@@ -79,7 +79,7 @@ cann_versions: ["9.1.0"]
 |---|---|
 | 实际入口 | `aclnnQuantMatmulAllReduceAddRmsNormGetWorkspaceSize` / `aclnnQuantMatmulAllReduceAddRmsNorm`；公开无版本后缀 ACLNN，已标记未来废弃 |
 | 计算语义 | `qmm=dequantScale*(x1_int8@x2_int8+bias_int32)`；`mmOut=AllReduceSum(qmm)`；`y=mmOut+residual`；`normOut=y/sqrt(mean(y²)+epsilon)*gamma` |
-| 输入输出 | `x1/x2:int8`；`bias:int32` 可空；`dequantScale:uint64/int64` 或 BF16；`residual/gamma/y/normOut:fp16|bf16`；均为 ND |
+| 输入输出 | `x1/x2:int8`；`bias:int32` 可空；`dequantScale:uint64/int64` 或 BF16；`residual/gamma/y/normOut:fp16\|bf16`；均为 ND |
 | 执行类型 | 单 Kernel MIX_CV + 非 Vector HCCL 通信；FP16 为 MIX_AIC_1_2，BF16 为 MIX_AIC_1_1 |
 | Kernel 路线 | R-001 FP16/B不转置；R-002 FP16/B转置；R-003 BF16/B不转置；R-004 BF16/B转置；每条再按 ARN key 选择 Normal/SplitD/MergeN/SingleN/MultiN |
 | 核心资源 | GM/HCCL window、workspace、Matmul L1/L0A/L0B/L0C、ARN UB/TQue/TBuf、标量寄存器 |
@@ -209,7 +209,7 @@ else -> Normal
 | R-002 | outer 4104；ARN 10/11/12/13/14 | FP16、B-T、A2 | 同 R-001 | BmmDequant bTrans=true | B offset用转置公式 | 同 R-001 |
 | R-003 | outer 8；ARN 30/31/32/33 | BF16、B-ND、A2 | MIX_AIC_1_1+HCCL | BmmDequantBf16 isAllAiv=true；BF16 ARN四body | INT32 workspace→AIV dequant→GM；Query→ARN | BF16无MultiN |
 | R-004 | outer 4104；ARN 30/31/32/33 | BF16、B-T、A2 | 同 R-003 | BmmDequantBf16 bTrans=true | 转置B offset | 同 R-003 |
-| ARN-Normal | 10/30 | 未命中专门模式 | AIV_VECTOR子任务 | `KernelAddRmsNorm<half|bf16>` | 每次一行、全N入UB | rowWork tail |
+| ARN-Normal | 10/30 | 未命中专门模式 | AIV_VECTOR子任务 | `KernelAddRmsNorm<half\|bf16>` | 每次一行、全N入UB | rowWork tail |
 | ARN-SplitD | 11/31 | N>12288 | AIV_VECTOR子任务 | `KernelAddRmsNormSplitD` | N切片；先全列累计rstd，再全列归一化 | col_tail |
 | ARN-MergeN | 12/32 | blockFactor!=1且align16(N)<=2000 | AIV_VECTOR子任务 | `KernelAddRmsNormMergeN` | 多行合并、x/y双缓冲 | row_tail |
 | ARN-SingleN | 13/33 | blockFactor==1 | AIV_VECTOR子任务 | `KernelAddRmsNormSingleN` | 每核一行、固定195584B TBuf | blockIdx行 |

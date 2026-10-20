@@ -633,7 +633,7 @@ cast each valid chunk FP32->FP16 and write final dgates
 | dgatesTemp | tile gate offset | `B*4H` elements | FP32 row-major | gate phase | reduce + CastBack | workspace/kernel | 保持未降精度 |
 | subDataBuf | UB base | U bytes | FP32 | dgatesTemp CopyIn | BinarySum | reduce phase | Reset 后独占 |
 | Cast buffers | UB base/独立 | `2*maxCalcNum` + `4*maxCalcNum` bytes | half + FP32 | CopyIn/Cast | CopyOut | cast phase | Reset 后重新布局 |
-| db/dgates GM | flat/tiled | FP16 | Cast | caller/ViewCopy | output | 仅有效尾块 |
+| db/dgates GM | flat/tiled | | FP16 | Cast | caller/ViewCopy | output | 仅有效尾块 |
 
 ##### 分层内存布局
 

@@ -152,7 +152,7 @@ bufferSize = min(bufferSize, 64KiB/dtypeBytes)
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-003 SIMD huge-width | tuple `(Mode=4, IsSIMT=0, CutMode=0)` | 非空、所有 padding `>=0`、`inShapeSize>49152`、且 `align(outShape[last],32/dtypeBytes)>bufferSize` | 任一条件不成立转 SIMT |
-| 2 | R-002 SIMT-64 | tuple `(Mode=4, IsBigShape=1, IsSIMT=1, CutMode=任意)` | 未命中 R-003，且 `inShapeSize>INT32_MAX || outShapeSize>INT32_MAX` | 否则 R-001 |
+| 2 | R-002 SIMT-64 | tuple `(Mode=4, IsBigShape=1, IsSIMT=1, CutMode=任意)` | 未命中 R-003，且 `inShapeSize>INT32_MAX \|\| outShapeSize>INT32_MAX` | 否则 R-001 |
 | 3 | R-001 SIMT-32 | tuple `(Mode=4, IsBigShape=0, IsSIMT=1, CutMode=任意)` | 未命中 R-003，且两端总元素均 `<=INT32_MAX`；含空域时也由 body 早退 | 无 fallback |
 
 ```text
@@ -185,7 +185,7 @@ mode=circular && IsRegBase
 | SIMD 尾宽 | `lastShapeSizeAlign>bufferSize` | huge-width body 切最后轴；较窄尾轴回到 SIMT | R-003 | SIMT | `CalculateTilingKeyCircular` |
 | SIMD UB cap | `bufferSize<=64KiB/dtypeBytes` | 两套双分区 TBuf 且每 buffer 有 64KiB 上限 | R-003 | 缩小 factor 后调优 | 同上 |
 | SIMD 核利用率 | 使用核比例 `>=0.8` 或 tile 输入字节 `<=4096`，否则调整 axis/factor | 避免低核利用率，同时阻止过小 tile 继续搜索 | R-003 | 调整 `ubAxis/ubFactor` | `CheckTilingInfoSatisfied` / `GetOptimizeTiling` |
-| SIMT 地址宽 | `inSize>INT32_MAX || outSize>INT32_MAX` | 线性 offset 和 magic division 必须避免 32-bit 溢出 | R-001/R-002 | 切到 64-bit 模板 | `DoTilingWithSIMTCircular` |
+| SIMT 地址宽 | `inSize>INT32_MAX \|\| outSize>INT32_MAX` | 线性 offset 和 magic division 必须避免 32-bit 溢出 | R-001/R-002 | 切到 64-bit 模板 | `DoTilingWithSIMTCircular` |
 
 ### POD/ABI
 
@@ -326,7 +326,7 @@ workspace_body = 0 B  # Host 仍声明 16 MiB 系统 workspace
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `pad_v3_grad_tiling_arch35.cpp` | `DoTilingWithSIMTCircular` | `inShapeSize>INT32_MAX || outShapeSize>INT32_MAX` | `isBigShape=true` |
+| Tiling | `pad_v3_grad_tiling_arch35.cpp` | `DoTilingWithSIMTCircular` | `inShapeSize>INT32_MAX \|\| outShapeSize>INT32_MAX` | `isBigShape=true` |
 | Router | `pad_v3_grad_simt.h` | `LaunchCircularKernelSIMT<T,true>` | compile-time true | `Process<int64_t>` |
 
 #### Device 数据流

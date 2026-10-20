@@ -184,7 +184,7 @@ else: R-004
 | 末轴 pad | 全局 `dimNeg1Tail<256` 时 `dimNeg1IsOdd=true` | 当前实现把该全局 flag 传给每个 task：先把整块 input Queue 清零，再 `DataCopyPad`，避免尾列无效 lane 读入旧 UB 数据 | 全部 | 无替代 Route；存在末轴 tail 时所有 task 都走带 event 的清零路径。 | `Process`、`CopyIn` |
 | scale 偶数化 | `ceil(axis/32)%2` 可能为奇 | scale 输出按相邻两个组储存，缺组为 0 | 全部 | 无 fallback；Tiling 扩展 shape/stride。 | `SetTilingParams`、`CopyOut` |
 | FP8 round | `roundMode==rint` | FP8 entry mapper和公开精度约束只允许 RINT | R-001/R-002 FP8 | `GetAttr` 失败。 | `GetAttr`、`RoundModeMapper` |
-| Dynamic branch | `dstTypeMax==0 || 6 || 7` | 这些值有专门的 BF16 指数 add/sub 常量；其余值要 FP32 乘倒数 | R-003/R-004 | 同 key 内转另一 body helper。 | `InitParams`、`ComputeAll` |
+| Dynamic branch | `dstTypeMax==0 \|\| 6 \|\| 7` | 这些值有专门的 BF16 指数 add/sub 常量；其余值要 FP32 乘倒数 | R-003/R-004 | 同 key 内转另一 body helper。 | `InitParams`、`ComputeAll` |
 | 950 overflow mode | `__NPU_ARCH__==3510` | entry 保存 SPR 60，`Init` 清零，结束后恢复 | 全部 | 其它编译架构不执行该段；但本卡只发布 950。 | `dynamic_mx_quant_with_dual_axis`、`Init` |
 
 ### POD/ABI
@@ -448,7 +448,7 @@ UB_total = 2184H; dynamic_ub = N/A; workspace_total = GetLibApiWorkSpaceSize()
 |---|---|---|---|---|
 | Host | tiling cpp | `GetAttr` | `scaleAlg=2`、FP4_E2M1、范围合法 | tuple `(0,round,2)`。 |
 | Body init | base.h | `InitParams` | `dstTypeMax==0/6` 或 `==7` | 装载两套 add/sub 常量。 |
-| Body dispatch | base.h | `ComputeAll` | `dstTypeMax==0 || 6 || 7` | `ComputeScaleDynamicDefault`。 |
+| Body dispatch | base.h | `ComputeAll` | `dstTypeMax==0 \|\| 6 \|\| 7` | `ComputeScaleDynamicDefault`。 |
 
 #### Device 数据流
 

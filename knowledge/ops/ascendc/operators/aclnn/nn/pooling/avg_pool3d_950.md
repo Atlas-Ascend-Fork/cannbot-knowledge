@@ -145,7 +145,7 @@ else -> R-004
 | ksize-one | 三轴 kernel 都为 1 | 可用 NDDMA 直接采样，省去窗口归约 | R-001 | R-002 | `Pool3DOneKsizeTiling::IsCapable` |
 | small UB | `CalcBufferSize(...) <= availableUb_` 并满足输入元素上限 | Queue、pad tmp、FP32 output/divisor 必须同时驻留 | R-002 | R-003 | `IsBufferCapable` |
 | small 离散轴 | D/H 的 dilation 与 stride 不同时 `>=3`；pad 大步长受限 | gather/scatter tile 不处理高度离散窗口 | R-002 | R-003 | `Pool3DNcdhwSmallKernelTiling::IsCapable` |
-| big kernel | `out_points<2*C || volume*dtypeSize>=256` | 为低并行或大归约窗口选逐输出分块 reduce | R-003 | R-004 | `Pool3DNcdhwBigKernelTiling::IsCapable` |
+| big kernel | `out_points<2*C \|\| volume*dtypeSize>=256` | 为低并行或大归约窗口选逐输出分块 reduce | R-003 | R-004 | `Pool3DNcdhwBigKernelTiling::IsCapable` |
 | SIMT 索引 | `xSize,ySize<=INT32_MAX` | magic division 与地址索引位宽 | R-004 | int64 key | `Pool3DSimtTiling::GetTilingKey` |
 | SIMT local memory | `localMemory=platformUB-128KiB` | 预留 DCache 后承载 POD/参数 | R-004 | 设置失败则整体失败 | `Pool3DSimtTiling::PostTiling` |
 

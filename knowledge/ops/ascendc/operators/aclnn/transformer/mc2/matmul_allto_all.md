@@ -183,7 +183,7 @@ platform DAV_2201
 | A2 UB | `ubMoveNum/2` 再向下对齐 `n0`；实际 TBuf 固定 160 KiB | 两个搬运 buffer 用 event 0/1 ping-pong | R-001 | 查表/默认值；无 Device fallback | `CommBase::SetTiling/SetArgs` |
 | A3 task 数 | 公式化切分最多 8 轮 | HCCL handle 与流水调度上界 | R-002 | 重新拟合 tile；失败则 Tiling 失败 | `AlltoAllMM::SetCommTimeFactor` |
 | A3 通算失衡 | `commTime>2*matmulTime && K>=8192` 时将最小tile降到对齐粒度；`2*commTime<=matmulTime<3*commTime` 时将最小tile抬到至少 `4 MiB/N` | 前者鼓励多切以覆盖通信，后者减少计算bound路线的过切 | R-002 | 重新生成long/short M tile；不切换Kernel | `AlltoAllMM::EstimateKernelTime` |
-| A3 2P小维 | `R<=2 && shortTileAtBack && (N<smallShapeBar || K<smallShapeBar)` | 只在2P、计算bound且N/K较小时启用小维向上对齐策略 | R-002 | `FitTileLengthDiscrete`采用`smallDimAlignUp=true` | `AlltoAllMM::SelectTilingMethod` |
+| A3 2P小维 | `R<=2 && shortTileAtBack && (N<smallShapeBar \|\| K<smallShapeBar)` | 只在2P、计算bound且N/K较小时启用小维向上对齐策略 | R-002 | `FitTileLengthDiscrete`采用`smallDimAlignUp=true` | `AlltoAllMM::SelectTilingMethod` |
 | 重排子块 | `ceil(tileM/64)*ceil((N/R)/256)`，used cores 取该值与 `2*aicCoreNum` 最小值 | 每 AIV block 搬一个或多个 64×256 子块 | R-002 | tail 使用实际 `blockCount/blockLen` | `MC2VecTranspose::getSplitCnt` |
 | dtype/bias | FP16→bias FP16；BF16→bias FP32 | ACLNN/Host 与 MatMul bias specialization 一致 | 两者 | 参数错误 | `CheckAllDtypesValid910B`、`CheckA3NonQuantTensorDataType` |
 

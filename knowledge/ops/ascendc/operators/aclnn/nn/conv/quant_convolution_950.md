@@ -608,7 +608,7 @@ UB = N/A（当前 route 量化由 Fixpipe 完成）
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| ACLNN | `ValuesChecker::CheckAttrGroups` | groups>0、Cout%groups=0、weightCin*groups=Cin | group合法 |
+| ACLNN | | `ValuesChecker::CheckAttrGroups` | groups>0、Cout%groups=0、weightCin*groups=Cin | group合法 |
 | Tiling | common group analysis | `convGroupType==OPT_GROUP_CONV` | 生成 groupOpt/enlarge/cinOpt/coutOpt | R-004 |
 | Router | 2D/3D entry | `GroupType!=NORMAL` | `GroupConv2d/GroupConv3dV2` | opt-group MIX key |
 

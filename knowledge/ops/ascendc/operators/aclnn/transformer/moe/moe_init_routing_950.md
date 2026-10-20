@@ -116,7 +116,7 @@ Arch35 Tiling 的 `DoOpTiling` 顺序执行平台、attrs、输入、空域、�
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 空张量 | 3000000 | `N==0 || K==0 || H==0`，最先返回 | 非空→R-002 |
+| 1 | R-001 空张量 | 3000000 | `N==0 \|\| K==0 \|\| H==0`，最先返回 | 非空→R-002 |
 | 2 | R-002 全载 | 200000/210000/220000 | `IsFullLoad` 且 mode 为 -1/0/1/13；INT4 复用 220000，由 POD 区分 | 不全载→R-003..005 |
 | 3 | R-003 staged 非量化/DropPad | 10000000/10001000/11000000/11001000；drop 10000100/11000100 | mode=-1，sortMode/rowIdx/drop 十进制编码 | quant→R-004/005 |
 | 4 | R-004 staged 整数量化 | static 10010000..11011000；dynamic 10020000..11021000；INT4 10140000..11141000 | mode 0/1/13，one/multi + gather/scatter | 低精度→R-005 |
@@ -132,7 +132,7 @@ validate → empty ? 3000000
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-001 空张量 | 3000000 | `N==0 || K==0 || H==0`，950 | entry 空域分支 | `InitGlobalMemory`、`Duplicate`、`DataCopyPad` | block0、单 zeroBuf | 精确有效字节后 return |
+| R-001 空张量 | 3000000 | `N==0 \|\| K==0 \|\| H==0`，950 | entry 空域分支 | `InitGlobalMemory`、`Duplicate`、`DataCopyPad` | block0、单 zeroBuf | 精确有效字节后 return |
 | R-002 全载 | 200000/210000/220000 | `IsFullLoad` 且 mode=-1/0/1/13 | 单 entry，FullLoadBase+派生 | `MoeV3FullLoad*` | UB 常驻 sort/map/count；同步 SIMT | UB 不足转 staged |
 | R-003 staged 非量化/DropPad | 10/11xx0000 与 drop key | mode=-1；one/multi、gather/scatter/drop | sort→count→row-map→copy | sort/count/nonquant/drop bodies | workspace ping-pong、SIMT、SyncAll | capacity/active tail |
 | R-004 staged 整数量化 | static/dynamic/INT4 keys | mode=0/1/13 且 dtype/scale/H 合法 | common producer→integer quant | static/dynamic bodies | FP32 calc、dynamic UB、可选 quant WS | INT4 H 偶数 |

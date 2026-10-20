@@ -308,7 +308,7 @@ scale x by rstd and gamma; cast and store outputs with MTE events
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
 | unitBuf | fixed offsets based on UF | 195584 B | mixed T/FP32 | DMA/vector | vector/DMA | whole Process | x2 region becomes gamma; tmp reuses tail |
-| GM row | `blockIdx*numCol` | numCol T | caller | one core | caller | one-row mapping |
+| GM row | `blockIdx*numCol` | numCol T | | caller | one core | caller | one-row mapping |
 
 ##### 分层内存布局
 

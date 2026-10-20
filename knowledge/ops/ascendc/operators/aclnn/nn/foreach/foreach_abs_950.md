@@ -42,7 +42,7 @@ cann_versions: ["9.1.0"]
 | 项目 | 内容 |
 |---|---|
 | 实际入口 | `aclnnForeachAbsGetWorkspaceSize` + `aclnnForeachAbs`，无版本后缀的公开两段式 ACLNN；固定仓未出现更新的同语义版本。 |
-| 计算语义 | 对张量列表逐张量、逐元素计算 `y_i[j] = |x_i[j]|`。 |
+| 计算语义 | 对张量列表逐张量、逐元素计算 `y_i[j] = \|x_i[j]\|`。 |
 | 输入输出 | 动态 TensorList；`FLOAT16/FLOAT32/BFLOAT16`，ND；输入可非连续并由框架 `AutoContiguous` 处理，公开接口不接受非连续输出。 |
 | 执行类型 | 单 Kernel：AIV entry 内以 `VF_CALL` 启动 SIMT 线程函数；实际逐元素节点为 SIMT，无 Cube/AIC/MIX_CV。 |
 | Kernel 路线 | R-001 FP16、R-002 FP32、R-003 BF16；key 分别为 0、1、2。 |

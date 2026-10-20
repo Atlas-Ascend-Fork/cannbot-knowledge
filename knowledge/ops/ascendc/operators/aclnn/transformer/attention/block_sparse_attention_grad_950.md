@@ -227,7 +227,7 @@ AIV: wait flag4; dv cast, dk/dq scale+cast; store
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
 | sftg workspace | offset0 | Qtoken·N1·8·4B | FP32 BNS8 | AIV front | AIV dS | executor/launch | pre完成后只读 |
-| gradients | POD dq/dk/dv offsets | 4·(|Q|+|K|+|V|) | FP32 ND | Cube atomic | AIV post | executor/launch | 先清零 |
+| gradients | POD dq/dk/dv offsets | 4·(\|Q\|+\|K\|+\|V\|) | FP32 ND | Cube atomic | AIV post | executor/launch | 先清零 |
 | UB MM1/MM2 | four `vecBaseM·baseN·4` segments | `8·baseM·baseN`B，最大128KiB | FP32 row-major | AIC Fixpipe | two AIV | kernel | task ping-pong/flag0,1 |
 | UB vector extras | MM区后 typed P/dS、LSE/sftg buffers；pre/front/post阶段也从offset0复用 | 总InitBuffer 247KiB | FP32/input/reg | MTE/V | L1/GM | AIV/stage | 阶段不并存 |
 | L1 P/dS | first four `baseM·baseN·2` segments | `8·baseM·baseN`B，最大128KiB | input NZ | AIV | Cube345 | kernel | ping-pong/flag2,3 |

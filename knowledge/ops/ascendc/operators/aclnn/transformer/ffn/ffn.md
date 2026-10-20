@@ -159,7 +159,7 @@ UB 先扣除 `align32(E*sizeof(int64_t))` 的 token 缓冲，再按 route 的块
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
 | R-001 FP16 高性能 | 0/2000 | A2，非 GLU，`x/W/y=FP16`，`innerPrecise=1`，非量化/伪量化 | 单 launch `MIX_AIC_1_1`；MM1→AIV activation→MM2 | `FFNHighPerformence<half, mmType<half,ND,ND>>`；2000 将两段绑到一个 Matmul 对象 | FP16 workspace1/2；`EVENT7`后 `SyncAll<true>` | M/N/K 尾块由 `TCubeTiling` 与 `curBase*`；不满足转后续 selector |
-| R-002 FP16/BF16 高精度 | 3/7 | FP16 `innerPrecise=0`，或 BF16 同 dtype 且 `innerPrecise=0`；BF16 公开范围限 800I A2 | 单 launch `MIX_AIC_1_2`；FP32 MM1/activation 子段→低精度 MM2 | `FFNHighPrecision<half|bfloat16_t,...>` | workspace1 FP32，workspace2 FP16/BF16；Vector cast 前 `PIPE_V` barrier | 不支持 GLU；BF16 实例受 arch22 编译 guard |
+| R-002 FP16/BF16 高精度 | 3/7 | FP16 `innerPrecise=0`，或 BF16 同 dtype 且 `innerPrecise=0`；BF16 公开范围限 800I A2 | 单 launch `MIX_AIC_1_2`；FP32 MM1/activation 子段→低精度 MM2 | `FFNHighPrecision<half\|bfloat16_t,...>` | workspace1 FP32，workspace2 FP16/BF16；Vector cast 前 `PIPE_V` barrier | 不支持 GLU；BF16 实例受 arch22 编译 guard |
 | R-003 GLU | 2 | FP16，无 expert，`activeType>=GEGLU`，`innerPrecise=1`，`N1%2=0`，`K2=N1/2` | 单 launch `MIX_AIC_1_2`；MM1 left/right→AIV GLU→MM2 | `FFNGlu<half>` | 每核 left/right×ping/pong 四片 GM workspace；最后 `SyncAll<true>` | M/N 双尾块；谓词失败直接 Host/Tiling 失败 |
 | R-004 标准 INT8 量化 | 1/2001/2002 | `x/W=INT8,y=FP16`，非 smooth，`deqScale!=FP32` | 单 launch `MIX_AIC_1_2`；INT8 Cube→AIV activation/quant→INT8 Cube | `FFNQuant<...,half,...,uint64_t>`；2001 单 Matmul，2002 加 `MM_CFG_STEPN` | FP16 workspace1 + INT8 workspace2；两段 `SetQuantVector` | 2002 需平均 token≤64 且两段 `stepN=2`；否则 2001/1 |
 | R-005 BF16 输出量化 | 11 | `x/W=INT8,y=BF16,deqScale=BF16`，非 smooth；公开范围限 800I A2 | 单 launch `MIX_AIC_1_2`；两次 INT32 Cube 结果都由 AIV 处理 | `FFNQuant<...,int32_t,bfloat16_t,...>` | FP32-sized workspace1、INT8 workspace2、`M*N2*4` MM2 输出片 | 按 dtype 粒度对齐；其他量化组合转 R-004/R-006/R-007 |
@@ -182,7 +182,7 @@ UB 先扣除 `align32(E*sizeof(int64_t))` 的 token 缓冲，再按 route 的块
 | smooth 优先 | 无 expert 时 `scale.dim0==N1`；有 expert 时 `scale.rank==2` | AIV 需逐 channel scale queue，不能用 per-tensor quant body | R-007 | 继续 BF16/FP32/标准 quant selector | `FFNGetQuantScale/SelectQuantTilingKey` |
 | per-group 边界 | scale rank 为 2/3，`G>=1`，`K1%G==0 && K2%G==0`，权重 INT4 | 每个 K tile 不得跨越 scale/offset group | R-009 | ACLNN 参数失败，不回退到 per-channel | `aclnn_ffn.cpp:CheckAntiQuantPergroup`、`FFNAntiQuant::CastWeightPerGroup` |
 | MSD 阈值 | `CheckMSD` 的 N1/K1/M/平均 token 布尔式全为真 | 只有大 K/N、小 M 时才启用两分量重构 body | R-010 | R-008 | `ffn_tiling.cpp:CheckMSD/SelectTilingKey` |
-| 空域 | `M==0 || K1==0 || N2==0` | 无有效输出或 Matmul 域 | 全部 | `blockDim=0`，不 launch | `FFNTiling::RunFusionKernelTiling` |
+| 空域 | `M==0 \|\| K1==0 \|\| N2==0` | 无有效输出或 Matmul 域 | 全部 | `blockDim=0`，不 launch | `FFNTiling::RunFusionKernelTiling` |
 
 ### POD/ABI
 

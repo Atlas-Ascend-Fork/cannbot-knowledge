@@ -153,7 +153,7 @@ Host 创建长度为 `workspaceCapacity/8` 的零初始化 `vector<uint64_t>`，
 
 | 对象 | 源码内可证明事实 | 完成期边界 |
 |---|---|---|
-| Y、descriptor/group-list、R-003 scratch | 它们位于同一个 `[Y | aligned workspace]` storage；返回的 Y 或行 views 持有该 storage | 返回 Tensor 对 Device storage 的 owner 由本文件闭合 |
+| Y、descriptor/group-list、R-003 scratch | 它们位于同一个 `[Y \| aligned workspace]` storage；返回的 Y 或行 views 持有该 storage | 返回 Tensor 对 Device storage 的 owner 由本文件闭合 |
 | `descriptorKeep` Host vector | callable 按值捕获 vector，lambda 执行时它是 `aclrtMemcpyAsync` 的 Host source | 源码没有 event、callback 或同步等待证明 vector 覆盖异步 H2D 消费期；依赖 `RunOpApi`/runtime 对 callable 与 H2D source 的契约 |
 | X、weight、optional bias | callable 按值捕获输入 Tensor，descriptor/raw 参数保存其 device pointer | 源码没有 `recordStream` 或 completion event 证明 capture 覆盖 Device 完成期；依赖 `RunOpApi` 与 NPU allocator/stream 的延迟回收契约 |
 

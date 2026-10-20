@@ -327,7 +327,7 @@ workspace_private = coreNum*4 or *8 is allocated but this per-token body does no
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `CalculateTilingData` | `calcSize>maxUseUb`、no group、pertoken | q1 |
+| Tiling | | `CalculateTilingData` | `calcSize>maxUseUb`、no group、pertoken | q1 |
 
 #### Device 数据流
 
@@ -400,7 +400,7 @@ workspace has no cross-core consumer in q1
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `CalculateTilingData` | q=pertoken、group>0、整行可载 | q2 |
+| Tiling | | `CalculateTilingData` | q=pertoken、group>0、整行可载 | q2 |
 
 #### Device 数据流
 
@@ -472,7 +472,7 @@ same full-load row formula + aligned group queue; group must be <=1024
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `CalculateTilingData` | group>0、pertoken、`calcSize>maxUseUb` | q3 |
+| Tiling | | `CalculateTilingData` | group>0、pertoken、`calcSize>maxUseUb` | q3 |
 
 #### Device 数据流
 
@@ -543,7 +543,7 @@ chunk bound from q3 `innerLoopEle`; workspace private unused
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `CheckAttrs/CalculateTilingData` | pertensor、group=null、整行可载 | q4 + scheduleMode1 |
+| Tiling | | `CheckAttrs/CalculateTilingData` | pertensor、group=null、整行可载 | q4 + scheduleMode1 |
 
 #### Device 数据流
 
@@ -617,7 +617,7 @@ UB_total = full-load queues + multiple 256B extrema/workspace transfer queues
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `CalculateTilingData` | pertensor、group=null、row too large | q5 + scheduleMode1 |
+| Tiling | | `CalculateTilingData` | pertensor、group=null、row too large | q5 + scheduleMode1 |
 
 #### Device 数据流
 
@@ -688,7 +688,7 @@ workspace_private=coreNum*4*(sym?1:2); UB chunk bound from `innerLoopEle`
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `IsCapableForFullLoad` | 存在 `i` 使整 M 及 N块/可选多 batch 入 UB | q7 |
+| Tiling | | `IsCapableForFullLoad` | 存在 `i` 使整 M 及 N块/可选多 batch 入 UB | q7 |
 
 #### Device 数据流
 
@@ -761,7 +761,7 @@ Host full-load inequality is exactly `IsCapableForFullLoad` lines 593-605; works
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `IsCapableForRecompute` | q7 不可且 `nBlockNum*B>=vectorCoreNum` | q8；调整 N 尾块填充率 |
+| Tiling | | `IsCapableForRecompute` | q7 不可且 `nBlockNum*B>=vectorCoreNum` | q8；调整 N 尾块填充率 |
 
 #### Device 数据流
 
@@ -837,7 +837,7 @@ mBlockSize=(maxUseUb-8*4*nBlock)/(2*nBlock*(2+1)+2*2); exact integer formula in 
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `IsCapableForSplitM` | q7/q8 均不可，保留默认 q9 | scheduleMode=1；workspace B*N*4/8 |
+| Tiling | | `IsCapableForSplitM` | q7/q8 均不可，保留默认 q9 | scheduleMode=1；workspace B*N*4/8 |
 
 #### Device 数据流
 

@@ -69,7 +69,7 @@ Softmax 的有效列数是 `width=W`，UB 行距是 `padLineNum=A`；padding lan
 | 参数 | shape/layout | dtype | 约束、默认值与语义 |
 |---|---|---|---|
 | `x` | `[B,N,S1,S2]` / ND | FP32、FP16、BF16 | 必须为 4 维；A2/A3 上 `0 < S2 <= 4096`；允许非连续输入，OpDef `AutoContiguous()` 形成框架连续化边界。 |
-| `mask` | `[Mb,Mn,S1,S2]` / ND | BOOL | 必须为 4 维；`Mb==B || Mb==1`，`Mn==N || Mn==1`；末两维与 `x` 相等；公开 API 路径要求非空，允许非连续并由 `AutoContiguous()` 处理。 |
+| `mask` | `[Mb,Mn,S1,S2]` / ND | BOOL | 必须为 4 维；`Mb==B \|\| Mb==1`，`Mn==N \|\| Mn==1`；末两维与 `x` 相等；公开 API 路径要求非空，允许非连续并由 `AutoContiguous()` 处理。 |
 | `scale` | 标量 | API 为 `double`；内部 attr/POD 为 FP32 | 公开入口把它交给生成式 inner bridge；固定仓可见的 OpDef attr 是 `Float`，Tiling 用 `GetAttrPointer<float>`，因此 Device 实际消费 FP32 `scale`。 |
 | `fixTriuMask` | 标量 | BOOL | 仅支持 `false`；`true` 在公开第一段接口直接返回 `ACLNN_ERR_PARAM_INVALID`，不生成核内上三角 mask。 |
 | `y` | 与 `x` 相同 / ND | 与 `x` 相同 | 公开实现检查 dtype 相同；文档要求 shape 相同。输出自身不支持非连续。 |
@@ -178,7 +178,7 @@ router: key 0 -> float; else key 1 -> half; else key 2 -> bfloat16_t; else -> no
 | 每迭代行数 | `(U-32768)/bytes_per_line > 0` | 三队列、FP32 中间和 Softmax tmp 必须容入 UB | 全部 | `SetUbSplitInfo` 返回 false，`DoTiling` 失败 | `SetUbSplitInfo` |
 | X 对齐 | `A=align_up(W,32/s)` | X/Y DMA 每行有效 `W*s` bytes，UB 行距需 32-byte 对齐 | 全部 | 无独立 fallback；通过 padding 实现 | `SetPaddingInfo`；`CopyXIn`；`CopyOut` |
 | mask 对齐 | `M=align_up(W,32)` | BOOL 每元素 1 byte，mask UB 行距按 32 byte 对齐 | 全部 | 无独立 fallback；通过 padding 实现 | `SetPaddingInfo`；`MoveMaskLines` |
-| 广播合法性 | `(B==Mb||Mb==1)&&(N==Mn||Mn==1)&&H==Mh&&W==Mw` | mask GM offset 只支持前两维 0/1 step 广播 | 全部 | API/Tiling 失败 | `CheckShape`；`InitInputShape`；`SetMaskAdapt` |
+| 广播合法性 | `(B==Mb\|\|Mb==1)&&(N==Mn\|\|Mn==1)&&H==Mh&&W==Mw` | mask GM offset 只支持前两维 0/1 step 广播 | 全部 | API/Tiling 失败 | `CheckShape`；`InitInputShape`；`SetMaskAdapt` |
 | Softmax tmp | Host 固定预留 32 KiB；Device 在 `A*L>32768` 时分配 64 KiB | `SelectWithBytesMask` 与 `SoftMax` 共用 `bufShare` | 全部 | 固定仓无显式 fallback；若条件可达，Host 字节账未证明额外 32 KiB | `SetUbSplitInfo`；`ScaledMaskedSoftmaxV2::Init` |
 | BF16 编译 guard | key 2 且架构不是 3003/3113 | 这两个 Kirin 架构不实例化 BF16 body | R-003 | A2/A3 可达；被排除平台无输出 body | `scaled_masked_softmax_v2` |
 | tail core/iter | `blockIdx<h` 取 head，否则 tail；最后迭代用 `lineLast*Iter` | 避免越过最后有效行 | 全部 | 零行 tail core 的 loop 为 0 | `Init`；`Process` |

@@ -200,7 +200,7 @@ Tiling 中仍保留 `N==0` 的 tuple `(dtype,0)` 与 `blockDim=1`，但公开 AC
 | 全局双缓冲阈值 | `N > 1024` | 把三个 Queue 的 depth 从 1 改为 2，同时用更大的 `bufferNum` 缩小 `ubFactor` | R-001↔R-002，R-003↔R-004 | 选择单缓冲或双缓冲 tuple | `HardSwishGradTilingFunc` |
 | 计算 lane 对齐 | `alignedNum=ceil_align(currentNum,64)` | 所有支持 dtype 的 `ComputeType` 都为 FP32，`Compares/Select` 按 256 字节粒度执行 | 全部 | 不存在替代 Route；仅把无效 lane 算入 UB，不写回 GM | `HardSwishGrad::Compute` |
 | UB 容量预算 | `ubFactor=floor_align(floor((B/s)/bufferNum),alignUnit)` | Queue depth、FP32 中间量与 bit mask 必须同时驻留 | 全部 | 无运行时 fallback；Tiling 失败仅覆盖平台信息异常，未显式保护 `ubFactor=0` | `HardSwishGradTilingFunc` |
-| dtype 升精度 | `T=half || T=bfloat16_t` | 线性导数和乘法在 FP32 完成，结果 `CAST_RINT` 回原 dtype | R-003/R-004 | FP32 走 R-001/R-002 直接计算 | `NEED_CAST`、`ComputeType`、`Compute` |
+| dtype 升精度 | `T=half \|\| T=bfloat16_t` | 线性导数和乘法在 FP32 完成，结果 `CAST_RINT` 回原 dtype | R-003/R-004 | FP32 走 R-001/R-002 直接计算 | `NEED_CAST`、`ComputeType`、`Compute` |
 | 空域 | Level-2：任一输入 `IsEmpty()` | 避免建立 launcher；输出为空无需 Device 写入 | 无 Kernel Route | `workspaceSize=0` 成功返回 | `aclnnHardswishBackwardGetWorkspaceSize` |
 | 平台资源 | `GetCoreNumAiv()!=0 && UB!=0` | 分核与 UB 推导的除数 | 全部 | Tiling `GRAPH_FAILED` | `GetPlatformInfo` |
 

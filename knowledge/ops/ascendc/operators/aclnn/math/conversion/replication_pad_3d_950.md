@@ -208,7 +208,7 @@ else: 33020 + (dimNum-ubAxis)*10 + 2
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 索引位宽 | `inElems>INT32_MAX || outElems>INT32_MAX` | 23000 的 shape/stride/index 为 uint32 | R-001 | R-002 | `DoTilingWithSIMTEdge` |
+| 索引位宽 | `inElems>INT32_MAX \|\| outElems>INT32_MAX` | 23000 的 shape/stride/index 为 uint32 | R-001 | R-002 | `DoTilingWithSIMTEdge` |
 | SIMT 小域 | `outElems<=4096` | 避免小域建立 UB/Vector tile | R-001/2 | Vector selector | `CalculateTilingKeyEdge` |
 | MoveAlignV2 轴数 | `dimNum>4` 或 4 轴且轴0 pad | normal body最多在 UB 内展开4轴且不处理 N 轴 padding | R-001/2 | R-003～5 | `CalculateTilingKeyEdge` |
 | 单 buffer 上限 | `bufferSize<=64KiB` | AscendC buffer 分配上限 | R-003～5 | 切 W | `UB_MAX_DATA_SIZE_PER_BUFFER` |
@@ -376,7 +376,7 @@ workspace_total = 16 MiB system workspace；body 不访问
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `pad_v3_tiling_arch35.cpp` | `DoTilingWithSIMTEdge` | `inShapeSize_>INT32_MAX || outShapeSize_>INT32_MAX` | 23001 |
+| Tiling | `pad_v3_tiling_arch35.cpp` | `DoTilingWithSIMTEdge` | `inShapeSize_>INT32_MAX \|\| outShapeSize_>INT32_MAX` | 23001 |
 
 #### Device 数据流
 

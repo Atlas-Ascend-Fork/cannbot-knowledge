@@ -127,9 +127,9 @@ Host 将输入/输出 storage shape 左侧补 1 到共同 raw rank，再删除�
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 rank4 FP32 | `XLOG1PY_RANK_4`; `Xlog1pyKernel<float,4>` | DAV_3510，非空，dtype FLOAT，归一化 rank `<=4` | dtype 半精度转 R-002；rank 大于 4 转 R-003/R-004 |
-| 2 | R-002 rank4 FP16/BF16 | `XLOG1PY_RANK_4`; `Xlog1pyKernel<half|bfloat16_t,4>` | DAV_3510，非空，dtype FLOAT16 或 BF16，归一化 rank `<=4` | rank 大于 4 转 R-004；其它 dtype 失败 |
+| 2 | R-002 rank4 FP16/BF16 | `XLOG1PY_RANK_4`; `Xlog1pyKernel<half\|bfloat16_t,4>` | DAV_3510，非空，dtype FLOAT16 或 BF16，归一化 rank `<=4` | rank 大于 4 转 R-004；其它 dtype 失败 |
 | 3 | R-003 rank8 FP32 | `XLOG1PY_RANK_8`; `Xlog1pyKernel<float,8>` | DAV_3510，非空，dtype FLOAT，归一化 rank `5..8` | 半精度转 R-004；rank 超 8 在 ACLNN 检查失败 |
-| 4 | R-004 rank8 FP16/BF16 | `XLOG1PY_RANK_8`; `Xlog1pyKernel<half|bfloat16_t,8>` | DAV_3510，非空，dtype FLOAT16 或 BF16，归一化 rank `5..8` | 其它 dtype 或 rank 超 8 失败 |
+| 4 | R-004 rank8 FP16/BF16 | `XLOG1PY_RANK_8`; `Xlog1pyKernel<half\|bfloat16_t,8>` | DAV_3510，非空，dtype FLOAT16 或 BF16，归一化 rank `5..8` | 其它 dtype 或 rank 超 8 失败 |
 
 ```text
 if x.empty || y.empty: return success without Device route

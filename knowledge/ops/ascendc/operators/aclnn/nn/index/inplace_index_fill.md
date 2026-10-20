@@ -122,8 +122,8 @@ Tiling 总是取全部 AIV 核。索引标记阶段先比较 `N < coreNum*32`：
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 FrontQ | key 0 | `(axis!=last || rank==1) && (Q>=1024 || dtype∈{INT64,BOOL})` | R-002/R-003；尾轴去 R-004/5 |
-| 2 | R-002 FrontN | key 1 | 非尾轴族、dtype 非 INT64/BOOL、`Q<1024 && (N>=64 || Q>=64)` | R-003 |
+| 1 | R-001 FrontQ | key 0 | `(axis!=last \|\| rank==1) && (Q>=1024 \|\| dtype∈{INT64,BOOL})` | R-002/R-003；尾轴去 R-004/5 |
+| 2 | R-002 FrontN | key 1 | 非尾轴族、dtype 非 INT64/BOOL、`Q<1024 && (N>=64 \|\| Q>=64)` | R-003 |
 | 3 | R-003 FrontP | key 2 | 非尾轴族、dtype 非 INT64/BOOL、`Q<64 && N<64` | 无 |
 | 4 | R-004 TailN | key 3 | `rank>1 && axis==last && N>=coreNum*256` | R-005 |
 | 5 | R-005 TailP | key 4 | `rank>1 && axis==last && N<coreNum*256` | 无 |
@@ -154,7 +154,7 @@ else:
 |---|---|---|---|---|---|
 | FrontQ 阈值 | `Q>=1024` | Q 足够长，按切片直接搬运/填值 | R-001 | R-002/3 | `ComputeTilingKey` |
 | dtype 强制 | INT64/BOOL | 其它 front body 只实例化 2/4 字节 | R-001 | 无 | `ComputeTilingKey/index_fill_front_q` |
-| N/Q 阈值 | `N>=64 || Q>=64` | 在 Q 不大时按 N 并行、Gather 展开 mask | R-002 | R-003 | 同上 |
+| N/Q 阈值 | `N>=64 \|\| Q>=64` | 在 Q 不大时按 N 并行、Gather 展开 mask | R-002 | R-003 | 同上 |
 | tail N 阈值 | `N>=coreNum*256` | 大尾轴按 N 分核 | R-004 | R-005 | 同上 |
 | indices mode | `N<coreNum*32` | 小 N 可每核本地完整 mask；大 N 按 N 切避免 atomic 冲突 | 全部 | 另一 mode | `IndicesTaskTiling/ExecIndicesTask` |
 | UB ownership | `InitBuffer(allUbBuf,ubSize)` | 各 body 在同一物理 TBuf 手工排子区 | 全部 | Tiling/运行资源失败 | `IndexFillBase::Init` |

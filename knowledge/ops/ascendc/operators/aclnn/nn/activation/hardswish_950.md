@@ -134,7 +134,7 @@ self
 | 节点 | Host 添加函数 / entry | 网格与参数 | 输入输出 / workspace | ordering、owner 与失败传播 |
 |---|---|---|---|---|
 | F0 | `aclnnHardswishGetWorkspaceSize -> l0op::Contiguous` | 框架决定 | `self -> selfContiguous`；slice 固定仓不可见 | 同一 executor/stream 的前驱；空返回阻断 K0。 |
-| K0 | `l0op::HardSwish -> ADD_TO_LAUNCHER_LIST_AICORE` / `hard_swish<0|1|2>` | `blockDim=usedCoreNum`；POD=`HardSwishTilingData` | 连续 GM x→同 dtype GM y；节点 workspace=0 | executor 依赖 F0 后启动；Tiling/launch 失败阻断 F1/F2。 |
+| K0 | `l0op::HardSwish -> ADD_TO_LAUNCHER_LIST_AICORE` / `hard_swish<0\|1\|2>` | `blockDim=usedCoreNum`；POD=`HardSwishTilingData` | 连续 GM x→同 dtype GM y；节点 workspace=0 | executor 依赖 F0 后启动；Tiling/launch 失败阻断 F1/F2。 |
 | F1 | `aclnnHardswishGetWorkspaceSize -> l0op::Cast` | 框架决定 | K0 中间输出→`out.dtype` 中间；slice 不可见 | 依赖 K0；空返回阻断 F2。 |
 | F2 | `aclnnHardswishGetWorkspaceSize -> l0op::ViewCopy` | 框架决定 | Cast 中间→用户 `out` view；slice 不可见 | 图尾节点；空返回使第一段失败，运行错误由 `CommonOpExecutorRun` 返回。 |
 
@@ -222,7 +222,7 @@ aclnnHardswishGetWorkspaceSize
 |---|---|---|---|---|---|---|---|
 | `HardSwishTilingData` | `totalNum` | `int64_t`/64 | offset 0 | 元素 | `GetShapeAttrsInfo: EnsureNotScalar(storageShape).GetShapeSize()` | 各 `Init`：计算本核 remainder | API 空 Tensor 不进 K0；rank-0 记为 1。 |
 | `HardSwishTilingData` | `blockFactor` | `int64_t`/64 | offset 8 | 元素/核 | `CeilDiv(totalNum, coreNum)` | 各 `Init`：GM base、blockLength | 仅非空有效；末核可小于该值。 |
-| `HardSwishTilingData` | `ubFactor` | `int64_t`/64 | offset 16 | 元素/tile | dtype 分支的 `FloorAlign(FloorDiv((U/4),6|8),Q)` | 各 `Init/Process/CopyIn/CopyOut`：Queue 容量、loop 与 GM offset | `<=0` 时 Tiling 失败；不进 Device。 |
+| `HardSwishTilingData` | `ubFactor` | `int64_t`/64 | offset 16 | 元素/tile | dtype 分支的 `FloorAlign(FloorDiv((U/4),6\|8),Q)` | 各 `Init/Process/CopyIn/CopyOut`：Queue 容量、loop 与 GM offset | `<=0` 时 Tiling 失败；不进 Device。 |
 
 ### Route 源码闭包
 

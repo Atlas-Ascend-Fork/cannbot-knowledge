@@ -157,9 +157,9 @@ else:
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | ACLNN 恒等快路 | `outputSize==N && numel(repeats)==1` | 直接 Reshape+ViewCopy，省去核心复制 | 无 Kernel | 正常核心路线 | `aclnnRepeatInterleaveGetWorkspaceSize` |
-| repeats 轴并行 | `used<C/2 && (R>64 || (CP==1 && R!=1)) && outputSize>1024` | batch/CP 不足以占核时，增加 repeats slice；需跨核前缀和 | R-003/R-004 | R-002 | `GetUbFactor`, `SplitRepeatsShape` |
+| repeats 轴并行 | `used<C/2 && (R>64 \|\| (CP==1 && R!=1)) && outputSize>1024` | batch/CP 不足以占核时，增加 repeats slice；需跨核前缀和 | R-003/R-004 | R-002 | `GetUbFactor`, `SplitRepeatsShape` |
 | CP 拆分 | `used<C/2 && CP*sizeof(T)>128` | 大连续 copy plane 可按 CP 分核 | 通用实现；本 ACLNN 不可达 | 保持 batch/repeats 分配 | `GetUbFactor`, `SplitCP` |
-| offset 位宽 | `repeats.dtype==INT64 || numel(y)>INT32_MAX` | 归约和输出 offset 不能窄化为 INT32 | 201/202 | 选 201 或 202 | `UseInt64`, `GetTilingKey` |
+| offset 位宽 | `repeats.dtype==INT64 \|\| numel(y)>INT32_MAX` | 归约和输出 offset 不能窄化为 INT32 | 201/202 | 选 201 或 202 | `UseInt64`, `GetTilingKey` |
 | scalar gather | `CP*sizeof(T)<32 && CP*r*sizeof(T)<=256`；本入口 CP=1 | 用寄存器 gather 一批生成多个重复值，8bit 另用宽载入+DeInterleave | R-001 | unaligned copy loop | `ProcessWholeCp`, `CopyCpToRepeatOutGatherAicore` |
 | 普通 UB factor | `F=floor32(U/2/(2sT+sU))` | 覆盖 Queue depth 后为输入、输出、repeats 留上界 | R-001/R-002 | 无 fallback；F 为 Device 除数 | `GetUbFactor` |
 | 拆分 UB/同步预留 | `U'=U-64C`，F 再扣 `32*sizeof(V)` | 为每核记录槽、归约输出以及 input/output/repeats buffer 留空间 | R-003/R-004 | 不满足资源时固定源码无显式 fallback | `GetUbFactor`, `RepeatInterleaveSmall::Init` |

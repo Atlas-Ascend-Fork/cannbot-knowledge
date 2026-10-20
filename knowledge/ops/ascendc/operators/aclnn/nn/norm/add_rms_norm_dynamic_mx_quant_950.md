@@ -154,7 +154,7 @@ split-R 从 `baseN=64` 起倍增；每次候选把 x1/x2、gamma/beta、xOut、y
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 reduce-empty | `(COMPUTE_MODE=2,Y=FP8)`；priority 500 | `numCol==0 || numRow==0`；ACLNN 前缀空已提前返回，因此公开入口实际可启动的是尾轴空 | 若两者均非 0，到 R-002/R-003 |
+| 1 | R-001 reduce-empty | `(COMPUTE_MODE=2,Y=FP8)`；priority 500 | `numCol==0 \|\| numRow==0`；ACLNN 前缀空已提前返回，因此公开入口实际可启动的是尾轴空 | 若两者均非 0，到 R-002/R-003 |
 | 2 | R-002 FP8 full-load | `(0,FP8)`；priority 1000 | 非空、y 为 E4M3FN/E5M2、`R<=16384`，且 `SetTilingParams` 算出 `rowFactor>=1` | full-load 不可容纳到 R-004 |
 | 3 | R-003 FP4 full-load | `(0,FP4)`；priority 1000 | 同 R-002，y 为 E2M1/E1M2，`R` 偶数、`scaleAlg=0` | full-load 不可容纳到 R-005 |
 | 4 | R-004 FP8 split-R | `(1,FP8)`；priority 2000 | 非空、FP8、前一模板失败且 `R>=64` | 无后续模板，失败 |
@@ -176,7 +176,7 @@ else:
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-001 | `(2,FP8)` | 950、`A==0 || R==0` | 单 AIV | `AddRmsNormDynamicMxQuantReduceEmpty` | 单 VECOUT Queue；只可能写 rstd NaN | rstd 无效或 A=0 时立即返回 |
+| R-001 | `(2,FP8)` | 950、`A==0 \|\| R==0` | 单 AIV | `AddRmsNormDynamicMxQuantReduceEmpty` | 单 VECOUT Queue；只可能写 rstd NaN | rstd 无效或 A=0 时立即返回 |
 | R-002 | `(0,FP8)` | 950、合法 FP16/BF16 × gamma同型/FP32 × E4M3FN/E5M2；full-load 可容纳 | 单 AIV | `FP8RFullLoad<T_X,T_GAMMA,T_Y>` | 多行整载、x/rstd/y/scale Queue；OCP/cuBLAS runtime 分支 | 行尾 `curRows`，列尾 mask/64 对齐 |
 | R-003 | `(0,FP4)` | 同上但 y=E2M1/E1M2、R 偶数、scaleAlg=0 | 单 AIV | `FP4RFullLoad<T_X,T_GAMMA,T_Y>` | y Queue 容量为 FP8 的一半；roundMode 选择模板实参 | packed FP4，最后组 scale 偶数 pad |
 | R-004 | `(1,FP8)` | 合法 FP8、full-load 失败、R>=64 | 单 AIV | `FP8SplitR<T_X,T_GAMMA,T_Y>` | 两阶段：先折叠归约整行，再重读每 tile 输出；cache TBuf | `curM/curN/foldTail`；OCP/cuBLAS分支 |
@@ -277,7 +277,7 @@ else:
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | ACLNN | `op_host/op_api/aclnn_add_rms_norm_dynamic_mx_quant.cpp` | GetWorkspaceSize | 前缀维 0 直接成功 | 无核心 launch |
-| Tiling | `op_host/...tiling_reduce_empty_arch35.cpp` | `IsCapable` | `numCol==0 || numRow==0` | key `(2,FP8)` |
+| Tiling | `op_host/...tiling_reduce_empty_arch35.cpp` | `IsCapable` | `numCol==0 \|\| numRow==0` | key `(2,FP8)` |
 | Router | `op_kernel/add_rms_norm_dynamic_mx_quant_apt.cpp` | entry constexpr branch | `COMPUTE_MODE_REDUCE_EMPTY` | Empty body |
 
 #### Device 数据流

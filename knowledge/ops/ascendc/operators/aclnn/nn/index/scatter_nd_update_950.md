@@ -149,7 +149,7 @@ router priority:
 | 地址位宽 | 三个size均在阈值内 | key100可用uint32 loop/type | 全route模板位宽 | key200/必要时OFFSET int64 | `GetTilingKey`, apt router |
 | DCache保留 | platformUB>32KiB | 950 local memory扣除DCache/stack | 全route | tiling失败 | `GetPlatformInfo` |
 | deterministic row threshold | `S*sizeof(T) <128` | 小行用SIMT聚合更多元素线程 | R-002 vs R-001 | 对方route | `CalcDeterministicCoreSplit` |
-| SIMD split | `S>AIV*128/sizeof(T) || R<AIV/2` | 大after-axis优先跨核分列 | R-004 | split-indices | `DoOpTilingForSimdNonDetermin` |
+| SIMD split | `S>AIV*128/sizeof(T) \|\| R<AIV/2` | 大after-axis优先跨核分列 | R-004 | split-indices | `DoOpTilingForSimdNonDetermin` |
 | runtime sort | `maxScore>0.01` | index histogram显示重复后才承担sort/unique | R-001/2 CalcMask、R-004、R-005 | unsorted subpath | `IndexStatistic*`, `SORT_HIST_THRESHOLD` |
 | mask容量 | `varInAxis<0.1*ubSize` 等四条件 | 每核UB常驻int8 mask才可行 | R-003 | R-004 | `CalculateMask` |
 | noncontiguous | K≤4且non-index轴连续 | strideList直接构造storage offset | 全route | API连续化+ViewCopy或tiling失败 | API/`HandleNonContiguousCase` |

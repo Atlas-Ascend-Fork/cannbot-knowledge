@@ -132,7 +132,7 @@ router: 1001 -> <half>; 1027 -> <bfloat16_t>; 1000 -> <float>; otherwise return
 | GuessK | `!doTopK && 0<p<1`，Device 再截 `min(topKGuess,S,1024)` | 先小集合排序，累计和达到 p 即免全排序 | 全部 | 未达到 p 转 `SortAll` 全排序 | `Process`, `TopPCompute` |
 | 排序对齐 | TopK tile 8192；Sort 基元长度按 32 元素补齐 | `Sort`/`MrgSort` 和 32B DMA 的粒度 | 全部 | 尾部填 `FLOAT_MIN` 后参与排序但不提交为有效数据 | `Sort32Block`, `SortSPartAll` |
 | UB 固定占用 | 6×32768 B | 六个 `TBuf<VECCALC>` | 全部 | Host 未实现基于 `ubSize` 的 fallback；平台资源不足无源码 fallback | `InitAndSetBuffer` |
-| 输出全局初始化 | `isNeedLogits || isNeedSampleResult` | 稀疏散射前必须定义未写位置 | 全部 | 不请求相应输出则不初始化；请求时设 BATCH_MODE 并 `SyncAll` | `SetOpTilingData`, `InitAndSetBuffer` |
+| 输出全局初始化 | `isNeedLogits \|\| isNeedSampleResult` | 稀疏散射前必须定义未写位置 | 全部 | 不请求相应输出则不初始化；请求时设 BATCH_MODE 并 `SyncAll` | `SetOpTilingData`, `InitAndSetBuffer` |
 | Q 与中间输出互斥 | q 存在且 `isNeedSampleResult!=0` | 末端模式二选一 | 全部 | Tiling 失败 | `CheckOpInputShape` |
 
 ### POD/ABI

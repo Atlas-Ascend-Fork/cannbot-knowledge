@@ -132,7 +132,7 @@ else:
 | mixed Normal UB | `bufSizeNew<ubSize` | x/y/gamma/FP32 临时完整驻留 | R-003 | R-004 | `CalMixDtypeTiling` |
 | mixed SingleRow UB | `oneRowBufSizeNew<ubSize` | 通过复用 FP32-sized inX 少一块 16-bit行缓冲 | R-004 | R-005 | `CalMixDtypeTiling` |
 | non-mixed D 上限 | alignedD `<=12288` (B16) 或 `<=10240` (FP32) | Normal queue/TBuf 静态容量 | R-003 | R-005 | `UB_FACTOR_B16/B32` |
-| Split-D 尾块 | 调整 U 直到 `D%U==0 || D%U>=16` | 避免末尾小于 32 B（16-bit）搬运边界 | R-005 | U 减 16；减到 0 则失败 | `Tiling4RmsNorm` |
+| Split-D 尾块 | 调整 U 直到 `D%U==0 \|\| D%U>=16` | 避免末尾小于 32 B（16-bit）搬运边界 | R-005 | U 减 16；减到 0 则失败 | `Tiling4RmsNorm` |
 | epsilon | `epsilon>=0` | rsqrt 域 | 全部 | `GRAPH_FAILED` | `Tiling4RmsNorm` |
 
 ### POD/ABI

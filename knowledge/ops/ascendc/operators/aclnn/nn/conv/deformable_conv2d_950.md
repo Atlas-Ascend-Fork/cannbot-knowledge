@@ -143,7 +143,7 @@ K2 的逻辑输入为 `Hi=OH*KH,Wi=OW*KW,Ci=inC`，kernel=`KH*KW`，stride=`KH,K
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-002 64 位采样索引 + Conv | K1 key 1001；K2 16 维 tuple | 950 且 `xSize>INT32_MAX || offsetSize>INT32_MAX || deformOutputSize>INT32_MAX` | shape/attr 失败 |
+| 1 | R-002 64 位采样索引 + Conv | K1 key 1001；K2 16 维 tuple | 950 且 `xSize>INT32_MAX \|\| offsetSize>INT32_MAX \|\| deformOutputSize>INT32_MAX` | shape/attr 失败 |
 | 2 | R-001 32 位采样索引 + Conv | K1 key 1000；K2 16 维 tuple | 950 且三者均 `<=INT32_MAX` | shape/attr 失败 |
 
 ```text

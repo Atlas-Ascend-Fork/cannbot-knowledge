@@ -136,9 +136,9 @@ R-003 先从 2048 threads 起步；当 `threadNum>=256 && ceil(G/threadNum)<aivN
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 AICPU fallback | `ADD_TO_LAUNCHER_LIST_AICPU(GatherV2)` | 950 `IsRegbase()` 下 `self.dtype` 不在 `{FLOAT,FLOAT16,BF16,INT32,INT64,INT16,UINT16,INT8,UINT8,BOOL,DOUBLE,COMPLEX64}`；对 aclnnTake 即 UINT32、UINT64、COMPLEX128 | AICore selector |
-| 2 | R-002 LastGather 全载 | `1100000101/102/104/108`；`Gatherv2SimdLastGather<rawD,DTYPE_INDICES,true>` | AICore dtype，且 `(S*D<=UB/2 || S*D<=UB-32768) && (D<=2 ? S<65536 : S<INT32_MAX) && floor(G/S)>1 && G*D>=32 && D<=8` | SIMT_TWO_DIM |
+| 2 | R-002 LastGather 全载 | `1100000101/102/104/108`；`Gatherv2SimdLastGather<rawD,DTYPE_INDICES,true>` | AICore dtype，且 `(S*D<=UB/2 \|\| S*D<=UB-32768) && (D<=2 ? S<65536 : S<INT32_MAX) && floor(G/S)>1 && G*D>=32 && D<=8` | SIMT_TWO_DIM |
 | 3 | R-004 PCIe AIV fallback | 与 R-003 相同 key；`Gatherv2SimdTwoDimPcie<DTYPE_INDICES>` | R-002 不命中，且 router 发现 `x/indices/axis/y` 任一地址在 `[0x40000000000,0x80000000000)` | R-003 |
-| 4 | R-003 TwoDim SIMT | `20000000{01,02,04,08}` 或 64-bit 地址型 `20000001{01,02,04,08}`；`Gatherv2SimtTwoDim<rawD,DTYPE_INDICES,uint32_t/uint64_t>` | R-002 不命中、地址不在 PCIe 区间；地址型由 `S>INT32_MAX || G>INT32_MAX` 决定 | 无；Tiling 失败则 launch 失败 |
+| 4 | R-003 TwoDim SIMT | `20000000{01,02,04,08}` 或 64-bit 地址型 `20000001{01,02,04,08}`；`Gatherv2SimtTwoDim<rawD,DTYPE_INDICES,uint32_t/uint64_t>` | R-002 不命中、地址不在 PCIe 区间；地址型由 `S>INT32_MAX \|\| G>INT32_MAX` 决定 | 无；Tiling 失败则 launch 失败 |
 
 ```text
 if empty(self) || empty(index): no-op success
@@ -164,10 +164,10 @@ else:                              # IsGaAllLoad=false; IsSimtTwoDim=true for fl
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | dtype selector | `IsRegbase()` 的 AICore dtype 集合 | 950 AICore binary/body 只由该 selector 可达 | 全部 | R-001 | `op_api/gather_v2.cpp::IsAiCoreSupport` |
-| 整轴全载 | `S*D<=UB/2 || S*D<=UB-32768` | R-002 把 `ubRows*S` 个 raw 元素载入 input queue | R-002 | R-003/R-004 | `Gatherv2TilingBase::IsLastGatherAndFullLoad` |
+| 整轴全载 | `S*D<=UB/2 \|\| S*D<=UB-32768` | R-002 把 `ubRows*S` 个 raw 元素载入 input queue | R-002 | R-003/R-004 | `Gatherv2TilingBase::IsLastGatherAndFullLoad` |
 | VGather 索引宽度 | `D<=2 ? S<65536 : S<INT32_MAX` | raw D=1/2 使用 16-bit gather index，D=4/8 使用 32-bit | R-002 | R-003/R-004 | `IsLastGatherAndFullLoad`, `IndexTypeGet` |
 | 重用阈值 | `floor(G/S)>1 && G*D>=32` | 只有重复读取足够多时才全载 self | R-002 | R-003/R-004 | `IsLastGatherAndFullLoad` |
-| 地址宽度 | `S>INT32_MAX || G>INT32_MAX` | SIMT 地址计算需 uint64 | R-003/R-004 | 选择 64-bit key | `GetTilingKey` |
+| 地址宽度 | `S>INT32_MAX \|\| G>INT32_MAX` | SIMT 地址计算需 uint64 | R-003/R-004 | 选择 64-bit key | `GetTilingKey` |
 | PCIe 地址 | 任一地址位于固定窗口 | SIMT 直接 GM 路径被运行时替换为搬运型 AIV | R-003/R-004 | 普通地址走 R-003 | `gather_v2` entry |
 | dynamic local memory | SIMT route 设置 `UB-128KiB` | Host 为 SIMT launch 保留 local memory；body 未显式索引该区 | R-003/R-004 | Tiling/launch 失败 | `PostTiling` |
 

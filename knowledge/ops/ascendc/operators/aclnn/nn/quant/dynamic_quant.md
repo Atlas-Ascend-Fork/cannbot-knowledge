@@ -227,7 +227,7 @@ else: BF16 ? key0 : key1
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `dynamic_quant_tiling.cpp` | `SetTilingData/SetTilingKey` | 整行可载、`!useDb`、无 group | key 0/1 |
-| Router | `dynamic_quant[_v2].cpp` | entry | `TILING_KEY_IS(0)||...1` | `DynamicQuant<DTYPE_X,DTYPE_Y>` |
+| Router | `dynamic_quant[_v2].cpp` | entry | `TILING_KEY_IS(0)\|\|...1` | `DynamicQuant<DTYPE_X,DTYPE_Y>` |
 
 #### Device 数据流
 
@@ -457,7 +457,7 @@ UB_total bounded by Host 19*C coefficient + reserved bytes
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `SetTilingKey` | `groupNum>0 && innerLoopTimes==0` | key 7 |
+| Tiling | | `SetTilingKey` | `groupNum>0 && innerLoopTimes==0` | key 7 |
 
 #### Device 数据流
 
@@ -529,7 +529,7 @@ UB per row = A8(E)*4 + 17*A16(rowLen); DB disabled by Host for MOE
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `SetTilingKey` | `groupNum>0 && innerLoopTimes>0` | key 8 |
+| Tiling | | `SetTilingKey` | `groupNum>0 && innerLoopTimes>0` | key 8 |
 
 #### Device 数据流
 
@@ -599,7 +599,7 @@ C uses large-shape Host bound; workspace=16 MiB system only
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `SetSpecialTilingForDs` | 对称、INT8、无 group、固定 N 与 row 范围 | key 100 |
+| Tiling | | `SetSpecialTilingForDs` | 对称、INT8、无 group、固定 N 与 row 范围 | key 100 |
 
 #### Device 数据流
 
@@ -670,7 +670,7 @@ maxHandleRowsPerUb=16384/rowLen; rowLoops=ceil(rowNum/maxHandleRowsPerUb)
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `CheckMultiRowPreconditions` | 对称、无 group、N>=128、N%8=0、N<=maxUbLen | key 10 |
+| Tiling | | `CheckMultiRowPreconditions` | 对称、无 group、N>=128、N%8=0、N<=maxUbLen | key 10 |
 
 #### Device 数据流
 

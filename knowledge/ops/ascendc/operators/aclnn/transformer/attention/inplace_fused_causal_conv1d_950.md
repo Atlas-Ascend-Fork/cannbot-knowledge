@@ -133,7 +133,7 @@ BH 以 `dimCoreCnt*batchCoreCnt=usedCoreNum` 做二维分核，dim 按 128 元�
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 BH | 20000 BF16 / 20001 FP16 | wrapper 谓词为 `rank==3 || (rank==2 && maxQueryLen<=8)`；进入后还要通过 BH shape/dtype/resource 校验 | wrapper 谓词为假时才尝试 R-002 |
+| 1 | R-001 BH | 20000 BF16 / 20001 FP16 | wrapper 谓词为 `rank==3 \|\| (rank==2 && maxQueryLen<=8)`；进入后还要通过 BH shape/dtype/resource 校验 | wrapper 谓词为假时才尝试 R-002 |
 | 2 | R-002 BSH | 10000 BF16 / 10001 FP16 | wrapper 的 else 分支；BSH `IsCapable` 只接受 rank2，并拒绝 `maxQueryLen∈[1,8]`。在公开合法域内等价于 rank2 且 `maxQueryLen>8` | 非 rank2、短序列、非法 dtype 或资源不足均失败 |
 
 ```text
@@ -288,7 +288,7 @@ entry 声明 `KERNEL_TYPE_AIV_ONLY`，默认注册 BSH POD，并用 `TILING_KEY_
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling wrapper | `inplace_fused_causal_conv1d_tiling.cpp` | `TilingInplaceFusedCausalConv1d` | `xDimNum==3 || (xDimNum==2 && maxQueryLen<=8)` | `FusedCausalConv1dCutBHTiling(context,true)` |
+| Tiling wrapper | `inplace_fused_causal_conv1d_tiling.cpp` | `TilingInplaceFusedCausalConv1d` | `xDimNum==3 \|\| (xDimNum==2 && maxQueryLen<=8)` | `FusedCausalConv1dCutBHTiling(context,true)` |
 | BH Tiling | `fused_causal_conv1d_cut_bh_tiling_arch35.cpp` | `GetTilingKey` | x BF16/FP16 | 20000/20001 |
 | Router | `inplace_fused_causal_conv1d_apt.cpp` | `TILING_KEY_IS` | key 20000/20001 | `FusedCausalConv1dCutBH<T>` |
 

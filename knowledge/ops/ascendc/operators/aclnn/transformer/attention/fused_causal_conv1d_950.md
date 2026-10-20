@@ -144,7 +144,7 @@ R-002 以 `overlap=K-1`，对候选 `dimCoreNum` 与 `bsCoreNum` 计算 `effecti
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 CutBH | BF16 `20000` / FP16 `20001` | dispatcher：`rank(x)==3 || (rank(x)==2 && maxQueryLen<=8)`；属性缺失时本函数局部 `maxQueryLen=0`，也命中 BH | 条件 false 转 R-002；BH 内校验失败直接 `GRAPH_FAILED` |
+| 1 | R-001 CutBH | BF16 `20000` / FP16 `20001` | dispatcher：`rank(x)==3 \|\| (rank(x)==2 && maxQueryLen<=8)`；属性缺失时本函数局部 `maxQueryLen=0`，也命中 BH | 条件 false 转 R-002；BH 内校验失败直接 `GRAPH_FAILED` |
 | 2 | R-002 CutBSH | BF16 `10000` / FP16 `10001` | dispatcher 的 `useBH==false`；公开有效域即 2D 且 `maxQueryLen>8`；BSH 自身还要求 rank 2 | 校验失败，无 Device fallback |
 
 ```text
@@ -167,7 +167,7 @@ selected route: x.dtype BF16/FP16 -> route key; other dtype -> GRAPH_FAILED
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 公开平台 | docs 支持 950 且 OpDef 仅 `ascend950` | 仅 arch35 AIV body 被接线 | 全部 | 不发布 A2/A3 | README 产品表；`FusedCausalConv1d::FusedCausalConv1d` |
-| 短长序列 | `rank3 || (rank2 && maxQueryLen<=8)` | BH 以 batch×dim 分核；BSH 以连续 token×dim 分核并处理 overlap | R-001/R-002 | 另一 Route 或校验失败 | `TilingFusedCausalConv1d` |
+| 短长序列 | `rank3 \|\| (rank2 && maxQueryLen<=8)` | BH 以 batch×dim 分核；BSH 以连续 token×dim 分核并处理 overlap | R-001/R-002 | 另一 Route 或校验失败 | `TilingFusedCausalConv1d` |
 | dtype key | BF16/FP16 | entry 只有四个精确 key 实例 | 全部 | Host dtype 校验失败；未知 key 无输出 | 两个 `GetTilingKey`；`fused_causal_conv1d` |
 | dim 粒度 | BH `D<1024` 用 128，`D>=1024` 用 1024+128；BSH 128 | DMA/VF 主路径按对齐 channel 块工作，余数交 last core/masked VF | 全部 | 专用 last-core tail；非法 D 失败 | `DoOpTiling/ApplyDimSplit` |
 | BH UB 上界 | `available=ubSize-8192-fixedUB`，tile 由 `ComputeUbFor*` 求解 | 单核必须容纳 x/y、weight、cache queue 与 metadata | R-001 | 源码无 `available<=0` 或最终总字节复核，`ComputeUbFor*` 会把 batch 至少钳为 1；超资源输入属于固定实现边界 | `ComputeIntraCoreUbTiling*`；`ComputeUbFor*` |
@@ -296,7 +296,7 @@ selected route: x.dtype BF16/FP16 -> route key; other dtype -> GRAPH_FAILED
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | API | `op_api/aclnn_fused_causal_conv1d.cpp` | `FusedCausalConv1dCommonProcess` | View/Contiguous/L0 成功 | launcher node |
-| Dispatcher | `op_host/fused_causal_conv1d_tiling.cpp` | `TilingFusedCausalConv1d` | `xDimNum==3 || (xDimNum==2 && maxQueryLen<=8)` | CutBH `DoTiling` |
+| Dispatcher | `op_host/fused_causal_conv1d_tiling.cpp` | `TilingFusedCausalConv1d` | `xDimNum==3 \|\| (xDimNum==2 && maxQueryLen<=8)` | CutBH `DoTiling` |
 | Tiling | `op_host/fused_causal_conv1d_cut_bh_tiling_arch35.cpp` | `GetTilingKey` | BF16→20000，FP16→20001 | raw BH POD |
 | Router | `op_kernel/fused_causal_conv1d_apt.cpp` | `fused_causal_conv1d` | exact key | `FusedCausalConv1dCutBH<T>` |
 

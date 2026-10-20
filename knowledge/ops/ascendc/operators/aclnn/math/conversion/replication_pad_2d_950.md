@@ -199,7 +199,7 @@ else compute alignedLast, buffer
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 小输出 | `outShapeSize<=4096` | 避免小域的 UB tiling/搬运开销 | R-001 | Vector selector | `CalculateTilingKeyEdge` |
-| SIMT 位宽 | `inShapeSize>INT32_MAX || outShapeSize>INT32_MAX` | 32 位扁平索引会溢出 | R-001/R-002 | 23001 | `DoTilingWithSIMTEdge` |
+| SIMT 位宽 | `inShapeSize>INT32_MAX \|\| outShapeSize>INT32_MAX` | 32 位扁平索引会溢出 | R-001/R-002 | 23001 | `DoTilingWithSIMTEdge` |
 | cut buffer | `buffer=align((UB/2)-VL,VL)`，上限 64 KiB | depth2 Queue 每半区还含 VL 辅助区 | R-003 | R-004/R-005 | `CalculateTilingKeyEdge` |
 | normal/gather 分界 | `outLast*dtypeBytes > VL/2` | 大尾轴适合 MoveAlignV2 行搬运，小尾轴用 gather 构造多行 | R-004/R-005 | 另一 Route | `CalculateTilingKeyEdge` |
 | core tune | 使用率 `<0.8` 且 tile 输入字节 `>4096` | 避免过少核且单 tile 过大 | R-003～R-005 | 移轴或 cut-last | `CheckTilingInfoSatisfied/GetOptimizeTiling` |
@@ -336,7 +336,7 @@ workspace_total = 16 MiB system workspace request；body 不读取 workspace
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `pad_v3_tiling_arch35.cpp` | `DoTilingWithSIMTEdge` | `inShapeSize>INT32_MAX || outShapeSize>INT32_MAX` | key 23001 |
+| Tiling | `pad_v3_tiling_arch35.cpp` | `DoTilingWithSIMTEdge` | `inShapeSize>INT32_MAX \|\| outShapeSize>INT32_MAX` | key 23001 |
 | Router | `pad_v3_apt.cpp` | `pad_v3` | key 23001 | huge SIMT |
 
 #### Device 数据流

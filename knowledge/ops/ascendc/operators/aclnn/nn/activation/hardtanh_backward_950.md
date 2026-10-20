@@ -62,7 +62,7 @@ cann_versions: ["9.1.0"]
 | 项目 | 内容 |
 |---|---|
 | 实际入口 | 公开两段式 ACLNN：`aclnnHardtanhBackwardGetWorkspaceSize` + `aclnnHardtanhBackward`；固定仓没有更高版本后缀。 |
-| 计算语义 | 实际 Kernel 为 `out[i] = (isnan(self[i]) || (self[i] > min && self[i] < max)) ? gradOutput[i] : 0`。这意味着有限值恰等于端点时输出 0；公开文档公式把端点归入通过区，存在可执行语义冲突。 |
+| 计算语义 | 实际 Kernel 为 `out[i] = (isnan(self[i]) \|\| (self[i] > min && self[i] < max)) ? gradOutput[i] : 0`。这意味着有限值恰等于端点时输出 0；公开文档公式把端点归入通过区，存在可执行语义冲突。 |
 | 输入输出 | `gradOutput/self/out` 公开契约为同 shape、同 dtype、ND、rank 0–8、可非连续；950 支持 FLOAT16、FLOAT、BFLOAT16。`min/max` 在 Host 转为 FP32 属性。 |
 | 执行类型 | 核心 `HardtanhGrad` 是单个 `AIV_VECTOR` Kernel；`Contiguous/ViewCopy` 为 executor 框架边界。无 Cube/AIC/MIX_CV。 |
 | Kernel 路线 | R-001 FP32 原位宽比较；R-002 FP16/BF16 仅比较路径升为 FP32。两者的活动 TilingKey 均为 `3`。 |

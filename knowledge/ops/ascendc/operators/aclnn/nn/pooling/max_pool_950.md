@@ -148,7 +148,7 @@ aclnnMaxPool(workspace, executor, stream)
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 小窗无 padding | priority 0；`300001` | NCHW；`Nf*Ho*Wo >= C0`；`IsBufferCapable()`；四侧 pad 为 0，且 ceil 最后窗口不越输入。 | padding/ceil 越界改 R-002；容量或并行谓词失败继续 priority 1/2。 |
-| 2 | R-002 小窗 padding | priority 0；`300002` | 同一小窗 `IsCapable` 成功，且任一 pad 非 0，或 `ceilMode && ((Wo-1)*sW+kW>W || (Ho-1)*sH+kH>H)`。 | 小窗失败继续 priority 1/2。 |
+| 2 | R-002 小窗 padding | priority 0；`300002` | 同一小窗 `IsCapable` 成功，且任一 pad 非 0，或 `ceilMode && ((Wo-1)*sW+kW>W \|\| (Ho-1)*sH+kH>H)`。 | 小窗失败继续 priority 1/2。 |
 | 3 | R-003 大窗 fallback | priority 2；`311110` | 公开 ACLNN 的 NCHW 输入，且 priority 0 小窗返回 `GRAPH_PARAM_INVALID`；priority 1 NHWC 小窗因 format false；priority 2 `IsCapable` 对 NCHW 恒真。 | 非 NCHW 才继续 priority 4 NHWC；公开 ACLNN 路径不可达。 |
 
 ```text

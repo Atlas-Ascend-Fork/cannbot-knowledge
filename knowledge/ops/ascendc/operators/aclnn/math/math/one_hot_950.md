@@ -152,7 +152,7 @@ R-001/R-002 都是一个 OneHot Device 节点，不存在算子自有的跨 Kern
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-002 UB 批量初始化 + SIMT 稀疏覆写 | key `1001`；`OneHotMix<DTYPE_X,DTYPE_DEPTH,DTYPE_Y>` | `depth_ > 3 && uint64(N)*uint64(depth_) > 1024` | 条件为假进入 R-001。 |
-| 2 | R-001 直接 SIMT 全量写 | key `1000`；`OneHot<DTYPE_X,DTYPE_DEPTH,DTYPE_Y>` | 上述条件为假，即 `depth_<=3 || N*depth_<=1024` | 无下一 Kernel Route；API 空域在 launcher 前返回。 |
+| 2 | R-001 直接 SIMT 全量写 | key `1000`；`OneHot<DTYPE_X,DTYPE_DEPTH,DTYPE_Y>` | 上述条件为假，即 `depth_<=3 \|\| N*depth_<=1024` | 无下一 Kernel Route；API 空域在 launcher 前返回。 |
 
 ```text
 若 self.empty || numClasses==0 -> API 成功短路，无 Kernel
@@ -168,7 +168,7 @@ unknown key -> entry 不执行 body，直接结束
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-001 直接 SIMT | 1000 | 950 的 36 个 binary dtype 组合；非空、`D>0`；`D<=3 || N*D<=1024` | 单 `one_hot` 节点，SIMT | `OneHot<T1,T2,T3>::Process`；`D==1` 调 `SimtComputeDepth`，否则按每核 offset 选 `SimtCompute` 或 `SimtComputeFor64` | 无 AIV UB；线程直接 GM load/store；无显式 block barrier | 尾核修正 `coreFactor`；`startOffset>INT32_MAX` 用 64 位除法 fallback。 |
+| R-001 直接 SIMT | 1000 | 950 的 36 个 binary dtype 组合；非空、`D>0`；`D<=3 \|\| N*D<=1024` | 单 `one_hot` 节点，SIMT | `OneHot<T1,T2,T3>::Process`；`D==1` 调 `SimtComputeDepth`，否则按每核 offset 选 `SimtCompute` 或 `SimtComputeFor64` | 无 AIV UB；线程直接 GM load/store；无显式 block barrier | 尾核修正 `coreFactor`；`startOffset>INT32_MAX` 用 64 位除法 fallback。 |
 | R-002 UB+SIMT | 1001 | 950 的 36 个 binary dtype 组合；非空；`D>3 && N*D>1024` | 单 `one_hot` 节点内 AIV Vector/DMA→全核同步→SIMT | `OneHotMix<T1,T2,T3>::InitOffValueAndCopyOut` + `SimtComputeMix/For64Mix` | `TBuf offValueUb=U-58KiB`；`Duplicate` 后 V→MTE3 event；`SyncAll<true>` 保护 dense-fill→sparse-patch | 两套尾核：输出初始化尾核和输入索引尾核；`endOffset>INT32_MAX` 用 64 位 fallback。 |
 
 ### 隐藏性能 Guard
@@ -179,7 +179,7 @@ unknown key -> entry 不执行 body，直接结束
 | SIMT dcache 预留 | `localMemorySize=U-58KiB` | R-002 同时使用 SIMT 与 AIV UB，Host 从平台 UB 扣除固定 dcache | R-002 | 固定源码无 fallback；`U<=58KiB` 未显式拒绝 | `DoOpTiling`, `PostTiling` |
 | 32/64 位地址分支 | R-001 `startOffset>INT32_MAX`；R-002 `endOffset>INT32_MAX` | 32 位 fast-division body 的 `gmIdx/coreFactor` 为 `int32_t` | 两 Route | 调对应 `For64` body | `OneHot::Process`, `OneHotMix::Process` |
 | `D==1` 特化 | `depth_==1` | 输出与输入一一对应，不需要类别轴循环或二维 thread block | R-001 | R-001 普通 SIMT 子路径 | `OneHot::Process` |
-| 空/零类别 | `self->IsEmpty() || numClasses==0` | 避免 Tiling 中 `factor1`/输出域为零并跳过无效 launch | 两 Route 前 | API 成功短路 | `aclnnOneHotGetWorkspaceSize` |
+| 空/零类别 | `self->IsEmpty() \|\| numClasses==0` | 避免 Tiling 中 `factor1`/输出域为零并跳过无效 launch | 两 Route 前 | API 成功短路 | `aclnnOneHotGetWorkspaceSize` |
 | workspace 指针 | `workspace!=nullptr && GetUserWorkspace(workspace)!=nullptr` | entry 初始化 system workspace 后才进入 body | 两 Route | Device entry 直接 return | `one_hot` |
 
 ### POD/ABI
@@ -518,7 +518,7 @@ m_ = static_cast<uint32_t>(magic);
 
 | 对比维度 | R-001 直接 SIMT | R-002 UB+SIMT | 设计选择依据 |
 |---|---|---|---|
-| 命中条件/优先级 | `D<=3 || N*D<=1024`，key 1000 | `D>3 && N*D>1024`，key 1001 | 输出规模与类别数共同决定批量初始化是否启用。 |
+| 命中条件/优先级 | `D<=3 \|\| N*D<=1024`，key 1000 | `D>3 && N*D>1024`，key 1001 | 输出规模与类别数共同决定批量初始化是否启用。 |
 | 模板与 dtype | `OneHot<T1,T2,T3>`，36 组 950 binary dtype 组合 | `OneHotMix<T1,T2,T3>`，同 36 组 | dtype 不改变 key，只实例化模板类型。 |
 | 循环与分核 | 输入 q 分核；每 q 全量写 D 个元素 | 输出 T 分核 fill；同步后输入 q 分核 sparse patch | 大 D 时分离 dense 与 sparse 阶段。 |
 | Queue/TBuf/寄存器/dynamic UB/通信 window | 无 UB；SIMT 标量寄存器 | 一个 `TBuf` 占 `U-58KiB`；SIMT 标量寄存器 | R-002 为批量 DMA 物化默认值模板。 |

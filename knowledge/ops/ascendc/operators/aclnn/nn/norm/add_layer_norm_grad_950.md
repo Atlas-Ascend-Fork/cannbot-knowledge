@@ -159,7 +159,7 @@ validate -> dtypeKey(1/2/3) -> compute Cut-N capacity
 |---|---|---|---|---|---|
 | Cut-N UB fit | 上述 `Navail>=1 && free>=0` | 至少容纳一行输入/输出、gamma/归约结果和保留区 | R-001～R-006 | Cut-D | `AddLayerNormGradTilingImpl` |
 | 32B 对齐 | FP32 `roundUp(*,8)`；FP16/BF16 `roundUp(*,16)` | DMA block 与 Queue 容量 | 全部 | `DataCopyPad` 或回退尾块搬运 | `CalNInUb`, `SafeDataCopy`, `DataCopyCustom` |
-| BF16 编译 | `__CCE_AICORE__==220 || 310` | router 只在该 guard 下实例化 BF16 | R-005/006/011/012 | 未知 key 无输出 | `add_layer_norm_grad` |
+| BF16 编译 | `__CCE_AICORE__==220 \|\| 310` | router 只在该 guard 下实例化 BF16 | R-005/006/011/012 | 未知 key 无输出 | `add_layer_norm_grad` |
 | 有效核 | `blockIdx<numCore` | launch 使用 `Cmax` 而数据只分给 `numCore` | 全部 | 空闲核只参与同步/归并调度 | `InitVar` |
 | 确定性 | `isDeterministicKey!=0` | 避免跨核直接原子归约顺序变化 | 全部 | 0 时直接 atomic 到输出 | `CutNProcess`, `CutDProcess` |
 | 归并 stride | 非 220/310 且 stride 超 `uint16_t` 才逐行；950 编译支路使用扩展搬运 | DMA stride 字段上限 | 确定性阶段 | `copyInByRow`（当前公开 950 路线不走） | `AddLayerNormGradDeterminsticCompute::copyIn` |
@@ -1121,7 +1121,7 @@ if(isDeterministicKey) {
 |---|---|---|---|
 | 支持状态 | 公开支持；详见无后缀卡 | 公开支持；详见无后缀卡 | 公开支持；`ascend950` OpDef、binary config、kernel config 三重接线 |
 | Host/Launcher | 与 A3/950 共用源码 | 与 A2/950 共用源码 | 共用 Tiling/OpDef，平台查询实际 AIV 核数和 UB |
-| Kernel/资源 | 同源 router/body | 同源 router/body | 同源 router/body；BF16 guard 覆盖 `__CCE_AICORE__==220 || 310`，产品到宏值的映射由固定仓外工具链提供 |
+| Kernel/资源 | 同源 router/body | 同源 router/body | 同源 router/body；BF16 guard 覆盖 `__CCE_AICORE__==220 \|\| 310`，产品到宏值的映射由固定仓外工具链提供 |
 
 ## 限制与失败边界
 

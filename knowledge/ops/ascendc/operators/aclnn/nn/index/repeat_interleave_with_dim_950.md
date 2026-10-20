@@ -107,7 +107,7 @@ Host 先折叠三维。逐元素 repeats 时为 `[N,R,CP]`；0D/单元素 repeat
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-003 分片 INT32 | 201 / `RepeatInterleaveSmall<T,U,int32_t>` | 已触发 `isSplitShape`，且 `repeats.dtype!=INT64 && numel(y)<=INT32_MAX` | 条件不全则检查 R-004 |
-| 2 | R-004 分片 INT64 | 202 / `RepeatInterleaveSmall<T,U,int64_t>` | 已触发 `isSplitShape`，且 `repeats.dtype==INT64 || numel(y)>INT32_MAX` | 未分片则检查 scalar |
+| 2 | R-004 分片 INT64 | 202 / `RepeatInterleaveSmall<T,U,int64_t>` | 已触发 `isSplitShape`，且 `repeats.dtype==INT64 \|\| numel(y)>INT32_MAX` | 未分片则检查 scalar |
 | 3 | R-001 scalar/单元素 | 101 / `RepeatInterleaveScalarImpl<T,U>` | 未触发 repeats 分片，且原 `repeats` 为 0D 或长度 1，Tiling 写 `repeatsCount=outputSize/self.shape[d]` | 否则 R-002 |
 | 4 | R-002 普通 tensor | 102 / `RepeatInterleaveImpl<T,U>` | 未触发 repeats 分片且 `repeats` 为长度 `R` 的 1D Tensor | 无其它 fallback；校验/Tiling 失败 |
 
@@ -137,7 +137,7 @@ else: key=102
 |---|---|---|---|---|---|
 | CP 分核 | `usedCoreNum<totalCoreNum/2 && CP*sizeof(T)>128` | 扩大并行核数且保证每片至少 128B | R-001/R-002 | 保持 batch 分核 | `RepeatInterleaveTilingKernelNorm::SplitCP/GetUbFactor` |
 | repeats 分片 | 低于半核且长度/CP 谓词、`outputSize>1024` | 用 repeats 轴补并行，需跨核前缀和 | R-003/R-004 | R-001/R-002 | `GetUbFactor/SplitRepeatsShape` |
-| offset 位宽 | `repeats.dtype==INT64 || numel(y)>INT32_MAX` | 前缀和及输出 offset 避免 INT32 窄化 | R-004 | R-003 | `UseInt64/GetTilingKey` |
+| offset 位宽 | `repeats.dtype==INT64 \|\| numel(y)>INT32_MAX` | 前缀和及输出 offset 避免 INT32 窄化 | R-004 | R-003 | `UseInt64/GetTilingKey` |
 | scalar Gather | `CP*sizeof(T)<32 && CP*repeatsCount*sizeof(T)<=256` | 寄存器 Gather 一次生成小 CP 的重复布局 | R-001 内部 | 普通 unaligned MicroAPI | `RepeatInterleaveScalarImpl::ProcessWholeCp` |
 | scalar/normal 大 CP | `CP*sizeof(T)>=128` | 单 CP 超过阈值，按 `ubFactor` 分 loop 并用 MTE loop mode 广播 | R-001/R-002 内部 | 小 CP 聚合路径 | `ProcessWholeCp/CopyOutY` |
 | small 大 CP | `CP*sizeof(T)>256` | CP 先 pad 到 32B 对齐跨度，逐项 loop-mode 输出 | R-003/R-004 | 整体/拆分 UB 生成 | `RepeatInterleaveSmall::Process/CopyOutY` |

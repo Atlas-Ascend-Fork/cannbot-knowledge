@@ -144,7 +144,7 @@ key = 2000000000 + dtypeOffset + fastOffset
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| RegBase selector | `IsRegbaseSocVersion || npuArch==DAV_5102` | 选择 Reg POD/key/body | 全部 950 | 非 RegBase Tiling | `CanUseRegbase` |
+| RegBase selector | `IsRegbaseSocVersion \|\| npuArch==DAV_5102` | 选择 Reg POD/key/body | 全部 950 | 非 RegBase Tiling | `CanUseRegbase` |
 | AIV-only | `KERNEL_TASK_TYPE_DEFAULT(KERNEL_TYPE_AIV_ONLY)`；AIC return | 禁止 Cube/AIC 执行 body | 全部 | AIC core 无操作 | `_apt::layer_norm_quant` |
 | 整载容量 | `UB-256 >= (13+3s)*C` | FP32时等于真实一行布局；2-byte dtype 对 scalar 区保守预留 256 B（实际128 B） | R-001~003 | 对应 split | `RegTiling::GetTilingSliceInfo` |
 | slice repeat | `sliceSize` 向下对齐 `256/s` 元素 | Vector repeat 粒度 | R-004~006 | 源码无 `elemSize==0` 独立失败 guard | 同上 |
@@ -440,7 +440,7 @@ dynamic_ub=N/A; workspace_total=LibApi workspace
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `layer_norm_quant_tiling_arch35.cpp` | `GetTilingSliceInfo` | s=2 且 `UB-256 < 19*C` | key 2300000000 |
-| Router | `layer_norm_quant_apt.cpp` | key 2300000000 | split half |
+| Router | `layer_norm_quant_apt.cpp` | | key 2300000000 | split half |
 
 #### Device 数据流
 
@@ -519,7 +519,7 @@ dynamic_ub=N/A; workspace_total=LibApi workspace
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `layer_norm_quant_tiling_arch35.cpp` | slice gate + BF16 key | s=2，多片 | 2200000000 |
-| Router | `layer_norm_quant_apt.cpp` | key2200m | split bf16 |
+| Router | `layer_norm_quant_apt.cpp` | | key2200m | split bf16 |
 
 #### Device 数据流
 
@@ -594,7 +594,7 @@ dynamic_ub=N/A; workspace_total=LibApi workspace
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `layer_norm_quant_tiling_arch35.cpp` | `dtypeSize=4`; slice gate | `UB-256<25*C` | 2400000000 |
-| Router | `layer_norm_quant_apt.cpp` | key2400m | split float |
+| Router | `layer_norm_quant_apt.cpp` | | key2400m | split float |
 
 #### Device 数据流
 

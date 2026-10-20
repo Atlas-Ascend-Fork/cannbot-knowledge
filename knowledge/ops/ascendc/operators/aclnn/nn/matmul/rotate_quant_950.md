@@ -251,7 +251,7 @@ L0 logical bytes = A(align(blkM,16)*K*2) + B(K*K*2) + C(align(blkM,16)*K*4), eac
 | 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
 |---|---|---|---|---|---|---|---|
 | AIC→AIV | Fixpipe | VECIN UB offset0，blkM*K*2 bytes | BF16 RowMajor | epilogue xTensor | `CrossCoreSetFlag<MODE_4,PIPE_FIX>`；AIV `WaitFlag<MODE_4,PIPE_V>` | shared UB/round | parity=subblock |
-| AIV→AIC reuse | GM stores | whole current UB tile | next AIC round | `SetFlag<MODE_4,PIPE_MTE3>`；next-round AIC wait | shared UB/next round | only if future tile exists |
+| AIV→AIC reuse | GM stores | whole current UB tile | | next AIC round | `SetFlag<MODE_4,PIPE_MTE3>`；next-round AIC wait | shared UB/next round | only if future tile exists |
 
 #### 同步、精度与尾块
 

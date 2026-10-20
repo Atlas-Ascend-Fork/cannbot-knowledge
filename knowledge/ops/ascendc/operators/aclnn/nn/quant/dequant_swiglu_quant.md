@@ -105,7 +105,7 @@ Host 先要求 `2H % 64 == 0`。字节模型预留 `UB_RESERVE=1024`，按双缓
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-002 按 group 分核 | 公开可达 key 为 `110000000` | `(speGroupType && G>=64 && M/G<=16) || (!speGroupType && G>=32 && M/G<=16 && biasCode==0 && qsCode==0 && x==INT32)`；V2 A2/A3 公开的一维 group 只可命中第二项 | 条件假转 R-001 |
+| 1 | R-002 按 group 分核 | 公开可达 key 为 `110000000` | `(speGroupType && G>=64 && M/G<=16) \|\| (!speGroupType && G>=32 && M/G<=16 && biasCode==0 && qsCode==0 && x==INT32)`；V2 A2/A3 公开的一维 group 只可命中第二项 | 条件假转 R-001 |
 | 2 | R-001 标准按 token 分核 | `100000000 + biasCode*1000 + qsCode*100` | groupIndex 存在且未命中 R-002；`biasCode={BF16/none:0,FP16:1,FP32:2,INT32:3}`，`qsCode={FP32:0,FP16:1,BF16:2}` | 校验或 router 不支持则失败/无输出 |
 
 ```text
@@ -167,7 +167,7 @@ else:
 
 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---|---|---|---|---|---|---|
-| R-001 | `100000000+...` | `dequant_swiglu_quant_tiling.cpp::CountTilingKey/DoOpTiling` | `DequantSwigluQuantBaseTilingData` | `dequant_swiglu_quant.cpp::dequant_swiglu_quant` | `dequant_swiglu_quant.h::DequantSwigluQuantBase` | `dequant_swiglu_quant_def.cpp`, `config/ascend910b|ascend910_93/*.json` |
+| R-001 | `100000000+...` | `dequant_swiglu_quant_tiling.cpp::CountTilingKey/DoOpTiling` | `DequantSwigluQuantBaseTilingData` | `dequant_swiglu_quant.cpp::dequant_swiglu_quant` | `dequant_swiglu_quant.h::DequantSwigluQuantBase` | `dequant_swiglu_quant_def.cpp`, `config/ascend910b\|ascend910_93/*.json` |
 | R-002 | `110000000`（公开 V2 一维 group） | 同上特殊谓词 | 同上 | 同上 | `dequant_swiglu_quant_cut_group.h::DequantSwigluQuantGroup` + base | 同上 |
 
 ## Kernel 实现

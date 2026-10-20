@@ -121,7 +121,7 @@ Tiling4MhcPostBackward
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 架构与 key | `npuArch==DAV_3510`，arch35 registry priority 0，key 1 | entry 固定 `KERNEL_TYPE_MIX_AIC_1_2` | R-001 | 非 DAV_3510 转 arch22；未命中则失败 | `Tiling4MhcPostBackward`、`REGISTER_TILING_TEMPLATE_WITH_ARCH`、`GetTilingKey` |
-| n 集合 | `n==4 || n==6 || n==8` | AIV 的 alignedN/alignedNN 与 AIC `(M,N)=(n,n)` specialization 仅由这些公开值闭合 | R-001 | `GRAPH_FAILED` | `CheckSpecConstraints` |
+| n 集合 | `n==4 \|\| n==6 \|\| n==8` | AIV 的 alignedN/alignedNN 与 AIC `(M,N)=(n,n)` specialization 仅由这些公开值闭合 | R-001 | `GRAPH_FAILED` | `CheckSpecConstraints` |
 | AIV UB tile | `maxTileD=align_down((UB-smallBufferBytes)/bytesPerTileD,16)` | T 数据按 16 元素/32 byte 对齐，FP32 小矩阵按 8 元素对齐 | R-001 AIV | 固定仓未检查无符号下溢或 `maxTileD==0`；不存在 fallback | `ComputeTiling` |
 | AIC/AIV 分核 | `usedCores=min(P,2*C)`；`usedAic=min(P,C)` | MIX 1:2 为每个 AIC block 配两份 AIV 逻辑资源，双方独立覆盖全部位置 | R-001 | 超出 used 数的 block return | `ComputeTiling`、`Init/Process` |
 | Matmul 可构造 | `MultiCoreMatmulTiling::GetTiling(...)!=-1` | 必须得到当前 GM ND T×ND T^T→GM ND FP32 实例的 Cube POD | R-001 AIC | Tiling 失败，整个 route 终止 | `ComputeTiling` |

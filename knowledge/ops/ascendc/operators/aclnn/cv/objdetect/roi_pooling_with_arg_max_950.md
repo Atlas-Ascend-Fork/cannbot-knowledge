@@ -145,7 +145,7 @@ else:
 | 正除数 | `poolH>0 && poolW>0`，有效输入还需 `channels>0` | magic/shift 和坐标解码的除数必须为正 | 两路 | ACLNN/Tiling 失败；空 `x` 先短路 | `CheckAttr`、`SetAttrParams`、`GetUintDivMagicAndShift` |
 | user workspace | `GetUserWorkspace(workspace)!=nullptr` | entry 在解析 POD 和启动 SIMT 前检查 | 两路 | entry 直接返回，不写输出 | `roi_pooling_with_arg_max` |
 | 32 位解码 | `idx` 被 `static_cast<uint32_t>` | magic division 参数和解码量均为 uint32 | 两路 | 固定仓没有大于 UINT32_MAX 输出域的 64 位 fallback | `RoiPoolingWithArgMaxCompute` |
-| ROI/bin 空域 | `roi_w<=0 || roi_h<=0`，或裁剪后边界倒置/相等 | 避免非法范围扫描 | 两路 | 写 `y=0,argmax=-1` 后继续 | `RoiPoolingWithArgMaxCompute`、`RoiPoolingBinRange` |
+| ROI/bin 空域 | `roi_w<=0 \|\| roi_h<=0`，或裁剪后边界倒置/相等 | 避免非法范围扫描 | 两路 | 写 `y=0,argmax=-1` 后继续 | `RoiPoolingWithArgMaxCompute`、`RoiPoolingBinRange` |
 
 ### POD/ABI
 

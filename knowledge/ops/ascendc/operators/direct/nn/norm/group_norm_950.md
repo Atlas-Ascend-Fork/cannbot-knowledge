@@ -158,7 +158,7 @@ maxReduceCount = floor((UB-other)/(2*2*s))
 | P3 | R-001 FP32 large-group parallel | active override | 每组拆 part；先写 warp partial，再合并并归一化 | FP32、`N·G<=A`、`R>2^18`；目标 950 上 `A=16` | `parts=floor(A/(N·G))>=1`；插件 scratch 扩容还要求 `N·G<=16`；两片 partial 总 extent不超过 2048 FP32 | H1 命中后双节点并立即 return；未命中→H2 | supplemental SIMT selector |
 | P4 | R-005 Welford generalized | active capacity fallback | R 分段 Welford，gamma/beta 按 D 或 HW tile 搬入 | 非 R-001；不能 full-load；`C>4096`；不追加 BF16 修复 | Host 必须求得正 `parallelN/processSize`；affine tile 与 phase2 双缓冲可共驻 | H2 失败、H3 保持失败、H4 失败→H5 选1120→H6；H7=false 后返回 | 1120 / `GroupNormSiluWelfordGeneralized<T,T>` |
 | P5 | R-006 Welford generalized + BF16 修复 | conditional semantic | P4 base 后追加与 P2 相同的修复节点 | BF16、`C>4096`、`R>2^20`，且 base key=1120 | P4 全部前提；base/repair 的 GM edge 与同 stream ordering 必须保留 | H5 选1120→H6 base→H7 命中 repair；repair 后结束 | 1120 + `RepairNonFiniteBf16` |
-| P6 | R-007 two-pass generalized | active fast | affine 仅保留 D 大小切片，使 full R 可驻 UB | 非 R-001；首轮不全载；`C>4096 || R<=VLbytes/4`；split 后 `newMaxReduceCount>R` | X/Y 双缓冲、stats、dichotomy 与两片 D affine 同驻；逐组 affine 事件完整 | H4 split-affine 成功即短路→H6；失败→H5 Welford fallback | 1130 / `GroupNormSiluTwoPassGeneralized<T,T>` |
+| P6 | R-007 two-pass generalized | active fast | affine 仅保留 D 大小切片，使 full R 可驻 UB | 非 R-001；首轮不全载；`C>4096 \|\| R<=VLbytes/4`；split 后 `newMaxReduceCount>R` | X/Y 双缓冲、stats、dichotomy 与两片 D affine 同驻；逐组 affine 事件完整 | H4 split-affine 成功即短路→H6；失败→H5 Welford fallback | 1130 / `GroupNormSiluTwoPassGeneralized<T,T>` |
 
 ```text
 H0 plugin: if x.numel()==0 -> Host return, no Device Route
@@ -201,7 +201,7 @@ H7 launcher post-step:
 | 平台资源 | `UB>0 && A>0 && VLbytes>4` | 分核、FP32 VL 与 UB 公式必需 | 全部 | `calc_group_norm_tiling=-1` | `group_norm_kernel.cpp::calc_group_norm_tiling` |
 | strict full-load | `maxReduceCount>R`，不是 `>=` | X/Y 两路各 double-buffer 并保留统计/affine 区 | R-004/R-007 | Welford | `calc_group_norm_tiling`、官方 `SetTilingKey4Regbase` |
 | NDDMA fold | `HW<=32` | 将 `(G,D)` affine 广播成 `(G,D,HW)` UB layout，便于 fold VF | R-004 | ordinary affine copy | `ProcessGammaAndBeta`、`CopyGammaAndBeta2UBByNDDMA` |
-| generalized affine | `C>4096 || R<=VLbytes/4` | 只驻留 `D` 或当前 rows 的 affine，释放 UB | R-005/R-007 | perf Welford | `SetWelfordGeneralizedTiling` |
+| generalized affine | `C>4096 \|\| R<=VLbytes/4` | 只驻留 `D` 或当前 rows 的 affine，释放 UB | R-005/R-007 | perf Welford | `SetWelfordGeneralizedTiling` |
 | Welford parallel | `parallelN` 以 `32/s` 对齐且 UB 字节账成立 | `x ping/pong + tmpMean/tmpVar FP32 + dichotomy` 同驻 | R-002/R-003/R-005/R-006 | tiling 继续减小 `parallelN` | `SetWelfordParallelN` |
 | supplemental FP32 | launcher：`N·G<=A && R>2^18`；插件扩容：`N·G<=16 && R>2^18` | 每组分配至少一 part；目标 `A=16` 时 `partials<=2048 FP32` | R-001 | key route | `group_norm_npu`、`launch_group_norm_direct` |
 | BF16 repair | `R>2^20` | 限定非有限值求值次序修复的扫描域 | R-003/R-006 | 单 base 节点 | `launch_group_norm_direct` |
@@ -257,7 +257,7 @@ H7 launcher post-step:
 
 | 类别 | 已存在源码 | 生产链不可达证明 | 重新启用条件 |
 |---|---|---|---|
-| dormant empty Route | `group_norm_silu_regbase_empty_tensor.h::GroupNormSiluEmpty<T>` 可把 mean/rstd 置零，且 `group_norm_kernel.cpp` 包含该头文件 | `group_norm_npu` 在 `x.numel()==0` 时先行返回；`calc_group_norm_tiling` 又拒绝 `shapeN<=0 || hwNum<=0`；typed entry 宏没有实例化 Empty，launcher 四个 key 也没有 Empty 分支 | 先定义空输入对公开 `y` 与私有 mean/rstd 的可观察语义，再同时增加 Host selector、合法空域 POD、typed entry 和 launcher；还需证明零 grid、Queue 容量和 `shapeN==0` 的终止条件，不能只删除 Host early-return |
+| dormant empty Route | `group_norm_silu_regbase_empty_tensor.h::GroupNormSiluEmpty<T>` 可把 mean/rstd 置零，且 `group_norm_kernel.cpp` 包含该头文件 | `group_norm_npu` 在 `x.numel()==0` 时先行返回；`calc_group_norm_tiling` 又拒绝 `shapeN<=0 \|\| hwNum<=0`；typed entry 宏没有实例化 Empty，launcher 四个 key 也没有 Empty 分支 | 先定义空输入对公开 `y` 与私有 mean/rstd 的可观察语义，再同时增加 Host selector、合法空域 POD、typed entry 和 launcher；还需证明零 grid、Queue 容量和 `shapeN==0` 的终止条件，不能只删除 Host early-return |
 | dormant SiLU mode | 公共 helper 与四个 class 都保留 `activateSilu=true` 的 normalize-and-SiLU body | `calc_group_norm_tiling` 无条件写 `td.activateSilu=0`，GroupNorm schema 也没有激活属性；没有任何 Host producer 能写 1 | 应作为不同算子语义重新定义接口/输出与 Host 属性，补 selector 和数值闭包；不得在 GroupNorm Route 内直接翻转 POD 位 |
 | dormant nullable affine | 四个 class 的 `hasGamma/hasBeta`、nullable GM 与模板分支可省略 gamma 或 beta | Torch schema、Meta 与 NPU wrapper 都把 gamma/beta 定义为必选 Tensor，并在取指针前检查 shape/dtype/device；当前 launcher从不传 null | 修改 schema 为 optional，重做 Meta/Host 校验和 null pointer ABI，并让 Host UB 账按存在性扣除 affine；随后逐 Route 复核 NDDMA、generalized tile 和 repair 对空指针的分支 |
 | dormant H3 promotion edge | `calc_group_norm_tiling` 在 `!reduceFullLoad && HW<=32` 时再次计算 `maxReduceCount` 并保留一次 key 1110 判断 | H3 使用的 `ubRemain`、dtypeSize、常量与 H2 完全相同，且只有 H2 谓词为 false 才进入；因此 H3 的成功边在当前源码中不可达，不是 R-004 的第二个 producer | 若未来要把它变成有效 retry，必须先改变 UB 账或 affine layout输入，再以新值重算并闭合对应 Device layout；仅保留相同算式不能形成新 Route |

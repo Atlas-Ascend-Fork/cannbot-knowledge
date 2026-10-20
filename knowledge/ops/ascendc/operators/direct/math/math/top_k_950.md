@@ -298,7 +298,7 @@ R-010: range_init -> int64_cast_input(atomic_or)
 | R-007 | `LaunchMergeTopK<half,half>` 或 `<bfloat16_t,float>` → `top_k_merge_direct_kernel<T,ConvertT>` | `generateMergeTopKObject` → `topkV2::MergeSort<T,ConvertT,TopKV2TilingDataSimd,order,int64_t>` | `Init/ProcessSort`；`KernelVbsMergeSort::VbsMergeSort/Bf16`；Queue/DataCopyPad |
 | R-008 | `LaunchTransposeBySize<true>` → `transpose_axis_topk_kernel<T,true>` → `LaunchOfficialTopK` → 两个 `<false>` reverse entry | `AxisToLastSimt<T>` / R-004 或 R-005 body / `LastToAxisSimt<T>` | 三次 `asc_vf_call<...,2048 lanes>` 包围 compact-POD TopKV2；同流 GM producer→consumer |
 | R-009 | `LaunchShortStridedSortTyped<int32_t,order>` → `sort_short_strided_top_k_kernel<int32_t,order>` | `SortShortStridedRowsSimt<int32_t,order>` | `asc_vf_call<...,2048 lanes>`；原地 scalar insertion sort，不用 Sort API/UB |
-| R-010 | `LaunchInt64DynamicInt32Typed<order>` → 三个 cast entry + one/two gated TopK entry | `CastInputVf/CastOutputVf`；`top_k_direct_kernel<int32_t,uint32_t,4>` 或 `top_k_v901::RadixSortTopKSingleCore<int32_t|int64_t,...>` | `asc_atomic_or` 范围证明；`CalcLastAxisTiling` retile；phase flag gate；int32 cast-back |
+| R-010 | `LaunchInt64DynamicInt32Typed<order>` → 三个 cast entry + one/two gated TopK entry | `CastInputVf/CastOutputVf`；`top_k_direct_kernel<int32_t,uint32_t,4>` 或 `top_k_v901::RadixSortTopKSingleCore<int32_t\|int64_t,...>` | `asc_atomic_or` 范围证明；`CalcLastAxisTiling` retile；phase flag gate；int32 cast-back |
 
 R-004/R-005/R-006/R-008 的普通 `LaunchTypedTopK` dtype 模板映射是固定 ABI 的一部分：
 

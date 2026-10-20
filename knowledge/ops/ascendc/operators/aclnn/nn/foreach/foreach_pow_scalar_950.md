@@ -294,7 +294,7 @@ for each tensor and idx assigned by global grid stride:
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
 | GM x/y | tensor pointer + idx | count half elements | FP16/ND | caller/SIMT | SIMT/caller | caller | tail 用 idx guard，无 DMA padding |
-| per-thread registers | 当前 idx | half x/scalar；float x/scalar/result | scalar/GM load | powf/store | 当前迭代 | 下一 idx 覆盖 |
+| per-thread registers | 当前 idx | | half x/scalar；float x/scalar/result | scalar/GM load | powf/store | 当前迭代 | 下一 idx 覆盖 |
 | UB/workspace | N/A | 0 显式字节 | N/A | N/A | N/A | N/A | 直接 GM+寄存器 |
 
 ##### 分层内存布局
@@ -374,7 +374,7 @@ for each tensor and global-grid-stride idx:
 |---|---|---|---|---|---|---|---|
 | GM x/y | tensor pointer + idx | count BF16 elements | BF16/ND | caller/SIMT | SIMT/caller | caller | `idx<count` |
 | scalar GM | 0 | 1 float | FP32 | ACLNN conversion | Process | executor | 每 block 读一次 |
-| per-thread registers | 当前 idx | BF16 x/y；FP32 x/scalar/result | load/powf | powf/store | 单迭代 | 下一 idx 覆盖 |
+| per-thread registers | 当前 idx | | BF16 x/y；FP32 x/scalar/result | load/powf | powf/store | 单迭代 | 下一 idx 覆盖 |
 | UB/workspace | N/A | 0 显式字节 | N/A | N/A | N/A | N/A | 直接 GM+寄存器 |
 
 ##### 分层内存布局

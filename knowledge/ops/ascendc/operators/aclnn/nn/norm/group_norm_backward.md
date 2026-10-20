@@ -137,7 +137,7 @@ mode1Cap = (UB-reserve)/(align_up(H,elePerBlock)*dtypeBytes*3)
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 0 | R-000 空输入 | 无 Kernel | `gradOut->IsEmpty() || input->IsEmpty()` | 非空进入 R-001。 |
+| 0 | R-000 空输入 | 无 Kernel | `gradOut->IsEmpty() \|\| input->IsEmpty()` | 非空进入 R-001。 |
 | 1 | R-001 H=1 | POD `Tiling_key=5` | `H==1`，优先于所有 UB capacity 判断 | 否则 R-002。 |
 | 2 | R-002 整组全载 | POD mode 0 | `H!=1 && mode0Cap>0` | 否则 R-003。 |
 | 3 | R-003 单通道全载 | POD mode 1 | `mode0Cap<=0 && mode1Cap==1` | 否则 R-004。 |
@@ -234,7 +234,7 @@ router 把 runtime key `0/1/2` 映射到 `GroupNormGrad<float/half/bfloat16,fals
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `op_host/op_api/aclnn_group_norm_backward.cpp` | `aclnnGroupNormBackwardGetWorkspaceSize` | `(gradOut->IsEmpty() || input->IsEmpty()) && !IsRegbase` | workspace=0，释放 executor owner，无 launch。 |
+| API | `op_host/op_api/aclnn_group_norm_backward.cpp` | `aclnnGroupNormBackwardGetWorkspaceSize` | `(gradOut->IsEmpty() \|\| input->IsEmpty()) && !IsRegbase` | workspace=0，释放 executor owner，无 launch。 |
 
 #### Device 数据流
 

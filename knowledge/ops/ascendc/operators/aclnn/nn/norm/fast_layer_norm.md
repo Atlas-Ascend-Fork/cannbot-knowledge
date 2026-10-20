@@ -132,8 +132,8 @@ cann_versions: ["9.1.0"]
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 Transpose | 200/210/211/220/222，priority 100 | `!isRegBase && N<=64 && N!=rowAlign`，且 dtype key 可生成 | R-002 |
-| 2 | R-002 SingleRead | 122，priority 1000 | `!isRegBase && x=BF16 && param=BF16 && (N==1024||N==4096) && rowAlign<=singleRowMax` | R-003/4/5 |
-| 3 | R-003 MergeN Align | 600/601/602，priority 1220 | `!isRegBase&&!isAscend310P&&!isV3 && ceil(M/coreNum)>2 && (N<mergeRowMax||N<=1280) && N>1280` | R-006 |
+| 2 | R-002 SingleRead | 122，priority 1000 | `!isRegBase && x=BF16 && param=BF16 && (N==1024\|\|N==4096) && rowAlign<=singleRowMax` | R-003/4/5 |
+| 3 | R-003 MergeN Align | 600/601/602，priority 1220 | `!isRegBase&&!isAscend310P&&!isV3 && ceil(M/coreNum)>2 && (N<mergeRowMax\|\|N<=1280) && N>1280` | R-006 |
 | 4 | R-004 MergeN AlignLimit | 1600/1601/1602，同一 priority | 与 MergeN capable 相同且 `2<=N<=1280` | R-006 |
 | 5 | R-005 N=1 | 2600/2601/2602，同一 priority | 与 MergeN capable 相同且 `N==1` | R-006 |
 | 6 | R-006 Common | 700/701/702，priority 2000 | A2/A3 上前三个 tiling template 均不 capable；Common 的 `!isRegBase&&!isAscend310P&&!isV3` 恒真 | tiling 失败 |
@@ -166,7 +166,7 @@ else: Common
 | Transpose 非对齐 | `N<=64 && N!=rowAlign` | 16 行借轴转置只为短且未自然 block 对齐的 N | R-001 | R-002 | `LayerNormV4TransposeTiling::IsCapable` |
 | SingleRead UB | `rowAlign<=((UB-256)/4)/2` | x/y 两个 FP32 tile 外加四个 32 B 结果/预留区 | R-002 | MergeN | `LayerNormV4SingleReadTiling::IsCapable` |
 | MergeN 行并行度 | `ceil(M/coreNum)>2` | 一核至少合并多行才使用行批处理 body | R-003/4/5 | Common | `LayerNormV4MergeNTiling::IsCapable` |
-| MergeN UB | `N<((UB-2048)/4/2) || N<=1280` | x/y FP32 双区并保留 2048 B | R-003/4/5 | Common | 同上 |
+| MergeN UB | `N<((UB-2048)/4/2) \|\| N<=1280` | x/y FP32 双区并保留 2048 B | R-003/4/5 | Common | 同上 |
 | Common UB | `maxtileCount >= tileCount` | totalBuf 中 FP16 对齐输入片区与 tile partial 个数不能重叠 | R-006 | `GRAPH_FAILED` | `LayerNormV4CommonTiling::DoOpTiling` |
 | AIV only | 非 DAV 3003/3113 时 `g_coreType==AIC` return | body 只使用 Vector/UB primitive | 全部 | 无输出（非目标 core） | `layer_norm_v4` |
 

@@ -127,7 +127,7 @@ else -> GRAPH_FAILED
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| CV ratio | `aic==aiv || 2*aic==aiv` | 只有 1:1/1:2 | R-002/R-003 | fail | `GetNpuInfo` |
+| CV ratio | `aic==aiv \|\| 2*aic==aiv` | 只有 1:1/1:2 | R-002/R-003 | fail | `GetNpuInfo` |
 | CV1:1 | 仅 q0 + PA_BSND/PA_NZ | 其它路线需额外 AIV | R-002/R-003 | fail | `GenTilingKey` |
 | group | partial,T=1,Nkv=8,aiv≥32,aic≥16,ratio!=1 | Qc/Qr 用 8/4 AIC | R-002/R-003b | normal split-N | `ProcessBaseInputs` |
 | dequant-opt | WUqQr INT8 且 N≥8 | split-N dequant/RoPE 流水 | R-002/R-003b/c | normal path | 同上 |

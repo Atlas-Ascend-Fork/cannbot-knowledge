@@ -154,7 +154,7 @@ else -> 失败（不会到达 Device）
 | UB 行块 | `maxUbCol=floor((U/6)/V/64)*64` | 32 行一 scale、两 scale 平面交织，行块需 64 对齐 | 两条 | 固定源码无显式 fallback；若为 0 会导致除零 | `DoTiling`; `Process` |
 | 列 tile | `ubFactor=V/2`，尾块 `tailUbFactor` | 输入每元素 2 B，列 tile 对齐向量寄存器宽度 | 两条 | 尾列路线 | `DoTiling`; `Process` |
 | groupIndex | Device: `0<=end<=m && start<=end` | 决定 GM 行区间与 scale offset | 两条 | Device `assert` | `Process` |
-| scale algorithm | `scaleAlg==0 || scaleAlg==1` | 选择两个不同数值管线 | R-001/R-002 | Tiling 失败 | `GetAttr`; `SplitPostAxisCompute` |
+| scale algorithm | `scaleAlg==0 \|\| scaleAlg==1` | 选择两个不同数值管线 | R-001/R-002 | Tiling 失败 | `GetAttr`; `SplitPostAxisCompute` |
 | `dstTypeMax` | `dstTypeMax==0.0f` | 当前 body 不消费该字段 | 两条 | Tiling 失败 | `GetAttr` |
 
 ### POD/ABI
@@ -201,7 +201,7 @@ entry 保存 arch3510 overflow SPR，构造 `GroupedDynamicMxQuantBaseFP8<DTYPE_
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `op_api/aclnn_grouped_dynamic_mx_quant_v2.cpp` | `CheckDtypeValid` | `scaleAlg==0 || scaleAlg==1` | 允许进入 launcher |
+| API | `op_api/aclnn_grouped_dynamic_mx_quant_v2.cpp` | `CheckDtypeValid` | `scaleAlg==0 \|\| scaleAlg==1` | 允许进入 launcher |
 | Tiling | `op_host/arch35/grouped_dynamic_mx_quant_tiling_arch35.cpp` | `GetAttr` | `scaleAlg==0` | POD `scaleAlg=0` |
 | Router | `op_kernel/arch35/grouped_dynamic_mx_quant_not_tail_axis_fp8.h` | `SplitPostAxisCompute` | `scaleAlg_==0` | `ComputeOCP` |
 

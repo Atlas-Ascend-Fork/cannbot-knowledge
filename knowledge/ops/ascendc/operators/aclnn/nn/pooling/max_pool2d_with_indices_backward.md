@@ -106,7 +106,7 @@ ACLNN phase 2 -> CommonOpExecutorRun(same stream)
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 normal/no-cross-core-overlap | key 0 | `dilationD/H/W==1`、normal 最小 UB 账 `<=maxUbSize`，且 tiling 后 `isOverLap=false`；既包括原始窗口不重叠，也包括整 H/W 留在同一 NC core tile、由 `SetNormalParamsNotCutUB(...,false)` 消除跨核冲突的场景 | tiling 后仍有跨核冲突则 R-002；normal 不 capable 则 scatter |
-| 2 | R-002 normal/cross-core-overlap | key 100 | normal capable，原始 `kh>sh || kw>sw` 且分核/切 UB 后 `isOverLap` 仍为 true | normal 不 capable 则 scatter |
+| 2 | R-002 normal/cross-core-overlap | key 100 | normal capable，原始 `kh>sh \|\| kw>sw` 且分核/切 UB 后 `isOverLap` 仍为 true | normal 不 capable 则 scatter |
 | 3 | R-003 scatter/no-overlap | key 2 | normal 不 capable；scatter `IsCapable=true`；无 overlap | overlap 则 R-004 |
 | 4 | R-004 scatter/overlap | key 102 | normal 不 capable；scatter fallback；存在 H/W overlap | tiling 失败 |
 
@@ -133,7 +133,7 @@ priority 16 Scatter: always capable
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | normal 最小 UB | `CalUBTotalSize(1,1,1,isOverlap)<=maxUbSize` | 保证 index/mask/grad/y 转置区和 8192B reserve 同时存在 | R-001/2 | scatter | `MaxPool3DGradWithArgmaxNormalTiling::IsCapable` |
-| overlap | 原始窗口条件 `kh>sh || kw>sw`；normal key 使用 tiling 后可能被清零的 `isOverLap` | 原始 overlap 表示窗口冲突；只有跨核冲突才要求 normal atomic key 100 | R-001/2/4 | core-local 时 key 0，否则 overlap 路线 | `SetAttrParams`、`SetNormalTilingParams` |
+| overlap | 原始窗口条件 `kh>sh \|\| kw>sw`；normal key 使用 tiling 后可能被清零的 `isOverLap` | 原始 overlap 表示窗口冲突；只有跨核冲突才要求 normal atomic key 100 | R-001/2/4 | core-local 时 key 0，否则 overlap 路线 | `SetAttrParams`、`SetNormalTilingParams` |
 | scatter DMA | `baseWo==woDim` 走连续块，否则逐 NC 以 H blockCount 搬运 | 保持 GM stride 与 UB 紧凑布局一致 | R-003/4 | 对应循环搬运 | `CopyInDataGeneric` |
 | 索引域 | `H*W<=INT32_MAX` | INT32 平面索引有效域 | 全部 | tiling 失败 | `CheckInputValid` |
 
@@ -268,7 +268,7 @@ UB_total <= platform maxUbSize; dynamic_ub=N/A; workspace_total=0 user bytes
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `max_pool3d_grad_with_argmax_tiling_base.cpp` + normal tiling | `SetAttrParams/SetNormalTilingParams` | 原始 `kh>sh || kw>sw` 且最终未消除跨核 overlap | overlap=true |
+| Tiling | `max_pool3d_grad_with_argmax_tiling_base.cpp` + normal tiling | `SetAttrParams/SetNormalTilingParams` | 原始 `kh>sh \|\| kw>sw` 且最终未消除跨核 overlap | overlap=true |
 | Router | `max_pool3d_grad_with_argmax.cpp` | key 100 | `TILING_KEY_IS(100)` | normal `<...,true>` |
 
 #### Device 数据流

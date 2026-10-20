@@ -141,10 +141,10 @@ Gather 节点输入为连续 `weight/indices` 与 executor 生成的 INT64 `axis
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 空输入 | 无 Kernel | `weight->IsEmpty() || indices->IsEmpty()` | 非空进入 2 |
+| 1 | R-001 空输入 | 无 Kernel | `weight->IsEmpty() \|\| indices->IsEmpty()` | 非空进入 2 |
 | 2 | R-007 AICPU | `GatherV2CpuKernel` | 950 且 `weight.dtype==COMPLEX128`；`IsAiCoreSupport` 不含该 dtype | 其他 dtype 进入 AICore Tiling |
 | 3 | R-002 SIMD 二维 | `1000000299` | `rowBytes>=2048`，或 `s'=1 && rowBytes>=218`，或 `s'=2 && rowBytes>=360`，或 `s'=4 && rowBytes>=620`；并且 `N>=C/2` | 进入 4 |
-| 4 | R-003 LastGather | `1100000000+s'`（Embedding 的 negative flag 为 false） | `inner'==1`；`V*s'<=U/2 || V*s'<=U-32768`；`s'<=2 ? V<65536 : V<INT32_MAX`；`floor(N/V)>1`；`N*s'>=32`；`s'<=8` | 进入 5 |
+| 4 | R-003 LastGather | `1100000000+s'`（Embedding 的 negative flag 为 false） | `inner'==1`；`V*s'<=U/2 \|\| V*s'<=U-32768`；`s'<=2 ? V<65536 : V<INT32_MAX`；`floor(N/V)>1`；`N*s'>=32`；`s'<=8` | 进入 5 |
 | 5 | R-004 GA all-load | `3000` | `32<rowBytes<2048`；排除 `s'=8 && align_B(rowBytes)*V<=512`；`floor(N/V)>1`；且 `U-256-4*16384-min(N,1024/sizeof(indices))*sizeof(indices)-align_B(rowBytes)*(V+1)>=0` | 进入 6 |
 | 6 | R-006 PCIe SIMD fallback | 与 R-005 相同的 `2000000000+s'(+100 if 64-bit address)` | Tiling 已选二维 SIMT，且 entry 发现任一 `x/indices/axis/y` 地址位于 `[0x40000000000,0x80000000000)` | 地址不命中为 R-005 |
 | 7 | R-005 SIMT 二维 | `2000000000+s'(+100 if 64-bit address)` | 对 Embedding 的 `batch=outer=1`，前述路线均未命中且地址不是 PCIe 区间 | 无后续 Route |
@@ -182,9 +182,9 @@ else:
 | dtype 打包 | `rowBytes%8/4/2==0` 按优先级 | 用更宽整数按位搬运，缩短逻辑 `innerSize` | 所有 AICore | 保持原 dtype 宽度 | `gather_v2_tiling.cpp::XDtypeImprove` |
 | SIMD 二维门槛 | 行字节阈值且 `N>=C/2` | 足够行宽与核并行度才使用 DMA/Vector 行复制 | R-002 | R-003 | `IsSimdTwoDim` |
 | LastGather 全载入 | `inner'==1`、V 可装 UB、重复率与 Gather 下标范围 | 整个 gather 轴驻留 UB 后用 `DataCopyGather` | R-003 | R-004 | `IsLastGatherAndFullLoad` |
-| GA bank padding | `aSizeAligned==128 || 256` 时 `+=B` | 避免 Gather 访问固定步长 bank 冲突 | R-004 | 仍为 R-004，改变内存布局 | `IsGaAllLoad/GaAllLoadTiling` |
+| GA bank padding | `aSizeAligned==128 \|\| 256` 时 `+=B` | 避免 Gather 访问固定步长 bank 冲突 | R-004 | 仍为 R-004，改变内存布局 | `IsGaAllLoad/GaAllLoadTiling` |
 | GA UB 容量 | `remainSpace>=0` | 同时容纳 `(V+1)` 行、indices、双输出和 helper | R-004 | R-005/R-006 | `IsGaAllLoad` |
-| 地址位宽 | `V*inner'>INT32_MAX || N*inner'>INT32_MAX` | 防止 GM 线性地址窄化 | R-005/R-006 | key 增加 100，实例改 `uint64_t` | `GetTilingKey` |
+| 地址位宽 | `V*inner'>INT32_MAX \|\| N*inner'>INT32_MAX` | 防止 GM 线性地址窄化 | R-005/R-006 | key 增加 100，实例改 `uint64_t` | `GetTilingKey` |
 | PCIe 地址 | 任一 GM 地址落入固定区间 | SIMT 直访路径改为显式 UB 搬运 | R-005/R-006 | 非命中继续 SIMT | `gather_v2_apt.cpp::gather_v2` |
 | SIMT local memory | Tiling 对 SIMT key 调用 `SetLocalMemorySize(U-128KiB)` | 为 SIMT runtime/cache 保留动态 local 区 | R-005/R-006 | 无其它 fallback | `Gatherv2TilingBase::PostTiling` |
 
@@ -271,7 +271,7 @@ else:
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `index/embedding/op_api/aclnn_embedding.cpp` | `aclnnEmbeddingGetWorkspaceSize` | `weight->IsEmpty() || indices->IsEmpty()` | workspace 0、释放空 executor、成功返回 |
+| API | `index/embedding/op_api/aclnn_embedding.cpp` | `aclnnEmbeddingGetWorkspaceSize` | `weight->IsEmpty() \|\| indices->IsEmpty()` | workspace 0、释放空 executor、成功返回 |
 
 #### Device 数据流
 

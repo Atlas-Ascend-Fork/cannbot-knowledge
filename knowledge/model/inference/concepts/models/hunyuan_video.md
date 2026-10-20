@@ -51,7 +51,20 @@ HunyuanVideo 是腾讯发布的开源 DiT 文生视频模型；cann-recipes-infe
 
 | 优化方案 | 优化角度 | 方案介绍 |
 | ------- | -------- | -------- |
-| NPU 开箱，FA 融合算子适配 | 融合算子 | 使用 CANN 内部的 FIA 融合算子替代 transformer 中 attention 计算，算子内部通过 tiling 策略减少运行时的动态内存，并且加速 attention 计算。| | NPU RMS Norm 融合算子适配 | 融合算子 | 使用 CANN 内部的 RMSNorm 融合算子替代小算子实现。| | NPU ROPE 融合算子适配 | 融合算子 | 使用 CANN 内部的 `npu_rotary_mul` 融合算子替代小算子实现。| | Ulysses 序列并行 | 提高算力 | 将超长序列高效地切分到多个 NPU 上并行处理，每张卡负责处理自己负责的序列长度。Attention 以外切 S，Attention 处切 N。| | Ring Attention 序列并行 | 提高算力 | 与 Ulysses 类似，但 attention 计算时仍按 S 切分，通过 P2P 循环传递 KV 块。| | FBCache | 减少计算量 | 用第一个 DiT Block 的输出判断能否复用残差。| | TeaCache | 减少计算量 | 用第一个 img modulate 输出判断能否复用残差。| | Ulysses Anything Attention | 功能泛化 | 扩展 Ulysses 支持任意头数配置，动态填充 + 对齐。| | VAE 并行 | 提高算力 | 每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野。| | VAE 优化 | 减少计算量 | mask 缓存，减少重复构造。| | 取消 VAE offload | 减少搬运 | 开启虚拟内存，取消 CPU-offload。| | FP8 量化注意力 | 降低显存带宽 | per-block 动态量化 Q/K/V 为 FP8。| | MXFP8 矩阵量化 (A8W8) | 降低显存带宽 | DiT Linear 层 MXFP8，权重显存减半。| | 块稀疏 Attention | 减少计算量 | TopK / SVG 两种 predictor，基于 blitz_sparse_attention 算子。|
+| NPU 开箱，FA 融合算子适配 | 融合算子 | 使用 CANN 内部的 FIA 融合算子替代 transformer 中 attention 计算，算子内部通过 tiling 策略减少运行时的动态内存，并且加速 attention 计算。|
+| NPU RMS Norm 融合算子适配 | 融合算子 | 使用 CANN 内部的 RMSNorm 融合算子替代小算子实现。|
+| NPU ROPE 融合算子适配 | 融合算子 | 使用 CANN 内部的 `npu_rotary_mul` 融合算子替代小算子实现。|
+| Ulysses 序列并行 | 提高算力 | 将超长序列高效地切分到多个 NPU 上并行处理，每张卡负责处理自己负责的序列长度。Attention 以外切 S，Attention 处切 N。|
+| Ring Attention 序列并行 | 提高算力 | 与 Ulysses 类似，但 attention 计算时仍按 S 切分，通过 P2P 循环传递 KV 块。|
+| FBCache | 减少计算量 | 用第一个 DiT Block 的输出判断能否复用残差。|
+| TeaCache | 减少计算量 | 用第一个 img modulate 输出判断能否复用残差。|
+| Ulysses Anything Attention | 功能泛化 | 扩展 Ulysses 支持任意头数配置，动态填充 + 对齐。|
+| VAE 并行 | 提高算力 | 每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野。|
+| VAE 优化 | 减少计算量 | mask 缓存，减少重复构造。|
+| 取消 VAE offload | 减少搬运 | 开启虚拟内存，取消 CPU-offload。|
+| FP8 量化注意力 | 降低显存带宽 | per-block 动态量化 Q/K/V 为 FP8。|
+| MXFP8 矩阵量化 (A8W8) | 降低显存带宽 | DiT Linear 层 MXFP8，权重显存减半。|
+| 块稀疏 Attention | 减少计算量 | TopK / SVG 两种 predictor，基于 blitz_sparse_attention 算子。|
 
 ## Known Optimizations
 

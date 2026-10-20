@@ -87,7 +87,7 @@ h_t  = r_t · W_hr^T                    # projSize > 0, W_hr∈R^(O×H)
 | `numLayers` | 标量 | int64 Host | 必须 `>0`。 |
 | `bias/batchFirst/bidirectional` | 标量 | bool Host | 决定偏置读取、地址公式、方向数 `D∈{1,2}`。 |
 | `dropout` | 标量 | double Host | 被接口接收但 Direct 实现未消费，固定源码中没有 dropout kernel。 |
-| `projSize` | 标量 | int64 Host | `0` 表示普通 LSTM；正值令 `O=projSize`。负值不会开启投影，却因 `projSize==0 || weightHr` 检查而仍要求完整 `weight_hr` 列表，随后又不读取它；这是非法输入边界，调用方必须保证 `projSize>=0`。 |
+| `projSize` | 标量 | int64 Host | `0` 表示普通 LSTM；正值令 `O=projSize`。负值不会开启投影，却因 `projSize==0 \|\| weightHr` 检查而仍要求完整 `weight_hr` 列表，随后又不读取它；这是非法输入边界，调用方必须保证 `projSize>=0`。 |
 | `y` | 与 `x` 前两轴一致，末轴 `D*O` | 与 `x` 相同 | 每层最后一层直接提交；中间层暂存 FP32。 |
 | `hn` | `[L*D,B,O]` | 与 `x` 相同 | 仅时间循环最后一步写当前层/方向切片。 |
 | `cn` | `[L*D,B,H]` | 与 `x` 相同 | 仅最后一步写。 |
@@ -172,8 +172,8 @@ flowchart TD
 
 | Route | 前导节点 | 时间循环节点 | 收尾/同步边界 |
 |---|---|---|---|
-| R-001 | `1[typed&&layer>0]` 次 W_ih cast + 1 次 input MM + `1[typed]` 次 W_hh cast + `1[h0||c0]` 次 init | `N_h` 次 hidden MM + `S` 次 staged step | 下一方向/层仍在同 stream；最终 `RunOpApi(...,true)` |
-| R-002 | 1 次 input MM + `1[h0||c0]` 次 init | `N_h` 次 hidden MM + `S` 次 gate + `S` 次 projection MM + `S` 次 commit | 同上 |
+| R-001 | `1[typed&&layer>0]` 次 W_ih cast + 1 次 input MM + `1[typed]` 次 W_hh cast + `1[h0\|\|c0]` 次 init | `N_h` 次 hidden MM + `S` 次 staged step | 下一方向/层仍在同 stream；最终 `RunOpApi(...,true)` |
+| R-002 | 1 次 input MM + `1[h0\|\|c0]` 次 init | `N_h` 次 hidden MM + `S` 次 gate + `S` 次 projection MM + `S` 次 commit | 同上 |
 | R-003 | `1[layer==0]` 次 typed input MM | 1 次 direct recurrent kernel，内部循环全部 `S` 步 | kernel 内 barrier；返回后同 stream 下一节点 |
 | R-004 | `1[layer==0]` 次 typed input MM | 1 次单核 direct recurrent+projection kernel | kernel 内 barrier；返回后同 stream 下一节点 |
 
@@ -205,7 +205,7 @@ castBlocks(count)   = min(20, ceil(count/256))
 
 | 重要性 | 状态 | Route | Route 特征 | 合法适用域 | 源码原始谓词/实现前提 | Host 顺序、短路与 fallback |
 |---:|---|---|---|---|---|---|
-| P0 | active | R-001 无投影 staged | 全序列 input AIC Matmul；每步 hidden AIC Matmul→SIMT 门控/状态 | `projSize==0 && dtype∈{FP32,FP16,BF16} && (dtype==FP32 || S*B*H*L*D>=512)` | 原始 `useStagedRoute` 没有 dtype 白名单；合法域还要求 Matmul 静态上界成立。typed `W_hh` 与后续层 `W_ih` 提升到 FP32；首层 `W_ih` 保持 FP16/BF16 进入 typed Cube | live 分支第 2 个：恒 false MIX、R-002 均未命中后检查；命中 `continue`。合法 typed 小 work 走 R-003；未知 dtype 大 work 是错误吸收，不是新 Route。 |
+| P0 | active | R-001 无投影 staged | 全序列 input AIC Matmul；每步 hidden AIC Matmul→SIMT 门控/状态 | `projSize==0 && dtype∈{FP32,FP16,BF16} && (dtype==FP32 \|\| S*B*H*L*D>=512)` | 原始 `useStagedRoute` 没有 dtype 白名单；合法域还要求 Matmul 静态上界成立。typed `W_hh` 与后续层 `W_ih` 提升到 FP32；首层 `W_ih` 保持 FP16/BF16 进入 typed Cube | live 分支第 2 个：恒 false MIX、R-002 均未命中后检查；命中 `continue`。合法 typed 小 work 走 R-003；未知 dtype 大 work 是错误吸收，不是新 Route。 |
 | P1 | active | R-002 FP32 投影 staged | 每步 hidden AIC→SIMT gate→projection AIC→SIMT commit | `dtype==FP32 && projSize>0` | `weight_hr[O,H]` 存在；hidden/projection 两组 MM POD 合法；`rawState/hState/cState` 覆盖整段递推 | live 分支第 1 个：恒 false MIX 后首先检查；命中 `continue`，短路 R-001/direct。typed 投影落到 R-004。 |
 | P2 | active | R-003 小型 typed SIMT | 首层 input AIC；无投影递推由单核或多核 SIMT 完成 | `projSize==0 && dtype∈{FP16,BF16} && S*B*H*L*D<512` | 首层 `inputPrecomputed=1`；后续层 `inputPrecomputed=0` 并直接做输入点积；kernel 内 barrier 覆盖 GM 状态复用 | R-002/R-001 selector miss 后的选择期 fallback；dtype function pointer 成功后 launch。不是先执行 staged 再失败重试。 |
 | P3 | active | R-004 typed 投影 SIMT | 首层 input AIC；单核 SIMT 内完成门控、cell 与投影 | `projSize>0 && dtype∈{FP16,BF16}` | `weight_hr[O,H]` 存在；`forceSingleCore=true`；`rawState` 覆盖四门与 raw hidden | R-002 miss 且 R-001 因投影为 false 后的选择期 fallback；由 `hasProjection=1` 进入投影 body。 |
@@ -339,9 +339,9 @@ Matmul specialization 从 GM ND A/B 进入库管理的 L1(A1/B1)、L0A/L0B，Mma
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Host短路 | Direct plugin | `if (useMixedRoute)`→`if (useStagedProjection)`→`if (useStagedRoute)` | 前两项均为 false，第三项为 true | R-001并`continue`；不进入direct |
-| Host | Direct plugin | `useStagedRoute` | `projSize==0 && (dtype==FP32 || recurrentWork>=512)` | R-001 |
+| Host | Direct plugin | `useStagedRoute` | `projSize==0 && (dtype==FP32 \|\| recurrentWork>=512)` | R-001 |
 | Host | Direct plugin | `useInputMatmul` | staged 为真 | 每层启动 input MM |
-| Host | Direct plugin | `useHiddenProduct` | `step>0 || h0.has_value()` | full step；否则 zero step |
+| Host | Direct plugin | `useHiddenProduct` | `step>0 \|\| h0.has_value()` | full step；否则 zero step |
 | Router | Direct kernel | dtype function pointers | FP32/FP16/BF16；中间层 `outputIsFloat` | 选择 input MM、init、step specialization |
 
 #### Device 数据流
@@ -466,7 +466,7 @@ SIMT explicit UB = 0
 | Host短路 | Direct plugin | `if (useMixedRoute)`→`if (useStagedProjection)` | MIX恒 false，首个live分支为 true | R-002并`continue`；不检查R-001/direct |
 | Host | Direct plugin | `useStagedProjection` | `dtype==FP32 && projSize>0` | R-002 |
 | Host | Direct plugin | projection POD | hidden `(B,4H,O)`；projection `(B,O,H)` | 两类 AIC MM |
-| Host | Direct plugin | first-step selector | `step>0 || h0`，再看 `c0` | full/zero/zero_state gate |
+| Host | Direct plugin | first-step selector | `step>0 \|\| h0`，再看 `c0` | full/zero/zero_state gate |
 
 #### Device 数据流
 

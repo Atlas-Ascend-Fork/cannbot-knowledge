@@ -299,7 +299,7 @@ e==2 and P in {f16,bf16,f32,int64,c64,c128}?
 | API Host | `aclnn_pow.cpp` | `canUseSquare` | `e==2 && P∈{f16,bf16,f32,i64,c64,c128}` | `l0op::Square` |
 | L0 | `square.cpp` | `IsAiCoreSupport` | 950 + P∈{f16,bf16,f32,i32,i64} | Square AICore |
 | Tiling | `square_tiling_arch35.cpp` | `SetTilingData` | P=f16/bf16/f32/i64 | key 1/2/3/5 |
-| Router | `square_apt.cpp` | `square` | `TILING_KEY_IS(1|2|3|5)` | `ElementwiseSch<0,SquareOp<T>::OpDag>` |
+| Router | `square_apt.cpp` | `square` | `TILING_KEY_IS(1\|2\|3\|5)` | `ElementwiseSch<0,SquareOp<T>::OpDag>` |
 
 #### Device 数据流
 
@@ -636,7 +636,7 @@ workspace_total(Pow node)=16 MiB
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | API | `aclnn_pow.cpp` | `CheckPowTensorScalarExponet` | P为整数要求e≥0 | 继续或参数失败 |
-| L0/Tiling | `pow.cpp`/scalar tiling | P=u8/s8/s16/s32，exp tensor单元素 | key 4001/5001/6001/7001 |
+| L0/Tiling | `pow.cpp`/scalar tiling | | P=u8/s8/s16/s32，exp tensor单元素 | key 4001/5001/6001/7001 |
 | Router | `pow_apt.cpp` | integer keys | key匹配 | `PowTensorScalarInteger<T,T>` |
 
 #### Device 数据流

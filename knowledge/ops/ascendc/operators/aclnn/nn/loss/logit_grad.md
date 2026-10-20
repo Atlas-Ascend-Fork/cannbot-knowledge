@@ -170,7 +170,7 @@ router under (__CCE_AICORE__ == 220 || __CCE_AICORE__ == 310):
 | 固定 UB | `InitBuffer(ubTBuf, 192*1024)` | 两个 96 KiB ping-pong 半区 | 全部 | 无 Host fallback；平台 UB 不足时的行为固定仓不可见。 | `LogitGradND::Init` |
 | compare 对齐 | `tmpDataCount=ceil(calNum/64)*64` | FP32 compare 以 64 元素 repeat 对齐；Select 只提交 `calNum` | 全部 | 尾部用向上取整 mask，不切 Route。 | `ComputeStepTwo` |
 | DMA 长度窄化 | `blockLen=uint32_t(calNum*sizeof(T))` | `DataCopyExtParams.blockLen` 为 32 位字节数；这里上界仅 32768 B | 全部 | 由固定 tile 保证，无 fallback。 | `CopyInAndCast`、`CastAndCopyOut` |
-| 编译架构 | `__CCE_AICORE__ == 220 || == 310` | router 只在两种 AICore 编译值下实例化 Vector body | 全部 | 其它值 entry 为空。 | `logit_grad` |
+| 编译架构 | `__CCE_AICORE__ == 220 \|\| == 310` | router 只在两种 AICore 编译值下实例化 Vector body | 全部 | 其它值 entry 为空。 | `logit_grad` |
 | 空域 | `N==0 -> needCoreNum=1,totalTimes=0` | 仍满足 blockDim 非零，Process 只建立/回收 event | 全部 | 正常无输出结束。 | `GetNeedCoreNum`、`Process` |
 
 ### POD/ABI

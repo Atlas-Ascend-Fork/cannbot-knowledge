@@ -190,7 +190,7 @@ else ResizeLinearGrad:
 | 950 专用 | `IsRegBase(curArch)`；OpDef/build 仅 ascend950 | 选择 arch35 SIMT 实现 | 全部 | 非 RegBase 为另一闭包 | ACLNN GetWorkspaceSize；`resize_linear_grad_def.cpp` |
 | 同长截获 | `CheckIOSizesIsSame` | 避免启动插值 Kernel | R-001 | 异长 Resize | ACLNN GetWorkspaceSize |
 | 32/64 位地址 | `X,Y<=UINT32_MAX && L_src,L_des<=INT32_MAX` | 控制除法/address 类型和 1024/512 线程 | R-002～007 | 自动切 uint64 模板 | `LinearComputeGrad`; entry router |
-| 确定性强制 | `context.det || scaleL<0.8 || repeatNum>=100` | 避免高冲突 atomic；按输出独占累加 | R-005 | R-006/007 | `ComputeOther` |
+| 确定性强制 | `context.det \|\| scaleL<0.8 \|\| repeatNum>=100` | 避免高冲突 atomic；按输出独占累加 | R-005 | R-006/007 | `ComputeOther` |
 | 特化单点 | `L_des==1` 与对齐/奇整数谓词 | 只搬一个贡献，省去权重与 atomic | R-002/003 | 后续 Route | `ComputeKey` |
 | 单源特化 | `L_src==1` | 所有输入贡献归约到唯一源点 | R-004 | `ComputeOther` | `ComputeLenSrcL1` |
 | 输出初始化 | 非确定性及单点 direct Route | atomic/稀疏写前必须把未写位置清零 | R-002/003/006/007 | N/A | 各 `Process::InitOutput→SyncAll` |

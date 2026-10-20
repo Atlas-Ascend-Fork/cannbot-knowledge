@@ -179,7 +179,7 @@ key = GET_TPL_TILING_KEY(scheMode, dType)
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 空域短路 | `gradOutput->IsEmpty() || self->IsEmpty()` | `ElewiseTiling` 明确拒绝 shape dim 为 0 | 全部 | workspace=0，成功且不启动 Kernel | `aclnnSwishBackwardGetWorkspaceSize`; `ElewiseTiling` |
+| 空域短路 | `gradOutput->IsEmpty() \|\| self->IsEmpty()` | `ElewiseTiling` 明确拒绝 shape dim 为 0 | 全部 | workspace=0，成功且不启动 Kernel | `aclnnSwishBackwardGetWorkspaceSize`; `ElewiseTiling` |
 | 每核最小粒度 | `C=min(Cplat, ceil(N*b/4096))` | 避免把少于 4 KiB 数据继续拆核 | 全部 | 自动减小 `blockNum` | `ElewiseTiling` |
 | UB 容量 | `ubFormer=floor(U/(6*b)/(256/b))*(256/b)` 且非 0 | 单 `TBuf` 必须容纳 6 个 tile 子区并按 256 B repeat 对齐 | 全部 | Tiling `GRAPH_FAILED` | `GetMaxElemNum`; `ElewiseBaseTiling::DoTiling`; `ElementwiseSch::Init` |
 | BF16 API gate | `ASCEND910B <= SocVersion <= ASCEND910E`；950 枚举为 `ASCEND910_95` | ACLNN 在 launch 前限制 BF16 平台 | R-002 BF16 | `ACLNN_ERR_PARAM_INVALID` | `CheckSocVersionIsSupportBf16`; `SocVersion` |

@@ -148,10 +148,10 @@ Host 将 shape 折叠为 `A/R/N`，`elementPerBlock=32/sizeof(T1)`。小于 4096
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 COPY | `10003` | `R==1`，`SetShapeInfoHighPerf` 立即返回 | 否则建立 AR/ARA 初始 key |
-| 2 | R-007 RA | `20003` | `A==1 && (N>=C*256 || (N>1 && R<256))` | 保留初始 key |
+| 2 | R-007 RA | `20003` | `A==1 && (N>=C*256 \|\| (N>1 && R<256))` | 保留初始 key |
 | 3 | R-005 AR Gather | `20001` | `N==1 && R*e<V && A*e>=C*V` | 保留 AR |
-| 4 | R-006 ARA Gather | `20002` | `A>1 && N>1 && A*N*e>=C*V && (R*e<V || (R*N*e>=UB/2 && R<maxSize))` | 保留 ARA |
-| 5 | R-008 GroupReduce | `30001` | 后置覆盖：`R*e>=C*256 && R<INT32_MAX && ((N==1 && A<C)||(N>1 && A*N<2*C))`；若 `N==1 && A>0.85*C` 又回退 R-002 | 保留前一 key |
+| 4 | R-006 ARA Gather | `20002` | `A>1 && N>1 && A*N*e>=C*V && (R*e<V \|\| (R*N*e>=UB/2 && R<maxSize))` | 保留 ARA |
+| 5 | R-008 GroupReduce | `30001` | 后置覆盖：`R*e>=C*256 && R<INT32_MAX && ((N==1 && A<C)\|\|(N>1 && A*N<2*C))`；若 `N==1 && A>0.85*C` 又回退 R-002 | 保留前一 key |
 | 6 | R-004 ARA 双轴切核 | `10012` | 当前仍为 ARA 且 `A*N*e>=C*128 && N*e>=128`；或 ARA mode104 的二次选择命中 | R-003 |
 | 7 | R-003 ARA | `10002` | `R>1 && N>1` 且未被上述覆盖；内部按 mode101～106 再分 tile/body 子路径 | Tiling 失败 |
 | 8 | R-002 AR | `10001` | `R>1 && N==1` 且未被 Gather/GroupReduce 覆盖 | Tiling 失败 |
@@ -192,7 +192,7 @@ else:
 | VL/块对齐 | tile 按 `vRegSize/e` 或 32B 向下/向上对齐 | MicroAPI mask 与 DMA block 要求 | R-002～R-008 | 更小 tile/保底 mode106 | `CalcCutRA`, `CalcUnitUbSpace` |
 | GroupReduce R 域 | `R<INT32_MAX` | partial 索引/累加 offset 以 int32 参与 | R-008 | 原 AR/ARA/RA 路线 | `SetShapeInfoHighPerf` |
 | workspace 非空 | `workspace!=nullptr` | entry 所有 key 共用早退 guard | 全部 | Kernel 无输出直接 return | `arg_min_with_value` |
-| R-008 UB 分型 | `N*e>=128 || blkFactor*e<256` | 决定 RA split 与 gather block | R-008 | AR split；若 AR UB 不足再 RA split | `CalcSplitInfoForGroupReduce` |
+| R-008 UB 分型 | `N*e>=128 \|\| blkFactor*e<256` | 决定 RA split 与 gather block | R-008 | AR split；若 AR UB 不足再 RA split | `CalcSplitInfoForGroupReduce` |
 | 未知 key | entry 的 if/else 无最终 else | 无对应模板实例 | 全部 | 静默无输出 | `arg_min_with_value` |
 
 ### POD/ABI

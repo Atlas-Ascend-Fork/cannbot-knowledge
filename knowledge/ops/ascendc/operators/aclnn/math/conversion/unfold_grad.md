@@ -158,7 +158,7 @@ core output base = blockIdx*batchPerCore*O
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 final-normal-overlap-fp32 | 211 / `<float,float,false>` | AiCore capable；末轴；`step<size`；normal；FLOAT | 后续行 |
-| 2 | R-002 final-normal-overlap-low | 221/231 / `<half|bf16,float,true>` | 同上；FLOAT16/BFLOAT16 | 后续行 |
+| 2 | R-002 final-normal-overlap-low | 221/231 / `<half\|bf16,float,true>` | 同上；FLOAT16/BFLOAT16 | 后续行 |
 | 3 | R-003 final-normal-nonoverlap-fp32 | 311 | AiCore capable；末轴；`step>=size`；normal；FLOAT | 后续行 |
 | 4 | R-004 final-normal-nonoverlap-low | 321/331 | 同上；FLOAT16/BFLOAT16 | 后续行 |
 | 5 | R-005 final-big-overlap-fp32 | 1211 | AiCore capable；末轴；`step<size`；big；FLOAT | 后续行 |
@@ -189,11 +189,11 @@ else:
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
 | R-001/R-003 | 211/311 | FLOAT，末轴 normal，分别 overlap/nonoverlap | 单 AIV | `UnfoldGradFinalAxe<float,float,false>` | 2×T2 Queue；输出清零+AtomicAdd | `loop+tail`；无 fallback |
-| R-002/R-004 | 221,231/321,331 | FP16/BF16，其余同上 | 单 AIV | `<half|bfloat16_t,float,true>` | T1 Queue+2×T2 Queue；FP32 workspace | tail 后 CAST_RINT |
+| R-002/R-004 | 221,231/321,331 | FP16/BF16，其余同上 | 单 AIV | `<half\|bfloat16_t,float,true>` | T1 Queue+2×T2 Queue；FP32 workspace | tail 后 CAST_RINT |
 | R-005/R-007 | 1211/1311 | FLOAT，末轴 big | 单 AIV | `UnfoldGradFinalAxeBigSize<float,float,false>` | 1×T2 VECOUT；直接 padded DMA AtomicAdd | `curHandleNum/size` 整除 |
-| R-006/R-008 | 1221,1231/1321,1331 | FP16/BF16，末轴 big | 单 AIV | `<half|bfloat16_t,float,true>` | T1 Queue+T2 VECOUT；FP32 workspace | padded copy/cast |
+| R-006/R-008 | 1221,1231/1321,1331 | FP16/BF16，末轴 big | 单 AIV | `<half\|bfloat16_t,float,true>` | T1 Queue+T2 VECOUT；FP32 workspace | padded copy/cast |
 | R-009/R-011 | 212/312 | FLOAT，倒数第二轴 | 单 AIV | `UnfoldGradFinalSecondAxe<float,float,false>` | 2×T2 Queue；五次 transpose/rearrange | `tailColLength` |
-| R-010/R-012 | 222,232/322,332 | FP16/BF16，倒数第二轴 | 单 AIV | `<half|bfloat16_t,float,true>` | T1 Queue+2×T2 Queue；FP32 workspace | CAST_RINT |
+| R-010/R-012 | 222,232/322,332 | FP16/BF16，倒数第二轴 | 单 AIV | `<half\|bfloat16_t,float,true>` | T1 Queue+2×T2 Queue；FP32 workspace | CAST_RINT |
 | R-013 | L0 fallback | 非 AIV capable，`N<=524288` | 单 AICPU | `DoCompute<T>`→`Process<T>` | CPU 顺序遍历，无 UB/Atomic | 每元素 fold 循环 |
 | R-014 | L0 fallback | 非 AIV capable，`N>524288` | 单 AICPU | `ParallelFor`→`Process<T>` | 按输出元素无冲突分片 | shard 失败返回错误 |
 
@@ -206,7 +206,7 @@ else:
 | second-axis UB | `tasksOnceMaxPerCore>0` | `lcm/size*rowAvail` 行布局必须至少容纳 16 行 | R-009～R-012 | Tiling GRAPH_FAILED | `Tiling4Block` |
 | repeat 上限 | transpose loop 以 `MAX_REPEATTIME=255` 分段 | `TransDataTo5HD.repeatTimes` 位宽/上限 | normal/second routes | 255 次块循环+tail | `TransDataForUnfold1/2/3/4and5` |
 | big 输出 stride | `step>=paddedBytes/4` | `dstStride` 为无符号；不足时不能表达负 stride | R-005～R-008 | 逐窗口单 block Atomic DMA | `SumFP32ResInGMFinalAxeBigSize` |
-| 空域 | L2 `gradOut.IsEmpty()||gradIn.IsEmpty()` | 避免 `B=0` 导致分核除法及无效 launch | 全部 | 零 workspace 成功返回 | `aclnnUnfoldGradGetWorkspaceSize` |
+| 空域 | L2 `gradOut.IsEmpty()\|\|gradIn.IsEmpty()` | 避免 `B=0` 导致分核除法及无效 launch | 全部 | 零 workspace 成功返回 | `aclnnUnfoldGradGetWorkspaceSize` |
 | AICPU 并行阈值 | `element_num>1024*512` | 大输出按 CPU 核分 shard | R-013/R-014 | 串行或 ParallelFor | `UnfoldGradCpuKernel::DoCompute` |
 
 ### POD/ABI
@@ -364,7 +364,7 @@ workspace_total = 4*Π(inputSizes) + libApiWorkspace（本 Route 实际不消费
 |---|---|---|---|---|
 | L0 | `op_api/unfold_grad.cpp` | `IsAiCoreSupport` | 末轴且 `max(size,step)<=32720` | AICORE |
 | Tiling | `op_host/unfold_grad_tiling.cpp` | `GetDataTypeKey/SetTilingKey` | `step<size`、normal、FP16 mode2/BF16 mode3 | 221/231 |
-| Router | `op_kernel/unfold_grad.cpp` | `unfold_grad` | dtype guard + key | `<half|bfloat16_t,float,true>` |
+| Router | `op_kernel/unfold_grad.cpp` | `unfold_grad` | dtype guard + key | `<half\|bfloat16_t,float,true>` |
 
 #### Device 数据流
 

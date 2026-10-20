@@ -190,7 +190,7 @@ else:  # A5 IsRegbase
 | R-002 | API shortcut | 950，index 非空且 self empty | 无 Device 节点 | API early return | `workspaceSize=0` | 无输出写，self 已为空 |
 | R-003 | SIMD+B32/B64 | 非空，`Q*s>128`；B64 当 `indicesNum>INT32_MAX` | 单 `index_fill` Hybrid 节点 | `IndexFillSimdImpl<ComputeType, int64_t, uint32_t/uint64_t>` | GM mask + `SyncAll`；AIV queues；SIMT set-mask | PN/Q former-tail、Q tile tail；不满足转 R-004/R-005 |
 | R-004 | DENSE+B32/B64 | 非空，`Q*s<=128`，`P*Q*K>2048`，`K>=5N`；B64 当 `numel>INT32_MAX` | 单 `index_fill` Hybrid 节点 | `IndexFillSimtDenseIndicesImpl<ComputeType,int64_t,uint32_t/uint64_t>` | data copy 后 Reset UB；Sort+unique；GM mask；两次全核同步 | indices chunk tail、data tail；不满足转 R-005 |
-| R-005 | SIMT+B32/B64 | 非空 fallback；B64 当 `numel>INT32_MAX || K*P*Q>INT32_MAX` | 单 `index_fill` Hybrid 节点 | `IndexFillSimtImpl<ComputeType,int64_t,uint32_t/uint64_t>` | 双缓冲 copy；by-N 才用 GM mask；SIMT write | copy tile tail；线程网格 stride tail |
+| R-005 | SIMT+B32/B64 | 非空 fallback；B64 当 `numel>INT32_MAX \|\| K*P*Q>INT32_MAX` | 单 `index_fill` Hybrid 节点 | `IndexFillSimtImpl<ComputeType,int64_t,uint32_t/uint64_t>` | 双缓冲 copy；by-N 才用 GM mask；SIMT write | copy tile tail；线程网格 stride tail |
 
 ### 隐藏性能 Guard
 
@@ -201,7 +201,7 @@ else:  # A5 IsRegbase
 | SIMD UB | `3*alignQ*s+alignMask <= UB-32KiB`，否则切 Q tile | 两份 x queue + 一份 value queue + mask TBuf | R-003 | 缩小 tile；固定仓无另一路 fallback | `IndexFillSimdTiling::CalcUBBlock` |
 | 稠密 index | `P*Q*K>2048 && K>=5N` | 先排序去重，减少大量重复 index 对同一 mask 地址的写 | R-004 | R-005 | `IndexFillSimtDenseIndicesTiling::IsCapable` |
 | Sort UB | `CalcUsedBufSize(indicesUbFactor)<=UB-128KiB` | indices 双缓冲、哨兵、unique id、Sort tmp 必须同驻 UB | R-004 | factor 每次减 1024，最低回退 512 | `DoIndicesTilingTask` |
-| SIMT 遍历方式 | `numel*s<256 || K<=N/5` 选 by-indices | 稀疏 index 时只遍历 `P*K*Q`；否则先位图再遍历 `P*N*Q` | R-005 | 两种模式互为 fallback | `CalcSimtUsedCoreNum` |
+| SIMT 遍历方式 | `numel*s<256 \|\| K<=N/5` 选 by-indices | 稀疏 index 时只遍历 `P*K*Q`；否则先位图再遍历 `P*N*Q` | R-005 | 两种模式互为 fallback | `CalcSimtUsedCoreNum` |
 | 32/64 位地址计算 | 各 Route 的计数乘积超过 `INT32_MAX` | 防止线程索引和 offset 窄化溢出 | R-003/R-004/R-005 | 同 Route 的 B64 实例 | 各 `GetTilingKey` |
 | 空输入 | ACLNN 在 launcher 前返回 | 避免 Host Tiling 中零除和空循环 | R-001/R-002 | 无 Device 路线 | `aclnnIndexFillTensorGetWorkspaceSize` |
 
@@ -644,8 +644,8 @@ workspace_total(core) = N bytes + sysWorkspaceSize
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `index_fill_tiling_simt.cpp` | `IsCapable` | 恒 true，priority 10 | 非空 fallback |
-| Tiling | 同上 | `CalcSimtUsedCoreNum` | `numel*s<256 || K<=N/5` 选 by-indices，否则 by-N | 写 `simtComputeMode` |
-| Tiling | 同上 | `GetTilingKey` | `numel>INT32_MAX || K*P*Q>INT32_MAX` 选 B64 | SIMT B32/B64 |
+| Tiling | 同上 | `CalcSimtUsedCoreNum` | `numel*s<256 \|\| K<=N/5` 选 by-indices，否则 by-N | 写 `simtComputeMode` |
+| Tiling | 同上 | `GetTilingKey` | `numel>INT32_MAX \|\| K*P*Q>INT32_MAX` 选 B64 | SIMT B32/B64 |
 | Router | `index_fill_apt.cpp` | SIMT branches | template mode SIMT | `IndexFillSimtImpl<T,int64_t,COM_T>` |
 
 #### Device 数据流

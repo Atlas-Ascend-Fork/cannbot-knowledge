@@ -120,7 +120,7 @@ F1/F2 的输出由 executor 持有并存活到 G 消费，`gatherNdOut` 存活�
 | 1 | R-001 全量+VGather | 4000/4100，`GatherNdAllLoadV<INT32,NIS>` | `IsGaAllLoad()` 全部成立且 `aSizeAligned<=512`；key +100 表示负索引 | R-002/R-003 |
 | 2 | R-002 全量+Vector | 3000/3100，`GatherNdAllLoad<INT32,NIS>` | `IsGaAllLoad()` 全部成立且 `aSizeAligned>512` | R-003 |
 | 3 | R-003 长切片 SIMD | 11111111，`GatherNdSimd<DTYPE_INDICES>` | 非全量；`A*xBytes>=2048 && U>=32768 && N>=coreNum/2` | R-004 |
-| 4 | R-004 Hybrid | 140/180/181/240/280/281/440/480/481/840/880/881 | 非前三；非 `(indices=int32 && (N>INT32_MAX || O>INT32_MAX))`，且 `K>1 && A*xBytes<=2048 && N>=640` | R-005 |
+| 4 | R-004 Hybrid | 140/180/181/240/280/281/440/480/481/840/880/881 | 非前三；非 `(indices=int32 && (N>INT32_MAX \|\| O>INT32_MAX))`，且 `K>1 && A*xBytes<=2048 && N>=640` | R-005 |
 | 5 | R-005 常规 SIMT | 十进制编码长 key，`GatherNdSimt<T1,T2,T3,NIS>` | 其余非空 ACLNN 合法输入；`T3` 按规模选 uint32/uint64，NIS 按属性选 | Tiling/资源失败 |
 
 ```text
@@ -147,7 +147,7 @@ nonempty -> IsGaAllLoad ? (aSizeAligned<=512 ? R-001 : R-002)
 |---|---|---|---|---|---|
 | 全量装载 | `N/coreNum>G`、`aSizeAligned<=16384`、重复度条件、`K<=3`、indices INT32、`remainSpace>=0` | x 全域加一块零 slice、至少两个 16 KiB y 缓冲和最小 indices 区必须进 UB | R-001/R-002 | R-003 | `GatherNdSimtTiling::IsGaAllLoad` |
 | VGather 阈值 | `aSizeAligned<=512` | VGather 以 32-bit lane 和 block stride 组织 | R-001 | R-002 | `GaAllLoadTiling` |
-| bank padding | `aSizeAligned==128 || 256` 时 `+=32` | 避免 gather bank conflict | R-001/R-002 | 同路线不同 stride | `IsGaAllLoad`、`GaAllLoadTiling` |
+| bank padding | `aSizeAligned==128 \|\| 256` 时 `+=32` | 避免 gather bank conflict | R-001/R-002 | 同路线不同 stride | `IsGaAllLoad`、`GaAllLoadTiling` |
 | 长切片 | `A*xBytes>=2048 && U>=32768 && N>=coreNum/2` | 保留 16 KiB index 区并给 byte-copy 双缓冲 | R-003 | R-004 | `DoOpTiling`、`CalcSimdTiling` |
 | Hybrid 地址宽度 | int32 indices 且 `N` 或 `O` 超 INT32_MAX 时禁用 | Mix 的部分索引/loop 参数为 int32 | R-004 | R-005 uint64 地址模板 | `MixkernelNotSupport` |
 | 空域 | `HasEmptyTensor(self,indices)` | ACLNN 不创建 GatherNd 节点 | 全部 | 成功短路 | `aclnnGatherNdGetWorkspaceSize` |

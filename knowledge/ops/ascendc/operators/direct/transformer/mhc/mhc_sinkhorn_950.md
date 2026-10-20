@@ -143,7 +143,7 @@ P0→P3 是实现知识的重要性顺序，不是 Host 判断序号：P0 覆盖
 
 | 重要性 | Route | 可达性/分类 | Route 特征 | 精确 selector 域与安全前提 | Host 顺序、短路与 fallback |
 |---:|---|---|---|---|---|
-| P0 | R-002 element-fast | 可达；派生专门化 | `MhcSinkhornElementFast<N>`；一条 vector lane 负责一个矩阵，`normBuffer_=[row,col,matrix_lane]` | selector：`((n in {2,3}) && B>1) || n in {4,6,12,16}`；安全还需连续 FP32、`B>=1` 与静态 UB 容量成立 | Host 第 2 项；R-001 false 后检查；false 后继续 R-003 |
+| P0 | R-002 element-fast | 可达；派生专门化 | `MhcSinkhornElementFast<N>`；一条 vector lane 负责一个矩阵，`normBuffer_=[row,col,matrix_lane]` | selector：`((n in {2,3}) && B>1) \|\| n in {4,6,12,16}`；安全还需连续 FP32、`B>=1` 与静态 UB 容量成立 | Host 第 2 项；R-001 false 后检查；false 后继续 R-003 |
 | P1 | R-003 official-adapted | 可达；官方 body 的 Direct 适配 | `MhcSinkhornSimd<float,false>`；data-block gather/reduce；每个 `TQue<...,1>` 由 `InitBuffer(...,2,...)` 配双槽 | selector：`n==8`；安全还需连续 FP32、`B>=1`、合法 platform AIV/UB 信息、POD 与 body ABI 一致 | Host 第 3 项；前两项 false 后检查；false 后进入 R-004 |
 | P2 | R-001 register-fast | 可达；派生 tiny-batch 专门化 | `MhcSinkhornRegisterFast<2/3>`；一个 register group 覆盖最多 8 个矩阵 | selector：`n in {2,3} && B<=1`；安全域把未拒绝的 `B=0` 排除后为 `B=1` | Host 第 1 项；true 时短路全部后续项；false 后继续 R-002 |
 | P3 | R-004 generic-SIMT | 可达；最终派生 fallback | `__vector__` entry 内 32-thread VF；每线程独占 256 FP32 dynamic-UB slice | selector：`n notin {2,3,4,6,8,12,16}`；已闭合安全域还需连续 FP32、`B>=1`、`1<=n<=16`。`n=0` 机械上循环为空，但零元素 GM/launch 契约未证明 | Host 第 4 项 final fallback；无更后 Route |
@@ -261,7 +261,7 @@ block_dim = used
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Direct Host | 交付层 wrapper | `mhc_sinkhorn_npu` | `((n=2/3)&&B>1) || n in {4,6,12,16}`；Host 第 2 项 | R-001 false 后检查；true 时短路，false 时检查 R-003 |
+| Direct Host | 交付层 wrapper | `mhc_sinkhorn_npu` | `((n=2/3)&&B>1) \|\| n in {4,6,12,16}`；Host 第 2 项 | R-001 false 后检查；true 时短路，false 时检查 R-003 |
 | Launcher | 交付层 Kernel 单元 | `launch_mhc_sinkhorn_element_fast` | 逐 `n` if-chain | `mhc_sinkhorn_element_nN` |
 | Device | 同上 | `RunMhcSinkhornElementFast<N>` | `N` 编译期常量 | `MhcSinkhornElementFast<N>::Process` |
 
@@ -476,7 +476,7 @@ workspace_total = 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Direct Host | 交付层 wrapper | `mhc_sinkhorn_npu` | `(n==2 || n==3) && B<=1`；Host 第 1 项 | true 时短路到 register launcher；false 时检查 R-002 |
+| Direct Host | 交付层 wrapper | `mhc_sinkhorn_npu` | `(n==2 \|\| n==3) && B<=1`；Host 第 1 项 | true 时短路到 register launcher；false 时检查 R-002 |
 | Launcher | 交付层 Kernel 单元 | `launch_mhc_sinkhorn_register_fast` | `n==2` / `n==3` | entry `<2>` / `<3>` |
 | Device | 同上 | `RunMhcSinkhornRegisterFast<N>` | `N` 编译期常量 | `MhcSinkhornRegisterFast<N>::Process` |
 

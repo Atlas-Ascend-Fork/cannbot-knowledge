@@ -261,7 +261,7 @@ workspace_total=useAiv*(4*M*N*2+8*mA*N*4)+16MiB; UB=148KiB
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `flat_quant_tiling.cpp` | FP4 branch | `M%16!=0 || N%16!=0` | key4 |
+| Tiling | `flat_quant_tiling.cpp` | FP4 branch | `M%16!=0 \|\| N%16!=0` | key4 |
 | Router | `flat_quant_apt.cpp` | FP4/key4 | `FlatQuantHighV2<T>` | route |
 
 #### Device 数据流

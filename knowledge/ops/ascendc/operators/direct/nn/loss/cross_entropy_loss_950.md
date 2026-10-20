@@ -144,7 +144,7 @@ cross_entropy_loss_npu
 | P2 | R-006 full-load | rank-2 整 C 驻留；Host 在 db=2/db=1 间选择，MicroAPI 一次完成 row softmax 与 target gather | rank 2、先通过 official-fast 总 guard，且至少一个对齐 row 可 full-load、编码复核成立 | `TryFullLoad` 资源估算覆盖 Queue/TBuf；`db` 必须乘入 UB；FP32/none 的近零 loss 精化与 reduced workspace 协议一致 |
 | P3 | R-004 hard target-only SIMT | 不物化 log-prob、不分配 C-sized UB slab的 int64-index streaming 完整安全兜底 | hard `none` 小域、rank-N 小工作量/lean 不可用、rank-2 小 N/二分类，或任一 official-fast/编码 guard 失败 | 512 threads/block；FP32 compensated exp tail；reduced 两段 partial workspace与可选 finalize；合法 shape 不因 fast-path 编码受限而失败 |
 | P4 | R-003 soft warp SIMT | 每 warp 一 row，lane 跨 class；scratch 分阶段别名复用 | soft target、`128<=C<=2^24` | 所有 lane 包括 inactive row 都必须到达 block barrier；两块 512-FP32 scratch；class index 可由 FP32 精确表示 |
-| P5 | R-002 soft scalar SIMT | 每线程一 row、串行扫描 class，也是超出 warp-index 精确域后的 fallback | soft target、`C<128 || C>2^24` | 512 threads/block；稳定 FP32 class scan；int64 class index；reduced partial/finalize 协议 |
+| P5 | R-002 soft scalar SIMT | 每线程一 row、串行扫描 class，也是超出 warp-index 精确域后的 fallback | soft target、`C<128 \|\| C>2^24` | 512 threads/block；稳定 FP32 class scan；int64 class index；reduced partial/finalize 协议 |
 | P6 | R-001 empty | 仅 core 0 写空域 scalar reduction 结果 | `N*S==0` | grid=1；`none` 不写、`mean` 写 NaN、`sum` 写 0 |
 
 以下才是 Host 的真实判断顺序、短路和 fallback：
@@ -152,9 +152,9 @@ cross_entropy_loss_npu
 | Host 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 empty | `EMPTY=6` | `R==0` | R-002 |
-| 2 | R-002 soft scalar SIMT | `SOFT_SIMT=5` / scalar body | `targetType==SOFT && (C<128 || C>2^24)`；Host key 与 warp 共用，第二项由 Device router 判定 | `128<=C<=2^24` 转 R-003 body |
+| 2 | R-002 soft scalar SIMT | `SOFT_SIMT=5` / scalar body | `targetType==SOFT && (C<128 \|\| C>2^24)`；Host key 与 warp 共用，第二项由 Device router 判定 | `128<=C<=2^24` 转 R-003 body |
 | 3 | R-003 soft warp SIMT | `SOFT_SIMT=5` / warp body | `targetType==SOFT && 128<=C<=2^24`；Host 用 `C>=128` 计算 16 rows/block，Device 再以 `C<=2^24` 收窄 | 超上界在同 entry 内转 R-002 body；soft 分支在此终止 |
-| 4 | R-004 hard target-only SIMT | `GENERIC_SIMT/FUSED_SIMT=3` | hard 且首个成立：`none && N*C*S<=1048576`；或 `rank>2 && (N*C*S<10^6 || BuildChannelFirstLean/动态 UB 复核失败)`；或 `rank==2 && (N<32 || C==2)`；或 rank-2 official-fast 总 guard/FullLoad/BigC 编码复核失败 | guard 通过则 R-005/R-006/R-007 |
+| 4 | R-004 hard target-only SIMT | `GENERIC_SIMT/FUSED_SIMT=3` | hard 且首个成立：`none && N*C*S<=1048576`；或 `rank>2 && (N*C*S<10^6 \|\| BuildChannelFirstLean/动态 UB 复核失败)`；或 `rank==2 && (N<32 \|\| C==2)`；或 rank-2 official-fast 总 guard/FullLoad/BigC 编码复核失败 | guard 通过则 R-005/R-006/R-007 |
 | 5 | R-005 channel-first lean Hybrid | `FUSED_VECTOR=4` | hard、未命中 `none && N*C*S<=1048576`、`rank>2`、`N*C*S>=10^6`，且 `C<=4095`、`maxTile>=32/b`、full/tail DMA 字段可编码、`localMemoryBytes<=min(U,UINT32_MAX)` | 任一 guard 失败回 R-004 |
 | 6 | R-006 full-load | `FULL_LOAD=1` | hard、未命中 `none && N*C<=1048576`、rank 2、`N>=32`、`C!=2`，且 official-fast 总 guard：`N*C>=10^6, N<=2097152, 2<=C<=16384, ignoreIndex` 可表示为 int32；`TryFullLoad(db2→db1)` 与 `FullLoadEncodingIsSafe` 均成立 | full-load 不成立则尝试 R-007；总 guard 失败直接 R-004 |
 | 7 | R-007 big-C | `BIG_C=0` | 与 R-006 相同的前序/official-fast guard 已成立，full-load capability/编码不成立，且 `BigCEncodingIsSafe` 成立 | BigC 编码复核失败回 R-004 |
@@ -180,7 +180,7 @@ else -> R-004
 | P2 · R-006 | 1 | hard rank2、FullLoad capable | 单 AIV kernel | `CrossEntropyLossFullLoad<T,TargetT,reduction,0,0,ignorePositive>` | db1/db2 input Queue；MicroAPI FP32；reduced 用 workspace+`SyncAll` | former/tail core、N tail、C padding |
 | P3 · R-004 | 3 | hard 的 accurate-small、rank-N fast guard、rank-2 shape/official/编码 guard 任一有序 fallback | primary SIMT；reduced multi-core 时 finalize | `CrossEntropyFusedTargetSimt<T,TargetT>` | 两个 512-FP32 TBuf；每 block tree reduce | global-thread stride；ignore row 写 0/不计数 |
 | P4 · R-003 | 5 | soft、`128<=C<=2^24` | primary SIMT；reduced multi-core 时 finalize | `CrossEntropySoftWarpSimt<T>` | 每 warp 一 row，两个 512-FP32 scratch，block/warp barriers | inactive row 仍参加 barrier；rowActive 守护；上界外回 scalar body |
-| P5 · R-002 | 5 | soft、`C<128 || C>2^24` | primary SIMT；reduced multi-core 时 finalize | `CrossEntropySoftScalarSimt<T>` | 2×512 FP32 TBuf，block tree barrier | row grid-stride；int64 class index；无 ignore |
+| P5 · R-002 | 5 | soft、`C<128 \|\| C>2^24` | primary SIMT；reduced multi-core 时 finalize | `CrossEntropySoftScalarSimt<T>` | 2×512 FP32 TBuf，block tree barrier | row grid-stride；int64 class index；无 ignore |
 | P6 · R-001 | 6 | `R==0`；3 input dtype；950 | 单 Kernel | `RunCrossEntropyEmpty<T>` | 无 UB Queue/workspace；dcache flush | none 不写；mean NaN；sum 0 |
 
 ### 性能与安全 Guard
@@ -272,7 +272,7 @@ else -> R-004
 | P2 · R-006 | 1 | `TryFullLoad`（交付件） | `CrossEntropyLossRegBaseTilingData` | dtype entry→`DispatchOfficial` | 官方 `CrossEntropyLossFullLoad` 的 direct loss-only 转换 | 官方 950 arch35 CMake + direct CMake |
 | P3 · R-004 | 3 | `FillStreamingHardConfig` 的全部有序出口 | channelFirst common fields | `cross_entropy_loss_fused_*_entry` | `RunCrossEntropyFusedTarget`→SIMT | direct op CMake（交付件） |
 | P4 · R-003 | 5, `128<=C<=2^24` | Host soft branch + Device 精确域 router | channelFirst common fields | `cross_entropy_loss_soft_*_entry` | `RunCrossEntropySoft`→`CrossEntropySoftWarpSimt` | 同上 |
-| P5 · R-002 | 5, `C<128 || C>2^24` | Host soft branch + Device fallback router | 同上 | 同 R-003 entry | `RunCrossEntropySoft`→`CrossEntropySoftScalarSimt` | 同上 |
+| P5 · R-002 | 5, `C<128 \|\| C>2^24` | Host soft branch + Device fallback router | 同上 | 同 R-003 entry | `RunCrossEntropySoft`→`CrossEntropySoftScalarSimt` | 同上 |
 | P6 · R-001 | 6 | `calc_cross_entropy_loss_tiling`（交付件） | reduction | `cross_entropy_loss_empty_*_entry` | `RunCrossEntropyEmpty<T>` | 同上 |
 
 ## Kernel 实现
@@ -786,7 +786,7 @@ workspace_total=reduced ? 8*lossCoreNum : 0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Host | direct kernel | soft branch | `targetType==SOFT`；`C<128` 时按 rows/block=512，`C>=128` 时按 16 生产 `lossCoreNum` | route 5、lossCoreNum |
-| Body router | direct kernel | `RunCrossEntropySoft` | `C<128 || C>2^24` | scalar SIMT；超上界时虽沿用 Host 的 16 rows/block grid 估算，body 仍以全局 thread stride 覆盖全部 row |
+| Body router | direct kernel | `RunCrossEntropySoft` | `C<128 \|\| C>2^24` | scalar SIMT；超上界时虽沿用 Host 的 16 rows/block grid 估算，body 仍以全局 thread stride 覆盖全部 row |
 
 #### Device 数据流
 
@@ -857,7 +857,7 @@ workspace_total=reduced ? 8*lossCoreNum : 0
 | 阶段 | 文件 | 符号/模板实例 | 实现事实 |
 |---|---|---|---|
 | Host/Tiling producer | direct kernel | soft branch | scalar rows/block 512 |
-| Kernel entry/router | direct kernel | `cross_entropy_loss_soft_*_entry`→`RunCrossEntropySoft` | `C<128 || C>2^24` scalar branch |
+| Kernel entry/router | direct kernel | `cross_entropy_loss_soft_*_entry`→`RunCrossEntropySoft` | `C<128 \|\| C>2^24` scalar branch |
 | Device body/helper | direct kernel | `CrossEntropySoftScalarSimt<T>` | stable row streaming与block reduction |
 
 ### Route R-001：empty（P6）

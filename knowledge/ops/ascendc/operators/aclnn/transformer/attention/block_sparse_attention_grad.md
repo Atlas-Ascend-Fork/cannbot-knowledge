@@ -170,9 +170,9 @@ all -> same 128x128x128 MIX body
 | 同结构 | `gradSize` | u64 | 不可见 | byte | Qrows·N·8·4 | Device 未读取 | workspace 尾部 sftg 容量 |
 | 同结构 | `sOutSize` | u64 | 不可见 | byte | blockDim·65536·4 | S/P offset | FP32双槽 |
 | 同结构 | `dPOutSize` | u64 | 不可见 | byte | 同S | dP/dS offset | 同上 |
-| 同结构 | `dQOutSize` | u64 | 不可见 | byte | |Q|·4 | dQ/post | FP32 |
-| 同结构 | `dKOutSize` | u64 | 不可见 | byte | |K|·4 | dK/post | FP32 |
-| 同结构 | `dVOutSize` | u64 | 不可见 | byte | |V|·4 | dV/post | FP32 |
+| 同结构 | `dQOutSize` | u64 | 不可见 | byte | \|Q\|·4 | dQ/post | FP32 |
+| 同结构 | `dKOutSize` | u64 | 不可见 | byte | \|K\|·4 | dK/post | FP32 |
+| 同结构 | `dVOutSize` | u64 | 不可见 | byte | \|V\|·4 | dV/post | FP32 |
 | 同结构 | `basicQBlockSize` | u32 | 不可见 | token | const128 | task M | 128 |
 | 同结构 | `basicKVBlockSize` | u32 | 不可见 | token | const128 | task N | 128 |
 | 同结构 | `taskNumPerCore` | u32 | 不可见 | task/core | floor split | loop | 可0 |
@@ -246,7 +246,7 @@ flush last slot; AIC flag9; AIV SyncAll and scale/cast/store
 |---|---|---|---|---|---|---|---|
 | S/dP slots | `core·65536+ping·32768` float index；dP加`sOutSize` | 各`blockDim·65536·4`B | FP32 row-major | Cube1 | AIV | executor/launch | 双槽 |
 | P/dS overlay | slot byte+65536；dS加`sOutSize` | ≤128²·2B/槽 | input type | AIV | Cube2/3 | 同槽 | flag保护 |
-| gradients | `sOut+dP+[0,dQ,dQ+dK]` | 4·(|Q|+|K|+|V|) | FP32 ND | Cube atomic | post | executor/launch | 先清零 |
+| gradients | `sOut+dP+[0,dQ,dQ+dK]` | 4·(\|Q\|+\|K\|+\|V\|) | FP32 ND | Cube atomic | post | executor/launch | 先清零 |
 | L1 | 起点0/128/256KiB | 三实例各128KiB，共384KiB≤512KiB | input NZ/ZN | GM copy | L0 | AIC | 各双缓冲 |
 | L0A/B/C | ping/pong 32/32/64KiB | 64/64/128KiB | input/input/FP32 | L1/MMAD | MMAD/Fixpipe | AIC | hard event |
 | UB | 分阶段复用 | `UB-sizeof(POD)-2KiB` | FP32+typed | MTE2/V | MTE3 | AIV | post三分片 |

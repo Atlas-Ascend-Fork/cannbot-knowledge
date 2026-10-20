@@ -49,7 +49,7 @@ cann_versions: ["9.1.0"]
 |---|---|
 | 实际入口 | `aclnnScaledMaskedSoftmaxBackwardGetWorkspaceSize` + `aclnnScaledMaskedSoftmaxBackward`，公开 ACLNN 两段式接口；内部算子类型为 `ScaledMaskedSoftmaxGradV2` |
 | 计算语义 | 对末轴逐行计算 `q=g*y`、`z=(q-sum_D(q)*y)*scale`，再按 bool `mask` 将真值位置清零 |
-| 输入输出 | `gradOutput/y/out` 为 `[B,N,S,D]`、同 shape/dtype、ND，dtype 为 FP16/FP32/BF16；`mask` 为 bool `[B|1,N|1,S,D]`；A2/A3 上 `0<D<=4096`，实际 Tiling 要求四维长度均大于 0 |
+| 输入输出 | `gradOutput/y/out` 为 `[B,N,S,D]`、同 shape/dtype、ND，dtype 为 FP16/FP32/BF16；`mask` 为 bool `[B\|1,N\|1,S,D]`；A2/A3 上 `0<D<=4096`，实际 Tiling 要求四维长度均大于 0 |
 | 执行类型 | 单个算子自有 `AIV_VECTOR` Kernel；无 Cube/AIC、MIX_CV、SIMT、NDDMA、通信或多 Kernel 节点 |
 | Kernel 路线 | R-001 normal 16-bit；R-002 normal FP32；R-003 large 16-bit；R-004 large FP32；每条路线内部再按四种 `maskMoveMode` 选择广播搬运 helper |
 | 核心资源 | GM 三输入一输出；normal 路线使用 4 个 depth=1 `TQue`、共享 `TBuf`，16-bit 另有两个 FP32 cast `TBuf`；large 路线使用两个输入 `TBuf`、共享 `TBuf`，并原地复用输入/转换区；算子 body 不读取 GM workspace |

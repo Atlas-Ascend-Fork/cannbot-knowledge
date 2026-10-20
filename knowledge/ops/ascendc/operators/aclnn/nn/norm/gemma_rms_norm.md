@@ -156,7 +156,7 @@ shape/dtype valid && epsilon>=0
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 全载列阈值 | `alignD<=U0` | key 0 同时分配 x/gamma/y、两块 U 长 FP32 TBuf 与 reduce/rstd；固定 U 避免运行时列循环 | R-001 | R-002 | `rms_norm_tiling.cpp::getUbFactor` |
-| 分片尾 DMA | `D%U==0 || D%U>=16` | U 以 16 元素对齐，并避免最后一片小于 16 元素；32 B 尾仍由 dtype-aware copy helper 处理 | R-002 | `U-=16`；降到 0 失败 | `rms_norm_tiling.cpp::getUbFactor` |
+| 分片尾 DMA | `D%U==0 \|\| D%U>=16` | U 以 16 元素对齐，并避免最后一片小于 16 元素；32 B 尾仍由 dtype-aware copy helper 处理 | R-002 | `U-=16`；降到 0 失败 | `rms_norm_tiling.cpp::getUbFactor` |
 | 平台 UB 隐式前提 | `totalUbSize-1024` 被读取但未参与 Gemma U 计算 | 实际 `InitBuffer` 总量必须可放入 UB | 两条 | 固定仓无 Host fallback | `Tiling4GemmaRmsNorm`、两类 `Init` |
 | dtype 编译实例 | A2/A3 binary config 仅同 dtype FP16/BF16/FP32 | entry 的 `DTYPE_X/DTYPE_GAMMA` 来自离线实例 | 两条 | 未注册组合不形成 binary | 两份 `gemma_rms_norm_binary.json` |
 | 空域 | 任一相关维为 0 即失败 | Device 的 `CeilDiv`、尾循环和最后一次无空域保护 | 两条 | Tiling `GRAPH_FAILED` | `CheckInputShape4RmsNorm` |

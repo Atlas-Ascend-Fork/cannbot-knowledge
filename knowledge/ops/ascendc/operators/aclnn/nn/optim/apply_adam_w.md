@@ -194,7 +194,7 @@ else:
 | 固定 tile | `P=2432`，不读取 `compileInfo.ubSize` | 三类 body静态分配分别为175168 B或184896 B | 全部 | 固定仓无更小tile fallback |
 | workspace非空 | `GetUserWorkspace(workspace)!=nullptr` | entry即使不寻址userWS也以此为启动前提 | 全部 | 直接return、无写回 |
 | AMSGrad可选输入 | `amsgrad==1 => max desc != nullptr` | body会CopyIn/CopyOut第4状态 | 全部 | Tiling/API失败 |
-| step类型 | `F32 || I64` | `GlobalTensor<U>::GetValue(0)` 后转F32 | 全部 | API/Tiling失败 |
+| step类型 | `F32 \|\| I64` | `GlobalTensor<U>::GetValue(0)` 后转F32 | 全部 | API/Tiling失败 |
 | 尾DMA | `dataCount<=2432`，字节数窄化为uint32 | `DataCopyPad`只搬有效尾元素 | 全部 | 无额外fallback |
 | 未知key | router仅有101～110，无最终else | 防止实例化不支持组合 | 全部 | kernel静默不写输出 |
 

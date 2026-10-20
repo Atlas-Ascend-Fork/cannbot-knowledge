@@ -131,7 +131,7 @@ Host 以全部 AIC 生成 1:2 MIX blockDim；Device 再按所有 batch 的实际
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 C 连续 KV | `(0,0,BSND,BSND,C,sg)`；`(0,0,TND,TND,C,sg)` | `s2Size==0 || sparseBlockSize>4`；`sg=(G>64)` | PA→R-002；小块→R-003 |
+| 1 | R-001 C 连续 KV | `(0,0,BSND,BSND,C,sg)`；`(0,0,TND,TND,C,sg)` | `s2Size==0 \|\| sparseBlockSize>4`；`sg=(G>64)` | PA→R-002；小块→R-003 |
 | 2 | R-002 C PA | `(0,1,BSND,PA_BSND,C,sg)`；`(0,1,TND,PA_BSND,C,sg)` | C 条件且 PA block/actual length 合法；`sg=(G>64)` | 小块→R-004；非法则 Host 失败 |
 | 3 | R-003 V 连续 KV | `(0,0,BSND,BSND,V,sg)`；`(0,0,TND,TND,V,sg)` | `s2Size!=0 && sparseBlockSize<=4`；`sg=(G>64)` | PA→R-004；大块→R-001 |
 | 4 | R-004 V PA | `(0,1,BSND,PA_BSND,V,sg)`；`(0,1,TND,PA_BSND,V,sg)` | V 条件且 PA 合法；`sg=(G>64)` | 非法则 Host 失败 |
@@ -221,7 +221,7 @@ entry 固定声明 `KERNEL_TYPE_MIX_AIC_1_2`。FP16/BF16 分别实例化，MM �
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | op_host/sparse_flash_attention_tiling.cpp | `InitParams` | `s2==0 || sparseBlockSize>4` | C_TEMPLATE |
+| Tiling | op_host/sparse_flash_attention_tiling.cpp | `InitParams` | `s2==0 \|\| sparseBlockSize>4` | C_TEMPLATE |
 | Layout | 同文件 | `GetKvLayout` | BSND/BSND 或 TND/TND | PA=0 |
 | Router | op_kernel/sparse_flash_attention.cpp | `SFA_OP_IMPL` | arch22 FP16/BF16 | `SparseFlashAttentionMla<SFAType<Q_T,KV_T,OUT_T,false,LAYOUT_T,KV_LAYOUT_T,C_TEMPLATE>>` |
 

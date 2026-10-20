@@ -140,16 +140,16 @@ Q  = (K==1 && P>=64)                              // BF16 fixed-K1 outer gate
 
 | 状态 | Route | 完整终端谓词 | selector 终点与未命中出边 |
 |---|---|---|---|
-| active | R-001 | `(FP16 && V && K3) || (BF16 && B && K3)` | 进入 vector entry 后由 Device `usePackedK3` 终止；FP16/BF16 内层未命中分别去 R-004。 |
+| active | R-001 | `(FP16 && V && K3) \|\| (BF16 && B && K3)` | 进入 vector entry 后由 Device `usePackedK3` 终止；FP16/BF16 内层未命中分别去 R-004。 |
 | active | R-002 | `FP32 && F && K3 && O<=8192` | Device packed-K3 终止；`O>8192` 或非 K3 在同一 entry 去 R-005。 |
 | active | R-003 | `BF16 && B && !K3 && K5` | Device K5 分支终止；非 K3/K5 去 R-004。 |
 | active | R-006 | `FP16 && L && !V && K3` | FP16 Host 第一分支终止；非 K3 继续到 R-008。 |
 | active | R-005 | `FP32 && F && !(K3 && O<=8192)` | FP32 vector entry 的 Device fallback；该 entry 内终止。 |
 | active | R-009 | `BF16 && Q` | BF16 Host 第一分支终止；`!Q` 继续检查 B。 |
 | active | R-007 | `FP32 && !F && L && K5 && strideH==2 && strideW==2` | plane4 family 内的 K5 gather 终止；未命中去 R-008。由于 `strideW==2`，此式中的 `!F` 是显式保留的上游短路事实。 |
-| active | R-010 | `(FP16 && !V && !L) || (FP32 && !F && !L) || (BF16 && !Q && !B && (!L || OW<48))` | 各 dtype 最终 `else`，无下一条计算 Route；只有 `totalOutput<=UINT32_MAX-28672+1=4,294,938,624` 时 grid-stride 加法可证明不回绕。Host 仍接受到 `UINT32_MAX`，所以该 Route 的安全域不能覆盖整个 Host 合法域。 |
-| active | R-004 | `(FP16 && V && !K3) || (BF16 && B && !K3 && !K5)` | B16 vector entry 的 Device fallback；该 entry 内终止。 |
-| active | R-008 | `(FP16 && L && !V && !K3) || (FP32 && !F && L && !(K5 && strideH==2 && strideW==2)) || (BF16 && !B && L && OW>=48)` | 各 dtype 的通用 plane4 终点；只有 Host 未命中该式时才继续到 dormant 判断或 R-010。 |
+| active | R-010 | `(FP16 && !V && !L) \|\| (FP32 && !F && !L) \|\| (BF16 && !Q && !B && (!L \|\| OW<48))` | 各 dtype 最终 `else`，无下一条计算 Route；只有 `totalOutput<=UINT32_MAX-28672+1=4,294,938,624` 时 grid-stride 加法可证明不回绕。Host 仍接受到 `UINT32_MAX`，所以该 Route 的安全域不能覆盖整个 Host 合法域。 |
+| active | R-004 | `(FP16 && V && !K3) \|\| (BF16 && B && !K3 && !K5)` | B16 vector entry 的 Device fallback；该 entry 内终止。 |
+| active | R-008 | `(FP16 && L && !V && !K3) \|\| (FP32 && !F && L && !(K5 && strideH==2 && strideW==2)) \|\| (BF16 && !B && L && OW>=48)` | 各 dtype 的通用 plane4 终点；只有 Host 未命中该式时才继续到 dormant 判断或 R-010。 |
 
 空 `N` 或空 `C` 没有被 Meta 拒绝：此时 `totalOutput=0`、`P=0`。FP16 且 `V` 仍可能进入 vector entry，但 `planeBegin>=planeEnd` 立即返回；其余 dtype 会落到无工作量的 R-010。这个空域行为属于现有 active Route 的空任务边界，不另拆 Route。
 
@@ -294,9 +294,9 @@ dtype=BF16:
 | P4 | active | R-005 | FP32 #2 Device fallback | `launch_depthwise_conv_2d_vec_fp32` → `depthwise_conv_2d_vec_fp32` | vector scalar ABI | `DepthwiseConv2dVector::Process/BuildTapDesc/CopyTapIn`，FP32 direct MTE3 | 同上 |
 | P5 | active | R-009 | BF16 #1 | `launch_depthwise_conv_2d_plane4_bf16_k1` → 同名 entry | common scalar ABI | `DepthwiseConv2dPlane4Simt<bfloat16_t,1>` | 同上 |
 | P6 | active | R-007 | FP32 #3 Device #1 | `launch_depthwise_conv_2d_stride2_gather_fp32_k5` → 同名 entry | common scalar ABI | `DepthwiseConv2dStride2Gather<float,5>`、同 helper | 同上 |
-| P7 | active | R-010 | 三 dtype #5 | `launch_depthwise_conv_2d_{fp16|fp32|bf16}` → `depthwise_conv_2d_{fp16|fp32|bf16}` | common scalar ABI；Host 上界宽于 Device 安全域 | `DepthwiseConv2dNchwSimt<T>` | 同上 |
+| P7 | active | R-010 | 三 dtype #5 | `launch_depthwise_conv_2d_{fp16\|fp32\|bf16}` → `depthwise_conv_2d_{fp16\|fp32\|bf16}` | common scalar ABI；Host 上界宽于 Device 安全域 | `DepthwiseConv2dNchwSimt<T>` | 同上 |
 | P8 | active | R-004 | FP16 #4 Device fallback；BF16 #2 Device fallback | `launch_depthwise_conv_2d_vec_fp16/bf16` → `depthwise_conv_2d_vec_fp16/bf16` | vector scalar ABI | `DepthwiseConv2dVector::Process/BuildTapDesc/CopyTapIn` | 同上 |
-| P9 | active | R-008 | FP16 #2；FP32 #3 Device fallback；BF16 #3 | `launch_depthwise_conv_2d_plane4_{fp16|fp32|bf16}` → `depthwise_conv_2d_plane4_{fp16|fp32|bf16}` | common scalar ABI | `DepthwiseConv2dPlane4Simt<T,0>`、`DepthwiseConv2dPlane4AccumulateOne` | 同上 |
+| P9 | active | R-008 | FP16 #2；FP32 #3 Device fallback；BF16 #3 | `launch_depthwise_conv_2d_plane4_{fp16\|fp32\|bf16}` → `depthwise_conv_2d_plane4_{fp16\|fp32\|bf16}` | common scalar ABI | `DepthwiseConv2dPlane4Simt<T,0>`、`DepthwiseConv2dPlane4AccumulateOne` | 同上 |
 
 十行的 Host/Tiling producer 都是 `op_plugin/depthwise_conv_2d_plugin.cpp::depthwise_conv_2d_npu`；它既生成 positional scalar，也完成 Route 短路。该表把 launcher 与 entry 分开列出，避免把 C ABI wrapper 当成 Device router。
 
@@ -315,7 +315,7 @@ dtype=BF16:
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Host | `op_plugin/depthwise_conv_2d_plugin.cpp` | dtype branch | FP16 `V`；BF16 `useBf16VectorRoute` | vector launcher |
-| Device router | `op_kernel/depthwise_conv_2d_kernel.cpp` | `DepthwiseConv2dVector::Process` | `Kh==3&&Kw==3&&(!float||O<=8192)` | `ProcessPackedK3` |
+| Device router | `op_kernel/depthwise_conv_2d_kernel.cpp` | `DepthwiseConv2dVector::Process` | `Kh==3&&Kw==3&&(!float\|\|O<=8192)` | `ProcessPackedK3` |
 
 #### Device 数据流
 

@@ -135,7 +135,7 @@ AIV 固定 `ubCalcN=baseN`，从平台 UB 扣除 broadcast、bias 常驻区后�
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 GELU_TANH | `(TRANS=0/1/2/3,BASIC=1,PERTOKEN=1,OPTION=0,FUSED=3)` | A2/A3、WeightNz 校验通过、A8W8/A4W4、`fusedOpType==gelu_tanh`；四个 TRANS 值依 `(transA<<1)|transB` | 任一校验/tiling/launch 失败返回错误；不回退非 WeightNz |
+| 1 | R-001 GELU_TANH | `(TRANS=0/1/2/3,BASIC=1,PERTOKEN=1,OPTION=0,FUSED=3)` | A2/A3、WeightNz 校验通过、A8W8/A4W4、`fusedOpType==gelu_tanh`；四个 TRANS 值依 `(transA<<1)\|transB` | 任一校验/tiling/launch 失败返回错误；不回退非 WeightNz |
 | 2 | R-002 GELU_ERF | `(TRANS=0/1/2/3,BASIC=1,PERTOKEN=1,OPTION=0,FUSED=4)` | 同上且 `fusedOpType==gelu_erf` | 同上 |
 
 ```text
@@ -244,7 +244,7 @@ entry 拒绝空 workspace/user workspace，解析 `QuantBatchMatmulV3TilingData`
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | API | `op_host/op_api/aclnn_fused_quant_matmul.cpp` | `CheckFusedOpType` | 字符串等于 `gelu_tanh` | 继续；否则检查 erf 或失败 |
-| Tiling | `op_host/op_tiling/fused_quant_matmul_unary_tiling.cpp` | `AnalyzeAttrs/GetTilingKey` | map 到 enum 3；`TRANS=(transA<<1)|transB`，BASIC=1，PERTOKEN=1，OPTION=0 | R-001 key |
+| Tiling | `op_host/op_tiling/fused_quant_matmul_unary_tiling.cpp` | `AnalyzeAttrs/GetTilingKey` | map 到 enum 3；`TRANS=(transA<<1)\|transB`，BASIC=1，PERTOKEN=1，OPTION=0 | R-001 key |
 | Router | `op_kernel/fused_quant_mat_mul.cpp` | `fused_quant_mat_mul` | `FUSED_OPTYPE=3`，TRANS 四分支 | `EpilogueDequantGeluTanh` |
 
 #### Device 数据流
@@ -339,7 +339,7 @@ UB = 2*ubM*ubN*4 + needUbBuffer + 2*ubM*ubN*2
 | AIC→AIV ping | `BasicMMCompute` | `(2*core)*baseM*baseN`，有效 tail M*N | int32 ND tile | epilogue | `NotifyEvent<PIPE_FIX>(6)` / `WaitEvent(6)` | user WS/到 AIV 完成 | 同核配对；调用的第二实参是 `V2C_PING_FLAG`，虽常量名相反 |
 | AIC→AIV pong | 同上 | `(2*core+1)*baseM*baseN` | 同上 | 同上 | flag 7 | 同上 | 同上 |
 | AIV→AIC ping reuse | epilogue 完成 WS 读取 | ping slice | N/A | 下一轮 AIC | `NotifyEvent<PIPE_MTE2>(4)`；AIC 第三轮前 `WaitEvent(4)` | 同上 | 最初 ping 无需预等；调用第一实参是 `C2V_PING_FLAG` |
-| AIV→AIC pong reuse | 同上 | pong slice | N/A | 下一轮 AIC | flag 5（`4|1`） | 同上 | 最初 pong 无需预等；End 补等待 |
+| AIV→AIC pong reuse | 同上 | pong slice | N/A | 下一轮 AIC | flag 5（`4\|1`） | 同上 | 最初 pong 无需预等；End 补等待 |
 
 #### 同步、精度与尾块
 

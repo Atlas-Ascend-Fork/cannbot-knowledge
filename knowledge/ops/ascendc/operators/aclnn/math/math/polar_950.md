@@ -188,8 +188,8 @@ ViewCopy(temp,out)
 | 平台接线 | `ascend950` | OpDef、binary config 与 CMake 只发布 950 binary | R-001 | 非 950 无本 Kernel 接线 | `ops::Polar::Polar`、`polar_binary.json`、CMake |
 | dtype | `abs.dtype==angle.dtype==FLOAT`，`out=COMPLEX64` | entry 固定实例化 `PolarSimt<float>`，输出按两个 float 分量写 | R-001 | ACLNN/L0/Tiling 失败，无 fallback | `CheckDtypeValid`、`IsAiCoreSupport`、`PolarTiling::CheckDtype` |
 | rank | `D<=POLAR_MAX_DIM(8)` | POD 每类 stride 只有 8 项 | R-001 | API 或 Tiling 失败 | `CheckShape`、`CheckBroadcastAndMergeShape` |
-| 广播合法性 | 每维 `a==b || a==1 || b==1` | stride-0 广播仅能表达标准逐维广播 | R-001 | API/Tiling 失败 | `CheckBroadcastAndMergeShape` |
-| 非空 | API 的 `input->IsEmpty() || angle->IsEmpty()` | 避免 `N=0` 时 blockDim 0 launch | R-001 | 成功返回、workspace 0、无 Kernel | `aclnnPolarGetWorkspaceSize` |
+| 广播合法性 | 每维 `a==b \|\| a==1 \|\| b==1` | stride-0 广播仅能表达标准逐维广播 | R-001 | API/Tiling 失败 | `CheckBroadcastAndMergeShape` |
+| 非空 | API 的 `input->IsEmpty() \|\| angle->IsEmpty()` | 避免 `N=0` 时 blockDim 0 launch | R-001 | 成功返回、workspace 0、无 Kernel | `aclnnPolarGetWorkspaceSize` |
 | AIV core 数 | `GetCoreNumAiv()>0` | 分核公式除以 `coreNum` | R-001 | TilingPrepare 失败 | `TilingPrepare4PolarAscendc` |
 | SIMT 线程数 | 编译常量 `POLAR_THREAD_DIM=1024` | `LAUNCH_BOUND(1024)` 与 `asc_vf_call(dim3(1024))` 一致 | R-001 | 固定仓无动态线程 fallback | `PolarSimt::Process/SimtPolarCompute` |
 

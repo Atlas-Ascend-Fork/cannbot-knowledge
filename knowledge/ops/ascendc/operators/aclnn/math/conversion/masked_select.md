@@ -44,7 +44,7 @@ cann_versions: ["9.1.0"]
 | 项目 | 内容 |
 |---|---|
 | 实际入口 | `aclnnMaskedSelectGetWorkspaceSize` + `aclnnMaskedSelect`，公开 ACLNN 两段式接口；内部主算子为 `MaskedSelectV3`。 |
-| 计算语义 | 对广播后的 `self` 与布尔 `mask` 按展平顺序稳定筛选：`out = [self[i] | mask[i] == true]`。 |
+| 计算语义 | 对广播后的 `self` 与布尔 `mask` 按展平顺序稳定筛选：`out = [self[i] \| mask[i] == true]`。 |
 | 输入输出 | `self`/`mask` 为 ND、0～8 维且可广播；`mask` 接受 BOOL/UINT8，先转 BOOL；`out` 是容量等于广播后元素数的一维连续 Tensor，运行期有效长度等于 true 数。 |
 | 执行类型 | 主节点 `masked_select_v3` 为 `AIV_VECTOR` 单 Kernel；不等 shape 时有外部 `BroadcastTo` 预处理节点，按 dtype 可为 AICORE 或 AICPU，`Contiguous/Cast` 属框架节点。主节点无 Cube/AIC/MIX_CV。 |
 | Kernel 路线 | R-001 1-byte、R-002 2-byte、R-003 4-byte、R-004 8-byte；key 等于主计算 dtype 字节数。 |

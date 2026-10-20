@@ -114,7 +114,7 @@ Tiling/launcher 失败阻止该核心节点；第一段任一后处理构造失�
 | 1 | R-005 M=1 reshape | key 5 | `M==1 && N%8==0` | R-002 |
 | 2 | R-002 Double | key 2 | `mA<=64 && nA<=128 && K>1` | R-004 |
 | 3 | R-004 High | key 4 | `mA*mA+nA*nA+4*mA*nA > 512KiB/2` | R-003 |
-| 4 | R-003 Split | key 3 | `mA>128 || nA>128` | R-001 |
+| 4 | R-003 Split | key 3 | `mA>128 \|\| nA>128` | R-001 |
 | 5 | R-001 Base | key 1 | 上述均不成立 | 无 fallback；key 1 |
 
 ```text
@@ -347,7 +347,7 @@ workspace_total=((K+K%2)*mA*N + mA*mA)*2 + 16MiB
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `flat_quant_tiling.cpp` | `DetermineMmMode` | prior false，`mA>128 || nA>128` | key 3 |
+| Tiling | `flat_quant_tiling.cpp` | `DetermineMmMode` | prior false，`mA>128 \|\| nA>128` | key 3 |
 | Router | `flat_quant.cpp` | key 3 | `MM_SPLIT_MODE` | split body |
 
 #### Device 数据流

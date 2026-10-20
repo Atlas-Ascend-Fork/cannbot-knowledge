@@ -174,7 +174,7 @@ A  && !H(A)  -> R-002 / SIMT_NCHW / key 30001 / u32 / 1024 threads
 | 官方 family/key | 精确 selector（按官方优先级） | 官方 entry/body 与数据依赖 | Direct 状态 | 若要纳入 Direct 必须补齐 |
 |---|---|---|---|---|
 | all-copy / 40000 | 首项；`dtypeX==dtypeY && inH==outH && inW==outW`，格式不限 | `ResizeBilinearV2AllCopy<DTYPE_X>`；`TPipe + TQueBind<VECIN,VECOUT>`，消费 `realCoreNum/splitBlockFactor/splitBlockTailFactor/ubCFactor` 做 GM↔UB 双缓冲复制 | NCHW 同 shape 与 Direct 合法域重叠，但 Direct 让它进入 R-002/mode 0 | 打包 body，补 Host producer、entry/launcher 与 UB queue；证明直拷不会改变零权重 NaN/Inf、block/UB 尾块语义 |
-| point-copy / 40001 | all-copy 未命中；`dtypeX==dtypeY && format==NHWC && C*sizeof(X)>=128 && scaleH>=1 && scaleW>=1`；令 `qH=int64(scaleH+1e-6),qW=int64(scaleW+1e-6)`，还要求 `abs(scaleH-qH)<1e-6 && abs(scaleW-qW)<1e-6`，且 `alignCorners!=0 || halfPixelCenters!=1 || (qH,qW均为奇数)` | `ResizeBilinearV2PointCopy<DTYPE_X>`；`TPipe` 与 point-copy UB/分核参数，消费 `n/h/w/cFactor` 及 `ubN/H/W/CFactor` | Direct 固定 NCHW，生产不可达 | 扩展 schema/layout 到 NHWC；移植整数 scale 与奇偶 guard、完整 factor producer、body/entry/launcher、UB/尾块和精度边界 |
+| point-copy / 40001 | all-copy 未命中；`dtypeX==dtypeY && format==NHWC && C*sizeof(X)>=128 && scaleH>=1 && scaleW>=1`；令 `qH=int64(scaleH+1e-6),qW=int64(scaleW+1e-6)`，还要求 `abs(scaleH-qH)<1e-6 && abs(scaleW-qW)<1e-6`，且 `alignCorners!=0 \|\| halfPixelCenters!=1 \|\| (qH,qW均为奇数)` | `ResizeBilinearV2PointCopy<DTYPE_X>`；`TPipe` 与 point-copy UB/分核参数，消费 `n/h/w/cFactor` 及 `ubN/H/W/CFactor` | Direct 固定 NCHW，生产不可达 | 扩展 schema/layout 到 NHWC；移植整数 scale 与奇偶 guard、完整 factor producer、body/entry/launcher、UB/尾块和精度边界 |
 | NCHW-broadcast / 40002 | 前两项未命中；`dtypeX==dtypeY && format==NCHW && outH*outW*sizeof(Y)>=128 && inH==1 && inW==1` | `ResizeBilinearV2BroadcastNCHW<DTYPE_X>`；`xQue/yQue`、`DataCopyPad`、Vector `Duplicate`、MTE2_S/S_V event，消费 N/C/HW 与 UB factor | 与 Direct 的 `1x1` 输入子域重叠；Direct 仍选择 R-001 或 R-002 | 打包 body，恢复 N/C/HW 与 UB tiling producer、POD consumer、entry/launcher；审计重复样本参与 FP32 表达式的 NaN/Inf 边界 |
 | NHWC-broadcast / 40003 | 前三项未命中；`dtypeX==dtypeY && format==NHWC && C*sizeof(X)>=128 && inH==1 && inW==1` | `ResizeBilinearV2BroadcastNHWC<DTYPE_X>`；`TPipe`、NHWC GM↔UB broadcast queues 与 N/HW/C factor | Direct 固定 NCHW，生产不可达 | 扩展 NHWC storage 解释；恢复 factor/UB producer、body/entry/launcher、同步与 C/HW tail |
 | C-parallel / 10000 | 前四项未命中；`format==NHWC && C*sizeof(X)>=128 && scaleH>=2 && scaleW>=2`；此 predicate 不要求输入输出 dtype 相同 | key 先进入二级分派：`cFactor<lenC` 调 `ResizeBilinearV2Nc<DTYPE_X,DTYPE_Y>`，否则调 `ResizeBilinearV2CParallel<DTYPE_X,DTYPE_Y>`；两者消费 C-parallel 的 N/HW/C 与 UB factors | Direct 固定 NCHW 且同 dtype，生产不可达 | 扩展 NHWC/dtype 合同；移植 `DoTilingCParallel`、两套 body、`cFactor<lenC` 二级 router、entry/launcher、UB 账与分派闭包 |
@@ -374,7 +374,7 @@ GM_live = I*sizeof(T) input + O*sizeof(T) output
 | 阶段 | 文件 | 符号/模板实例 | 实现事实 |
 |---|---|---|---|
 | Host/Tiling producer | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey/DoTilingSIMT_HW` | 官方 HW/i32 阈值、key 与商余公式基线 |
-| Kernel entry/router | `op_kernel/resize_bilinear_v2_apt.cpp` | key 30004 branch | 官方模板为 `SimtHW<...,true|false,0,uint32_t>`；Direct 改为显式 entry |
+| Kernel entry/router | `op_kernel/resize_bilinear_v2_apt.cpp` | key 30004 branch | 官方模板为 `SimtHW<...,true\|false,0,uint32_t>`；Direct 改为显式 entry |
 | Device body/helper | `op_kernel/arch35/resize_bilinear_v2_simt_hw.h` | `Process/calleeInt32/SimtCompute` | 1024 threads、HW ownership、N/C 内循环与四点插值 |
 
 ### P1 · Route R-002：SIMT_NCHW/i32

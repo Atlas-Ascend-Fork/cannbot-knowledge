@@ -152,11 +152,7 @@ print(f'max diff: {torch.max(torch.abs((x + y) - add(x, y)))}')
 
 官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
 
-- [main
-
-#](https://gitcode.com/Ascend/triton-ascend/tree/main
-
-#)
+- [main#](https://gitcode.com/Ascend/triton-ascend/tree/main#)
 - [installation_guide.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/installation_guide.md)
 - [quick_start.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/quick_start.md)
 - [get_ascend_devices.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/tools/get_ascend_devices.py)

@@ -150,7 +150,7 @@ ReduceEmpty：当有效 `rstd` 需要写时，按每 32 KiB 数据约一个 AIV 
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 ReduceEmpty | `(REDUCE_EMPTY,NORMAL)`；priority 50 | `N==0 || M==0` | 条件 false→priority 100；若 `outputRstd=false || M==0` 仍启动 1 核但不写 |
+| 1 | R-001 ReduceEmpty | `(REDUCE_EMPTY,NORMAL)`；priority 50 | `N==0 \|\| M==0` | 条件 false→priority 100；若 `outputRstd=false \|\| M==0` 仍启动 1 核但不写 |
 | 2 | R-002 FullLoad-Optimize | `(FULL_LOAD,OPTIMIZE)`；priority 100 | `M,N!=0 && N<=16384`，FullLoad UB 公式得 `mUbFactorMax>=1`，且 `x=FP16 && y∈FP4 && scaleAlg=0 && roundMode∈{rint,round}` | `N>16384` 或 UB 不足→priority 200；只是不满足 optimize 条件→R-003 |
 | 3 | R-003 FullLoad-Normal | `(FULL_LOAD,NORMAL)`；priority 100 | 与 R-002 相同 FullLoad 能力，但 optimize 条件为 false | FullLoad 不可用→priority 200 |
 | 4 | R-004 Recompute-Optimize | `(RECOMPUTE,OPTIMIZE)`；priority 200 | 前两模板未成功、`N>64`、`GetUbSize(baseN)<=UB`，且 optimize 条件为 true | optimize false→R-005；基础 UB 不足→失败 |
@@ -174,7 +174,7 @@ otherwise -> GRAPH_FAILED
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-001 | `(REDUCE_EMPTY,NORMAL)` | 950，`N==0 || M==0` | 单 AIV K-001 | `RmsNormDynamicMxQuantReduceEmpty::{Init,Process}` | 一个 VECOUT queue；一次 Duplicate 后循环 DMA | 无 y/scale；按需写 M 个 NaN；否则 no-op |
+| R-001 | `(REDUCE_EMPTY,NORMAL)` | 950，`N==0 \|\| M==0` | 单 AIV K-001 | `RmsNormDynamicMxQuantReduceEmpty::{Init,Process}` | 一个 VECOUT queue；一次 Duplicate 后循环 DMA | 无 y/scale；按需写 M 个 NaN；否则 no-op |
 | R-002 | `(FULL_LOAD,OPTIMIZE)` | FullLoad capable + 精确 optimize 谓词 | 单 AIV K-001 | `RmsNormDynamicMxQuantFullLoad<TX,TG,TY,true>` | gamma/beta 常驻；多行 x 全载；FP4 量化走 FP32 显式 truncate 优化体 | 行尾按 `mUbFactor`；N 补到 64；UB 不足 fallthrough |
 | R-003 | `(FULL_LOAD,NORMAL)` | FullLoad capable + 非 optimize | 单 AIV K-001 | `RmsNormDynamicMxQuantFullLoad<TX,TG,TY,false>` | 与 R-002 相同 UB 图；量化 helper 按 FP4/FP8、OCP/cuBLAS 分支 | 同 R-002 |
 | R-004 | `(RECOMPUTE,OPTIMIZE)` | Recompute capable + 精确 optimize 谓词 | 单 AIV K-001 | `RmsNormDynamicMxQuantRecompute<TX,TG,TY,true>` | 第一遍分块平方归约并 cache，第二遍重读 x 做 norm+FP4；降低整行常驻 UB | N 尾块补到 64；基础 UB 不足失败 |
@@ -184,7 +184,7 @@ otherwise -> GRAPH_FAILED
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 空域优先级 | `N==0 || M==0` | 避免 `1/N` 和空 DMA；必要时只产 NaN rstd | R-001 | R-002/R-003 | `ReduceEmptyTiling::IsCapable` |
+| 空域优先级 | `N==0 \|\| M==0` | 避免 `1/N` 和空 DMA；必要时只产 NaN rstd | R-001 | R-002/R-003 | `ReduceEmptyTiling::IsCapable` |
 | FullLoad N 阈值 | `N<=16384` | 更大 N 的 binary-add rounds 增加 | R-002/R-003 | Recompute | `FullLoadTiling::IsCapable` |
 | FullLoad UB | `mUbFactorMax>=1` | 至少容纳一行 x/norm、归约、scale/y queue 与 gamma/beta | R-002/R-003 | 返回 `GRAPH_PARAM_INVALID` 尝试 Recompute | `FullLoadTiling::DoOpTiling` |
 | Recompute 最小 N | `N>64` | 至少有两个 N 分块才使用跨 UB 二分 | R-004/R-005 | 无后继模板，失败 | `RecomputeTiling::IsCapable` |
@@ -278,8 +278,8 @@ K-001 的参数顺序固定为 `x,gamma,beta,y,mxscale,rstd,workspace,tiling`。
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `op_host/arch35/rms_norm_dynamic_mx_quant_reduce_empty_tiling.cpp` | `IsCapable` | `numN_==0 || numM_==0` | key `(REDUCE_EMPTY,NORMAL)` |
-| Tiling | 同上 | `DoOpTiling` | `hasOutputRstd_==0 || numM_==0` | 1 核，POD loop 全 0 |
+| Tiling | `op_host/arch35/rms_norm_dynamic_mx_quant_reduce_empty_tiling.cpp` | `IsCapable` | `numN_==0 \|\| numM_==0` | key `(REDUCE_EMPTY,NORMAL)` |
+| Tiling | 同上 | `DoOpTiling` | `hasOutputRstd_==0 \|\| numM_==0` | 1 核，POD loop 全 0 |
 | Router | `op_kernel/rms_norm_dynamic_mx_quant_apt.cpp` | entry ReduceEmpty branch | `COMPUTE_MODE==REDUCE_EMPTY` | `Init(rstd)->Process()` |
 
 #### Device 数据流

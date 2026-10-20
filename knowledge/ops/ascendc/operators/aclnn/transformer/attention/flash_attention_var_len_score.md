@@ -118,8 +118,8 @@ priority90 在填完 dropmask POD 后返回 `GRAPH_PARAM_INVALID` 以继续 prio
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-003 empty | key `1` | `(querySize==0 || keySize==0) && (attentionOutSize!=0 || softmaxSumSize!=0)` | 全输出空已API快返；非空继续 |
-| 2 | R-002 SameAB | priority94；`UB0=3,UB1=9,Block=9,Layout=4` | `((B>=4&&accumS1>=8192&&accumS2>=8192&&S1>=512&&S2>=512)||(S1>5120&&S2>5120))`，且非FP32、非`Nq=Nkv=1`、非invalid-line-high-precision | R-001 |
+| 1 | R-003 empty | key `1` | `(querySize==0 \|\| keySize==0) && (attentionOutSize!=0 \|\| softmaxSumSize!=0)` | 全输出空已API快返；非空继续 |
+| 2 | R-002 SameAB | priority94；`UB0=3,UB1=9,Block=9,Layout=4` | `((B>=4&&accumS1>=8192&&accumS2>=8192&&S1>=512&&S2>=512)\|\|(S1>5120&&S2>5120))`，且非FP32、非`Nq=Nkv=1`、非invalid-line-high-precision | R-001 |
 | 3 | R-001 general | priority94；`UB0=3,UB1=4,Block=9,Layout=4` | 非空TND且未命中SameAB；FP16/BF16/FP32实例在白名单 | 非TND或无合法实例失败 |
 
 ```text

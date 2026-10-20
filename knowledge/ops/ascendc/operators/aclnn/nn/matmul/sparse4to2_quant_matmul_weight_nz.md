@@ -146,7 +146,7 @@ else REGISTER_TILING_TEMPLATE(priority=0)
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| SoC 白名单 | `soc==ASCEND910B || soc==ASCEND910_93` | 公开产品与 binary 接线只覆盖 A2/A3 | R-001 | API 报不支持 | `aclnn...GetWorkspaceSize` |
+| SoC 白名单 | `soc==ASCEND910B \|\| soc==ASCEND910_93` | 公开产品与 binary 接线只覆盖 A2/A3 | R-001 | API 报不支持 | `aclnn...GetWorkspaceSize` |
 | L0C tile | `baseM*baseN<=32768`；DB 另需 `2*baseM*baseN*4<=l0cSize` | int32 L0C 容量 | R-001 | 剪枝候选或关闭 DB | `SetBase`、`CheckDbL0c` |
 | L1 depth | `depthASize+depthBSize+indexSize<l1Size` | A、压缩 B 与 index 的 L1 stage | R-001 | 交替把 depth 减半；再失败则 tiling 失败 | `CalcL1Tiling` |
 | K step | `stepKa,stepKb>0`；K≤512 时限制 `kL1<=256` | 避免小 K 全载令 MTE2 与 MTE1/MMAD 串行 | R-001 | 修正 step；零值失败 | `GetStepK` |

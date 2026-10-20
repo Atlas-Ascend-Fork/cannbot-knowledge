@@ -134,10 +134,10 @@ P0 为最高重要性，后续等级依次降低。该顺序只组织实现知�
 |---:|---|---|
 | H0 | 初始 key：`R==1` 得 COPY；否则末轴或 `nextA==1` 得 AR；其余得 ARA | 只生成初值，除 COPY 外均可被后续覆盖 |
 | H1 | `SetShapeInfoHighPerf` 首先再检查 `R==1` | true 立即返回，COPY 跳过 H2～H4；false 进入 H2 |
-| H2a | `A==1` 时检查 `nextA>=core*256 || (nextA>1 && R<256)` | true 覆盖为 RA；false 保留 H0 初值。该 `if` 命中布局分支后不再检查 H2b/H2c |
+| H2a | `A==1` 时检查 `nextA>=core*256 \|\| (nextA>1 && R<256)` | true 覆盖为 RA；false 保留 H0 初值。该 `if` 命中布局分支后不再检查 H2b/H2c |
 | H2b | 否则 `nextA==1`时检查 AR_GATHER 的 R/A/32B 三项 guard | true 覆盖为 AR_GATHER；false 保留 AR。该分支后不检查 H2c |
-| H2c | `A>1 && N>1 && A*N*e>=C*256 && (R*e<256 || (R*N*e>=U/2 && R<maxSize))` | true 覆盖为 ARA_GATHER；false 保留 ARA |
-| H3 | `R*e>=C0*256 && R<INT32_MAX && ((N==1 && A<C0) || (N>1 && A*N<C0*2))` | 两种输出域任一成立即覆盖 H2 结果为 GROUP；false 保留当前 key |
+| H2c | `A>1 && N>1 && A*N*e>=C*256 && (R*e<256 \|\| (R*N*e>=U/2 && R<maxSize))` | true 覆盖为 ARA_GATHER；false 保留 ARA |
+| H3 | `R*e>=C0*256 && R<INT32_MAX && ((N==1 && A<C0) \|\| (N>1 && A*N<C0*2))` | 两种输出域任一成立即覆盖 H2 结果为 GROUP；false 保留当前 key |
 | H4 | `key==ARA && A*N*e>=C*128 && N*e>=((A>C && !isInt64) ? 64 : 128)` | true 覆盖为 ARA_CUT；门槛按非 int64 且 `A>C` 取 64B，否则取 128B；false 保留 ARA |
 | H5 | 返回 `GetShapeInfo` 后，对末轴/`nextA==1` 且当前为 GROUP 的 key 检查 `A>0.85*originCores` | true 覆盖回 AR；false 保留 GROUP |
 | H6 | `CalcSplitInfo` 按最终 key 分发 COPY/AR/ARA/ARA_CUT/RA/AR_GATHER/ARA_GATHER/GROUP split | 子路线由 full/cut、mode、flat、AR/RA 资源谓词决定；未知 key 或切分失败立即返回失败，不启动 Kernel |
@@ -487,7 +487,7 @@ UB_total = 2*cutA*cutR*alignN*sizeof(T)
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Selector | `arg_common_base_tiling_arch35.cpp` | `CalcSplitInfoForGroupReduce` | `isRaSplit=(nextA*bytes>=128)||(blkFactor*bytes<256)`；AR UB不足也fallback RA | R-015/016 |
+| Selector | `arg_common_base_tiling_arch35.cpp` | `CalcSplitInfoForGroupReduce` | `isRaSplit=(nextA*bytes>=128)\|\|(blkFactor*bytes<256)`；AR UB不足也fallback RA | R-015/016 |
 
 #### Device 数据流
 

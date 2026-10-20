@@ -336,7 +336,7 @@ for linear = core*1024+thread; linear < O+stateCount; linear += P*1024:
 
 | 层级 | 关系 |
 |---|---|
-| 触发谓词 | H1 strict；H2/H3 false；无 state，K4，`dilation<=3`，`32<=L<1024`，`D>=768`，`alignedD<=1024`，且 `B*HC>=16 || D%64!=0 || HC>=8` |
+| 触发谓词 | H1 strict；H2/H3 false；无 state，K4，`dilation<=3`，`32<=L<1024`，`D>=768`，`alignedD<=1024`，且 `B*HC>=16 \|\| D%64!=0 \|\| HC>=8` |
 | selector/key/template | Host `useEightRowK4` → `engram_strict_fast_k4_batch8_kernel_bfloat16` → `EngramStrictFastKernel<false,false,true>` |
 | Host/POD | strict config 把 `normTile>=8`、`convTile=8`，并生成 task counts、blockDim |
 | Device body | `NormalizeAllRows` → barrier → `WriteStateOutput` → `ConvolveAllRows/ConvolveTile` → 两次 `Conv4Rows4TapsUniqueVF` |
@@ -419,7 +419,7 @@ packed channel-major weight gather coefficient。
 | `CanPackConvWeights: K<=8` | 整段 `[D,K]` 入 UB 后 Gather | 每 tap 以 32B stride `DataCopyPad+Gather` |
 | `CanUsePackedState: state && K==4 && S<=16 && alignedD<=1024` | 整个 `[D,S]` state slab 缓存 | 每个 state row strided load |
 | `CanPackStateOutput: S!=0 && alignedD*S*2 <= 48KiB`（`alignedD<=1024`），否则 `S!=0 && alignedD*S*2<=32KiB` | whole-slab writer | `StatePackChannels` 分 channel tile；`S=0` 时 state writer 在 selector 前返回 |
-| `CanBatchStateRows: L>1 && (S<=10 || kFusedK8) && CanPackStateOutput` | 批量搬尾 normalized rows并 Scatter | row-wise/tiled writer |
+| `CanBatchStateRows: L>1 && (S<=10 \|\| kFusedK8) && CanPackStateOutput` | 批量搬尾 normalized rows并 Scatter | row-wise/tiled writer |
 | `D%64==0` | 多 row 2-D DMA | 逐 row pad/copy |
 
 ### 可落地伪码

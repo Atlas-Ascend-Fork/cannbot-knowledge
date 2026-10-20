@@ -140,8 +140,8 @@ K-C 的 L1 计算枚举 `stepK<=min(ceil(K/baseK),8)`，要求双缓冲 A/B 总�
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 K-C FP8 MIX_CV | `(permX1=1,permX2=0,batchSplit=0,precision=FP8)`；BASE 999 | scale 均 FP32；x1/x2 为支持的 E5M2/E4M3FN 组合；K=512、N=128；permX2 `[0,1,2]`；且 `aivNum==2*aicNum` | 条件失败不是下一模板，而是参数/能力失败。 |
-| 2 | R-002 MXFP8 AIC-only | `(1,0|1,0,MXFP8)`；BASE 999 | x1/x2 E4M3FN；scale 均 E8M0；K%64=0；group M/N∈{0,1}, K=32；permX2 两种 | 参数失败。 |
-| 3 | R-003 HIFP8/T-C AIC-only | `(1,0|1,0,HIFP8)`；BASE 999 | x1/x2 HIFLOAT8；x2Scale UINT64，x1Scale 空或 UINT64；permX2 两种；输出三种；因共用 `IsCapable`，仍要求 `aivNum==2*aicNum` | 参数/能力失败。 |
+| 2 | R-002 MXFP8 AIC-only | `(1,0\|1,0,MXFP8)`；BASE 999 | x1/x2 E4M3FN；scale 均 E8M0；K%64=0；group M/N∈{0,1}, K=32；permX2 两种 | 参数失败。 |
+| 3 | R-003 HIFP8/T-C AIC-only | `(1,0\|1,0,HIFP8)`；BASE 999 | x1/x2 HIFLOAT8；x2Scale UINT64，x1Scale 空或 UINT64；permX2 两种；输出三种；因共用 `IsCapable`，仍要求 `aivNum==2*aicNum` | 参数/能力失败。 |
 
 ```text
 if platform != DAV_3510: fail

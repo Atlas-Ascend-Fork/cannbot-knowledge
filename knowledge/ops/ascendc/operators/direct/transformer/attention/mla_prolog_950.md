@@ -228,7 +228,7 @@ R-002 只有同时满足以下条件才可能重新可达：
 | `TA=BF16` / `TA=FP32` | 单项乘积 / 三项 BF16-representable 分解 | 编译期 primitive 特化，节点由 Host 数据流固定。 |
 | `TC/TOut=FP32` / `BF16` | FP32 workspace 写出 / correction fold 或 RINT 输出 | 编译期输出特化，不由 shape 临时选择。 |
 | RoPE phase 0 / 1 | `x*cos-x2*sin` / `x*cos+x1*sin` | 同一 Kernel 的 split-half 两阶段。 |
-| `n_begin>=n_end || m==0 || k==0` | `GemmCore` 防御性 no-op | 合法 Host tile 的维度均为正且 block 数不超过 work items，不构成合法域 fallback。 |
+| `n_begin>=n_end \|\| m==0 \|\| k==0` | `GemmCore` 防御性 no-op | 合法 Host tile 的维度均为正且 block 数不超过 work items，不构成合法域 fallback。 |
 
 这张表覆盖 production selector 之后的条件路径：没有遗漏一个会对合法 tensor 改用 CPU、Cube、量化、不同 workspace 或另一套精度算法的 conditional fallback。
 

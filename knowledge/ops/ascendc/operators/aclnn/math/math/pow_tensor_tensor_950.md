@@ -197,8 +197,8 @@ blockNum = ceil(ubOuter/blockFactor); blockTail = ubOuter % blockFactor（0 改�
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 singleton float | 1001/2001/3001；`PowTensorScalarFloat<half|bfloat16_t|float, same>` | AiCore 且 `prod(exponent.shape)==1`，P 为 FLOAT16/BFLOAT16/FLOAT；priority 0 | singleton integer 或 priority 1 |
-| 2 | R-002 singleton integer | 4001/5001/6001/7001；`PowTensorScalarInteger<uint8_t|int8_t|int16_t|int32_t, same>` | AiCore 且 exponent 单元素，P 为 UINT8/INT8/INT16/INT32；priority 0 | priority 1 |
+| 1 | R-001 singleton float | 1001/2001/3001；`PowTensorScalarFloat<half\|bfloat16_t\|float, same>` | AiCore 且 `prod(exponent.shape)==1`，P 为 FLOAT16/BFLOAT16/FLOAT；priority 0 | singleton integer 或 priority 1 |
+| 2 | R-002 singleton integer | 4001/5001/6001/7001；`PowTensorScalarInteger<uint8_t\|int8_t\|int16_t\|int32_t, same>` | AiCore 且 exponent 单元素，P 为 UINT8/INT8/INT16/INT32；priority 0 | priority 1 |
 | 3 | R-003 NDDMA 无外循环 | `opKey*10^14+1000100` | AiCore，exponent 元素数不为 1，P 属七种，且 `shapeLen-ubSplitAxis<=5` | R-004 或 Tiling 失败 |
 | 4 | R-004 NDDMA 有外循环 | `opKey*10^14+1001100` | 同 R-003，但 `shapeLen-ubSplitAxis>5`（最大 8） | Tiling 失败 |
 | 5 | R-005 AICPU 简单索引串行 | AICPU `NoBcastCompute` | `P` 不在 950 AiCore 列表；两 shape 相同或任一输入仅 1 元素；`out.numel<30720` | R-006 |

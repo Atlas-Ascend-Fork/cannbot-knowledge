@@ -329,7 +329,7 @@ workspace_total_for_sigmoid_kernel = 0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | API | `experimental/activation/sigmoid_v2/op_host/op_api/aclnn_sigmoid.cpp` | `CheckDtypeValid` | dtype 为 FP16/BF16 且输入输出相同 | 允许进入 launcher |
-| Tiling | `experimental/activation/sigmoid_v2/op_host/sigmoid_tiling.cpp` | `GetShapeAttrsInfo` | `dataType==DT_FLOAT16 || DT_BF16` | selector 写对应 16 位 dtype |
+| Tiling | `experimental/activation/sigmoid_v2/op_host/sigmoid_tiling.cpp` | `GetShapeAttrsInfo` | `dataType==DT_FLOAT16 \|\| DT_BF16` | selector 写对应 16 位 dtype |
 | Selector | `experimental/activation/sigmoid_v2/op_kernel/sigmoid_tiling_key.h` | `ASCENDC_TPL_SEL` | `D_T_X=C_DT_FLOAT16/C_DT_BF16` | 实例化对应 `sigmoid<T>` |
 | Router | `experimental/activation/sigmoid_v2/op_kernel/sigmoid.cpp` | `sigmoid<D_T_X>` | `sizeof(D_T_X)!=sizeof(float)` | `KernelSigmoidUpcast<T>` |
 

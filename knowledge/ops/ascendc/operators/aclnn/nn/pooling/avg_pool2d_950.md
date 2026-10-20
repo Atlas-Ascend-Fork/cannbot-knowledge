@@ -161,10 +161,10 @@ priority 0 small-NCHW IsCapable?
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 小窗口并行度 | `batches*Ho*Wo >= coreNum` | priority 0 至少需要足够 tile 供核分配 | R-001～003 | R-004 | `AvgPoolCommonNCHWSmallKernelTiling::IsCapable` |
-| overlap 专门区 | `3600<=kH*kW<=4900 && 58<=sH*sW<=64 && batches>=64 && (kH/sH>=30 || kW/sW>=30)` | 主动让出给后续实现 | R-001～003 | R-004/SIMT | 同上 |
+| overlap 专门区 | `3600<=kH*kW<=4900 && 58<=sH*sW<=64 && batches>=64 && (kH/sH>=30 \|\| kW/sW>=30)` | 主动让出给后续实现 | R-001～003 | R-004/SIMT | 同上 |
 | sparse stride | `Ho>1 && sH>=2*kH`，或 `Wo>1 && sW>=2*kW && sW>128` | 小窗口连续装载不适合极离散访问 | R-001～003 | R-004/SIMT | 同上 |
 | 小窗口 UB | `IsBufferCapable()`，包含 double buffer、padding tmp、index/divisor | 保证最小向量并行 tile 可放入 UB | R-001～003 | R-004 | `CalcBufferSize`、`IsBufferCapable` |
-| 大窗口选择 | 若 `(sW<kW/8 || sW<32) && kH*kW<5000 && outputs>8400` 则拒绝；否则 outputs<`2*coreNum` 直接接受，或需 `kH*kW*dtypeSize>=256` | 平衡逐输出 reduction 与 SIMT | R-004 | R-005/R-006 | `AvgPoolCommonBigKernelTiling::IsCapable` |
+| 大窗口选择 | 若 `(sW<kW/8 \|\| sW<32) && kH*kW<5000 && outputs>8400` 则拒绝；否则 outputs<`2*coreNum` 直接接受，或需 `kH*kW*dtypeSize>=256` | 平衡逐输出 reduction 与 SIMT | R-004 | R-005/R-006 | `AvgPoolCommonBigKernelTiling::IsCapable` |
 | 索引宽度 | `xSize,ySize<=INT32_MAX` | SIMT magic division/index 不溢出 | R-005/R-006 | int64 Route | `PoolSimtTiling::GetTilingKey` |
 
 ### POD/ABI

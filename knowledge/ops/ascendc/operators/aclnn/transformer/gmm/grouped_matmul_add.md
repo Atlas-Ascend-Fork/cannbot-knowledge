@@ -191,7 +191,7 @@ DAV3510 -> 转 A5 advanced route
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| ACLNN | gmm/grouped_matmul_add/op_api/aclnn_grouped_matmul_add.cpp | `CheckParams/CheckZeroShape` | 非空且 dtype/format/rank/总输出元素数合法；`groupListType==0||1` | 空输入成功短路；非空进入 L0；失败返回 |
+| ACLNN | gmm/grouped_matmul_add/op_api/aclnn_grouped_matmul_add.cpp | `CheckParams/CheckZeroShape` | 非空且 dtype/format/rank/总输出元素数合法；`groupListType==0\|\|1` | 空输入成功短路；非空进入 L0；失败返回 |
 | Tiling | gmm/grouped_matmul_add/op_host/op_tiling/grouped_matmul_add_tiling.cpp | `Tiling4GroupedMatmulAdd/CalMmTiling` | `IsAdvancedNpuArch==false`；x dtype FP16/BF16 | key 0/1、blockDim、workspace 与 POD |
 | Router | gmm/grouped_matmul_add/op_kernel/grouped_matmul_add.cpp | `grouped_matmul_add` | `TILING_KEY_IS(0)` 或 `TILING_KEY_IS(1)` | half 或 bfloat16_t 的同一 body |
 

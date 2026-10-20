@@ -167,7 +167,7 @@ ACLNN phase 2
 | 3 | R-002 TwoPass API | 300/310/311/320/322；priority 200 | RegBase；二分搜索至少找到 `aFactor=1` 使 `bufferUse+primitiveTmp<=UB` | SingleRead reject |
 | 4 | — 950 硬拒绝 | SingleRead；priority 1000 | dtype/shape guard之后，`isRegBase` 明确返回 false；无论前置 guard 结果都不可在 950 成功 | MergeN reject |
 | 5 | — 950 硬拒绝 | MergeN；priority 1220 | `isRegBase` 时第一条判断返回 false | Common reject |
-| 6 | — 950 硬拒绝 | Common；priority 2000 | `isRegBase || isAscend310P || isV3`，950 命中首项 | R-003 |
+| 6 | — 950 硬拒绝 | Common；priority 2000 | `isRegBase \|\| isAscend310P \|\| isV3`，950 命中首项 | R-003 |
 | 7 | R-003 Welford | 400/410/411/420/422；priority 4000 | RegBase；此前有效模板不命中，四个非 RegBase 模板均硬拒绝。`IsCapable` 本身恒为 `isRegBase` | 无安全资源 fallback |
 
 数值越小优先级越高，注册框架按该顺序尝试：

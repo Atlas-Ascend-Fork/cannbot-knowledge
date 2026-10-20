@@ -621,7 +621,7 @@ L2 在 L1 基础上（`_def.cpp`/`_apt.cpp`/`arch35/`/`config/`），**核心计
 | `__simt_vf__` 未声明 | 缺少 SIMT 头文件或编译选项 | 确认 `op_host/CMakeLists.txt` 中 ascend950 分支有 `-cce-aicore-dcci-before-kernel-end=false` |
 | `RegTensor` 未声明 | 缺少 MicroAPI 头文件或命名空间 | 检查 `using AscendC::MicroAPI::RegTensor` |
 | `CastTrait` 模板错误 | CastTrait 参数不匹配 | 检查四要素：RegLayout/SatMode/MaskMergeMode/RoundMode |
-| `ToFloat<>` static_assert 失败 | A5 上 `ToFloat` 仅支持 BF16/FP8/HiFloat8 等新类型， 见下方「ToFloat<> 修复详解」 |
+| `ToFloat<>` static_assert 失败 | A5 上 `ToFloat` 仅支持 BF16/FP8/HiFloat8 等新类型 | 见下方「ToFloat<> 修复详解」 |
 | UB 越界运行时错误 | Tiling 未预留 SIMT DCache 40KB | 升级到 L4 |
 
 ### ToFloat<> 修复详解

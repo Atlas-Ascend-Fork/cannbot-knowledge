@@ -173,7 +173,7 @@ else:
 | 整 slice 分核 | `blockTilingSize=ceil_div(I,B)*S` | `m=globalIdx/S` 要保持每核起点为 slice 边界 | 全 Route | 无其他 Route |
 | 空 indices | `I==0 -> B=1,P=0,Pt=0` | 保持合法 launch，VF 循环零次 | 全 Route | no-op |
 | 空 slice | `S==0` | 避免 Device 的 `globalIdx/S` 除零 | 全 Route | `Init/Process` 直接返回 |
-| index 边界 | `idxVal<0 || idxVal>=V0` | 防止 var GM 越界 | 全 Route | 当前元素 `continue` |
+| index 边界 | `idxVal<0 \|\| idxVal>=V0` | 防止 var GM 越界 | 全 Route | 当前元素 `continue` |
 | CAS 位宽 | `sizeof(T)==4` | primitive 对 FP32/INT32 有直接 overload，subword 无 overload | R-001/R-002 | R-003～R-005 enclosing-word helper |
 | GM 对齐 | subword tensor base 至少 4B 对齐；源码注释给出 GM tensor 至少 32B 对齐 | 以 `uint32_t*` 访问 enclosing word | R-003～R-005 | 固定源码无 fallback |
 | 线程数 | `THREAD_NUM=512` 与 `LAUNCH_BOUND(512)` | VF grid-stride 的 `blockDim.x` 固定 | 全 Route | 无动态线程 fallback |

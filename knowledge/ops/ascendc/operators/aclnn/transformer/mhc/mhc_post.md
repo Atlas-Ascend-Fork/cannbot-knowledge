@@ -141,7 +141,7 @@ ACLNN 校验成功且非空
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| D 切片资源上界 | 循环条件 `Q*dOuter<=coreNum/2 || dInner>=UB/24`；只有 `dInner>256` 才继续二分 | R-001 的三条 depth=2 TQue 与三个 FP32 TBuf合计 `24*dInner` B；同时尝试增加可并行 item | 两条 Route 共用 | `dInner<=256` 时停止二分，随后 16 元素对齐并重算 tail | `mhc_post_tiling.cpp:MhcPostTilingBase::ComputeTiling` |
+| D 切片资源上界 | 循环条件 `Q*dOuter<=coreNum/2 \|\| dInner>=UB/24`；只有 `dInner>256` 才继续二分 | R-001 的三条 depth=2 TQue 与三个 FP32 TBuf合计 `24*dInner` B；同时尝试增加可并行 item | 两条 Route 共用 | `dInner<=256` 时停止二分，随后 16 元素对齐并重算 tail | `mhc_post_tiling.cpp:MhcPostTilingBase::ComputeTiling` |
 | 常驻 X UB 上界 | `8*(n+2)*dInner<=UB` | R-002 的 X queue 与 X FP32 TBuf按 n 倍扩容，总 UB 为 `8*(n+2)*dInner` B | R-002 | 条件为假使用 R-001 | `mhc_post_tiling.cpp:ComputeTiling`；`mhc_post.h:Init` |
 | arch22 规格 | `socVer!=4` 时 `n==4 && 0<D<100000 && D%128==0` | 地址/搬运路线只对该公开规格发布，D 的 128 对齐也保证完整 tile 基础对齐 | R-001/R-002 | `GRAPH_FAILED`，无 fallback | `mhc_post_tiling.cpp:CheckSpecConstraints` |
 | 多 block 搬运窄化 | R-002 将 `n` 强转 `uint16_t`、`dNum*sizeof(T)` 与 src stride 强转 `uint32_t` | `DataCopyExtParams` 字段位宽 | R-002 | 固定 Host 未给额外 guard；属于不可见的超界边界 | `mhc_post.h:CopyInX` |

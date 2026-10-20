@@ -127,7 +127,7 @@ else -> R-007
 |---|---|---|---|---|---|
 | UB 最小 tile | `floor(usableUb/baseBytes)>=A` | 至少一个 32B 对齐 tile | 全部 | `GRAPH_FAILED` | `CalcTiling` |
 | 核上限 | `coreLimit=min(GetCoreNumAiv(),40)` | 实现显式限制 | 全部 | 截断 | `GetPlatformInfo` |
-| reuse 启发式 | `L==1 || (L<=64&&C>=32) || (L<=1024&&32<=C<=1024)` | 限制权重展开范围 | R-002–004 | R-005 | `preferWeightReuseByRow` |
+| reuse 启发式 | `L==1 \|\| (L<=64&&C>=32) \|\| (L<=1024&&32<=C<=1024)` | 限制权重展开范围 | R-002–004 | R-005 | `preferWeightReuseByRow` |
 | split-C 并行度 | `finalCore>=min(coreLimit,10)`（L>1） | 避免少 task 的 split-C | R-004 | R-005 | `CalcTiling` |
 | 32B tail | `computeLen=AlignUp(realLen,32/S)` | Vector/搬运对齐，padding 清零 | 全部 | 真实长度写回 | `CopyGmToLocalPad` |
 | BF16 升精度 | `T=bfloat16_t` | FP32 中间与 RINT 降精度 | 全部 | 编译期 FP16/FP32 分支 | `Compute/ComputeNc` |

@@ -103,7 +103,7 @@ PerTensor 路线在 AIC 上把两个 FP32 scale 相乘，将位模式与 `0xFFFF
 | `epWorldSize` | 标量 | INT64 | `{2,4,8,16,32,64,128,256}`；`e*W<=256` |
 | `sendCounts/recvCounts` | 长度 `e*W` | INT64 list | 元素非负且分别不超过 BSK/A；sum 分别等于 BSK/A |
 | 两个 transpose attr | 标量 | BOOL | 默认 false；成为 B 的 compile-time 模板位 |
-| `groupSize` | `K|(N<<16)|(M<<32)` | INT64 | TT 为 0；MX 只允许 `M∈{0,1},N∈{0,1},K∈{0,32}` |
+| `groupSize` | `K\|(N<<16)\|(M<<32)` | INT64 | TT 为 0；MX 只允许 `M∈{0,1},N∈{0,1},K∈{0,32}` |
 | `permuteOutFlag` | 标量 | BOOL | 与 `permuteOutOptional!=nullptr` 等价 |
 | `gmmY/mmY/permuteOut` | `[A,N1]` / `[BS,N2]` / `[A,H1]` | FP16/BF16；permute 与 X 同型 | 后两者按 optional 条件存在 |
 

@@ -136,10 +136,10 @@ FP32：`usedUBSize=ubSize/2`。FP16/BF16：`usedUBSize=ubSize/2/3`。若 `inputH
 | 2 | R-002 depth-flat FP32 big | 212 / 同模板 | `front==0 && back==0 && dtype=FP32` 且 small 谓词为假 | 输入 guard 失败或 Kernel |
 | 3 | R-003 depth-flat 16-bit small | 221/231 / `half` 或 `bfloat16_t`, FP32, true | `front==0 && back==0 && dtype∈{FP16,BF16} && inputH*inputWAlign < ubSize/12` | R-004 |
 | 4 | R-004 depth-flat 16-bit big | 222/232 / 同 dtype 模板 | 同上且 small 谓词为假 | 输入 guard 失败或 Kernel |
-| 5 | R-005 3D FP32 small | 311 / `CircularPadGrad3D<float,float,false>` | `(front!=0 || back!=0) && dtype=FP32 && small` | R-006 |
-| 6 | R-006 3D FP32 big | 312 / 同模板 | `(front!=0 || back!=0) && dtype=FP32 && !small` | 输入 guard 失败或 Kernel |
-| 7 | R-007 3D 16-bit small | 321/331 / `half` 或 `bfloat16_t`, FP32, true | `(front!=0 || back!=0) && dtype∈{FP16,BF16} && small` | R-008 |
-| 8 | R-008 3D 16-bit big | 322/332 / 同 dtype 模板 | `(front!=0 || back!=0) && dtype∈{FP16,BF16} && !small` | 输入 guard 失败或 Kernel |
+| 5 | R-005 3D FP32 small | 311 / `CircularPadGrad3D<float,float,false>` | `(front!=0 \|\| back!=0) && dtype=FP32 && small` | R-006 |
+| 6 | R-006 3D FP32 big | 312 / 同模板 | `(front!=0 \|\| back!=0) && dtype=FP32 && !small` | 输入 guard 失败或 Kernel |
+| 7 | R-007 3D 16-bit small | 321/331 / `half` 或 `bfloat16_t`, FP32, true | `(front!=0 \|\| back!=0) && dtype∈{FP16,BF16} && small` | R-008 |
+| 8 | R-008 3D 16-bit big | 322/332 / 同 dtype 模板 | `(front!=0 \|\| back!=0) && dtype∈{FP16,BF16} && !small` | 输入 guard 失败或 Kernel |
 
 ```text
 CheckDtype -> CalculateParams

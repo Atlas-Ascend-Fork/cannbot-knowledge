@@ -97,7 +97,7 @@ def index_select_simd(src, dim, index, src_shape, src_offset, read_shape, _build
 | `src` | GM 源张量指针 |
 | `dim` | 索引选择维度（**不能是最后一维**） |
 | `index` | 1D 索引张量（UB） |
-| `src_shape` | 源张量完整形状（`List[int | tensor]`，支持动态形状） |
+| `src_shape` | 源张量完整形状（`List[int \| tensor]`，支持动态形状） |
 | `src_offset` | 各维读取起始偏移（`src_offset[dim]` 可为 `-1`，被忽略） |
 | `read_shape` | 各维读取大小（`read_shape[dim]` 必须为 `-1`，由 index 长度决定） |
 

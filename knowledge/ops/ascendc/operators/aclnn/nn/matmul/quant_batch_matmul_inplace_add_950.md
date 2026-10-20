@@ -110,7 +110,7 @@ yRef[m,n] += (Σ_(k=0..K-1) x1[k,m] * x2[k,n]) * deqScale
 | `yRef` | `[M,N]`，ND | FLOAT32 | 输入输出同一逻辑 tensor；M/N 必须匹配；Device 以 atomic-add 累加 |
 | `transposeX1` | 标量 | bool | 必须为 `true`；非连续的“末两维转置视图”可由 Host 翻转属性而不插入转置 Kernel |
 | `transposeX2` | 标量 | bool | 必须为 `false` |
-| `groupSize` | 标量 | int64 | 低 48 位编码 `groupSizeK | groupSizeN<<16 | groupSizeM<<32`；MX 最终必须 `[1,1,32]`（编码 4295032864），HIF8 必须 0 |
+| `groupSize` | 标量 | int64 | 低 48 位编码 `groupSizeK \| groupSizeN<<16 \| groupSizeM<<32`；MX 最终必须 `[1,1,32]`（编码 4295032864），HIF8 必须 0 |
 
 ### 入口与版本
 

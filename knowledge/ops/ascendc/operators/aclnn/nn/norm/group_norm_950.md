@@ -111,7 +111,7 @@ aclnnGroupNorm -> CommonOpExecutorRun(workspace, executor, stream)
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 TwoPassPerf | 1110 | `maxReduceCount>reduceCount`，其中容量先含 gamma/beta（`hwNum<=32` 时按 NDDMA 展开估算）、mean/rstd、cast 与 dichotomy 区 | 尝试 split affine |
-| 2 | R-002 TwoPassGeneralized | 1130 | 第一项失败，且 `C>4096 || reduceCount<=vectorLength/4`；把 gamma/beta 各限制为 `shapeD` 后 `newMaxReduceCount>reduceCount` | Welford |
+| 2 | R-002 TwoPassGeneralized | 1130 | 第一项失败，且 `C>4096 \|\| reduceCount<=vectorLength/4`；把 gamma/beta 各限制为 `shapeD` 后 `newMaxReduceCount>reduceCount` | Welford |
 | 3 | R-004 WelfordGeneralized | 1120 | 无法全载且 `C>4096`，核心又恒有 gamma/beta | 无 |
 | 4 | R-003 WelfordPerf | 1100 | 无法全载且不满足 large-channel generalized | 无 |
 

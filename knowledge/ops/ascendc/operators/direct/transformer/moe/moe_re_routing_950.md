@@ -149,7 +149,7 @@ else                         useReRoute = 0;  // R-003 R
 |---:|---|---|---|
 | 1 | R-001 official RE | `E>1 && N<5` | 命中即停止；否则检查 R-002。 |
 | 2 | R-002 derived fast-RE | `E>1 && N>=5 && 2N<=P` | 命中即停止；否则 R-003。 |
-| 3 | R-003 official R | `E==1 || (E>1 && N>=5 && 2N>P)` | 最终 fallback，无下一 Route。 |
+| 3 | R-003 official R | `E==1 \|\| (E>1 && N>=5 && 2N>P)` | 最终 fallback，无下一 Route。 |
 
 Route 的知识复用优先级与 selector 顺序分开：
 

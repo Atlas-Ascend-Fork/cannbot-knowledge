@@ -562,8 +562,8 @@ L1/L0 = 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| ACLNN | workspace-size entry | M>0,K=0,optional为空 | flag=false |
-| Tiling | `RunKernelTiling` | K==0 + flag=0 | key 0，empty flag=1；仍按 flag 额外计算 LM workspace |
+| ACLNN | | workspace-size entry | M>0,K=0,optional为空 | flag=false |
+| Tiling | | `RunKernelTiling` | K==0 + flag=0 | key 0，empty flag=1；仍按 flag 额外计算 LM workspace |
 | Device | `Process` | empty flag=1 | AIV统计/target后 return | 不读取 LM workspace |
 
 #### Device 数据流

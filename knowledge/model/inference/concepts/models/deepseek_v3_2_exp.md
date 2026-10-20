@@ -141,8 +141,7 @@ DeepSeek-V3.2-Exp 沿用 V3 的 Multi-Token Prediction。但由于 DSA 结构，
 
 **64K 序列 × 4 batch 搬运量/计算量对比（源文档表）**：
 
-| |
-| KV 搬运量 (MB) | Cube 计算量 (GFlops) | QK^T 搬运量 (MB) |
+| | | KV 搬运量 (MB) | Cube 计算量 (GFlops) | QK^T 搬运量 (MB) |
 | ---- | ---- | ---- | ---- | ---- |
 | MLA | 非 MTP | 144 | 19.33 | 32 |
 | MLA | MTP1 | 144 | 38.65 | 64 |

@@ -139,7 +139,7 @@ key = 2000000000 + dtypeOffset + fastOffset
 | 整载容量 | `UB-64 >= 21*C` | 容纳单行三 FP32、两 FP16、批行 x/z 与标量区 | R-001/R-002 | 分片 Route | `LayerNormQuantTiling::GetTilingSliceInfo` |
 | slice repeat | `sliceSize=floor((UB-64)/21,128)` | FP16 Vector repeat 粒度 256 B/2 B | R-003/R-004 | `elementSize` 为 0 会使后续除法不可用；源码无显式单独 guard |
 | tail DMA | 分片循环将 `tailSize` 调到至少 32 元素 | 非 220 `DataCopyEx` 的 GM tail 回写需要最后一个 32-byte block | 分片 | 继续 `elementSize-=32` | `GetTilingSliceInfo`; `DataCopyEx` |
-| BF16 body guard | `__CCE_KT_TEST__ || __CCE_AICORE__==220` | entry 只在该 guard 内实例化 BF16 | R-002/R-004 | 无 BF16 body | `layer_norm_quant` |
+| BF16 body guard | `__CCE_KT_TEST__ \|\| __CCE_AICORE__==220` | entry 只在该 guard 内实例化 BF16 | R-002/R-004 | 无 BF16 body | `layer_norm_quant` |
 | shape 窄化 | `R,D<=UINT_MAX` 且行乘法不溢出 | POD 字段为 uint32 | 全部 | `GRAPH_FAILED` | `PostLayerNormPtrFunc` |
 
 ### POD/ABI

@@ -103,7 +103,7 @@ cann_versions: ["9.1.0"]
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 Empty | tuple `schId=1,reduction∈{0,1,2},0,0,0` | `N==0 || C==0`；shape gate已排除 N非0且C=0，因此公开可达重点是 N=0 | 结束 |
+| 1 | R-001 Empty | tuple `schId=1,reduction∈{0,1,2},0,0,0` | `N==0 \|\| C==0`；shape gate已排除 N非0且C=0，因此公开可达重点是 N=0 | 结束 |
 | 2 | R-002 Full-load | `schId=2` + reduction/weight/labelS/ignore flags | 非空且 `IsAllC()`：db2可容纳至少 block 元素行，或回退db1仍满足 | R-003 |
 | 3 | R-003 Big-C | `schId=0` +全 flags | 非空且 `IsAllC()==false` | 若算不出正 `cOnceNum`，固定仓没有显式失败 gate |
 
@@ -126,7 +126,7 @@ key = GET_TPL_TILING_KEY(schId,reduction,isWeight,labelS,ignorex)
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| empty | `N==0 || C==0` | 避免常规地址/除法 | R-001 | R-002 check | `GetTilingKey` |
+| empty | `N==0 \|\| C==0` | 避免常规地址/除法 | R-001 | R-002 check | `GetTilingKey` |
 | full-load db2→db1 | `aNum_res>=blockSize/dtypeX` | 全 C 与至少一 block 行留在 UB；优先双缓冲 | R-002 | db2不足试db1，仍不足 R-003 | `IsAllC` |
 | Reduce tmp | `GetReduceSumMaxMinTmpSize` 返回 maxValue | AR reduce需额外 UB | R-002 | 减小 aNum/改R-003 | `IsAllC` |
 | Big-C cache fit | `cacheBytes<=tailUb` | 二叉 fold cache必须覆盖 `cacheStart+1` blocks | R-003 | 每次将 cOnceNum减一个 block | `ComputeUbTiling` |
@@ -183,7 +183,7 @@ entry 读取显式 POD、取得 user workspace，并由五维 tuple 实例化 bo
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | `op_host/cross_entropy_loss_tiling_arch35.cpp` | `GetTilingKey` | `N==0 || C==0` | schId1、core=1、其它flags=0 |
+| Host | `op_host/cross_entropy_loss_tiling_arch35.cpp` | `GetTilingKey` | `N==0 \|\| C==0` | schId1、core=1、其它flags=0 |
 | Router | `op_kernel/arch35/cross_entropy_loss.cpp` | `schId else` | schId1 | `CrossEntropyLossEmpty` |
 
 #### Device 数据流

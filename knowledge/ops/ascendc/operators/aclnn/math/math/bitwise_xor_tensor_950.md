@@ -197,7 +197,7 @@ BitwiseXor DAG 三个 Tensor dtype 相同，`bmax=bmin=8/16/32/64`；NotEqual BO
 
 | Route | 入口选择 | Device family/selector | 精确条件 | 下一跳或失败 |
 |---|---|---|---|---|
-| R-001 Empty | Host | 无 Device | `self.IsEmpty() || other.IsEmpty()` | workspaceSize=0，成功。 |
+| R-001 Empty | Host | 无 Device | `self.IsEmpty() \|\| other.IsEmpty()` | workspaceSize=0，成功。 |
 | R-002 BOOL core | Host→NotEqual | AIV；内部 mode 202/1/2/101–104/109 | `PromoteType==BOOL`，即两输入均 BOOL | NotEqual失败则整个 API失败。 |
 | R-003 Integer core | Host→输入 Cast?→BitwiseXor | AIV；内部 mode同上 | `PromoteType` 为八种 950 整数 | 输入 Cast或BitwiseXor失败则失败。 |
 | R-004 Cast identity | Cast selector | 无 Device | `src.dtype==dst.dtype` | 直接返回输入 Tensor。 |

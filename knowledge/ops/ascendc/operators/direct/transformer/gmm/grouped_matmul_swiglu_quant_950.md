@@ -171,7 +171,7 @@ else: P0 / R-001 fixed arch35 per-token MIX_AIC_1_2
 | 顺序 | 分支 | 触发谓词 | 选中动作 | 否则路径/语义边界 |
 |---:|---|---|---|---|
 | 1 | C-001 L0C 双缓冲 | `2*baseM*baseN*4 <= L0C_size` | `dbL0C=2` 写入 `meta[47:40]` | `dbL0C=1`；仍是 R-001，仅管线深度不同 |
-| 2 | C-002 B L2 one-shot | `M_g<=baseM && N%256==0 && baseN%256==0 && (K<=256 || K>=4096)` | B GM Tensor 设 `CACHE_MODE_DISABLE` | `CACHE_MODE_NORMAL`；中等 K 保留 tail split 间的 B 复用 |
+| 2 | C-002 B L2 one-shot | `M_g<=baseM && N%256==0 && baseN%256==0 && (K<=256 \|\| K>=4096)` | B GM Tensor 设 `CACHE_MODE_DISABLE` | `CACHE_MODE_NORMAL`；中等 K 保留 tail split 间的 B 复用 |
 | 3 | C-003 weight-scale L2 one-shot | `M_g<=baseM && N%256==0 && baseN%256==0` | `x2ScaleGlobal_` 设 `CACHE_MODE_DISABLE` | `CACHE_MODE_NORMAL` |
 | 4 | C-004 空专家 | `unpack(groupSize[g])==0` | 更新到专家 g 的 W/weight-scale 基址，但不调 scheduler/MMAD/epilogue | 非空组进入 tile 循环；X/x-scale/workspace 只按已消费 token 推进 |
 | 5 | C-005 末组 tail split | `g==E-1 && remainTile>1` | 以 M/N 最小切分约束调 `UpdateTailTile` | 保留原 tail tile；若最后一个索引组为空，前一非空组不会补做此优化 |
@@ -223,7 +223,7 @@ partition_quant_rows(V=2*blockDim, batch=min(ubAvail,255,rows_per_core))
 | inactive quant AIV | 当前实现需 `M>=V=2*blockDim`，使 `coreNum=V`、不存在 inactive AIV | `M<V` 时 inactive AIV 的 `InitParams` 不写 `multiRowNum_`，但后续先据此计算 Queue 长度并执行三次 `InitBuffer`，之后才检查 `blockIdx>=coreNum` | P0 / R-001 | Host 无检查、Device 无安全 fallback；复用时须把 inactive guard 移到所有参数/Queue 初始化之前，或显式初始化安全的零长度状态 | `CalParams`, `InitParams`, `InitAndSetBuffer`, `operator()` |
 | dequant 固定 UB | 950 UB 至少覆盖 199680 bytes | 两块 INT32/FP32 VECIN、SwiGLU VECOUT与三个 scale buffer使用固定地址 | P0 / R-001 | 转换 Host没有显式容量 fallback | `BlockEpilogueDequantSwiglu::Init` |
 | compact ABI 宽度 | M/N/K 和 rowLen 需 `<=65535`，ubAvail 需 `1..65535`，AIC 数、depth/step 需 `<=255` | raw launch 只传 3 个 uint64 metadata；`dims/tile` 显式截断，`meta` 的 rowLen/ubAvail 还可向高位字段串扰 | P0 / R-001 | 转换源码没有溢出 fallback | `launch_grouped_matmul_swiglu_quant_kernel`, `RebuildCubeTiling` |
-| B L2 hint | 单专家 `M_g<=baseM`、`N%256==0`、`baseN%256==0`，且 `K<=256 || K>=4096` | 一次性 B 流关闭 L2；中等 K 保留 cache 供 tail 分片复用 | P0 / R-001 每专家 | normal cache | `UpdateGlobalBuffer` |
+| B L2 hint | 单专家 `M_g<=baseM`、`N%256==0`、`baseN%256==0`，且 `K<=256 \|\| K>=4096` | 一次性 B 流关闭 L2；中等 K 保留 cache 供 tail 分片复用 | P0 / R-001 每专家 | normal cache | `UpdateGlobalBuffer` |
 | scale L2 hint | `M_g<=baseM && N%256==0 && baseN%256==0` | 一次性 weight_scale 读取 | P0 / R-001 每专家 | normal cache | `SetX2ScaleL2CacheHint` |
 | schedule mode | 恒设 `schemMode=1` | MIX 1:2 的配对 AIC/AIV flag 协议要求批调度 | P0 / R-001 | 无替代 launch | `launch_grouped_matmul_swiglu_quant_kernel` |
 

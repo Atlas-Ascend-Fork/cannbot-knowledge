@@ -77,9 +77,9 @@ host 侧 `ASCENDC_TPL_ARGS_DECL` 声明顺序为 `(templateType, isEmptyTensor, 
 
 | 循环 i | param.name | param.bitWidth | totalBits(执行前) | line 313 执行 |
 |---|---|---|---|---|
-| 0 | templateType | 1 | 0 | `tilingKey |= T << 0` |
-| 1 | isEmptyTensor | 1 | 1 | `tilingKey |= E << 1` |
-| 2 | isTailR | 1 | 2 | `tilingKey |= R << 2` |
+| 0 | templateType | 1 | 0 | `tilingKey \|= T << 0` |
+| 1 | isEmptyTensor | 1 | 1 | `tilingKey \|= E << 1` |
+| 2 | isTailR | 1 | 2 | `tilingKey \|= R << 2` |
 
 故 `tilingKey = T | (E<<1) | (R<<2)`。后缀 `_N` 就是这个编码值：
 

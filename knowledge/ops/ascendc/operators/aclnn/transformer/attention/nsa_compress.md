@@ -232,7 +232,7 @@ nsa_compress
 | Vector repeat/tail | `loopCount=D/64`, `remain=D%64` | FP32 Mul 每 repeat 64 元素；尾部用单 repeat 的 `remain` mask | R-001 | N/A，原 Route 内尾处理 | `KernelNASCompress::VecMulBlkMat` |
 | overlap context 上界 | `maxOverlap=floor(2*(L+d-1)/d)-1`，有效公开语义域 `L<=128,d>=16` | Device 静态 `seqContext[MAX_OVERLAP_NUM=20]` 与动态 overlap TBuf 必须匹配 | R-001 | 有效公开域最大 16；越界输入没有 Device fallback | `AnalyzeAttrs`; `OverlapBufferManager_st` |
 | POD core 数 | Host 数组长度 48，`blockDim=aivNum` | entry 以 blockId 索引 48 元素数组 | R-001 | 固定源码未显式检查 `aivNum<=48` | `MAX_CORE_NUM`; `PostTiling`; `nsa_compress` |
-| 空 core | `PerCoreOutputNum[id]==0 || PerCoreHeadNum[id]==0` | 分组数可能大于有效输出/head 数 | R-001 | 当前 core 直接 return | `nsa_compress` |
+| 空 core | `PerCoreOutputNum[id]==0 \|\| PerCoreHeadNum[id]==0` | 分组数可能大于有效输出/head 数 | R-001 | 当前 core 直接 return | `nsa_compress` |
 
 ### POD/ABI
 

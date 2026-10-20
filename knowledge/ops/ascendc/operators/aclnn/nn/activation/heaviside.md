@@ -159,9 +159,9 @@ ACLNN dtype ∈ {FLOAT, FLOAT16, BFLOAT16}
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| scalar/same-shape | `valuesShapeSize==1 || (valuesShapeSize>0 && valuesShape==inputShape)` | Kernel 只有标量 GM 读取或同 offset 向量读取两种寻址 | 全部 | ACLNN 先 `BroadcastTo`；直接进入 Tiling 而不满足则 `GRAPH_FAILED` | `HeavisideTiling::GetValuesType` |
+| scalar/same-shape | `valuesShapeSize==1 \|\| (valuesShapeSize>0 && valuesShape==inputShape)` | Kernel 只有标量 GM 读取或同 offset 向量读取两种寻址 | 全部 | ACLNN 先 `BroadcastTo`；直接进入 Tiling 而不满足则 `GRAPH_FAILED` | `HeavisideTiling::GetValuesType` |
 | 每核最大基础 tile | `P=8192`，Host 用 `ceil(N/8192)` 求核数 | A2/A3 TBuf 地址布局按 8192 元素切片 | 全部 | 超过一个 tile 时每核循环 | `MAX_ELEMENT_NUM_EACH_CORE`、`PP_ELEMENT_NUM` |
-| dtype 编译 guard | `__CCE_AICORE__==220 || 310` | 只有该分支实例化 key 1 body | 全部 | 不进入 body，无 Kernel fallback | `heaviside` entry |
+| dtype 编译 guard | `__CCE_AICORE__==220 \|\| 310` | 只有该分支实例化 key 1 body | 全部 | 不进入 body，无 Kernel fallback | `heaviside` entry |
 | Vector repeat 对齐 | `tmpDataCount=ceil(dataCount/(256/sizeof(compute_type)))*(256/sizeof(compute_type))` | Compare/Max 覆盖完整 256-byte repeat | 全部 | 无别的 Route；输出仅提交 `dataCount` | `HeavisideND::Compute` |
 | 空域 | ACLNN 任一 Tensor `IsEmpty()` | 避免生成无数据节点 | 全部 | 成功返回 workspace 0 的空 executor | `aclnnHeavisideGetWorkspaceSize` |
 

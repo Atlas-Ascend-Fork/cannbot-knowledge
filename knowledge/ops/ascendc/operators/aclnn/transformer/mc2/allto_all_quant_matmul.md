@@ -153,7 +153,7 @@ ASCEND910B -> dtype pair A16W8 / A16W4 / A4W4 -> 对应 Route；否则 GRAPH_FAI
 | 对齐 | A16 `K*R%16=0`；INT4 H/N 偶 | Cube/pack | 对应 route | 失败 | `CheckShapeInfo` |
 | token 上界 | `K*R<=35000` | window/tiling 表 | 全部 | 失败 | `CheckShapeInfo` |
 | window | HCCL buffer≥200 MiB | flag offset 180 MiB 与数据区 | 全部 | 失败 | `DoOpTiling` |
-| UB route | `doubleBufferSize<=0 || ubLeft<=0 || copyTokenNum==0` | 160 KiB 不容纳完整 token | R-001/2 | `QuantTokenSegment` | `CalcQuantTokenNumPerUb` |
+| UB route | `doubleBufferSize<=0 \|\| ubLeft<=0 \|\| copyTokenNum==0` | 160 KiB 不容纳完整 token | R-001/2 | `QuantTokenSegment` | `CalcQuantTokenNumPerUb` |
 | 可选输出 | alltoAllOut 非空 | 避免额外 GM 物化 | 全部 | 空则不复制 | `AlltoAll` |
 
 ### POD/ABI

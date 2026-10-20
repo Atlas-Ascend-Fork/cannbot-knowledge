@@ -201,7 +201,7 @@ else:                                        # public dtype subset supported by 
 | 950 AICore dtype | `IsRegBase && dtype∈{F32,F16,BF16}` | OpDef/binary 只实例化三种 `Cross<T>` | R-001/R-002 | AICPU | `math/cross/op_api/cross.cpp::IsAiCoreSupport` |
 | 950 同 rank | `dimNum1==dimNum2` | SIMT POD 用同一维号和 8 项 stride 数组同时解释两输入 | R-001/R-002 | Tiling `GRAPH_FAILED`；没有 AICPU fallback | `CrossTiling::CheckBaseShapeAndAttrs` |
 | 叉积轴长度 | `x1[d]==3 && x2[d]==3` | 每线程固定读取轴上的 0/1/2 三个分量 | R-001/R-002 | Tiling 失败 | 同上 |
-| 非叉积轴广播 | `x1[i]==x2[i] || x1[i]==1 || x2[i]==1` | 长度 1 的输入 stride 被置 0，重复读同一 GM 元素 | R-001/R-002 | Tiling 失败 | `CheckBroadcastAndMergeShape`; `CalcStrideAndVectors` |
+| 非叉积轴广播 | `x1[i]==x2[i] \|\| x1[i]==1 \|\| x2[i]==1` | 长度 1 的输入 stride 被置 0，重复读同一 GM 元素 | R-001/R-002 | Tiling 失败 | `CheckBroadcastAndMergeShape`; `CalcStrideAndVectors` |
 | int64-base 切换 | `ySize>INT_MAX` | 输出 flat base 可能超过 int32，切到 int64 累加并降为 512 threads | R-002 | 否则 R-001 | `CrossTiling::CheckBroadcastAndMergeShape`; `Cross::Process` |
 | Device 窄化 | 源码没有 `totalVectors/stride<=INT_MAX` guard | POD int64 值写入 Device int32 成员/数组，R-002 仍可能截断 | R-001/R-002 | 无 fallback；属于失败边界 | `Cross::Init`; `CrossStridePara` |
 | AICPU 并行阈值 | `V>2048` | 大工作量才支付 CPU 分片开销 | R-003/R-004 | 小于等于阈值直接本线程执行 | `CrossCpuKernel::CrossCompute` |

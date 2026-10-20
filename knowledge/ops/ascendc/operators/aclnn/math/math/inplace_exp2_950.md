@@ -201,7 +201,7 @@ blockNum = ceil(N/blockFormer)
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 FP16/FP32 singleton | 1001/3001；`PowTensorScalarFloat<half|float,same>` | 非空，dtype FP16/FP32，`N=1`，Pow AiCore，priority 0 | N>1→R-003 |
+| 1 | R-001 FP16/FP32 singleton | 1001/3001；`PowTensorScalarFloat<half\|float,same>` | 非空，dtype FP16/FP32，`N=1`，Pow AiCore，priority 0 | N>1→R-003 |
 | 2 | R-002 BF16 singleton | Cast direct + Pow key3001 + Cast direct | 非空，dtype BF16，`N=1`；先升FP32 | N>1→R-004 |
 | 3 | R-003 FP16/FP32 NDDMA | 100000001000100/300000001000100 | dtype FP16/FP32，`N>1`，priority 1，合并后内轴数1≤5 | Tiling失败 |
 | 4 | R-004 BF16 NDDMA | 两Cast + 300000001000100 | dtype BF16，`N>1`；Pow实际dtype FP32 | Tiling失败 |

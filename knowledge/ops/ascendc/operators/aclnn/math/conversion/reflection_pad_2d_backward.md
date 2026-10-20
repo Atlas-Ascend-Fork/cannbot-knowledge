@@ -130,8 +130,8 @@ Host 把 4D `x` 解为 `N,C,Hi,Wi`，输出 `Ho=Hi-top-bottom, Wo=Wi-left-right`
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 mini-HW | `1000` / `PadV4GradPadMiniHW<float>` | `Hi<=128 && Wi<=112` | 否则下一项 |
-| 2 | R-002 H-only | `1110` / `PadV4GradPadH<float>` | `left=right=0 && (top!=0||bottom!=0) && Hi>64` | 下一项 |
-| 3 | R-003 W-only | `1101` / `PadV4GradPadW<float>` | `top=bottom=0 && (left!=0||right!=0)` | 下一项 |
+| 2 | R-002 H-only | `1110` / `PadV4GradPadH<float>` | `left=right=0 && (top!=0\|\|bottom!=0) && Hi>64` | 下一项 |
+| 3 | R-003 W-only | `1101` / `PadV4GradPadW<float>` | `top=bottom=0 && (left!=0\|\|right!=0)` | 下一项 |
 | 4 | R-004 small-H/large-W | `1100` / `PadV4GradPadSamllHLargeW<float>` | `Hi<=64 && Wi>112` | 下一项 |
 | 5 | R-005 large-H/small-W | `1010` / `PadV4GradLargeHSmallW<float>` | `Hi>128 && Wi<=128` | R-006 |
 | 6 | R-006 generic-HW | `1111` / `PadV4GradPadHW<float>` | 上述均不命中 | 无 fallback |

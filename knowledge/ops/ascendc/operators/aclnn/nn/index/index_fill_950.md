@@ -119,7 +119,7 @@ aclnnIndexFill -> CommonOpExecutorRun(same stream)
 |---:|---|---|---|---|
 | 1 | R-001 宽 Q SIMD | `(SIMD,B32/B64)` | `numel!=0 && Q*dtypeSize>128`；priority 1 | R-002 |
 | 2 | R-002 稠密 indices | `(SIMT_DENSE_INDICES,B32/B64)` | `numel!=0 && Q*dtypeSize<=128 && P*Q*indicesNum>2048 && indicesNum>=N*5`；priority 6 | 通用 SIMT |
-| 3 | R-003 通用按 indices | `(SIMT,B32/B64)` | 前两者失败，且 `numel*dtypeSize<256 || indicesNum<=N/5`；priority 10 | R-004 |
+| 3 | R-003 通用按 indices | `(SIMT,B32/B64)` | 前两者失败，且 `numel*dtypeSize<256 \|\| indicesNum<=N/5`；priority 10 | R-004 |
 | 4 | R-004 通用按 N | `(SIMT,B32/B64)` | 前两者失败，且上述按-indices 谓词为 false | 无 |
 
 ```text
@@ -138,7 +138,7 @@ else priority 10 General:
 |---|---|---|---|---|---|---|
 | R-001 宽 Q SIMD | SIMD；B64 iff `indicesNum>INT32_MAX` | 950、非空、`Q*s>128` | 单 Kernel，SIMT 建 mask→AIV 分 Q/PN copy/fill | `IndexFillSimdImpl<T,INDEX_TYPE,uint32/64_t>` | 32KiB dCache 预留；3 份 Q tile + mask UB；N-byte workspace | Q tile 与 Q 尾核；不满足去 Dense |
 | R-002 稠密 indices | Dense；B64 iff `numel>INT32_MAX` | 950、非空、窄 Q、工作量>2048、indices>=5N | 单 Kernel，AIV copy→Sort/unique→SIMT mask→SIMT fill | `IndexFillSimtDenseIndicesImpl` | 两阶段 UB 复用；128KiB dCache；N-byte workspace；3 次 SyncAll | indices chunk tail；不满足去 General |
-| R-003 通用按 indices | SIMT；B64 iff `numel>INT32_MAX || indicesNum*P*Q>INT32_MAX` | fallback 且稀疏/极小 | 单 Kernel，AIV copy→SIMT 遍历 `indices*P*Q` | `IndexFillSimtImpl`, mode 1 | 双缓冲 copy Queue；无用户 mask；copy 后 SyncAll | grid-stride tail；越界 index continue |
+| R-003 通用按 indices | SIMT；B64 iff `numel>INT32_MAX \|\| indicesNum*P*Q>INT32_MAX` | fallback 且稀疏/极小 | 单 Kernel，AIV copy→SIMT 遍历 `indices*P*Q` | `IndexFillSimtImpl`, mode 1 | 双缓冲 copy Queue；无用户 mask；copy 后 SyncAll | grid-stride tail；越界 index continue |
 | R-004 通用按 N | SIMT；同上 | fallback 且 mode 谓词 false | 单 Kernel，AIV copy→SIMT mask→SIMT 遍历 `P*N*Q` | 同一模板，mode 0 | 双缓冲 copy Queue；N-byte workspace；mask 前后 SyncAll | grid-stride tail；mask=0 skip |
 
 ### 隐藏性能 Guard
@@ -147,7 +147,7 @@ else priority 10 General:
 |---|---|---|---|---|---|
 | 宽 Q | `Q*dtypeSize>128` | 连续 Q slice 可由 AIV DMA/预广播高效处理 | R-001 | R-002/General | `IndexFillSimdTiling::IsCapable` |
 | 稠密重复 | `P*Q*indicesNum>2048 && indicesNum>=5N` | 先 Sort/unique 可减少同地址 mask 写与重复 index 工作 | R-002 | General | `IndexFillSimtDenseIndicesTiling::IsCapable` |
-| 遍历域 | `numel*s<256 || indicesNum<=N/5` | 在 `indices*P*Q` 与 `P*N*Q` 两种 SIMT 工作量间选择 | R-003/R-004 | 另一 mode | `CalcSimtUsedCoreNum` |
+| 遍历域 | `numel*s<256 \|\| indicesNum<=N/5` | 在 `indices*P*Q` 与 `P*N*Q` 两种 SIMT 工作量间选择 | R-003/R-004 | 另一 mode | `CalcSimtUsedCoreNum` |
 | 32/64-bit 计算索引 | 路线各自比较 `MAX_INT32` | 防止线程线性下标/乘积窄化 | 全部 | B64 实例 | 各 `GetTilingKey` |
 | AIV tile UB | `(ubSize-128KiB)/2` 或 `(ubSize-32KiB)/3` | 给双缓冲及 SIMT dCache 留空间 | 全部 | tile 缩小，无另一 Route | `DoUBTiling/CalcUBBlock` |
 | Dense indices factor | while `CalcUsedBufSize(f)>ubSize-128KiB` 每次减 1024 | Queue、sorted、unique、Sort tmp 必须同时容纳 | R-002 | 最低设 512，固定仓未给资源失败分支 | `DoIndicesTilingTask` |
@@ -402,7 +402,7 @@ workspace_total = sysWorkspace + N
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Registry | `tiling_templates_registry.h` | `DoTilingImpl` | priority 1、6 都返回 PARAM_INVALID | priority 10 |
-| Tiling | `index_fill_tiling_simt.cpp` | `CalcSimtUsedCoreNum` | `numel*s<256 || indicesNum<=N/5` | mode 1 |
+| Tiling | `index_fill_tiling_simt.cpp` | `CalcSimtUsedCoreNum` | `numel*s<256 \|\| indicesNum<=N/5` | mode 1 |
 | Router | `index_fill_apt.cpp` | SIMT B32/B64 | POD mode=1 | `IndexFillSimtImpl` |
 
 #### Device 数据流

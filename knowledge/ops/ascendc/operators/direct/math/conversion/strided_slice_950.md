@@ -191,7 +191,7 @@ Dispatch:
 | active | R-003 | rank1/3/4 连续大后缀，或不满足 R-002 完整行 ownership/capacity guard 的 rank2 连续大后缀 | N/A |
 | active | R-005 | rank2 FP32/INT32、末步长≥4、total≥2^20；选择单行 footprint 不超过 Queue slot 的形状即可同时满足当前安全前提 | N/A |
 | active | R-006 | 任一负 source step、超 i32 step、超 u32 suffix/total、有效 rank0或5..8 都由 H1/H2→D3 命中 | N/A |
-| dormant | DR-001 `GatherDirect::Run<T>` 的 `rank==1` 分支 | `D1.b` 对 rank1 先执行 `if (rank==1 || sizeof(T)==2) Nddma::Run`，因此 rank1 不可能调用 `GatherDirect::Run` | 必须先修改上游 selector，使某类 rank1/正步长输入显式选择 gather，并同时证明单 tile 容量、index 位宽与相对 NDDMA 的价值；仅直接调用 body 不构成生产 Route |
+| dormant | DR-001 `GatherDirect::Run<T>` 的 `rank==1` 分支 | `D1.b` 对 rank1 先执行 `if (rank==1 \|\| sizeof(T)==2) Nddma::Run`，因此 rank1 不可能调用 `GatherDirect::Run` | 必须先修改上游 selector，使某类 rank1/正步长输入显式选择 gather，并同时证明单 tile 容量、index 位宽与相对 NDDMA 的价值；仅直接调用 body 不构成生产 Route |
 | dormant | DR-002 gather 的非 4-byte 模板分支（含 `sizeof(T)==1` 时转 NDDMA） | `GatherDirect::Run<T>` 的唯一调用点位于 `if constexpr(sizeof(T)==4)`；当前只会实例化 FP32/INT32，1/2/8-byte dtype 均在调用前被 NDDMA 或 SIMT 截断 | 必须扩展 dispatcher 的 dtype selector，并为对应 `RegTensor/IdxType/vl`、UB footprint 和 API 支持补齐约束；其中 1-byte 分支即使启用仍立即转 R-004，不应另算 gather Route |
 
 `DispatchStridedSlice` 的最终 `else` 还会接收理论上的未知 `route` 值，但 Host producer 只写 0/1/2；未知值只是与 R-006 共用 body 的不可达防御边，不是第七条生产 Route。若未来扩展 key，必须新增显式分支，不能依赖该静默归并。

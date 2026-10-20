@@ -182,7 +182,7 @@ router keys: 0,1,17,25,2,3,11,27,4,5,13,21
 | Queue depth | 从4递减到2 | UB允许时扩大流水 depth，最少双缓冲 | 全部 | 减 depth，不换 key | `SetBufferNum` |
 | token分片 | `Uremain<q*K*unitToken` | metadata/cast必须装下 | 全部 | 减 B、增加循环 | `TilingToken` |
 | 32 B对齐 | `Hcur*sizeof(T1)%32==0` | 对齐路径走 `DataCopy` | 全部 | `DataCopyPad` | `CopyTokenIn`/`CopyOut` |
-| 有效贡献 | `idx<M && (!PROBS || prob!=0)` | 避免无贡献随机 gather/乘加 | 全部 | 首项清零或后续跳过 | `CalPartOutToken` |
+| 有效贡献 | `idx<M && (!PROBS \|\| prob!=0)` | 避免无贡献随机 gather/乘加 | 全部 | 首项清零或后续跳过 | `CalPartOutToken` |
 | 空域 | C、Htile、B必须为正 | 分核/分片分母与 blockDim依赖 | 全部 | 固定源码无显式 N=0 fallback | `SetCoreNum`/`TilingToken` |
 | package tuple | A2/A3 binary JSON列表 | 交付 binary签名 | R-003 | key17 tuple缺失且 BF16/FP32重复，见限制 | 两平台 binary JSON |
 

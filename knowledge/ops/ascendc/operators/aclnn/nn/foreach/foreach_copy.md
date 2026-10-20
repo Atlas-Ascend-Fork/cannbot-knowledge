@@ -138,8 +138,8 @@ Host 先把总输入按 32 字节逻辑 block 均分到最多 50 个 AIV core。
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 同 dtype 复制 | 1 FP16；2 FP32；3 INT32；4 BF16；5 INT16；6 UINT16；7 INT8；8 UINT8；9 UINT32；10 INT64；11 DOUBLE；12 BOOL | `dataType == dstDataType`，再按 `GetTilingKeyByDtypeOnly(dataType)` 映射 | dtype 不同则继续转换映射；不支持 dtype 在 Host 失败。 |
-| 2 | R-002 扩展到 FP32 | 14 `half,float`；16 `bfloat16_t,float` | `(x=FP16 && y=FP32) || (x=BF16 && y=FP32)` | 其它不等 dtype 继续 R-003 或 Host 失败。 |
-| 3 | R-003 FP32 窄化 | 13 `float,half`；15 `float,bfloat16_t` | `(x=FP32 && y=FP16) || (x=FP32 && y=BF16)` | 其它组合 Host `CheckForeachCopyDtype` 失败。 |
+| 2 | R-002 扩展到 FP32 | 14 `half,float`；16 `bfloat16_t,float` | `(x=FP16 && y=FP32) \|\| (x=BF16 && y=FP32)` | 其它不等 dtype 继续 R-003 或 Host 失败。 |
+| 3 | R-003 FP32 窄化 | 13 `float,half`；15 `float,bfloat16_t` | `(x=FP32 && y=FP16) \|\| (x=FP32 && y=BF16)` | 其它组合 Host `CheckForeachCopyDtype` 失败。 |
 
 ```text
 if x.dtype == out.dtype:

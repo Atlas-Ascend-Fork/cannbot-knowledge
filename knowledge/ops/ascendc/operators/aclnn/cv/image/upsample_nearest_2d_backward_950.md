@@ -153,7 +153,7 @@ R-001 only:
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 同尺寸 AllCopy | `schId=0, format∈{NCHW,NHWC}, align=0, half=0, idx∈{32,64}` | 非空 950 路径且 `lenSrcH==lenDstH && lenSrcW==lenDstW`；最先判断 | R-002 |
-| 2 | R-002 单空间轴 1D | `schId=4, format∈{NCHW,NHWC}, align=0, half=0, idx∈{32,64}` | 非同尺寸，且 `((lenSrcH==lenDstH && lenSrcH==1) || (lenSrcW==lenDstW && lenSrcW==1))`；950 固定 `!alignCorners` | R-003 |
+| 2 | R-002 单空间轴 1D | `schId=4, format∈{NCHW,NHWC}, align=0, half=0, idx∈{32,64}` | 非同尺寸，且 `((lenSrcH==lenDstH && lenSrcH==1) \|\| (lenSrcW==lenDstW && lenSrcW==1))`；950 固定 `!alignCorners` | R-003 |
 | 3 | R-003 NCHW 大 HW | `schId=3, format=NCHW, align=0, half=0, idx∈{32,64}` | 前两条失败，NCHW，`lenDstW>=2048`，`1/scaleW>=12`，`lenSrcH*lenSrcW>=4096` | R-004 |
 | 4 | R-004 通用确定性 SIMT | `schId=2, format∈{NCHW,NHWC}, align=0, half=0, idx∈{32,64}` | 前三条均失败；950 固定 `IsMatchSimtDetermine()==true` | Tiling 失败 |
 
@@ -182,7 +182,7 @@ non-empty + IsRegBase
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 950 专用 Host gate | `IsRegBase()` | 只在 RegBase 使用 arch35 SIMT/AIV 实现 | 全部 | 非 950 平台分支 | ACLNN cpp + `aclnnUpsampleNearest2dBackwardGetWorkspaceSize` |
-| 空域 | `gradOut->IsEmpty() || gradInput->IsEmpty()` | 避免 `realCoreNum=0` 后除法和无效 launch | 全部 | Host 零 workspace 成功 | ACLNN cpp + 同名第一段接口 |
+| 空域 | `gradOut->IsEmpty() \|\| gradInput->IsEmpty()` | 避免 `realCoreNum=0` 后除法和无效 launch | 全部 | Host 零 workspace 成功 | ACLNN cpp + 同名第一段接口 |
 | UB 预留 | `ubBlockNum=ceil(UB/blockSize)-8` | AllCopy 在可用 UB 中保留 8 个 block；depth=2 后再求单 buffer 容量 | R-001 | Tiling 平台资源失败 | tiling_base.cpp + `GetPlatformInfo/DoTilingAllCopy` |
 | 32/64 位索引 | `C,G<UINT32_MAX && H/W<=INT32_MAX` | 32 位路径使用更多 SIMT threads；超界必须防地址窄化 | R-002～R-004 | uint64 模板、512 threads | tiling_base.cpp + `SetIndexType` |
 | HW specialization | NCHW 且 `lenDstW>=2048 && 1/scaleW>=12 && lenSrcH*lenSrcW>=4096` | 只切 HW 后在每点循环 N/C，适合足够大的空间域与宽向归约 | R-003 | R-004 | tiling_base.cpp + `IsSimtDetermineHW` |

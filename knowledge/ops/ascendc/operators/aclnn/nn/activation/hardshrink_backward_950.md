@@ -40,7 +40,7 @@ cann_versions: ["9.1.0"]
 | 项目 | 内容 |
 |---|---|
 | 实际入口 | `aclnnHardshrinkBackwardGetWorkspaceSize` + `aclnnHardshrinkBackward`，公开 ACLNN 两段式接口；固定仓未出现更高版本入口。 |
-| 计算语义 | 令 `lambda=max(float(lambd),0)`；逐元素在 `abs(self)<=lambda` 时输出 0，否则传递 `gradOutput`。这与有限实数域上的 `self>lambda || self<-lambda` 等价。 |
+| 计算语义 | 令 `lambda=max(float(lambd),0)`；逐元素在 `abs(self)<=lambda` 时输出 0，否则传递 `gradOutput`。这与有限实数域上的 `self>lambda \|\| self<-lambda` 等价。 |
 | 输入输出 | `gradOutput` 与 `self` 可 broadcast，输出 shape 必须等于 broadcast 结果；ND、0–8 维、支持非连续与空 Tensor；950 核心 dtype 为 `FLOAT16/FLOAT/BFLOAT16`。 |
 | 执行类型 | 核心语义节点是单个 `AIV_VECTOR` Kernel；executor 外围可包含框架 `Contiguous/BroadcastTo/Cast/ViewCopy` 节点。无可达 Cube/AIC 或 `MIX_CV` body。 |
 | Kernel 路线 | R-001/R-002 FP16 单/双缓冲；R-003/R-004 FP32 单/双缓冲；R-005/R-006 BF16→FP32 单/双缓冲。 |
@@ -144,7 +144,7 @@ POD 写入 `ubFactor=U`。每核循环 `ceil(blockLength/U)` 次，GM base 为 `
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 0 | 空 Tensor 快返 | 无核心 key | API 校验与类型提升后，`gradOutput->IsEmpty() || self->IsEmpty()` | `workspaceSize=0` 成功返回，不运行 Tiling/Kernel |
+| 0 | 空 Tensor 快返 | 无核心 key | API 校验与类型提升后，`gradOutput->IsEmpty() \|\| self->IsEmpty()` | `workspaceSize=0` 成功返回，不运行 Tiling/Kernel |
 | 1 | R-001 FP16 单缓冲 | `(C_DT_FLOAT16,0)` | 950、非空、核心 dtype `FLOAT16` 且 `N<=1024` | 同 dtype 且 `N>1024` → R-002；其它 dtype 继续 |
 | 2 | R-002 FP16 双缓冲 | `(C_DT_FLOAT16,1)` | 950、非空、核心 dtype `FLOAT16` 且 `N>1024` | 不满足 dtype → 后续 Route |
 | 3 | R-003 FP32 单缓冲 | `(C_DT_FLOAT,0)` | 950、非空、核心 dtype `FLOAT` 且 `N<=1024` | 同 dtype 且 `N>1024` → R-004；其它 dtype 继续 |

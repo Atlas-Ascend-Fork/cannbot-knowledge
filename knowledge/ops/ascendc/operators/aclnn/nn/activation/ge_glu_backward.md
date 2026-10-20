@@ -104,7 +104,7 @@ ACLNN executor (同一 stream)
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001/R-004/R-007/R-010/R-013/R-016 Perf | 103/203/303/703/803/903 | `(curArch==DAV_2201 || isRegbase) && valueM<=maxProcCount/(512/S)`，再按 approximate/dtype 选 key | 普通整行 |
+| 1 | R-001/R-004/R-007/R-010/R-013/R-016 Perf | 103/203/303/703/803/903 | `(curArch==DAV_2201 \|\| isRegbase) && valueM<=maxProcCount/(512/S)`，再按 approximate/dtype 选 key | 普通整行 |
 | 2 | R-002/R-005/R-008/R-011/R-014/R-017 整行分组 | 101/201/301/701/801/901 | 前项假且 `valueM<=maxProcCount` | 切 M |
 | 3 | R-003/R-006/R-009/R-012/R-015/R-018 切 M | 102/202/302/702/802/902 | `valueM>maxProcCount` | 无；参数/资源前置失败则 Tiling 失败 |
 

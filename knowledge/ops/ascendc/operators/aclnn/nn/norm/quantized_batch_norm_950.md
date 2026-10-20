@@ -109,12 +109,12 @@ aclnnQuantizedBatchNorm(workspace,size,executor,stream)
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 R0Split-Tail | 1000 | 先置 key：`!(r0UbLoop==1 || r0UbFactor==r0UbTail)`；且 R1 合并 guard 不成立 | 1001 或 R1 覆盖路线 |
-| 2 | R-002 R0Split-Aligned | 1001 | 先置 key：`r0UbLoop==1 || r0UbFactor==r0UbTail`；且 R1 合并 guard 不成立 | R1 覆盖路线 |
+| 1 | R-001 R0Split-Tail | 1000 | 先置 key：`!(r0UbLoop==1 \|\| r0UbFactor==r0UbTail)`；且 R1 合并 guard 不成立 | 1001 或 R1 覆盖路线 |
+| 2 | R-002 R0Split-Aligned | 1001 | 先置 key：`r0UbLoop==1 \|\| r0UbFactor==r0UbTail`；且 R1 合并 guard 不成立 | R1 覆盖路线 |
 | 3 | R-003 R1Group-Tail-Padded | 1002 | R1 guard 成立，`R0!=R0Align`，且 `nR0Loop!=1 && lastLoopNR0!=procNR0` | R-004 |
-| 4 | R-004 R1Group-Aligned-Padded | 1003 | R1 guard 成立，`R0!=R0Align`，且 `nR0Loop==1 || lastLoopNR0==procNR0` | 无 |
+| 4 | R-004 R1Group-Aligned-Padded | 1003 | R1 guard 成立，`R0!=R0Align`，且 `nR0Loop==1 \|\| lastLoopNR0==procNR0` | 无 |
 | 5 | R-005 R1Group-Tail-R0Aligned | 1012 | R1 guard 成立，`R0==R0Align`，且 `nR0Loop!=1 && lastLoopNR0!=procNR0` | R-006 |
-| 6 | R-006 R1Group-Aligned-R0Aligned | 1013 | R1 guard 成立，`R0==R0Align`，且 `nR0Loop==1 || lastLoopNR0==procNR0` | 无 |
+| 6 | R-006 R1Group-Aligned-R0Aligned | 1013 | R1 guard 成立，`R0==R0Align`，且 `nR0Loop==1 \|\| lastLoopNR0==procNR0` | 无 |
 
 ```text
 key = (r0UbLoop == 1 || r0UbFactor == r0UbTail) ? 1001 : 1000
@@ -296,7 +296,7 @@ workspace_total(operator declaration) = 16 MiB; Kernel-consumed workspace = 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `op_host/quantized_batch_norm_welford_tiling.cpp` | `DoOpTiling` | `r0UbLoop==1 || r0UbFactor==r0UbTail` 且 R1 guard false | 1001 |
+| Tiling | `op_host/quantized_batch_norm_welford_tiling.cpp` | `DoOpTiling` | `r0UbLoop==1 \|\| r0UbFactor==r0UbTail` 且 R1 guard false | 1001 |
 | Router | `op_kernel/quantized_batch_norm.cpp` | key 1001 | `TILING_KEY_IS(1001)` | `<T,float,1,0>` |
 
 #### Device 数据流

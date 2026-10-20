@@ -143,7 +143,7 @@ Host 先计算 `A/R/N`。当 `A*R*N*sizeof(index_dtype)<4096` 时强制一核。
 |---:|---|---|---|---|
 | 1 | R-015/R-016 BOOL Cast | Cast selector 5/2 | `self.dtype==BOOL`，分别在主节点前后 | 非 BOOL 不发 Cast kernel |
 | 2 | R-001 COPY | 10003 | 初始 `R==1`，且未被后续高性能 override | 继续高性能选择 |
-| 3 | R-004 RA | 20003 | `A==1 && (N>=coreNum*256 || (N>1 && R<256))` | 下一 guard |
+| 3 | R-004 RA | 20003 | `A==1 && (N>=coreNum*256 \|\| (N>1 && R<256))` | 下一 guard |
 | 4 | R-003 AR_GATHER | 20001 | `N==1 && R*effectiveByte<vRegSize && A*effectiveByte>=coreNum*vRegSize` | 下一 guard |
 | 5 | R-012 ARA_GATHER | 20002 | 初始 ARA，`A*N*effectiveByte>=coreNum*vRegSize` 且 `R*byte<vRegSize` 或大 RA footprint 条件 | 下一 guard |
 | 6 | R-013/R-014 GROUP | 30001 | `R*effectiveByte>=coreNum*256 && R<INT32_MAX` 且输出并行度低：`N==1&&A<core` 或 `N>1&&A*N<2*core` | 下一 guard；最终轴 A 接近满核时回退 AR |
@@ -179,7 +179,7 @@ R==1 ? COPY : (N==1 ? AR : ARA)
 | R-011 CUT_A_NEXT | 10012 | A/N 均足够大 | 单 AIV+NDDMA | `ArgMaxWithValueArACutAAndNextA` | 2D 核映射，A/R/N tile | 二维核尾块 |
 | R-012 ARA_GATHER | 20002 | A*N 足、RA footprint guard | 单 AIV+NDDMA/strided copy | `ArgMaxWithValueAraGather` | A>1 时 `[A,R,N]→[R,A,N]` | A/N tail |
 | R-013 GROUP-AR | 30001, isRaSplit=0 | 输出低并行、每核 R 片，workspace guard | 单 kernel 两阶段 | `GroupReduce::ProcessTemplate` | workspace→SyncAll→core0 合并 | R tail |
-| R-014 GROUP-RA | 30001, isRaSplit=1 | `N*effectiveByte>=128 || blkFactor*effectiveByte<256` | 单 kernel 两阶段 | `GroupReduce::ProcessRaSplit` | workspace→SyncAll→多核分块合并 | R/N tail |
+| R-014 GROUP-RA | 30001, isRaSplit=1 | `N*effectiveByte>=128 \|\| blkFactor*effectiveByte<256` | 单 kernel 两阶段 | `GroupReduce::ProcessRaSplit` | workspace→SyncAll→多核分块合并 | R/N tail |
 | R-015 BOOL→FLOAT | Cast id=5 | BOOL public input | 前置 AIV | `CastTwo<int8_t,half,float>` | 双缓冲+half TBuf | former/tail core |
 | R-016 FLOAT→BOOL | Cast id=2 | BOOL public output | 后置 AIV | `CastDstBool<float>` | compare mask+zero TBuf | former/tail core |
 
@@ -192,7 +192,7 @@ R==1 ? COPY : (N==1 ? AR : ARA)
 | CUT_A_NEXT | `A*N*byte>=core*128 && N*byte>=128` | 二维输出可提供并行且 DMA 块足够宽 | R-011 | R-005--R-010 | `ArgOpsTilingHighPerformance` |
 | Group workspace | `R*effectiveByte>=core*256`, `R<INT32_MAX`, 输出并行度低 | 以 workspace 换取 R 维多核并行 | R-013/R-014 | 原 route | `DoArgOpsTilingGroupReduce` |
 | Group 回退 | `N==1 && A>0.85*coreNum` | A 已足以满核，不付核间合并成本 | R-013 | R-002 | `ArgOpsTilingForAscendC` |
-| RA split | `N*effectiveByte>=128 || blkFactor*effectiveByte<256` | 决定 workspace 行布局和第二阶段并行 | R-014 | R-013 | `DoArgOpsTilingGroupReduce` |
+| RA split | `N*effectiveByte>=128 \|\| blkFactor*effectiveByte<256` | 决定 workspace 行布局和第二阶段并行 | R-014 | R-013 | `DoArgOpsTilingGroupReduce` |
 | workspace 非空 | entry `workspace==nullptr` 直接 return | GROUP 和系统 workspace 协议要求有效地址 | 全部主 route | 无计算 | `arg_max_with_value` |
 
 ### POD/ABI
@@ -491,7 +491,7 @@ workspace_total = 16 MiB
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `op_host/arch35/arg_common_base_tiling_arch35.cpp` | HighPerformance | `A==1 && (N>=core*256 || (N>1&&R<256))` | 20003 |
+| Tiling | `op_host/arch35/arg_common_base_tiling_arch35.cpp` | HighPerformance | `A==1 && (N>=core*256 \|\| (N>1&&R<256))` | 20003 |
 | Router | `op_kernel/arg_max_with_value_apt.cpp` | router | key 20003 | RA body |
 
 #### Device 数据流
@@ -1248,7 +1248,7 @@ UB_total = GroupReduce::InitBuffer allocations; tiling rejects/falls back if not
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `op_host/arch35/arg_common_base_tiling_arch35.cpp` | Group tiling | GROUP guard 且 `N*effectiveByte>=128 || blkFactor*effectiveByte<256` | `isRaSplit=1` |
+| Tiling | `op_host/arch35/arg_common_base_tiling_arch35.cpp` | Group tiling | GROUP guard 且 `N*effectiveByte>=128 \|\| blkFactor*effectiveByte<256` | `isRaSplit=1` |
 | Device | `op_kernel/arch35/arg_max_with_value_group_reduce.h` | `ProcessRaSplit` | isRaSplit | all-core phase2 |
 
 #### Device 数据流

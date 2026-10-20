@@ -161,14 +161,14 @@ dtype digit 为 INT8→1、FP16→2、BF16→3、FP32→4、INT32→5。key 公�
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 2D-small-LR | `211/221/231/241/251`；`CircularPad2D<T>` | `front==0 && back==0` 且 small 条件成立，且 `left>0 || right>0` | `hasLR=false` 到 R-002；small 失败到 R-003/R-004。 |
+| 1 | R-001 2D-small-LR | `211/221/231/241/251`；`CircularPad2D<T>` | `front==0 && back==0` 且 small 条件成立，且 `left>0 \|\| right>0` | `hasLR=false` 到 R-002；small 失败到 R-003/R-004。 |
 | 2 | R-002 2D-small-direct | 同 R-001 keys；`CircularPad2D<T>` | `front==0 && back==0` 且 small，且 `left<=0 && right<=0` | small 失败到 R-004。 |
-| 3 | R-003 2D-big-LR | `212/222/232/242/252`；`CircularPad2D<T>` | `front==0 && back==0` 且 small 条件不成立，且 `left>0 || right>0` | `hasLR=false` 到 R-004。 |
+| 3 | R-003 2D-big-LR | `212/222/232/242/252`；`CircularPad2D<T>` | `front==0 && back==0` 且 small 条件不成立，且 `left>0 \|\| right>0` | `hasLR=false` 到 R-004。 |
 | 4 | R-004 2D-big-direct | 同 R-003 keys；`CircularPad2D<T>` | `front==0 && back==0` 且 big，且 `left<=0 && right<=0` | 无 fallback；校验失败则 Tiling 失败。 |
-| 5 | R-005 3D-small-LR | `311/321/331/341/351`；`CircularPad3D<T>` | `(front!=0 || back!=0)` 且 small，且 `left>0 || right>0` | `hasLR=false` 到 R-006；small 失败到 R-007/R-008。 |
-| 6 | R-006 3D-small-direct | 同 R-005 keys；`CircularPad3D<T>` | `(front!=0 || back!=0)` 且 small，且 `left<=0 && right<=0` | small 失败到 R-008。 |
-| 7 | R-007 3D-big-LR | `312/322/332/342/352`；`CircularPad3D<T>` | `(front!=0 || back!=0)` 且 big，且 `left>0 || right>0` | `hasLR=false` 到 R-008。 |
-| 8 | R-008 3D-big-direct | 同 R-007 keys；`CircularPad3D<T>` | `(front!=0 || back!=0)` 且 big，且 `left<=0 && right<=0` | 无 fallback；校验失败则 Tiling 失败。 |
+| 5 | R-005 3D-small-LR | `311/321/331/341/351`；`CircularPad3D<T>` | `(front!=0 \|\| back!=0)` 且 small，且 `left>0 \|\| right>0` | `hasLR=false` 到 R-006；small 失败到 R-007/R-008。 |
+| 6 | R-006 3D-small-direct | 同 R-005 keys；`CircularPad3D<T>` | `(front!=0 \|\| back!=0)` 且 small，且 `left<=0 && right<=0` | small 失败到 R-008。 |
+| 7 | R-007 3D-big-LR | `312/322/332/342/352`；`CircularPad3D<T>` | `(front!=0 \|\| back!=0)` 且 big，且 `left>0 \|\| right>0` | `hasLR=false` 到 R-008。 |
+| 8 | R-008 3D-big-direct | 同 R-007 keys；`CircularPad3D<T>` | `(front!=0 \|\| back!=0)` 且 big，且 `left<=0 && right<=0` | 无 fallback；校验失败则 Tiling 失败。 |
 
 ```text
 CheckDtype -> CalculateParams -> CheckInput
@@ -199,8 +199,8 @@ CheckDtype -> CalculateParams -> CheckInput
 |---|---|---|---|---|---|
 | 单行 UB | `inputW < ubSize/(2*t)` | 一个 queue 槽仅 96 KiB，至少要容纳一条输入行 | 全部 | `GRAPH_FAILED`，无更小 tile fallback | `CircularPadTiling::CheckInput` |
 | 整页 UB | `inOutputH*outputWAlign < ubSize/(2*t)` | small 一次把整个有效 H×对齐 W 放进单槽 | R-001/2/5/6 | 否则 big 路线 | `CircularPadTiling::DoOpTiling` |
-| 左右正 pad | `left>0 || right>0` | 需要从另一端循环复制，必须生成 workspace 中间列 | 奇数 LR Route | 否则 direct Route | `CircularPad<T>::Init` / `hasLR` |
-| 深度依赖 | `front!=0 || back!=0` | front/back 需读取同一 volume 已完成的 y 页 | R-005～8 | 为 0 时按独立页走 2D Route | `CalculateParams` / `DivCore` |
+| 左右正 pad | `left>0 \|\| right>0` | 需要从另一端循环复制，必须生成 workspace 中间列 | 奇数 LR Route | 否则 direct Route | `CircularPad<T>::Init` / `hasLR` |
+| 深度依赖 | `front!=0 \|\| back!=0` | front/back 需读取同一 volume 已完成的 y 页 | R-005～8 | 为 0 时按独立页走 2D Route | `CalculateParams` / `DivCore` |
 | padding 有效域 | 四组正负组合检查 | 防止源 offset 越界或裁空维度 | 全部 | `GRAPH_FAILED` | `CheckLeftAndRight/CheckTopAndBottom/CheckFrontAndBack` |
 | DMA 窄化 | `inOutputH/top/bottom` 写入 `uint16_t blockCount`；宽/stride 写入 `uint32_t` | `DataCopyExtParams` 字段位宽 | 全部 | 固定 Host 无显式溢出 fallback；须遵守公开 shape 上界 | `CalculateLeftAndRightParams` / `CopyToOutSmallShapeOnePage` |
 | BF16 编译 guard | A2/A3 不命中 `__NPU_ARCH__==3003/3113` 排除条件 | Kirin 编译不实例化 BF16，A2/A3 保留 | BF16 keys `231/232/331/332` | 被排除平台 unknown-key return | `circular_pad` router |
@@ -256,7 +256,7 @@ small 将完整有效页放入一个 UB 槽；big 的 `CopyLines/CopyOnePage` �
 | Tiling | `circular_pad_common_tiling.cpp` | `CalculateParams/SetTilingKey` | `front==0 && back==0` | key 百位 2 |
 | Tiling | `circular_pad_tiling.cpp` | `DoOpTiling` | `inOutputH*outputWAlign < ubSize/2/t` | key 末位 1 |
 | Router | `circular_pad.cpp` | `circular_pad` | 2x1 key | `CircularPad2D<T>::ProcessSmallShape` |
-| Device | `circular_pad.h` | `Init` | `left>0 || right>0` | `PadLeftAndRightSmallShape<true>` |
+| Device | `circular_pad.h` | `Init` | `left>0 \|\| right>0` | `PadLeftAndRightSmallShape<true>` |
 
 #### Device 数据流
 
@@ -430,7 +430,7 @@ workspace_total = sysWorkspaceSize + 4*totalTasks*workspaceLen  # body user byte
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `circular_pad_tiling.cpp` | `DoOpTiling` | D pad=0；整页不满足 1 槽 | key 2x2、窄条 workspace |
-| Device | `circular_pad.h` | `Init/ProcessBigShape` | `left>0 || right>0` | big `<true>` |
+| Device | `circular_pad.h` | `Init/ProcessBigShape` | `left>0 \|\| right>0` | big `<true>` |
 
 #### Device 数据流
 
@@ -602,7 +602,7 @@ workspace_total = sysWorkspaceSize + 4*totalTasks*workspaceLen; body user consum
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `circular_pad_common_tiling.cpp` | `CalculateParams/DivCore` | `front!=0 || back!=0` | key 3x1，整 volume 分核 |
+| Tiling | `circular_pad_common_tiling.cpp` | `CalculateParams/DivCore` | `front!=0 \|\| back!=0` | key 3x1，整 volume 分核 |
 | Device | `circular_pad.h` | `hasLR` | LR 正 pad | 3D small `<true>` |
 
 #### Device 数据流

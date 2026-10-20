@@ -307,7 +307,7 @@ for tile len<=S/4: CopyIn; Sub with 64 elems/repeat, <=255 repeats/batch,
 |---|---|---|---|---|---|---|---|
 | GM x/y | pointer table + slice + tile*S/4 | len*4 B | FP32 | MTE2/MTE3 | Vector/runtime | Kernel | tail pad |
 | dataQueue/outQueue | allocator | each depth2×S B | FP32 | CopyIn/Sub | Sub/CopyOut | per tile | double buffer |
-| scalar TBuf | allocator | 32 B=8 floats | Duplicate | Sub broadcast | per Tensor | stride 0 |
+| scalar TBuf | allocator | 32 B=8 floats | | Duplicate | Sub broadcast | per Tensor | stride 0 |
 
 ##### 分层内存布局
 
@@ -388,7 +388,7 @@ for tile len<=S/4: GM->UB; Sub int32 with 64 elems/repeat and exact tail mask; U
 | GM x/y | list table + element offset | len*4 B | INT32 | DMA | Vector/DMA | Kernel | tail Pad |
 | GM scalars | `t*8` B | n*8 B | INT64 | bridge | `GetValue(t)` | Kernel | cast once/core/Tensor |
 | data/out Queue | allocator | each depth2×S B | INT32 | CopyIn/Sub | Sub/CopyOut | tile | double buffer |
-| scalar TBuf | allocator | 32 B INT32 | Duplicate | Sub | Tensor | broadcast |
+| scalar TBuf | allocator | 32 B INT32 | | Duplicate | Sub | Tensor | broadcast |
 
 ##### 分层内存布局
 

@@ -552,9 +552,9 @@ for each local row:
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| workspace y1 | `(blockIdx*N)+nOffset` FP32 | `N` FP32/core | reduce-max pass | y pass | Torch workspace；跨阶段 | slice 0 |
-| workspace xOut FP32 | `(blockDim*N)+(blockIdx*N)+nOffset` | `N` FP32/core | add/reduce pass | reduce-max pass | 同上 | slice 1 |
-| workspace y2 | `2*blockDim*N+blockIdx*N` | `N` FP32/core | inactive | inactive | 仍由 Host 预留 | slice 2 |
+| workspace y1 | `(blockIdx*N)+nOffset` FP32 | `N` FP32/core | | reduce-max pass | y pass | Torch workspace；跨阶段 | slice 0 |
+| workspace xOut FP32 | `(blockDim*N)+(blockIdx*N)+nOffset` | `N` FP32/core | | add/reduce pass | reduce-max pass | 同上 | slice 1 |
+| workspace y2 | `2*blockDim*N+blockIdx*N` | `N` FP32/core | | inactive | inactive | 仍由 Host 预留 | slice 2 |
 | x queues/xOut queue | current N chunk | 各 `Rcut*2` B | input dtype | DMA/vector | reduce/DMA | chunk | `Rcut=align(baseN,256)` |
 | gamma/y/scale queues | chunk/row | `2*Acut`、`B8cut`、32 B | mixed | DMA/vector | vector/DMA | chunk/row | depth 1 |
 | x/y temporaries | 0 | `4*Rcut`、`4*B32cut` B | FP32 | MTE/vector | vector/MTE | chunk | event guarded |

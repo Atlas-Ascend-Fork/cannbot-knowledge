@@ -436,8 +436,8 @@ for each core-owned tensor slice:
 | input/output GM | outer offset `tile*9U/2` | n BF16 | BF16/ND flat | caller/CopyOut | CopyIn/caller | caller | tail n*2 B |
 | `dataQueue` | slot | depth2×9U | BF16 | CopyIn | Cast | TPipe outer tile | U is64 B aligned |
 | `outQueue` | slot | depth2×9U | BF16 | final Cast | CopyOut | TPipe outer tile | 同上 |
-| `float32Queue` first half | offset0 | U bytes=`U/4` float | Cast in | Cosh src | depth1，整个Process期间持有 | 与second half同一2U slot |
-| `float32Queue` second half | offset U bytes | U bytes | Cosh dst | final Cast | 同上 | 非原地Cosh，避免覆盖输入 |
+| `float32Queue` first half | offset0 | U bytes=`U/4` float | | Cast in | Cosh src | depth1，整个Process期间持有 | 与second half同一2U slot |
+| `float32Queue` second half | offset U bytes | U bytes | | Cosh dst | final Cast | 同上 | 非原地Cosh，避免覆盖输入 |
 
 ##### 分层内存布局
 

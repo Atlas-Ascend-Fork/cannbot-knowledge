@@ -257,7 +257,7 @@ workspace_total = 0 B
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
 | SIMT 映射 | thread-stride loop | VF launch | thread body | 唯一 idx | `idx<cnt` 保护尾段；无 barrier |
-| FP32 maximum | `isnan(float(a)) || a>b` | 两 GM load | GM store | 标量结果 | FP32 比较；任一 NaN 传播 |
+| FP32 maximum | `isnan(float(a)) \|\| a>b` | 两 GM load | GM store | 标量结果 | FP32 比较；任一 NaN 传播 |
 
 #### 关键实现
 
@@ -329,7 +329,7 @@ UB_total=0 B; dynamic_ub=N/A; local_memory_budget=U-128 KiB; workspace_total=0 B
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| FP16 maximum | `__hisnan(a)||a>b` | GM load | store | 标量 | FP16 比较；任一 NaN 传播；`idx<cnt` tail |
+| FP16 maximum | `__hisnan(a)\|\|a>b` | GM load | store | 标量 | FP16 比较；任一 NaN 传播；`idx<cnt` tail |
 
 #### 关键实现
 
@@ -615,5 +615,5 @@ BF16 转 FP32 只服务于 NaN 检查和大小比较，输出直接选择原始 
 | 调用顺序 | 单 Kernel，外层 Tensor overlap 后调用 VF | 每交集独立 512-thread VF；三列表同 index/localOff | `Process<T,schMode>` |
 | workspace/内存 | 0 workspace、直接 GM | localMemory=`U-128KiB`；不得虚构 Queue/shared buffer | Tiling + SIMT body |
 | 同步 | 无 barrier/atomic，靠不重叠 idx 与 Kernel/stream 边界 | 核区间和线程 stride 必须保持无重叠 | `Process`、VF loops |
-| 精度与尾块 | 浮点 NaN propagation；BF16 FP32 predicate；INT32 direct compare | `(isnan(a)||a>b)?a:b` 顺序、`idx<cnt` | 四个 VF body |
+| 精度与尾块 | 浮点 NaN propagation；BF16 FP32 predicate；INT32 direct compare | `(isnan(a)\|\|a>b)?a:b` 顺序、`idx<cnt` | 四个 VF body |
 | 失败边界 | resource/tensorNum/dtype 失败阻断 launch | x2/out 校验仍依赖 ACLNN 框架；N 累加无溢出检查 | `GetPlatformInfo`、Tiling dtype branch |

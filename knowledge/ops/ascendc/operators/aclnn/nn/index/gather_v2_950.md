@@ -131,7 +131,7 @@ Host 先做 dtype 合宽：若尾部连续字节数可整除 8/4/2，则把 `imp
 | 2 | R-002 last gather | `1100000000+D` | `B==1 && A==1 && G*D` 可全载，`D<=8`，`I/G>1`，`I*D>=32`，且 B8/B16 时 `G<65536`、其余 `G<INT32_MAX`；公开 V3 950 的 NIS 固定 false | R-003 |
 | 3 | R-003 GA all-load | `3000` | `B==1 && I/G>1`；`32<A*D<2048`；若 `D==8` 则 `align(A*D)*G>512`；扣除 help、双输出区、最小 index 区和一个 `GA` 载入区后 UB 非负；公开 V3 950 的 NIS 固定 false | R-004/R-005 |
 | 4 | R-004/R-005 2D SIMT/PCIe | `2000000000+D+(addr64?100:0)` | 前述路线均不命中且 `B==1 && P==1`；所有地址不在 `[0x40000000000,0x80000000000)` 用 SIMT，否则同 key 改走 PCIe SIMD | R-006 |
-| 5 | R-006 general SIMD | `1000000099` | 前述二维路线不命中；`(D=1 && A*D>=218)||(D=2 && >=360)||(D=4 && >=620)||(A*D>=2048)`，且 `UB>=16384`、`B*P*I>=aivNum/2` | R-007/R-008 |
+| 5 | R-006 general SIMD | `1000000099` | 前述二维路线不命中；`(D=1 && A*D>=218)\|\|(D=2 && >=360)\|\|(D=4 && >=620)\|\|(A*D>=2048)`，且 `UB>=16384`、`B*P*I>=aivNum/2` | R-007/R-008 |
 | 6 | R-007/R-008 general SIMT/PCIe | `GET_TILINGKEY(addrType,dtypeKey)` | 其余 AICore case；本地地址用 SIMT，任一 I/O/axis 地址落入 PCIe 区间时改走 PCIe SIMD | Tiling 失败 |
 | 7 | R-009 AICPU | 无 AICore key | `IsAiCoreSupport==false`；950 V3 API 白名单与 L0 白名单的差集为 COMPLEX128 | 失败 |
 

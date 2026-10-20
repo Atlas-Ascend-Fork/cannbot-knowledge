@@ -119,7 +119,7 @@ aclnnTransposeBatchMatMul
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-005 PP 102/012 | `(split=0,pp=1,x1=2,x2=0)` | 无 bias/scale、HF32=false、factor=1、x1=102，且 `K>=65536 || B*K>=65536 || (x1/x2/out全FP32)`；x2=012。 | R-001～R-004 registry base 或失败。 |
+| 1 | R-005 PP 102/012 | `(split=0,pp=1,x1=2,x2=0)` | 无 bias/scale、HF32=false、factor=1、x1=102，且 `K>=65536 \|\| B*K>=65536 \|\| (x1/x2/out全FP32)`；x2=012。 | R-001～R-004 registry base 或失败。 |
 | 2 | R-006 PP 102/021 | `(0,1,2,1)` | 无 bias/scale、HF32=false、factor=1、x1=102、x2=021。 | 失败（ACLNN 已禁止其它组合）。 |
 | 3 | R-001 Base 012 | `(0,0,0,0)` | x2=012、factor=1、x1=012；PP 前置谓词不命中。 | tiling/参数失败。 |
 | 4 | R-002 Base 102 | `(0,0,2,0)` | x2=012、factor=1、x1=102，且 PP 前置谓词不命中；scale 存在时落此路线。 | tiling/参数失败。 |

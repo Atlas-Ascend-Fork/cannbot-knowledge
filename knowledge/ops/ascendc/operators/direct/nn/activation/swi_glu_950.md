@@ -164,17 +164,17 @@ compact 的 H2 在普通 DB/SB entry 分发之前，但在公共 tiling 之后�
 |---|---|---|---|---|
 | R-002（P0）FP32 aligned DB | `dtype=FP32 && A && !S` | H0 float；H1 DB；H3 → `swi_glu_float_expsub_db_aiv`；`SwigluSingle<SwigluExpSubVector<float,2>,float,float>` | 3 个 depth-2 TQue；实际 `24L` B；TQue lifecycle | 32B block DMA；四区 tail + 64-lane mask；FP32 全程；tiling/launch 失败即报错 |
 | R-004（P0）FP32 unaligned DB | `dtype=FP32 && !A && !S` | 同 R-002 entry/template，D1 走 nonaligned methods | depth-2；实际 `24L` B，`L=baseRow*align_up(baseCol,8)` | byte-unit DataCopyPad；只写有效列；FP32；无跨 Route 重试 |
-| R-006（P0）T16 aligned DB | `dtype in {FP16,BF16} && !C && A && !S` | H0 half/BF16；H1 DB；H3 → `swi_glu_{half|bfloat16}_expsub_db_aiv`；`SwigluSingle<SwigluExpSubVector<T16,2>,T16,T16>` | 3 个 depth-2 TQue；实际 `12L` B | 32B block DMA；T16→FP32→`CAST_RINT` T16；mask tail；失败报错 |
+| R-006（P0）T16 aligned DB | `dtype in {FP16,BF16} && !C && A && !S` | H0 half/BF16；H1 DB；H3 → `swi_glu_{half\|bfloat16}_expsub_db_aiv`；`SwigluSingle<SwigluExpSubVector<T16,2>,T16,T16>` | 3 个 depth-2 TQue；实际 `12L` B | 32B block DMA；T16→FP32→`CAST_RINT` T16；mask tail；失败报错 |
 | R-008（P0）T16 unaligned DB | `dtype in {FP16,BF16} && !C && !A && !S` | 同 R-006 entry/template，D1 走 nonaligned methods | depth-2；实际 `12L` B，`L=baseRow*align_up(baseCol,16)` | byte-unit padded row；有效 bytes 回写；FP32 中间值；失败报错 |
 | R-001（P1）BF16 col1 compact | `dtype=BF16 && colLen==1` | H1 后 H2 → `swi_glu_bfloat16_col1_compact_aiv`；`SwiGluNarrowBf16`；只消费 `rowLen` 和 launch blockDim | inQ depth2、outQ depth1、3 TBuf；固定 135168B；TQue + 显式 PIPE_V | 连续 pair copy；6144 行 tile；BF16→FP32，`Muls+Exp`，RINT；count tail；无 Device fallback |
 | R-003（P2）FP32 aligned SB | `dtype=FP32 && A && S` | H1 写 DB=0；H3 → `swi_glu_float_expsub_sb_aiv`；`SwigluSingle<SwigluExpSubVector<float,1>,float,float>` | 3 个 depth-1 TQue；实际 `12L` B | 与 R-002 相同 DMA/tail/FP32；SB 候选不成立则不进入本叶而保持 P0 |
 | R-005（P2）FP32 unaligned SB | `dtype=FP32 && !A && S` | 同 R-003 entry/template，D1 nonaligned | depth-1；实际 `12L` B，padded L | 与 R-004 相同 valid-only tail/FP32；无运行时 retry |
-| R-007（P2）T16 aligned SB | `dtype in {FP16,BF16} && !C && A && S` | H1 写 DB=0；H3 → `swi_glu_{half|bfloat16}_expsub_sb_aiv`；`SwigluSingle<SwigluExpSubVector<T16,1>,T16,T16>` | 3 个 depth-1 TQue；实际 `6L` B | 与 R-006 相同 aligned tail/FP32 intermediate/RINT；S 不成立保持 P0 |
+| R-007（P2）T16 aligned SB | `dtype in {FP16,BF16} && !C && A && S` | H1 写 DB=0；H3 → `swi_glu_{half\|bfloat16}_expsub_sb_aiv`；`SwigluSingle<SwigluExpSubVector<T16,1>,T16,T16>` | 3 个 depth-1 TQue；实际 `6L` B | 与 R-006 相同 aligned tail/FP32 intermediate/RINT；S 不成立保持 P0 |
 | R-009（P2）T16 unaligned SB | `dtype in {FP16,BF16} && !C && !A && S` | 同 R-007 entry/template，D1 nonaligned | depth-1；实际 `6L` B，padded L | 与 R-008 相同 valid-only tail/精度；无运行时 retry |
 
 | family | Host/selector 与 POD 锚点 | entry/body 锚点 | 后文关键伪码 |
 |---|---|---|---|
-| F-GDB / F-GSB | `op_kernel/swi_glu_kernel.cpp` 的 `GluSingleTilingCalculator::CalcTiling`、三个 `launch_swi_glu_*`；`swi_glu_tilingdata.h` | 同文件 `*_expsub_{db|sb}_aiv`；`arch35/swi_glu_single.hpp`；`swi_glu_expsub.h` | base shape/S、二维 tile offset、四区 DMA、Queue lifecycle、ExpSub VF |
+| F-GDB / F-GSB | `op_kernel/swi_glu_kernel.cpp` 的 `GluSingleTilingCalculator::CalcTiling`、三个 `launch_swi_glu_*`；`swi_glu_tilingdata.h` | 同文件 `*_expsub_{db\|sb}_aiv`；`arch35/swi_glu_single.hpp`；`swi_glu_expsub.h` | base shape/S、二维 tile offset、四区 DMA、Queue lifecycle、ExpSub VF |
 | F-C1 | `launch_swi_glu_bfloat16` 的 `colLen==1` 分支；POD `rowLen` 与公共 blockDim | `swi_glu_bfloat16_col1_compact_aiv`；`swi_glu_narrow_bf16.h` | 连续行分核、pair copy/Gather、135168B UB、Muls+Exp 与 count tail |
 
 ## Tiling、分核与普通 body
@@ -320,8 +320,8 @@ core 拥有连续、不重叠的半开行区间；多余 core 由 `coreBegin>=ro
 
 | dormant family | entry/body | 不可达原因 | 重新启用边界 |
 |---|---|---|---|
-| faithful shells | `swi_glu_{float|half|bfloat16}_{db|sb}`；`SwigluVector` 或 `SwigluVectorBF16` | 三个 launcher 无调用边，且 shell 不设置 AIV-only task metadata | 需要显式 launcher selector，并补齐 950 direct task metadata 与独立精度/资源验证 |
-| adapted non-ExpSub shells | `swi_glu_{float|half|bfloat16}_{db|sb}_aiv`；官方 `SwiGLU`/BF16 body | 有 AIV marker，但生产 launcher 仍无调用边 | 需要新增生产 selector；不能与当前 ExpSub 叶混记为 active |
+| faithful shells | `swi_glu_{float\|half\|bfloat16}_{db\|sb}`；`SwigluVector` 或 `SwigluVectorBF16` | 三个 launcher 无调用边，且 shell 不设置 AIV-only task metadata | 需要显式 launcher selector，并补齐 950 direct task metadata 与独立精度/资源验证 |
+| adapted non-ExpSub shells | `swi_glu_{float\|half\|bfloat16}_{db\|sb}_aiv`；官方 `SwiGLU`/BF16 body | 有 AIV marker，但生产 launcher 仍无调用边 | 需要新增生产 selector；不能与当前 ExpSub 叶混记为 active |
 
 ### Route 间不变量
 

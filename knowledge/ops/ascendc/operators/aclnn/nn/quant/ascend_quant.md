@@ -132,7 +132,7 @@ else: key=0
 | UB reserve | `availableUb=ubSize-2048` | 为运行时保留 2 KiB，tile 只用余量 | R-001..003 | 缩小 `baseLen/baseN` | `CalcUBFactor*` |
 | cache 对齐 | A2/A3 `cacheLine=512 B` | 分核、DMA 和 UB tile 按 cache line 元素对齐 | R-001..003 | 改切轴或缩 tile | `GetCompileInfo/CalcTiling` |
 | 输出尾轴 | INT4 偶数；INT32 为 1/8 view | 两个 INT4/byte、八个 INT4/INT32 | 全部 | ACLNN 参数错误 | `CheckInt4LastDim/CheckInt32OutputShape` |
-| 空 block | `blockIdx>=numCore || blockN==0` | `blockDim` 是物理 AIV 核数而非实际核数 | R-001..003 | Device 立即返回 | 各 `Process` |
+| 空 block | `blockIdx>=numCore \|\| blockN==0` | `blockDim` 是物理 AIV 核数而非实际核数 | R-001..003 | Device 立即返回 | 各 `Process` |
 | NZ 几何 | `needCoreNum=min(K/16,coreNum)`，`nloop=E*N/64` | body 固定 16×64 数据片 | R-004 | 公开 API shape 约束兜底；固定仓无额外 fallback | `CalcTilingNz/AscendQuantV2NZFP32::Process` |
 
 ### POD/ABI

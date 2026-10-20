@@ -355,7 +355,7 @@ register bytes=固定仓不可见
 |---|---|---|---|
 | Host/Tiling producer | arch35 Tiling | `ForeachMinimumListTilingFunc` | schMode1。 |
 | Kernel entry/router | arch35 entry | `foreach_minimum_list<1>` | `Process<half,1>`。 |
-| Device body/helper | arch35 SIMT header | `ForeachMinimumListSimtFp16` | `__hisnan(a)||a<b`、512 threads。 |
+| Device body/helper | arch35 SIMT header | `ForeachMinimumListSimtFp16` | `__hisnan(a)\|\|a<b`、512 threads。 |
 
 ### Route R-003：BF16 选择式 FP32 比较 SIMT
 

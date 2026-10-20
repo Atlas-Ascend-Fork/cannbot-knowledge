@@ -101,7 +101,7 @@ selector 先尝试 HighPerformance：`baseN=N`、`baseNDtypeAlign=align(N,32/siz
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-005 Empty | 199 | `M==0 || N==0`，最终覆盖其它 tiling key | 空 Kernel |
+| 1 | R-005 Empty | 199 | `M==0 \|\| N==0`，最终覆盖其它 tiling key | 空 Kernel |
 | 2 | R-001 HighPerformance | 103 | `baseNDtypeAlign<=16384` 且双缓冲公式求得 `baseM>=1` 且 `mPerCore>1` | R-002/R-003 尝试不切 |
 | 3 | R-002 Normal/Cut-M | 100 | HighPerformance 不适用；`CalUBTotalSize(mPerCore,N)<maxUB` 或 `CalUBTotalSize(1,N)<=maxUB`，且 `mPerCore>1` | R-003（若单行）或 R-004 |
 | 4 | R-003 Single-N | 102 | 同一“不切/Cut-M 可容纳”条件，但 `mPerCore==1` | R-004 |
@@ -270,7 +270,7 @@ workspace_total = system workspace only
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Host | `...tiling_arch35.cpp` | `CalUBTotalSize/SetTilingParams` | HP 未命中，整 N 至少一行可放且 mPerCore>1 | key100 |
-| Router | `...add_rms_norm_cast_apt.cpp` | key100 | `RegBaseNormal<T>` |
+| Router | `...add_rms_norm_cast_apt.cpp` | | key100 | `RegBaseNormal<T>` |
 
 #### Device 数据流
 
@@ -359,7 +359,7 @@ workspace_total = system only
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Host | `...tiling_arch35.cpp` | `SetTilingParams` | 整 N 至少一行可放，`mPerCore==1` | key102、scheduleMode=1 |
-| Router | `...add_rms_norm_cast_apt.cpp` | key102 | Single-N body |
+| Router | `...add_rms_norm_cast_apt.cpp` | | key102 | Single-N body |
 
 #### Device 数据流
 
@@ -442,7 +442,7 @@ workspace_total = usedCoreNum*128 B + system workspace
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Host | `...tiling_arch35.cpp` | `SetTilingParams` | 一行整 N 不入 UB，最小 reduce tile 可入 UB | key101 |
-| Router | `...add_rms_norm_cast_apt.cpp` | key101 | SplitReduce body |
+| Router | `...add_rms_norm_cast_apt.cpp` | | key101 | SplitReduce body |
 
 #### Device 数据流
 
@@ -531,7 +531,7 @@ workspace_total = usedCoreNum*N*4 + system workspace
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | `op_host/add_rms_norm_cast_tiling_arch35.cpp` | `SetInputParams/GetTilingKey` | `M==0 || N==0` | key199 |
+| Host | `op_host/add_rms_norm_cast_tiling_arch35.cpp` | `SetInputParams/GetTilingKey` | `M==0 \|\| N==0` | key199 |
 | Router | `op_kernel/add_rms_norm_cast_apt.cpp` | key199 branch | 显式注释 Empty kernel | 返回 |
 
 #### Device 数据流

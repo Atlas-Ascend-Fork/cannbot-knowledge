@@ -139,7 +139,7 @@ RouteToFia ? empty(0)->MLA(9)->general(29)
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| CV 比例 | `aicNum==aivNum || 2*aicNum==aivNum` | AIC/AIV pairing 与 flag 编号 | R-001 | legacy/失败 | `CheckRouteToFiaPrerequisites` |
+| CV 比例 | `aicNum==aivNum \|\| 2*aicNum==aivNum` | AIC/AIV pairing 与 flag 编号 | R-001 | legacy/失败 | `CheckRouteToFiaPrerequisites` |
 | legacy 特例 | D=Dv、ropeD=0、S1=1、MHA、非 PA，且 D=256 无 prefix 或 D=80 有 prefix | 保留旧 IFA 特化 | R-001/R-003 | R-003 | `IsLegacyTemplatePreferred` |
 | MLA 注册模板 | D/Dv=512、ropeD=64、N2=1、无 sink/prefix/PSE/padding/postquant/TensorList | MLA 固定内存/地址 specialization | R-001 | p29/失败 | `FiaTilingNonQuantMla::IsCapable` |
 | SplitFuse D | D=KD=VD≤256；FP 16 对齐；INT8 32 对齐 | fixed MMAD/DMA tile | R-002 | R-003/R-004/失败 | `IsUsingFAI`,`TilingProcess4PFA` |

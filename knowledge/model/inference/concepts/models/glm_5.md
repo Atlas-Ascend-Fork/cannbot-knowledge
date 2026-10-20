@@ -61,25 +61,17 @@ flowchart TD
 
 精简参数表（与部署用 `configuration_glm.py` 默认值一致）：
 
-| 维度 | 值 |
-| MoE | 值 |
+| 维度 | 值 | | MoE | 值 |
 | ---- | ---- | ---- | ---- | ---- |
-| vocab | 154880 |
-| n_routed_experts | 256 |
-| hidden | 6144 |
-| n_shared_experts | 1 |
-| n_layers | 78 |
-| num_experts_per_tok | 8 |
-| dense intermediate | 12288 |
-| routed_scaling_factor | 2.5 |
-| moe_intermediate | 2048 |
-| n_group / topk_group | 1 / 1 |
+| vocab | 154880 | | n_routed_experts | 256 |
+| hidden | 6144 | | n_shared_experts | 1 |
+| n_layers | 78 | | num_experts_per_tok | 8 |
+| dense intermediate | 12288 | | routed_scaling_factor | 2.5 |
+| moe_intermediate | 2048 | | n_group / topk_group | 1 / 1 |
 | dense 层 | 1-3（共 3）| | scoring | sigmoid |
 | MoE 层 | 4-78（共 75）| | balance | noaux_tc（无辅助损失）|
-| max_position_embeddings | 202752 |
-| norm_topk_prob | True |
-| rms_norm_eps | 1e-5 |
-| tie_word_embeddings | False |
+| max_position_embeddings | 202752 | | norm_topk_prob | True |
+| rms_norm_eps | 1e-5 | | tie_word_embeddings | False |
 
 > 层类型由 `GlmMoeDsaConfig` 硬编码 `mlp_layer_types = ["dense"]×3 + ["sparse"]×75`，不通过 `first_k_dense_replace` 配置。
 

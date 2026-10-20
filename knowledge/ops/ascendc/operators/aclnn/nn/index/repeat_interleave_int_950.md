@@ -160,7 +160,7 @@ block `b` 覆盖 `eachCoreBatchCount` 个输入元素，尾 block 改用 `tailCo
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 空输出 | 无 Kernel | 校验成功后 `self->IsEmpty() || out->IsEmpty()` | R-002 |
+| 1 | R-001 空输出 | 无 Kernel | 校验成功后 `self->IsEmpty() \|\| out->IsEmpty()` | R-002 |
 | 2 | R-002 恒等复制 | 无 Repeat Kernel | 非空且 `repeats==1` | R-003 |
 | 3 | R-003 小重复 Gather | key 101，`RepeatInterleaveScalarImpl<T,int64_t>` | 普通路径；`s<32` 且 `r*s<=256`；对本接口 `cp=1`，这是 Device `ProcessWholeCp` 的首个判断 | R-004 |
 | 4 | R-004 批量寄存器复制 | key 101，同模板 | `r*s>256` 且 `floor(F/r)>0`，即 `r<=F` | R-005 |
@@ -253,7 +253,7 @@ GM x tile -> xInQueue(VECIN) -> MicroAPI register copy/gather
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `op_api/aclnn_repeat_interleave.cpp` | `aclnnRepeatInterleaveIntGetWorkspaceSize` | `self->IsEmpty() || out->IsEmpty()` | `workspaceSize=0`，移交空 executor 并成功返回 |
+| API | `op_api/aclnn_repeat_interleave.cpp` | `aclnnRepeatInterleaveIntGetWorkspaceSize` | `self->IsEmpty() \|\| out->IsEmpty()` | `workspaceSize=0`，移交空 executor 并成功返回 |
 
 #### Device 数据流
 

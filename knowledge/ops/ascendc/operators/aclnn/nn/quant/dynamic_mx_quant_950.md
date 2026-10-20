@@ -124,7 +124,7 @@ aclnnDynamicMxQuantV2GetWorkspaceSize
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 尾轴 block32 | 33/65/97 | `isTailAxis && (attr blocksize==32 || quantAxisSize==32)`；key 随 `scaleAlg=0/1/2` | R-004 检查 |
+| 1 | R-001 尾轴 block32 | 33/65/97 | `isTailAxis && (attr blocksize==32 \|\| quantAxisSize==32)`；key 随 `scaleAlg=0/1/2` | R-004 检查 |
 | 2 | R-004 非尾轴小尾高性能 | 292/324/356/388，548/580/612/644，804/836/868/900 | 非尾轴，`post<=nAlign`，`blockSize==32`，`groupPerUb>0`；三组分别 rint/round/floor，组内 calcMode 0/1/2/3 | R-006/R-007 |
 | 3 | R-005 非尾轴大尾高性能 | 293/325/357/389，549/581/613/645，805/837/869/901 | 非尾轴，`post>nAlign`，`groupPerUb>0`；round/calcMode 编码同上 | R-006/R-007 |
 | 4 | R-002 尾轴普通直写 | 8192 | 尾轴、有效 blockSize!=32、`blocks` 为偶数 | 失败 |

@@ -178,8 +178,8 @@ aclnnMatmulAllReduceV3(stream)
 | 1 | R-001 K=0 | `MMTYPE_FP_NULL_TENSOR`；`MIX_AIV_1_0`；commMode 0/1 | `K==0`；key 强制 `A2A_RS_AG=false`、`MATMUL_WITH_ADD=false`，bias/x3 由 POD 运行时判断 | K!=0→R-002..R-005 |
 | 2 | R-002 AllReduce/Cube | `MMTYPE_FP_MM,A2A=0,MATMUL_WITH_ADD=0`；`MIX_AIC_1_0` | K!=0，rank 不为 950 4/8，x3 缺省；commMode 0/1 各自实例 | x3 存在→R-003；rank 4/8→R-004 |
 | 3 | R-003 AllReduce/Cube+AIV add | `MMTYPE_FP_MM,A2A=0,MATMUL_WITH_ADD=1`；`MIX_AIC_1_2` | K!=0，rank 不为 950 4/8，x3 存在；commMode 0/1 | rank 4/8→R-005 |
-| 4 | R-004 A2A+ReduceSum+AG | `MMTYPE_FP_MM,A2A=1,MATMUL_WITH_ADD=0`；`MIX_AIC_1_2` | K!=0，`rankDim==4 || rankDim==8`，x3 缺省；commMode 0/1 | x3 存在→R-005 |
-| 5 | R-005 A2A+add+ReduceSum+AG | `MMTYPE_FP_MM,A2A=1,MATMUL_WITH_ADD=1`；`MIX_AIC_1_2` | K!=0，`rankDim==4 || rankDim==8`，x3 存在；commMode 0/1 | 不满足则 R-002/R-003 |
+| 4 | R-004 A2A+ReduceSum+AG | `MMTYPE_FP_MM,A2A=1,MATMUL_WITH_ADD=0`；`MIX_AIC_1_2` | K!=0，`rankDim==4 \|\| rankDim==8`，x3 缺省；commMode 0/1 | x3 存在→R-005 |
+| 5 | R-005 A2A+add+ReduceSum+AG | `MMTYPE_FP_MM,A2A=1,MATMUL_WITH_ADD=1`；`MIX_AIC_1_2` | K!=0，`rankDim==4 \|\| rankDim==8`，x3 存在；commMode 0/1 | 不满足则 R-002/R-003 |
 
 ```text
 A5 registry priority 0 Quant IsCapable=false

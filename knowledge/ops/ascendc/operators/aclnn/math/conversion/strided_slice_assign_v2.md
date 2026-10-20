@@ -222,7 +222,7 @@ A2/A3 公开 ACLNN dtype
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | API | `docs/aclnnStridedSliceAssignV2.md` | `aclnnStridedSliceAssignV2GetWorkspaceSize` | dtype 属于 FP16/FP32/BF16/INT32/INT8 且其余公开约束成立 | 进入 StridedSliceAssignV2 executor |
-| Host config | `op_host/config/ascend910b|ascend910_93/strided_slice_assign_v2_binary.json` | 对应 dtype `bin_filename` | A2/A3 + var/input 同 dtype + indices INT64 | 编译/装载相应 `DTYPE_VAR` binary |
+| Host config | `op_host/config/ascend910b\|ascend910_93/strided_slice_assign_v2_binary.json` | 对应 dtype `bin_filename` | A2/A3 + var/input 同 dtype + indices INT64 | 编译/装载相应 `DTYPE_VAR` binary |
 | Tiling | `op_host/strided_slice_assign_v2_tiling.cpp` | `Tiling4StridedSliceAssignV2` | shape 校验通过；无 Route 分支 | `key=1`、`blockDim=totalCoreNum` |
 | Router | `op_kernel/strided_slice_assign_v2.cpp` | `strided_slice_assign_v2` | `TILING_KEY_IS(1)` | 实例化 `KernelStridedSliceAssignV2<DTYPE_VAR>` |
 | Body | `op_kernel/strided_slice_assign_v2.h` | `Init/Process` | `if constexpr(sizeof(T)==sizeof(int64_t))` 为 false | 原生 `GlobalTensor<T>` / `LocalTensor<T>` 路径 |
@@ -335,7 +335,7 @@ workspace_total = 16777216 bytes system workspace；Kernel 数据 workspace = 0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | API | `docs/aclnnStridedSliceAssignV2.md` | `aclnnStridedSliceAssignV2GetWorkspaceSize` | dtype 为 INT64 或 DOUBLE 且其余公开约束成立 | 进入 StridedSliceAssignV2 executor |
-| Host config | `op_host/config/ascend910b|ascend910_93/strided_slice_assign_v2_binary.json` | `StridedSliceAssignV2_Int64_Int64` / `Double_Int64` | A2/A3 + var/input 同 dtype + indices INT64 | 装载 64-bit `DTYPE_VAR` binary |
+| Host config | `op_host/config/ascend910b\|ascend910_93/strided_slice_assign_v2_binary.json` | `StridedSliceAssignV2_Int64_Int64` / `Double_Int64` | A2/A3 + var/input 同 dtype + indices INT64 | 装载 64-bit `DTYPE_VAR` binary |
 | Tiling | `op_host/strided_slice_assign_v2_tiling.cpp` | `Tiling4StridedSliceAssignV2` | shape 校验通过 | `key=1`、`blockDim=totalCoreNum` |
 | Router | `op_kernel/strided_slice_assign_v2.cpp` | `strided_slice_assign_v2` | `TILING_KEY_IS(1)` | 同一 Kernel 模板 |
 | Body | `op_kernel/strided_slice_assign_v2.h` | `Init/Process` | `sizeof(T)==sizeof(int64_t)` 为 true | GM/UB 均改用 `int32_t` 视图；逻辑 offset 乘 2 |

@@ -263,7 +263,7 @@ Direct `UniqueDimTilingData` 是 32 个连续 `int64_t`：`sizeof=256`、`aligno
 
 | 槽 | official Phase8 写值 | fixed/dense 写值 | Direct Host 是否读取 |
 |---:|---|---|---|
-| 0 | `0x80000000 | inputDimNum`，Direct 恒为 `0x80000001` | finalize 暂写 0；fixed 不写 | 否 |
+| 0 | `0x80000000 \| inputDimNum`，Direct 恒为 `0x80000001` | finalize 暂写 0；fixed 不写 | 否 |
 | 1 | y 的 `numOut` | compact 写 `numOut`；dense finalize 先写 `UINT64_MAX` 防止旧值冒充结果 | 是，D2H 8 B |
 | 2..8 | y 的其余维，Direct rank1 因而保持初始化值 | dense 槽2暂作 `routeFlag`；其余不保证 | 否 |
 | 9/10 | inverse 描述；槽10为 `N` 或 noinv 时 1 | 不保证 | 否 |

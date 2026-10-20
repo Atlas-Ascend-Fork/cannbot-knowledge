@@ -278,7 +278,7 @@ workspace_total(operator) = 0 B
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API/OpDef | docs + OpDef | FP16 | 支持 |
+| API/OpDef | docs + OpDef | | FP16 | 支持 |
 | Tiling | arch35 Tiling | `dataType==DT_FLOAT16` | mode 1 | entry specialization |
 | Router | arch35 entry | `schMode==1` | `Process<half,1>` | FP16 leaf |
 
@@ -351,7 +351,7 @@ UB_total(explicit)=0 B; dynamic_ub=N/A; workspace_total=0 B
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API/OpDef | docs + OpDef | BF16 + 950 | 支持 |
+| API/OpDef | docs + OpDef | | BF16 + 950 | 支持 |
 | Tiling | arch35 Tiling | `dataType==DT_BF16` | mode 2 | entry specialization |
 | Router | arch35 entry | `schMode==2` | `Process<bfloat16_t,2>` | BF16 leaf |
 
@@ -423,7 +423,7 @@ UB_total(explicit)=0 B; dynamic_ub=N/A; workspace_total=0 B
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API/OpDef | docs + OpDef | INT32 | 支持 |
+| API/OpDef | docs + OpDef | | INT32 | 支持 |
 | Tiling | arch35 Tiling | `dataType==DT_INT32` | mode 3 | entry specialization |
 | Router | arch35 entry | `schMode==3` | `Process<int32_t,3>` | INT32 leaf |
 

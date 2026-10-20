@@ -165,7 +165,7 @@ else:
 |---|---|---|---|---|---|
 | full-load 容量 | `finalTotal<=ubNSize && finalN>=1` | 同时驻留 `finalN×A` input/output/fp32 tmp 与 N 元数据 | R-004/R-005 | R-002/R-003 | `CELossGradInnerCoreFullLoad` |
 | split 128-element C align | `A=floor(min(candidate,C),128)` | C tile 以 512B(fp32) 粒度；MicroAPI/VReg 循环稳定 | R-002/R-003 | A=0 无后续 fallback | `CELossGradCoreSplitInfo` |
-| mean global denominator | `reduction==1 && (weight || isIgnore)` | 仅这些条件下分母不是简单 N | 非空 mean | 无 weight 且 negative ignore 用 `rowVal` | `Process/TargetWeightReduceSum*` |
+| mean global denominator | `reduction==1 && (weight \|\| isIgnore)` | 仅这些条件下分母不是简单 N | 非空 mean | 无 weight 且 negative ignore 用 `rowVal` | `Process/TargetWeightReduceSum*` |
 | public target dtype | ACLNN docs int64 | 950 binary/OpDef 还有 int32，但不属于入口公开域 | 全部正式路线 | 不发布 int32 route | API 文档 + binary JSON |
 | negative ignore | `isIgnore=(ignoreIndex>=0)` | constexpr mask/gather 只为非负 ignore 编译 | 950 全部 | 负 ignore 当作无 ignore；target 实值必须仍在 `[0,C)` | `GetTilingAttr` / full-load assert |
 | VReg tail | `tailNum=C%vfLen` 或 `N%vfLen` | `UpdateMask` 保护寄存器 lane | full-load/split | tail=0 跳过 | MicroAPI loops |

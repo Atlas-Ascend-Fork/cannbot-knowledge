@@ -147,7 +147,7 @@ CheckSupportV2 ?
 | single-N 优先 | `blockFactor==1 && SoC!=310P && D<=singleUbFactor` | body 固定一行大 UB 并直接取标量 scale | R-003/006/009 | split/normal | `CalcModeAndUbFactor` |
 | normal UB | `D<=normalUbFactor` | normal body整行驻留 | R-001/004/007 | split-D | `CalcModeAndUbFactor` |
 | 32 元素对齐 | 动态 UB 因子向下对齐 32 | 各 FP32/TX 子区及 DMA 尾块需要安全容量 | 全部 | 更小 factor 或失败 | `CalcModeAndUbFactor` |
-| 空 tensor | `x1.empty || gamma.empty || y2.empty` | 不启动 Device | 全部 | workspace 0 成功 | `aclnnAddRmsNormQuantV2GetWorkspaceSize` |
+| 空 tensor | `x1.empty \|\| gamma.empty \|\| y2.empty` | 不启动 Device | 全部 | workspace 0 成功 | `aclnnAddRmsNormQuantV2GetWorkspaceSize` |
 | unknown key | router 的 if/else 均不命中 | 无默认 body | 全部 | 不写输出 | `add_rms_norm_quant_v2` / `add_rms_norm_quant` |
 
 ### POD/ABI
@@ -732,7 +732,7 @@ workspace_total=16 MiB+256 B
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| ACLNN/Tiling | V2 API + tiling | fallback 且 D 超 normal UB | key 1 |
+| ACLNN/Tiling | V2 API + tiling | | fallback 且 D 超 normal UB | key 1 |
 | Router | `add_rms_norm_quant.cpp` | key 1 | split | `<false,true,false>` |
 
 #### Device 数据流
@@ -803,7 +803,7 @@ UB_total = split fixed + conditional option bytes from InitBuffer；workspace_to
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| ACLNN/Tiling | V2 API + tiling | fallback 且 single-N首选谓词 | key 3 |
+| ACLNN/Tiling | V2 API + tiling | | fallback 且 single-N首选谓词 | key 3 |
 | Router | `add_rms_norm_quant.cpp` | key 3 | single | `<false,true,false>` |
 
 #### Device 数据流

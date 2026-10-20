@@ -109,7 +109,7 @@ arch22 registry 按 priority 数值小者优先。公共层把累积序列还原
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 0 | R-001 空输出 | key 0 | 非 3510 且 `IsEmptyOutput || IsTndAllSeqLenZero` | AIV 清零后返回 |
+| 0 | R-001 空输出 | key 0 | 非 3510 且 `IsEmptyOutput \|\| IsTndAllSeqLenZero` | AIV 清零后返回 |
 | 1 | R-002 basic TND | priority 1001，9/9/9 | 非 FP32、TND、非确定性、无 sink/PSE/drop；sparse 0/2/3 与 mask 配套；`D==Dv<=128 && D%16==0 && T1==T2`、各段等长且 S 不超模板上限 | R-004/R-005 |
 | 2 | R-003 确定性 TND | priority 1000 S1S2_BN2；1002 basic-det；1100 SameAB-det | deterministic=1；BN2 要无 sink/rope、K/V同shape，FP32或maxS<1024；basic-det补非FP32、无PSE、D==Dv<=128；SameAB-det补其余非FP32无rope，sink直接命中 | 后续模板或失败 |
 | 3 | R-004 通用 unpadded | priority 2000，S1S2_BN2GS1S2 | 无 sink；`softmaxInLayout==""`；非 tnd2bsh；actualSeq双数组存在；非 max-workspace；`!isTndSABHit` | R-005 |

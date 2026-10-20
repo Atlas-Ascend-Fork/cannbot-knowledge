@@ -194,7 +194,7 @@ effective path = one weight route R-xxx + independently selected tile ARN route 
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| A16W8/W4 | `isA16W8_||isA16W4_` | 只编译weight-quant模板 | 全部 | tiler不可用 | `IsCapable` |
+| A16W8/W4 | `isA16W8_\|\|isA16W4_` | 只编译weight-quant模板 | 全部 | tiler不可用 | `IsCapable` |
 | 轴上界 | M≤INT32_MAX，K/N≤UINT16_MAX | POD/Cube/通信上界 | 全部 | Host失败 | `CheckAxisSize` |
 | INT4内轴 | innerN偶数 | packed int4 | W4 | Host失败 | `CheckA16W4Shape` |
 | BF16 bias | bias存在且BF16 | Matmul bias用FP32 | BF16 | AIV0 cast后SyncAll | `PreProcForBiasOnVector` |

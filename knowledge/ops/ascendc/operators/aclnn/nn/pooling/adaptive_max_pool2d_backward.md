@@ -152,7 +152,7 @@ ACLNN second stage -> CommonOpExecutorRun(..., stream)
 |---:|---|---|---|---|
 | 1 | R-001 固定窗口 Normal | key 0；`MaxPool3DGradWithArgmaxNormalTiling`, priority 12 | A2/A3 且 `H%Ho==0 && W%Wo==0`；Normal `CalUBTotalSize(1,1,1,false) <= UBmax`。CutK priority 10 因 `kd=1 != 5` 不可用。 | R-002。 |
 | 2 | R-002 固定窗口 Scatter | key 2；`MaxPool3DGradWithArgmaxScatterTiling`, priority 16 | 同一整除入口；Normal 不可容纳最小块；Scatter 五级切分任一成功。 | tiling 失败。 |
-| 3 | R-003 自适应 Normal-overlap | key 100；`AdaptiveMaxPool3DGradNormalTiling`, priority 10 | `H%Ho!=0 || W%Wo!=0` 且 `CalUBTotalSize(1,1,1) <= UBmax`。 | R-004。 |
+| 3 | R-003 自适应 Normal-overlap | key 100；`AdaptiveMaxPool3DGradNormalTiling`, priority 10 | `H%Ho!=0 \|\| W%Wo!=0` 且 `CalUBTotalSize(1,1,1) <= UBmax`。 | R-004。 |
 | 4 | R-004 自适应 Scatter-overlap | key 102；`AdaptiveMaxPool3DGradScatterTiling`, priority 20 | 同一非整除入口；Normal 不可容纳最小块；Scatter 五级切分任一成功。 | tiling 失败。 |
 
 ```text

@@ -138,7 +138,7 @@ ACLNN dtype/shape/format 成功
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| D 切片资源上界 | `Q*dOuter<=coreNum/2 || dInner>=UB/24`；只有 `dInner>256` 继续二分 | R-001 三条 depth=2 TQue 与三个 FP32 TBuf合计 `24*dInner` B；并增加可并行 item | 两条 Route | `dInner<=256` 时停止二分，16 元素对齐并重算 tail | `mhc_post_tiling.cpp:MhcPostTilingBase::ComputeTiling` |
+| D 切片资源上界 | `Q*dOuter<=coreNum/2 \|\| dInner>=UB/24`；只有 `dInner>256` 继续二分 | R-001 三条 depth=2 TQue 与三个 FP32 TBuf合计 `24*dInner` B；并增加可并行 item | 两条 Route | `dInner<=256` 时停止二分，16 元素对齐并重算 tail | `mhc_post_tiling.cpp:MhcPostTilingBase::ComputeTiling` |
 | 常驻 X UB 上界 | `8*(n+2)*dInner<=UB` | key 1 的 X queue 与 X FP32 TBuf按 n 倍扩容，总 UB 为 `8*(n+2)*dInner` B | R-002 | 条件为假使用 R-001 | `mhc_post_tiling.cpp:ComputeTiling`；`arch35/mhc_post.h:Init` |
 | 950 规格分支 | `socVer==4` 直接返回成功；其余仍检查 `n=4,D` 规格 | 950 公开实现允许任意正 n/D，但 Device 搬运字段仍有固定位宽 | R-001/R-002 | 正维、shape/dtype 失败为 `GRAPH_FAILED` | `mhc_post_tiling.cpp:CheckSpecConstraints` |
 | 多 block 搬运窄化 | R-002：`blockCount=(uint16)n`、`blockLen=(uint32)(dNum*sizeof(T))`，src stride 初始化为 int64 字段 | `DataCopyExtParams` ABI 与 arch35 overload | R-002 | 固定 Host 未给额外超界 guard | `arch35/mhc_post.h:CopyInX` |

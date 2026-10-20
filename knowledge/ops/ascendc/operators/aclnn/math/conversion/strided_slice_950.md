@@ -166,7 +166,7 @@ Host 先计算 `outputShapeProd/inputShapeProd`；任一乘积超过 `UINT32_MAX
 | 6 | R-001 MoveAlign compact | 100 | 无负 stride、末轴 `s==1` 且 `L*B≥64`；UB 不切末轴，且不是 2D 的 UB/blk 同切 0 轴特化。 | R-002/R-003 由 UB 轴细分；正稀疏 Gather 已在 R-008。 |
 | 7 | R-002 MoveAlign last-dim | 101 | R-001 家族选择后 `ubIndex==D-1` 且 `useGather==false`。 | UB 切更外轴到 R-001/R-003。 |
 | 8 | R-003 2D MoveAlign | 150 | R-001 家族、`D==2`、`ubIndex==D-2`，由 `MovAlignV2UbSplitLastTwoDim` 设置。 | 其他维数到 R-001。 |
-| 9 | R-004 NDDMA multi-dim | 102 | 无负 stride，MoveAlign 未命中，且 `V*B≥64`；或最终 guard `isShapeExceedUint32 || outputElements≤1024`，随后 `ubIndex!=D-1`。 | 末轴切分到 R-005。 |
+| 9 | R-004 NDDMA multi-dim | 102 | 无负 stride，MoveAlign 未命中，且 `V*B≥64`；或最终 guard `isShapeExceedUint32 \|\| outputElements≤1024`，随后 `ubIndex!=D-1`。 | 末轴切分到 R-005。 |
 | 10 | R-005 NDDMA last-dim | 103 | R-004 家族且 `ubIndex==D-1`。 | 更外轴到 R-004。 |
 | 11 | R-007 SIMT B64 | 201 | 存在负 stride，且负向 MoveAlign/NDDMA guard 均未命中（包括 `S≤1024` 的提前返回），同时 input/output 总元素乘积超过 `UINT32_MAX`。正 stride 的大 shape 会被最终 NDDMA guard 截获。 | 乘积≤UINT32_MAX 到 R-006。 |
 | 12 | R-006 SIMT normal | 200 | 前述路线均未命中且乘积≤`UINT32_MAX`，或空域；可覆盖正 stride 的稀疏大于1024元素 fallback及负 stride fallback。 | 终点。 |

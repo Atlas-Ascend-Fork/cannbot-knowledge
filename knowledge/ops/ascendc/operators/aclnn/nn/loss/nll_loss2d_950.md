@@ -147,7 +147,7 @@ R-003/R-004 每线程从 `blockId*512+threadIdx` 起，以 `blockDim*512` 为步
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 API 空输入 | 无 NLLLoss key；executor Fill/ViewCopy | `self->IsEmpty() || target->IsEmpty() || weight->IsEmpty()` | 非空进入下一项。 |
+| 1 | R-001 API 空输入 | 无 NLLLoss key；executor Fill/ViewCopy | `self->IsEmpty() \|\| target->IsEmpty() \|\| weight->IsEmpty()` | 非空进入下一项。 |
 | 2 | R-002 4D none | `GET_TPL_TILING_KEY(0,4,0)` | 非空、950 Regbase、`reduction==0`；`xDims==4` 令 selector 选择 SIMT | 其它 reduction 进入下一项。 |
 | 3 | R-003 4D sum | `GET_TPL_TILING_KEY(0,4,2)` | 非空、950 Regbase、`reduction==2` | `reduction==1` 进入下一项。 |
 | 4 | R-004 4D mean | `GET_TPL_TILING_KEY(0,4,1)` | 非空、950 Regbase、`reduction==1` | API 已拒绝其它值。 |
@@ -241,7 +241,7 @@ else if DAV_3510/Regbase:
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `loss/nll_loss/op_api/aclnn_nll_loss2d.cpp` | `aclnnNLLLoss2dGetWorkspaceSize` | `self->IsEmpty() || target->IsEmpty() || weight->IsEmpty()` | `NLLLossEmptyTensorCompute`，返回 workspace 0。 |
+| API | `loss/nll_loss/op_api/aclnn_nll_loss2d.cpp` | `aclnnNLLLoss2dGetWorkspaceSize` | `self->IsEmpty() \|\| target->IsEmpty() \|\| weight->IsEmpty()` | `NLLLossEmptyTensorCompute`，返回 workspace 0。 |
 | API | 同上 | `NLLLossEmptyTensorCompute` | reduction 0/1/2 | none 返回；mean Fill NaN；sum Fill 0；后两者 Fill totalWeight 0。 |
 
 #### Device 数据流

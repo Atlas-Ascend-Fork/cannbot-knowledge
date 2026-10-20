@@ -308,7 +308,7 @@ workspace_body = 0 B  # Host 仍声明 16MiB
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `pad_v3_grad_tiling_arch35.cpp` | `DoTilingWithSIMTMirror` | `2*inSize+1>INT32_MAX || 2*outSize+1>INT32_MAX` | Big=true |
+| Tiling | `pad_v3_grad_tiling_arch35.cpp` | `DoTilingWithSIMTMirror` | `2*inSize+1>INT32_MAX \|\| 2*outSize+1>INT32_MAX` | Big=true |
 | Router | `pad_v3_grad_simt.h` | `LaunchMirrorKernelSIMT<float,true,2>` | true | `Process<int64_t>` |
 
 #### Device 数据流

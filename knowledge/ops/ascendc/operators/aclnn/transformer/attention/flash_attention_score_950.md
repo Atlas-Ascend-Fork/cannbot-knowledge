@@ -239,7 +239,7 @@ key 是固定 64-bit schema，依次编码 kernel type、impl、layout、S1/S2�
 | optionalDn | causal-only、无 PSE/RoPE/drop、非 FP32、DTemplate=DvTemplate≤256、S1Base≠64；Basic 真长或 TND 平均长≥1536 | Dn QK 改变 A/B 角色、mask 只处理末轮 | R-002/R-004 | regular R-001/R-003 | `AnalyzeOptionalDn` |
 | Bmm2 UB/GM | `GetC2Position(DvTemplate,UbOutCondition(...),...,optionalDn)` | UB 容量不足时改为 GM 三槽；Dv>256 还需 vec2 GM 累积片 | R-001~R-004 | 无 fallback，Host key 必须与编译 specialization 一致 | `GetC2Position`、`InitMMResBuf` |
 | 主 workspace | ordinary D>128；仅 no-PSE/no-mask/no-drop/no-RoPE implicit-Dn 时 D>192 | 承载每 AIC 三槽 `bmm2`，splitD 再加三槽 vec2 | R-001~R-004 | 小 D 直接 UB；allocation 失败为 launch/executor 错误 | `FlashAttentionScoreTilingBasic/VarLen::GetWorkspaceSize` |
-| dropMask adapter | `dropMaskOuter && (S2%8!=0 || (layout=TND && B>1))` | bit packing 不能由主 Vec1 按 bool 字节直接读 | R-001/R-003 的 hasDrop key | 不触发则直接读原 bit mask | `AnalyzeDropOptionalInput`、`FlashAttentionScoreTilingDropMaskRegbase` |
+| dropMask adapter | `dropMaskOuter && (S2%8!=0 \|\| (layout=TND && B>1))` | bit packing 不能由主 Vec1 按 bool 字节直接读 | R-001/R-003 的 hasDrop key | 不触发则直接读原 bit mask | `AnalyzeDropOptionalInput`、`FlashAttentionScoreTilingDropMaskRegbase` |
 | TND 正倒序分核 | `layout=TND && splitCoreMode=1` | 交替正/反映射长短 batch 的 S1 outer | R-003/R-004 | 使用 `sparseStartIdx` 普通范围 | `CalcRealCoreIdxVarlen` |
 
 ### POD/ABI

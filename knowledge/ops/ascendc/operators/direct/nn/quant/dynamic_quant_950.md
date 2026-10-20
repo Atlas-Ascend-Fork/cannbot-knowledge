@@ -152,9 +152,9 @@ P0 表示实现与复用时的优先级，不表示 Host 的判断先后。当�
 
 | Route | 源码 selector/关键代码关系 | 生产链不可达原因 | 重新启用条件 |
 |---|---|---|---|
-| R-D01 `cast2-full-load-db1` | `launch_dynamic_quant_{half|bfloat16}` 的 `config.useDoubleBuffer == 0` 分支，实例化 `DynamicQuantRegbaseFullLoadCast2<xDtype,int8_t,false,1,true>` | 唯一 Host producer `calc_dynamic_quant_tiling` 在 `calcDbSize>maxUseUbSize` 与其 `else` 分支中都写 `useDoubleBuffer=1`；注册 wrapper 没有第二个 config producer | 修改并证明 Host UB selector，使其在 DB1 字节账成立时产出 0；同时保持 dtype、POD、行分核和 current-stream launcher 链不变 |
-| R-D02 `official-full-load-db2` | 两个 `dynamic_quant_{half|bfloat16}_db2_entry` 实例化 `DynamicQuantRegbaseFullLoad<xDtype,int8_t,false,2,true>` | entry 虽参与编译，但两个 launcher 的非零分支只引用 `*_cast2_db2_entry`，注册表也没有直达节点 | 显式增加 DB2 launcher/selector 出边，并先处理原 body 的 scale 初值和三段 cast 与 Direct 语义差异；不能只凭符号存在恢复 |
-| R-D03 `official-full-load-db1` | 两个 `dynamic_quant_{half|bfloat16}_db1_entry` 实例化 `DynamicQuantRegbaseFullLoad<xDtype,int8_t,false,1,true>` | entry 虽参与编译，但两个 launcher 的零值分支只引用 `*_cast2_db1_entry`；活动 producer 还不会产出零 | 同时增加 DB1 producer 与 launcher 出边，重做 depth=1 UB 字节账，并处理原 body 与 Direct 的数值语义差异 |
+| R-D01 `cast2-full-load-db1` | `launch_dynamic_quant_{half\|bfloat16}` 的 `config.useDoubleBuffer == 0` 分支，实例化 `DynamicQuantRegbaseFullLoadCast2<xDtype,int8_t,false,1,true>` | 唯一 Host producer `calc_dynamic_quant_tiling` 在 `calcDbSize>maxUseUbSize` 与其 `else` 分支中都写 `useDoubleBuffer=1`；注册 wrapper 没有第二个 config producer | 修改并证明 Host UB selector，使其在 DB1 字节账成立时产出 0；同时保持 dtype、POD、行分核和 current-stream launcher 链不变 |
+| R-D02 `official-full-load-db2` | 两个 `dynamic_quant_{half\|bfloat16}_db2_entry` 实例化 `DynamicQuantRegbaseFullLoad<xDtype,int8_t,false,2,true>` | entry 虽参与编译，但两个 launcher 的非零分支只引用 `*_cast2_db2_entry`，注册表也没有直达节点 | 显式增加 DB2 launcher/selector 出边，并先处理原 body 的 scale 初值和三段 cast 与 Direct 语义差异；不能只凭符号存在恢复 |
+| R-D03 `official-full-load-db1` | 两个 `dynamic_quant_{half\|bfloat16}_db1_entry` 实例化 `DynamicQuantRegbaseFullLoad<xDtype,int8_t,false,1,true>` | entry 虽参与编译，但两个 launcher 的零值分支只引用 `*_cast2_db1_entry`；活动 producer 还不会产出零 | 同时增加 DB1 producer 与 launcher 出边，重做 depth=1 UB 字节账，并处理原 body 与 Direct 的数值语义差异 |
 
 ```text
 # dormant 代码关系；不是当前调用图的运行时 fallback
@@ -284,7 +284,7 @@ R-001 的 fallback 出边是封闭的：rank/H/dtype/contiguous、uint32 域、�
 | Direct API | 交付件 `op_plugin/dynamic_quant_plugin.cpp` | `dynamic_quant_meta` | rank 2..8、`H>0`、fp16/bf16、contiguous | 通过后分配 y/scale；否则 TORCH_CHECK 失败 |
 | Direct Host | 交付件 `op_kernel/dynamic_quant_kernel.cpp` | `calc_dynamic_quant_tiling` | uint32 行域、平台有效、`11*A<=U-1024` | 生成 core/M/POD；否则抛异常 |
 | Launcher | 同上 | `launch_dynamic_quant_half/bfloat16` | `config.useDoubleBuffer != 0`；实际 producer 恒写 1 | 两个 cast2 DB2 entry 之一 |
-| Router/entry | 同上 | `dynamic_quant_{half|bfloat16}_cast2_db2_entry` | 模板 `xDtype` 随 Host dtype，`y=int8,false,2,true` | R-001 body |
+| Router/entry | 同上 | `dynamic_quant_{half\|bfloat16}_cast2_db2_entry` | 模板 `xDtype` 随 Host dtype，`y=int8,false,2,true` | R-001 body |
 | 官方相关 | `quant/dynamic_quant/op_kernel/dynamic_quant_apt.cpp` | `dynamic_quant<...>` | `quantMode==TPL_COMMON_FULL_LOAD` | 证明官方 full-load 对应类与 AIV-only 执行族；不是 Direct entry |
 
 #### Device 数据流

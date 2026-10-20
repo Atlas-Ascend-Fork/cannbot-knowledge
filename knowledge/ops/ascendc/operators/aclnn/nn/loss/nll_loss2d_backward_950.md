@@ -192,7 +192,7 @@ F∈{int32,int64,uint8}, reduction) 选择 27 个专用 binary 之一；TilingKe
 | 950 AICore dtype | arch=`DAV_3510` 且 T∈{FP32,BF16,FP16} | 固定仓只为 ascend950 构建 SIMT Kernel | 全部 | L0 其它平台可能 AICPU/缺失实现，不属于本卡 | `GetAiCoreDtypeSupportListBySocVersion` |
 | 线程上限 | `T=min(compile_info.max_thread,1024)` | `LAUNCH_BOUND(1024)` 与 `asc_vf_call(dim3{usedThread})` | 全部 | 无备用 Route；平台 producer 必须给正值 | `PostTiling`、`THREAD_DIM` |
 | DCache 预留 | `localMemorySize=UB-32768` | 为 SIMT local memory 从平台 UB 扣除固定 32 KiB | 全部 | UB≤32 KiB 时无 Host fallback，固定源码未加显式下溢 guard | `NLLLossGradSimtTiling::PostTiling` |
-| target 范围 | `target==ignoreIdx || 0<=target<C` | 防止 weight/output GM 越界 | 全部 | 非 ignore 越界触发 Device `ASSERT` | `TargetCheck` |
+| target 范围 | `target==ignoreIdx \|\| 0<=target<C` | 防止 weight/output GM 越界 | 全部 | 非 ignore 越界触发 Device `ASSERT` | `TargetCheck` |
 | mean 除数 | 语义要求 `totalWeight[0]!=0` | mean 先做 FP32 除法 | R-002 | 固定 ACLNN 不校验；Device 源码含非零 ASSERT 文本，但其标识符与函数形参不一致，见限制 | `SimtComputeReduceMean4d` |
 | workspace 指针 | entry 中 `workspace!=nullptr && GetUserWorkspace(workspace)!=nullptr` | entry 先设置系统 workspace；虽 body 不用 user 区，仍硬检查 | 全部 | 直接 return，无输出 | `nll_loss_grad` |
 

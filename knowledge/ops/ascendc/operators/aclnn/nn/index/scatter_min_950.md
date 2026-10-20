@@ -161,7 +161,7 @@ indices dtype in {INT32, INT64} 只改变 INDICES_T，不改变算法拓扑
 | 核数回退 | `coreNum==0 ? 1 : coreNum` | 防止除 0，并为 runtime 无 compileInfo 提供平台读取路径 | 全部 | 1 core | `ResolveCoreNum` |
 | 空 index | `M==0 -> B=1,P=0,T=0` | 保持合法 launch，同时 thread 循环零次 | 全部 | K1 启动但无写 | `ScatterReduceCommonTiling` |
 | 空 slice | `F==0 -> S=0` 或 Device `tiling.sliceSize==0` | 避免除 0和 GM 绑定/访问 | 全部 | `Init/Process` 直接返回 | `ScatterReduceCommonTiling`；`ScatterReduceSimt::Init/Process` |
-| index 边界 | `idxVal < 0 || idxVal >= varFirstDim` | 避免目标 GM 越界 | 全部 | 当前 update 元素跳过 | `SimtComputeReduce` |
+| index 边界 | `idxVal < 0 \|\| idxVal >= varFirstDim` | 避免目标 GM 越界 | 全部 | 当前 update 元素跳过 | `SimtComputeReduce` |
 | CAS 宽度 | `sizeof(PARAMS_T)==4` | 原生 CAS 仅覆盖 float/int32；窄类型需 word CAS | R-001 vs R-002/R-003 | 编译期另一分支 | `SimtComputeReduce` |
 | 子字 mask | `sizeof(T)==1 ? 0xFF : 0xFFFF` | word CAS 必须仅替换目标 byte/half | R-002/R-003 | 编译期选择对应 mask | `AtomicReduceSubWord` |
 | 512-thread 步长 | `THREAD_NUM=512`；`index += blockDim.x` | VF 内并行覆盖任意长度，不依赖 UB tile | 全部 | 无运行时 fallback | `THREAD_NUM`；`SimtComputeReduce` |

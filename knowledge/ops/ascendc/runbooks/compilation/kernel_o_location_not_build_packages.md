@@ -83,7 +83,7 @@ ls $ASCEND_OPP_PATH/vendors/BesselI1e/op_impl/ai_core/tbe/kernel/ascend950/Besse
 |---|---|---|---|
 | 交付 kernel binary | `build/ascendc_kernels/binary/<soc>/<op>/<OpType>_<hash>.o` | 3 | 是 |
 | CPack staging 副本 | `build/_CPack_Packages/Linux/External/*.run/packages/vendors/...` | 3 | 是（同上 3 枚的打包副本） |
-| host 侧 CMake 对象 | `build/CMakeFiles/cust_optiling_obj|cust_proto_obj|cust_opapi_obj/...` | 10 | 否 |
+| host 侧 CMake 对象 | `build/CMakeFiles/cust_optiling_obj\|cust_proto_obj\|cust_opapi_obj/...` | 10 | 否 |
 | kernel_meta 中间产物 | `build/<OpType>_<soc>/kernel_N/kernel_meta_*/kernel_meta/*.o`（含 `*_infer_channel_dav-c310-cube_0.o`、`*_vec_0.o`、`*_0.o`） | 12 | 否 |
 
 安装目录单独查：`find $ASCEND_OPP_PATH/vendors/<OpType> -name '*.o'`（不要按 `<OpType>` 子目录名硬拼）。

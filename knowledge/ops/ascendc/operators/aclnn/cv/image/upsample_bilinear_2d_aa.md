@@ -174,7 +174,7 @@ A/B/C position+layout+dtype = GM/ND/T
 |---:|---|---|---|---|
 | 1 | R-001 identity bypass | 无算子 key；framework alias/copy | 非 RegBase 且 `inH==outH && inW==outW`；在 dtype Cast 与算子 launcher 之前命中 | shape 不同进入 R-002/R-003/R-004 |
 | 2 | R-002 W-only MIX_CV | key 1；`UpsampleBilinearAAND<float>` | 非 identity；Tiling `scaleW!=1` 且 `scaleH==1`（`FloatEqual` 阈值 `1e-6`） | `scaleW==1` 进入 R-003；两轴均非 1 进入 R-004 |
-| 3 | R-003 H-only MIX_CV | key 1；`UpsampleBilinearAAND<float>` | 非 identity；`scaleW==1`；H 段条件 `scaleH!=1 || scaleW==1` 恒为真 | `scaleW!=1` 进入 R-002/R-004 |
+| 3 | R-003 H-only MIX_CV | key 1；`UpsampleBilinearAAND<float>` | 非 identity；`scaleW==1`；H 段条件 `scaleH!=1 \|\| scaleW==1` 恒为真 | `scaleW!=1` 进入 R-002/R-004 |
 | 4 | R-004 W→H MIX_CV | key 1；`UpsampleBilinearAAND<float>` | 非 identity；`scaleW!=1 && scaleH!=1` | 无 Device fallback；校验/Tiling/Matmul tiling 失败终止 |
 
 ```text
@@ -203,7 +203,7 @@ if !IsRegBase():
 |---|---|---|---|---|---|
 | 最大缩小倍数 | 非 RegBase `realScalesH<=50 && realScalesW<=50` | 控制 `maxInterp`、K 与 UB/权重矩阵上界 | R-002~R-004 | ACLNN 参数错误；无 fallback | `CheckMaxScaleSupport`; `CheckScales` |
 | slide specialization | `maxScale<=5/8/20/else` | 以 64/48/32/16 平衡输出 N tile 与 K 支持宽度 | R-002~R-004 | 总有一档；上游 >50 已失败 | `getSlideSize` |
-| conditional UB | W buffer仅 `scaleW!=1`；H buffer仅 `scaleH!=1 || scaleW==1` | 不为未执行轴占用 UB | R-002~R-004 | 切换对应 Route | `UpsampleBilinearAAND::Init` |
+| conditional UB | W buffer仅 `scaleW!=1`；H buffer仅 `scaleH!=1 \|\| scaleW==1` | 不为未执行轴占用 UB | R-002~R-004 | 切换对应 Route | `UpsampleBilinearAAND::Init` |
 | dtype router | `dataType=2` 对应 float；1/3 分支存在但公开 A2/A3 ACLNN 非 identity 已先 Cast | 保证公开 FP16/BF16 走 FP32 权重与 Matmul计算 | R-002~R-004 | unsupported code 0 无 body；编译 guard 可删除部分类型实例 | ACLNN GetWorkspaceSize；kernel entry |
 | Matmul tiling成功 | 两次 `GetTiling(...)!=-1` 才能得到有效内部 tile | 当前 Cube specialization 依赖合法 `TCubeTiling` | R-002~R-004 | Host函数只记录 error并 return void；固定源码未显式把该失败传播为 GRAPH_FAILED | `getTCubeTiling_w/h` |
 | user workspace非空 | `GetUserWorkspace(workspace)!=nullptr` | 中间矩阵/权重必须有 GM backing | R-002~R-004 | entry 直接 return，无输出 | `upsample_bilinear2d_aa` entry |

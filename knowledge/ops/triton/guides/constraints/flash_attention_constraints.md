@@ -186,7 +186,7 @@ platforms: [a2]
 | **pse case 输出 77~96% 错 / 编译产物错乱** | pse 按实际维数分档：2D `view(1,1,1,-1)` 广播、4D `S=1` 广播、4D dense 三种语义不同；`[B,N,1,SK]` 一维 load + 广播加在 native dot 下编译产物错乱（smax 差 135） | **统一 2D load**（`offs_q*stride_s + offs_kv*stride_k`，`S=1` 时 stride=0 语义相同）；先探 golden 的 pse 广播行为（§6.1） |
 | **`npu_*` op 输出 shape 不匹配、查不到原因** | `npu_fusion_attention` 返回 7 元组，`softmax_max/sum` 是 `[B,N,Sq,8]`（8 列同值）、`reserved` 空 | **§6.2 输出契约表**：按 7 元组契约分配输出，再写 kernel |
 | 改了参考实现后老结论突然失效 | 参考的算术路径变了 | L1.4，先钉死契约再优化 |
-| **fp16 near-zero 输出 MERE 爆炸（case MERE 0.2+）** | MERE 分母 `|golden|+1e-7`，softmax 近均匀（scale 小）→ 输出≈mean(V)≈0 时相对误差病态放大 | **CANN 契约：softmax probs 先 cast 到输入 dtype 再 PV dot**（L1.5「禁降 p」在本算子被证伪）；实测 case61 MERE 0.219→4.6e-6 |
+| **fp16 near-zero 输出 MERE 爆炸（case MERE 0.2+）** | MERE 分母 `\|golden\|+1e-7`，softmax 近均匀（scale 小）→ 输出≈mean(V)≈0 时相对误差病态放大 | **CANN 契约：softmax probs 先 cast 到输入 dtype 再 PV dot**（L1.5「禁降 p」在本算子被证伪）；实测 case61 MERE 0.219→4.6e-6 |
 | **sink case MERE 略超阈值** | sink 用 `l_init=1.0`（数学等价但舍入顺序不同） | **sink 契约：m_init=sink、l_init=0、末尾 `l += exp(sink-m)`**（对齐 CANN） |
 | **大 D（512）UB 溢出 / 编译失败** | scores/p/acc fp32 三块 + k/v 双缓冲放大，编译器多缓冲使实际用量 ~1.7x 估计值 | **UB 预算实测校准**：`total = BQ*(BLOCK_D*4+8*BKV+BLOCK_D*elem) + 4*BLOCK_D*BKV*elem <= 160000B`；D=512 需 BQ=8/BKV=32 微块（BQ=16/BKV=32 溢出 1608192 bits） |
 | **`npu_*` op 的 `.py` 内含同名纯 torch fallback** | fallback 只是 docstring 参考语义，**不是 golden**（探针实锤 CANN 行为） | 先 §6.1 CANN 语义探针钉死契约（p 先降 dtype、sink 末尾加、smax/ssum [B,N,Sq,8]），再谈算法与性能 |

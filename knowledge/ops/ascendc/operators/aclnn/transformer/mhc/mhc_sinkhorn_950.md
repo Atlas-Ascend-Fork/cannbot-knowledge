@@ -132,7 +132,7 @@ Kernel 重新取 `blockDataNum=GetUbBlockSize()/4`、`nAlign=CeilAlign(n,blockDa
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 无中间输出 | tiling key 0；`TEMPLATE_MODE=0`；`MhcSinkhornSimd<float,false>` | ACLNN 第一段初始 `outFlag=1`，若 `normOut==nullptr || sumOut==nullptr` 则替换两者并置 0；Tiling `outFlag_!=1` 返回 key 0 | 两者均非空则 R-002；其它 `outFlag` 在 Tiling 校验失败 |
+| 1 | R-001 无中间输出 | tiling key 0；`TEMPLATE_MODE=0`；`MhcSinkhornSimd<float,false>` | ACLNN 第一段初始 `outFlag=1`，若 `normOut==nullptr \|\| sumOut==nullptr` 则替换两者并置 0；Tiling `outFlag_!=1` 返回 key 0 | 两者均非空则 R-002；其它 `outFlag` 在 Tiling 校验失败 |
 | 2 | R-002 保留中间输出 | tiling key 1；`TEMPLATE_MODE=1`；`MhcSinkhornSimd<float,true>` | `normOut!=nullptr && sumOut!=nullptr`，ACLNN 保持 `outFlag=1`；Tiling `outFlag_==1` 返回 key 1 | 任一为空回 R-001；无其它 fallback |
 
 ```text
@@ -151,7 +151,7 @@ aclnnMhcSinkhornGetWorkspaceSize
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-001 无中间输出 | `GET_TPL_TILING_KEY(0)` / `TEMPLATE_MODE=0` | 950；FP32 ND；rank 3/4；非空；方阵且 `n∈{4,6,8}`；`1≤numIters≤100`；`normOut==nullptr || sumOut==nullptr` | 单节点：`MhcSinkhornAiCore` enqueue → `mhc_sinkhorn<0>`，`blockDim=usedCoreNum`，执行族 `AIV_VECTOR` | `MhcSinkhornSimd<float,false>::Init/Process` 及全部直接 helper | 无中间 GM snapshot；`sumRowQue_` 每 slot 仅一 UB block；Queue、`LocalMemBar` 与固定 `MTE3_V` event | former/tail core 与 tail loop 使用 POD；参数/资源失败即 Host 失败，entry user-workspace null 则静默 return |
+| R-001 无中间输出 | `GET_TPL_TILING_KEY(0)` / `TEMPLATE_MODE=0` | 950；FP32 ND；rank 3/4；非空；方阵且 `n∈{4,6,8}`；`1≤numIters≤100`；`normOut==nullptr \|\| sumOut==nullptr` | 单节点：`MhcSinkhornAiCore` enqueue → `mhc_sinkhorn<0>`，`blockDim=usedCoreNum`，执行族 `AIV_VECTOR` | `MhcSinkhornSimd<float,false>::Init/Process` 及全部直接 helper | 无中间 GM snapshot；`sumRowQue_` 每 slot 仅一 UB block；Queue、`LocalMemBar` 与固定 `MTE3_V` event | former/tail core 与 tail loop 使用 POD；参数/资源失败即 Host 失败，entry user-workspace null 则静默 return |
 | R-002 保留中间输出 | `GET_TPL_TILING_KEY(1)` / `TEMPLATE_MODE=1` | 同上，且 `normOut!=nullptr && sumOut!=nullptr`；两者还须 FP32 | 单节点：`MhcSinkhornAiCore` enqueue → `mhc_sinkhorn<1>`，`blockDim=usedCoreNum`，执行族 `AIV_VECTOR` | `MhcSinkhornSimd<float,true>::Init/Process` 及全部直接 helper | 每次 norm/sum 状态经 MTE3 写 GM；`sumRowQue_` 每 slot 为 `u*nAlign*4` B；源码在初始状态、首次列状态、每次 row 状态后及下一 iter 入口设置 `MTE3_V` event | 同一 former/tail；没有第三模板，任一中间输出为空回 R-001 |
 
 ### 隐藏性能 Guard
@@ -162,7 +162,7 @@ aclnnMhcSinkhornGetWorkspaceSize
 | 单份 UB 预算 | `available=(ubSize-64-3*256)/2`；整核不适配时按 `floor(available/onePiece)` 缩小 `u` | Queue depth=2；Host 先为 mask 与三个 256 B 常量留保守区，再按单 slot 预算 tile | R-001/R-002 | 缩小 `tUbFactor`，无其它 Kernel fallback | `mhc_sinkhorn_base_tiling.cpp:ForwardSplitCore/BackwardSplitCore` |
 | tile 非零 | forward 把计算出的 `u==0` 改成 8；backward 候选可保留 0；最终选择两候选较小 `u` | `u` 进入 `CeilDiv`、Buffer 容量、GM stride 与 tail 公式，0 不是合法 Device tile | R-001/R-002 | 固定源码无显式失败；属于资源闭包缺口，不能假定实际 950 永不命中 | `BaseSplitCores/ForwardSplitCore/BackwardSplitCore` |
 | 8 矩阵 tile 对齐 | forward 超限时 `FloorAlign(u,8)`；backward 超限时按 `256/(8*4)=8` 对齐 | MicroAPI 以 UB block/VREG 分组，n-mask 固定覆盖每组 8 lane | R-001/R-002 | 向下缩小 tile；forward 的 0 再改 8，backward 无修复 | `ForwardSplitCore/BackwardSplitCore` |
-| n 与动态 mask | `n==4 || n==6 || n==8` | `Process` 只有 `MASK_4/MASK_6/MASK_8`，gather/scatter lane 图以 8 为行内槽数 | R-001/R-002 | ACLNN 与 Tiling 均失败，不进入 Kernel | `CheckShape/CheckInputShape/MhcSinkhornSimd::Process` |
+| n 与动态 mask | `n==4 \|\| n==6 \|\| n==8` | `Process` 只有 `MASK_4/MASK_6/MASK_8`，gather/scatter lane 图以 8 为行内槽数 | R-001/R-002 | ACLNN 与 Tiling 均失败，不进入 Kernel | `CheckShape/CheckInputShape/MhcSinkhornSimd::Process` |
 | Route 与 POD 一致 | `outFlag∈{0,1}`，key 仅由 `outFlag==1` 决定 | compile-time `OUT_FLAG` 改变 Queue 容量和 GM snapshot 副作用；错误组合会破坏容量/输出语义 | R-001/R-002 | 非 0/1 在 ACLNN/Tiling 失败；框架的 key/POD 一致性实现固定仓不可见 | `GetShapeAttrsInfo/GetTilingKey/mhc_sinkhorn` |
 | MTE3→V 复用 | `k=0`、`k=1`、每个 row snapshot 后以及每个 `iter` 入口执行 `SetFlag<HardEvent::MTE3_V>`→`WaitFlag` | 下一 Vector helper 会改写刚由 MTE3 读取的 norm/sum LocalTensor；下一 iter 入口覆盖上一 col snapshot | 两 Route；R-001 也保留同位置的固定 event | 无 fallback；`numIters>1` 的最终 col snapshot 后没有新的显式 `MTE3_V`，其完成边界只能保留为 Queue/Kernel primitive 边界 | `MhcSinkhornSimd::Process` |
 | user workspace 指针 | `GetUserWorkspace(workSpace)!=nullptr`，尽管 tiling user workspace 为 0 B | entry 在读取 POD/启动 body 前先做指针 guard | R-001/R-002 | Device 静默 return；无 Host 侧附加错误 | `mhc_sinkhorn_apt.cpp:mhc_sinkhorn` |
@@ -206,8 +206,8 @@ aclnnMhcSinkhornGetWorkspaceSize
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `mhc/mhc_sinkhorn/op_host/op_api/aclnn_mhc_sinkhorn.cpp` | `aclnnMhcSinkhornGetWorkspaceSize` | `normOut==nullptr || sumOut==nullptr`，同时重绑两者并 `outFlag=0` | `l0op::MhcSinkhorn(...,0,...)` |
-| Host | `mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_tiling.cpp` | `GetShapeAttrsInfo` / `GetTilingKey` | 先要求 `outFlag_==0 || outFlag_==1`；仅 `outFlag_==1` 才把 key 置 1 | 此 Route 返回 `GET_TPL_TILING_KEY(0)` |
+| API | `mhc/mhc_sinkhorn/op_host/op_api/aclnn_mhc_sinkhorn.cpp` | `aclnnMhcSinkhornGetWorkspaceSize` | `normOut==nullptr \|\| sumOut==nullptr`，同时重绑两者并 `outFlag=0` | `l0op::MhcSinkhorn(...,0,...)` |
+| Host | `mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_tiling.cpp` | `GetShapeAttrsInfo` / `GetTilingKey` | 先要求 `outFlag_==0 \|\| outFlag_==1`；仅 `outFlag_==1` 才把 key 置 1 | 此 Route 返回 `GET_TPL_TILING_KEY(0)` |
 | Router | `mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn_tiling_key.h` | `ASCENDC_TPL_SEL` | selector 0 明确配 `ASCENDC_TPL_AIV_ONLY` | 选择 `TEMPLATE_MODE=0` |
 | Entry | `mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp` | `mhc_sinkhorn<0>` | `if constexpr(TEMPLATE_MODE==0)` | 实例化 `MhcSinkhornSimd<float,false>`；无 fallback |
 

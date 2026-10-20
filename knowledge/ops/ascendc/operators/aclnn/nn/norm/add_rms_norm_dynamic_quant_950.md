@@ -519,9 +519,9 @@ for row:
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| workspace q1 | `core*N + [0,N)` FP32 | N*4/core | pass2 | pass3 | executor/Kernel | 第一个 `usedCore*N` 大区，core-private |
-| workspace x | `usedCore*N + core*N + [0,N)` | N*4/core | pass1 | pass2 | same | 第二个大区 |
-| workspace q2 | `2*usedCore*N + core*N + [0,N)` | N*4/core | pass2 | pass3 | same | 第三个大区；only q2 active，Host 始终预留 |
+| workspace q1 | `core*N + [0,N)` FP32 | N*4/core | | pass2 | pass3 | executor/Kernel | 第一个 `usedCore*N` 大区，core-private |
+| workspace x | `usedCore*N + core*N + [0,N)` | N*4/core | | pass1 | pass2 | same | 第二个大区 |
+| workspace q2 | `2*usedCore*N + core*N + [0,N)` | N*4/core | | pass2 | pass3 | same | 第三个大区；only q2 active，Host 始终预留 |
 | slice queues | UB | x queues `3*R512*2`；y active `A32*1` | mixed | DMA/compute | stages | slice | Queue |
 | FP32 slice tmp | UB | x/y tmp + rstd/reduce P | FP32 | stages | stages | slice | 原地 |
 | hierarchy | UB | `3*256*4 + V*4` | FP32 | chunk sums | final reduce | row | level1/2/3 |

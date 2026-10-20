@@ -117,7 +117,7 @@ TilingForClippedSwiglu: non-regbase -> priority 20000 ClippedSwigluTiling -> key
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| SoC | `ASCEND910B || ASCEND910_93` | 本模板只注册这两种非 regbase SoC | 全部 | `IsCapable=false` | `ClippedSwigluTiling::IsCapable` |
+| SoC | `ASCEND910B \|\| ASCEND910_93` | 本模板只注册这两种非 regbase SoC | 全部 | `IsCapable=false` | `ClippedSwigluTiling::IsCapable` |
 | UB | `ubSize-1024-2*align32(groupNum*8)>0 && ubMaxPair>0` | 覆盖 double-buffer Queue 与两个 FP32 TBuf | 全部 | Tiling 失败 | `CountMaxPair` |
 | 长 H | `2*ubMaxPair < 2H` | 决定按 batch 合并或 H 分段 | R-003～R-006 | 另一前后 Route | `CountMaxPair` |
 | 32B 对齐 | `AlignBytes(pair*2)` | DMA block 与 FP32 物理复用要求 | 全部 | Host 减小 tile | `AlignBytes`/`CountMaxPair` |

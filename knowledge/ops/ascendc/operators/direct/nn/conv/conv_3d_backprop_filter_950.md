@@ -182,7 +182,7 @@ totalCnt = mCnt * nCnt * kd * realGroup
 | Host 顺序 | Host/Device 决策点 | 精确顺序、短路与 fallback |
 |---|---|---|
 | H0 | `OfficialArch35Tiler::Run` 前半 | `Validate`→`CalcRealGroup`→shape/basic-block→`InitSplitWOI`→`MultiCoreSplitMN`；校验失败或所有资源降级均失败时立即返回 `valid=0`，不进入任何 Route |
-| H1 | `DoStreamKTiling` | 先令 `route=(totalCnt<AIC ? 1 : 2)`；若 `tail==0 || tail>AIC/2`，直接置 `streamkType=0,route=2`；否则先比较 BatchDout/HWout，再执行所选切分；切分维退化或 HWout L1 回调失败时置 `streamkType=0,route=2`。最终 `route==1` 是 R-001；`route==2 && streamkType==0` 是 R-002；`route==2 && streamkType!=0` 是 R-003 |
+| H1 | `DoStreamKTiling` | 先令 `route=(totalCnt<AIC ? 1 : 2)`；若 `tail==0 \|\| tail>AIC/2`，直接置 `streamkType=0,route=2`；否则先比较 BatchDout/HWout，再执行所选切分；切分维退化或 HWout L1 回调失败时置 `streamkType=0,route=2`。最终 `route==1` 是 R-001；`route==2 && streamkType==0` 是 R-002；`route==2 && streamkType!=0` 是 R-003 |
 | H2 | `Run` 后半 | 在 H1 已定主 Route 后，先计算 R-004 flag，再 `WriteFinalTiling`，然后计算 R-005 flag；两者独立，不互相 `else` 短路；谓词为假仅省略对应扩展，主 Route 保持不变 |
 | H3 | BF16 前置 launch | 先判断 R-004：命中则 clear→detect nonfinite；再判断 R-005：命中则再次 clear→detect magnitude。FP16 跳过整个 H3 |
 | H4 | main launch/router | FP16/BF16 均只提交一次主 MIX_CV。Device 先判断 `route==1` 并进入 R-001；否则进入共同 MN 模板，`streamkType==0` 执行 R-002，非零则在主轮后执行 R-003 尾轮；`split` 后判 `enlarge` 选择唯一 specialization |
@@ -342,7 +342,7 @@ Direct selector emits no corresponding key
 
 | 重要性 | 可达性 | Route | Key/selector | Host 顺序 | Host/Tiling producer | POD/参数 | Kernel entry/router | Kernel body/直接依赖 | 构建接线 |
 |---|---|---|---|---|---|---|---|---|---|
-| P0 | active | R-001 | `route=1,split,enlarge` | H1→H4 stream 分支→H6 | Direct `OfficialArch35Tiler`；官方映射 `DoStreamKTiling/GetTilingKey` | `Conv3dBpfLaunchTiling` + 248 B official POD | `conv3d_bpf_{half|bf16}_entry`→`RunSelectedOfficialConv3dBpf` | `Conv3dDwBasicBlockStreamK`→ConvBp helper | ascend950 binary config |
+| P0 | active | R-001 | `route=1,split,enlarge` | H1→H4 stream 分支→H6 | Direct `OfficialArch35Tiler`；官方映射 `DoStreamKTiling/GetTilingKey` | `Conv3dBpfLaunchTiling` + 248 B official POD | `conv3d_bpf_{half\|bf16}_entry`→`RunSelectedOfficialConv3dBpf` | `Conv3dDwBasicBlockStreamK`→ConvBp helper | ascend950 binary config |
 | P1 | active | R-002 | `route=2,streamkType=0,split,enlarge` | H1 fallback→H4 MN 分支→H6 | `MultiCoreSplitMN/DoStreamKTiling` | 同上 | 同上，MN 分支 | `CalBasicBlock/IterateAll`；enlarge 时 `LoadL0c2UbForGroup/Rearrange2Gm` | 同上 |
 | P2 | active | R-003 | `route=2,streamkType=1/2,split,enlarge` | H1→H4 MN 主轮与尾轮→H6 | 同上 | 同上 + user workspace | 同上，MN 分支 | 同 R-002 主轮 + `CalcStreamK/DeterministicReduceKInUb` | 同上 |
 | P3 | conditional | R-004 | 主 key + nonfinite flag | H2→H3a→H4→H5b→H6 | Direct correction guard | `Conv3dBpfProblem` + flag slice | clear/detect→main→fix→cast entries | SIMT detectors/fixer + 官方 main body | Direct 950 target + official ascend950 config |
@@ -475,7 +475,7 @@ UB_total = TOTAL_UB_SIZE
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | stream-k Host file | `DoStreamKTiling` | `tail==0 || tail>AIC/2` 或 Stream-K 无效 | `streamkType=0,route=2` |
+| Tiling | stream-k Host file | `DoStreamKTiling` | `tail==0 \|\| tail>AIC/2` 或 Stream-K 无效 | `streamkType=0,route=2` |
 | Router | Direct main TU | `RunOfficialConv3dBpf<T,false,split,enlarge>` | `route!=1` | MN template |
 | Body | basic-block header | `CalBasicBlock` | `calRound=ceil(totalCnt/AIC)` | 主轮 grid-stride basic block |
 

@@ -216,7 +216,7 @@ TensorList 地址通过共同 ABI 解码：首个 `uint64_t` 给出地址表相�
 |---|---|---|---|---|
 | API | `op_host/op_api/aclnn_foreach_sub_list_v2.cpp` | `CheckDtypeValid` | A2/A3，Tensor dtype FP16/INT32，Scalar 对应合法 | 加入 ForeachSubList node。 |
 | Tiling | `foreach_utils/op_host/common_dtype.h` | `GetTilingKeyByDtypeOnly` | FP16→1，INT32→3 | runtime key。 |
-| Router | `op_kernel/foreach_sub_list.cpp` | `foreach_sub_list` | `TILING_KEY_IS(1/3)` | `ForeachOneScalarTernary<half|int,...NormalAdapter>`。 |
+| Router | `op_kernel/foreach_sub_list.cpp` | `foreach_sub_list` | `TILING_KEY_IS(1/3)` | `ForeachOneScalarTernary<half\|int,...NormalAdapter>`。 |
 
 #### Device 数据流
 

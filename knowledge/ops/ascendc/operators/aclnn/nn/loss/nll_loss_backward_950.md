@@ -177,7 +177,7 @@ self empty? -> workspace=0、无核心节点
 | SIMT 线程上限 | `usedThread=min(GetSimtMaxThreadNum(context),1024)` | `LAUNCH_BOUND(1024)` 且 Host/Device 使用同一线程数计算覆盖域 | 全部 | 无其他模板；平台返回值被截到 1024 | `op_host/arch35/nll_loss_grad_tiling_arch35.cpp::NLLLossGradParse/PostTiling` |
 | local-memory 预留 | `localMemorySize=platformUB-32768` | 为 DCache 固定保留 32 KiB；三个显式 TBuf 在剩余 local memory 内 | 全部 | 固定仓无 fallback；若平台 UB 获取失败则 Tiling 失败 | `NLLLossGradSimtTiling::GetShapeAttrsInfo/PostTiling` |
 | workspace 指针 | `workspace!=nullptr && GetUserWorkspace(workspace)!=nullptr` | entry 在设置系统 workspace 后才进入 body | 全部 | Kernel 直接返回、无输出提交 | `op_kernel/nll_loss_grad.cpp::nll_loss_grad` |
-| target 有效域 | `target[i]==ignoreIdx || 0<=target[i]<C` | 稀疏 GM 地址使用 `target` 作为类别偏移 | 全部 | ignore 跳过；其他越界触发 Device `ASSERT`，无 fallback | `op_kernel/arch35/nll_loss_grad.h::TargetCheck` |
+| target 有效域 | `target[i]==ignoreIdx \|\| 0<=target[i]<C` | 稀疏 GM 地址使用 `target` 作为类别偏移 | 全部 | ignore 跳过；其他越界触发 Device `ASSERT`，无 fallback | `op_kernel/arch35/nll_loss_grad.h::TargetCheck` |
 
 ### POD/ABI
 

@@ -112,8 +112,8 @@ Tiling 把输入折叠为 `[P,N,Q]`。`indicesProcessMode=(N<coreNum*32)?0:1`：
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 Front-Q | key 0 | `(axis!=rank-1 || rank==1)` 且 `Q>=1024`；或同一轴域中 dtype 为 INT64/BOOL（源码也含 950-only UINT8 override） | 否则继续 key1/key2；尾轴去 key3/key4 |
-| 2 | R-002 Front-N | key 1 | 前/单轴，dtype 非 INT64/BOOL，`Q<1024 && (N>=64 || Q>=64)` | R-003 |
+| 1 | R-001 Front-Q | key 0 | `(axis!=rank-1 \|\| rank==1)` 且 `Q>=1024`；或同一轴域中 dtype 为 INT64/BOOL（源码也含 950-only UINT8 override） | 否则继续 key1/key2；尾轴去 key3/key4 |
+| 2 | R-002 Front-N | key 1 | 前/单轴，dtype 非 INT64/BOOL，`Q<1024 && (N>=64 \|\| Q>=64)` | R-003 |
 | 3 | R-003 Front-P | key 2 | 前/单轴，dtype 非 INT64/BOOL，`N<64 && Q<64` | 无 |
 | 4 | R-004 Tail-N | key 3 | `rank>1 && axis==rank-1 && N>=coreNum*256`；ACLNN 的 INT64/BOOL 尾轴已转置，故公开路径仅 2B/4B dtype 可达 | R-005 |
 | 5 | R-005 Tail-P | key 4 | `rank>1 && axis==rank-1 && N<coreNum*256`；同上仅 2B/4B dtype 可达 | 无 |
@@ -133,16 +133,16 @@ else:
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
 | R-001 Front-Q | 0 | 前/单轴大 Q，或 A2/A3 INT64/BOOL 前轴 | 单 AIV Kernel | `IndexFillFrontQ<T,U>`，T 按 1/2/4/8B映射 | workspace FP16 mask；UB 预广播 value，按 Q 分核；全核 `SyncAll` | Q 以 8192 元素半块切尾 |
-| R-002 Front-N | 1 | 前/单轴，2B/4B dtype，Q<1024 且 N/Q 至少一者>=64 | 单 AIV Kernel | `IndexFillFrontN<half|float,U>` | workspace gather offsets；UB Gather 扩展 mask | N 以 `8192/Q` 切尾 |
-| R-003 Front-P | 2 | 前/单轴，2B/4B dtype，N,Q<64 | 单 AIV Kernel | `IndexFillFrontP<half|float,U>` | workspace 多次复制标记；UB mask 后复用成 x | P 尾块 |
-| R-004 Tail-N | 3 | 多维尾轴，2B/4B dtype，N>=coreNum*256 | 单 AIV Kernel | `IndexFillTailN<half|float,U>` | mask/FP16 ws/x 阶段别名 | N 以 12288 切尾 |
-| R-005 Tail-P | 4 | 多维尾轴，2B/4B dtype，N<coreNum*256 | 单 AIV Kernel | `IndexFillTailP<half|float,U>` | workspace 复制 32 行标记；按 P 分核 | `pBlockLength=floor((N<=1024?4096:12288)/N)` |
+| R-002 Front-N | 1 | 前/单轴，2B/4B dtype，Q<1024 且 N/Q 至少一者>=64 | 单 AIV Kernel | `IndexFillFrontN<half\|float,U>` | workspace gather offsets；UB Gather 扩展 mask | N 以 `8192/Q` 切尾 |
+| R-003 Front-P | 2 | 前/单轴，2B/4B dtype，N,Q<64 | 单 AIV Kernel | `IndexFillFrontP<half\|float,U>` | workspace 多次复制标记；UB mask 后复用成 x | P 尾块 |
+| R-004 Tail-N | 3 | 多维尾轴，2B/4B dtype，N>=coreNum*256 | 单 AIV Kernel | `IndexFillTailN<half\|float,U>` | mask/FP16 ws/x 阶段别名 | N 以 12288 切尾 |
+| R-005 Tail-P | 4 | 多维尾轴，2B/4B dtype，N<coreNum*256 | 单 AIV Kernel | `IndexFillTailP<half\|float,U>` | workspace 复制 32 行标记；按 P 分核 | `pBlockLength=floor((N<=1024?4096:12288)/N)` |
 
 ### 隐藏性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 轴路线 | `axis!=last || rank==1` | 前轴需处理 Q，尾轴 Q=1 可直接按 N/P | 全部 | 另一轴族 | `IndexFillTilingOp::ComputeTilingKey` |
+| 轴路线 | `axis!=last \|\| rank==1` | 前轴需处理 Q，尾轴 Q=1 可直接按 N/P | 全部 | 另一轴族 | `IndexFillTilingOp::ComputeTilingKey` |
 | 大 Q | `Q>=1024` | Front-Q 让同一 `(p,n)` 的 Q 片跨核并可直接搬 fill 块 | R-001 | R-002/R-003 | 同上 |
 | 小 N/Q | `N<64 && Q<64` | mask 扩展成本可由按 P 复用摊销 | R-003 | R-002 | 同上 |
 | 尾轴大 N | `N>=coreNum*256` | 按 N 切分提供足够并行度 | R-004 | R-005 | 同上 |
@@ -277,8 +277,8 @@ workspace_total(core node) = 16MiB + align32(2N + coreNum)
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `index_fill_tiling.cpp` | `ComputeTilingKey` | 前/单轴、`Q<1024`、`N>=64 || Q>=64`、dtype 非 override | key1 |
-| Router | `index_fill.cpp` | `index_fill` | key1 | `IndexFillFrontN<half|float,U>` |
+| Tiling | `index_fill_tiling.cpp` | `ComputeTilingKey` | 前/单轴、`Q<1024`、`N>=64 \|\| Q>=64`、dtype 非 override | key1 |
+| Router | `index_fill.cpp` | `index_fill` | key1 | `IndexFillFrontN<half\|float,U>` |
 
 #### Device 数据流
 

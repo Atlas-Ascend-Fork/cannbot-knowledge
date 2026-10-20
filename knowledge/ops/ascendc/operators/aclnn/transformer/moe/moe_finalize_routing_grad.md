@@ -391,7 +391,7 @@ workspace_total(Device) = 0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `op_host/moe_finalize_routing_v2_grad_tiling_membase.cpp` | `CalcTilingKeyWithScales` | scales存在、bias不存在、`H<=P` | key20001 |
-| Router/body | entry + `WithScaleNotCutH::SubProcess` | `bias==nullptr` / `hasBias=false` | `SubProcessWithOutBias` |
+| Router/body | | entry + `WithScaleNotCutH::SubProcess` | `bias==nullptr` / `hasBias=false` | `SubProcessWithOutBias` |
 
 #### Device 数据流
 
@@ -483,7 +483,7 @@ dynamic_ub = N/A; workspace_total(Device)=0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `tiling_membase.cpp` | `CalcTilingKeyWithScales` | scales+bias存在、`H<=P`，bytesPerH=`12+s` | key20001 |
-| Router/body | entry + `WithScaleNotCutH::SubProcess` | `bias!=nullptr`→`hasBias=true` | `SubProcessWithBias` |
+| Router/body | | entry + `WithScaleNotCutH::SubProcess` | `bias!=nullptr`→`hasBias=true` | `SubProcessWithBias` |
 
 #### Device 数据流
 
@@ -570,7 +570,7 @@ dynamic_ub=N/A; workspace_total(Device)=0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `tiling_membase.cpp` | `CalcTilingKeyWithScales` | scale存在、bias不存在、`H>P>0` | key20002 |
-| Router/body | entry + `WithScaleCutH::SubProcess` | `hasBias=false` | `SubProcessWithOutBias` |
+| Router/body | | entry + `WithScaleCutH::SubProcess` | `hasBias=false` | `SubProcessWithOutBias` |
 
 #### Device 数据流
 
@@ -652,7 +652,7 @@ workspace_total(Device)=0; dynamic_ub=N/A
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Tiling | `tiling_membase.cpp` | `CalcTilingKeyWithScales` | scale+bias存在、`H>P>0` | key20002 |
-| Router/body | entry + `WithScaleCutH::SubProcess` | `hasBias=true` | `SubProcessWithBias` |
+| Router/body | | entry + `WithScaleCutH::SubProcess` | `hasBias=true` | `SubProcessWithBias` |
 
 #### Device 数据流
 

@@ -143,7 +143,7 @@ else:
 | 64 元素阈值 | `N<=SCALAR_THRESHOLD_NUM(64)` | 小输入直接在 UB 方块散写；大输入用固定 64×64 Vector tile | R-001/R-002 | 另一 Route | `diag_flat_tiling.cpp::TilingDiagFlat` |
 | 16 字节 route | `dtypeSize==16` | 独立的双 `int64_t` body | 非公开 dormant key 102/104 | ACLNN dtype 检查先拒绝；不进入正式 Route | `CalcScalarTiling` / `CalcAuxMatrixTiling` |
 | R-002 核粒度 | `H=ceil_align(max(ceil_div(N,C_total),64),64)` | 确保每核处理数与固定 tile 64 对齐 | R-002 | 无 fallback；平台核数/UB 读取失败时 Tiling 失败 | `CalcAuxMatrixTiling` |
-| DataCopyPad 编译能力 | `__CCE_AICORE__==220 || ==310 || __NPU_ARCH__∈{3003,3113}` | 非对齐 GM 搬运与无 workspace 参数的 `SyncAll()` 可用性 | R-001/R-002 CopyOut 和清零同步 | 编译为逐行 DataCopy + `SyncAll(syncGlobal,workLocal)`；A2/A3 精确宏映射固定仓不可见 | `IsDataCopyPadSupport` |
+| DataCopyPad 编译能力 | `__CCE_AICORE__==220 \|\| ==310 \|\| __NPU_ARCH__∈{3003,3113}` | 非对齐 GM 搬运与无 workspace 参数的 `SyncAll()` 可用性 | R-001/R-002 CopyOut 和清零同步 | 编译为逐行 DataCopy + `SyncAll(syncGlobal,workLocal)`；A2/A3 精确宏映射固定仓不可见 | `IsDataCopyPadSupport` |
 | R-002 二维 DMA | `W*s % 32==0 && dstStride<65535` | `DataCopyParams` 的 stride 为 32 字节 block、`uint16_t` 宽度 | R-002 | 能力分支且 `s<8` 时 `DataCopyPad`；否则逐行 DataCopy | `DiagFlatNDTo2D::CopyOut` |
 | R-001 输出 tile | `ONCE_HANDLE_NUM=32/s` | 一行正好一个 32B block；tile 为 `(32/s)^2` 元素 | R-001 | 不存在资源 fallback | `DiagFlatNDTo2DWithFew::Init` |
 | workspace 非空 | `workspace==nullptr` | kernel 初始化同步区依赖 workspace | 全部 | entry 直接返回，不写输出，Host 不接收 Device 错误码 | `diag_flat` entry |

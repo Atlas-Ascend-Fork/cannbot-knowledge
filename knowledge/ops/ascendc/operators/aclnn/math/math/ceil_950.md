@@ -268,7 +268,7 @@ R-001/R-002 共用单 Kernel AIV 图：entry 声明 `KERNEL_TYPE_AIV_ONLY`，解
 | API | `math/ceil/op_api/aclnn_ceil.cpp` | `CheckDtypeValid/CheckParamsCeil` | RegBase 白名单含 FLOAT；self/out dtype、shape相同，rank<=8 | 进入连续化；否则参数错误 |
 | L0 | `math/ceil/op_api/ceil.cpp` | `IsAiCoreSupport` | `IsRegBase(curArch)` 且 dtype 在 `{FLOAT,FLOAT16,BFLOAT16}` | `CeilAiCore` |
 | Tiling | `math/ceil/op_host/arch35/ceil_tiling_arch35.cpp` | `CeilTiling::RunTiling` | output dtype `DT_FLOAT` | `dType=TPL_FP32`; `DoTiling<CeilDAG<float>>` |
-| Key | 同上 + `ceil_struct.h` | `SetTilingData`; template declaration | `scheMode=1`, UINT list index=1；dtype raw value=3，左移1 bit | key `1 | (3<<1) = 7` |
+| Key | 同上 + `ceil_struct.h` | `SetTilingData`; template declaration | `scheMode=1`, UINT list index=1；dtype raw value=3，左移1 bit | key `1 \| (3<<1) = 7` |
 | Router | `math/ceil/op_kernel/ceil_apt.cpp` | `ceil<schMode,dType>` | `if constexpr(dType==TPL_FP32)` | `ElementwiseSch<1,CeilDAG<float>::OpDag>` |
 
 #### Device 数据流

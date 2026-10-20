@@ -163,7 +163,7 @@ blockDim            = B                                  # AIV core 数
 | 有效 AIV 核数 | `coreNum==0` 时强制为 1 | 防止分核除零，保证即便空 indices 也有合法 blockDim | R-001 | 始终归一为 1，不存在 fallback | `ResolveCoreNum` |
 | 空索引 | `M==0` 时 `B=1,P=0,T=0` | 保持合法 launch，VF 循环零次 | R-001 | 空操作 | `ScatterReduceCommonTiling`; `SimtComputeReduce` |
 | 空切片 | `D0==0 -> S=0`，或合法 shape 得到 `S==0` | `Init/Process` 不绑定或访问 GM，避免除以零 `globalIdx/S` | R-001 | Kernel 早退 | `ScatterReduceSimt::Init/Process` |
-| 索引边界 | `idxVal < 0 || uint64(idxVal) >= varFirstDim` | 避免目标 GM 越界；先检查负数再做无符号转换 | R-001 | 跳过该索引的当前元素 | `SimtComputeReduce` |
+| 索引边界 | `idxVal < 0 \|\| uint64(idxVal) >= varFirstDim` | 避免目标 GM 越界；先检查负数再做无符号转换 | R-001 | 跳过该索引的当前元素 | `SimtComputeReduce` |
 | 元素宽度 | `sizeof(PARAMS_T)==4` 编译期判断 | CAS API 直接支持 `float/int32`，不直接支持 16/8-bit | R-001 内部分支 | 2/1-byte 类型走包围 32-bit word CAS | `SimtComputeReduce` |
 | 包围字对齐 | `var` GM 基址至少 4-byte 对齐；源码注释给出实际 GM tensor ≥32-byte 对齐 | `reinterpret_cast<uint32_t*>` 后按 `byteOff>>2` 定位原子字 | R-001 subword | 固定源码没有运行时 fallback 或对齐错误返回 | `AtomicReduceSubWord` |
 | 固定线程数 | `THREAD_NUM=512`，`asc_vf_call(dim3(THREAD_NUM),...)` | 用 grid-stride 循环覆盖任意 `blockElems`，无 UB tile cap | R-001 | 无其他线程配置 | `THREAD_NUM`; `ScatterReduceSimt::Process` |

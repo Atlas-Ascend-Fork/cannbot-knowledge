@@ -175,7 +175,7 @@ ACLNN dtype ∈ {FLOAT, FLOAT16, BFLOAT16}
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
 | R-001 FLOAT32 原生 | dtype 模板参数 `C_DT_FLOAT`；数值 key 在固定源码不可见 | A2 OpDef、非空、FLOAT、0D～8D | 单 `sigmoid` AIV_VECTOR Kernel | `KernelSigmoid<float>::Process`→`ComputeBase` | 绑定队列两块 FP32 tile + 一个 FP32 ones TBuf；Queue producer/consumer 同步 | 最后一核/最后一 tile 取实际长度；无 fallback |
-| R-002 16 位升精度 | `C_DT_FLOAT16` 或 `C_DT_BF16`；数值 key 不可见 | A2 OpDef、非空、FLOAT16/BFLOAT16、0D～8D | 单 `sigmoid` AIV_VECTOR Kernel | `KernelSigmoidUpcast<half|bfloat16_t>::Process`→`ComputeBase` | 绑定队列两块 16 位 tile + 两个 FP32 TBuf；Queue 同步 | 实际 tail 长度传给全部 primitive；无 fallback |
+| R-002 16 位升精度 | `C_DT_FLOAT16` 或 `C_DT_BF16`；数值 key 不可见 | A2 OpDef、非空、FLOAT16/BFLOAT16、0D～8D | 单 `sigmoid` AIV_VECTOR Kernel | `KernelSigmoidUpcast<half\|bfloat16_t>::Process`→`ComputeBase` | 绑定队列两块 16 位 tile + 两个 FP32 TBuf；Queue 同步 | 实际 tail 长度传给全部 primitive；无 fallback |
 
 ### 隐藏性能 Guard
 
@@ -204,7 +204,7 @@ Host 通过 `context->GetTilingData<SigmoidTilingData>()` 直接填同一 POD，
 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---|---|---|---|---|---|---|
 | R-001 FLOAT32 原生 | `D_T_X=C_DT_FLOAT` | `op_host/sigmoid_tiling.cpp` · `SigmoidTilingFunc/FillNormalTiling` | `SigmoidTilingData` 四字段 | `op_kernel/sigmoid.cpp` · `sigmoid<float>` | `op_kernel/sigmoid.h` · `KernelSigmoidBase`、`KernelSigmoid<float>` | `op_host/sigmoid_def.cpp` · `AddConfig("ascend910b")`；`op_host/CMakeLists.txt` |
-| R-002 16 位升精度 | `D_T_X=C_DT_FLOAT16/C_DT_BF16` | 同上 | 同上 | `sigmoid<half|bfloat16_t>` | `KernelSigmoidBase`、`KernelSigmoidUpcast<T>` | 同上 |
+| R-002 16 位升精度 | `D_T_X=C_DT_FLOAT16/C_DT_BF16` | 同上 | 同上 | `sigmoid<half\|bfloat16_t>` | `KernelSigmoidBase`、`KernelSigmoidUpcast<T>` | 同上 |
 
 ## Kernel 实现
 
@@ -426,7 +426,7 @@ workspace_core = GetLibApiWorkSpaceSize()，Device body 不读取
 | 阶段 | 文件 | 符号/模板实例 | 实现事实 |
 |---|---|---|---|
 | Host/Tiling producer | `experimental/activation/sigmoid_v2/op_host/sigmoid_tiling.cpp` | `FillNormalTiling` | 12 字节/元素 tile 上界适配 16 位升精度内存 |
-| Kernel entry/router | `experimental/activation/sigmoid_v2/op_kernel/sigmoid.cpp` | `sigmoid<half|bfloat16_t>` | 非 4 字节实例映射到升精度类 |
+| Kernel entry/router | `experimental/activation/sigmoid_v2/op_kernel/sigmoid.cpp` | `sigmoid<half\|bfloat16_t>` | 非 4 字节实例映射到升精度类 |
 | Device body/helper | `experimental/activation/sigmoid_v2/op_kernel/sigmoid.h` | `KernelSigmoidUpcast<T>::ComputeBase` | 两次 Cast、FP32 算术、RINT、绑定队列复用与 tail |
 
 ## 算子特定优化
@@ -515,7 +515,7 @@ __aicore__ inline void ComputeBase(int64_t curTileLength)
 | 对比维度 | R-001 FLOAT32 原生 | R-002 FLOAT16/BFLOAT16 升精度 | 设计选择依据 |
 |---|---|---|---|
 | 命中条件/优先级 | `D_T_X=C_DT_FLOAT` | `D_T_X=C_DT_FLOAT16/C_DT_BF16` | dtype 模板选择后按 `sizeof(D_T_X)` 编译期分支 |
-| 模板与 dtype | `KernelSigmoid<float>` | `KernelSigmoidUpcast<half|bfloat16_t>` | 4 字节原生；2 字节升精度 |
+| 模板与 dtype | `KernelSigmoid<float>` | `KernelSigmoidUpcast<half\|bfloat16_t>` | 4 字节原生；2 字节升精度 |
 | 循环与分核 | 16KiB/核目标、512B former 对齐、32B tile 对齐 | 相同公式，`S=2` | 同一 POD 和公共基类 |
 | Queue/TBuf/寄存器/dynamic UB/通信 window | 两个 FP32 queue buffer + 一个 FP32 TBuf | 两个 16 位 queue buffer + 两个 FP32 TBuf | 两者都严格为 12L bytes；无 dynamic UB/通信 |
 | 内存总占用与复用 | 12L；xLocal 原地完成算术 | 12L；FP32 TBuf 原地算术，xLocal 承接降精度结果 | Host 用统一 `U/12` tile 上界 |

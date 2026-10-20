@@ -199,7 +199,7 @@ AIV 固定申请 191 KiB `vecQue`。K/V gather 每轮最多 12288 个 INPUT_T �
 | Matmul buffer | 两次 `SetBufferSpace==0` 且 `GetTiling!=-1` | 固定 base 必须放入 L1/L0C | 两者 | Tiling 失败 | `SetMatMulTiling` |
 | K/V gather | `L_b·D{v}<=12288` 一轮，否则 `floor(12288/D{v})` 行/轮 | K/V 共用 24 KiB UB | 两者 | 自动多轮；商为 0 无保护 | `SetTiling/SelectAndGatherK/V` |
 | SoftMax | `G·L<=32768` 一轮，否则 `floor(32768/L)` 行/轮 | P UB 128 KiB FP32 | 两者 | 自动分 G；公共 `L<8192` 保证商非零 | `SetTiling/ProcessSoftmax` |
-| mask stride | `L_b>64 || L>=2048` | 64-bit mask 或 uint8 stride 上限 | R-002 | 改逐行 loop | `HandleMask` |
+| mask stride | `L_b>64 \|\| L>=2048` | 64-bit mask 或 uint8 stride 上限 | R-002 | 改逐行 loop | `HandleMask` |
 | DataCopy 对齐 | 公开 `D=192,Dv=128,L_b%16=0` | blockLen 以 32B block 计 | 两者 | 公共域外无 fallback | `SelectAndGatherK/V` |
 | 固定 UB 池 | 所有切片须落入 191 KiB | 单 `TBuf` 手工切片 | 两者 | 源码无最终容量断言 | `InitBuffer` |
 | workspace 核数 | Host 按 `A_p` 分配；Device 按 `C_u` 切片 | 避免把未使用 AIV 的保守空间误算进实际跨度 | 两者 | N/A，Host 天然留冗余 | `GetWorkspaceSize/InitWorkspace` |
@@ -489,7 +489,7 @@ mask_extra_UB = 0
 |---|---|---|---|---|---|
 | key使能 | Host selector | mask presence+mode | router | bool模板 | mask值不入Device |
 | mask | MTE2_S/V + Duplicate + PIPE_V | topk/P | SoftMax | P UB | `negativeScalar` 成员是 float，`GetExtremeValue` 实例化为 float，二者均填 0xFF7FFFFF 对应的有限 FP32 负极值 |
-| 大 stride | 逐行 loop | HandleMask | SoftMax | G rows | `Lb>64 || L>=2048` |
+| 大 stride | 逐行 loop | HandleMask | SoftMax | G rows | `Lb>64 \|\| L>=2048` |
 | 公共计算 | 同 R-001 | 同上 | 同上 | 同上 | 同上 |
 
 #### 关键实现

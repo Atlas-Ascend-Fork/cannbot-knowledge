@@ -109,8 +109,8 @@ aclnnForeachNormGetWorkspaceSize
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 16-bit L1 | key 1/4；`ForeachNormND<half|bfloat16_t,float,1>` | 非 regbase；x=FP16/BF16；Device `static_cast<int>(scalarVal)==1` | 同 dtype R-002 |
-| 2 | R-002 16-bit L2 | key 1/4；`ForeachNormND<half|bfloat16_t,float,2>` | 非 regbase；x=FP16/BF16；Device 上述条件为 false | 无 fallback |
+| 1 | R-001 16-bit L1 | key 1/4；`ForeachNormND<half\|bfloat16_t,float,1>` | 非 regbase；x=FP16/BF16；Device `static_cast<int>(scalarVal)==1` | 同 dtype R-002 |
+| 2 | R-002 16-bit L2 | key 1/4；`ForeachNormND<half\|bfloat16_t,float,2>` | 非 regbase；x=FP16/BF16；Device 上述条件为 false | 无 fallback |
 | 3 | R-003 FP32 L1 | key 2；`ForeachNormND<float,float,1>` | 非 regbase；x=FP32；Device `static_cast<int>(scalarVal)==1` | R-004 |
 | 4 | R-004 FP32 L2 | key 2；`ForeachNormND<float,float,2>` | 非 regbase；x=FP32；Device 上述条件为 false | 无 fallback |
 

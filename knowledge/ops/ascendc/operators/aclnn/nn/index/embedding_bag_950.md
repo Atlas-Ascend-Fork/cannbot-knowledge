@@ -131,7 +131,7 @@ Host 取 `UB'=UB-32KiB`、AIV核数。若 `D*sizeof(weight)<=512`，强制 SIMT�
 |---:|---|---|---|---|
 | 1 | R-001 empty SIMT | 500/501/502/503 | `D==0`；+2/+3 表示dtype提升，+1/+3表示compute地址需uint64 | 返回该key |
 | 2 | R-002 1D SIMT | 300/301/302/303 | `D>0 && indices.rank==1 && (D*weightSize<=512)`；或其它逻辑把`isSimt=1` | 返回该key |
-| 3 | R-003 2D SIMT | 400/401/402/403 | `D>0 && indices.rank==2 && (D*weightSize<=512 || 2*K*indicesSize>4096)` | 返回该key |
+| 3 | R-003 2D SIMT | 400/401/402/403 | `D>0 && indices.rank==2 && (D*weightSize<=512 \|\| 2*K*indicesSize>4096)` | 返回该key |
 | 4 | R-004 1D Vector sum | 100/101 + mode0 | 非SIMT、rank1、mode=sum；101表示indices/offsets dtype不同 | entry mode子分支 |
 | 5 | R-005 1D Vector mean | 100/101 + mode1 | 非SIMT、rank1、mode=mean | entry mode子分支 |
 | 6 | R-006 1D Vector max | 100/101 + mode2 | 非SIMT、rank1、mode=max | entry mode子分支 |

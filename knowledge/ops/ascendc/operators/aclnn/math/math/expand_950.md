@@ -149,11 +149,11 @@ blockDim = usedCoreCnt*dFactor
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 空 Tensor | API Host shortcut | `self.IsEmpty() || out.IsEmpty()` | 检查 0D 标量 |
+| 1 | R-001 空 Tensor | API Host shortcut | `self.IsEmpty() \|\| out.IsEmpty()` | 检查 0D 标量 |
 | 2 | R-002 0D 标量直拷 | framework `ViewCopy` | 非空且 `selfDimNum==0 && size.Size()==0` | 普通 Expand Tiling |
 | 3 | R-005 尾轴大 A | 11002 / `BrcToDataCopyPad<T>` | `lastDim>=tensorSize && !lastIsB`，随后 `uAxisCnt!=5` | 检查 11003 |
 | 4 | R-006 尾轴大 B | 11003 / `BrcToWithTailAxis<T>` | 前项未中，`lastDim>=tensorSize && lastIsB && ubSizeCheck`，随后 `uAxisCnt!=5` | 检查 UB 条件 |
-| 5 | R-004 UB 广播 | 11001 / `BroadcastToUb<T,false>` | 前两项未中；`((dimNum==1&&!lastIsB)||(lastDim<=tensorSize&&((!lastIsB&&!isDMABrcA)||(lastIsB&&lastDim>=8))))&&ubSizeCheck`；随后不满足 11004/11005 覆盖 | R-003 |
+| 5 | R-004 UB 广播 | 11001 / `BroadcastToUb<T,false>` | 前两项未中；`((dimNum==1&&!lastIsB)\|\|(lastDim<=tensorSize&&((!lastIsB&&!isDMABrcA)\|\|(lastIsB&&lastDim>=8))))&&ubSizeCheck`；随后不满足 11004/11005 覆盖 | R-003 |
 | 6 | R-003 NDDMA-4D | 11000 / `BrcToWithNDDMA<T,TD,4>` | 上述三类未中，且计算 U 后 `uAxisCnt!=5` | 无 Host fallback |
 | 7 | R-007 FULL-NDDMA-5D | 11004 / `BrcToWithNDDMA<T,TD,5>` | 初选任意 key 后，`uAxisCnt==5` 无条件覆盖 | 无 Host fallback |
 | 8 | R-008 尾轴小 A | 11005 / `BroadcastToUb<T,true>` | 初选 11001、`!lastIsB`、`uAxisCnt>1`、`out[d-2]*ceilAlign(lastDim*S,B)<=vRegSize`，且未先被 11004 覆盖 | 保留 11001 |
@@ -260,7 +260,7 @@ else:
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `math/expand/op_api/aclnn_expand.cpp` | `aclnnExpandGetWorkspaceSize` | `self->IsEmpty() || out->IsEmpty()` | `workspaceSize=0`，释放 executor，成功返回 |
+| API | `math/expand/op_api/aclnn_expand.cpp` | `aclnnExpandGetWorkspaceSize` | `self->IsEmpty() \|\| out->IsEmpty()` | `workspaceSize=0`，释放 executor，成功返回 |
 
 #### Device 数据流
 

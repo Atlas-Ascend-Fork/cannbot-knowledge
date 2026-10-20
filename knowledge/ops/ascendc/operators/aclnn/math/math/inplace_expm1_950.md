@@ -183,7 +183,7 @@ else:
 | tile 对齐 | FP32 对齐 64 元素；FP16/BF16 对齐 128 元素 | 对齐到 256-byte Vector repeat；tail 由 DataCopyPad 和 count 保护 | 全部 | 缩小至前一对齐倍数，变成 0 则失败 | `GetMaxElemNum` |
 | POD 窄化 | `ElewiseTilingData.ubFormer(int64)` 隐式赋给 POD `int32`，无显式范围检查 | Device 用该值计算 TBuf 大小和循环 | 全部 | 固定源码无 fallback；平台 UB 的实际上界使常规值远小于 `INT32_MAX`，但这不是源码校验 | `AdaptEleBaseTilingData` |
 | 内嵌 SIMT 线程数 | 恒为 `THREAD_NUM=1024` | `i=threadIdx.x; i<count; i+=blockDim.x` 覆盖 tile | 全部 | 无其它线程配置 | `Expm1SimtCompute`、`Expm1Custom` |
-| 大幅值快速分支 | `fabs(x)>2` | 直接选择已有 `expm1f`，避免用小区间重建结果 | 全部 | `|x|<=2` 走约化多项式 | `Expm1SimtCompute` |
+| 大幅值快速分支 | `fabs(x)>2` | 直接选择已有 `expm1f`，避免用小区间重建结果 | 全部 | `\|x\|<=2` 走约化多项式 | `Expm1SimtCompute` |
 
 ### POD/ABI
 
@@ -309,7 +309,7 @@ workspace_total(self Expm1 node) = 16777216 bytes（Kernel 不读取）
 | GM→UB | `Get/ReleaseTensor<VECIN>`→`Mutex PIPE_MTE2` | CopyIn | VECCALC 获取同 id | input 子区 | `blockLen=count*4`，无 padding 写入 |
 | UB 计算 | `Get/ReleaseTensor<VECCALC>`→`Mutex PIPE_V` | CopyIn | SIMT/后续 MTE3 | 输入和输出子区 | 全 FP32；每线程 stride 1024；`i<count` 防越界 |
 | UB→GM | `Get/ReleaseTensor<VECOUT>`→`Mutex PIPE_MTE3` | SIMT | 下一次 V 复用 | output 子区 | 仅搬 `count` 个元素 |
-| 数值分支 | FP32 `fmaf/expm1f/exp2f/roundf` | 当前 lane | 当前 lane 写回 | 寄存器值 | `|x|>2` 用 `expm1f`；溢出/下溢/零显式选择 |
+| 数值分支 | FP32 `fmaf/expm1f/exp2f/roundf` | 当前 lane | 当前 lane 写回 | 寄存器值 | `\|x\|>2` 用 `expm1f`；溢出/下溢/零显式选择 |
 
 #### 关键实现
 

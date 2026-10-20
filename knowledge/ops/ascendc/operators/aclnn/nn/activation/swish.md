@@ -163,7 +163,7 @@ template dtype == FLOAT16 or BF16 -> R-002 KernelSwishV2Upcast<T>
 | 最小每核工作量 | `targetCoreNum=ceil(totalBytes/16KiB)` 后限制到 `[1,C]` | 避免按所有 AIV 核切出过小工作块 | 全部 | 自动减少 blockDim，不失败 | `FillNormalTiling` |
 | 512 B 分核对齐 | `formerLength=align_up(ceil(N/targetCoreNum),512/s)` | 核边界按 cache-line 元素数对齐 | 全部 | 无另一 Route | `FillNormalTiling` |
 | UB 上界 | `tileLength=align_down(U/16,32/s)` | 两路线的真实 UB 总量均为 `16*tileLength` 字节 | 全部 | 结果≤0 时置 `32/s`；平台 UB 过小无独立错误保护 | `FillNormalTiling`、`InitExtraBuffers` |
-| 空域 | ACLNN `self->IsEmpty() || out->IsEmpty()` | 避免 `N=0` 的无意义 Device launch | 全部 | 成功返回、workspace 0 | `aclnnSwishGetWorkspaceSize` |
+| 空域 | ACLNN `self->IsEmpty() \|\| out->IsEmpty()` | 避免 `N=0` 的无意义 Device launch | 全部 | 成功返回、workspace 0 | `aclnnSwishGetWorkspaceSize` |
 | dtype router | `sizeof(D_T_X)==sizeof(float)` | FP32 直接走 native body；16-bit 必须升精度 | R-001/R-002 | 编译期二选一 | `swish_v2` entry |
 
 ### POD/ABI

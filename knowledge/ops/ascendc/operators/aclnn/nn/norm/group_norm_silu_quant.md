@@ -171,7 +171,7 @@ else:
 | UB 间接上界 | `C+numPerCore<=2700` | gamma/beta 与 `[N,G]` 统计量缓冲随两项增长 | 全部 | `GRAPH_FAILED` | `SetTiling` |
 | 固定 tile | `P=8192` | 三个 FP32 P 缓冲与双缓冲输入/输出构成固定 UB 主体 | 全部 | `E` 决定单块/多块 body | `SetTilingParams`、`GroupNormSiluQuantB16::Init` |
 | DMA tail | `copyNum` 非 32B 对齐时 `isAlign=false` | A2/A3 `__CCE_AICORE__==220` 路径用按字节 `DataCopyPad` 避免越界写 | 全部 | 尾块 pad 路径 | `GroupNormSiluQuantBase::CopyInData/CopyOutData` |
-| 量化 scale 形状 | `Q==1 || Q==C` | body 仅有标量和逐通道两种索引 | 全部 | API `ACLNN_ERR_PARAM_INVALID` | `CheckShape`、`ComputeOneLoop/ComputeMultipleLoop` |
+| 量化 scale 形状 | `Q==1 \|\| Q==C` | body 仅有标量和逐通道两种索引 | 全部 | API `ACLNN_ERR_PARAM_INVALID` | `CheckShape`、`ComputeOneLoop/ComputeMultipleLoop` |
 | workspace 非空 | `workspace!=nullptr && GetUserWorkspace(workspace)!=nullptr` | entry 在解析 POD 前硬返回 | 全部 | 无输出直接返回 | `group_norm_silu_quant` |
 | mean/rstd copy 长度窄化 | `copyNum` 隐式要求可安全转 `uint16_t` | `CopyOutMeanAndRstd` 将每核任务数转为 `uint16_t`；Host 的 2700 guard使成功 Route 小于上限 | 全部 | Host guard 失败 | `CopyOutMeanAndRstd` |
 | UB 平台值未参与选择 | `TilingPrepare` 取得 `ubSizePlatForm>0`，后续不读取 | 固定仓无法从 selector 证明 `UB_total<=runtime UB`，只存在 2700 常量 guard | 全部 | 无动态 UB fallback | `TilingPrepare4GroupNormSiluQuant`、`SetTiling` |
@@ -221,7 +221,7 @@ entry 先声明 `KERNEL_TYPE_MIX_VECTOR_CORE`，拒绝空 workspace/user workspa
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `op_host/op_api/aclnn_group_norm_silu_quant.cpp` | `CheckShape` | `Q==1 || Q==C` | Q=1 保留标量分支 |
+| API | `op_host/op_api/aclnn_group_norm_silu_quant.cpp` | `CheckShape` | `Q==1 \|\| Q==C` | Q=1 保留标量分支 |
 | Tiling | `op_host/group_norm_silu_quant_tiling.cpp` | `SetTiling` | `S>=16 && C+numPerCore<=2700` | key 1031，否则失败 |
 | Device | `op_kernel/group_norm_silu_quant_b16.h` | `ComputeSilu` | `loopNum==1`，等价 `E<=8192` | `ComputeOneLoop` |
 | Device | 同上 | `ComputeOneLoop` | `shapeQuantScale==1` | 始终复用 `quantScaleLocal[0]` |

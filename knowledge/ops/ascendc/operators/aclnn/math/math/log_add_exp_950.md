@@ -231,7 +231,7 @@ else: R-003/P
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 公开 simplified | `base==-1 && scale==1 && shift==0` | 避免四个 scalar 与 full DAG；key 的 formulaType 固定 0 | 全部 | 内部 full route，但公开 ACLNN 不可达 | `aclnn_logaddexp.cpp::LOG_*`; `LogAddExpTiling::GetShapeAttrsInfo` |
-| 空域 | `self->IsEmpty() || other->IsEmpty()` | 避免 `dimLength==0` 与无意义节点 | 全部之前 | 成功、workspace=0、无 Device 节点 | `aclnnLogAddExpGetWorkspaceSize` |
+| 空域 | `self->IsEmpty() \|\| other->IsEmpty()` | 避免 `dimLength==0` 与无意义节点 | 全部之前 | 成功、workspace=0、无 Device 节点 | `aclnnLogAddExpGetWorkspaceSize` |
 | dtype 同构 | 核心 `x1.dtype==x2.dtype==y.dtype` | 单模板 `DTYPE_X1`；BF16 专门升 FP32 | 全部核心 | `CheckDtype` 失败；正常 ACLNN 由前置 Cast 保证 | `LogAddExpTiling::CheckDtype` |
 | AIV-only | `BroadcastSch::Process` 固定设置 | DAG 只含 Vector/MicroAPI 与搬运；不启动 Cube/AIC | R-001～R-004 | N/A | `broadcast_sch.h::BroadcastSch::Process` |
 | UB 容量 | `B*elemNum*smax<=U` 且 256B repeat 对齐 | pool 必须容纳全部存活节点 | 全部核心 | Tiling `GRAPH_FAILED` | `BroadcastGetMaxElemNum`; `DoBrodcastTiling` |

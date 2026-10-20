@@ -188,7 +188,7 @@ dtype binary specialization
 | key10001 UB guard | `cTile>0 && cTile*s>=128` | 需要同时容纳 N×C 双输入、计数、running/output queue 与 FP32 reduction buffers | R-001/R-002 | key20001 | `sync_batch_norm_gather_stats_tiling_arch35.cpp::DoOpTiling` |
 | C 对齐 | key10001 对齐 `32/s`；key20001 FP32 对齐 128 元素、B16 对齐 64 元素 | DataCopyPad/ReduceSum 的行宽与 UB block/tile 账按对齐长度计算 | 全部 | 缩小 tile 或失败 | `DoOpTiling`、`DoNNotFullLoadTiling` |
 | 半核重分配 | `blockNum < coreNum_/2` | 避免过大 C tile 导致使用核数少于平台 AIV 核数一半 | R-001/R-002 | 保持原分配或重算 | `DoOpTiling` |
-| 分块候选停止 | `(cTileNum<=cBlockFactor && nTileNum!=64) || cTileNum<=0` | 增大 N tile 会改变 N×C queue 与 cache UB 预算 | R-003/R-004 | 使用前一成功候选；无成功值失败 | `DoNNotFullLoadTiling` |
+| 分块候选停止 | `(cTileNum<=cBlockFactor && nTileNum!=64) \|\| cTileNum<=0` | 增大 N tile 会改变 N×C queue 与 cache UB 预算 | R-003/R-004 | 使用前一成功候选；无成功值失败 | `DoNNotFullLoadTiling` |
 | 空域 | ACLNN `N==0` 报错，`C==0` 直接成功返回 | Kernel 的 `blockLoopNum-1`/除法路径不接受空 N/C | 全部 | 不启动 Kernel | `aclnnSyncBatchNormGatherStatsGetWorkspaceSize` |
 | count 数值域 | 固定仓没有 `countAll>1` 检查 | 公式包含 `1/countAll` 与 `countAll/(countAll-1)` | 全部 | 无 fallback，可能产生 Inf/NaN | 两个 body 的 `NFullLoadBatchNormVF` |
 

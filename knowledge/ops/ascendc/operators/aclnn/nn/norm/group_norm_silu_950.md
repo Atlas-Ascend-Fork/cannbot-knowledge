@@ -115,7 +115,7 @@ aclnnGroupNormSiluV2(workspace, executor, stream)
 | 1 | R-001 Empty same | 1000 / `GroupNormSiluEmpty<T1>` | `xShapeSize==0 && !mixType` | 非空到 3；mixed 到 2 |
 | 2 | R-002 Empty mixed | 1001 / `GroupNormSiluEmpty<float>` | `xShapeSize==0 && mixType` | 非空到 3 |
 | 3 | R-003/R-004 TwoPass performance | 1110/1111 | 扣除完整/折叠仿射与统计、二分区后 `maxReduceCount>R`；按 mixType 分 key | 否则尝试 generalized |
-| 4 | R-005/R-006 TwoPass generalized | 1130/1131 | 前项失败，且 `(C>4096 || R<=vectorLength/4)`；仿射缩为 `D` 后 `newMaxReduceCount>R` | 否则 Welford |
+| 4 | R-005/R-006 TwoPass generalized | 1130/1131 | 前项失败，且 `(C>4096 \|\| R<=vectorLength/4)`；仿射缩为 `D` 后 `newMaxReduceCount>R` | 否则 Welford |
 | 5 | R-009/R-010 Welford generalized | 1120/1121 | R 不可全载，且 `C>4096 && (gamma 或 beta 存在)` | 其余到 performance |
 | 6 | R-007/R-008 Welford performance | 1100/1101 | R 不可全载且不满足上一项 | 终点 |
 
@@ -149,7 +149,7 @@ else -> 1100 / 1101
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | strict full load | `maxReduceCount>R`，不是 `>=` | x/y 双缓冲各占两份 R | R-003～006 | Welford |
-| fold/NDDMA | `HW<=32 && hasOptional`；body 的 `isFold=HW<=32 || noOptional` | 把 D 个系数广播成按 R 对齐的 group 局部布局 | R-003/004 | 普通全 C CopyIn |
+| fold/NDDMA | `HW<=32 && hasOptional`；body 的 `isFold=HW<=32 \|\| noOptional` | 把 D 个系数广播成按 R 对齐的 group 局部布局 | R-003/004 | 普通全 C CopyIn |
 | large channel | `C>4096` | 全 C gamma/beta 不再常驻 UB | R-005/006/009/010 | performance 路线 |
 | short reduce | `R<=vectorLength/4` | 即使 C 不大也尝试 per-group full-load | R-005/006 | Welford performance |
 | mixed statistics | `T2!=T1` | mean/rstd GM dtype 为 FP32，省略 16 位输出转换区 | 偶数编号 mixed routes | same route |
