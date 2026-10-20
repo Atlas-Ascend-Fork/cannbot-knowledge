@@ -1,3 +1,3 @@
 # TileLang
 
-本目录是已注册的 TileLang 技术路由入口，当前尚无通过评审的知识卡。
+- [开发指南](guides/index.md)：TileLang 算子开发的设计与实现指南。
