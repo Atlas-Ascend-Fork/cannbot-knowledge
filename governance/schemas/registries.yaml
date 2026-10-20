@@ -47,6 +47,10 @@ technologies:
     type: dsl
     description: PyPTO 算子编程 DSL
     domains: [ops]
+  catlass:
+    type: ascendc
+    description: CATLASS C++ 模板算子编程栈与直调开发技术栈
+    domains: [ops]
   torch_compile:
     type: framework
     description: PyTorch torch.compile 图编译技术栈
