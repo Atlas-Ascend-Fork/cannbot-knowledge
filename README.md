@@ -105,6 +105,8 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 
 设计取舍见[设计原则](docs/design_principles.md)；常见任务见[形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)、[查询 API](recipes/api_search.md)和[使用知识库进行算子开发](recipes/operator_development.md)。
 
+知识库纳入 CANN 领域的概念与机制、API、硬件与平台知识、设计与优化方法，以及可复用的调试和故障处置经验，详见[知识纳入范围](docs/knowledge_and_skills_boundary.md#什么内容放到知识库仓)。用户可以将本仓作为个人 Skill 的知识来源，通过 `knowledge-query` 检索并引用相关知识卡。
+
 ## 贡献和检查
 
 贡献前阅读 [CONTRIBUTING.md](CONTRIBUTING.md)，按贡献类型准备材料：
