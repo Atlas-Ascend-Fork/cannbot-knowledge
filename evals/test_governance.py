@@ -306,6 +306,7 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/ops/pypto",
             "knowledge/ops/triton",
             "knowledge/ops/catlass",
+            "knowledge/ops/catlass-dsl",
             "knowledge/runtime",
         }
         actual = {path.as_posix() for path in self.contract.structural_directories()}

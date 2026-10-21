@@ -25,7 +25,7 @@ from yaml.nodes import MappingNode
 from .schema import SchemaValidator
 
 
-ID_RE = re.compile(r"^[a-z0-9_]+$")
+ID_RE = re.compile(r"^[a-z0-9_-]+$")
 
 
 class UniqueKeySafeLoader(yaml.SafeLoader):

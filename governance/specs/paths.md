@@ -26,7 +26,7 @@ route 是 technology 或 scope 的统称。当前允许的组合如下：
 |---|---|---|
 | `common` | `platforms`, `toolchains`, `observability` | `glossaries` |
 | `contrib` | `ascendc` | 无 |
-| `ops` | `ascendc`, `catlass`, `triton`, `tilelang`, `pypto`, `shared` | 无 |
+| `ops` | `ascendc`, `catlass`, `catlass-dsl`, `triton`, `tilelang`, `pypto`, `shared` | 无 |
 | `graph` | `torch_compile`, `ge`, `shared` | 无 |
 | `model` | `inference`, `training`, `spatial`, `embodied` | 无 |
 | `runtime` | 无 | `concepts`, `apis`, `runbooks` |

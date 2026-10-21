@@ -51,6 +51,10 @@ technologies:
     type: ascendc
     description: CATLASS C++ 模板算子编程栈与直调开发技术栈
     domains: [ops]
+  catlass-dsl:
+    type: dsl
+    description: CATLASS Python 算子编程 DSL
+    domains: [ops]
   torch_compile:
     type: framework
     description: PyTorch torch.compile 图编译技术栈
