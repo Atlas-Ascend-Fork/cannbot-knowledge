@@ -13,7 +13,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/reduction_operations/ReduceMin_interface/ReduceMin.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -90,13 +90,13 @@ platforms:
 -   支持的数据类型<a id="li184311059161511"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：int8\_t、uint8\_t、int16\_t、uint16\_t、half、bfloat16\_t、int32\_t、uint32\_t、float、int64\_t、uint64\_t。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：int8\_t、uint8\_t、int16\_t、uint16\_t、half、bfloat16\_t、int32\_t、uint32\_t、float、int64\_t、uint64\_t。
     
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float。
+    Atlas A3系列产品，支持的数据类型为：half、float。
     
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float。
+    Atlas A2系列产品，支持的数据类型为：half、float。
     
 
 ## 调用示例

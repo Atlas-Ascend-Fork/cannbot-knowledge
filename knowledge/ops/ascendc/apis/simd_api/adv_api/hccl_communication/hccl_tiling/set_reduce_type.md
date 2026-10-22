@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/SetReduceType.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/adv_api/hccl/hccl_tiling.h
@@ -46,13 +46,14 @@ uint32_t SetReduceType(uint32_t reduceType, uint8_t dstDataType = 0, uint8_t src
 
 ## 约束说明
 
-对于Ascend 950PR/Ascend 950DT，AI CPU作为服务端时，该接口暂不支持使用。
+
+对于Ascend 950PR&950DT系列产品，AI CPU作为服务端时，该接口暂不支持使用。
 
 
-对于Atlas A3 训练系列产品/Atlas A3 推理系列产品，该接口暂不支持使用。
+对于Atlas A3系列产品，该接口暂不支持使用。
 
 
-对于Atlas A2 训练系列产品/Atlas A2 推理系列产品，该接口暂不支持使用。
+对于Atlas A2系列产品，该接口暂不支持使用。
 
 
 ## 调用示例

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/Lock.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -57,8 +57,9 @@ static __aicore__ inline void Lock(MutexID id)
 ## 约束说明<a name="section184751024101111"></a>
 
 - 每个锁有固定的一个MutexID，在不同编程范式中，该ID的获取以及释放方式不同：
-    - 采用[TPipe-TQue框架编程范式](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_paradigm.md)时，MutexID需要通过[AllocMutexID](alloc_mutex_id_isasi.md)/[ReleaseMutexID](release_mutex_id_isasi.md)进行申请释放。
-    - 采用[静态Tensor编程范式](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/static_tensor_programming.md)时，MutexID由开发者自行管理，建议使用0-27，28-31为系统内部规划预留，不建议使用。
+    - 采用[TPipe-TQue框架编程范式](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_paradigm.md)时，MutexID需要通过[AllocMutexID](alloc_mutex_id_isasi.md)/[ReleaseMutexID](release_mutex_id_isasi.md)进行申请释放，由框架统一管理MutexID分配记录，避免与TQue等资源管理接口使用的MutexID冲突。
+    - 采用[静态Tensor编程范式](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/static_tensor_programming.md)时，MutexID可以通过[AllocMutexID](alloc_mutex_id_isasi.md)/[ReleaseMutexID](release_mutex_id_isasi.md)申请释放，也可以由开发者自行管理。自行管理可减少接口调用开销，但开发者需要自行保证MutexID不与其他同步或资源管理接口使用的MutexID冲突。自行管理MutexID时，建议使用0-27，28-31为系统内部规划预留，不建议使用。
+<a id="mutexid_resource_management_constraint"></a>
 - 调用`Lock`/`Unlock`时，如果由开发者自行管理MutexID，不得同时使用以下可能申请、取得或操作MutexID的资源管理接口：
     - `TPipe`接口：[InitBuffer](../../resource_management/t_pipe/init_buffer.md)（仅指参数类型为`TQue`或`TQueBind`的重载）、[InitBufPool](../../resource_management/t_pipe/init_buf_pool.md)。
     - `TBufPool`接口：[InitBuffer](../../resource_management/t_buf_pool/init_buffer.md)、[InitBufPool](../../resource_management/t_buf_pool/init_buf_pool.md)、[Reset](../../resource_management/t_buf_pool/reset.md)。
@@ -161,7 +162,6 @@ AscendC::ReleaseMutexID(mutexId1);
 ```
 
 完整样例请参考：[Mutex样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/mutex)。
-
 
 - [FlashAttentionScoreGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_grad_950.md)
 - [FlashAttentionUnpaddingScoreGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad_950.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__bfloat162float.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -82,6 +82,12 @@ inline float __bfloat162float(const bfloat16_t x)
     }
     ```
 
+输入输出示例如下：
+
+```text
+x: 0.5, -0.5, -0.0, 0.0, inf, -inf, nan, 1.5
+result: 0.5, -0.5, -0.0, 0.0, inf, -inf, nan, 1.5
+```
 
 - [ForeachTan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)
 - [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)

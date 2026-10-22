@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_half2int4x2_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -21,9 +21,7 @@ source_headers:
 
 ## 功能说明
 
-头文件路径为：`"c_api/reg_compute/reg_convert.h"`。
-
-**该接口已废弃，后续版本将不再支持。**
+**该接口的无显式位置参数原型已废弃，请使用[asc_half2int4x2](../reg_compute/reg_convert/asc_half2int4x2.md)的显式位置参数重载替代。**
 
 将half类型数据转为int4x2类型，并支持多种舍入模式，饱和/非饱和模式。
 
@@ -129,10 +127,6 @@ __simd_callee__ inline void asc_half2int4x2_rz_sat_v4(vector_int4x2_t& dst, vect
 ## 返回值说明
 
 无
-
-## 流水类型
-
-PIPE_V
 
 ## 约束说明
 

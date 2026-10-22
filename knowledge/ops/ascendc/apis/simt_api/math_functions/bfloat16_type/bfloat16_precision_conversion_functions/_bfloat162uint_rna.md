@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__bfloat162uint_rna.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -85,3 +85,10 @@ inline unsigned int __bfloat162uint_rna(const bfloat16_t x)
         dst[idx] = __bfloat162uint_rna(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0.5, 1.5, 2.5, 63.5, 64.5, 127.5, 255.0, inf
+result: 1, 2, 3, 64, 65, 128, 255, 4294967295
+```

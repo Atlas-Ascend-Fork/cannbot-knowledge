@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__bfloat16_as_ushort.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -85,3 +85,10 @@ inline unsigned short int __bfloat16_as_ushort(const bfloat16_t x)
         dst[idx] = __bfloat16_as_ushort(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0.5, -0.5, -0.0, 0.0, inf, -inf, nan, 1.5
+result: 16128, 48896, 32768, 0, 32640, 65408, 32704, 16320
+```

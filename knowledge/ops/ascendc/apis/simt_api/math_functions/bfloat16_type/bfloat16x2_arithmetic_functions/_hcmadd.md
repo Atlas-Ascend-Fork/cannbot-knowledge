@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_arithmetic_functions/__hcmadd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -97,3 +97,12 @@ bfloat16x2_t __hcmadd(const bfloat16x2_t x, const bfloat16x2_t y, const bfloat16
         asc_vf_call<simt_hcmadd>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, (__gm__ bfloat16x2_t*)z, (__gm__ bfloat16x2_t*)dst, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.25, 0.5), (2.5, -3.75), (-2, 1.25), (0.75, -0.25)
+y: (0.5, -2), (1.25, 3), (1.5, -1), (-0.5, 2.25)
+z: (-0.5, 1), (-2, 0.75), (1, -1.5), (0.25, 2)
+result: (-0.125, 3.75), (12.375, 3.5625), (-0.75, 2.375), (0.4375, 3.8125)
+```

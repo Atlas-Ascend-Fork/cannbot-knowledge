@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/best_practices/matmul_tuning_cases/matmul_multi_core_split_k.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -31,9 +31,8 @@ platforms: []
 
 本案例的算子规格如下：
 
-**表1**  算子规格
+**表1**  算子规格<a name="table101751125175213"></a>
 
-<a name="table101751125175213"></a>
 <table><thead align="left"><tr id="row8175525185219"><th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.1"><p id="p1417582516529"><a name="p1417582516529"></a><a name="p1417582516529"></a>输入</p>
 </th>
 <th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.2"><p id="p417532575212"><a name="p417532575212"></a><a name="p417532575212"></a>Shape</p>
@@ -76,10 +75,10 @@ platforms: []
 
 ## 分析主要瓶颈点<a name="section221431704714"></a>
 
--   优化前的流水图如下，由于未开启多核切K，且M和N非常小，原始矩阵数据未进行切分，所有数据在单核上进行计算。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002375339736.png)
+-   优化前的流水图如下，由于未开启多核切K，且M和N非常小，原始矩阵数据未进行切分，所有数据在单核上进行计算。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002375339736.png)
 -   优化前的Profiling数据如下，可以看到算子只在单核上执行，aic\_time耗时约19.60us，其中aic\_mte2\_time的平均耗时约为13.72us，aic\_mte2\_ratio占比较高。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002375340188.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002375340188.png)
 
 ## 设计优化方案<a name="section33901368431"></a>
 
@@ -129,9 +128,9 @@ platforms: []
 
 -   优化后的流水图如下，开启多核切K后，切分原始矩阵的K方向，单核处理K方向的数据量由原来的1024变为512，单核处理的数据量减半，MTE2流水变短。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002408742265.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002408742265.png)
 
--   优化后的Profiling数据如下，可以看到算子在两个核上执行，aic\_time平均耗时约为13.70us，较优化前的19.60us有较大提升。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002375184084.png)
+-   优化后的Profiling数据如下，可以看到算子在两个核上执行，aic\_time平均耗时约为13.70us，较优化前的19.60us有较大提升。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002375184084.png)
 
 ## 总结<a name="section8281219125011"></a>
 

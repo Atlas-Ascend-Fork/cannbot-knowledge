@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/environment_setup.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -32,4 +32,4 @@ platforms: []
     ```
 
 >[!NOTE]说明 
->对于Ascend C算子的开发，并非必须安装驱动固件。在非昇腾设备上，可以利用CPU仿真环境先行进行算子开发和测试，并在准备就绪后，利用昇腾设备进行加速计算。非昇腾设备的安装请参考 [《CANN安装指南》](https://www.hiascend.com/document/redirect/CannCommunityInstSoftware)中“附录B：常用操作 \> 在非昇腾设备上安装CANN”章节。
+>对于Ascend C算子的开发，并非必须安装驱动固件。在非昇腾设备上，可以利用CPU仿真环境先行进行算子开发和测试，并在准备就绪后，利用昇腾设备进行加速计算。非昇腾设备的安装请参考 [《CANN软件安装》](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/latest/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum)中“附录B：常用操作 \> 在非昇腾设备上安装CANN”章节。

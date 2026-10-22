@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/type_conversion_aux_config/SetDeqScale.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -40,7 +40,7 @@ source_headers:
 | CastDequant不开启向量量化的s162b8场景 | 0~31 | scale | 一个float类型数据M（硬件在计算时将其视为(1,8,10)格式，即1个符号位、8个指数位和10个尾数位）。 |
 | CastDequant不开启向量量化的s162b8场景 | 37~45 | offset | 一个有符号的9位整数。 |
 | CastDequant不开启向量量化的s162b8场景 | 46 | signMode | 用于指示量化结果是否有符号（其中0表示无符号，1表示有符号）。 |
-| CastDequant开启向量量化的s162b8场景 | 0~13 | vdeqAddr | 被硬件视为一个地址，指向UB中的一块空间，该空间大小为128B。空间被切分为16个64bit，每64bit可用于1次量化计算。 |
+| CastDequant开启向量量化的s162b8场景 | 0~13 | vdeqAddr | 被硬件视为一个地址，指向Unified Buffer（UB）中的一块空间，该空间大小为128B。空间被切分为16个64bit，每64bit可用于1次量化计算。 |
 
 ## 函数原型<a name="zh-cn_topic_0000002563051145_section21861260618"></a>
 
@@ -141,7 +141,6 @@ source_headers:
   // dst = src
   AscendC::CastDequant<int8_t, int16_t, true, true>(dstLocal, srcLocal, srcSize);
   ```
-
 
 - [AddLayerNormQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant.md)
 - [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)

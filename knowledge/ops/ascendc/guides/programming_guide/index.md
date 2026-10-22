@@ -1,6 +1,6 @@
 # programming guide
 
-- [高级编程](advanced_programming/index.md)：共 53 张知识卡（如 AOT编译优化（高级编程）、SIMT协作组简介（高级编程） 等）。
+- [高级编程](advanced_programming/index.md)：共 57 张知识卡（如 AOT编译优化（高级编程）、SIMT协作组简介（高级编程） 等）。
 - [appendix](appendix/index.md)：共 17 张知识卡（如 基于样例工程完成Kernel直调、msobjdump工具、optype_collector工具 等）。
 - [编译与运行](compilation_and_execution/index.md)：共 6 张知识卡（如 异步执行（编译与执行） 等）。
 - [调试调优](debug_and_tuning/index.md)：介绍Ascend C算子调试与调优整体方案，涵盖CPU域孪生调试、NPU域上板调试及性能调优工具。（共 4 张知识卡：性能调优（调试与调优） 等）

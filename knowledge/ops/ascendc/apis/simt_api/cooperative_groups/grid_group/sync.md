@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/grid_group/sync.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -44,7 +44,7 @@ void sync() const
 
 - 仅支持SIMT编程场景，不支持SIMD与SIMT混合编程场景。
 - 必须保证Grid内所有线程都能执行到同一个`sync()`调用，否则是未定义行为。
-- 确保Grid中的线程块总数不超过设备的AIV物理核数，以避免程序卡死。开发者可以通过[aclrtGetDeviceInfo](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/latest/API/runtimeapi/aclcppdevg_03_1867.html)接口查询设备的AIV物理核数。
+- 确保Grid中的线程块总数不超过设备的AIV物理核数，以避免程序卡死。开发者可以通过[aclrtGetDeviceInfo](https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/04_device_management.md#aclrtGetDeviceInfo)接口查询设备的AIV物理核数。
 - `sync()`接口仅保证线程指令执行的同步，不保证各线程块的Data Cache和Global Memory间的[缓存一致性](../../../../guides/programming_guide/advanced_programming/memory_model/cache_coherence.md)。
 
 ## 调用示例

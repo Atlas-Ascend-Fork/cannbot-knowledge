@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/GetTPipePtr.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -53,7 +53,6 @@ GetTPipePtr()->InitBuffer(inQueueX, 2, this->tileLength * sizeof(float));
 GetTPipePtr()->InitBuffer(inQueueY, 2, this->tileLength * sizeof(float));
 GetTPipePtr()->InitBuffer(outQueueZ, 2, this->tileLength * sizeof(float));
 ```
-
 
 - [DequantBias A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dequant_bias.md)
 - [UpsampleBicubic2dAAGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa_grad.md)

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/ub_gather/asc_gather.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,11 +26,13 @@ source_headers:
 
 根据索引位置`index`将源操作数`src`按元素收集到目的操作数`dst`中。
 
-**UB源收集模式**：源操作数为UB地址，目的操作数为矢量数据寄存器。按`index`矢量寄存器中保存的逐元素索引，从UB中读取对应位置的元素写入`dst`对应位置，受`mask`掩码控制；`mask`比特位为0的位置对应`dst`位置写0。
+**UB源收集模式**：源操作数为Unified Buffer（UB）地址，目的操作数为矢量数据寄存器。按`index`矢量寄存器中保存的逐元素索引，从UB中读取对应位置的元素写入`dst`对应位置，受`mask`掩码控制；`mask`比特位为0的位置对应`dst`位置写0。
 
 **图 1**  UB源收集模式
 
 ![UB源收集模式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_gather_ub.png)
+
+本接口为Reg矢量搬运接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -48,6 +50,7 @@ __simd_callee__ inline vector_<dst_dtype> asc_gather(__ubuf__ <src_dtype>* src,
 ```
 
 ### 数据类型组合列表
+
 **表1** UB源收集模式支持数据类型组合列表
 
 | dst_dtype | src_dtype | index_dtype |
@@ -112,14 +115,12 @@ __simd_callee__ inline vector_int16_t asc_gather(__ubuf__ int16_t* src,
 
 ### 通用约束
 
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
-- 本接口在Vector Function（`__simd_vf__` 标记的函数）内调用，源操作数为UB地址、目的操作数为矢量数据寄存器。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
+- 源操作数为UB地址、目的操作数为矢量数据寄存器。
 
 ### UB源收集模式约束
 
 - UB地址空间外的指针不可作为`src`传入，源操作数在UB中的起始地址需要32B对齐。
-- `mask`需通过掩码设置接口预先赋值后再传入，未赋值的掩码寄存器内容不确定，会导致有效元素位置错误。
 - 对于`mask`筛选需要搬运的元素，对应的地址需要在UB有效范围内；对于`mask`未筛选的元素，对应的地址不会触发任何地址越界异常，同时`dst`中对应的元素将被置零。
 - 当`src`为b8数据类型，`dst`为b16数据类型时，实现是编译器的软件仿真实现，通过函数返回值输出结果的函数原型不做支持。目的操作数的低8位与源操作数相同，高8位自动补0。例如`src`为`int8_t`数据类型，`dst`为`int16_t`数据类型：
 
@@ -136,7 +137,7 @@ __simd_callee__ inline vector_int16_t asc_gather(__ubuf__ int16_t* src,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
@@ -227,6 +228,5 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
 
 - [AscGather：固定 reference 调用约束](../../../../../guides/regbase/asc_gather_reference_contract.md)

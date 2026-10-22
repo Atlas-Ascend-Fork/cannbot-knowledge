@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/activation_functions/ReGlu_interface/ReGlu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -29,11 +29,11 @@ source_headers:
 
 ReGlu是一种GLU变体，使用Relu作为激活函数，计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002316175130.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002316175130.png)
 
 其中Relu激活函数的计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001792534088.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000001792534088.png)
 
 ## 函数原型
 
@@ -90,27 +90,27 @@ ReGlu是一种GLU变体，使用Relu作为激活函数，计算公式如下：
 -   支持的数据类型<a id="li356910105419"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16\_t、float。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16\_t、float。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、bfloat16\_t、float。
+    Atlas A3系列产品，支持的数据类型为：half、bfloat16\_t、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、bfloat16\_t、float。
+    Atlas A2系列产品，支持的数据类型为：half、bfloat16\_t、float。
     
 
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、float。
     
 
     
-    Kirin X90，支持的数据类型为：half、float。
+    Kirin X90处理器系列产品，支持的数据类型为：half、float。
     
 
     
-    Kirin 9030，支持的数据类型为：half、float。
+    Kirin 9030处理器系列产品，支持的数据类型为：half、float。
     
 
 ## 调用示例

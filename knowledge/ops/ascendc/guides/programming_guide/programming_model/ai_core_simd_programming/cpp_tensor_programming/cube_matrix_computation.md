@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/cube_matrix_computation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -375,6 +375,11 @@ AI Core内部执行单元（如MTE2搬运单元、Vector计算单元等）以异
 以下示例中，核函数（Kernel）入参`x`、`y`、`z`的指针类型与对应`GlobalTensor`的模板类型一致，因此调用`SetGlobalBuffer`时可省略显式类型转换。若实参指针类型与`GlobalTensor`的模板类型不一致，需要先将其显式转换为对应的`__gm__ PrimType*`类型。
 
 ```cpp
+// Tile sizes of one base matrix multiplication: M=128, K=64, N=256 (aligned to the 16x16 fractal granularity)
+constexpr uint32_t BLOCK_M = 128;
+constexpr uint32_t BLOCK_K = 64;
+constexpr uint32_t BLOCK_N = 256;
+
 __global__ __cube__ void matmul_kernel(__gm__ half* x, __gm__ half* y, __gm__ float* z)
 {
     uint8_t mutex_id = 1;

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_copy/asc_extract_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -33,7 +33,7 @@ source_headers:
 
 本接口与[asc_copy](asc_copy.md)的矢量数据寄存器复制到掩码寄存器模式功能相同，区别在于本接口通过函数返回值返回结果。
 
-本接口为Reg矢量计算接口，仅在AIV上生效。
+本接口为Reg矢量搬运接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -41,9 +41,9 @@ source_headers:
 
 ```c
 __simd_callee__ inline vector_bool asc_extract_mask(vector_uint16_t src,
-                                                     int16_t part)
+                                                    int16_t part)
 __simd_callee__ inline vector_bool asc_extract_mask(vector_uint32_t src,
-                                                     int16_t part)
+                                                    int16_t part)
 ```
 
 ## 参数说明
@@ -63,8 +63,8 @@ __simd_callee__ inline vector_bool asc_extract_mask(vector_uint32_t src,
 
 ## 约束说明
 
-- 本接口仅在AIV上生效，非AIV调用直接返回。
-- 本接口在Vector Function（`__simd_vf__`标记的函数）内调用，src为矢量数据寄存器。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
+- src为矢量数据寄存器。
 - **part的值必须在编译期确定，可传入整数字面量或constexpr整数常量，不支持传入运行时变量。**
     - 当数据类型为uint16_t时，part∈[0, 15]。
     - 当数据类型为uint32_t时，part∈[0, 31]。
@@ -74,7 +74,7 @@ __simd_callee__ inline vector_bool asc_extract_mask(vector_uint32_t src,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510&& ./main

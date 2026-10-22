@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopyPad_UBToGM.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-30T01:53:56Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -48,10 +48,10 @@ source_headers:
 
 
 
-- 支持配置设置数据搬运模式mode（仅Ascend 950PR/Ascend 950DT支持）
+- 支持配置设置数据搬运模式mode（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
-    // 该函数原型仅支持Ascend 950PR/Ascend 950DT
+    // 该函数原型仅支持Ascend 950PR&950DT系列产品
     template <typename T, PaddingMode mode = PaddingMode::Normal>
     __aicore__ inline void DataCopyPad(const GlobalTensor<T>& dst, const LocalTensor<T>& src, const DataCopyExtParams& dataCopyParams)
     ```
@@ -79,7 +79,7 @@ source_headers:
 
 
 
-针对Ascend 950PR/Ascend 950DT，DataCopyExtParams结构体参数定义请参考[表3](#table_ub2gm_pad_3)。
+针对Ascend 950PR&950DT系列产品，DataCopyExtParams结构体参数定义请参考[表3](#table_ub2gm_pad_3)。
 
 **表3**  DataCopyExtParams结构体参数定义<a name="table_ub2gm_pad_3"></a>
 
@@ -98,13 +98,13 @@ source_headers:
 针对如下型号，DataCopyExtParams结构体参数定义请参考[表4](#table_ub2gm_pad_4)：
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- Atlas A3系列产品
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- Atlas A2系列产品
 
 
-- Atlas 200I/500 A2 推理产品
+- Atlas 200I/500 A2推理产品
 
 
 **表4**  DataCopyExtParams结构体参数定义<a name="table_ub2gm_pad_4"></a>
@@ -143,25 +143,25 @@ source_headers:
 
 
 
-- Ascend 950PR/Ascend 950DT，支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
+- Ascend 950PR&950DT系列产品，支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
 
 
 
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
+- Atlas A3系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
 
 
 
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
+- Atlas A2系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
 
 
 
 
 
-- Atlas 200I/500 A2 推理产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- Atlas 200I/500 A2推理产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
@@ -173,7 +173,7 @@ source_headers:
 
 - 位于UB的源地址必须32字节对齐，位于Global Memory的目的地址必须1字节对齐。
 
-- 针对Ascend 950PR/Ascend 950DT，DataCopyExtParams结构体参数的数据类型和取值范围如下：
+- 针对Ascend 950PR&950DT系列产品，DataCopyExtParams结构体参数的数据类型和取值范围如下：
 
     **表5**  DataCopyExtParams结构体参数的数据类型和取值范围
 
@@ -188,13 +188,13 @@ source_headers:
 
 - 针对如下型号，DataCopyExtParams结构体参数的数据类型和取值范围如下：
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  - Atlas A3系列产品
   
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  - Atlas A2系列产品
   
   
-  - Atlas 200I/500 A2 推理产品
+  - Atlas 200I/500 A2推理产品
   
 
     **表6**  DataCopyExtParams结构体参数的数据类型和取值范围
@@ -211,13 +211,13 @@ source_headers:
 
 - 当DataCopyExtParams结构体参数blockCount、blockLen任意一个值为0时，该接口将被视为NOP（空操作）。该说明针对如下型号生效：
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  - Atlas A3系列产品
   
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  - Atlas A2系列产品
   
   
-  - Ascend 950PR/Ascend 950DT
+  - Ascend 950PR&950DT系列产品
   
 
 

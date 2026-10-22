@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/IterateBatch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -135,40 +135,40 @@ platforms:
 -   **异步模式**不支持IterateBatch搬运到UB上。
 -   当开启MixDualMaster（双主模式）场景时，即模板参数[enableMixDualMaster](matmul_config.md#matmulconfig-params)设置为true，不支持使用该接口。
 
--   Ascend 950PR/Ascend 950DT上，不支持A、B矩阵内存逻辑位置为TPosition::VECOUT的输入；输出至VECIN的函数原型当前只支持BSNGD Layout格式。
+-   Ascend 950PR&950DT系列产品上，不支持A、B矩阵内存逻辑位置为TPosition::VECOUT的输入；输出至VECIN的函数原型当前只支持BSNGD Layout格式。
 
 
--   Atlas 推理系列产品AI Core上，只支持NORMAL  Layout格式。
--   Atlas 推理系列产品AI Core上，不支持A、B矩阵内存逻辑位置为TPosition::TSCM的输入。
+-   Atlas推理系列产品AI Core上，只支持NORMAL  Layout格式。
+-   Atlas推理系列产品AI Core上，不支持A、B矩阵内存逻辑位置为TPosition::TSCM的输入。
 
 
--   Ascend 950PR/Ascend 950DT上，A、B矩阵内存逻辑位置为TPosition::TSCM时，只支持NORMAL  Layout格式。
+-   Ascend 950PR&950DT系列产品上，A、B矩阵内存逻辑位置为TPosition::TSCM时，只支持NORMAL  Layout格式。
 
 
--   Atlas 推理系列产品AI Core上，Bias不支持复用，Bias的shape大小必须为Batch \* N。
+-   Atlas推理系列产品AI Core上，Bias不支持复用，Bias的shape大小必须为Batch \* N。
 
 -   使用该接口时，A矩阵、B矩阵不支持int4b\_t类型的输入，即BatchMatmul不支持int4b\_t类型的矩阵输入。
 
 -   支持的数据类型<a id="li12616155731722"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16_t、int32_t、float。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16_t、int32_t、float。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、bfloat16_t、int32_t、float。
+    Atlas A3系列产品，支持的数据类型为：half、bfloat16_t、int32_t、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、bfloat16_t、int32_t、float。
+    Atlas A2系列产品，支持的数据类型为：half、bfloat16_t、int32_t、float。
     
 
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、bfloat16_t、int32_t、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、bfloat16_t、int32_t、float。
     
 
     
-    Kirin X90，支持的数据类型为：half、int32_t。
+    Kirin X90处理器系列产品，支持的数据类型为：half、int32_t。
     
 
 

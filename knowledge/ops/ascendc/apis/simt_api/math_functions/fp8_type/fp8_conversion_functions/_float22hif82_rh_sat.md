@@ -11,11 +11,12 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/fp8_type/fp8_conversion_functions/__float22hif82_rh_sat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
 - include/simt_api/asc_fp8.h
+- include/basic_api/kernel_operator_common_intf.h
 ---
 
 # \_\_float22hif82\_rh\_sat
@@ -63,19 +64,28 @@ SIMT编程场景当前不支持使用该接口。
 
     ```cpp
     #include "simt_api/asc_fp8.h"
+    #include "basic_api/kernel_operator_common_intf.h"
 
     // 使用短向量可提升数据搬运效率
     __simt_vf__ __launch_bounds__(1024) inline void simt_float22hif82_rh_sat(__gm__ float2* input, __gm__ hifloat8x2_t* output, uint32_t input_total_length)
     {
         uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
         // 每个线程处理1个float2类型的数据，即2个float类型的数据，因此idx >= input_total_length / 2的线程不处理数据
-        if (idx > input_total_length /2) {
+        if (idx >= input_total_length / 2) {
             return;
         }
         output[idx] = __float22hif82_rh_sat(input[idx]);
     }
     __global__ __vector__ void cast_kernel(__gm__ float* input, __gm__ uint8_t* output, uint32_t input_total_length)
     {
+        AscendC::SetCtrlSpr<60, 60>(0);  // 将CTRL[60]设置为0，使饱和模式生效。
         asc_vf_call<simt_float22hif82_rh_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ hifloat8x2_t*)output, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x(float2)：(0.0, 1.75), (0.25, 16.25), (128.25, 8.0), (nan, inf)
+result(hifloat8x2_t)：(0, 1.75), (0.25, 20), (160, 8), (0, 32768)
+```

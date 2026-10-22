@@ -11,13 +11,15 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/gen_simplified_key.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # GenSimplifiedKey回调实现
 
 本文介绍如何编写并注册`GenSimplifiedKey`回调。该回调用于预编译多份核函数（Kernel）binary的场景：算子开发者根据本次调用的输入、输出和属性生成一个自定义simplified key片段，运行时框架使用该片段查找对应的binary。
+
+完整可运行样例请参考[自定义simplified key编译样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op_simplified_key)。
 
 本文只说明回调如何生成Key。如何在编译时提供每个Key对应的binary，请参见[simplified key二进制配置JSON](../compilation_and_deployment/simplified_key_json_configuration.md)；运行时如何调用回调并选择binary，请参见[基于simplified key的运行时选择流程](../invocation/simplified_key_runtime_flow.md)。
 

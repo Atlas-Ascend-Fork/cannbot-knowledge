@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/data_type_conversion/type_conversion_functions/__uint2float_rd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,3 +81,10 @@ inline float __uint2float_rd(const unsigned int x)
         dst[idx] = __uint2float_rd(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0, 1, 16777216, 16777217, 16777219, 33554434, 2147483648, 4294967295
+result: 0.0, 1.0, 16777216.0, 16777216.0, 16777218.0, 33554432.0, 2147483648.0, 4294967040.0
+```

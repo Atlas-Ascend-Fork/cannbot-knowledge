@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/random_functions/PhiloxRandom.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -104,6 +104,5 @@ PhiloxRandom<10>(dstLocal, philoxKey, philoxCounter, 1024);
 ```
 [0.31179297 0.8263413  0.6849456 ... 0.10521233 0.29894042 0.96700084]
 ```
-
 
 - [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)

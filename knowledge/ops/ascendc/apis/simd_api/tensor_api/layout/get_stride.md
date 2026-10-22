@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/get_stride.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -52,7 +52,7 @@ __aicore__ inline constexpr auto get_stride(const Layout& layout)
 
 ## 返回值说明
 
-返回描述内存访问步长的stride对象（或其子结构）。
+返回描述内存访问步长的stride对象（或其子结构）。步长单位为元素个数，详见[stride](stride.md)。
 
 ## 约束说明
 

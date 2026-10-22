@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/ai_framework_adaptation/onnx_framework/adaptation_plugin_development.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,11 +19,11 @@ platforms: []
 
 >[!NOTE]说明 
 >
->针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，暂不支持ONNX框架算子调用。
+>针对Atlas A3系列产品，暂不支持ONNX框架算子调用。
 >
 >
 >
->针对Ascend 950PR/Ascend 950DT，暂不支持ONNX框架算子调用。
+>针对Ascend 950PR&950DT系列产品，暂不支持ONNX框架算子调用。
 >
 
 
@@ -43,7 +43,7 @@ LeakyReluCustom
 │   │   ├── leaky_relu_custom_plugin.cc // ONNX框架适配插件实现文件    
 │   ├── CMakeLists.txt
 ├── op_host                      // host侧实现文件
-├── op_kernel                    // kernel侧实现文件
+├── op_kernel                    // 核函数（Kernel）侧实现文件
 └── scripts                      // 自定义算子工程打包相关脚本所在目录
 ```
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__half2ll_rd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -90,3 +90,10 @@ inline long long int __half2ll_rd(const half x)
         dst[idx] = __half2ll_rd(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -2.5, -1.5, 0.5, 1.5, 2.5, inf, -inf, nan
+result: -3, -2, 0, 1, 2, 9223372036854775807, -9223372036854775808, 0
+```

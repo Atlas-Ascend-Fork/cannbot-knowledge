@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_3002.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 本节介绍\_\_NPU\_ARCH\_\_版本号为3002的硬件架构和其功能说明。对应的产品型号为：
 
 
--   Atlas 200I/500 A2 推理产品
+-   Atlas 200I/500 A2推理产品
 
 
 ## 硬件架构图<a name="section129231322122015"></a>
@@ -46,9 +46,8 @@ platforms: []
 
 开发者可以通过[平台信息获取](../../../../../apis/utils_api/platform_info/index.md)接口查询各存储单元的内存空间大小。
 
-**各存储单元的最小访问粒度（对齐要求）**
+**各存储单元的最小访问粒度（对齐要求）**<a name="table12348145512210"></a>
 
-<a name="table12348145512210"></a>
 <table><thead align="left"><tr id="row3348175522218"><th class="cellrowborder" valign="top" width="7.5200000000000005%" id="mcps1.1.4.1.1"><p id="p1680716381143"><a name="p1680716381143"></a><a name="p1680716381143"></a>核</p>
 </th>
 <th class="cellrowborder" valign="top" width="46.22%" id="mcps1.1.4.1.2"><p id="p5348145515229"><a name="p5348145515229"></a><a name="p5348145515229"></a>存储单元</p>

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/rnorm3df.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据a、b、c的平方和a^2 + b^2 + c^2的平方根的倒数。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002516816367.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002516816367.png)
 
 ## 函数原型
 
@@ -60,9 +60,7 @@ a^2 + b^2 + c^2的平方根的倒数。
 
 ## 约束说明
 
-
-针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了除法运算符，由于除法运算符不支持Subnormal场景，当所有输入均为Subnormal数据时，本接口最终返回nan。
-
+无
 
 ## 调用示例
 
@@ -104,8 +102,8 @@ a^2 + b^2 + c^2的平方根的倒数。
 输入输出示例如下：
 
 ```
-x：0.25, 0.75, 1.25, 1.75
-y：1.5, 2.5, 3.5, 4.5
-z：-0.5, 0.5, 1.5, 2.5
-result: 0.624695 0.3762884 0.2495131 0.1839202
+x: 0.25, 0.75, 1.25, 1.75
+y: 1.5, 2.5, 3.5, 4.5
+z: -0.5, 0.5, 1.5, 2.5
+result: 0.624695, 0.3762884, 0.2495131, 0.1839202
 ```

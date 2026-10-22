@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_cpu_programming.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -25,13 +25,13 @@ AI CPU是位于Device侧ARM64架构的处理器，其具备与AI Core相同的�
 本节介绍的AI CPU编程仅支持如下产品型号：
 
 
--   Ascend 950PR/Ascend 950DT
+-   Ascend 950PR&950DT系列产品
 
 
--   Atlas A3 训练系列产品/Atlas A3 推理系列产品
+-   Atlas A3系列产品
 
 
--   Atlas A2 训练系列产品/Atlas A2 推理系列产品
+-   Atlas A2系列产品
 
 
 ## AI CPU核函数（Kernel）定义<a name="section4987175618443"></a>
@@ -67,7 +67,7 @@ hello_world<<<numBlocks, nullptr, stream>>>(&args, sizeof(KernelArgs));
 
 -   numBlocks：AI CPU Device侧暂不支持分核逻辑，因此Host侧调用多核无实际意义。建议设置为1。
 -   l2ctrl：保留参数，当前固定为nullptr，开发者无需关注。
--   stream：类型为aclrtStream，stream用于维护一些异步操作的执行顺序，确保按照应用程序中的代码调用顺序在Device上执行。stream创建等管理接口请参考[《Runtime运行时API》](https://hiascend.com/document/redirect/CannCommunityRuntimeApi)。
+-   stream：类型为aclrtStream，stream用于维护一些异步操作的执行顺序，确保按照应用程序中的代码调用顺序在Device上执行。stream创建等管理接口请参考[《Runtime运行时API》](https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/README.md)。
 
 >[!NOTE]说明 
 >在编写调用代码时需要遵循如下规范：

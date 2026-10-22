@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__sad.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -75,3 +75,12 @@ unsigned int __sad(int x, int y, unsigned int z)
         dst[idx] = __sad(x[idx], y[idx], z[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -12, 0, 23, 7
+y: 0, 15, 7, -13
+z: 0, 5, 9, 3
+result: 12, 20, 25, 23
+```

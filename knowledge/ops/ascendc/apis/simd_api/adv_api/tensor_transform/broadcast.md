@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/Broadcast.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -70,7 +70,7 @@ platforms:
 -   支持动态shape
 
     
-    仅在Ascend 950PR/Ascend 950DT上支持。
+    仅在Ascend 950PR&950DT系列产品上支持。
     
 
     ```
@@ -87,10 +87,10 @@ platforms:
 
 另外，提供了一个核函数（Kernel）侧计算Tiling的接口，针对Broadcast的实现计算Tiling，获取Tiling结果。该接口的模板参数功能与支持动态shape的Broadcast接口模板参数相同，其余参数说明请参见[表5](#table5458981523)。
 
--   **kernel侧tiling计算接口**
+-   **核函数（Kernel）侧tiling计算接口**
 
     
-    仅在Ascend 950PR/Ascend 950DT上支持。
+    仅在Ascend 950PR&950DT系列产品上支持。
     
 
     ```
@@ -139,7 +139,7 @@ platforms:
 | srcShape | 输入 | 输入tensor的shape：uint32_t类型的数组，长度取值范围为[1, 9]。输入/输出的shape维度数目必须一致，且满足条件dstShape[i] >= srcShape[i]。<br><br>当srcShape[i]的值为1，且dstShape[i]不等于srcShape[i]时，表示i轴为广播轴。 |
 | tiling | 输入 | Broadcast接口所需的Tiling信息。BroadcastTiling*类型，通过调用核函数（Kernel）侧的tiling计算接口GetBroadcastTilingInfo获取。 |
 
-**表5**  kernel侧tiling计算接口参数说明
+**表5**  核函数（Kernel）侧tiling计算接口参数说明
 
 <a name="table5458981523"></a>
 
@@ -162,31 +162,31 @@ platforms:
 -   当前仅支持ND格式的输入，不支持其他格式。
 -   dim目前仅支持1或者2， axis目前仅支持0或者1。
 
--   对于Atlas 推理系列产品AI Core，在dim=2且axis=1时，srcShape\[0\]必须为32B对齐，即当输入/输出Tensor的维度为2维，且广播的维度为1时，输入Tensor的第0维数据需为32字节的倍数。
+-   对于Atlas推理系列产品AI Core，在dim=2且axis=1时，srcShape\[0\]必须为32B对齐，即当输入/输出Tensor的维度为2维，且广播的维度为1时，输入Tensor的第0维数据需为32字节的倍数。
 
 -   在dim=2，axis=0时，要求srcShape\[1\]必须32B对齐。
 
--   对于Ascend 950PR/Ascend 950DT，输入/输出tensor支持的维度数目，即rank支持的取值范围为\[1, 9\]。
+-   对于Ascend 950PR&950DT系列产品，输入/输出tensor支持的维度数目，即rank支持的取值范围为\[1, 9\]。
 
 -   支持的数据类型<a id="li12616155731718"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：b8、b16、b32、b64位宽对应的数据类型，具体数据类型请参考[不同位宽对应的数据类型](../../basic_api/data_structures/builtin_data_types.md#section16395539499)。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：b8、b16、b32、b64位宽对应的数据类型，具体数据类型请参考[不同位宽对应的数据类型](../../basic_api/data_structures/builtin_data_types.md#section16395539499)。
     
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    Atlas A3系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
     
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    Atlas A2系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
     
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：int8\_t、uint8\_t、half、float。
     
     
-    Kirin X90，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    Kirin X90处理器系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
     
     
-    Kirin 9030，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    Kirin 9030处理器系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
     
 
 ## 调用示例
@@ -240,7 +240,6 @@ axis：1
  [15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15]
  [16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16]]
 ```
-
 
 - [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)
 - [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)

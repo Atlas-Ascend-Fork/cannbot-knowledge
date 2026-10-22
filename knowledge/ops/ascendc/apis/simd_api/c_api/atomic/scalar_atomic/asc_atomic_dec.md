@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/atomic/scalar_atomic/asc_atomic_dec.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -41,7 +41,7 @@ __aicore__ inline <dtype> asc_atomic_dec(__gm__ <dtype>* address,
 
 ### dtype支持数据类型
 
-dtype支持的数据类型为`uint32_t`、`uint64_t`。
+`dtype`取值为：`uint32_t`、`uint64_t`。
 
 ### 函数原型典型示例
 
@@ -57,7 +57,7 @@ __aicore__ inline uint32_t asc_atomic_dec(__gm__ uint32_t* address,
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| address | 输入 | Global Memory的地址。 |
+| address | 输入/输出 | Global Memory的地址。 |
 | val | 输入 | 源操作数。 |
 
 ## 返回值说明
@@ -78,7 +78,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

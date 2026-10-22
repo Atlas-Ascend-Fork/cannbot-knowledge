@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_load/LoadUnAlign_continuous.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -33,7 +33,7 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 | RegTensor模板参数regTrait | 普通搬运接口 | PostUpdate扩展搬运接口 | 使用AddrReg寄存器存储偏移量接口 |
 |-----|-----|-----|-----|
 | RegTraitNumOne | 完成一次搬运后，UB地址不会自动更新，每次迭代需要手动更新地址。 | &bull; POST_MODE_NORMAL模式：不支持。<br>&bull; POST_MODE_UPDATE模式：完成一次搬运后，UB地址会自动更新，每次迭代不需要手动更新地址。 | 在每次迭代中，需要先调用CreateAddrReg手动设定地址偏移量，再调用搬运指令。 |
-| RegTraitNumTwo | 不支持 | &bull; POST_MODE_NORMAL模式：不支持。<br>&bull; POST_MODE_UPDATE模式：完成一次搬运后，UB地址会自动更新，每次迭代不需要手动更新地址。 | 不支持 |
+| RegTraitNumTwo | 完成一次搬运后，UB地址不会自动更新，每次迭代需要手动更新地址。 | &bull; POST_MODE_NORMAL模式：不支持。<br>&bull; POST_MODE_UPDATE模式：完成一次搬运后，UB地址会自动更新，每次迭代不需要手动更新地址。 | 不支持 |
 
 非对齐搬入原理请参考[关键特性说明](#关键特性说明)。
 
@@ -106,12 +106,13 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 
 - LoadUnAlignPre与LoadUnAlign接口需要组合使用。
 - PostUpdate扩展搬运接口只支持POST_MODE_UPDATE模式。
+- 当RegTensor模板参数regTrait为RegTraitNumTwo时，srcAddr起始位置需要保证至少有2*VL（512B）可读数据。
 - 当RegTensor模板参数RegTrait为RegTraitNumOne和RegTraitNumTwo时，支持情况如下：
 
     | RegTensor模板参数RegTrait取值 | 支持的接口 | 支持的数据类型 |
     |-----|-----|-----|
     | RegTraitNumOne | 所有接口 | b8、b16、b32、b64 |
-    | RegTraitNumTwo | PostUpdate扩展搬运接口的POST_MODE_UPDATE模式 | complex32、b64 |
+    | RegTraitNumTwo | &bull; 普通搬运接口<br>&bull; PostUpdate扩展搬运接口的POST_MODE_UPDATE模式 | complex32、b64 |
 
 ## 关键特性说明
 
@@ -120,11 +121,13 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 **图 1**  非对齐搬入示例<a id="fig-loadunalign-1"></a>  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_loadunalign.png)
 
-如[图1 非对齐搬入示例](#fig-loadunalign-1)所示，从UB地址srcAddr ~ 304读取数据，并将其搬运至目标寄存器dstReg（256B）。处理流程如下：
+以下以RegTraitNumOne场景为例。如[图1 非对齐搬入示例](#fig-loadunalign-1)所示，从UB地址srcAddr ~ 304读取数据，并将其搬运至目标寄存器dstReg（256B）。处理流程如下：
 
 ① 调用**LoadUnAlignPre**进行非对齐搬入初始化。非对齐寄存器ureg缓存UB地址32 ~ 64的有效数据，作为后续非对齐访问的前置数据缓存。
 
 ② 调用**LoadUnAlign**，硬件指令将UB地址64 ~ 320的对齐数据搬入临时寄存器tmpReg，并将ureg中srcAddr ~ 64对应的数据与tmpReg中地址64 ~ 304对应的数据拼接在一起，将结果写入dstReg。此外，UB地址288 ~ 320的数据会被写入ureg。
+
+当RegTensor模板参数regTrait为RegTraitNumTwo时，每次调用LoadUnAlign搬运2*VL（512B）数据。
 
 **2、连续非对齐搬入搬出示例**
 
@@ -169,6 +172,7 @@ __simd_vf__ inline void LoadUnAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, 
 ## 调用示例<a name="section15860211204820"></a>
 
 - 普通搬运接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void LoadUnAlignVF1(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t postUpdateStride, uint16_t repeatTimes)
@@ -186,6 +190,7 @@ __simd_vf__ inline void LoadUnAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, 
     ```
 
 - PostUpdate扩展搬运接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void LoadUnAlignVF2(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t postUpdateStride, uint16_t repeatTimes)
@@ -203,6 +208,7 @@ __simd_vf__ inline void LoadUnAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, 
     ```
 
 - 使用AddrReg寄存器存储偏移量接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void LoadUnAlignVF3(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t oneRepeatSize, uint16_t repeatTimes)
@@ -220,8 +226,6 @@ __simd_vf__ inline void LoadUnAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, 
         AscendC::Reg::StoreUnAlignPost(dstAddr, ureg1, aReg);
     }
     ```
-
-
 
 - [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)
 - [GroupNormSwishGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/group_norm_swish_grad_950.md)

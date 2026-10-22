@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/get_shape.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -23,7 +23,7 @@ source_headers:
 
 头文件路径为：`tensor_api/tensor.h`。
 
-`get_shape`用于从layout中提取shape部分：
+`get_shape`用于从[layout](layout.md)中提取shape部分：
 
 - **不指定模板参数Is...**：返回完整的shape元组。
 - **指定模板参数Is...**：从shape顶层tuple中选择对应索引的元素。指定单个索引时返回该元素；指定多个索引时返回由这些顶层元素组成的新tuple。

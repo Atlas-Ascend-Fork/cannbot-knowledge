@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/sort_and_merge_ISASI/GetMrgSortResult.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -34,19 +34,19 @@ source_headers:
     以上说明适用于如下型号：
 
     
-    - Ascend 950PR/Ascend 950DT
+    - Ascend 950PR&950DT系列产品
     
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
 
     
-    - Atlas 200I/500 A2 推理产品
+    - Atlas 200I/500 A2推理产品
     
 
 
@@ -59,7 +59,7 @@ source_headers:
 
     以上说明适用于如下型号：
 
-    Atlas 推理系列产品AI Core
+    Atlas推理系列产品AI Core
 
 
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/erfcxf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据的缩放互补误差函数值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776420.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002484776420.png)
 
 ## 函数原型
 
@@ -48,12 +48,13 @@ inline float erfcxf(float x)
 -   当x为nan时，返回值为nan。
 -   当x为-inf时，返回值为inf。
 -   当x为inf时，返回0。
+-   在快速计算模式（[--cce-use-fast-math](../../../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#常用的编译选项)设置为`true`）下，若内部计算的除法结果为Subnormal数据时，接口返回值为0。
 
 ## 约束说明
 
-
-针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了除法运算符，由于除法运算符不支持Subnormal场景，在极少数场景下内部计算的除法结果为Subnormal数据，导致本接口最终结果为0。
-
+本接口受编译选项`--cce-use-fast-math`的影响。
+-   --cce-use-fast-math=true：开启快速计算模式。本接口内部实现使用到了除法运算符，由于快速计算模式下除法运算符不支持Subnormal场景，因此本接口不支持内部计算的除法结果为Subnormal数据的场景。
+-   --cce-use-fast-math=false：支持Subnormal场景的高精度计算。
 
 ## 调用示例
 
@@ -96,6 +97,6 @@ inline float erfcxf(float x)
 输入输出示例如下：
 
 ```
-x：0.25, 0.75, 1.25, 1.75
-result: 0.7703465 0.5069377 0.3678229 0.2849723
+x: 0.25, 0.75, 1.25, 1.75
+result: 0.7703465, 0.5069377, 0.3678229, 0.2849723
 ```

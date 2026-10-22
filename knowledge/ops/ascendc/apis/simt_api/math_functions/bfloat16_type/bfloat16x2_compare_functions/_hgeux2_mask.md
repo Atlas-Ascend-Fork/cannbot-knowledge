@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_compare_functions/__hgeux2_mask.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -122,3 +122,11 @@ unsigned int __hgeux2_mask(bfloat16x2_t x, bfloat16x2_t y)
         asc_vf_call<simt_hgeux2_mask>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, dst, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.0, 0.0), (1.0, -1.0), (inf, -inf), (nan, 0.5)
+y: (1.0, 0.0), (1.0, -2.0), (inf, inf), (0.5, nan)
+result: 4294901760, 4294967295, 65535, 4294967295
+```

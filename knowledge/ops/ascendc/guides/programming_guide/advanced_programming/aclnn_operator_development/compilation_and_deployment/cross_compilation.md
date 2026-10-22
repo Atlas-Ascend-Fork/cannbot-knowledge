@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/compilation_and_deployment/cross_compilation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -150,6 +150,7 @@ file build_out/op_host/libcust_opapi.so
 # 2. 在目标平台的run包文件夹下执行安装
 ./custom_opp_ubuntu_x86_64.run 
 ```
+
 安装后，按照安装日志提示给LD_LIBRARY_PATH设置环境变量，之后调用算子的使用方式与普通编译部署一致，参考[算子包调用](../aclnn_quick_start.md#部署)。
 
 ## 相关文档

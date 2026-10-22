@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_load/Gather_discrete.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -55,8 +55,8 @@ __simd_callee__ inline void Gather(T3& dstReg, __ubuf__ T1* baseAddr, T4& index,
 | 参数名 | 输入/输出 | 描述 |
 |-----|-----|-----|
 | dstReg | 输出 | 目的操作数，类型为[RegTensor](../register_data_types/reg_tensor.md)。 |
-| baseAddr | 输入 | 源操作数，UB中的基地址，需要32字节对齐。 |
-| index | 输入 | 索引值，dstReg中的每个元素在Unified Buffer（UB）中相对于baseAddr的位置，单位：元素。类型为[RegTensor](../register_data_types/reg_tensor.md)。index中的值可以重复。<br>例：baseAddr：[elem0, elem1, elem2, elem3, elem4, elem5, elem6, elem7, ...]。 <br>每个元素相对于baseAddr的索引位置为：[0, 1, 2, 3, 4, 5, 6, 7, ...]。 |
+| baseAddr | 输入 | 源操作数，Unified Buffer（UB）中的基地址，需要32字节对齐。 |
+| index | 输入 | 索引值，dstReg中的每个元素在UB中相对于baseAddr的位置，单位：元素。类型为[RegTensor](../register_data_types/reg_tensor.md)。index中的值可以重复。<br>例：baseAddr：[elem0, elem1, elem2, elem3, elem4, elem5, elem6, elem7, ...]。 <br>每个元素相对于baseAddr的索引位置为：[0, 1, 2, 3, 4, 5, 6, 7, ...]。 |
 | mask | 输入 | 源操作数元素操作的有效指示，详细说明请参考[MaskReg](../register_data_types/mask_reg.md)。 |
 
 ## 数据类型

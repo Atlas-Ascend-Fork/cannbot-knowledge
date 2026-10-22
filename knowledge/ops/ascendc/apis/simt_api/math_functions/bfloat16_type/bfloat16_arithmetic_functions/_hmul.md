@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_arithmetic_functions/__hmul.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -92,3 +92,11 @@ bfloat16_t __hmul(const bfloat16_t x, const bfloat16_t y)
         asc_vf_call<kernel_hmul>(dim3(1024), dst, x, y, total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0.5, -0.5, 1.0, -1.0, 2.0, -2.0, 0.0, 4.0
+y: 2.0, 0.5, -1.0, -1.0, 0.5, 2.0, 4.0, 0.5
+result: 1.0, -0.25, -1.0, 1.0, 1.0, -4.0, 0.0, 2.0
+```

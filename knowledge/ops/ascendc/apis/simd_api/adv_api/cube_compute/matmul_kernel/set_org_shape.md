@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetOrgShape.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -51,8 +51,8 @@ __aicore__ inline void SetOrgShape(int orgM, int orgN, int orgKa, int orgKb, int
 
 
 > [!CAUTION]注意
->-   对于Ascend 950PR/Ascend 950DT上使用[MDL模板](matmul_config.md)创建的Matmul对象，L1上数据的形状与Tiling侧接口[SetOrgShape](../matmul_tiling/set_org_shape.md)中的orgMIn/orgNIn/orgKIn/orgKaIn/orgKbIn一致时，不必须调用此接口。
->-   对于Ascend 950PR/Ascend 950DT上使用[MDL模板](matmul_config.md)创建的Matmul对象，L1上数据的形状与Tiling侧接口[SetOrgShape](../matmul_tiling/set_org_shape.md)中的orgMIn/orgNIn/orgKIn/orgKaIn/orgKbIn不一致时，必须调用本接口指定GM/L1上的orgM/orgN/orgK/orgKa/orgKb。
+>-   对于Ascend 950PR&950DT系列产品上使用[MDL模板](matmul_config.md)创建的Matmul对象，L1上数据的形状与Tiling侧接口[SetOrgShape](../matmul_tiling/set_org_shape.md)中的orgMIn/orgNIn/orgKIn/orgKaIn/orgKbIn一致时，不必须调用此接口。
+>-   对于Ascend 950PR&950DT系列产品上使用[MDL模板](matmul_config.md)创建的Matmul对象，L1上数据的形状与Tiling侧接口[SetOrgShape](../matmul_tiling/set_org_shape.md)中的orgMIn/orgNIn/orgKIn/orgKaIn/orgKbIn不一致时，必须调用本接口指定GM/L1上的orgM/orgN/orgK/orgKa/orgKb。
 >    例如，使用[MDL模板](matmul_config.md)时，输入矩阵A在L1、输入矩阵B在GM的场景，L1上A的形状大小与Tiling侧原始的orgMIn/orgKIn/orgKaIn不一致时，调用SetOrgShape\(orgM, orgN, orgK\)/SetOrgShape\(orgM, orgN, orgKa, orgKb\)接口指定L1上A矩阵相关参数orgM/orgK/orgKa。
 
 
@@ -83,7 +83,7 @@ __aicore__ inline void SetOrgShape(int orgM, int orgN, int orgKa, int orgKb, int
     ```
 
 
--   对于Ascend 950PR/Ascend 950DT上使用[MDL模板](matmul_config.md)的Matmul对象，设置GM或L1上完整的形状
+-   对于Ascend 950PR&950DT系列产品上使用[MDL模板](matmul_config.md)的Matmul对象，设置GM或L1上完整的形状
 
     ```
     REGIST_MATMUL_OBJ(&pipe, GetSysWorkSpacePtr(), mm, &tiling);
@@ -102,8 +102,6 @@ __aicore__ inline void SetOrgShape(int orgM, int orgN, int orgKa, int orgKb, int
          }
     }
     ```
-
-
 
 - [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)
 - [MhcPreSinkhorn A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_sinkhorn.md)

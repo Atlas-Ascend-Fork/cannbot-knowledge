@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_create_iter_reg_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -73,6 +73,5 @@ PIPE_V
 ## 调用示例
 
 见[地址寄存器调用示例](../defs/type/data_type_definition.md#example4)。
-
 
 - [asc_create_iter_reg (废弃)：固定 reference 调用约束](../../../../guides/regbase/asc_create_iter_reg_deprecated_reference_contract.md)

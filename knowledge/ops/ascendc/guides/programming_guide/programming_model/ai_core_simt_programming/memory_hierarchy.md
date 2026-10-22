@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/memory_hierarchy.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -36,7 +36,7 @@ SIMT线程可访问多种内存空间。下表汇总了SIMT编程中常见内存
 
 ## 全局内存（Global Memory）<a name="section8946131492119"></a>
 
-Device侧的全局内存是整个Grid中所有线程均可访问的内存空间。全局内存具有持久性：通过全局内存分配的空间及其存储的数据将持续保留，直到该内存空间被释放或应用程序终止。用户需在核函数（Kernel）启动前通过Runtime API完成全局内存的分配与初始化，核函数（Kernel）执行期间SIMT每个线程均可读写全局内存，执行完毕后可将结果拷贝回Host。有关Runtime API的更多信息与细节，可以参考[《Runtime运行时API》](https://hiascend.com/document/redirect/CannCommunityRuntimeApi)。
+Device侧的全局内存是整个Grid中所有线程均可访问的内存空间。全局内存具有持久性：通过全局内存分配的空间及其存储的数据将持续保留，直到该内存空间被释放或应用程序终止。用户需在核函数（Kernel）启动前通过Runtime API完成全局内存的分配与初始化，核函数（Kernel）执行期间SIMT每个线程均可读写全局内存，执行完毕后可将结果拷贝回Host。有关Runtime API的更多信息与细节，可以参考[《Runtime运行时API》](https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/README.md)。
 
 运行在Device侧的核函数（Kernel）可以通过指针直接访问全局内存。下述代码展示了全局内存的简易示例。数组x、y、z均存储于全局内存中，通过以下核函数（Kernel）实现每个线程对全局内存的访问和存储。
 
@@ -91,42 +91,52 @@ __global__ void add_custom(float* x, float* y, float* z, uint64_t total_length)
     }
     ```
 
-### 共享内存大小的限制
+### UB内存划分排布
 
-如下图所示，UB内存空间总大小为256KB。默认编译模式下，UB按功能划分为四个主要区域，从低地址到高地址依次为静态内存、动态内存、预留空间和Data Cache。由于这四类区域共享同一块UB内存，因此用户在配置共享内存大小时，应确保为Data Cache保留足够的空间（至少32KB），避免因可用空间不足导致校验报错。
+如下图所示，UB内存空间总大小为256KB。除了用户申请的动静态内存，UB还需要预留一定的空间供内部使用，因此用户在配置动静态内存大小时，并不能用满全部UB空间：
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/ub_alloc.png)
 
-具体结构如下：
+UB按功能划分为四个主要区域，从低地址到高地址依次为静态内存、动态内存、预留空间和Data Cache，具体结构如下：
 
-1.  静态内存和动态内存对应用户静态、动态申请方式分配的内存。
-2.  预留空间：编译器和Ascend C预留空间，大小固定为8KB。
+1.  静态内存和动态内存对应用户静态、动态申请方式分配的内存。用户在UB上申请的动态内存首地址固定按照32B对齐，静态内存按如下首地址对齐规则排布：
+    -   默认情况下，申请到的静态内存首地址按照数据类型大小进行对齐；
+    -   用户可以通过`alignas(N)`手动指定对齐方式，该配置的优先级高于默认对齐方式。
+2.  预留空间：编译器和Ascend C预留空间，大小为8KB，其中6KB作为SIMT传参寄存器溢出栈空间，2KB为Ascend C接口内部预留空间。
 3.  Data Cache：SIMT专有的Data Cache空间，用于SIMT线程访问全局内存时的数据缓存，Data Cache的空间可配置范围为**最小32KB、最大128KB**，实际内存大小受用户配置的静态和动态内存大小影响，具体计算公式为：
 
     ```
-    Data Cache空间大小 = min(UB总大小（256KB） - 静态内存 - 动态内存 - 预留空间（8KB）, 128KB)
+    Data Cache空间大小 = min(UB总大小（256KB） - 静态内存 - 动态内存 - 预留空间（默认8KB）, 128KB)
     ```
 
     Data Cache空间上限为**128KB**，即使静态与动态内存申请较少，Data Cache实际分配大小也不会超出该上限。
 
-由于Data Cache、预留空间与用户申请的UB内存共用同一块UB，因此开发者无法使用全部UB空间，应确保实际访问范围不超过已申请的静态内存和动态内存大小。
+#### Data Cache内存空间说明
 
-静态内存和动态内存的声明或配置限定了用户使用UB内存的有效范围。若用户配置的内存大小不足，甚至未申请内存即直接访问UB地址，访问地址可能越过用户动、静态内存边界并落入Data Cache区域。由于Data Cache容量由UB总量扣除静态内存、动态内存和预留空间后确定，所以用户共享内存配置偏小会扩大可分配给Data Cache的剩余空间。当程序执行越过已申请的动、静态内存边界，发生越界写入行为时，未必立即表现为内存分配失败，但可能破坏SIMT全局内存访问的数据缓存，导致计算结果不稳定或算子精度异常。
+Data Cache作为访问GM内存的缓存，其大小会影响算子的访存效率。若Data Cache小于32KB，执行时会出现校验报错并退出，因此申请内存时需确保预留足够的Data Cache空间。
 
-> [!NOTE]说明
->
-> 用户可选择禁用预留空间，禁用方法为：编译时增加[--cce-disable-vf-stack-reserved-ubuf](../../compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#ZH-CN_TOPIC_0000002462746461)选项。开启该选项后，编译器不再预留该部分UB空间，该空间可作为普通UB空间使用，Data Cache空间可按如下公式估算：
-> ```
-> Data Cache空间大小 = min(UB总大小（256KB） - 静态内存 - 动态内存, 128KB)
-> ```
-> 使用该选项时，仍需保证Data Cache空间不小于32KB，且Data Cache空间上限仍为128KB。开启该选项后，编译器将无法使用预留UB空间作为寄存器溢出的缓存空间，开发者需保证不会发生寄存器溢出。
+由于Data Cache、预留空间与用户申请的动静态内存共用同一块UB，开发者无法使用全部UB空间。Data Cache的容量由UB总量扣除动静态内存和预留空间计算所得，用户配置的共享内存越小，留给Data Cache的空间就越大，即共享内存大小实际上隐式决定了Data Cache的容量，直至其达到128KB上限。
+
+若用户配置的内存大小不足，甚至未申请内存即直接访问UB地址，访问地址可能越过动、静态内存边界并落入Data Cache区域，属于未定义行为，非常危险。此类越界写入可能破坏SIMT全局内存访问的数据缓存，导致算子功能异常。
+
+#### 禁用预留空间
+
+若用户需要使用更多UB内存，可通过禁用预留空间来扩大可用UB空间。禁用方法为编译时增加如下编译选项：
+
+- [--cce-disable-vf-stack-reserved-ubuf](../../compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#ZH-CN_TOPIC_0000002462746461)：关闭6KB的SIMT传参寄存器溢出栈空间。
+- [--cce-disable-asc-reserved-ubuf](../../compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#ZH-CN_TOPIC_0000002462746461)：关闭2KB的Ascend C接口内部预留空间。
+
+以上编译选项可独立使用，也可同时使用。开启后，编译器不再预留对应部分UB空间，该空间可作为普通UB空间使用。但开发者需要自行确认禁用预留空间的影响：
+
+- 开启`--cce-disable-vf-stack-reserved-ubuf`后，编译器将无法使用预留UB空间作为传参寄存器溢出的栈空间，若用户函数参数过大，将会编译报错。
+- 开启`--cce-disable-asc-reserved-ubuf`暂无影响，当前SIMT编程场景内部暂未使用该空间。
 
 ## 栈空间
 
 SIMT编程中的栈空间由编译器管理，生命周期与核函数（Kernel）一致，包括以下两部分：
 
 -   位于Global Memory（GM）上的SIMT栈空间。
--   位于UB上用于SIMT函数调用参数传递的中转栈空间(UB上8KB预留空间的一部分)。
+-   位于UB上用于SIMT函数调用参数传递的中转栈空间（UB上8KB预留空间的一部分）。
 
 下文分别说明这两类栈空间。
 
@@ -139,7 +149,7 @@ GM上的SIMT栈空间用于保存线程私有运行时状态，按用途分为SI
 -   **SIMT Divergence栈空间**  
     用于存放SIMT分支发散场景下的程序计数器（PC，Program Counter）和活动掩码（Active Mask）。Warp内线程共享一个SIMT Divergence栈空间，每个Warp的栈空间默认大小为1024Byte。分支发散越频繁、控制流越复杂，该栈空间占用越高，严重时可能引发栈溢出。
 
-开发者可通过`--cce-res-usage`编译选项查看核函数（Kernel）的栈空间使用情况。若栈空间占用较高，应优先减少线程私有临时变量、控制调试打印的数据量、简化函数调用链并优化分支发散逻辑，以减少不必要的Global Memory访问。若业务确需调整栈空间大小，可通过`aclInit()`接口加载的配置文件进行设置：配置项`simt_stack_size`用于设置每个线程的SIMT通用栈空间大小，`simt_divergence_stack_size`用于设置SIMT Divergence栈空间大小，单位均为Byte。配置示例如下，更多说明请参考[aclInit()接口配置说明](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/latest/API/runtimeapi/aclcppdevg_03_0022.html)中的“SIMT算子栈空间大小配置示例”。
+开发者可通过`--cce-res-usage`编译选项查看核函数（Kernel）的栈空间使用情况。若栈空间占用较高，应优先减少线程私有临时变量、控制调试打印的数据量、简化函数调用链并优化分支发散逻辑，以减少不必要的Global Memory访问。若业务确需调整栈空间大小，可通过`aclInit()`接口加载的配置文件进行设置：配置项`simt_stack_size`用于设置每个线程的SIMT通用栈空间大小，`simt_divergence_stack_size`用于设置SIMT Divergence栈空间大小，单位均为Byte。配置示例如下，更多说明请参考[aclInit()接口配置说明](https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/02_initialization_and_deinitialization.md#aclinit)中的“SIMT算子栈空间大小配置示例”。
 
 ```json
 {
@@ -152,7 +162,7 @@ GM上的SIMT栈空间用于保存线程私有运行时状态，按用途分为SI
 
 ### UB上的SIMT函数调用中转栈空间
 
-如上文[共享内存大小的限制](#共享内存大小的限制)所述，UB中有8KB大小的预留空间，其中6KB内存是用于SIMT函数调用参数传递的中转栈。如[传参寄存器](#传参寄存器)章节所述，硬件原生支持的函数间传参寄存器容量有限，当参数总大小超出该容量时，编译器会使用该中转栈空间完成参数传递，由此产生额外的访存开销，降低函数调用性能。因此，开发者应关注Device侧函数调用的参数规模，避免传递过大的参数对象。
+如上文[UB内存划分排布](#ub内存划分排布)所述，UB中有8KB大小的预留空间，其中6KB内存是用于SIMT函数调用参数传递的中转栈。如[传参寄存器](#传参寄存器)章节所述，硬件原生支持的函数间传参寄存器容量有限，当参数总大小超出该容量时，编译器会使用该中转栈空间完成参数传递，由此产生额外的访存开销，降低函数调用性能。因此，开发者应关注Device侧函数调用的参数规模，避免传递过大的参数对象。
 
 ## 寄存器<a name="section1137715201010"></a>
 

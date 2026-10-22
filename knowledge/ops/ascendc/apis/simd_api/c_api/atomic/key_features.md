@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/atomic/key_features.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -140,9 +140,9 @@ if (block_idx == 0) {
 
 ## 核内同步
 
-搬运指令和开启原子操作的指令流水类型如下表所示，当上述指令在同一个核内执行时，开发者按需插入[asc_sync_pipe](../sync/asc_sync_pipe.md)或者[asc_sync_notify](../sync/asc_sync_notify.md)与[asc_sync_wait](../sync/asc_sync_wait.md)。
+搬运指令和开启原子操作的指令流水类型如下表所示，当上述指令在同一个核内执行时，开发者按需插入[asc_sync_pipe](../sync/intra_core_sync/asc_sync_pipe.md)或者[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)与[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)。
 
-**表1**  原子操作确定性计算相关指令的流水类型
+**表1** 原子操作确定性计算相关指令的流水类型
 
 | 指令名称 | 流水类型 |
 | --- | --- |

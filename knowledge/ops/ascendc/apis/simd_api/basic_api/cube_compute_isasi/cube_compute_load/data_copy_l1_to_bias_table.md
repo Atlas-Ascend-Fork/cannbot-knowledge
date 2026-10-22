@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_L1ToBiasTable.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -29,10 +29,10 @@ source_headers:
 DataCopy数据搬运支持将矩阵计算用到的Bias参数从L1 Buffer移动到BiasTable Buffer。
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品，BiasTable Buffer总大小为1KB。
+针对Atlas A2系列产品和Atlas A3系列产品，BiasTable Buffer总大小为1KB。
 
 
-针对Ascend 950PR/Ascend 950DT，BiasTable Buffer总大小为4KB。
+针对Ascend 950PR&950DT系列产品，BiasTable Buffer总大小为4KB。
 
 
 ## 函数原型<a id="zh-cn_topic_0000002566886667_section82039854412"></a>
@@ -43,12 +43,14 @@ DataCopy数据搬运支持将矩阵计算用到的Bias参数从L1 Buffer移动�
   template <typename T>
   __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>& src, const uint32_t count)
   ```
+
 - 连续或非连续搬运场景（高维切分）。
 
   ```cpp
   template <typename T>
   __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>& src, const DataCopyParams& repeatParams)
   ```
+
 - 连续或非连续搬运场景，支持源操作数和目的操作数数据类型不一致。
 
   ```cpp
@@ -90,13 +92,14 @@ DataCopy数据搬运支持将矩阵计算用到的Bias参数从L1 Buffer移动�
 源操作数和目的操作数支持数据类型不一样，具体请参考如下：
 
 
-针对Ascend 950PR/Ascend 950DT，src支持的数据为：half、bfloat16_t、int32_t、float；dst支持的数据为：int32_t、float。
+针对Ascend 950PR&950DT系列产品，src支持的数据为：half、bfloat16_t、int32_t、float；dst支持的数据为：int32_t、float。
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，src支持的数据为：half、int32_t、float；dst支持的数据为：int32_t、float。
+针对Atlas A3系列产品，src支持的数据为：half、int32_t、float；dst支持的数据为：int32_t、float。
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，src支持的数据为：half、int32_t、float；dst支持的数据为：int32_t、float。
+针对Atlas A2系列产品，src支持的数据为：half、int32_t、float；dst支持的数据为：int32_t、float。
+
 
 
 ## 返回值说明
@@ -111,23 +114,23 @@ DataCopy数据搬运支持将矩阵计算用到的Bias参数从L1 Buffer移动�
 - 如果BiasTable Buffer中的目标dst地址溢出，将引发异常。
 - blockLen对不同型号单位不一样，具体请参考如下：
   
-  - 针对Ascend 950PR/Ascend 950DT，单位为32字节，blockLen必须为偶数。
+  - 针对Ascend 950PR&950DT系列产品，单位为32字节，blockLen必须为偶数。
   
   
-  - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，单位为64字节。
+  - 针对Atlas A3系列产品，单位为64字节。
   
   
-  - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，单位为64字节。
+  - 针对Atlas A2系列产品，单位为64字节。
   
 - dstGap对不同型号单位不一样，具体请参考如下：
   
-  - 针对Ascend 950PR/Ascend 950DT，单位为32字节。
+  - 针对Ascend 950PR&950DT系列产品，单位为32字节。
   
   
-  - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，单位为64字节。
+  - 针对Atlas A3系列产品，单位为64字节。
   
   
-  - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，单位为64字节。
+  - 针对Atlas A2系列产品，单位为64字节。
   
 
 ## 调用示例<a id="zh-cn_topic_0000002566886667_section088124295117"></a>

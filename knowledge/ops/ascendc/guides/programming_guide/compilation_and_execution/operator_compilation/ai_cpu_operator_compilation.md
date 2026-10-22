@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/compilation_and_execution/operator_compilation/ai_cpu_operator_compilation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -100,9 +100,8 @@ bisheng hello_world.aicpu.o main.asc.o -o demo
 
 ## AI CPU算子常用编译选项<a name="section345885113142"></a>
 
-AI CPU算子常用的编译选项说明如下：
+AI CPU算子常用的编译选项说明如下：<a name="table9126181131320"></a>
 
-<a name="table9126181131320"></a>
 <table><thead align="left"><tr id="row312711101316"><th class="cellrowborder" valign="top" width="33.63636363636363%" id="mcps1.1.4.1.1"><p id="p71271711201318"><a name="p71271711201318"></a><a name="p71271711201318"></a><strong id="b01279110139"><a name="b01279110139"></a><a name="b01279110139"></a>选项</strong></p>
 </th>
 <th class="cellrowborder" valign="top" width="9.676767676767676%" id="mcps1.1.4.1.2"><p id="p1212711115131"><a name="p1212711115131"></a><a name="p1212711115131"></a><strong id="b101271011101310"><a name="b101271011101310"></a><a name="b101271011101310"></a>是否必需</strong></p>

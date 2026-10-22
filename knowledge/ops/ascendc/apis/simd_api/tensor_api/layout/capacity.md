@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/capacity.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,6 +81,5 @@ auto layout3 = make_layout(make_shape(10, 20, 30), make_stride(1, 10, 200));
 auto cap3_all = capacity(layout3);       // max(10*1, 20*10, 30*200) = max(10, 200, 6000) = 6000
 auto cap3_0_1 = capacity<0, 1>(layout3); // max(10*1, 20*10) = max(10, 200) = 200
 ```
-
 
 - [MoeReRouting 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/moe/moe_re_routing_950.md)

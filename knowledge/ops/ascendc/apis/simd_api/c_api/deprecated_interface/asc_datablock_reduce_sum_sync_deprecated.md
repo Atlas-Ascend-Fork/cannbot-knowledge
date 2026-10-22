@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_datablock_reduce_sum_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_datablock_reduce_sum_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_reduce/asc_datablock_reduce_sum.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_datablock_reduce_sum_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_reduce/asc_datablock_reduce_sum.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 对每个DataBlock内所有元素求和。
 
@@ -64,7 +64,6 @@ PIPE_V
 - dst、src的起始地址需要32字节对齐。
 - 操作数地址重叠约束请参考[通用地址重叠约束](../general_description_and_constraints.md#通用地址重叠约束)。
 
-
 ## 调用示例
 
 ```cpp
@@ -73,12 +72,8 @@ constexpr uint32_t dst_length = 16;
 __ubuf__ half src[src_length];
 __ubuf__ half dst[dst_length];
 
-// 使用高维切分计算接口，需设置mask
-asc_set_mask_norm();
-asc_set_vector_mask(0xffffffffffffffff, 0xffffffffffffffff);    // 设置每个迭代内所有元素均参与计算。
-
-// 每次repeat256B，2次repeat，无间隔
-asc_datablock_reduce_sum_sync(dst, src, 2, 1, 1, 8);
+// 同步接口使用 count 指定参与计算的元素总数，无需手动设置 mask。
+asc_datablock_reduce_sum_sync(dst, src, src_length);
 ```
 
 结果示例：

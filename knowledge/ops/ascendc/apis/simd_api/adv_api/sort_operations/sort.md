@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/sort_operations/Sort.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -32,27 +32,27 @@ source_headers:
     排序函数，按照数值大小进行降序排序。排序后的数据按照如下排布方式进行保存：
 
     
-    Ascend 950PR/Ascend 950DT采用方式一。
+    Ascend 950PR&950DT系列产品采用方式一。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品采用方式一。
+    Atlas A3系列产品采用方式一。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品采用方式一。
+    Atlas A2系列产品采用方式一。
     
 
     
-    Atlas 推理系列产品AI Core采用方式二。
+    Atlas推理系列产品AI Core采用方式二。
     
 
     
-    Kirin X90采用方式一。
+    Kirin X90处理器系列产品采用方式一。
     
 
     
-    Kirin 9030采用方式一。
+    Kirin 9030处理器系列产品采用方式一。
     
 
 -   排布方式一：
@@ -61,11 +61,11 @@ source_headers:
 
     -   当score为float，index为uint32类型时，计算结果中index存储在高4Bytes，score存储在低4Bytes。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002007005918.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/image_0000002007005918.png)
 
     -   当score为half，index为uint32类型时，计算结果中index存储在高4Bytes，score存储在低2Bytes，中间的2Bytes保留。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002042886661.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/image_0000002042886661.png)
 
 -   排布方式二：Region Proposal排布
 
@@ -79,18 +79,18 @@ source_headers:
 
     如下图所示，总共包含16个Region Proposals。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002043918785.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/image_0000002043918785.png)
 
     对于数据类型float，每一个Region Proposal占32Bytes，Byte\[31:24\]是无效数据，Byte\[23:0\]包含6个float类型的元素，其中Byte\[23:20\]定义为label，Byte\[19:16\]定义为score，Byte\[15:12\]定义为y2，Byte\[11:8\]定义为x2，Byte\[7:4\]定义为y1，Byte\[3:0\]定义为x1。
 
     如下图所示，总共包含16个Region Proposals。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002043797849.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/image_0000002043797849.png)
 
 -   对应带模板参数SortConfig的函数原型
 
     
-    仅在Ascend 950PR/Ascend 950DT上支持。
+    仅在Ascend 950PR&950DT系列产品上支持。
     
 
     根据模板参数SortConfig，按其中指定的排序算法，对输入数据排序，排序结果可以指定升序或降序排序。
@@ -115,7 +115,7 @@ source_headers:
 -   带SortConfig
 
     
-    仅在Ascend 950PR/Ascend 950DT上支持。
+    仅在Ascend 950PR&950DT系列产品上支持。
     
 
     -   接口框架申请临时空间
@@ -248,23 +248,23 @@ source_headers:
     该样例适用于：
 
     
-    Ascend 950PR/Ascend 950DT
+    Ascend 950PR&950DT系列产品
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    Atlas A2系列产品
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    Atlas A3系列产品
     
 
     
-    Kirin X90
+    Kirin X90处理器系列产品
     
 
     
-    Kirin 9030
+    Kirin 9030处理器系列产品
     
 
     ```
@@ -307,7 +307,7 @@ source_headers:
     该样例适用于：
 
     
-    Atlas 推理系列产品AI Core
+    Atlas推理系列产品AI Core
     
 
     ```
@@ -343,7 +343,7 @@ source_headers:
         该样例适用于：
 
         
-        Ascend 950PR/Ascend 950DT
+        Ascend 950PR&950DT系列产品
         
 
         ```
@@ -362,7 +362,6 @@ source_headers:
         输出数据（dstIndexGm）:
         [1023 1022 ... 2 1 0]
         ```
-
 
 - [InplaceIndexFill 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_index_fill_950.md)
 - [GroupedBiasAddGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/math/grouped_bias_add_grad.md)

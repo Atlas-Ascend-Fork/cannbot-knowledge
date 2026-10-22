@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__float22half2_rd_sat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,4 +81,11 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
     {
         asc_vf_call<simt_float22half2_rd_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
+    ```
+
+    输入输出示例如下：
+
+    ```text
+    x: (128, 128.0625), (128.1875, -128.1875), (inf, -inf), (nan, 65536)
+    result: (128, 128), (128.125, -128.25), (65504, -65504), (0, 65504)
     ```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/data_type_conversion/type_conversion_functions/__uint2float_ru.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -80,3 +80,10 @@ inline float __uint2float_ru(const unsigned int x)
         dst[idx] = __uint2float_ru(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 6, 7, 16777222, 16777223, 16777224, 33554437, 2147483645, 4294967292
+result: 6.0, 7.0, 16777222.0, 16777224.0, 16777224.0, 33554440.0, 2147483648.0, 4294967296.0
+```

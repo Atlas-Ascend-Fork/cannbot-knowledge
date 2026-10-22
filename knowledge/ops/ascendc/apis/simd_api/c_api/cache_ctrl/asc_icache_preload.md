@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cache_ctrl/asc_icache_preload.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -73,7 +73,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
@@ -134,8 +134,8 @@ __global__ __mix__(1, 2) void MatmulScaleKernel(
 
     if ASC_IS_AIC {
         // AIC直接将两个输入矩阵从GM搬入L1 Buffer。
-        asc_copy_gm2l1(matrix_a_l1, input, 1, INPUT_BYTES / DATA_BLOCK_BYTES, 0, 0, 0);
-        asc_copy_gm2l1(matrix_b_l1, input, 1, INPUT_BYTES / DATA_BLOCK_BYTES, 0, 0, 0);
+        asc_copy_gm2l1(matrix_a_l1, input, 1, INPUT_BYTES / DATA_BLOCK_BYTES, asc_channel_pad_mode::NONE, 0, 0);
+        asc_copy_gm2l1(matrix_b_l1, input, 1, INPUT_BYTES / DATA_BLOCK_BYTES, asc_channel_pad_mode::NONE, 0, 0);
         asc_sync_notify(PIPE_MTE2, PIPE_MTE1, EVENT_ID0);
         asc_sync_wait(PIPE_MTE2, PIPE_MTE1, EVENT_ID0);
         asc_copy_l12l0a(matrix_a_l0, matrix_a_l1, 0, 0, 1, 1, 1, 1);
@@ -143,13 +143,13 @@ __global__ __mix__(1, 2) void MatmulScaleKernel(
         asc_sync_notify(PIPE_MTE1, PIPE_M, EVENT_ID0);
         asc_sync_wait(PIPE_MTE1, PIPE_M, EVENT_ID0);
         asc_mmad(
-            matmul_result_l0, matrix_a_l0, matrix_b_l0, MATRIX_DIM, MATRIX_DIM, MATRIX_DIM, 0, false, false, true);
+            matmul_result_l0, matrix_a_l0, matrix_b_l0, MATRIX_DIM, MATRIX_DIM, MATRIX_DIM, asc_unit_flag_mode::DISABLE, false, false, true);
         asc_sync_notify(PIPE_M, PIPE_FIX, EVENT_ID0);
         asc_sync_wait(PIPE_M, PIPE_FIX, EVENT_ID0);
-        asc_set_l0c2gm_nz2nd(1, 0, 0);
-        asc_copy_l0c2gm(matmul_result, matmul_result_l0, MATRIX_DIM, MATRIX_DIM, MATRIX_DIM, MATRIX_DIM, 0, 0, 0,
-            static_cast<uint64_t>(QuantMode_t::NoQuant), 0, false, true,
-            static_cast<uint64_t>(QuantMode_post::NoConv), 0, false, 0, false, false, false, false);
+        asc_set_l0c_copy_nz_para(1, 0, 0);
+        asc_copy_l0c2gm(matmul_result, matmul_result_l0, MATRIX_DIM, MATRIX_DIM, MATRIX_DIM, MATRIX_DIM,
+            asc_store_l2_cache_mode::NORMAL_FIRST_VICTIM, asc_unit_flag_mode::DISABLE, QuantMode_t::NoQuant,
+            asc_relu_pre_mode::NONE, false, true, false, false);
         asc_sync_block_arrive(PIPE_FIX, OUTPUT_READY_FLAG_ID);
     }
 

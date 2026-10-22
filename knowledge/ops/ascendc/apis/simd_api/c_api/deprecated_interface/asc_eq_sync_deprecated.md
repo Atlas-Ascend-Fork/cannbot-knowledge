@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_eq_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,13 +24,14 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_eq_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_compare/asc_eq.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_eq_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_compare/asc_eq.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 比较src0与src1在对应索引位置的元素大小。若比较结果为真，则输出结果的对应比特位设为1，否则设为0。
 
 ## 函数原型
 
 - 同步计算
+
   ```cpp
   // 比较结果存入寄存器
   __aicore__ inline void asc_eq_sync(__ubuf__ half* src0, __ubuf__ half* src1, uint8_t repeat, uint8_t dst_block_stride, uint8_t src0_block_stride, uint8_t src1_block_stride, uint8_t dst_repeat_stride, uint8_t src0_repeat_stride, uint8_t src1_repeat_stride)

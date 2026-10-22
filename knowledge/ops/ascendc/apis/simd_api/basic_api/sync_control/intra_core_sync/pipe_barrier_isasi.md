@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/PipeBarrier_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -73,7 +73,7 @@ __aicore__ inline void PipeBarrier()
 - 开启[cce-auto-sync编译选项](key_features.md#cce-compiler-auto-sync)时，毕昇编译器自动插入PIPE\_V之间的同步。
 
 
-- 针对Ascend 950PR/Ascend 950DT，PIPE\_V之间的同步由硬件保证。
+- 针对Ascend 950PR&950DT系列产品，PIPE\_V之间的同步由硬件保证。
 
 
 **图2**  Mul指令和Add指令是串行关系，必须等待Add指令执行完成后，才能执行Mul指令。<a name="fig1359216580459"></a>  
@@ -90,7 +90,6 @@ AscendC::Add(dst0Local, src0Local, src1Local, 512);
 AscendC::PipeBarrier<PIPE_V>();
 AscendC::Mul(dst1Local, dst0Local, src2Local, 512);
 ```
-
 
 - [Rasterizer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/rasterizer.md)
 - [ChunkCat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat.md)

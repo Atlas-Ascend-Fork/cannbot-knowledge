@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_math_functions/hexp.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 指定输入x，获取e的x次方。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002533292167.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002533292167.png)
 
 ## 函数原型
 
@@ -82,3 +82,10 @@ e的x次方。本接口受全局饱和寄存器的影响，特殊值如下：
         dst[idx] = hexp(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.25, 0.5, 2.5, -3.75
+result: 0.286621, 1.64844, 12.1797, 0.0235138
+```

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/cube_compute_load/copy_l1_to_l0a.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -61,7 +61,7 @@ Img2Col场景中，搬运过程中会将卷积特征图展开为矩阵。
     __aicore__ inline void copy(const copy_atom<Atom>& atom, const DstTensor& dst, const SrcTensor& src)
     ```
 
-- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait执行L1 Buffer到L0A Buffer的数据搬运。
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用[默认trait](../../algorithm.md#copy_traits)执行L1 Buffer到L0A Buffer的数据搬运。
 
     ```cpp
     template <typename DstTensor, typename SrcTensor>
@@ -129,7 +129,7 @@ Img2Col搬运通过`copy_atom::with`绑定`img2col_params`后，使用相同的`
 
 | 参数名 | 输入/输出 | 描述 |
 | :--- | :---: | :--- |
-| atom | 输入 | 搬运原子对象，可由`make_copy`接口构造。 |
+| atom | 输入 | 搬运原子对象，封装特定搬运通路的Operation、Trait与可选运行时Params组合，可由`make_copy`接口构造，详见[Algorithm](../../algorithm.md#copy_atom)。 |
 | dst | 输出 | 目的张量，存储位置为`location::l0a`。 |
 | src | 输入 | 源张量，存储位置为`location::l1`。 |
 | dst_coord | 输入 | 搬运区域在目的张量中的起始坐标，也可传入`zero_coord`。 |

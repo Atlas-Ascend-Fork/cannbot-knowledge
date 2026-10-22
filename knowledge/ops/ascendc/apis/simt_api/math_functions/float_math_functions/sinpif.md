@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/sinpif.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据与π相乘的正弦值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776394.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002484776394.png)
 
 ## 函数原型
 
@@ -46,8 +46,10 @@ inline float sinpif(float x)
 
 输入数据与π相乘的正弦值。
 
-- 当x\*π超出float最大范围，返回值为nan。
-- 当x\*π超出float最小范围，返回值为0或极小的subnormal值。
+- 当输入x为有限值且Abs\(x\)\>=2^24时，返回值为0.0。
+- 当输入x为整数时，返回值为0.0。
+- 当输入x=n+0.5，n为偶数，返回值为1.0。
+- 当输入x=n+0.5，n为奇数，返回值为-1.0。
 - 当x为inf时，返回值为nan。
 - 当x为-inf时，返回值为nan。
 - 当x为nan时，返回值为nan。
@@ -96,6 +98,6 @@ inline float sinpif(float x)
 输入输出示例如下：
 
 ```
-x：0.25, 0.75, 1.25, 1.75
-result: 0.7071068 0.7071068 -0.7071069 -0.7071065
+x: 0.25, 0.75, 1.25, 1.75
+result: 0.7071068, 0.7071068, -0.7071069, -0.7071065
 ```

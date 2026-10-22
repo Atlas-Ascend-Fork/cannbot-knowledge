@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetVecRegLen.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -71,7 +71,6 @@ void GetLayerNormMaxMinTmpSize(...)
     // ... 使用vecLenB32和vecLenB16设计切分策略
 }
 ```
-
 
 - [AddRmsNormDynamicQuant 950 Direct Invoke 算子知识](../../../../operators/direct/nn/norm/add_rms_norm_dynamic_quant_950.md)
 - [GroupNorm 950 Direct Invoke 算子知识](../../../../operators/direct/nn/norm/group_norm_950.md)

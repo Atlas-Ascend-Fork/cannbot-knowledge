@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute_aux_config/GetReduceRepeatMaxMinSpr_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -35,11 +35,11 @@ source_headers:
 - 获取调用[ReduceRepeat<MAX/MIN>](../reduction_compute/reduce_repeat.md)时所有repeat内的最值及其索引，或获取调用[ReduceMax](../reduction_compute/reduce_max.md)/[ReduceMin](../reduction_compute/reduce_min.md)得到的最值（此时获取的索引不准确）。该函数原型仅支持如下型号：
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
 
     ```cpp
@@ -51,7 +51,7 @@ source_headers:
 
 
 
-- 获取调用[ReduceRepeat<MAX/MIN>](../reduction_compute/reduce_repeat.md)时所有repeat内的最值，或获取调用[ReduceMax](../reduction_compute/reduce_max.md)/[ReduceMin](../reduction_compute/reduce_min.md)得到的最值。该函数原型仅支持Atlas 推理系列产品AI Core。
+- 获取调用[ReduceRepeat<MAX/MIN>](../reduction_compute/reduce_repeat.md)时所有repeat内的最值，或获取调用[ReduceMax](../reduction_compute/reduce_max.md)/[ReduceMin](../reduction_compute/reduce_min.md)得到的最值。该函数原型仅支持Atlas推理系列产品AI Core。
 
     ```cpp
     template <typename T>
@@ -101,10 +101,10 @@ source_headers:
 
     - 针对如下型号：
       
-      - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+      - Atlas A3系列产品
       
       
-      - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+      - Atlas A2系列产品
       
 
       ```cpp
@@ -121,7 +121,7 @@ source_headers:
 
     
 
-    - 针对Atlas 推理系列产品AI Core：
+    - 针对Atlas推理系列产品AI Core：
 
         ```cpp
         AscendC::LocalTensor<float> src;
@@ -140,10 +140,10 @@ source_headers:
 
     - 针对如下型号，`GetReduceRepeatMaxMinSpr`仅用于获取最大值，不能用于获取`ReduceMax`对应的准确索引。
       
-      - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+      - Atlas A3系列产品
       
       
-      - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+      - Atlas A2系列产品
       
 
       ```cpp
@@ -161,7 +161,7 @@ source_headers:
 
     
 
-    - 针对Atlas 推理系列产品AI Core版本，可在调用`ReduceMax`后直接调用`GetReduceRepeatMaxMinSpr`指令获取最大值。
+    - 针对Atlas推理系列产品AI Core版本，可在调用`ReduceMax`后直接调用`GetReduceRepeatMaxMinSpr`指令获取最大值。
 
         ```cpp
         AscendC::LocalTensor<float> src;

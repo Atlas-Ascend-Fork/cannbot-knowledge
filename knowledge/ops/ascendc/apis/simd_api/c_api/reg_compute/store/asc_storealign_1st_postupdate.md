@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/store/asc_storealign_1st_postupdate.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -25,7 +25,7 @@ source_headers:
 
 头文件路径为：`"c_api/reg_compute/store/storealign.h"`。
 
-将源矢量数据寄存器中的第一个元素写入Unified Buffer（UB）中目的地址。单次搬出单个元素的数据，不支持配置掩码，目的地址需按`sizeof(dtype)`对齐，搬运过程中数据格式和内容保持不变。接口采用Post Update模式，搬运完成后自动更新目的地址，便于硬件循环内连续多次调用时无需手动维护目的地址。本接口在Vector Function（`__simd_vf__`标记的函数）内使用。
+将源矢量数据寄存器中的第一个元素写入Unified Buffer（UB）中目的地址。单次搬出单个元素的数据，不支持配置掩码，目的地址需按`sizeof(dtype)`对齐，搬运过程中数据格式和内容保持不变。接口采用Post Update模式，搬运完成后自动更新目的地址，便于硬件循环内连续多次调用时无需手动维护目的地址。
 
 以**b16位宽单点搬出**过程为例，示意图如下：
 
@@ -33,7 +33,7 @@ source_headers:
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_store_onept.png)
 
-本接口仅在AIV上执行有效。
+本接口为Reg矢量搬运接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -46,7 +46,7 @@ __simd_callee__ inline void asc_storealign_1st_postupdate(__ubuf__ <dtype>*& dst
 
 ### dtype支持数据类型
 
-`dtype`支持的数据类型为`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
+`dtype`取值为：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
 
 ### 函数原型典型示例
 
@@ -76,10 +76,9 @@ __simd_callee__ inline void asc_storealign_1st_postupdate(__ubuf__ int8_t*& dst,
 
 ### 通用约束
 
-- 本接口非AIV调用直接返回。
-- 本接口在Vector Function（`__simd_vf__`标记的函数）内调用。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - UB容量上限：UB总容量为256KB，默认预留6KB SIMD VF栈与2KB Ascend C预留空间后可用248KB；SIMD+SIMT混编时再划分32KB~128KB作Data Cache，可用容量进一步减少。`dst`起始地址与Post Update累计偏移量之和不可超过实际可用容量，否则会报错。
-- 如果本指令与其他指令存在UB地址重叠，需要插入同步指令[asc_mem_bar](../reg_sync/asc_mem_bar.md)，保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在数据依赖，需要插入同步指令[asc_mem_bar](../reg_sync/asc_mem_bar.md)，保证多个指令串行化，防止出现异常数据。
 
 ### 指令约束
 
@@ -90,7 +89,7 @@ __simd_callee__ inline void asc_storealign_1st_postupdate(__ubuf__ int8_t*& dst,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

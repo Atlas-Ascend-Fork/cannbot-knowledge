@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopyL1ToUB.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -64,6 +64,8 @@ __aicore__ inline void DataCopyL1ToUB(const LocalTensor<T>& dst, const LocalTens
 ## 数据类型
 
 支持的数据类型为b8、b16、b32、b64。
+
+
 
 ## 返回值说明
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/experimental/BesselI0_interface/GetBesselI0MaxMinTmpSize.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -20,7 +20,7 @@ platforms: []
 
 本接口为试验接口，在后续版本中可能会调整或改进，不保证后续兼容性。请开发者在使用过程中关注后续版本更新。
 
-kernel侧BesselI0接口的计算不需要预留/申请临时空间，本接口用于在host侧获取需要预留/申请的最大和最小临时空间大小。对于BesselI0接口，获取到的最大和最小临时空间大小均为0，0表示计算不需要临时空间。
+核函数（Kernel）侧BesselI0接口的计算不需要预留/申请临时空间，本接口用于在host侧获取需要预留/申请的最大和最小临时空间大小。对于BesselI0接口，获取到的最大和最小临时空间大小均为0，0表示计算不需要临时空间。
 
 ## 函数原型
 

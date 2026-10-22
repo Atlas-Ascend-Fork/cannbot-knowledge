@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/L1_or_L0C_UB_data_move.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -27,7 +27,7 @@ L1 Buffer/L0C Buffer与Unified Buffer（UB）之间的数据搬运提供了灵�
 |----------|------|------|
 | UB->L1 Buffer | 连续数据搬运(DataCopy) | 提供基础的数据搬运能力，数据在传输过程中保持原始格式和内容不变，支持连续数据搬运。 |
 | UB->L1 Buffer | 高维切分数据搬运(DataCopy) | 提供基础的数据搬运能力，数据在传输过程中保持原始格式和内容不变，支持连续和非连续的数据搬运。 |
-| UB->L1 Buffer | 随路转换-[ND2NZ](https://gitcode.com/cann/asc-devkit/blob/master/docs/zh/api/SIMD-API/basic_api/data_move_guide/<../cube_compute_ISASI/cube_compute_fractal_intro/key_fractal_format_details.md)搬运(DataCopy) | 支持在数据搬运时进行[ND](https://gitcode.com/cann/asc-devkit/blob/master/docs/zh/api/SIMD-API/basic_api/data_move_guide/<../cube_compute_ISASI/cube_compute_fractal_intro/key_fractal_format_details.md)到[NZ](https://gitcode.com/cann/asc-devkit/blob/master/docs/zh/api/SIMD-API/basic_api/data_move_guide/<../cube_compute_ISASI/cube_compute_fractal_intro/key_fractal_format_details.md)格式的转换。 |
+| UB->L1 Buffer | 随路转换-[ND2NZ](<../cube_compute_isasi/cube_compute_fractal_intro/key_fractal_format_details.md#ZH-CN_TOPIC_0000002568950893>)搬运(DataCopy) | 支持在数据搬运时进行[ND](<../cube_compute_isasi/cube_compute_fractal_intro/key_fractal_format_details.md#zh-cn_topic_0000002545089965_section958745018719>)到[NZ](<../cube_compute_isasi/cube_compute_fractal_intro/key_fractal_format_details.md#zh-cn_topic_0000002545089965_section363412741113>)格式的转换。 |
 | UB->L1 Buffer | 非对齐数据搬运(DataCopyPad) | 支持数据非对齐搬运，可以根据开发者的需要自行填充数据。 |
 | L0C Buffer->UB | 随路转换与量化(DataCopy) | 支持多种随路能力的组合，DataCopy接口内包含了设置寄存器与数据搬运能力。 |
 | L0C Buffer->UB | 随路量化激活搬运(FixPipe) | 支持多种随路能力的组合，FixPipe接口内包含了设置寄存器与数据搬运能力。 |
@@ -109,6 +109,7 @@ __aicore__ inline void DataCopyPad(const LocalTensor<T>& dst, const LocalTensor<
 ```
 
 
+
 ## DataCopy（L0CToUB随路量化激活搬运）
 
 该接口主要实现将数据从L0C Buffer搬运至UB，并支持多种随路能力的组合，接口内包含了设置寄存器与数据搬运能力。
@@ -120,7 +121,7 @@ __aicore__ inline void DataCopyPad(const LocalTensor<T>& dst, const LocalTensor<
 
 搬运的数据为[矩阵计算](../cube_compute_isasi/index.md)的结果，接口具体介绍请参考：[DataCopy（L0C到UB数据搬运）](../cube_compute_isasi/cube_compute_store/data_copy_l0_c_to_ub.md)。
 
-该接口仅Atlas 推理系列产品AI Core支持。
+该接口仅Atlas推理系列产品AI Core支持。
 
 src和dst分别为源操作数和目的操作数；intriParams和enhancedParams为搬运参数。
 
@@ -148,7 +149,7 @@ src和dst分别为源操作数和目的操作数；intriParams和enhancedParams�
 - L0C Buffer -> UB
     - CO1 -> UB
 
-搬运的数据为[矩阵计算](../cube_compute_isasi/index.md)的结果，以Ascend 950PR/Ascend 950DT为例，接口示例如下：
+搬运的数据为[矩阵计算](../cube_compute_isasi/index.md)的结果，以Ascend 950PR&950DT系列产品为例，接口示例如下：
 
 注意，不同产品型号的接口原型可能不同，具体介绍请参考：[Fixpipe（L0C到UB数据搬运）](../cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_ub.md)。
 
@@ -169,6 +170,7 @@ src和dst分别为源操作数和目的操作数；intriParams为搬运参数，
     ```
 
 
+
 ## DataCopyL1ToUB（L1ToUB连续数据搬运）
 
 DataCopyL1ToUB能够实现L1 Buffer到UB的连续数据搬运，数据搬运时格式和内容保持不变。
@@ -180,7 +182,7 @@ DataCopyL1ToUB能够实现L1 Buffer到UB的连续数据搬运，数据搬运时�
 
 搬运的数据用于[矩阵计算](../cube_compute_isasi/index.md)，接口具体介绍请参考：[DataCopyL1ToUB（L1到UB数据搬运）](../cube_compute_isasi/cube_compute_store/data_copy_l1_to_ub.md)。
 
-该接口仅Ascend 950PR/Ascend 950DT支持。
+该接口仅Ascend 950PR&950DT系列产品支持。
 
 src和dst分别为源操作数和目的操作数；count为连续搬运的元素个数。
 
@@ -188,6 +190,7 @@ src和dst分别为源操作数和目的操作数；count为连续搬运的元素
 template <typename T, uint8_t subBlockId = 0>
 __aicore__ inline void DataCopyL1ToUB(const LocalTensor<T>& dst, const LocalTensor<T>& src, const uint32_t count)
 ```
+
 
 
 
@@ -204,7 +207,7 @@ DataCopyL1ToUB能够实现L1 Buffer到UB的连续数据搬运和非连续数据�
 
 搬运的数据用于[矩阵计算](../cube_compute_isasi/index.md)，接口具体介绍请参考：[DataCopyL1ToUB（L1到UB数据搬运）](../cube_compute_isasi/cube_compute_store/data_copy_l1_to_ub.md)。
 
-该接口仅Ascend 950PR/Ascend 950DT支持。
+该接口仅Ascend 950PR&950DT系列产品支持。
 
 src和dst分别为源操作数和目的操作数；repeatParams为搬运参数。
 

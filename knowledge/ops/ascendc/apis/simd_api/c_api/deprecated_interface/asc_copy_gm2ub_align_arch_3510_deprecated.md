@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_gm2ub_align_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -21,7 +21,7 @@ platforms:
 
 **高维切分搬运接口已废弃，请使用`asc_load_l2_cache_mode`类型枚举值进行L2 Cache管理策略配置，新接口形式请参见[asc_copy_gm2ub_align高维切分数据搬运接口](../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md#高维切分数据搬运)。**
 
-提供数据非对齐搬运的功能，将数据从Global Memory (GM)搬运到Unified Buffer (UB)，并支持8位/16位/32位数据类型搬运。
+提供数据非对齐搬运的功能，将数据从Global Memory (GM)搬运到Unified Buffer（UB），并支持8位/16位/32位数据类型搬运。
 
 本接口为高维切分搬运方式。若搬运数据长度非32字节对齐，会将搬运数据补齐至32字节对齐。可通过配置参数`dst_stride`选择Normal模式或Compact模式。非32字节对齐场景支持以下两种填充方式：
 
@@ -61,7 +61,6 @@ platforms:
     __aicore__ inline void asc_copy_gm2ub_align(__ubuf__ float* dst, __gm__ float* src, uint16_t n_burst, uint32_t len_burst, uint8_t left_padding_num, uint8_t right_padding_num, bool enable_constant_pad, uint8_t l2_cache_mode, uint64_t src_stride, uint32_t dst_stride)
     ```
 
-
 ## 参数说明
 
 **表1** 参数说明
@@ -91,6 +90,6 @@ PIPE_MTE2
 
 - 各存储单元的空间大小和对齐要求请参考[存储单元说明](../general_description_and_constraints.md#存储单元说明)。
 - 当`n_burst`、`len_burst`中任意一个值为0时，该接口被视为NOP（空操作）。
-- 如果需要执行多条`asc_copy_gm2ub_align`指令，且`asc_copy_gm2ub_align`指令的目的地址存在重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个`asc_copy_gm2ub_align`指令的串行化，防止出现异常数据。
+- 如果需要执行多条`asc_copy_gm2ub_align`指令，且`asc_copy_gm2ub_align`指令的目的地址存在重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个`asc_copy_gm2ub_align`指令的串行化，防止出现异常数据。
 - 当`left_padding_num`或`right_padding_num`非0时，`enable_constant_pad`不生效，必须在搬运前调用`asc_set_copy_pad_val`配置填充值。`left_padding_num`、`right_padding_num`对应的填充数据大小均不能超过32字节。
 - 当`dst_stride`不等于`len_burst`时，`dst_stride`要求32字节对齐。

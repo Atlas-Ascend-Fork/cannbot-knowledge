@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/tuning_interface/clock.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -32,7 +32,7 @@ __aicore__ inline uint64_t clock(void)
 ```
 
 
-以下接口为SIMT中所使用的clock接口，仅支持Ascend 950PR/Ascend 950DT。
+以下接口为SIMT中所使用的clock接口，仅支持Ascend 950PR&950DT系列产品。
 
 ```cpp
 inline uint64_t clock(void)
@@ -52,13 +52,13 @@ inline uint64_t clock(void)
 
 -   SIMT场景的支持情况如下：
       
-    - Ascend 950PR/Ascend 950DT：支持。
+    - Ascend 950PR&950DT系列产品：支持。
       
       
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持。
+    - Atlas A3系列产品：不支持。
       
       
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品：不支持。
+    - Atlas A2系列产品：不支持。
       
 
 

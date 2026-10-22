@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopy_GMAndUB_slice.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -36,7 +36,7 @@ source_headers:
 - UB -> Global Memory
     - VECOUT -> GM
     
-    - CO2 -> GM（仅Atlas 推理系列产品AI Core支持）
+    - CO2 -> GM（仅Atlas推理系列产品AI Core支持）
     
 
 ## 函数原型<a name="zh-cn_topic_0000002565968945_section82039854412"></a>
@@ -148,25 +148,27 @@ source_headers:
 
 
 
-- Ascend 950PR/Ascend 950DT：bool、int8_t、uint8_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
+- Ascend 950PR&950DT系列产品：bool、int8_t、uint8_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
 
 
 
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- Atlas A3系列产品：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- Atlas A2系列产品：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
 
 
-- Atlas 推理系列产品AI Core：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+- Atlas推理系列产品AI Core：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+
+
 
 
 

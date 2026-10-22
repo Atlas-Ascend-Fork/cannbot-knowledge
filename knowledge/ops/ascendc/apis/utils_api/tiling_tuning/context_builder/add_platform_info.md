@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_tuning/ContextBuilder/AddPlatformInfo.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/utils/context/context_builder.h
@@ -26,7 +26,7 @@ source_headers:
 -   **自动获取当前硬件平台信息**：传入空指针，自动获取当前硬件信息并添加到ContextBuilder类中。
 -   **指定硬件平台信息**：传入具体的AI处理器型号，添加对应硬件信息至ContextBuilder类中。
 
-若设置失败，会打印报错信息。关于日志配置和查看，请参考[《环境变量参考》](https://www.hiascend.com/document/redirect/CannCommunityEnvRef)中日志相关环境变量。
+若设置失败，会打印报错信息。关于日志配置和查看，请参考[《环境变量参考》](https://gitcode.com/cann/docs/blob/master/docs/zh/env-vars/README.md)中日志相关环境变量。
 
 ## 函数原型<a name="zh-cn_topic_0000001867409741_zh-cn_topic_0000001389787297_section13230182415108"></a>
 

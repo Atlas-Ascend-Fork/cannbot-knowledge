@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TBufPool/InitBuffer.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T08:27:47Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -35,11 +35,14 @@ source_headers:
 ## 函数原型<a name="section620mcpsimp"></a>
 
 -   为TQue分配内存
+
     ```cpp
     template <class T>
     __aicore__ inline bool InitBuffer(T& que, uint8_t num, uint32_t len)
     ```
+
 -   为TBuf分配内存
+
     ```cpp
     template <TPosition pos>
     __aicore__ inline bool InitBuffer(TBuf<pos>& buf, uint32_t len)
@@ -133,7 +136,6 @@ source_headers:
 ## 调用示例<a name="section642mcpsimp"></a>
 
 参考[InitBufPool](init_buf_pool.md)。
-
 
 - [SwigluGroupQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swiglu_group_quant_950.md)
 - [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)

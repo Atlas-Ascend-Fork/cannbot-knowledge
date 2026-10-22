@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/frexpf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 将`x`转换为归一化\[1/2, 1\)的有符号数乘以2的积分幂。返回归一化的有符号数，指数存储在`exp`中。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002516816359.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002516816359.png)
 
 ## 函数原型
 
@@ -96,7 +96,7 @@ inline float frexpf(float x, int *exp)
 输入输出示例如下：
 
 ```
-x：0.25, 0.75, 1.25, 1.75
-result: 0.5 0.75 0.625 0.875
+x: 0.25, 0.75, 1.25, 1.75
+result: 0.5, 0.75, 0.625, 0.875
 exp_out: -1 0 1 1
 ```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/type_conversion/Cast.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -71,7 +71,7 @@ platforms:
 | dst    |  输出     | 目的操作数。<br>类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 |
 | src | 输入 | 源操作数。<br>类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。|
 | roundMode | 输入 | 精度转换处理模式，类型是RoundMode。<br>RoundMode为枚举类型，用以控制精度转换处理模式，可参考[精度转换规则](../../data_structures/precision_conversion.md)。RoundMode取值说明请参考[RoundMode取值说明](#roundmode取值说明)。 |
-| count | 输入 | 参与计算的元素个数。<br>**注：参数取值范围和操作数的数据类型有关，数据类型不同，能够处理的元素个数最大值不同，最大处理的数据量不能超过UB大小限制。** |
+| count | 输入 | 参与计算的元素个数。<br>**注：参数取值范围和操作数的数据类型有关，数据类型不同，能够处理的元素个数最大值不同，最大处理的数据量不能超过Unified Buffer（UB）大小限制。** |
 | mask/mask[] | 输入 | mask用于控制每次迭代内参与计算的元素。<br>注意：数据类型转换的mask会按照输入和输出类型中sizeof(dtype)较大的来筛选。<br>设置详见[掩码操作](../simd_compute/mask.md)。 |
 | repeatTime | 输入| 重复迭代次数。<br>矢量计算单元，每次读取连续的256Bytes数据进行计算，为完成对输入数据的处理，必须通过多次迭代（repeat）才能完成所有数据的读取与计算。repeatTime表示迭代的次数。<br>关于该参数的具体描述请参考[高维切分](../simd_compute/high_dim_split.md)。 |
 | repeatParams | 输入 | 控制操作数地址步长的参数。[UnaryRepeatParams](../../aux_data_structures/unary_repeat_params.md)类型，包含操作数相邻迭代间相同DataBlock的地址步长，操作数同一迭代内不同DataBlock的地址步长等参数。<br>相邻迭代间的地址步长参数说明请参考[repeatStride](../simd_compute/high_dim_split.md)；同一迭代内DataBlock的地址步长参数说明请参考[dataBlockStride](../simd_compute/high_dim_split.md)。 |
@@ -101,7 +101,7 @@ enum class RoundMode {
 
 
 
-**表**  Ascend 950PR/Ascend 950DT支持的数据类型组合情况
+**表**  Ascend 950PR&950DT系列产品支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -174,7 +174,7 @@ enum class RoundMode {
 
 
 
-**表**  Atlas A3 训练系列产品/Atlas A3 推理系列产品支持的数据类型组合情况
+**表**  Atlas A3系列产品支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -208,7 +208,7 @@ enum class RoundMode {
 
 
 
-**表**  Atlas A2 训练系列产品/Atlas A2 推理系列产品支持的数据类型组合情况
+**表**  Atlas A2系列产品支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -242,7 +242,7 @@ enum class RoundMode {
 
 
 
-**表**  Atlas 200I/500 A2 推理产品支持的数据类型组合情况
+**表**  Atlas 200I/500 A2推理产品支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -274,7 +274,7 @@ enum class RoundMode {
 
 
 
-**表**  Atlas 推理系列产品AI Core支持的数据类型组合情况
+**表**  Atlas推理系列产品AI Core支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -297,7 +297,7 @@ enum class RoundMode {
 
 
 
-**表**  Atlas 训练系列产品支持的数据类型组合情况
+**表**  Atlas训练系列产品支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -316,7 +316,7 @@ enum class RoundMode {
 
 
 
-**表**  Kirin X90支持的数据类型组合情况
+**表**  Kirin X90处理器系列产品支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -330,7 +330,7 @@ enum class RoundMode {
 
 
 
-**表**  Kirin 9030支持的数据类型组合情况
+**表**  Kirin 9030处理器系列产品支持的数据类型组合情况
 
 | src数据类型 | dst数据类型 | 支持的roundMode |
 | :---------- | :---------- | :-------------- |
@@ -356,21 +356,21 @@ enum class RoundMode {
 - 当dst或src为int4b\_t时，tensor高维切分计算接口的连续模式的mask与tensor前n个数据计算接口的count必须为偶数；对于tensor高维切分计算接口的逐bit模式，对应同一字节的相邻两个比特位的数值必须一致，即0-1位数值一致，2-3位数值一致，4-5位数值一致，以此类推。
 - int32\_t到half数据类型的转换，设置舍入模式无效，需要与[SetDeqScale](../type_conversion_aux_config/set_deq_scale.md)接口配合使用。
 
-- 针对Ascend 950PR/Ascend 950DT，complex32/complex64/double数据类型仅支持tensor前n个数据计算接口。
+- 针对Ascend 950PR&950DT系列产品，complex32/complex64/double数据类型仅支持tensor前n个数据计算接口。
 
 
 - 当参数count或repeatTime取值为0时，该接口的行为如下：
     
     - 针对如下型号，当参数count或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
        
-       - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+       - Atlas A3系列产品
        
        
-       - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+       - Atlas A2系列产品
        
     
     
-    - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
+    - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
     
 
 
@@ -634,7 +634,6 @@ AscendC::Cast(dstLocal, srcLocal, AscendC::RoundMode::CAST_CEIL, mask, 8, { 1, 1
  1199654414 1206405188 1214203847 1165183076 1213745302 1208830102
  1209944118 1215121459]
 ```
-
 
 - [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)
 - [Celu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/celu_950.md)

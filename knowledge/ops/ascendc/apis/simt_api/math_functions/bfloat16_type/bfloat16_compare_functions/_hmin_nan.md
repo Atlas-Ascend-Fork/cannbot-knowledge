@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_compare_functions/__hmin_nan.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取两个输入数据中的最小值。任一输入为nan时，结果为nan。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002574049837.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002574049837.png)
 
 ## 函数原型
 
@@ -83,3 +83,11 @@ bfloat16_t __hmin_nan(const bfloat16_t x, const bfloat16_t y)
         dst[idx] = __hmin_nan(x[idx], y[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.0, 0.5, 2.0, 2.0, nan, 1.0, inf, -inf
+y: 0.5, 0.5, 2.0, 3.0, 1.0, nan, inf, 0.0
+result: -1.0, 0.5, 2.0, 2.0, nan, nan, inf, -inf
+```

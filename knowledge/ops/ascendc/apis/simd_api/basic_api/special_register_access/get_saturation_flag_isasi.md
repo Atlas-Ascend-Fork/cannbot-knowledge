@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/special_register_access/GetSaturationFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -50,14 +50,14 @@ __aicore__ inline bool GetSaturationFlag()
 ## 约束说明
 
 
-- Ascend 950PR/Ascend 950DT支持`SaturationMode::FLOAT`、`SaturationMode::FLOAT8`、`SaturationMode::INT`和`SaturationMode::CAST`。
+- Ascend 950PR&950DT系列产品支持`SaturationMode::FLOAT`、`SaturationMode::FLOAT8`、`SaturationMode::INT`和`SaturationMode::CAST`。
 - 查询`SaturationMode::FLOAT8`时，返回值仅表示该模式的开启状态。该模式仅在精度转换接口处于饱和模式时生效，可通过全局`SaturationMode::FLOAT`或单接口`satMode`进入饱和模式。
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品支持`SaturationMode::FLOAT`、`SaturationMode::INT`和`SaturationMode::CAST`，不支持`SaturationMode::FLOAT8`。
+- Atlas A3系列产品支持`SaturationMode::FLOAT`、`SaturationMode::INT`和`SaturationMode::CAST`，不支持`SaturationMode::FLOAT8`。
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品支持`SaturationMode::FLOAT`、`SaturationMode::INT`和`SaturationMode::CAST`，不支持`SaturationMode::FLOAT8`。
+- Atlas A2系列产品支持`SaturationMode::FLOAT`、`SaturationMode::INT`和`SaturationMode::CAST`，不支持`SaturationMode::FLOAT8`。
 
 
 ## 调用示例

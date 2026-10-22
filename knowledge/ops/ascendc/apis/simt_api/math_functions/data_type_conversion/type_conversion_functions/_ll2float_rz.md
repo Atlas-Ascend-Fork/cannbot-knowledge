@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/data_type_conversion/type_conversion_functions/__ll2float_rz.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,3 +81,10 @@ inline float __ll2float_rz(const long long int x)
         dst[idx] = __ll2float_rz(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -9007199254740989, -16777221, -5, 0, 5, 16777221, 9007199254740989, 9223372036854775803
+result: -9007198717870080.0, -16777220.0, -5.0, 0.0, 5.0, 16777220.0, 9007198717870080.0, 9.22337149e+18
+```

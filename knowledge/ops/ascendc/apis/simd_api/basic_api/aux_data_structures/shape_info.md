@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/aux_data_structures/ShapeInfo.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -35,8 +35,8 @@ ShapeInfo用来存放LocalTensor或GlobalTensor的shape信息。
         __aicore__ inline ShapeInfo(const uint8_t inputShapeDim, const uint32_t inputShape[]);
         uint8_t shapeDim;
         uint8_t originalShapeDim;
-        uint32_t shape[K_MAX_DIM];
-        uint32_t originalShape[K_MAX_DIM];
+        uint32_t shape[K_MAX_SHAPE_DIM];
+        uint32_t originalShape[K_MAX_SHAPE_DIM];
         DataFormat dataFormat;
     };
     ```
@@ -44,7 +44,7 @@ ShapeInfo用来存放LocalTensor或GlobalTensor的shape信息。
 -   获取Shape中所有dim的累乘结果
 
     ```cpp
-    __aicore__ inline int GetShapeSize(const ShapeInfo& shapeInfo)
+    __aicore__ inline uint64_t GetShapeSize(const ShapeInfo& shapeInfo)
     ```
 
 ## 函数说明<a name="zh-cn_topic_0000001441184464_section622mcpsimp"></a>
@@ -113,7 +113,6 @@ ShapeInfo用来存放LocalTensor或GlobalTensor的shape信息。
 </tr>
 </tbody>
 </table>
-
 
 - [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad.md)
 - [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)

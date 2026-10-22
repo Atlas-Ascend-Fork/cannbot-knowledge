@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__brev.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -117,4 +117,20 @@ unsigned long __brev(unsigned long x)
         }
         dst[idx] = __brev(x[idx]);
     }
+    ```
+
+输入输出示例如下：
+
+- 当输入数据类型为`unsigned int`时：
+
+    ```text
+    x: 0, 1, 2, 8, 15
+    result: 0, 2147483648, 1073741824, 268435456, 4026531840
+    ```
+
+- 当输入数据类型为`unsigned long long`时：
+
+    ```text
+    x: 0, 1, 2, 8, 15
+    result: 0, 9223372036854775808, 4611686018427387904, 1152921504606846976, 17293822569102704640
     ```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/REGISTER_TILING_FOR_TILINGKEY.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -23,7 +23,7 @@ platforms:
 
 ## 功能说明<a name="zh-cn_topic_0000001526206862_section212607105720"></a>
 
-用于在kernel侧注册与TilingKey相匹配的TilingData自定义结构体；该接口需提供一个逻辑表达式，逻辑表达式以字符串“TILING\_KEY\_VAR”代指实际TilingKey，表达TilingKey所满足的范围。
+用于在核函数（Kernel）侧注册与TilingKey相匹配的TilingData自定义结构体；该接口需提供一个逻辑表达式，逻辑表达式以字符串“TILING\_KEY\_VAR”代指实际TilingKey，表达TilingKey所满足的范围。
 
 ## 函数原型<a name="zh-cn_topic_0000001526206862_section1630753514297"></a>
 
@@ -65,7 +65,7 @@ REGISTER_TILING_FOR_TILINGKEY(EXPRESSION, TILING_STRUCT)
 -   EXPRESSION当前支持位运算：&、|、\~、^；移位运算符：<<、\>\>；算术运算：+、-、\*、/、%；条件运算符：==、!=、\>、<、\>=、<=；逻辑与&&、或||以及\(\)。优先级同C++。
 -   若TilingData结构体在命名空间内，注册时需要携带对应的命名空间作用域符。
 -   不支持同个TilingKey指向不同TilingData结构体，会出现拦截报错。
--   暂不支持kernel直调工程。
+-   暂不支持核函数（Kernel）直调工程。
 
 ## 调用示例<a name="zh-cn_topic_0000001526206862_section97001499599"></a>
 
@@ -140,8 +140,6 @@ ge::graphStatus TilingFunc(gert::TilingContext* context)
     // 其他代码逻辑
 }
 ```
-
-
 
 - [InplaceIndexFill 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_index_fill_950.md)
 - [FlashAttentionScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)

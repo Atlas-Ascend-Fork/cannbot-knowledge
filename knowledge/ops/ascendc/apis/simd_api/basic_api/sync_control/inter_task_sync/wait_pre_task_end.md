@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_task_sync/WaitPreTaskEnd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a3
@@ -60,9 +60,10 @@ __aicore__ inline void WaitPreTaskEnd()
 
 ## 约束说明<a name="section633mcpsimp"></a>
 
-- 该接口适用于TorchAir图模式开发场景，且需在启用SuperKernel特性后方可生效。具体内容请参考[图内标定SuperKernel范围](https://www.hiascend.com/document/detail/zh/Pytorch/latest/devguide/TorchAir/docs/zh/ascend_ir/features/advanced/super_kernel_scope.md)。
+- 该接口适用于TorchAir图模式开发场景，且需在启用SuperKernel特性后方可生效。具体内容请参考[图内标定SuperKernel范围](https://gitcode.com/Ascend/torchair/blob/master/docs/zh/ascend_ir/features/advanced/super_kernel_scope.md)。
 - 在算子运行过程中，需要保证此接口在每个核上都被调用，且每个核上仅被调用一次。
 - 若子核函数（Kernel）某个TilingKey分支调用了此接口，则开发者需要保证当前算子可能会运行的所有TilingKey均调用了此接口，否则会出现因同步指令数量不匹配而卡住的现象。
+- 本接口内部实现会占用核间同步flagId，若与CrossCoreSetFlag/CrossCoreWaitFlag同时使用需注意避免flagId冲突，详见[核间同步flagId占用说明](../inter_core_sync/key_features.md#inter_core_sync_flagid_usage)。
 
 ## 调用示例<a name="section837496171220"></a>
 
@@ -72,7 +73,7 @@ AscendC::LocalTensor<T> src0Local = ubAllocator.Alloc<T, TOTAL_LENGTH>();
 AscendC::LocalTensor<T> src1Local = ubAllocator.Alloc<T, TOTAL_LENGTH>();
 AscendC::LocalTensor<T> dstLocal = ubAllocator.Alloc<T, TOTAL_LENGTH>();
 
-// 在第一条搬运指令前调用，使之前的指令可与前序子kernel并行执行。
+// 在第一条搬运指令前调用，使之前的指令可与前序子核函数（Kernel）并行执行。
 AscendC::WaitPreTaskEnd();
 
 AscendC::DataCopy(src0Local, src0Global, TOTAL_LENGTH);
@@ -84,7 +85,6 @@ AscendC::Add(dstLocal, src0Local, src1Local, TOTAL_LENGTH);
 ```
 
 完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
-
 
 - [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)
 - [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)

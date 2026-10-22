@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_logic/asc_xor.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -39,7 +39,7 @@ def asc_xor(dst, src0, src1, mask):
         dst[i] = src0[i] ^ src1[i] if mask[i] else 0
 ```
 
-本接口为`Reg`矢量计算接口，仅在AIV上生效。
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -48,8 +48,8 @@ def asc_xor(dst, src0, src1, mask):
 ```c
 // 通过函数返回值返回结果（占位符形式）
 __simd_callee__ inline vector_<dtype> asc_xor(vector_<dtype> src0,
-                                               vector_<dtype> src1,
-                                               vector_bool mask)
+                                              vector_<dtype> src1,
+                                              vector_bool mask)
 
 // 通过引用参数输出结果（占位符形式）
 __simd_callee__ inline void asc_xor(vector_<dtype>& dst,
@@ -59,15 +59,16 @@ __simd_callee__ inline void asc_xor(vector_<dtype>& dst,
 ```
 
 #### dtype支持数据类型
-`dtype`支持的数据类型：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`。
+
+`dtype`取值为：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`。
 
 #### 函数原型典型示例
 
 ```c
 // 示例：对int8_t矢量数据寄存器执行按位异或，通过函数返回值返回结果。
 __simd_callee__ inline vector_int8_t asc_xor(vector_int8_t src0,
-                                              vector_int8_t src1,
-                                              vector_bool mask)
+                                             vector_int8_t src1,
+                                             vector_bool mask)
 
 // 示例：对int8_t矢量数据寄存器执行按位异或。
 __simd_callee__ inline void asc_xor(vector_int8_t& dst,
@@ -119,7 +120,7 @@ __simd_callee__ inline void asc_xor(vector_bool& dst,
 
 ## 约束说明
 
-- 本接口非AIV调用直接返回。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - `dst`中未被`mask`筛选的位置被置为0。
 
 ## 调用示例
@@ -127,7 +128,7 @@ __simd_callee__ inline void asc_xor(vector_bool& dst,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

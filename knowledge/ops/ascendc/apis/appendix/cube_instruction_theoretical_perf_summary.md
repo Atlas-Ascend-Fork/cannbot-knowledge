@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/cube_instruction_theoretical_perf_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -20,13 +20,13 @@ platforms: []
 本节汇总介绍了主要的Cube指令的理论性能，以下内容针对如下型号生效：
 
 
-Ascend 950PR/Ascend 950DT
+Ascend 950PR&950DT系列产品
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
+Atlas A3系列产品
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
+Atlas A2系列产品
 
 
 ## Mmad计算类指令理论性能汇总
@@ -37,7 +37,7 @@ $$
 \begin{gathered}
 {ceil_m} = \left\lceil \frac{m}{16} \right\rceil \times 16 \\[12pt]
 {ceil_n} = \left\lceil \frac{n}{16} \right\rceil \times 16 \\[12pt]
-{ceil_k} = \left\lceil \frac{k}{16} \right\rceil \times k_0 \\[16pt]
+{ceil_k} = \left\lceil \frac{k}{k_0} \right\rceil \times k_0 \\[16pt]
 \text{cube利用率} =
 \frac{ (m \times n \times k) / ({cube_m} \times {cube_n} \times {cube_k}) }
 { \Delta t + ({ceil_m} \times {ceil_n} \times {ceil_k}) / ({cube_m} \times {cube_n} \times {cube_k}) }
@@ -154,7 +154,7 @@ $$
 | [DataCopy（L1 Buffer->BiasTable Buffer）](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/data_copy_l1_to_bias_table.md) | 32 |
 | [DataCopy（L1 Buffer->Fixpipe Buffer）](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/data_copy_l1_to_fixpipe.md) | 32 |
 
-针对Ascend 950PR/Ascend 950DT，LoadData（2D矩阵搬运）接口仅为兼容实现，内部使用了LoadData（2D矩阵搬运V2）接口实现，相关理论性能可参考LoadData（2D矩阵搬运V2）接口，但需要注意，该兼容实现会造成性能损失。
+针对Ascend 950PR&950DT系列产品，LoadData（2D矩阵搬运）接口仅为兼容实现，内部使用了LoadData（2D矩阵搬运V2）接口实现，相关理论性能可参考LoadData（2D矩阵搬运V2）接口，但需要注意，该兼容实现会造成性能损失。
 
 由于LoadData（MX矩阵搬运）接口内部实现涉及两条数据通路的搬运，其占用cycle数的理论计算公式有所不同，具体公式如下：
 
@@ -170,7 +170,7 @@ $$
 - $bandwidth\_mx$：搬运scale矩阵的带宽，单位为Byte/cycle。
 - $\Delta T$：搬运过程中的带宽延迟等额外开销。
 
-针对Ascend 950PR/Ascend 950DT，[LoadData（卷积数据搬运）](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_3_d.md)和[LoadDataWithStride](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_with_stride.md)指令的理论性能与参数相关，相关参数说明见[LoadData3DParamsV2结构体内参数说明](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_3_d.md#zh-cn_topic_0000002512171652_table193501032193419)。此外，LoadDataWithStride接口相比于LoadData（卷积数据搬运）接口，内部不包含针对其他芯片版本的兼容性实现，减少了兼容造成的额外开销，性能表现有所优化。两个接口的理论性能说明见下表：
+针对Ascend 950PR&950DT系列产品，[LoadData（卷积数据搬运）](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_3_d.md)和[LoadDataWithStride](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_with_stride.md)指令的理论性能与参数相关，相关参数说明见[LoadData3DParamsV2结构体内参数说明](../simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_3_d.md#zh-cn_topic_0000002512171652_table193501032193419)。此外，LoadDataWithStride接口相比于LoadData（卷积数据搬运）接口，内部不包含针对其他芯片版本的兼容性实现，减少了兼容造成的额外开销，性能表现有所优化。两个接口的理论性能说明见下表：
 
 **表6** LoadData（卷积数据搬运）和LoadDataWithStride理论性能说明（[NPU架构版本3510](../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="table1877123821313"></a>  
 

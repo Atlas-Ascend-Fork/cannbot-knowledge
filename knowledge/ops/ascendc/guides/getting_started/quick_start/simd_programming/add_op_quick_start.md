@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/quick_start/simd_programming/add_op_quick_start.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -24,7 +24,7 @@ platforms: []
 
   Add算子的数学表达式为：
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_formulaimage_0000002501241896.png)
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/formulaimage_0000002501241896.png)
 
   计算逻辑为逐元素完成`z = x + y`。
 
@@ -53,6 +53,7 @@ platforms: []
   - **Device端核函数（Kernel）实现**：
   Device端部分示例如下：
     - **基于C语言API实现Memory矢量计算示例**
+
       ```cpp
       __vector__ __global__ void add_custom(__gm__ float* x, __gm__ float* y, __gm__ float* z)
       {
@@ -84,13 +85,14 @@ platforms: []
           asc_sync();
       }
       ```
+
       > [!NOTE]说明
       > - 本Memory矢量计算示例支持以下型号：
       >     
-      >     - Atlas A3训练系列产品/Atlas A3推理系列产品
+      >     - Atlas A3系列产品
       >     
       >     
-      >     - Atlas A2训练系列产品/Atlas A2推理系列产品
+      >     - Atlas A2系列产品
       >     
       > - SIMD算子的核函数（Kernel）需要额外修饰符，[`__vector__`](../../../programming_guide/language_extension/simd_builtin_keywords.md)修饰符表明该算子仅在向量计算单元上执行。
       > - **性能提示**：示例中为简化同步操作，统一使用了 `asc_sync`。在实际算子开发中，建议根据流水线执行情况使用具体的同步控制指令，以获得更好的性能。详见[同步机制](../../../programming_guide/programming_model/ai_core_simd_programming/c_pointer_programming/c_programming_overview.md#同步机制)章节。
@@ -129,22 +131,24 @@ platforms: []
           AscendC::PipeBarrier<PIPE_ALL>();
       }
       ```
+
       > [!NOTE]说明
       > - 该样例支持以下型号：
       >     
-      >     - Ascend 950PR/Ascend 950DT
+      >     - Ascend 950PR&950DT系列产品
       >     
       >     
-      >     - Atlas A3训练系列产品/Atlas A3推理系列产品
+      >     - Atlas A3系列产品
       >     
       >     
-      >     - Atlas A2训练系列产品/Atlas A2推理系列产品
+      >     - Atlas A2系列产品
       >     
       > - SIMD算子的核函数（Kernel）需要额外修饰符，[`__vector__`](../../../programming_guide/language_extension/simd_builtin_keywords.md)修饰符表明该算子仅在向量计算单元上执行。
 
   - **Host端代码实现**：
 
     Host端通过`<<<>>>`语法糖调用Device端核函数（Kernel），示例代码片段如下：
+
     ```cpp
       int32_t main(int argc, char const *argv[])
       {
@@ -185,6 +189,7 @@ platforms: []
 - **算子编译与运行**：
 
   CMake配置文件示例：
+
   ```cmake
   cmake_minimum_required(VERSION 3.16)
 
@@ -206,12 +211,15 @@ platforms: []
       $<$<COMPILE_LANGUAGE:ASC>:--npu-arch=dav-2201>
   )
   ```
+
   编译与执行示例：
+
   ```bash
   mkdir -p build && cd build;   # 创建并进入build目录
   cmake ..;make -j;             # 编译工程
   ./c_api_add_example           # 运行样例
   ```
+
   > [!NOTE]说明
   > - 编译选项`--npu-arch`用于指定NPU架构版本，`dav-`后面的数字为架构版本号，请替换为您实际使用的版本。各AI处理器型号与架构版本的对应关系请查阅[AI处理器型号和 \_\_NPU_ARCH\_\_ 的对应关系](../../../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
@@ -226,7 +234,7 @@ platforms: []
 
 
 > [!NOTE]说明
-> Ascend 950PR/Ascend 950DT新一代架构在传统[UB](../../../technical_appendix/concepts_and_terms/glossary.md)缓存体系的基础上，开放了寄存器（Register）可编程能力，单个寄存器大小为256B。基于寄存器的矢量计算称为Reg矢量计算，而基于传统UB的矢量计算称为Memory矢量计算。
+> Ascend 950PR&950DT系列产品新一代架构在传统[UB](../../../technical_appendix/concepts_and_terms/glossary.md)缓存体系的基础上，开放了寄存器（Register）可编程能力，单个寄存器大小为256B。基于寄存器的矢量计算称为Reg矢量计算，而基于传统UB的矢量计算称为Memory矢量计算。
 
 
 若要深入理解Ascend C的SIMD与SIMT编程模型，请参阅[Ascend C编程模型概述](../../../programming_guide/programming_model/programming_model_overview.md)。

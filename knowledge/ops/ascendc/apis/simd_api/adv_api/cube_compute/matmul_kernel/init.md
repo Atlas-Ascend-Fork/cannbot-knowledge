@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/Init.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -51,14 +51,14 @@ Init主要用于对Matmul对象中的Tiling数据进行初始化，根据Tiling�
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| cubeTiling | 输入 | Matmul Tiling参数，TCubeTiling结构体定义请参见[表1 TCubeTiling结构说明](../matmul_tiling/t_cube_tiling_struct.md#tcubetiling-struct)。<br><br>Tiling参数可以通过host侧[GetTiling](../matmul_tiling/get_tiling.md)接口获取，并传递到kernel侧使用。在kernel侧调用[GET_TILING_DATA](../../../basic_api/kernel_tiling/get_tiling_data.md)实现将Tiling参数搬运到AI Core内的栈空间中，本接口传入Tiling参数中TCubeTiling结构体的栈地址。 |
+| cubeTiling | 输入 | Matmul Tiling参数，TCubeTiling结构体定义请参见[表1 TCubeTiling结构说明](../matmul_tiling/t_cube_tiling_struct.md#tcubetiling-struct)。<br><br>Tiling参数可以通过host侧[GetTiling](../matmul_tiling/get_tiling.md)接口获取，并传递到核函数（Kernel）侧使用。在核函数（Kernel）侧调用[GET_TILING_DATA](../../../basic_api/kernel_tiling/get_tiling_data.md)实现将Tiling参数搬运到AI Core内的栈空间中，本接口传入Tiling参数中TCubeTiling结构体的栈地址。 |
 | tpipe | 输入 | Tpipe对象。 |
 
 **表2**  Tiling参数传入GM地址接口参数说明
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| gmCubeTiling | 输入 | Matmul Tiling参数，该参数指向gm上的一块内存地址，其中的数据类型是TCubeTiling结构体，TCubeTiling结构体定义请参见[表1 TCubeTiling结构说明](../matmul_tiling/t_cube_tiling_struct.md#tcubetiling-struct)。<br><br>Tiling参数可以通过host侧[GetTiling](../matmul_tiling/get_tiling.md)接口获取，并传递到kernel侧使用。在kernel侧调用[GET_TILING_DATA_PTR_WITH_STRUCT](../../../basic_api/kernel_tiling/get_tiling_data_ptr_with_struct.md)获取gm上Tiling参数的指针，本接口传入Tiling参数中TCubeTiling结构体的GM地址。 |
+| gmCubeTiling | 输入 | Matmul Tiling参数，该参数指向gm上的一块内存地址，其中的数据类型是TCubeTiling结构体，TCubeTiling结构体定义请参见[表1 TCubeTiling结构说明](../matmul_tiling/t_cube_tiling_struct.md#tcubetiling-struct)。<br><br>Tiling参数可以通过host侧[GetTiling](../matmul_tiling/get_tiling.md)接口获取，并传递到核函数（Kernel）侧使用。在核函数（Kernel）侧调用[GET_TILING_DATA_PTR_WITH_STRUCT](../../../basic_api/kernel_tiling/get_tiling_data_ptr_with_struct.md)获取gm上Tiling参数的指针，本接口传入Tiling参数中TCubeTiling结构体的GM地址。 |
 | tpipe | 输入 | Tpipe对象。 |
 
 ## 返回值说明
@@ -108,7 +108,6 @@ Init主要用于对Matmul对象中的Tiling数据进行初始化，根据Tiling�
         // MIX模式下，只调用REGIST_MATMUL_OBJ接口，传入Tiling参数的GM地址，不需调用Init接口
         REGIST_MATMUL_OBJ(&pipe, GetSysWorkSpacePtr(), mm, &(tilingDataPtr->cubeTilingData));
         ```
-
 
 - [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)
 - [Sparse4to2QuantMatmulWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/sparse4to2_quant_matmul_weight_nz.md)

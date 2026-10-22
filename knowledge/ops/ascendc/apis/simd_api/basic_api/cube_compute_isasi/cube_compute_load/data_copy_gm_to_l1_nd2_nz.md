@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_GMToL1_ND2NZ.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -45,7 +45,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 ```
 
 
-特别针对Ascend 950PR/Ascend 950DT，函数原型请参考如下：
+特别针对Ascend 950PR&950DT系列产品，函数原型请参考如下：
 
 ```cpp
 template <typename T, bool enableSmallC0 = false>
@@ -65,7 +65,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 ### enableSmallC0参数支持度说明
 
 
-- 针对Ascend 950PR/Ascend 950DT，新增enableSmallC0参数，调用该接口必须配置参数enableSmallC0；
+- 针对Ascend 950PR&950DT系列产品，新增enableSmallC0参数，调用该接口必须配置参数enableSmallC0；
 
 
 - 其他型号不支持该参数。
@@ -96,27 +96,27 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 源矩阵和目的矩阵支持的数据类型保持一致。
 
 
-针对Ascend 950PR/Ascend 950DT，支持的数据类型为：bool、int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32。
+针对Ascend 950PR&950DT系列产品，支持的数据类型为：bool、int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32。
 
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型为：b4（int4b_t）、int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
+针对Atlas A3系列产品，支持数据类型为：b4（int4b_t）、int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
 
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型为：b4（int4b_t）、int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
+针对Atlas A2系列产品，支持数据类型为：b4（int4b_t）、int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
 
 
 
-针对Atlas 推理系列产品AI Core，支持数据类型为：int16_t、uint16_t、int32_t、uint32_t、half、float。
+针对Atlas推理系列产品AI Core，支持数据类型为：int16_t、uint16_t、int32_t、uint32_t、half、float。
 
 
 
-Kirin X90，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、half。
+Kirin X90处理器系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、half。
 
 
 
-Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、half。
+Kirin 9030处理器系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、half。
 
 
 ## 返回值说明
@@ -145,7 +145,7 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
     | dstNzMatrixStride | [0, 16384] |
 
 
-- 针对Atlas 推理系列产品AI Core，使用Global Memory -\> Local Memory通路的ND2NZ搬运接口时，需要预留8K的Unified Buffer（UB）空间，作为接口的临时数据存放区。
+- 针对Atlas推理系列产品AI Core，使用Global Memory -\> Local Memory通路的ND2NZ搬运接口时，需要预留8K的Unified Buffer（UB）空间，作为接口的临时数据存放区。
 
 
 ## 关键特性说明
@@ -160,7 +160,7 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 - srcNdMatrixStride = 0，只有一个ND矩阵，该值为0。
 - srcDValue = 32，表示源矩阵一行所含元素个数，即32个half数据类型的元素。
 - dstNzC0Stride = 16，NZ矩阵中相邻Z矩阵起始地址的偏移，偏移为16个C0_SIZE。
-- dstNzNStride = 1，表示NZ矩阵中相邻行起始地址的偏移。
+- dstNzNStride = 1，表示NZ矩阵中相邻行起始地址的偏移，偏移为1个C0_SIZE。
 - dstNzMatrixStride = 0，只有一个NZ矩阵，该值为0。
 
 **图2** ND2NZ转换示意图（连续搬运）<a id="zh-cn_topic_0000002566538879_fig7420114233419"></a>
@@ -177,7 +177,7 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 - srcNdMatrixStride = 384，表示相邻ND矩阵起始地址的偏移，每行32个元素，共12行，偏移为32 * 12 = 384个元素。
 - srcDValue = 32，表示源矩阵一行所含元素个数，即32个half数据类型的元素。
 - dstNzC0Stride = 37，NZ矩阵中相邻Z矩阵起始地址的偏移，偏移为37个C0_SIZE。
-- dstNzNStride = 2，表示NZ矩阵中相邻行起始地址的偏移。
+- dstNzNStride = 2，表示NZ矩阵中相邻行起始地址的偏移，偏移为2个C0_SIZE。
 - dstNzMatrixStride = 320，相邻NZ矩阵起始地址的偏移，每行16个元素，共20行，偏移为16 * 20 = 320个元素。
 
 **图3** ND2NZ转换示意图（非连续搬运）<a id="zh-cn_topic_0000002566538879_fig19978184883316"></a>

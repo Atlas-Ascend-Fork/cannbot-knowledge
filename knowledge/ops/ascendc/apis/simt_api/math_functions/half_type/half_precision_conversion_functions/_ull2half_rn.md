@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__ull2half_rn.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -78,3 +78,10 @@ inline half __ull2half_rn(const unsigned long long int x)
         dst[idx] = __ull2half_rn(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0, 1, 2049, 4097, 65535
+result: 0, 1, 2048, 4096, inf
+```

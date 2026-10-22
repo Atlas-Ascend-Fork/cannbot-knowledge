@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/enum/asc_l13d_repeat_direction.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/c_api/defs/enum.h
@@ -18,7 +18,7 @@ source_headers:
 
 # asc_l13d_repeat_direction
 
-`asc_l13d_repeat_direction`用于表示3D img2col搬运的repeat迭代方向，作为[asc_set_l13d_rpt](../../cube_datamove/asc_set_l13d_rpt.md)和[asc_set_l13d_rpt_b](../../cube_datamove/asc_set_l13d_rpt_b.md)接口的`repeat_direction`参数类型。
+`asc_l13d_repeat_direction`用于表示3D img2col搬运的repeat迭代方向，作为[asc_set_l13d_rpt](../../cube_datamove/cube_load_aux_config/asc_set_l13d_rpt.md)和[asc_set_l13d_rpt_b](../../cube_datamove/cube_load_aux_config/asc_set_l13d_rpt_b.md)接口的`repeat_direction`参数类型。
 
 头文件路径为：`"c_api/defs/enum.h"`。
 
@@ -37,5 +37,5 @@ enum class asc_l13d_repeat_direction : uint8_t {
 
 | 枚举值 | 取值 | repeat迭代方向 | `repeat_stride`单位 |
 | --- | --- | --- | --- |
-| `M_DIRECTION` | 0 | 沿height（M）方向迭代。 | 16个元素。 |
-| `K_DIRECTION` | 1 | 沿width（K）方向迭代。 | `32 / sizeof(data_type)`个元素。其中，`data_type`为3D搬运接口源操作数的数据类型。 |
+| M_DIRECTION | 0 | 沿height（M）方向迭代。 | 16个元素。 |
+| K_DIRECTION | 1 | 沿width（K）方向迭代。 | `32 / sizeof(data_type)`个元素。其中，`data_type`为3D搬运接口源操作数的数据类型。 |

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_arithmetic_functions/__hdivx2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -108,7 +108,7 @@ bfloat16x2_t __hdivx2(const bfloat16x2_t x, const bfloat16x2_t y)
 ## 约束说明
 
 
-针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。
+针对Ascend 950PR&950DT系列产品，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。
 
 
 ## 调用示例
@@ -154,3 +154,11 @@ bfloat16x2_t __hdivx2(const bfloat16x2_t x, const bfloat16x2_t y)
         asc_vf_call<simt_hdivx2>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, (__gm__ bfloat16x2_t*)dst, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.25, 0.5), (2.5, -3.75), (-2, 1.25), (0.75, -0.25)
+y: (0.5, -2), (1.25, 3), (1.5, -1), (-0.5, 2.25)
+result: (-2.5, -0.25), (2, -1.25), (-1.33594, -1.25), (-1.5, -0.111328)
+```

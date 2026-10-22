@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_transpose_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -25,13 +25,14 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_transpose_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_permute_sel/asc_transpose.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_transpose_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_permute_sel/asc_transpose.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 用于实现16*16的二维矩阵数据块转置。
 
 ## 函数原型
 
 - 同步计算
+
   ```cpp
     __aicore__ inline void asc_transpose_sync(__ubuf__ int16_t* dst, __ubuf__ int16_t* src)
     __aicore__ inline void asc_transpose_sync(__ubuf__ uint16_t* dst, __ubuf__ uint16_t* src)

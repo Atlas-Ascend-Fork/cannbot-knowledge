@@ -799,6 +799,32 @@ class FixedArchiveHeaderTests(unittest.TestCase):
                         ))
             self.assertEqual(expected, module.mirror_card_paths(root, definition))
 
+    def test_source_frontmatter_is_stripped_before_mirroring(self) -> None:
+        module = self.load_module()
+        frontmatter = "---\nokftype: reference.api\ndependencies: []\n---\n"
+        self.assertEqual(
+            "# Title\n\nBody.\n",
+            module.strip_source_frontmatter(frontmatter + "# Title\n\nBody.\n"),
+        )
+        self.assertEqual(
+            "# Title\n",
+            module.strip_source_frontmatter(
+                "---\nokftype: reference.api\n---\n\n# Title\n"
+            ),
+        )
+        self.assertEqual(
+            "# Plain\n",
+            module.strip_source_frontmatter("# Plain\n"),
+        )
+        self.assertEqual(
+            "---\nnot a mapping\n---\n# Title\n",
+            module.strip_source_frontmatter("---\nnot a mapping\n---\n# Title\n"),
+        )
+        self.assertEqual(
+            "---\n- one\n- two\n---\n# Title\n",
+            module.strip_source_frontmatter("---\n- one\n- two\n---\n# Title\n"),
+        )
+
     def test_archive_sync_preserves_supporting_guide_and_verify_checks_expected_cards(self) -> None:
         module = self.load_module()
         with tempfile.TemporaryDirectory() as temporary:

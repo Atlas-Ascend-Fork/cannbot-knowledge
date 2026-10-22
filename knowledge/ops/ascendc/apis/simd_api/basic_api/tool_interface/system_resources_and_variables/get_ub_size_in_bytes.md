@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/system_resources_and_variables/GetUBSizeInBytes.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -40,7 +40,7 @@ __aicore__ inline constexpr uint32_t GetUBSizeInBytes()
 UB空间的大小。
 
 
-Ascend 950PR/Ascend 950DT架构下，返回常量248KB，单位为Byte。
+Ascend 950PR&950DT系列产品架构下，返回常量248KB，单位为Byte。
 
 
 ## 约束说明
@@ -64,7 +64,6 @@ if (totalLength > AscendC::GetUBSizeInBytes() / sizeof(half) / 2) {
 // 需要迭代的分片数量
 this->tileNum = this->totalLength / this->tileLength;
 ```
-
 
 - [GatherV2 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_v2_950.md)
 - [Embedding 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/embedding_950.md)

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/scalar_compute/WriteGmBypassDCache_ISASI.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -34,6 +34,9 @@ source_headers:
 使用场景：
 
 - 当多个核写入的数据落在同一条Cache Line内时，经过DCache的读写将以64B为粒度，可能引发多核数据随机覆盖问题（参考[DataCacheCleanAndInvalid调用示例3](../cache_control/data_cache_clean_and_invalid.md#example3_multi_core)）。使用该接口不经过DCache直接按操作数大小写GM，可避免此问题。
+
+    ![多核数据随机覆盖问题示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/write_gm_bypass_dcache.png)
+
 - 经过DCache写GM时可能导致多核间的数据不一致问题（详细原因请参考[Cache写策略与Cache一致性问题](../cache_control/system_cache_overview.md#zh-cn_topic_0000002583420201_section053731716357)），使用该接口不经过DCache直接向GM写数据，可避免此问题。
 
 由于WriteGmBypassDCache接口向GM写数据时不经过DCache，因此开发者需要考虑如下场景：

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceDataBlock.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -84,28 +84,28 @@ source_headers:
 支持的数据类型如下：
 
 
-- Ascend 950PR/Ascend 950DT，支持half、float。
+- Ascend 950PR&950DT系列产品，支持half、float。
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持half、float。
+- Atlas A3系列产品，支持half、float。
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持half、float。
+- Atlas A2系列产品，支持half、float。
 
 
-- Atlas 200I/500 A2 推理产品，支持half、float。
+- Atlas 200I/500 A2推理产品，支持half、float。
 
 
-- Atlas 推理系列产品AI Core，支持half、float。
+- Atlas推理系列产品AI Core，支持half、float。
 
 
-- Atlas 训练系列产品，支持half。
+- Atlas训练系列产品，支持half。
 
 
-- Kirin X90，支持half、float。
+- Kirin X90处理器系列产品，支持half、float。
 
 
-- Kirin 9030，支持half、float。
+- Kirin 9030处理器系列产品，支持half、float。
 
 
 目的操作数与源操作数的数据类型需要保持一致。
@@ -125,20 +125,20 @@ source_headers:
   
   - 针对如下型号，当参数mask或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
 
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
   
 
 
 
-- 对UB空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对UB空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算占用8KB UB。
   - tensor前n个数据连续计算不涉及8KB UB的占用。
 
@@ -146,15 +146,15 @@ source_headers:
 
 - 针对如下型号，若配置`mask[]/mask`参数后，存在某个DataBlock里的任何一个元素都不参与计算，不会有值写入对应目的操作数，保留目的操作数原有数据。
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  - Atlas A3系列产品
   
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  - Atlas A2系列产品
   
 
 
 
-- 针对Atlas 200I/500 A2 推理产品，若配置`mask[]/mask`参数后，存在某个DataBlock里的任何一个元素都不参与计算，则会以默认值填充对应目的操作数，默认值与`reduceType`和数据类型有关：
+- 针对Atlas 200I/500 A2推理产品，若配置`mask[]/mask`参数后，存在某个DataBlock里的任何一个元素都不参与计算，则会以默认值填充对应目的操作数，默认值与`reduceType`和数据类型有关：
   - `reduceType == ReduceType::SUM`时填充0；
   - `reduceType == ReduceType::MAX`，操作数数据类型为`float`时填充-inf，操作数数据类型为`half`时填充-65504；
   - `reduceType == ReduceType::MIN`，操作数数据类型为`float`时填充inf，操作数数据类型为`half`时填充65504。
@@ -162,7 +162,7 @@ source_headers:
 
 
 
-- 针对Ascend 950PR/Ascend 950DT，若配置`mask[]/mask`参数后，存在某个DataBlock里的任何一个元素都不参与计算，则会以默认值填充对应目的操作数，默认值与`reduceType`和数据类型有关：
+- 针对Ascend 950PR&950DT系列产品，若配置`mask[]/mask`参数后，存在某个DataBlock里的任何一个元素都不参与计算，则会以默认值填充对应目的操作数，默认值与`reduceType`和数据类型有关：
   - `reduceType == ReduceType::SUM`时填充0；
   - `reduceType == ReduceType::MAX`时填充-inf；
   - `reduceType == ReduceType::MIN`时填充inf。

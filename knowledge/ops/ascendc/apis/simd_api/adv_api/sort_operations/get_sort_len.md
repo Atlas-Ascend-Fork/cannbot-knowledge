@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/sort_operations/GetSortLen.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -55,7 +55,6 @@ sort数据的大小（单位为字节）。
 ```
 AscendC::GetSortLen<half>(128);
 ```
-
 
 - [Sort 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/sort_950.md)
 - [MoeDistributeDispatchSetup 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_setup_950.md)

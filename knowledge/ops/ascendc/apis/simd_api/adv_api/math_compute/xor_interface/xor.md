@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Xor_interface/Xor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -32,9 +32,9 @@ source_headers:
 
 计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002342367301.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002342367301.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002188545700.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002188545700.png)
 
 ```
 例如：3^5=6，即0000 0011^0000 0101 = 0000 0110
@@ -130,6 +130,5 @@ AscendC::Xor(dstLocal, src0Local, src1Local);
 输入数据(srcLocal): [ 1  2  3  4  5  6  7  8 ]
 输出数据(dstLocal): [ 3  1  6  3 14 10 22 27 ]
 ```
-
 
 - [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)

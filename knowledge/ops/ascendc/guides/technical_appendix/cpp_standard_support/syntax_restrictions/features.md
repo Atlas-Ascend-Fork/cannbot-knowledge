@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/technical_appendix/cpp_standard_support/syntax_restrictions/features.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T04:40:44Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -25,6 +25,7 @@ platforms: []
 -   不支持文件系统IO
 -   不支持标准库下的tuple及算法类运算（相关库函数调用需要标记aicore）
 -   支持lamda表达式，但在混合编程场景，需要显示标记lamda表达式的函数属性（`__aicore__`、`__simd_callee__`、`__simt_callee__`等）示例如下：
+
     ```cpp
     __simt_vf__ __launch_bounds__(THREAD_COUNT) inline void simt_lambda_by_value(
         __ubuf__ float* in, __ubuf__ float* out, uint32_t count, float scale, float bias)

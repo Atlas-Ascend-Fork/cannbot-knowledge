@@ -127,7 +127,7 @@ local_sources:
     description: 从官方持续更新归档恢复的 Ascend C 文档
     root: cann-docs-raw
     fetch_script: get_resources.sh
-    archive_url: https://ascend-ci.obs.cn-north-4.myhuaweicloud.com/package/doc/Ascend-cann-docs-examples.tar.gz
+    archive_url: https://ascend.devcloud.huaweicloud.com/artifactory/cann-run-mirror/cann-docs/master/20261020/Ascend-cann-docs-raw_master.tar.gz
     mirror:
       source_root: asc-devkit/docs/zh
       api_roots: [api]

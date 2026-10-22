@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_index/asc_arange.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -36,7 +36,7 @@ source_headers:
 以int16_t数据类型，起始值`value=10`为例：
 递增索引为{10, 11, 12, 13, ... 135, 136, 137}，递减索引为{137, 136, 135, 134, ... 12, 11, 10}。
 
-本接口仅在AIV上生效。
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -70,11 +70,11 @@ __simd_callee__ inline vector_half asc_arange(half value)
 ### 递减模式
 
 ```c
-// 通过引用参数输出结果
+// 通过引用参数输出结果（占位符形式）
 __simd_callee__ inline void asc_arange_descend(vector_<dtype>& dst,
                                                <dtype> value)
 
-// 通过函数返回值返回结果
+// 通过函数返回值返回结果（占位符形式）
 __simd_callee__ inline vector_<dtype> asc_arange_descend(<dtype> value)
 ```
 
@@ -100,19 +100,19 @@ __simd_callee__ inline vector_half asc_arange_descend(half value)
 
 **表1** 参数说明
 
-| 参数名       | 输入/输出 | 描述                |
+| 参数名 | 输入/输出 | 描述 |
 | --------- | ----- | ----------------- |
-| dst       | 输出    | 目的操作数（矢量数据寄存器）。 |
-| value     | 输入    | 源操作数（标量），dtype须与dst一致。作为递增序列的起点，序列第0个元素等于value，后续元素按1递增。取值范围为该dtype的可表示范围。 |
+| dst | 输出 | 目的操作数（矢量数据寄存器）。 |
+| value | 输入 | 源操作数（标量），dtype须与dst一致。作为递增序列的起点，序列第0个元素等于value，后续元素按1递增。取值范围为该dtype的可表示范围。 |
 
 ### 递减模式
 
 **表2** 参数说明
 
-| 参数名       | 输入/输出 | 描述                |
+| 参数名 | 输入/输出 | 描述 |
 | --------- | ----- | ----------------- |
-| dst       | 输出    | 目的操作数（矢量数据寄存器）。 |
-| value     | 输入    | 源操作数（标量），dtype须与dst一致。作为递减序列的起点，序列第0个元素等于`value + VL_T - 1`，后续元素按1递减。取值范围为该dtype的可表示范围。 |
+| dst | 输出 | 目的操作数（矢量数据寄存器）。 |
+| value | 输入 | 源操作数（标量），dtype须与dst一致。作为递减序列的起点，序列第0个元素等于`value + VL_T - 1`，后续元素按1递减。取值范围为该dtype的可表示范围。 |
 
 矢量数据寄存器的详细说明请参见[reg数据类型定义](../../defs/type/data_type_definition.md)。
 
@@ -123,8 +123,7 @@ __simd_callee__ inline vector_half asc_arange_descend(half value)
 
 ## 约束说明
 
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - 整型dtype（int8_t、int16_t、int32_t）结果在超出该dtype可表示范围时回绕（wrap-around），不触发异常。例如int8_t取value=127时，序列前128个元素依次为127、−128、−127、…、-2；value=−128时，序列前128个元素依次为−128、−127、…、−1。
 
 ## 调用示例
@@ -132,10 +131,10 @@ __simd_callee__ inline vector_half asc_arange_descend(half value)
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
-bisheng example.asc -o main --npu-arch=dav-3510; ./main
+bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
 
 
@@ -215,6 +214,5 @@ int main()
     return 0;
 }
 ```
-
 
 - [AscArange：固定 reference 调用约束](../../../../../guides/regbase/asc_arange_reference_contract.md)

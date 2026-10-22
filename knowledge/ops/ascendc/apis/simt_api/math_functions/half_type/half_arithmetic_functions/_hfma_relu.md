@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_arithmetic_functions/__hfma_relu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -126,3 +126,12 @@ x \* y + z的值，若结果为负数，置为0。本接口受全局饱和模式
         dst[idx] = __hfma_relu(x[idx], y[idx], z[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.25, 0.5, 2.5, -3.75
+y: -0.5, 0.5, 1.25, 2.0
+z: 1.0, -1.0, 0.5, 2.5
+result: 1.625, 0, 3.625, 0
+```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/cross_gen_migration_guide/ascend_c_api_compatibility.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -25,9 +25,8 @@ platforms: []
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/api_hierarchy.png "Ascend-C-API层次结构")
 
 
-**表1**  Ascend C API兼容策略
+**表1**  Ascend C API兼容策略<a name="table18109729593"></a>
 
-<a name="table18109729593"></a>
 <table><thead align="left"><tr id="row810952912919"><th class="cellrowborder" valign="top" width="18.01%" id="mcps1.2.3.1.1"><p id="p141091429991"><a name="p141091429991"></a><a name="p141091429991"></a>API层级</p>
 </th>
 <th class="cellrowborder" valign="top" width="81.99%" id="mcps1.2.3.1.2"><p id="p0109162915915"><a name="p0109162915915"></a><a name="p0109162915915"></a>兼容策略</p>

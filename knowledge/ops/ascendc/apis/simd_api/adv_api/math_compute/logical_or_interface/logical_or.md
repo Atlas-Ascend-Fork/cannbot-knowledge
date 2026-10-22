@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/LogicalOr_interface/LogicalOr.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 按元素进行或操作。当输入的数据类型不是bool时，零被视为False，非零数据被视为True。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002386255958.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002386255958.png)
 
 ## 函数原型
 
@@ -86,6 +86,5 @@ AscendC::LogicalOr(dst, src0, src1, count);
 [ True,  True,  False,  True,  True,  False,  True,  True,  False,  True,
   True,  False,  True,  True,  False,  True,  True,  False,  ...  False]
 ```
-
 
 - [BitwiseOrTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)

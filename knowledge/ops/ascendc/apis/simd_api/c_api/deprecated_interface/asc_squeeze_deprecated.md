@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_squeeze_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -80,6 +80,5 @@ asc_loadalign(src, src_addr); // src_addr是外部输入的Unified Buffer（UB�
 vector_int8_t dst;
 asc_squeeze_v2(dst, src, mask);
 ```
-
 
 - [AscSqueezeV2：固定 reference 调用约束](../../../../guides/regbase/asc_squeeze_deprecated_reference_contract.md)

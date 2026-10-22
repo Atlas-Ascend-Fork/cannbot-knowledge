@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/GET_TILING_DATA.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -23,7 +23,7 @@ platforms:
 
 ## 功能说明<a name="zh-cn_topic_0000001526206862_section212607105720"></a>
 
-用于获取算子kernel入口函数传入的Tiling信息，并填入注册的TilingData结构体中，此函数会以宏展开的方式进行编译。对应的算子host实现中需要定义TilingData结构体，实现并注册计算TilingData的Tiling函数。如果用户通过[TilingData结构注册](../../../utils_api/tiling_data_structure_register/tiling_data_struct_register.md)注册了多个TilingData结构体，使用该接口返回默认注册的结构体。
+用于获取算子核函数（Kernel）入口函数传入的Tiling信息，并填入注册的TilingData结构体中，此函数会以宏展开的方式进行编译。对应的算子host实现中需要定义TilingData结构体，实现并注册计算TilingData的Tiling函数。如果用户通过[TilingData结构注册](../../../utils_api/tiling_data_structure_register/tiling_data_struct_register.md)注册了多个TilingData结构体，使用该接口返回默认注册的结构体。
 
 ## 函数原型<a name="zh-cn_topic_0000001526206862_section1630753514297"></a>
 
@@ -61,8 +61,8 @@ GET_TILING_DATA(tiling_data, tiling_arg)
 
 ## 约束说明<a name="zh-cn_topic_0000001526206862_section65498832"></a>
 
--   本函数需在算子kernel代码处使用，并且传入的tiling\_data参数不需要声明类型。
--   暂不支持kernel直调工程。
+-   本函数需在算子核函数（Kernel）代码处使用，并且传入的tiling\_data参数不需要声明类型。
+-   暂不支持核函数（Kernel）直调工程。
 
 ## 调用示例<a name="zh-cn_topic_0000001526206862_section97001499599"></a>
 
@@ -92,7 +92,6 @@ ge::graphStatus TilingFunc(gert::TilingContext* context)
     // 其他代码逻辑
 }
 ```
-
 
 - [DequantBias A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dequant_bias.md)
 - [HardswishBackwardV2 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/hardswish_backward_v2_950.md)

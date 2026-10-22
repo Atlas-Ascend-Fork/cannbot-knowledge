@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_gm2l1_sync_highdim_split_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,9 +24,9 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_gm2l1_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_gm2l1/asc_copy_gm2l1_highdim_split_arch_3510.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_gm2l1_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_gm2l1_highdim_split_arch_3510.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
-将数据从Global Memory搬运到L1 Buffer，数据搬运时格式和内容保持不变。高维切分是指能够通过配置数据块个数、单个数据块长度、地址偏移等搬运参数实现非连续搬运。并且此接口支持在搬运过程中按通道padding模式对32字节粒度的数据插入或移除padding。其中padding值需要通过[asc_set_gm2l1_padding](../cube_datamove/asc_set_gm2l1_padding.md)设置。
+将数据从Global Memory搬运到L1 Buffer，数据搬运时格式和内容保持不变。高维切分是指能够通过配置数据块个数、单个数据块长度、地址偏移等搬运参数实现非连续搬运。并且此接口支持在搬运过程中按通道padding模式对32字节粒度的数据插入或移除padding。其中padding值需要通过[asc_set_gm2l1_padding](../cube_datamove/cube_load_aux_config/asc_set_gm2l1_padding.md)设置。
 
 本接口仅在AIC上执行有效。
 
@@ -52,7 +52,7 @@ __aicore__ inline void asc_copy_gm2l1_sync(__cbuf__ void* dst, __gm__ void* src,
 | src | 输入 | 源操作数，存储位置为GM。起始地址需要按照1字节对齐。 |
 | n_burst | 输入 | 搬运的数据块的个数。取值范围：[1, $2^{17}-1$]。 |
 | len_burst | 输入 | 搬运的每个数据块长度，单位32字节。取值范围：[1, $2^{17}-1$]。 |
-| pad_func_mode | 输入 | 搬运过程中的填充或删除数据模式，取值范围：[0, 8]。填充模式是指在目的的数据中插入padding值，padding值需要通过[asc_set_gm2l1_padding](../cube_datamove/asc_set_gm2l1_padding.md)设置。删除模式是指在从搬运的每个32字节中移除部分数据。<br>&nbsp;&nbsp;&bull; `0`：不做padding；<br>&nbsp;&nbsp;&bull; `1`：每有1个字节的数据，插入31个padding值，其中插入的每个padding的位宽为b8；<br>&nbsp;&nbsp;&bull; `2`：每有2个字节的数据，插入15个padding值，其中插入的每个padding的位宽为b16；<br>&nbsp;&nbsp;&bull; `3`：每有4个字节的数据，插入14个padding值，其中插入的每个padding的位宽为b16；<br>&nbsp;&nbsp;&bull; `4`：每有8个字节的数据，插入12个padding值，其中插入的每个padding的位宽为b16； <br>&nbsp;&nbsp;&bull; `5`：每有16个字节的数据，插入8个padding值，其中插入的每个padding的位宽为b16；<br>&nbsp;&nbsp;&bull; `6`：每有32个字节的数据，移除28个最高有效位数据，只保留4个最低有效位字节；<br>&nbsp;&nbsp;&bull; `7`：每有32个字节的数据，移除24个最高有效位数据，只保留8个最低有效位字节；<br>&nbsp;&nbsp;&bull; `8`：每有32个字节的数据，移除16个最高有效位数据，只保留16个最低有效位字节。 |
+| pad_func_mode | 输入 | 搬运过程中的填充或删除数据模式，取值范围：[0, 8]。填充模式是指在目的的数据中插入padding值，padding值需要通过[asc_set_gm2l1_padding](../cube_datamove/cube_load_aux_config/asc_set_gm2l1_padding.md)设置。删除模式是指在从搬运的每个32字节中移除部分数据。<br>&nbsp;&nbsp;&bull; `0`：不做padding；<br>&nbsp;&nbsp;&bull; `1`：每有1个字节的数据，插入31个padding值，其中插入的每个padding的位宽为b8；<br>&nbsp;&nbsp;&bull; `2`：每有2个字节的数据，插入15个padding值，其中插入的每个padding的位宽为b16；<br>&nbsp;&nbsp;&bull; `3`：每有4个字节的数据，插入14个padding值，其中插入的每个padding的位宽为b16；<br>&nbsp;&nbsp;&bull; `4`：每有8个字节的数据，插入12个padding值，其中插入的每个padding的位宽为b16； <br>&nbsp;&nbsp;&bull; `5`：每有16个字节的数据，插入8个padding值，其中插入的每个padding的位宽为b16；<br>&nbsp;&nbsp;&bull; `6`：每有32个字节的数据，移除28个最高有效位数据，只保留4个最低有效位字节；<br>&nbsp;&nbsp;&bull; `7`：每有32个字节的数据，移除24个最高有效位数据，只保留8个最低有效位字节；<br>&nbsp;&nbsp;&bull; `8`：每有32个字节的数据，移除16个最高有效位数据，只保留16个最低有效位字节。 |
 | src_stride | 输入 | 源操作数相邻数据块之间的间隔（即前一个数据块起始地址与后一个数据块起始地址的差值），取值范围：[0, $2^{36}-1$]，单位32字节。<br>&nbsp;&nbsp;&bull; n_burst = 1时，`src_stride`无意义，设置为0即可。 |
 | dst_stride | 输入 | 目的操作数相邻数据块之间的间隔（即前一个数据块起始地址与后一个数据块起始地址的差值），取值范围：[0, $2^{17}-1$]，单位32字节。<br>&nbsp;&nbsp;&bull; n_burst = 1时，`dst_stride`无意义，设置为0即可。 |
 
@@ -79,7 +79,7 @@ PIPE_MTE2
 - 本接口仅在AIC上生效，非AIC调用直接返回。
 - `dst`起始地址需32字节对齐（L1 Buffer对齐要求），否则会导致搬运异常。
 - `src`起始地址需1字节对齐（Global Memory对齐要求），否则会导致搬运异常。
-- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
 - L1 Buffer容量上限：L1 Buffer总容量512KB，dst偏移量与搬运大小之和不可越界，否则触发异常。
 
 ### 高维切分数据搬运约束
@@ -94,14 +94,14 @@ PIPE_MTE2
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng examples.asc -o main --npu-arch=dav-3510 && ./main
 ```
 
 
-样例中A、B、C矩阵的shape均为[128,128]，Bias矩阵的shape为[1,128]。Bias通过高维切分搬运接口按两个256字节块从GM搬运到L1 Buffer，再调用[asc_copy_l12bt](../cube_datamove/asc_copy_l12bt/asc_copy_l12bt_arch_3510.md)搬运到BiasTable Buffer，最后由MMAD完成`A × B + Bias`计算。样例单核占用64.5KB L1 Buffer、32KB L0A Buffer、32KB L0B Buffer、64KB L0C Buffer和512字节BiasTable Buffer。样例依次复用`EVENT_ID0`完成MTE2到MTE1、MTE1到M、M到FIX的同步。
+样例中A、B、C矩阵的shape均为[128,128]，Bias矩阵的shape为[1,128]。Bias通过高维切分搬运接口按两个256字节块从GM搬运到L1 Buffer，再调用[asc_copy_l12bt](../cube_datamove/cube_compute_load/asc_copy_l12bt_arch_3510.md)搬运到BiasTable Buffer，最后由MMAD完成`A × B + Bias`计算。样例单核占用64.5KB L1 Buffer、32KB L0A Buffer、32KB L0B Buffer、64KB L0C Buffer和512字节BiasTable Buffer。样例依次复用`EVENT_ID0`完成MTE2到MTE1、MTE1到M、M到FIX的同步。
 
 ```cpp
 #include <cstdint>

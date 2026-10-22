@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_sys_virtual_base.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -26,7 +26,7 @@ source_headers:
 
 头文件路径为：`"c_api/utils/sys_var.h"`。
 
-读取系统虚拟基地址特殊寄存器的值并按`int64_t`返回，该寄存器为只读特殊寄存器，存储当前核上下文的系统虚拟基地址，由系统在kernel启动前按核配置完成。系统虚拟基地址用于在kernel内将相对偏移量转换为系统虚拟地址，常用于地址推导、跨核地址对齐等需要系统虚拟基地址参与的场景。
+读取系统虚拟基地址特殊寄存器的值并按`int64_t`返回，该寄存器为只读特殊寄存器，存储当前核上下文的系统虚拟基地址，由系统在核函数（Kernel）启动前按核配置完成。系统虚拟基地址用于在核函数（Kernel）内将相对偏移量转换为系统虚拟地址，常用于地址推导、跨核地址对齐等需要系统虚拟基地址参与的场景。
 
 ## 函数原型
 
@@ -56,7 +56,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

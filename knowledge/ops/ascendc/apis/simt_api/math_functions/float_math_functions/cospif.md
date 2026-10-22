@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/cospif.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据与π相乘的余弦值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002516816349.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002516816349.png)
 
 ## 函数原型
 
@@ -45,12 +45,12 @@ inline float cospif(float x)
 ## 返回值说明
 
 输入数据与π相乘的余弦值。
-
--   当x\*π超出float最大范围，返回值为nan。
--   当x\*π超出float最小范围，返回值为nan。
--   当x为inf时，返回值为nan。
--   当x为-inf时，返回值为nan。
--   当x为nan时，返回值为nan。
+- 当输入x为有限值且Abs\(x\)\>=2^24时，直接返回1.0。
+- 当输入x为整数且|Abs\(x\)\<2^24时，x为偶数返回1.0，x为奇数返回-1.0。
+- 当输入x=n+0.5，返回值为0.0。
+- 当x为inf时，返回值为nan。
+- 当x为-inf时，返回值为nan。
+- 当x为nan时，返回值为nan。
 
 ## 约束说明
 
@@ -96,6 +96,6 @@ inline float cospif(float x)
 输入输出示例如下：
 
 ```
-x：0.25, 0.75, 1.25, 1.75
-result: 0.7071068 -0.7071068 -0.7071066 0.707107
+x: 0.25, 0.75, 1.25, 1.75
+result: 0.7071068, -0.7071068, -0.7071066, 0.707107
 ```

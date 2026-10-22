@@ -11,8 +11,9 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/aux_data_structures/TensorDesc/GetDim.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
+- '950'
 - a2
 - a3
 - 310p
@@ -47,8 +48,6 @@ uint64_t GetDim()
 ## 调用示例<a name="zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section320753512363"></a>
 
 参考[调用示例](get_data_ptr.md#zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section320753512363)。
-
-
 
 - [ChunkCat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat.md)
 - [FusedSgd A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/fused_sgd.md)

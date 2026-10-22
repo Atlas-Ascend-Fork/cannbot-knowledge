@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/mask_operations/ResetMask.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -57,7 +57,6 @@ AscendC::ResetMask();
 ```
 
 更多示例请参考[接口外设置Mask](../simd_compute/mask.md#接口外设置mask)。
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [ClippedSwiglu A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu.md)

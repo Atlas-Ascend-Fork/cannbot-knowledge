@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_math_functions/h2tanh.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据各元素的三角函数双曲正切值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002576421059.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002576421059.png)
 
 ## 函数原型
 
@@ -83,3 +83,10 @@ inline bfloat16x2_t h2tanh(bfloat16x2_t x)
         dst[idx] = h2tanh(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.25, 0.5), (2.5, -3.75), (-2, 1.25), (0.75, -0.25)
+result: (-0.847656, 0.462891), (0.988281, -1), (-0.964844, 0.847656), (0.636719, -0.245117)
+```

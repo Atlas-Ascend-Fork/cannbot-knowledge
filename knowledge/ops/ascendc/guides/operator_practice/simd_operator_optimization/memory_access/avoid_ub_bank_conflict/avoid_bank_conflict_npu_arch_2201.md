@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/avoid_ub_bank_conflict/avoid_bank_conflict_npu_arch_2201.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -21,10 +21,10 @@ platforms: []
 >[!NOTE]说明 
 >该性能优化建议适用于如下产品型号：
 >
->- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+>- Atlas A3系列产品
 >
 >
->- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+>- Atlas A2系列产品
 >
 
 【描述】为了提高数据访问的效率和吞吐量，Unified Buffer（UB）采用了bank（大小相等的内存模块）结构设计。UB总大小为192K，划分为48个bank。每个bank由128行组成，每行长度为32B。这48个bank进一步组织为16个bank group，每个bank group包含3个bank，例如bank15、bank31和bank47组成一个bank group。
@@ -53,9 +53,8 @@ bank冲突主要可以分为以下三种场景：
 
     Vector指令的源操作数src和目的操作数dst同时读写到同一个bank时造成读写冲突，具体分析如下：
 
-    **表1**  读写冲突示例
+    **表1**  读写冲突示例<a name="table06741342154717"></a>
 
-    <a name="table06741342154717"></a>
     <table><thead align="left"><tr id="row1767434244710"><th class="cellrowborder" valign="top" width="5.9988002399520095%" id="mcps1.2.7.1.1"><p id="p17674144211470"><a name="p17674144211470"></a><a name="p17674144211470"></a>序号</p>
     </th>
     <th class="cellrowborder" valign="top" width="9.948010397920417%" id="mcps1.2.7.1.2"><p id="p9674114213473"><a name="p9674114213473"></a><a name="p9674114213473"></a>src地址</p>
@@ -103,9 +102,8 @@ bank冲突主要可以分为以下三种场景：
 
     Vector指令目的操作数dst对应的8个DataBlock（block0-block7）同时写到一个bank group时造成写写冲突，具体分析如下：
 
-    **表2**  写写冲突示例
+    **表2**  写写冲突示例<a name="table11121346153814"></a>
 
-    <a name="table11121346153814"></a>
     <table><thead align="left"><tr id="row212044623812"><th class="cellrowborder" valign="top" width="5.789726356216995%" id="mcps1.2.9.1.1"><p id="p13120184619386"><a name="p13120184619386"></a><a name="p13120184619386"></a>序号</p>
     </th>
     <th class="cellrowborder" valign="top" width="7.959673547767644%" id="mcps1.2.9.1.2"><p id="p2012004612384"><a name="p2012004612384"></a><a name="p2012004612384"></a>dst地址</p>
@@ -164,9 +162,8 @@ bank冲突主要可以分为以下三种场景：
 -   读读冲突
     -   Vector指令多个源操作数同时读到同一个bank group时造成读读冲突，具体分析如下：
 
-        **表3**  双src场景读读冲突示例
+        **表3**  双src场景读读冲突示例<a name="table1318881512255"></a>
 
-        <a name="table1318881512255"></a>
         <table><thead align="left"><tr id="row8188715102517"><th class="cellrowborder" valign="top" width="6.5786842631473705%" id="mcps1.2.7.1.1"><p id="p111881154254"><a name="p111881154254"></a><a name="p111881154254"></a>序号</p>
         </th>
         <th class="cellrowborder" valign="top" width="12.787442511497702%" id="mcps1.2.7.1.2"><p id="p14188915172513"><a name="p14188915172513"></a><a name="p14188915172513"></a>src0地址</p>
@@ -212,9 +209,8 @@ bank冲突主要可以分为以下三种场景：
 
     -   Vector指令某一个源操作数对应的8个DataBlock（block0-block7）读到同一个bank group时造成读读冲突，具体分析如下：
 
-        **表4**  单src场景读读冲突示例
+        **表4**  单src场景读读冲突示例<a name="table332972534717"></a>
 
-        <a name="table332972534717"></a>
         <table><thead align="left"><tr id="row832822516476"><th class="cellrowborder" valign="top" width="6.117919521374119%" id="mcps1.2.9.1.1"><p id="p157111614175011"><a name="p157111614175011"></a><a name="p157111614175011"></a>序号</p>
         </th>
         <th class="cellrowborder" valign="top" width="11.560358969410403%" id="mcps1.2.9.1.2"><p id="p33287255478"><a name="p33287255478"></a><a name="p33287255478"></a>src地址</p>
@@ -280,9 +276,8 @@ bank冲突主要可以分为以下三种场景：
 
 -   **优化计算逻辑**
 
-    对一个shape为\(8, 16, 16\)的输入做\(1, 0, 2\)的transpose操作，输出shape为\(16, 8, 16\)。通过将计算逻辑由“跳读，连续写”修改为“连续读，跳写”可避免冲突问题。实现方案对比如下：
+    对一个shape为\(8, 16, 16\)的输入做\(1, 0, 2\)的transpose操作，输出shape为\(16, 8, 16\)。通过将计算逻辑由“跳读，连续写”修改为“连续读，跳写”可避免冲突问题。实现方案对比如下：<a name="table12921549195512"></a>
 
-    <a name="table12921549195512"></a>
     <table><thead align="left"><tr id="row1229364945511"><th class="cellrowborder" valign="top" width="6.813978389954251%" id="mcps1.1.4.1.1"><p id="p2081249145715"><a name="p2081249145715"></a><a name="p2081249145715"></a>实现方案</p>
     </th>
     <th class="cellrowborder" valign="top" width="42.6652389759564%" id="mcps1.1.4.1.2"><p id="p2029374985519"><a name="p2029374985519"></a><a name="p2029374985519"></a>原始实现</p>

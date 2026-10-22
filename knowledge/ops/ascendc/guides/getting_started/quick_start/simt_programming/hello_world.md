@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/quick_start/simt_programming/hello_world.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -27,6 +27,7 @@ platforms: []
 - **Device端核函数（Kernel）实现**：
 
     后缀名为`*.asc`的代码文件包含Host端与Device端代码，其Device端部分示例如下：
+
     ```cpp
     __global__ void hello_world()
     {
@@ -39,25 +40,54 @@ platforms: []
 - **Host端代码实现**：
 
     Host端通过<<<>>>语法糖调用Device端代码。
+
     ```cpp
     int32_t main(int argc, char const *argv[])
     {
         ...
-        // 4. Configure kernel launch parameters
-        constexpr uint32_t blocks_per_grid     = 2;   // Number of thread blocks (Grid size)
-        constexpr uint32_t threads_per_block    = 32;  // Number of threads per block (Block size)
-        constexpr uint32_t dyn_ubuf_size = 0;   // No dynamic memory required in this sample
-
-        // 5. Launch kernel <<<grid_dim, block_dim, dynamic_memory_size, stream>>>
-        hello_world<<<blocks_per_grid, threads_per_block, dyn_ubuf_size, stream>>>();
+        // Launch kernel <<<grid_dim, block_dim, dynamic_memory_size, stream>>>
+        // grid_dim : Number of thread blocks (Grid size)
+        // block_dim : Number of threads per block (Block size)
+        // dynamic_memory_size : Dynamic unified buffer size. Default to 0 in this example
+        // stream : Runtime stream, pass nullptr to use default stream
+        hello_world<<<2, 32, 0, nullptr>>>();
         // Wait for kernel execution to complete
         ...
     }
     ```
 
 - **算子编译与运行**：
+
+    本样例完整代码（hello_world.asc）如下：
+
+    ```cpp
+    #include "acl/acl.h"
+    #include "simt_api/asc_simt.h"
+    #include "utils/debug/asc_printf.h"
+
+    __global__ void hello_world()
+    {
+        if (threadIdx.x < 3) {
+            printf("[blockIdx (%u/%u)][threadIdx (%u/%u)]: Hello World!\n", blockIdx.x, gridDim.x, threadIdx.x, blockDim.x);
+        }
+    }
+
+    int32_t main(int argc, char const* argv[])
+    {
+        aclInit(nullptr);
+        aclrtSetDevice(0);
+        hello_world<<<2, 32, 0, nullptr>>>();
+        aclrtSynchronizeDevice();
+        aclrtResetDevice(0);
+        aclFinalize();
+        return 0;
+    }
+    ```
+
+    运行如下命令进行编译运行：
+
     ```bash
-    bisheng hello_world.asc --npu-arch=dav-3510 -o demo --enable-simt 
+    bisheng hello_world.asc --npu-arch=dav-3510 -o demo --enable-simt
     ./demo
     ```
 
@@ -66,7 +96,7 @@ platforms: []
     > [!NOTE]说明
     > - 该样例支持以下型号：
     >     
-    >     - Ascend 950PR/Ascend 950DT
+    >     - Ascend 950PR&950DT系列产品
     >     
     > - 编译选项`--npu-arch`用于指定NPU架构版本，`dav-`后为架构版本号，请替换为您实际使用的版本。各AI处理器型号对应的架构版本号请通过[AI处理器型号和 \_\_NPU\_ARCH\_\_ 的对应关系](../../../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)查询。
     > - 编译选项`--enable-simt`用于启用SIMT编程场景。

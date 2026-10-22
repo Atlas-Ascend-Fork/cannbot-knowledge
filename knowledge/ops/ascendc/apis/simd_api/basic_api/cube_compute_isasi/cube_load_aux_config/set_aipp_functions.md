@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_load_aux_config/SetAippFunctions.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -84,9 +84,9 @@ source_headers:
 
 - **色域转换：** RGB格式转换为YUV格式，或YUV格式转换为RGB格式。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001938335310.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000001938335310.png)
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001938176178.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000001938176178.png)
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -153,16 +153,16 @@ source_headers:
 | dtcMeanCh0 | 输入 | 计算公式内的mean值，channel0，数据类型为uint8_t，默认值为0。 |
 | dtcMeanCh1 | 输入 | 计算公式内的mean值，channel1，数据类型为uint8_t，默认值为0。 |
 | dtcMeanCh2 | 输入 | 计算公式内的mean值，channel2，数据类型为uint8_t，默认值为0。 |
-| dtcMinCh0 | 输入 | 计算公式内的min值，channel0，数据类型为half，默认值为0。<br>Atlas 200I/500 A2 推理产品不支持配置该参数。 |
-| dtcMinCh1 | 输入 | 计算公式内的min值，channel1，数据类型为half，默认值为0。<br>Atlas 200I/500 A2 推理产品不支持配置该参数。 |
-| dtcMinCh2 | 输入 | 计算公式内的min值，channel2，数据类型为half，默认值为0。<br>Atlas 200I/500 A2 推理产品不支持配置该参数。 |
+| dtcMinCh0 | 输入 | 计算公式内的min值，channel0，数据类型为half，默认值为0。<br>Atlas 200I/500 A2推理产品不支持配置该参数。 |
+| dtcMinCh1 | 输入 | 计算公式内的min值，channel1，数据类型为half，默认值为0。<br>Atlas 200I/500 A2推理产品不支持配置该参数。 |
+| dtcMinCh2 | 输入 | 计算公式内的min值，channel2，数据类型为half，默认值为0。<br>Atlas 200I/500 A2推理产品不支持配置该参数。 |
 | dtcVarCh0 | 输入 | 计算公式内的var值，channel0，数据类型为half，默认值为1.0。 |
 | dtcVarCh1 | 输入 | 计算公式内的var值，channel1，数据类型为half，默认值为1.0。 |
 | dtcVarCh2 | 输入 | 计算公式内的var值，channel2，数据类型为half，默认值为1.0。 |
 | dtcRoundMode | 输入 | 控制dtc做数据类型转换的模式，数据类型为uint32_t，默认值为0。<br>0：四舍五入到最接近的整数值（C语言round）。<br>1：四舍五入到最接近的偶数（C语言rint）。 |
 
 > [!NOTE]说明
-> 参数dtcRoundMode，仅在Atlas 200I/500 A2 推理产品支持配置。
+> 参数dtcRoundMode，仅在Atlas 200I/500 A2推理产品支持配置。
 
 **表7** AippChannelPaddingParams结构体内参数说明<a name="table163681812917"></a>
 
@@ -210,6 +210,7 @@ source_headers:
 | YUV400 | 无对齐要求 | - |
 
 - 对于XRGB输入格式的数据，芯片会默认丢弃第四个通道的数据输出RGB格式的数据。如果X在channel0的场景下，X通道后移功能必须使能，将输入通道转换为RGBX；反之如果X在channel3的场景下，X通道后移功能必须不使能，以输出RGB格式的数据。
+
 
 
 ## 调用示例<a name="section6461234123118"></a>

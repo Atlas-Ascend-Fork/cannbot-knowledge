@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/synchronization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -26,7 +26,7 @@ SIMT是一种单指令多线程的编程模型，该编程模型旨在通过多�
 
 | 类型 | 代表接口 | 典型用途 |
 | --- | --- | --- |
-| 同步屏障 | `asc_syncthreads` | Thread Block内阶段同步，例如先写UB，再统一读取。 |
+| 同步屏障 | `asc_syncthreads` | Thread Block内阶段同步，例如先写Unified Buffer（UB），再统一读取。 |
 | 内存栅栏 | `asc_threadfence_block`、`asc_threadfence` | 发布数据或标志前，约束当前Thread的内存访问顺序和可见性。 |
 
 同步接口和内存栅栏接口的详细语义、作用范围、使用示例及注意事项，请参见[同步与内存栅栏简介](../../../../apis/simt_api/sync_and_memory_fence/sync_and_memory_fence_intro.md)。

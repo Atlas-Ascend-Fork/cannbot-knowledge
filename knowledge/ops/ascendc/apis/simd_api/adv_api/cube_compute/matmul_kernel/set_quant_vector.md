@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetQuantVector.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -45,13 +45,13 @@ Matmul量化场景：在Matmul计算时，左、右矩阵的输入为half或bflo
     ```
 
     
-    -   Atlas 200I/500 A2 推理产品暂不支持量化参数的存储位置为L1 Buffer。
+    -   Atlas 200I/500 A2推理产品暂不支持量化参数的存储位置为L1 Buffer。
     
     
-    -   Atlas 推理系列产品AI Core暂不支持量化参数的存储位置为L1 Buffer。
+    -   Atlas推理系列产品AI Core暂不支持量化参数的存储位置为L1 Buffer。
     
     
-    -   Kirin X90暂不支持量化参数的存储位置为L1 Buffer。
+    -   Kirin X90处理器系列产品暂不支持量化参数的存储位置为L1 Buffer。
     
 
 ## 参数说明
@@ -106,7 +106,6 @@ if (tiling.isBias) {
 mm.IterateAll(gm_c);
 mm.End();
 ```
-
 
 - [QuantMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/quant_matmul_950.md)
 - [TransposeBatchMatMul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul.md)

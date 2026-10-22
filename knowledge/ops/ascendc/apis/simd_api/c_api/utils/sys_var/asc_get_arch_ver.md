@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_arch_ver.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -30,13 +30,13 @@ source_headers:
 
 不同型号服务器有不同的架构版本号取值，如下所示：
 
-- Ascend 950PR/Ascend 950DT：3510
+- Ascend 950PR&950DT系列产品：3510
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品：2201
+- Atlas A3系列产品：2201
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品：2201
+- Atlas A2系列产品：2201
 
 
 ## 函数原型
@@ -63,16 +63,16 @@ PIPE_S
 
 ## 约束说明
 
-在调用asc_get_arch_ver接口前，需先定义core_version,调用asc_get_arch_ver接口后core_version会变成相对应架构版本号的值。
+在调用asc_get_arch_ver接口前，需先定义core_version，调用asc_get_arch_ver接口后core_version会变成相对应架构版本号的值。
 
 ## 调用示例
 
-本示例模拟算子部署诊断场景：Kernel读取架构版本并写入GM，Host侧检查返回值是否属于当前接口支持的架构。返回值可用于确认编译产物的目标架构。
+本示例模拟算子部署诊断场景：核函数（Kernel）读取架构版本并写入GM，Host侧检查返回值是否属于当前接口支持的架构。返回值可用于确认编译产物的目标架构。
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
@@ -93,7 +93,7 @@ constexpr uint32_t BYTES = ELEMENTS * sizeof(uint32_t);
 
 /*
  * 本示例说明：
- * - Kernel调用asc_get_arch_ver获取当前架构版本号。
+ * - 核函数（Kernel）调用asc_get_arch_ver获取当前架构版本号。
  * - 通过Scalar将版本号写入GM，并刷新对应的Cache Line。
  * - Host侧读取并检查版本号，辅助确认算子二进制的目标架构。
  */

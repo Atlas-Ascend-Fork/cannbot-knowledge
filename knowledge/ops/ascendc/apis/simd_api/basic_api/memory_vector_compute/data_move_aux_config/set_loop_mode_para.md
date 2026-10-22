@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move_aux_config/SetLoopModePara.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -93,7 +93,7 @@ __aicore__ inline void SetLoopModePara(const LoopModeParams& loopParams, DataCop
 - SetLoopModePara使能loop mode，Compact模式
 
     ```cpp
-    // 场景4：使用SetLoopModePara使能loop mode进行数据搬运（仅支持Ascend 950PR/Ascend 950DT）。
+    // 场景4：使用SetLoopModePara使能loop mode进行数据搬运（仅支持Ascend 950PR&950DT系列产品）。
     // Compact模式：每次内层循环搬运80B后填充16B使其96字节对齐。
     // padding值设为-1。
     AscendC::DataCopyExtParams copyParams{BLOCK_COUNT, BLOCK_LEN, 0, 0, 0};
@@ -108,7 +108,7 @@ __aicore__ inline void SetLoopModePara(const LoopModeParams& loopParams, DataCop
 - SetLoopModePara使能loop mode，Normal模式
 
     ```cpp
-    // 场景5：使用SetLoopModePara使能loop mode进行数据搬运（仅支持Ascend 950PR/Ascend 950DT）。
+    // 场景5：使用SetLoopModePara使能loop mode进行数据搬运（仅支持Ascend 950PR&950DT系列产品）。
     // Normal模式：每个block搬运40B后填充24B使其64字节对齐。
     // padding值设为-1。
     AscendC::DataCopyExtParams copyParams{BLOCK_COUNT, BLOCK_LEN, 0, 0, 0};
@@ -165,7 +165,6 @@ __aicore__ inline void SetLoopModePara(const LoopModeParams& loopParams, DataCop
     ```
 
 完整样例请参考[DataCopyPad样例场景4、5、6](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [ConfusionTranspose 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/confusion_transpose_950.md)

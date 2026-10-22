@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/normalization/WelfordUpdate.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T02:36:08Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -36,9 +36,9 @@ LayerNorm算法中Reduce轴较大的场景，可以通过切分Reduce轴，联�
 
 本接口的计算公式如下。进行上述的数据切分后，分n次调用本接口，切分后的每块数据均完成如下公式的计算。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002186230593.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/image_0000002186230593.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002150833386.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/image_0000002150833386.png)
 
 上式中，x<sub>i</sub>、Meant<sub>i</sub>、M<sub>i</sub>的形状均为\[1, k\]，x<sub>i</sub>表示切分后的第i块数据，Meant<sub>i</sub>表示第i次调用本接口得到的前i块数据的均值，M<sub>i</sub>表示第i次调用本接口得到的前i块数据的方差中间结果（即为求方差而保存的中间计算结果，本节后续内容中写作方差中间结果）。其中，第一次调用本接口，即i=1时，公式中的Meant<sub>0</sub>和M<sub>0</sub>由用户定义为形状\[1, k\]、取值全0的数据。
 
@@ -80,7 +80,7 @@ Meant<sub>n</sub>的计算过程示意如下图，调用n次本接口后，得�
 | T | inputX操作数的数据类型。不同型号支持的数据类型请参考[支持的数据类型](#li1773114612461)。 |
 | U | outputMean、outputVariance、inputMean、inputVariance操作数的数据类型。支持的数据类型为：float。 |
 | isReuseSource | 是否允许修改源操作数，默认值为false。如果开发者允许源操作数被改写，可以设置该参数取值为true开启，开启后能够节省部分内存空间。<br><br>设置为true，则本接口内部计算时复用inputX的内存空间，节省内存空间；设置为false，则本接口内部计算时不复用inputX的内存空间。<br><br>isReuseSource的使用样例请参考[更多样例](../math_compute/more_examples.md#section639165323915)。 |
-| config | 配置非指定计算范围内的目的操作数与源操作数的复用关系。WelfordUpdateConfig类型，定义如下方代码所示，其中参数的含义如下。<br>isInplace：接口参数para中的abComputeLength参数指定了输入数据内层轴的计算长度，在该指定计算长度之外的输出数据具体为何值，通过本参数设置。本参数表示，在指定计算长度之外的目的操作数是否复用源操作数；若复用，对于指定计算长度之外的输出，直接使用对应位置的源操作数代替输出目的操作数；若不复用，则本接口不会输出计算范围外的目的操作数。<br>false：默认值。表示目的操作数不复用源操作数。<br>true：表示目的操作数复用源操作数。outputMean复用inputMean，outputVariance复用inputVariance。<br><br>此参数一般用于配合kernel侧tiling计算的接口使用。 |
+| config | 配置非指定计算范围内的目的操作数与源操作数的复用关系。WelfordUpdateConfig类型，定义如下方代码所示，其中参数的含义如下。<br>isInplace：接口参数para中的abComputeLength参数指定了输入数据内层轴的计算长度，在该指定计算长度之外的输出数据具体为何值，通过本参数设置。本参数表示，在指定计算长度之外的目的操作数是否复用源操作数；若复用，对于指定计算长度之外的输出，直接使用对应位置的源操作数代替输出目的操作数；若不复用，则本接口不会输出计算范围外的目的操作数。<br>false：默认值。表示目的操作数不复用源操作数。<br>true：表示目的操作数复用源操作数。outputMean复用inputMean，outputVariance复用inputVariance。<br><br>此参数一般用于配合核函数（Kernel）侧tiling计算的接口使用。 |
 
 ```
 struct WelfordUpdateConfig {
@@ -129,19 +129,19 @@ struct WelfordUpdateParam {
 -   支持的数据类型<a id="li1773114612461"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16\_t、float。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16\_t、float。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float。
+    Atlas A3系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float。
+    Atlas A2系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、float。
     
 
 ## 调用示例
@@ -206,7 +206,6 @@ AscendC::WelfordUpdate<T, U, false, WELFORD_UPDATE_ENABLE_INPLACE_CFG>(
  5.40000e+01 5.50000e+01 5.60000e+01 5.70000e+01 5.80000e+01 5.90000e+01
  6.00000e+01 6.10000e+01 6.20000e+01 6.30000e+01 ]
 ```
-
 
 - [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)
 - [LayerNormWithImplMode 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_with_impl_mode_950.md)

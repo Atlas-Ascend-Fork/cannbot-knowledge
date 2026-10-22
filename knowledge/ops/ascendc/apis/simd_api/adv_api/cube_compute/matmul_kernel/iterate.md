@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/Iterate.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -47,10 +47,10 @@ platforms:
     ```
 
     
-    -   Atlas 推理系列产品AI Core暂不支持用户自主管理L0C Buffer（CO1）。
+    -   Atlas推理系列产品AI Core暂不支持用户自主管理L0C Buffer（CO1）。
     
     
-    -   Atlas 200I/500 A2 推理产品暂不支持用户自主管理L0C Buffer（CO1）。
+    -   Atlas 200I/500 A2推理产品暂不支持用户自主管理L0C Buffer（CO1）。
     
 
 ## 参数说明
@@ -103,7 +103,6 @@ for (int i = 0; i < singleM/baseM*singleN/baseN; ++i) {
     mm.template GetTensorC<false>(ubCmatrix);
 }
 ```
-
 
 - [QuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_950.md)
 - [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)

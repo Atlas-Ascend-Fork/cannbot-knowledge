@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/compare_and_select/Compare.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -60,7 +60,7 @@ source_headers:
     ```
 
     
-    Atlas 200I/500 A2 推理产品暂不支持整个Tensor参与计算的运算符重载。
+    Atlas 200I/500 A2推理产品暂不支持整个Tensor参与计算的运算符重载。
     
 
 - Tensor前n个数据计算
@@ -112,83 +112,83 @@ source_headers:
 ### mask/mask[]参数说明
 
 
-- 针对Ascend 950PR/Ascend 950DT，设置有效。
+- 针对Ascend 950PR&950DT系列产品，设置有效。
 
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，保留参数，设置无效。
+- 针对Atlas A3系列产品，保留参数，设置无效。
 
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，保留参数，设置无效。
+- 针对Atlas A2系列产品，保留参数，设置无效。
 
 
 
-- 针对Atlas 200I/500 A2 推理产品，设置有效。
+- 针对Atlas 200I/500 A2推理产品，设置有效。
 
 
 
-- 针对Atlas 推理系列产品AI Core，保留参数，设置无效。
+- 针对Atlas推理系列产品AI Core，保留参数，设置无效。
 
 
 
-- 针对Atlas 训练系列产品，保留参数，设置无效。
+- 针对Atlas训练系列产品，保留参数，设置无效。
 
 
 
-- 针对Kirin X90，保留参数，设置无效。
+- 针对Kirin X90处理器系列产品，保留参数，设置无效。
 
 
 
-- 针对Kirin 9030，保留参数，设置无效。
+- 针对Kirin 9030处理器系列产品，保留参数，设置无效。
 
 
 ## 数据类型
 
 
-- 针对Ascend 950PR/Ascend 950DT
+- 针对Ascend 950PR&950DT系列产品
     - T支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。其中，int8\_t/uint8\_t/int64\_t/uint64\_t/double数据类型仅支持tensor前n个数据计算接口和整个tensor参与计算的运算符重载。
     - U支持的数据类型为：int8_t、uint8_t。
 
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- 针对Atlas A3系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：int8_t、uint8_t。
 
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- 针对Atlas A2系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：int8_t、uint8_t。
 
 
 
-- 针对Atlas 200I/500 A2 推理产品
+- 针对Atlas 200I/500 A2推理产品
     - T支持的数据类型为：half、float。
     - U支持的数据类型为：int8_t、uint8_t。
 
 
 
-- 针对Atlas 推理系列产品 AI Core
+- 针对Atlas推理系列产品AI Core
     - T支持的数据类型为：half、float。
     - U支持的数据类型为：int8_t、uint8_t。
 
 
 
-- 针对Atlas 训练系列产品
+- 针对Atlas训练系列产品
     - T支持的数据类型为：half、float。
     - U支持的数据类型为：int8_t、uint8_t。
 
 
 
-- 针对Kirin X90
+- 针对Kirin X90处理器系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：uint8_t。
 
 
 
-- 针对Kirin 9030
+- 针对Kirin 9030处理器系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：uint8_t。
 
@@ -208,14 +208,14 @@ source_headers:
   
   - 针对如下型号，该接口不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
   
 
 
@@ -223,10 +223,10 @@ source_headers:
 
 - 针对如下型号，使用tensor前n个数据参与计算的接口，设置count时，需要保证count个元素所占空间256字节对齐。未对齐部分元素不参与计算，仅完整对齐块有效。
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  - Atlas A3系列产品
   
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  - Atlas A2系列产品
   
 
 
@@ -350,7 +350,6 @@ source_headers:
     输入数据mask：64
     输出数据dstLocal： [ 255(0b11111111) 255(0b11111111) 255(0b11111111) 255(0b11111111) 0(0b00000000) 0(0b00000000) 0(0b00000000) 0(0b00000000) ]
     ```
-
 
 - [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)
 - [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)

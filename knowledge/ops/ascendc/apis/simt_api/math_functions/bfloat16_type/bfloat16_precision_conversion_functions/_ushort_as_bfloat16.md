@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__ushort_as_bfloat16.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -87,3 +87,10 @@ unsigned short int的数据按位重新解释为bfloat16的值。特殊值如下
         dst[idx] = __ushort_as_bfloat16(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0, 32768, 16256, 48896, 1, 32640, 64512, 32256
+result: 0.0, -0.0, 1.0, -0.5, 0.0, inf, -2.65846e+36, 4.25353e+37
+```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Fmod_interface/Fmod.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -27,9 +27,9 @@ source_headers:
 
 按元素计算两个浮点数a, b相除后的余数。计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002348879736.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002348879736.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002188778220.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002188778220.png)
 
 其中，Trunc为向零取整操作。举例如下：
 
@@ -115,18 +115,18 @@ struct FmodConfig {
 ## 约束说明
 
 
--   针对Atlas 推理系列产品AI Core，输入数据限制在\[-2147483647.0, 2147483647.0\]范围内。
+-   针对Atlas推理系列产品AI Core，输入数据限制在\[-2147483647.0, 2147483647.0\]范围内。
 
 -   源操作数src0Tensor与src1Tensor的数据长度必须保持一致。
 -   **不支持源操作数与目的操作数地址重叠。**
 -   不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。
 
--   对于Ascend 950PR/Ascend 950DT，模板参数config中的algo为ITERATION\_COMPENSATION迭代补偿模式下，操作数的数据类型仅支持float。
+-   对于Ascend 950PR&950DT系列产品，模板参数config中的algo为ITERATION\_COMPENSATION迭代补偿模式下，操作数的数据类型仅支持float。
 
 -   操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md#section796754519912)。
 
 
--   针对Ascend 950PR/Ascend 950DT，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
+-   针对Ascend 950PR&950DT系列产品，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
     -   配置为`false`时，计算过程中保留Subnormal，并按照其实际数值参与后续计算。
     -   配置为`true`时，启用FTZ（Flush-To-Zero）模式，计算过程中产生或参与运算的Subnormal将按0处理，可能导致计算结果与保留Subnormal时存在精度差异。
 

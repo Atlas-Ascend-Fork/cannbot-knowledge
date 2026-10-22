@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_gm2l1_dn2nz_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,11 +24,11 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_gm2l1_dn2nz_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_gm2l1_dn2nz.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_gm2l1_dn2nz_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_gm2l1_dn2nz.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将数据从Global Memory搬运到L1 Buffer，并在搬运过程中进行DN到Nz格式的转换，使其满足后续矩阵计算对分形列连续性的要求。
 
-进行DN2Nz格式搬运前，需先通过[asc_set_gm2l1_nz_para](../cube_datamove/asc_set_gm2l1_nz_para.md)接口配置DN2Nz搬运的目的Nz矩阵步长与DN矩阵搬运个数。
+进行DN2Nz格式搬运前，需先通过[asc_set_gm2l1_nz_para](../cube_datamove/cube_load_aux_config/asc_set_gm2l1_nz_para.md)接口配置DN2Nz搬运的目的Nz矩阵步长与DN矩阵搬运个数。
 
 本接口仅在AIC上执行有效。
 
@@ -40,9 +40,8 @@ source_headers:
 
 ## 函数原型
 
-### 模板原型（占位符形式）
-
 ```cpp
+// 占位符形式
 __aicore__ inline void asc_copy_gm2l1_dn2nz_sync(__cbuf__ <dtype>* dst,
                                                  __gm__ <dtype>* src,
                                                  uint64_t loop1_src_stride,
@@ -53,9 +52,9 @@ __aicore__ inline void asc_copy_gm2l1_dn2nz_sync(__cbuf__ <dtype>* dst,
                                                  bool smallc0_en)
 ```
 
-### dtype支持的数据类型
+### dtype支持数据类型
 
-dtype支持的数据类型为`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
+`dtype`取值为：`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
 
 ## 参数说明
 
@@ -96,12 +95,12 @@ PIPE_MTE2
 - 本接口非AIC调用直接返回。
 - `dst`的起始地址要求32字节对齐（L1 Buffer对齐要求），否则会导致搬运异常。
 - `src`的起始地址要求1字节对齐（Global Memory对齐要求），否则会导致搬运异常。
-- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
 - L1 Buffer容量上限：L1 Buffer总容量512KB，`dst`偏移量与搬运大小之和不可越界，否则触发异常。
 
 ### DN2Nz约束
 
-- 调用本接口前，需要先调用[asc_set_gm2l1_nz_para](../cube_datamove/asc_set_gm2l1_nz_para.md)接口配置DN2Nz搬运的目的Nz矩阵步长与DN矩阵搬运个数。
+- 调用本接口前，需要先调用[asc_set_gm2l1_nz_para](../cube_datamove/cube_load_aux_config/asc_set_gm2l1_nz_para.md)接口配置DN2Nz搬运的目的Nz矩阵步长与DN矩阵搬运个数。
 - `loop1_src_stride`、`n_value`、`d_value`、`loop4_src_stride`取值需确保在取值范围内，超出取值范围的值会被截断，导致搬运结果不符合预期。
 - `smallc0_en`设置为`true`时，$d\_value \le 4$，否则导致搬运异常。
 
@@ -110,7 +109,7 @@ PIPE_MTE2
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng examples.asc -o main --npu-arch=dav-3510 && ./main

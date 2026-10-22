@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/atomic_operations/SetAtomicType.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -47,23 +47,23 @@ __aicore__ inline void SetAtomicType()
 ## 数据类型
 
 
-- Ascend 950PR/Ascend 950DT，支持的数据类型为int8_t、int16_t、half、bfloat16_t、int32_t、float。
+- Ascend 950PR&950DT系列产品，支持的数据类型为int8_t、int16_t、half、bfloat16_t、int32_t、float。
 
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为int8_t、int16_t、half、bfloat16_t、int32_t、float。
+- Atlas A3系列产品，支持的数据类型为int8_t、int16_t、half、bfloat16_t、int32_t、float。
 
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为int8_t、int16_t、half、bfloat16_t、int32_t、float。
+- Atlas A2系列产品，支持的数据类型为int8_t、int16_t、half、bfloat16_t、int32_t、float。
 
 
 
-- Atlas 200I/500 A2 推理产品，支持的数据类型为int16_t、half、int32_t、float。
+- Atlas 200I/500 A2推理产品，支持的数据类型为int16_t、half、int32_t、float。
 
 
 
-- Atlas 推理系列产品AI Core，支持的数据类型为int16_t、half、float。
+- Atlas推理系列产品AI Core，支持的数据类型为int16_t、half、float。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>
@@ -78,7 +78,6 @@ __aicore__ inline void SetAtomicType()
 ## 调用示例<a name="section177231425115410"></a>
 
 根据约束说明可知，使用[SetAtomicAdd](set_atomic_add.md)、[SetAtomicMax](set_atomic_max_isasi.md)、[SetAtomicMin](set_atomic_min_isasi.md)时，已通过模板参数指定原子操作的数据类型，无需额外调用`SetAtomicType`接口，因此本接口不提供调用示例。
-
 
 - [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)
 - [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)

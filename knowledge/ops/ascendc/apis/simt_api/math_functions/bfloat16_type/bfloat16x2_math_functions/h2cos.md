@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_math_functions/h2cos.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据各元素的三角函数余弦值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002545900882.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002545900882.png)
 
 ## 函数原型
 
@@ -87,3 +87,10 @@ inline bfloat16x2_t h2cos(bfloat16x2_t x)
         dst[idx] = h2cos(x[idx]); // 对x源地址的第idx个元素取三角函数余弦值
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.25, 0.5), (2.5, -3.75), (-2, 1.25), (0.75, -0.25)
+result: (0.314453, 0.878906), (-0.800781, -0.820313), (-0.416016, 0.314453), (0.730469, 0.96875)
+```

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_load_image_to_cbuf_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_load_image_to_cbuf_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_load_image_to_cbuf.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_load_image_to_cbuf_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_load_aux_config/asc_load_image_to_cbuf.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将图像数据从Global Memory搬运到L1 Buffer。
 

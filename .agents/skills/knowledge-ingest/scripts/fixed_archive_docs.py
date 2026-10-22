@@ -134,6 +134,7 @@ def _navigation_after(source: str, card_body: str) -> str | None:
     raise ValueError("mirror additions must be ordinary trailing links")
 
 FRONTMATTER_RE = re.compile(r"\A---\n(?P<metadata>.*?)\n---\n\n", re.DOTALL)
+SOURCE_FRONTMATTER_RE = re.compile(r"\A---\n(?P<metadata>.*?)\n---\n", re.DOTALL)
 INLINE_LINK_RE = re.compile(r"(!?)\[(?:\\.|[^\]\\\n])*\]\(([^)\n]+)\)")
 REFERENCE_DEFINITION_RE = re.compile(
     r"(?m)^[ \t]{0,3}\[((?:\\.|[^\]\\\n])+)]" r":[ \t]*(?:<([^>\n]+)>|(\S+))"
@@ -273,6 +274,26 @@ def plain_heading_title(value: str) -> str:
     value = re.sub(r"<a\b[^>]*>.*?</a>", "", value, flags=re.I)
     value = HTML_TAG_RE.sub("", value)
     return ESCAPED_PUNCTUATION_RE.sub(r"\1", value).strip()
+
+
+def strip_source_frontmatter(text: str) -> str:
+    """Drop a leading YAML frontmatter block from an upstream source document.
+
+    Publisher sources may carry their own metadata block; it is provenance for
+    the upstream pipeline, never mirrored card body. Blocks that do not parse
+    as a YAML mapping are preserved as ordinary content.
+    """
+
+    match = SOURCE_FRONTMATTER_RE.match(text)
+    if match is None:
+        return text
+    try:
+        metadata = yaml.safe_load(match.group("metadata"))
+    except yaml.YAMLError:
+        return text
+    if not isinstance(metadata, dict):
+        return text
+    return text[match.end() :].lstrip("\n")
 
 
 def strip_configured_sections(
@@ -927,7 +948,9 @@ def expected_cards(
     source_documents = selected_sources(root, definition, mirror)
     navigation_policy = str(mirror["navigation_policy"])
     omitted_titles = [str(value) for value in mirror["omit_section_title_contains"]]
-    source_bodies = {source: read_utf8(source) for source in source_documents}
+    source_bodies = {
+        source: strip_source_frontmatter(read_utf8(source)) for source in source_documents
+    }
     curated_bodies: dict[Path, str] = {}
     section_counts: dict[Path, int] = {}
     for source, source_body in source_bodies.items():

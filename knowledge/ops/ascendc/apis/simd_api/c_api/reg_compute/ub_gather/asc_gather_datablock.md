@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/ub_gather/asc_gather_datablock.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -29,6 +29,8 @@ source_headers:
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_gather_datablock.png)
 
 其中，index中仅前8个元素有效，每个元素对应一个DataBlock。例如，第一个元素为96（3 * 32），表示选取DataBlock3写入dst中对应的位置。
+
+本接口为Reg矢量搬运接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -85,15 +87,15 @@ __simd_callee__ inline vector_int8_t asc_gather_datablock(__ubuf__ int8_t* src,
                                                           vector_bool mask)
 ```
 
-### 无掩码控制（占位符形式）
+### 无掩码控制
 
 ```c
-// 通过引用参数输出结果
+// 通过引用参数输出结果（占位符形式）
 __simd_callee__ inline void asc_gather_datablock(vector_<dst_dtype>& dst,
                                                  __ubuf__ <src_dtype>* src,
                                                  vector_uint32_t index)
 
-// 通过函数返回值返回结果
+// 通过函数返回值返回结果（占位符形式）
 __simd_callee__ inline vector_<dst_dtype> asc_gather_datablock(__ubuf__ <src_dtype>* src,
                                                                vector_uint32_t index)
 ```
@@ -166,8 +168,7 @@ __simd_callee__ inline vector_int8_t asc_gather_datablock(__ubuf__ int8_t* src,
 
 ## 约束说明
 
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - b64数据类型属于编译器软件仿真实现，通过函数返回值输出结果的函数原型不做支持。
 - 源操作数在UB中的起始地址需要32B对齐。
 - 索引位置要大于等于0且32B对齐，即一个索引值对应一个DataBlock。
@@ -180,7 +181,7 @@ __simd_callee__ inline vector_int8_t asc_gather_datablock(__ubuf__ int8_t* src,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

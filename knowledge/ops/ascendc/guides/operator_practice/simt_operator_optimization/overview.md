@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -108,9 +108,11 @@ SIMT编程模式以线程（Thread）为基本编程单位，由开发者编写�
 | 优化建议 | 优先级 | 样例 |
 | --- | :---: | --- |
 | [同一Warp内避免分支跳转](control_flow/avoid_warp_branch.md) | 高 | [warp_divergence](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/02_control_flow/warp_divergence) |
+| [分支处理](control_flow/branch_handing.md) | 中 | [predicate_optimization](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/02_control_flow/predicate_optimization) |
 
 表4 最大化指令吞吐量（指令优化）
 
 | 优化建议 | 优先级 | 样例 |
 | --- | :---: | --- |
 | [原子操作指令优化](instruction_optimization/atomic_instruction_optimization.md) | 高 | [histogram](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/03_instruction_optimizations/atomic_histogram)<br>[atomic_add_perf](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/02_features/01_api_features/02_atomic_operation/atomic_add_perf) |
+| [原地加法指令优化](instruction_optimization/inplace_add_instruction_optimization.md) | 中 | [inplace_add_atomic](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/03_instruction_optimizations/inplace_add_atomic) |

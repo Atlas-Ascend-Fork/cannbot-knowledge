@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TPipe/InitBuffer.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T08:27:47Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -222,10 +222,10 @@ source_headers:
 
 -   InitBuffer申请的内存会在TPipe对象销毁时通过析构函数自动释放，无需手动释放。
 -   如果需要重新分配InitBuffer申请的内存，可以调用[Reset](reset.md)，再调用InitBuffer接口。
--   一个kernel中所有使用的Buffer数量之和不能超过64。
+-   一个核函数（Kernel）中所有使用的Buffer数量之和不能超过64。
 -   自定义地址InitBuffer方式分配不建议与不指定地址的混用，可能会导致内存冲突。
 
-- 针对Ascend 950PR/Ascend 950DT，对Unified Buffer（UB）的内存分配，会基于静态内存的基础上进行分配，即动态内存初始位置，参考[内存层级](../../../../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/memory_hierarchy.md)。
+- 针对Ascend 950PR&950DT系列产品，对Unified Buffer（UB）的内存分配，会基于静态内存的基础上进行分配，即动态内存初始位置，参考[内存层级](../../../../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/memory_hierarchy.md)。
 
 - 当前暂不支持与L1 Buffer, L0A Buffer, L0B Buffer, L0C Buffer, BiasTable静态数组混用。
 
@@ -257,7 +257,6 @@ AscendC::TBuf<AscendC::TPosition::A1> buf; // 输出数据管理对象，TPositi
 uint32_t len = 128;
 pipe.InitBuffer(buf, len);
 ```
-
 
 - [Rasterizer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/rasterizer.md)
 - [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/atomic_operations/AtomicAdd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -51,7 +51,7 @@ __aicore__ inline T AtomicAdd(__gm__ T *address, T value)
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| address | 输入 | 输入GM的地址。 |
+| address | 输入/输出 | 输入GM的地址。 |
 | value | 输入 | 标量值，支持数据类型和address指向的数据类型一致。 |
 
 ## 数据类型<a name="section832119018128"></a>
@@ -87,7 +87,6 @@ AscendC::DataCopy(yLocal, yGlobal, DATA_SIZE);
 ```
 
 完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。
-
 
 - [Scatter 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/scatter_950.md)
 - [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)

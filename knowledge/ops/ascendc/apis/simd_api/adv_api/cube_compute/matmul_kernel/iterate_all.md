@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/IterateAll.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -66,27 +66,27 @@ template <bool sync = true> __aicore__ inline void IterateAll(const LocalTensor<
 -   支持的数据类型<a id="li12616155731720"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t、fp8_e4m3fn_t、hifloat8_t。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t、fp8_e4m3fn_t、hifloat8_t。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t。
+    Atlas A3系列产品，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t。
+    Atlas A2系列产品，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t。
     
 
     
-    Atlas 推理系列产品AI Core，不支持包含ubCmatrix参数的原型，对于包含gm参数的原型，支持的数据类型为：half、float、int8_t、int32_t。
+    Atlas推理系列产品AI Core，不支持包含ubCmatrix参数的原型，对于包含gm参数的原型，支持的数据类型为：half、float、int8_t、int32_t。
     
 
     
-    Atlas 200I/500 A2 推理产品，支持的数据类型为：half、float、bfloat16_t、int32_t。
+    Atlas 200I/500 A2推理产品，支持的数据类型为：half、float、bfloat16_t、int32_t。
     
 
     
-    Kirin X90，支持的数据类型为：half、int8_t、int32_t。
+    Kirin X90处理器系列产品，支持的数据类型为：half、int8_t、int32_t。
     
 
 
@@ -107,7 +107,6 @@ if (tiling.isBias) {
 mm.IterateAll(gm_c);    // 计算
 mm.End();
 ```
-
 
 - [UpsampleBilinear2dAA A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa.md)
 - [TransposeBatchMatMul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul.md)

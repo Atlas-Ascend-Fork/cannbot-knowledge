@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/reg_vector_compute_interface_soft_simulation_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -18,7 +18,7 @@ platforms: []
 
 本节汇总介绍了Reg矢量计算接口软仿数据类型的情况，本节内容仅针对如下型号生效：
 
-Ascend 950PR/Ascend 950DT
+Ascend 950PR&950DT系列产品
 
 [Reg数据搬入](../simd_api/basic_api/reg_vector_compute/reg_data_load/index.md)和[Reg数据搬出](../simd_api/basic_api/reg_vector_compute/reg_data_store/index.md)目录下提供了Unified Buffer（UB）与RegTensor、UB与MaskReg之间的数据搬运接口。
 

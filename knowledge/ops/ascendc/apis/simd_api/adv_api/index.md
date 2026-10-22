@@ -5,7 +5,7 @@
 - [矩阵计算](cube_compute/index.md)：共 96 张知识卡，分布在 3 个子目录（get_matmul_compute_space、matmul_kernel、matmul_tiling）。
 - [数据过滤](data_filter/index.md)：共 4 张知识卡（如 DropOut、GetDropOutMaxMinTmpSize、GetSelectMaxMinTmpSize 等）。
 - [数据结构](data_structures/index.md)：汇总高阶API在Host侧Tiling接口中使用的Ascend C公共类型，包含TensorShape、TensorDataType等数据结构定义。（共 3 张知识卡：TensorDataType、TensorShape）
-- [HCCL通信类](hccl_communication/index.md)：共 46 张知识卡，分布在 3 个子目录（hccl_context、hccl_kernel、hccl_tiling）。
+- [HCCL通信类](hccl_communication/index.md)：共 57 张知识卡，分布在 4 个子目录（hccl_context、hccl_kernel、hccl_mc2 等）。
 - [索引计算](index_compute/index.md)：共 2 张知识卡（如 Arange（索引计算）、GetArangeMaxMinTmpSize）。
 - [数学计算](math_compute/index.md)：共 144 张知识卡（如 更多样例（数学计算） 等）。
 - [归一化操作](normalization/index.md)：共 20 张知识卡（如 BatchNorm、BatchNorm Tiling、DeepNorm 等）。

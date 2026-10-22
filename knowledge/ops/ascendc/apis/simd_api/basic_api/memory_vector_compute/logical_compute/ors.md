@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/logical_compute/Ors.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -83,7 +83,7 @@ $dst_i = scalar_{idx} | src_i$
 ## 数据类型
 
 
-Ascend 950PR/Ascend 950DT，目的操作数dst和源操作数src支持的数据类型为：int16_t、uint16_t、int64_t、uint64_t。数据类型int64_t、uint64_t仅支持tensor前n个数据计算接口。
+Ascend 950PR&950DT系列产品，目的操作数dst和源操作数src支持的数据类型为：int16_t、uint16_t、int64_t、uint64_t。数据类型int64_t、uint64_t仅支持tensor前n个数据计算接口。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>
@@ -100,7 +100,7 @@ Ascend 950PR/Ascend 950DT，目的操作数dst和源操作数src支持的数据�
 -   操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md#section796754519912)。
 
 
--   针对Ascend 950PR/Ascend 950DT，tensor前n个数据计算API中的isSetMask参数不生效，保持默认值即可。
+-   针对Ascend 950PR&950DT系列产品，tensor前n个数据计算API中的isSetMask参数不生效，保持默认值即可。
 
 -   左操作数及右操作数中，必须有一个为矢量；当前不支持左右操作数同时为标量。
 -   本接口传入LocalTensor单点数据作为标量时，idx参数需要传入编译期已知的常量，传入变量时需要声明为constexpr。

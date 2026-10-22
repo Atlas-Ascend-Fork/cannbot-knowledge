@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/cube_compute_load/copy_l1_to_ub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -21,13 +21,13 @@ platforms:
 
 头文件路径为：`tensor_api/tensor.h`。
 
-本接口将源张量的数据从L1 Buffer搬运到Unified Buffer。接口根据源张量和目的张量的Layout选择对应搬运实现。
+本接口将源张量的数据从L1 Buffer搬运到Unified Buffer（UB）。接口根据源张量和目的张量的Layout选择对应搬运实现。
 
 接口支持完整Tensor搬运，也支持通过`dst_coord`、`src_coord`和`copy_shape`指定目的Tensor中的起始坐标、源Tensor中的起始坐标和搬运区域的形状，执行区域搬运。
 
 ## 函数原型
 
-- 执行L1 Buffer到Unified Buffer搬运。
+- 执行L1 Buffer到UB搬运。
 
     ```cpp
     template <typename Atom, typename DstTensor, typename SrcTensor>
@@ -35,14 +35,14 @@ platforms:
         const DstTensor& dst, const SrcTensor& src)
     ```
 
-- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait执行L1 Buffer到Unified Buffer搬运。
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用[默认trait](../../algorithm.md#copy_traits)执行L1 Buffer到UB搬运。
 
     ```cpp
     template <typename DstTensor, typename SrcTensor>
     __aicore__ inline void copy(const DstTensor& dst, const SrcTensor& src)
     ```
 
-- 按指定源坐标、目的坐标和搬运形状执行L1 Buffer到Unified Buffer搬运。
+- 按指定源坐标、目的坐标和搬运形状执行L1 Buffer到UB搬运。
 
     ```cpp
     template <typename Atom, typename DstTensor, typename SrcTensor, typename DstCoord,
@@ -52,7 +52,7 @@ platforms:
         const CopyShape& copy_shape)
     ```
 
-- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait按指定源坐标、目的坐标和搬运形状执行L1 Buffer到Unified Buffer搬运。
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait按指定源坐标、目的坐标和搬运形状执行L1 Buffer到UB搬运。
 
     ```cpp
     template <typename DstTensor, typename SrcTensor, typename DstCoord,
@@ -96,7 +96,7 @@ platforms:
 
 | 参数名 | 输入/输出 | 描述 |
 | :--- | :---: | :--- |
-| atom | 输入 | 搬运原子对象，可由`make_copy`接口构造。 |
+| atom | 输入 | 搬运原子对象，封装特定搬运通路的Operation、Trait与可选运行时Params组合，可由`make_copy`接口构造，详见[Algorithm](../../algorithm.md#copy_atom)。 |
 | dst | 输出 | 目的张量，存储位置必须为`location::ub`。 |
 | src | 输入 | 源张量，存储位置必须为`location::l1`。 |
 | dst_coord | 输入 | 搬运区域在目的张量中的起始坐标。 |
@@ -107,12 +107,12 @@ platforms:
 
 | 参数名 | 输入/输出 | 描述 |
 | :--- | :---: | :--- |
-| operation | 输入 | 搬运操作对象。L1 Buffer到Unified Buffer搬运取`copy_l1_to_ub{}`。 |
-| trait | 输入 | 搬运trait对象。L1 Buffer到Unified Buffer默认取`l1_to_ub_trait_default{}`。 |
+| operation | 输入 | 搬运操作对象。L1 Buffer到UB搬运取`copy_l1_to_ub{}`。 |
+| trait | 输入 | 搬运trait对象。L1 Buffer到UB默认取`l1_to_ub_trait_default{}`。 |
 
 ### copy_l1_to_ub说明
 
-`copy_l1_to_ub`用于标识L1 Buffer到Unified Buffer数据搬运通路，仅列出其public内容：
+`copy_l1_to_ub`用于标识L1 Buffer到UB数据搬运通路，仅列出其public内容：
 
 ```cpp
 struct copy_l1_to_ub {
@@ -121,7 +121,7 @@ struct copy_l1_to_ub {
 };
 ```
 
-`copy`静态成员函数用于接收Trait和搬运参数，并分发L1 Buffer到Unified Buffer数据搬运。
+`copy`静态成员函数用于接收Trait和搬运参数，并分发L1 Buffer到UB数据搬运。
 
 ### l1_to_ub_trait说明
 
@@ -147,6 +147,6 @@ struct l1_to_ub_trait_default {
 
 ## 约束说明
 
-- `dst`必须位于Unified Buffer，`src`必须位于L1 Buffer。
+- `dst`必须位于UB，`src`必须位于L1 Buffer。
 - 源张量和目的张量的Layout组合需要属于该通路支持的数据排布。
 - 使用坐标搬运时，coord和copy_shape需要与对应张量的形状结构匹配，且搬运范围不能越界。

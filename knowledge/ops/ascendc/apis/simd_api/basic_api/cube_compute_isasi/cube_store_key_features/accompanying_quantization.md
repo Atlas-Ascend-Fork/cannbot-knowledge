@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_key_features/accompanying_quantization.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -37,7 +37,8 @@ REQ8,                  // ReQuant_int8：int32_t重量化成int8_t/uint8_t，sca
 VREQ8,                 // Vector_ReQuant_int8：int32_t重量化成int8_t/uint8_t，tensor量化
 ```
 
-除上述量化模式外，Ascend 950PR/Ascend 950DT产品还额外支持以下量化模式：
+
+除上述量化模式外，Ascend 950PR&950DT系列产品还额外支持以下量化模式：
 
 ```text
 QF322FP8_PRE,          // Quant_Float32_2_FP8: float量化成fp8_e4m3fn_t，scalar量化

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/y1f.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据x的1阶第二类贝塞尔函数y1的值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776434.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002484776434.png)
 
 ## 函数原型
 
@@ -50,12 +50,13 @@ inline float y1f(float x)
 -   当x=0时，返回值为-inf。
 -   当x=inf时，返回值为0。
 -   当x=nan时，返回值为nan。
+-   在快速计算模式（[--cce-use-fast-math](../../../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#常用的编译选项)设置为`true`）下，若内部中间计算值的除数为Subnormal数据，则接口返回值为-inf。
 
 ## 约束说明
 
-
--   针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了除法运算符。由于除法运算符不支持Subnormal场景，在极少数场景下内部中间计算值的除数为Subnormal数据，会导致本接口最终结果为-inf。
-
+本接口受编译选项`--cce-use-fast-math`的影响。
+-   --cce-use-fast-math=true：开启快速计算模式。本接口内部实现使用到了除法运算符，由于快速计算模式下除法运算符不支持Subnormal场景，因此本接口不支持内部中间计算值的除数为Subnormal数据的场景。
+-   --cce-use-fast-math=false：支持Subnormal场景的高精度计算。
 
 ## 调用示例
 
@@ -98,6 +99,6 @@ inline float y1f(float x)
 输入输出示例如下：
 
 ```
-x：1, 2, 3, 4
-result: -0.7812128 -0.1070324 0.3246745 0.3979257
+x: 1, 2, 3, 4
+result: -0.7812128, -0.1070324, 0.3246745, 0.3979257
 ```

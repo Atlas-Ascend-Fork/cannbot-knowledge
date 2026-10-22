@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cache_control/DataCacheCleanAndInvalid.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -32,9 +32,9 @@ source_headers:
 如图1所示，在AI Core内部，Scalar单元和DMA单元都可能对GM进行访问：
 
 - DMA搬运单元读写GM，数据通过DataCopy等接口在Unified Buffer（UB）等Local Memory和GM间交互，没有Cache一致性问题。
-- Scalar单元访问GM，首先会访问每个核内的Data Cache，因此存在Data Cache与GM的Cache一致性问题，具体原因请参考[缓存一致性](../../../../guides/programming_guide/advanced_programming/memory_model/cache_coherence.md)。
+- Scalar单元访问GM，首先会访问每个核内的Data Cache（DCache），因此存在DCache与GM的Cache一致性问题，具体原因请参考[缓存一致性](../../../../guides/programming_guide/advanced_programming/memory_model/cache_coherence.md)。
 
-**图1**  DataCache内存层次示意图<a name="zh-cn_topic_0000002530021782_fig1161014168448"></a>  
+**图1**  DCache内存层次示意图<a name="zh-cn_topic_0000002530021782_fig1161014168448"></a>
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacache.png)
 
@@ -51,7 +51,7 @@ DataCacheCleanAndInvalid接口用于解决上述一致性问题，其功能可�
 - 用户通过Scalar单元写GM的数据，希望立刻写出，也需要使用DataCacheCleanAndInvalid接口。
 
 
-- 针对Ascend 950PR/Ascend 950DT，原子操作过程中，如果希望改变后续数据的饱和模式，需要先使用DataCacheCleanAndInvalid接口将Cache Line中现存的数据立刻写出，再调用[SetCtrlSpr](../special_register_access/set_ctrl_spr_isasi.md)设置后续数据的饱和模式。
+- 针对Ascend 950PR&950DT系列产品，原子操作过程中，如果希望改变后续数据的饱和模式，需要先使用DataCacheCleanAndInvalid接口将Cache Line中现存的数据立刻写出，再调用[SetCtrlSpr](../special_register_access/set_ctrl_spr_isasi.md)设置后续数据的饱和模式。
 
 
 ## 函数原型<a name="section620mcpsimp"></a>
@@ -76,7 +76,7 @@ DataCacheCleanAndInvalid接口用于解决上述一致性问题，其功能可�
 
 
 > [!NOTE]说明 
-> 对于Atlas 推理系列产品AI Core，仅支持不配置dcciDst参数的原型。
+> 对于Atlas推理系列产品AI Core，仅支持不配置dcciDst参数的原型。
 
 
 
@@ -160,7 +160,6 @@ DataCacheCleanAndInvalid接口用于解决上述一致性问题，其功能可�
     // 刷新整个DCache，性能较差。
     AscendC::DataCacheCleanAndInvalid<uint64_t, AscendC::CacheLine::ENTIRE_DATA_CACHE, AscendC::DcciDst::CACHELINE_OUT>(global);
     ```
-
 
 - [MatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_add_rms_norm.md)
 - [MaskedSelect A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/masked_select.md)

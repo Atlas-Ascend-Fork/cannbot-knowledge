@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/basic_arithmetic/Abs.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -47,7 +47,7 @@ $dst_i = |src_i|$
 - tensor前n个复数计算
 
     ```cpp
-    // 该函数原型，仅支持Ascend 950PR/Ascend 950DT。
+    // 该函数原型，仅支持Ascend 950PR&950DT系列产品。
     template <typename T, typename U>
     __aicore__ inline void Abs(const LocalTensor<T>& dst, const LocalTensor<U>& src, const int32_t& count)
     ```
@@ -92,30 +92,30 @@ $dst_i = |src_i|$
 ## 数据类型
 
 
-- 针对Ascend 950PR/Ascend 950DT
+- 针对Ascend 950PR&950DT系列产品
     - T支持的数据类型为：int8_t、int16_t、half、int32_t、float、int64_t。数据类型int8_t、int64_t仅支持tensor前n个数据计算接口。
     - U支持的数据类型为：complex32、complex64；当U为complex32类型时，T必须是half类型；当U为complex64类型时，T必须是float类型。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，T支持的数据类型为：half、float。
+- 针对Atlas A3系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，T支持的数据类型为：half、float。
+- 针对Atlas A2系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Atlas 200I/500 A2 推理产品，T支持的数据类型为：int16_t、half、float。
+- 针对Atlas 200I/500 A2推理产品，T支持的数据类型为：int16_t、half、float。
 
 
-- 针对Atlas 推理系列产品AI Core，T支持的数据类型为：half、float。
+- 针对Atlas推理系列产品AI Core，T支持的数据类型为：half、float。
 
 
-- 针对Atlas 训练系列产品，T支持的数据类型为：half、float。
+- 针对Atlas训练系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Kirin X90，T支持的数据类型为：half、float。
+- 针对Kirin X90处理器系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Kirin 9030，T支持的数据类型为：half、float。
+- 针对Kirin 9030处理器系列产品，T支持的数据类型为：half、float。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>
@@ -131,23 +131,23 @@ $dst_i = |src_i|$
   
   - 针对如下型号，当参数count或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
   
 
 
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算占用8KB UB。
   - tensor前n个数据连续计算不涉及8KB UB的占用。
 
 
-- 针对Ascend 950PR/Ascend 950DT，仅complex32和complex64类型的接口内部计算涉及Subnormal，处理方式受编译选项--cce-ftz控制（默认值为true）：
+- 针对Ascend 950PR&950DT系列产品，仅complex32和complex64类型的接口内部计算涉及Subnormal，处理方式受编译选项--cce-ftz控制（默认值为true）：
     - --cce-ftz=false时，计算过程中保留Subnormal，并按照其实际数值参与后续计算。
     - --cce-ftz=true时，启用FTZ（Flush-To-Zero）模式，计算过程中产生或参与运算的Subnormal将按0处理，可能导致计算结果与保留Subnormal时存在精度差异。
 
@@ -202,7 +202,7 @@ $dst_i = |src_i|$
     ```
 
 
-针对Ascend 950PR/Ascend 950DT：
+针对Ascend 950PR&950DT系列产品：
 
 - tensor前n个复数计算接口样例
 
@@ -218,8 +218,6 @@ $dst_i = |src_i|$
     输入数据srcLocal：[1+2j  2-3j ...]
     输出数据dstLocal：[2.236 3.605 ...]
     ```
-
-
 
 - [AddRmsNormDynamicQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_quant_950.md)
 - [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)

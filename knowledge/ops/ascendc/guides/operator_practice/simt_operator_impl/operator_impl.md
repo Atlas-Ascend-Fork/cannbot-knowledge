@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_impl/operator_impl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -46,9 +46,8 @@ platforms: []
 
 3.  明确函数名称和参数。
     -   自定义核函数（Kernel）名称，本样例中核函数（Kernel）命名为gather\_custom。
-    -   通过分析算子的输入和输出，使用模板参数来支持不同的输入输出数据类型。
+    -   通过分析算子的输入和输出，使用模板参数来支持不同的输入输出数据类型。<a name="table4135123919714"></a>
 
-        <a name="table4135123919714"></a>
         <table><thead align="left"><tr id="row6135439176"><th class="cellrowborder" valign="top" width="31.619999999999997%" id="mcps1.1.4.1.1"><p id="p213510395713"><a name="p213510395713"></a><a name="p213510395713"></a>模板参数名</p>
         </th>
         <th class="cellrowborder" valign="top" width="29.2%" id="mcps1.1.4.1.2"><p id="p531020292080"><a name="p531020292080"></a><a name="p531020292080"></a>模板参数类型</p>
@@ -74,9 +73,8 @@ platforms: []
         </tbody>
         </table>
 
-        函数入参定义如下：
+        函数入参定义如下：<a name="table1353353310716"></a>
 
-        <a name="table1353353310716"></a>
         <table><thead align="left"><tr id="row125311633871"><th class="cellrowborder" valign="top" width="23.362336233623363%" id="mcps1.1.4.1.1"><p id="p115315333718"><a name="p115315333718"></a><a name="p115315333718"></a>参数名</p>
         </th>
         <th class="cellrowborder" valign="top" width="17.72177217721772%" id="mcps1.1.4.1.2"><p id="p135316331477"><a name="p135316331477"></a><a name="p135316331477"></a>参数类型</p>
@@ -132,9 +130,8 @@ platforms: []
 -   算子类型（OpType）：Gather
 -   算子输入输出：
 
-    **表1**  Gather算子输入输出规格
+    **表1**  Gather算子输入输出规格<a name="table4934296305"></a>
 
-    <a name="table4934296305"></a>
     <table><thead align="left"><tr id="row59358913304"><th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.1"><p id="p5503181819300"><a name="p5503181819300"></a><a name="p5503181819300"></a><strong id="b1850331853010"><a name="b1850331853010"></a><a name="b1850331853010"></a>name</strong></p>
     </th>
     <th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.2"><p id="p1550381833017"><a name="p1550381833017"></a><a name="p1550381833017"></a><strong id="b7503171811309"><a name="b7503171811309"></a><a name="b7503171811309"></a>shape</strong></p>

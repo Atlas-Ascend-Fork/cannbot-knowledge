@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Power_interface/Power.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -25,9 +25,9 @@ platforms:
 
 实现按元素做幂运算功能，提供3类接口，处理逻辑如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002218328733.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002218328733.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002192030526.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002192030526.png)
 
 ## 函数原型
 
@@ -172,26 +172,26 @@ struct PowerConfig {
 
 - **不支持源操作数与目的操作数地址重叠。**
 
--   对于Atlas 推理系列产品AI Core，幂运算的指数必须小于2<sup>31</sup>-1。
+-   对于Atlas推理系列产品AI Core，幂运算的指数必须小于2<sup>31</sup>-1。
 
 -   操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md#section796754519912)。
 -   支持的数据类型<a id="li559613463410"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：uint8\_t、int8\_t、uint16\_t、int16\_t、uint32\_t、int32\_t、half、bfloat16\_t、float。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：uint8\_t、int8\_t、uint16\_t、int16\_t、uint32\_t、int32\_t、half、bfloat16\_t、float。
     
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float、int32\_t。
+    Atlas A3系列产品，支持的数据类型为：half、float、int32\_t。
     
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float、int32\_t。
+    Atlas A2系列产品，支持的数据类型为：half、float、int32\_t。
     
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、float、int32\_t。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、float、int32\_t。
     
 
 
--   针对Ascend 950PR/Ascend 950DT，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
+-   针对Ascend 950PR&950DT系列产品，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
     -   配置为`false`时，计算过程中保留Subnormal，并按照其实际数值参与后续计算。
     -   配置为`true`时，启用FTZ（Flush-To-Zero）模式，计算过程中产生或参与运算的Subnormal将按0处理，可能导致计算结果与保留Subnormal时存在精度差异。
 
@@ -245,7 +245,6 @@ AscendC::Power<T, false\>\(dstLocal, srcLocalBase, scalarValueExp\)示例数据�
 输入数据(scalarValueExp): 4
 输出数据(dstLocal): [16 81 256 625 1296 2401 4096 6561]
 ```
-
 
 - [ApplyAdamW A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w.md)
 - [ForeachPowScalar A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_scalar.md)

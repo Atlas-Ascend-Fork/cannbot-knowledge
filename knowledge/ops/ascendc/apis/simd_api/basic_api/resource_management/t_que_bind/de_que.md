@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQueBind/DeQue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-30T01:53:56Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -124,7 +124,6 @@ non-inplace接口的返回值为从队列中取出的[LocalTensor](../../data_st
     que.DeQue<half>(tensor1); // 将Tensor从VECOUT的Queue中搬出
     que.FreeTensor<half>(tensor1);
     ```
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)

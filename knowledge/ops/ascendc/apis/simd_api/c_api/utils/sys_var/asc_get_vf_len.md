@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_vf_len.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -47,7 +47,7 @@ PIPE_S
 ## 约束说明
 
 - 本接口不触发硬件指令，不依赖任何特殊寄存器或前置setter接口配置，可在AIC与AIV上下文中调用。
-- 返回值反映当前芯片的矢量寄存器位宽，同一kernel内多次调用返回值相同。
+- 返回值反映当前芯片的矢量寄存器位宽，同一核函数（Kernel）内多次调用返回值相同。
 - 本接口不支持纯SIMT编译模式，在该模式下包含对应头文件会触发编译错误。
 
 ## 调用示例
@@ -55,7 +55,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

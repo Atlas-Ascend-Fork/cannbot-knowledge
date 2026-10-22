@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_load_aux_config/LoadImageToLocal.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -78,13 +78,13 @@ __aicore__ inline void LoadImageToLocal(const LocalTensor<T>& dst, const LoadIma
 - 当通过[SetAippFunctions](set_aipp_functions.md)配置padding模式为块填充模式或者镜像块填充模式时，因为padding的数据来自于抠出的图片，左右padding的长度（leftPadSize、rightPadSize）必须小于或等于抠图的水平长度（horizSize），上下padding的长度（topPadSize、botPadSize）必须小于或等于抠图的垂直的长度（vertSize）。
 - 支持的物理存储位置为：L1 Buffer（TPosition: A1/B1）。
     
-    - 特别针对Ascend 950PR/Ascend 950DT，支持物理存储位置为：VECIN、VECCALC、VECOUT。
+    - 特别针对Ascend 950PR&950DT系列产品，支持物理存储位置为：VECIN、VECCALC、VECOUT。
     
 
 ## 调用示例<a name="section22811728184217"></a>
 
 
-该调用示例支持的运行平台为Atlas 推理系列产品AI Core，示例图片格式为YUV420SP。
+该调用示例支持的运行平台为Atlas推理系列产品AI Core，示例图片格式为YUV420SP。
 
 ```cpp
 constexpr uint16_t imageWidth = 32;

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l12l0a_sync_2d_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_l12l0a_sync`和`asc_copy_l12l0a_transpose_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l12l0a/asc_copy_l12l0a_2d_arch_3510.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l12l0a_sync`和`asc_copy_l12l0a_transpose_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_l12l0a_2d_arch_3510.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 负责完成矩阵计算所需的2D格式数据的搬运，搬运粒度为大小为512字节的数据分形，支持非转置与转置矩阵从L1 Buffer到L0A Buffer的数据搬运。
 
@@ -52,9 +52,9 @@ __aicore__ inline void asc_copy_l12l0a_sync(__ca__ <dtype>* dst,
                                             uint16_t dst_stride)
 ```
 
-### dtype支持的数据类型
+#### dtype支持数据类型
 
-dtype支持的数据类型为`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
+`dtype`取值为：`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
 
 ### 2D转置搬运模式
 
@@ -69,9 +69,9 @@ __aicore__ inline void asc_copy_l12l0a_transpose_sync(__ca__ <dtype>* dst,
                                                       uint16_t dst_stride)
 ```
 
-### dtype支持的数据类型
+#### dtype支持数据类型
 
-dtype支持的数据类型为`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
+`dtype`取值为：`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
 
 ## 参数说明
 
@@ -117,7 +117,7 @@ PIPE_MTE1
 - dst起始地址需要按照512字节对齐（L0A Buffer对齐要求），否则会导致搬运异常。
 - src起始地址需要按照32字节对齐（L1 Buffer对齐要求），否则会导致搬运异常。
 - src位于L1 Buffer，dst位于L0A Buffer，两者分属不同的物理存储单元，不存在源操作数与目的操作数地址重叠的场景。
-- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
 - L0A Buffer容量上限：L0A Buffer总容量64KB，dst偏移量与搬运大小之和不可越界，否则触发异常。
 - L1 Buffer容量上限：L1 Buffer总容量512KB，src偏移量与源矩阵占用大小之和不可越界，否则触发异常。
 
@@ -188,7 +188,7 @@ $$
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng examples.asc -o main --npu-arch=dav-3510 && ./main

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_aux_config/SetFixpipeNz2ndFlag.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -36,7 +36,7 @@ __aicore__ inline void SetFixpipeNz2ndFlag(uint16_t ndNum, uint16_t srcNdStride,
 
 
 ```cpp
-// 如下原型仅Ascend 950PR/Ascend 950DT支持
+// 如下原型仅Ascend 950PR&950DT系列产品支持
 __aicore__ inline void SetFixpipeNz2ndFlag(uint16_t ndNum, uint16_t srcNdStride, uint32_t dstNdStride)
 ```
 
@@ -46,13 +46,13 @@ __aicore__ inline void SetFixpipeNz2ndFlag(uint16_t ndNum, uint16_t srcNdStride,
 
 针对如下产品型号，参数说明见下表：
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
+Atlas A3系列产品
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
+Atlas A2系列产品
 
 
-Atlas 200I/500 A2 推理产品
+Atlas 200I/500 A2推理产品
 
 **表1** 参数说明
 
@@ -65,7 +65,7 @@ Atlas 200I/500 A2 推理产品
 
 
 
-针对Ascend 950PR/Ascend 950DT：
+针对Ascend 950PR&950DT系列产品：
 
 **表2** 参数说明
 
@@ -80,10 +80,10 @@ Atlas 200I/500 A2 推理产品
 
 针对如下产品型号，参数说明见下表：
 
-Kirin X90 处理器系列产品
+Kirin X90处理器系列产品 
 
 
-Kirin 9030 处理器系列产品
+Kirin 9030处理器系列产品 
 
 **表3** 参数说明
 
@@ -117,7 +117,6 @@ uint16_t srcNdStride = 2;
 uint16_t dstNdStride = 1;
 AscendC::SetFixpipeNz2ndFlag(ndNum, srcNdStride, dstNdStride); // 设置FIX搬运NZ格式到ND格式转换的参数
 ```
-
 
 - [QuantBatchMatmulInplaceAdd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_batch_matmul_inplace_add_950.md)
 - [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant_950.md)

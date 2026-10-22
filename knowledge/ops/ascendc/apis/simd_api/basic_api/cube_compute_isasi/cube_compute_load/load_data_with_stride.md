@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadDataWithStride.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"basic_api/kernel_operator_mm_intf.h"`。
 
-本接口本质上实现功能和[LoadData（卷积数据搬运）](load_data_3_d.md)接口一致，用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。与LoadData（卷积数据搬运）接口的差异在于，本接口仅支持Ascend 950PR/Ascend 950DT产品，支持配置输出矩阵K轴方向偏移量dstStride的能力且必须配置该参数，调用之前必须使用辅助配置接口[SetLoadDataRepeatWithStride](../cube_load_aux_config/set_load_data_repeat_with_stride.md)配置dstStride参数。此外，相比于LoadData（卷积数据搬运），本接口内部不包含针对其他芯片版本的兼容性实现，减少了兼容造成的额外开销，性能表现有所优化。
+本接口本质上实现功能和[LoadData（卷积数据搬运）](load_data_3_d.md)接口一致，用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。与LoadData（卷积数据搬运）接口的差异在于，本接口仅支持Ascend 950PR&950DT系列产品，支持配置输出矩阵K轴方向偏移量dstStride的能力且必须配置该参数，调用之前必须使用辅助配置接口[SetLoadDataRepeatWithStride](../cube_load_aux_config/set_load_data_repeat_with_stride.md)配置dstStride参数。此外，相比于LoadData（卷积数据搬运），本接口内部不包含针对其他芯片版本的兼容性实现，减少了兼容造成的额外开销，性能表现有所优化。
 
 LoadDataWithStride支持的数据通路为：L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer。
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_fused/asc_exp_sub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -40,6 +40,8 @@ source_headers:
   result_i = e^{float(src0_{2i+1}) - float(src1_{2i+1})} & \text{提取奇数索引元素}
   \end{cases}
   $$
+
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -100,22 +102,19 @@ source_headers:
 
 ## 约束说明
 
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
-- `mask`需通过掩码设置接口预先赋值后再传入，未赋值的掩码寄存器内容不确定，会导致有效元素位置错误。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - `mask`掩码位为0时，结果对应元素置0。
 - 只有当输出数据类型位宽大于输入时，计算时才会有精度提升。
-
 
 ## 调用示例
 
 将以下代码保存为`example.asc`后，可通过`bisheng`命令编译运行。其中，`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
-bisheng example.asc -o main --npu-arch=dav-3510 && ./main
+bisheng example.asc -o main --npu-arch=dav-3510 -lm && ./main
 ```
 
 
@@ -129,6 +128,16 @@ bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 #include "acl/acl.h"
 
 namespace {
+template <typename T>
+void print_data(const char* label, const std::vector<T>& values)
+{
+    std::cout << label << ":";
+    const size_t count = values.size() < 8 ? values.size() : 8;
+    for (size_t i = 0; i < count; ++i) std::cout << ' ' << static_cast<float>(values[i]);
+    if (values.size() > count) std::cout << " ...";
+    std::cout << std::endl;
+}
+
 bool compare_data(const std::vector<float>& actual, const std::vector<float>& expected, double tolerance)
 {
     if (actual.size() != expected.size()) return false;
@@ -263,6 +272,16 @@ int main()
     aclrtMemcpy(half_odd_output.data(), FLOAT_COUNT * sizeof(float), half_odd_dst_device,
         FLOAT_COUNT * sizeof(float), ACL_MEMCPY_DEVICE_TO_HOST);
 
+    print_data("Float src0", float_src0);
+    print_data("Float src1", float_src1);
+    print_data("Float output", float_output);
+    print_data("Float golden", float_golden);
+    print_data("Half src0", half_src0);
+    print_data("Half src1", half_src1);
+    print_data("Half even output", half_even_output);
+    print_data("Half even golden", half_even_golden);
+    print_data("Half odd output", half_odd_output);
+    print_data("Half odd golden", half_odd_golden);
     const bool passed = compare_data(float_output, float_golden, 1e-4) &&
                         compare_data(half_even_output, half_even_golden, 1e-4) &&
                         compare_data(half_odd_output, half_odd_golden, 1e-4);

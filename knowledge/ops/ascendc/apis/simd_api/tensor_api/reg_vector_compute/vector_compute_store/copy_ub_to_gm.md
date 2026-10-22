@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/vector_compute_store/copy_ub_to_gm.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-30T01:53:56Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,11 +24,11 @@ source_headers:
 
 ## 功能说明
 
-头文件路径为：`tensor_api/tensor.h`，命名空间为`asc::te`。
+头文件路径为：`tensor_api/algorithm/copy.h`，命名空间为`asc::te`。
 
 该接口用于将Unified Buffer（UB）中的数据搬运到Global Memory。接口根据源、目的Tensor的存储位置自动选择`copy_ub_to_gm`通路，并根据源、目的Layout推导搬运块数、单块长度、源步长和目的步长，支持单块长度非32字节对齐的数据搬运。
 
-当前支持ND2ND、DN2DN和NZ2NZ搬运，不支持ZN2ZN以及不同Layout Pattern之间的格式转换。搬运过程中不执行数据类型转换，数据格式和有效内容保持不变。接口支持整Tensor搬运和通过坐标、Shape指定的局部区域搬运。Global Memory目的Tensor设置的L2 Cache Hint会传递给搬运指令。
+当前支持ND2ND、DN2DN、NZ2NZ和ZN2ZN搬运。搬运过程中不执行数据类型转换，数据格式和有效内容保持不变。接口支持整Tensor搬运和通过坐标、Shape指定的局部区域搬运。接口使用Global Memory目的Tensor设置的[L2 Cache Hint](../../tensor/tensor.md#set_l2_cache_hint)确定本次搬运的L2 Cache模式。
 
 ## 函数原型
 
@@ -61,7 +61,7 @@ UB到Global Memory通路使用`copy_ub_to_gm{}`作为搬运操作对象，默认
 | 参数名 | 输入/输出 | 描述 |
 | :--- | :---: | :--- |
 | atom | 输入 | 搬运原子对象，可通过`make_copy(copy_ub_to_gm{})`或`make_copy(copy_ub_to_gm{}, ub_to_gm_trait_default{})`构造。 |
-| dst | 输出 | 目的Tensor，存储位置必须为`location::gm`。目的Tensor的Cache Hint用于选择底层L2 Cache模式。 |
+| dst | 输出 | 目的Tensor，存储位置必须为`location::gm`。本次搬运的L2 Cache模式从目的Tensor的L2 Cache Hint中获取，设置方法参见[L2 Cache模式](#l2-cache模式)。 |
 | src | 输入 | 源Tensor，存储位置必须为`location::ub`。 |
 | dst_coord | 输入 | 目的区域起始坐标。显式坐标的结构应与`copy_shape`一致，也可以使用`zero_coord`。 |
 | src_coord | 输入 | 源区域起始坐标。显式坐标的结构应与`copy_shape`一致，也可以使用`zero_coord`。 |
@@ -78,6 +78,7 @@ UB到Global Memory通路使用`copy_ub_to_gm{}`作为搬运操作对象，默认
 | ND | 源Layout的总行数 | 源、目的Layout总列字节数的较小值 | 对应Tensor的行步长 × 元素字节数 |
 | DN | 源Layout的总列数 | 源、目的Layout总行字节数的较小值 | 对应Tensor的列步长 × 元素字节数 |
 | NZ | 分形格式的外层列数 | 总行数 × 内层列数 × 元素字节数 | 对应Tensor的外层列步长 × 元素字节数 |
+| ZN | 分形格式的外层行数 | 总列数 × 内层行数 × 元素字节数 | 对应Tensor的外层行步长 × 元素字节数 |
 
 ## 数据类型
 
@@ -85,7 +86,7 @@ UB到Global Memory通路使用`copy_ub_to_gm{}`作为搬运操作对象，默认
 
 | 源/目的Layout | 支持的数据类型 |
 | :--- | :--- |
-| ND、DN、NZ | `fp4x2_e1m2_t`、`fp4x2_e2m1_t`、`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t` |
+| ND、DN、NZ、ZN | `int4b_t`、`fp4x2_e1m2_t`、`fp4x2_e2m1_t`、`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t` |
 
 ## 返回值说明
 
@@ -119,7 +120,15 @@ UB源地址按32字节对齐，Global Memory目的端允许1字节对齐。单�
 
 ### L2 Cache模式
 
-接口从目的Global Memory Tensor的Engine中取得Cache Hint，并转换为底层`asc_store_l2_cache_mode`参数。需要指定Cache策略时，应在目的Tensor上设置对应Hint，无需向`copy`额外传参。
+`copy`从位于Global Memory的目的Tensor中获取L2 Cache Hint，作为本次搬运的L2 Cache模式，无需向`copy`额外传参。
+
+调用`copy`前，可通过目的Tensor的[set_l2_cache_hint()](../../tensor/tensor.md#set_l2_cache_hint)接口设置L2 Cache Hint，通过[get_cache_mode()](../../tensor/tensor.md#get_cache_mode)接口获取当前配置。未显式设置时，默认值为`asc::te::cache_mode::normal`。
+
+```cpp
+dst.set_l2_cache_hint(asc::te::cache_mode::normal);
+auto cache_mode = dst.get_cache_mode();
+asc::te::copy(dst, src);
+```
 
 ## 调用示例
 

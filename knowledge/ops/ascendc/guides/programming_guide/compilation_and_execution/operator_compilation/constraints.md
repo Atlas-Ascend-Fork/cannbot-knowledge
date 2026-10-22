@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/compilation_and_execution/operator_compilation/constraints.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,13 +19,13 @@ platforms: []
 - 在同一个编译单元，若存在多个核函数（Kernel），暂不支持自动推导核函数（Kernel）类型，需要开发者手动设置核函数（Kernel）类型。
     - 特别地，针对如下型号，无论是否是同一个编译单元多个核函数（Kernel）的场景，均不支持在开发者未设置核函数（Kernel）类型时进行自动推导。建议开发者手动设置核函数（Kernel）类型。
         
-        - Ascend 950PR/Ascend 950DT
+        - Ascend 950PR&950DT系列产品
         
         
-        - Atlas 推理系列产品
+        - Atlas推理系列产品
         
 
-- 核函数（Kernel）推荐使用 \_\_cube\_\_ / \_\_vector\_\_ / \_\_mix\_\_(cube, vec)进行标记，KERNEL\_TASK\_TYPE\_DEFAULT接口即将废弃。
+- 核函数（Kernel）使用 \_\_cube\_\_ / \_\_vector\_\_ / \_\_mix\_\_(cube, vec)进行标记。
 
 - 纯Scalar算子无法实现自动推导
     需手动标记核函数（Kernel）类型，推荐设置为纯Vector类型，添加\_\_vector\_\_ attribute进行标记：
@@ -47,6 +47,7 @@ platforms: []
     | 复数 | complex32、complex64。| 仅支持声明 |
     
     使用示例如下：
+
       ```cpp
       // 全局
       bool flag = true;
@@ -69,6 +70,7 @@ platforms: []
     | 扩展向量数据类型  | vector_hifloat8_t、vector_fp8_e4m3fn_t、vector_fp8_e5m2_t、vector_fp8_e8m0_t、vector_bfloat16_t。|
 
     使用示例如下：
+
       ```cpp
       // 全局声明
       hifloat8_t *flag = nullptr;
@@ -81,6 +83,8 @@ platforms: []
         vector_fp8_e5m2_t *y = nullptr;
       }
       ```
+
+- 暂不支持在Host端使用模板方式传递`扩展向量数据类型`，如`vector_fp8_e4m3fn_t`。
 
 - 暂不支持在函数空间外定义和使用device侧的字符串字面量。例如：
 

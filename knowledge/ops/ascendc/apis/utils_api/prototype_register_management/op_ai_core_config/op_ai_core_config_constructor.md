@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpAICoreConfig/OpAICoreConfig_constructor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -136,7 +136,6 @@ public:
     }
 };
 ```
-
 
 - [UpsampleNearestExact2dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_exact_2d_backward_950.md)
 - [QuantMax 950 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/quant_max_950.md)

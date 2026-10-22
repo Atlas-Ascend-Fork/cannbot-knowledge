@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/Copy_UBToUB_mask_highdim_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -90,37 +90,37 @@ source_headers:
 
 
 
-- Ascend 950PR/Ascend 950DT，支持的数据类型为：int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- Ascend 950PR&950DT系列产品，支持的数据类型为：int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
 
 
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- Atlas A3系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- Atlas A2系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
 
 
-- Atlas 200I/500 A2 推理产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- Atlas 200I/500 A2推理产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
 
 
-- Kirin X90，支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
+- Kirin X90处理器系列产品，支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
 
 
 
 
 
-- Kirin 9030，支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
+- Kirin 9030处理器系列产品，支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
 
 
 
@@ -148,14 +148,14 @@ source_headers:
     
   - 针对如下型号，当参数repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
      
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
      
      
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
      
     
     
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
     
 
 

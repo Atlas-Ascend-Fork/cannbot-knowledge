@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/c_pointer_programming/c_programming_overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -37,7 +37,7 @@ AI Core采用分级存储架构，不同计算单元的编程视角有所差异�
 
 Global Memory是昇腾NPU的设备内存，位于AI Core外部，容量大、带宽高但访问延迟相对较长。用于存储算子的输入数据、输出结果和中间计算数据。运行在Device侧的核函数（Kernel）可直接访问Global Memory。Global Memory具备数据持久性：通过全局内存分配的空间，其存储的数据会一直保留，直至该内存空间被释放或应用程序终止。用户通过Runtime API完成Device侧全局内存的管理。
 
-结合下述示例说明：Host侧通过aclrtMalloc接口分配Device侧全局内存，通过aclrtMemcpy完成Host与Device全局内存间的数据互相拷贝（Host→Device或Device→Host）；随后通过<<<>>>语法触发Device侧核函数（Kernel）执行运算；此外，通过aclrtMalloc分配的Device全局内存，需调用aclrtFree接口释放。有关Runtime API的更多信息与细节，可以参考[《Runtime运行时API》](https://hiascend.com/document/redirect/CannCommunityRuntimeApi)。
+结合下述示例说明：Host侧通过aclrtMalloc接口分配Device侧全局内存，通过aclrtMemcpy完成Host与Device全局内存间的数据互相拷贝（Host→Device或Device→Host）；随后通过<<<>>>语法触发Device侧核函数（Kernel）执行运算；此外，通过aclrtMalloc分配的Device全局内存，需调用aclrtFree接口释放。有关Runtime API的更多信息与细节，可以参考[《Runtime运行时API》](https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/README.md)。
 
 此外，核函数（Kernel）需使用__global__函数前缀进行声明。该前缀用于标识函数在Host侧调用、Device侧执行，是Ascend C核函数（Kernel）的标准定义方式，确保编译器正确识别核函数（Kernel）入口并生成相应的硬件执行代码。完整的调用流程为：Host分配GM内存 → 数据拷贝 → 启动核函数（Kernel） → 释放内存，示例代码如下：
 
@@ -242,7 +242,7 @@ AI Core上的执行单元分别属于不同的执行流水，同步即是保证�
 
 | 同步类型 | 核心作用及场景说明 | 关键接口 | 实现代码示例 |
 |---------|-------------------|---------|-------------|
-| 多流水同步（机制一） | 通过"锁定-释放"指定流水的方式，解决核内异步流水间的同步依赖问题；该机制功能类似于传统CPU的锁机制，是[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)新引入的同步方式，相较于notify/wait更易使用。 | `asc_lock` & `asc_unlock` | `uint8_t mutex_id = 1;`<br>`asc_lock(PIPE_MTE2, mutex_id);`<br>`asc_copy_gm2ub((__ubuf__ void*)src0, ...);`<br>`asc_unlock(PIPE_MTE2, mutex_id);`<br>`asc_lock(PIPE_V, mutex_id);`<br>`asc_add(shared_buffer, x_local, y_local);`<br>`asc_unlock(PIPE_V, mutex_id);` |
+| 多流水同步（机制一） | 通过"锁定-释放"指定流水的方式，解决核内异步流水间的同步依赖问题；该机制功能类似于传统CPU的锁机制，是[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)新引入的同步方式，相较于notify/wait更易使用。同步原理及双缓冲场景中的数据依赖和Buffer复用，请参考[基于Mutex实现多流水同步](../../../advanced_programming/advanced_kernel_programming/intra_core_sync/mutex_multi_pipeline_sync.md)。 | `asc_lock` & `asc_unlock` | `uint8_t mutex_id = 1;`<br>`asc_lock(PIPE_MTE2, mutex_id);`<br>`asc_copy_gm2ub((__ubuf__ void*)src0, ...);`<br>`asc_unlock(PIPE_MTE2, mutex_id);`<br>`asc_lock(PIPE_V, mutex_id);`<br>`asc_add(shared_buffer, x_local, y_local);`<br>`asc_unlock(PIPE_V, mutex_id);` |
 | 多流水同步（机制二） | 通过notify与wait机制实现两条流水间的同步等待，用于核内异步流水的同步协调。[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)引入mutex机制后，仍保持对该接口的兼容支持，但优先推荐使用mutex机制进行多流水同步。 | `asc_sync_notify` & `asc_sync_wait` | `asc_copy_gm2ub((__ubuf__ void*)src0, ...);`<br>`asc_sync_notify(PIPE_MTE2, PIPE_V, EVENT_ID0);`<br>`asc_sync_wait(PIPE_MTE2, PIPE_V, EVENT_ID0);`<br>`asc_add(dst, src1, src0, total_length);` |
 | 单流水同步 | 等待同一流水内前序指令完成，用于同一流水内存在前后数据依赖。 | `asc_sync_pipe` & `asc_sync_mte2等` | `asc_add(dst, src1, src0, total_length);`<br>`asc_sync_pipe(PIPE_V);`<br>`asc_sub(dst, dst, src0, total_length);` |
 | 内存访问顺序控制 | 等待所有前序内存访问完成，用于存在数据依赖或内存依赖的场景。 | `asc_sync_data_barrier` | `asc_sync_data_barrier(mem_dsb_t::DSB_ALL);` |
@@ -381,7 +381,7 @@ __global__ __cube__ void add_kernel(__gm__ float* x, __gm__ float* y, __gm__ flo
     // GM2L1 and L12L0 data transfer operations
     // ...
     // Execute Mmad, computation size is (BLOCK_M, BLOCK_K, BLOCK_N)
-    asc_mmad(l0c_buf, l0a_buf, l0b_buf, BLOCK_M, BLOCK_K, BLOCK_N, 0, false, false, false);
+    asc_mmad(l0c_buf, l0a_buf, l0b_buf, BLOCK_M, BLOCK_K, BLOCK_N, asc_unit_flag_mode::DISABLE, false, false, false);
     // Matrix data transfer out
 }
 ```
@@ -405,7 +405,7 @@ __global__ __mix__ void add_kernel(__gm__ float* x, __gm__ float* y, __gm__ floa
 
     if ASCEND_IS_AIC {
         // ...
-        asc_mmad(l0c_buf, l0a_buf, l0b_buf, BLOCK_M, BLOCK_K, BLOCK_N, 0, false, false, false);
+        asc_mmad(l0c_buf, l0a_buf, l0b_buf, BLOCK_M, BLOCK_K, BLOCK_N, asc_unit_flag_mode::DISABLE, false, false, false);
         // ...
     }
 }

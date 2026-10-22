@@ -10,13 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/memory_model/cache_coherence.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # 缓存一致性
 
-本文介绍NPU编程中常见的缓存一致性问题，说明DCache、ICache、SIMT DCache与GM的数据一致性。芯片的硬件架构参考[NPU架构版本2201](../hardware_implementation/architecture_spec/npu_arch_2201.md)和[NPU架构版本3510](../hardware_implementation/architecture_spec/npu_arch_3510.md)。
+本文介绍NPU编程中常见的缓存一致性问题，说明Data Cache（DCache）、Instruction Cache（ICache）、SIMT DCache与Global Memory（GM）的数据一致性。芯片的硬件架构参考[NPU架构版本2201](../hardware_implementation/architecture_spec/npu_arch_2201.md)和[NPU架构版本3510](../hardware_implementation/architecture_spec/npu_arch_3510.md)。
 
 ## 缓存一致性的基本概念
 
@@ -72,7 +72,7 @@ Data Cache Clean and Invalid（[DCCI](../../../../apis/simd_api/c_api/cache_ctrl
 
 实际使用时，可根据一致性目标选择不同DCCI接口：使用[`asc_dcci_single`](../../../../apis/simd_api/c_api/cache_ctrl/asc_dcci.md)刷新指定地址所在的单个Cache Line；使用[`asc_dcci_entire_out`](../../../../apis/simd_api/c_api/cache_ctrl/asc_dcci.md)刷新面向GM的一致性目标；原子相关目标按产品支持情况选择[`asc_dcci_entire_atomic`](../../../../apis/simd_api/c_api/cache_ctrl/asc_dcci.md)等接口。
 
-对于需要等待DCCI触发的写回真正完成的场景，还需要配合Data Sync Barrier（[DSB](../../../../apis/simd_api/c_api/sync/asc_sync_data_barrier.md)）等待前序内存访问完成，DSB只用于阻塞后续指令执行，直到之前的内存访问指令执行结束，参数可选择`DSB_ALL`、`DSB_DDR`或`DSB_UB`。
+对于需要等待DCCI触发的写回真正完成的场景，还需要配合Data Sync Barrier（[DSB](../../../../apis/simd_api/c_api/sync/intra_core_sync/asc_sync_data_barrier.md)）等待前序内存访问完成，DSB只用于阻塞后续指令执行，直到之前的内存访问指令执行结束，参数可选择`DSB_ALL`、`DSB_DDR`或`DSB_UB`。
 
 Cache写入策略决定写操作是否会形成Dirty副本，常见策略包括直写和写回：
 
@@ -82,7 +82,7 @@ Cache写入策略决定写操作是否会形成Dirty副本，常见策略包括�
 
 ### 缓存一致性与内存一致性的区别
 
-缓存一致性（cache一致性）关注的是同一地址或同一Cache Line在不同缓存副本之间的值是否一致。例如，某个核的DCache已经把`A`修改为新值，但GM中仍是旧值；或者GM已经被其他路径更新，但当前核DCache仍保留旧副本。此时问题的关键是是否需要写回Dirty副本、失效旧副本，或者绕过Cache访问。
+缓存一致性关注的是同一地址或同一Cache Line在不同缓存副本之间的值是否一致。例如，某个核的DCache已经把`A`修改为新值，但GM中仍是旧值；或者GM已经被其他路径更新，但当前核DCache仍保留旧副本。此时问题的关键是是否需要写回Dirty副本、失效旧副本，或者绕过Cache访问。
 
 内存一致性关注的是不同执行单元、不同线程或不同核之间的读写顺序是否符合程序预期。例如，生产者先写数据再写标志，消费者看到标志后是否一定能按预期读取到数据。同步接口、内存栅栏主要解决执行顺序和访问完成问题；DCCI主要解决Cache副本写回和失效问题。实际编程时，两类问题经常同时出现，但本文重点讨论Cache副本与GM、UB之间的数据一致性。
 
@@ -231,9 +231,10 @@ T6                                                Scalar.LOAD A -> 1
 
 - 生产者通过Scalar写GM后，如果消费者需要从GM或其他路径读取该数据，生产者需要执行DCCI（例如`asc_dcci_single`）把Dirty数据写回GM。
 - 消费者如果担心本核DCache中有旧副本，读取前需要执行DCCI使旧副本失效。
-- 如果算法本身不需要DCache缓存，可以使用[ReadGmBypassDCache](https://gitcode.com/cann/asc-devkit/tree/master/docs/zh/guide/programming_guide/api/SIMD-API/basic_api/scalar_compute/ReadGmBypassDCache_ISASI.md>)和[WriteGmBypassDCache](https://gitcode.com/cann/asc-devkit/tree/master/docs/zh/guide/programming_guide/api/SIMD-API/basic_api/scalar_compute/WriteGmBypassDCache_ISASI.md>)直接读写GM。
+- 如果算法本身不需要DCache缓存，可以使用[ReadGmBypassDCache](<../../../../apis/simd_api/basic_api/scalar_compute/read_gm_bypass_d_cache_isasi.md>)和[WriteGmBypassDCache](<../../../../apis/simd_api/basic_api/scalar_compute/write_gm_bypass_d_cache_isasi.md>)直接读写GM。
 
 还有一类问题来自Cache Line粒度。普通Scalar写后续以64B Cache Line为单位写回；多个核即使写的是同一条Cache Line中的不同字段，也可能在各自写回整条Cache Line时覆盖对方结果。此类场景可以通过让不同核操作的地址至少相隔Cache Line大小，或使用ReadGmBypassDCache和WriteGmBypassDCache降低风险。
+
 
 
 #### Atomic访问导致的DCache缓存一致性
@@ -267,6 +268,7 @@ T1        asc_atomic_add(A, 1)
 上面的关键不是`asc_atomic_add`本身不原子，而是原子操作看到的GM值没有包含此前停留在DCache中的普通Scalar写入。
 
 反过来，如果`asc_atomic_add(A, 1)`已经把GM更新为1，而本核DCache里还保留`A == 0`的旧副本，后续普通Scalar读也可能继续读到旧副本。
+
 ```text
 Case 2：Atomic在前，普通Scalar读在后
 初始状态：
@@ -338,7 +340,6 @@ T3        Scalar.DCCI A
 T4        Scalar.LOAD A -> 1
           // 重新从GM获取Atomic更新后的新值
 ```
-
 
 
 #### 软件维护Scalar访问GM的DCache一致性
@@ -462,6 +463,7 @@ WAR场景下维护缓存一致性的目标是读取写前旧值，维护重点�
 ICache用于缓存Scalar单元最近使用或频繁使用的指令。Scalar读取GM指令时，优先从ICache读取；ICache未命中时，再从L2 Cache读取；L2 Cache也未命中时，再从GM加载指令并更新到L2 Cache和ICache。相关说明见[系统缓存概述](../../../../apis/simd_api/basic_api/cache_control/system_cache_overview.md)。
 
 从缓存一致性角度看，ICache缓存的是指令而不是普通数据，并且是只读Cache，因此一般不涉及普通数据路径上的Cache副本不一致问题。
+
 
 
 ### SIMT DCache与GM的缓存一致性
@@ -624,6 +626,7 @@ C API中提供了[`asc_ub_dcci_single`](../../../../apis/simd_api/c_api/cache_ct
 下面按atomic事件发起路径分类说明：。本节只说明这些atomic事件放入一致性分析时需要关注的Cache行为，接口细节可参考对应API文档。
 
 
+
 ### Scalar原子操作与DCache一致性
 
 [NPU架构版本3510](../../language_extension/simd_builtin_keywords.md)支持Scalar原子操作，Scalar原子操作和普通Scalar读写GM混用时，需要按DCache与GM的一致性来分析，详细处理方式参考[Atomic访问导致的DCache缓存一致性](#atomic访问导致的dcache缓存一致性)。
@@ -649,6 +652,7 @@ FixPipe常用于`L0C Buffer -> GM`或相关矩阵搬出路径。对一致性分�
 - 如果GM目标地址的初值来自普通Scalar写GM，需要先按[DCache缓存一致性](#DCache与GM的缓存一致性)把DCache中的Dirty数据写回GM，再执行FixPipe随路原子。
 - 如果FixPipe随路原子后，消费者通过Scalar普通路径读取GM，需要等待FixPipe写GM完成，并在读端处理DCache旧副本。
 - 如果多个流水或多个核都对同一GM地址做随路原子，原子操作只保证每次GM读-改-写不被打断；不同流水、不同核之间的启动顺序仍应由同步或算法协议保证。
+
 
 
 ### SIMT原子操作与缓存一致性

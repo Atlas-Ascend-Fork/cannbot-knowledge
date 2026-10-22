@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/workspace/GetUserWorkspace.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-12T02:51:24Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -27,7 +27,7 @@ platforms:
 
 ## 功能说明<a name="section618mcpsimp"></a>
 
-获取用户使用的workspace指针。核函数（Kernel）直调开发方式下，如果未开启HAVE\_WORKSPACE编译选项，框架不会自动设置系统workspace。如果使用了[Matmul核函数（Kernel）侧接口](../../../adv_api/cube_compute/matmul_kernel/index.md)等需要系统workspace的高阶API，kernel侧需要通过[SetSysWorkSpace](set_sys_work_space.md)设置系统workspace，此时用户workspace需要通过该接口获取。
+获取用户使用的workspace指针。核函数（Kernel）直调开发方式下，如果未开启HAVE\_WORKSPACE编译选项，框架不会自动设置系统workspace。如果使用了[Matmul核函数（Kernel）侧接口](../../../adv_api/cube_compute/matmul_kernel/index.md)等需要系统workspace的高阶API，核函数（Kernel）侧需要通过[SetSysWorkSpace](set_sys_work_space.md)设置系统workspace，此时用户workspace需要通过该接口获取。
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -65,7 +65,6 @@ __aicore__ inline GM_ADDR GetUserWorkspace(GM_ADDR workspace)
 ## 返回值说明<a name="section640mcpsimp"></a>
 
 用户使用workspace指针。
-
 
 - [Im2colBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/im2col_backward_950.md)
 - [CircularPad2d A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d.md)

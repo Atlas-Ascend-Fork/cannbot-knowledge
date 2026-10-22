@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/faq/filename_too_long_error.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -61,7 +61,7 @@ platforms: []
 下面列出了常见错误的解决方案：
 
 -   文件名过长报错
-    -   位于算子工程op\_kernel目录下的kernel侧代码和位于op\_host目录下的host侧代码等文件，文件名是根据创建算子工程时传入的算子OpType自动生成的。如果因为此类文件名过长报错，应减少OpType的长度。
+    -   位于算子工程op\_kernel目录下的核函数（Kernel）侧代码和位于op\_host目录下的host侧代码等文件，文件名是根据创建算子工程时传入的算子OpType自动生成的。如果因为此类文件名过长报错，应减少OpType的长度。
     -   使用Comment接口设置算子分组名称后，会对应生成同名的供GE调用的原型定义代码文件。如果因为此类文件导致文件名过长报错，应减少算子分组名称的长度。
 
 -   文件路径过长报错

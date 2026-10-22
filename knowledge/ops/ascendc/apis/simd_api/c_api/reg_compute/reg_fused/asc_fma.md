@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_fused/asc_fma.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -29,6 +29,8 @@ source_headers:
 $$
 result_i = src0_i \times src1_i + src2_i
 $$
+
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -56,12 +58,12 @@ __simd_callee__ inline vector_float asc_fma(vector_float src0,
 
 **表1** 参数说明
 
-| 参数名 | 输入/输出 | 描述                                                                                                             |
+| 参数名 | 输入/输出 | 描述 |
 | ------ | --------- | ---------------------------------------------------------------------------------------------------------------- |
-| src0   | 输入      | 源操作数0（矢量数据寄存器）。                                                                                     |
-| src1   | 输入      | 源操作数1（矢量数据寄存器）。                                                                                     |
-| src2   | 输入      | 源操作数2（矢量数据寄存器），作为乘加运算的累加值。                                                               |
-| mask   | 输入      | 掩码寄存器，用于控制各元素是否参与计算。`mask`中与元素对应的比特位为1时，该元素参与计算；为0时，该元素不参与计算。 |
+| src0 | 输入 | 源操作数0（矢量数据寄存器）。 |
+| src1 | 输入 | 源操作数1（矢量数据寄存器）。 |
+| src2 | 输入 | 源操作数2（矢量数据寄存器），作为乘加运算的累加值。 |
+| mask | 输入 | 掩码寄存器，用于控制各元素是否参与计算。`mask`中与元素对应的比特位为1时，该元素参与计算；为0时，该元素不参与计算。 |
 
 矢量数据寄存器和掩码寄存器的详细说明请参见[reg数据类型定义](../../defs/type/data_type_definition.md)。
 
@@ -79,7 +81,7 @@ __simd_callee__ inline vector_float asc_fma(vector_float src0,
 将以下代码保存为`example.asc`后，可通过`bisheng`命令编译运行。其中，`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

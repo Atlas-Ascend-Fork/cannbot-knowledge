@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__mul64hi.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入int64类型数据x和y乘积的高64位。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002562010435.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002562010435.png)
 
 ## 函数原型
 
@@ -76,3 +76,11 @@ long long __mul64hi(long long x, long long y)
         dst[idx] = __mul64hi(x[idx], y[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -12, 23, -7, 6
+y: 6, 3, 4, 15
+result: -1, 0, -1, 0
+```

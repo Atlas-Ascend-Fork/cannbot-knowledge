@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__mul_i32toi64.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -99,5 +99,22 @@ unsigned long long __mul_i32toi64(unsigned int x, unsigned int y)
     }
     ```
 
+输入输出示例如下：
+
+- 当输入数据类型为`int`时：
+
+    ```text
+    x: -12, 23, -7, 6
+    y: 6, 3, 4, 15
+    result: -72, 69, -28, 90
+    ```
+
+- 当输入数据类型为`unsigned int`时：
+
+    ```text
+    x: 0, 12, 23, 70
+    y: 6, 15, 3, 4
+    result: 0, 180, 69, 280
+    ```
 
 - [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)

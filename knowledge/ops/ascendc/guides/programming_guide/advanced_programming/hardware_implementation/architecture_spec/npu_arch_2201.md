@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_2201.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,10 +19,10 @@ platforms: []
 本节介绍\_\_NPU\_ARCH\_\_版本号为2201的硬件架构和其功能说明。对应的产品型号为：
 
 
--   Atlas A3 训练系列产品/Atlas A3 推理系列产品
+-   Atlas A3系列产品
 
 
--   Atlas A2 训练系列产品/Atlas A2 推理系列产品
+-   Atlas A2系列产品
 
 
 ## 硬件架构图<a name="section2189135013710"></a>
@@ -51,9 +51,7 @@ platforms: []
 
 开发者可以通过[平台信息获取](../../../../../apis/utils_api/platform_info/index.md)接口查询各存储单元的内存空间大小。
 
-**各存储单元的参数规格**
-
-<a name="table12348145512210"></a>
+**各存储单元的参数规格**<a name="table12348145512210"></a>
 
 | 存储单元名称 | 存储空间大小 | 对齐要求 | 核函数（Kernel）侧常量名称及大小（单位：字节） |
 | --- | --- | --- | --- |
@@ -108,7 +106,7 @@ platforms: []
 
 **支持跨卡数据搬运（Hccs物理链路）**
 
-在跨卡通信算子开发场景，DataCopy类接口支持跨卡数据搬运，在Atlas A2 训练系列产品/Atlas A2 推理系列产品设备上，仅支持Hccs物理链路，不支持其他通路；开发者开发过程中，请关注涉及卡间通信的物理通路；通过npu-smi  info -t topo指令查询Hccs 物理通路。
+在跨卡通信算子开发场景，DataCopy类接口支持跨卡数据搬运，在Atlas A2系列产品设备上，仅支持Hccs物理链路，不支持其他通路；开发者开发过程中，请关注涉及卡间通信的物理通路；通过npu-smi  info -t topo指令查询Hccs 物理通路。
 
 **支持Fixpipe硬件化加速**
 
@@ -150,7 +148,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_f32_1.png)
 
-## 指令序列深度<a name="section1073952984666"></a>
+## 指令队列深度<a name="section1073952984666"></a>
 
 以下是计算单元和搬运单元的指令队列深度：
 
@@ -230,15 +228,13 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     -   **与其它接口的flagId冲突**
 
-        Matmul高阶API和SyncAll硬件同步接口内部实现中使用了CrossCoreSetFlag和CrossCoreWaitFlag会占用一部分flagId，开发者同时使用以上两个接口与CrossCoreSetFlag/CrossCoreWaitFlag时，需注意避免flagId使用冲突，具体情况参考[CrossCoreSetFlag的flagId冲突说明](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md#flagId冲突说明)。
+        部分接口内部实现中使用了CrossCoreSetFlag和CrossCoreWaitFlag，会占用一部分flagId，开发者同时使用这些接口与CrossCoreSetFlag/CrossCoreWaitFlag时，需注意避免flagId使用冲突，各接口flagId占用的完整说明（含各NPU架构版本的差异）参考[核间同步flagId占用说明](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/key_features.md#inter_core_sync_flagid_usage)。
 
     -   **计数器限制**
 
         同一flagId的计数器最多可以设置15次。
 
-    <a id="cross_core_wait_flag_default_values"></a>
-
-    -   **默认值**
+    -   **默认值**<a id="cross_core_wait_flag_default_values"></a>
 
         - modeId：默认值为0。建议显式配置与CrossCoreSetFlag相同的modeId。
         - pipe：默认值为PIPE\_S。CrossCoreWaitFlag接口提供pipe模板参数，但本架构版本的硬件指令不区分等待的流水，因此pipe取值不影响实际执行效果，CrossCoreWaitFlag会阻塞全部流水的后续指令。

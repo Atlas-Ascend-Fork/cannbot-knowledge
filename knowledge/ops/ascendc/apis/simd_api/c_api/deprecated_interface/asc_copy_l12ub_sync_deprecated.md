@@ -10,28 +10,29 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l12ub_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/c_api/composite/cube_datamove_composite.h
+- include/c_api/cube_datamove/cube_datamove.h
 ---
 
 # asc_copy_l12ub_sync（废弃）
 
 ## 功能说明
 
-头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
-**`asc_copy_l12ub_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l12ub.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l12ub_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_store/asc_copy_l12ub.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将数据从L1 Buffer搬运到Unified Buffer（UB）中。
 
 ## 函数原型
 
 - 同步搬运
+
     ```cpp
-    __aicore__ inline void asc_copy_l12ub_sync(__ubuf__ void* dst_addr, __cbuf__ void* src_addr, int8_t sub_blockid, uint16_t burst_count, uint16_t burst_len, uint16_t src_gap, uint16_t dst_gap)
+    __aicore__ inline void asc_copy_l12ub_sync(__ubuf__ void* dst_addr, __cbuf__ void* src_addr, bool sub_blockid, uint16_t burst_count, uint16_t burst_len, uint16_t src_gap, uint16_t dst_gap)
     ```
 
 ## 参数说明
@@ -42,7 +43,7 @@ source_headers:
 | :--- | :--- | :--- |
 | dst_addr | 输出 | 目的操作数起始地址。 |
 | src_addr | 输入 | 源操作数起始地址。 |
-| sub_blockid | 输入 | 使用的子块ID。 |
+| sub_blockid | 输入 | 使用的子块ID，bool类型，false为0，true为1。 |
 | burst_count | 输入 | 待搬运的连续传输数据块个数。 |
 | burst_len | 输入 | 待搬运的每个连续传输数据块的长度，单位为DataBlock（32字节）。 |
 | src_gap | 输入 | 源操作数相邻连续数据块的间隔（前面一个数据块的尾与后面一个数据块的头的间隔）。<br>单位为DataBlock（32字节）。 |

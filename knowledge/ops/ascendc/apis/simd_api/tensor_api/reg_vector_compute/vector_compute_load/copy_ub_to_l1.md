@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/vector_compute_load/copy_ub_to_l1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 ## 功能说明
 
-头文件路径为：`tensor_api/tensor.h`，命名空间为`asc::te`。
+头文件路径为：`tensor_api/algorithm/copy.h`，命名空间为`asc::te`。
 
 该接口用于将Unified Buffer（UB）中的数据搬运到L1 Buffer。接口根据源、目的Tensor的存储位置自动选择`copy_ub_to_l1`通路，并根据Layout推导数据块个数、单块长度以及源、目的块间间隔，同时支持连续和非连续的高维切分数据搬运。
 
@@ -90,7 +90,7 @@ UB到L1 Buffer通路使用`copy_ub_to_l1{}`作为搬运操作对象，默认trai
 
 | 源/目的Layout | 支持的数据类型 |
 | :--- | :--- |
-| ND、DN、NZ、ZN | `fp4x2_e1m2_t`、`fp4x2_e2m1_t`、`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t` |
+| ND、DN、NZ、ZN | `int4b_t`、`fp4x2_e1m2_t`、`fp4x2_e2m1_t`、`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t` |
 
 ## 返回值说明
 

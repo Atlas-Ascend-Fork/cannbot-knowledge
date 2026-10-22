@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopy_L0CToUB.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - 310p
 ---
@@ -160,7 +160,7 @@ platforms:
 - Local Memory -\> Local Memory，源操作数与目的操作数类型不一致
 
     ```cpp
-    // 以下示例为L0C Buffer -> UB通路的数据搬运，仅在Atlas 推理系列产品AI Core场景下支持。srcLocal为int32_t类型的L0C Buffer上的LocalTensor，dstLocal为int8_t类型的UB上的LocalTensor
+    // 以下示例为L0C Buffer -> UB通路的数据搬运，仅在Atlas推理系列产品AI Core场景下支持。srcLocal为int32_t类型的L0C Buffer上的LocalTensor，dstLocal为int8_t类型的UB上的LocalTensor
     // 使用传入DataCopyParams参数的搬运接口，支持连续和非连续搬运
     DataCopyParams intriParams;
     intriParams.blockCount = 1; // 连续数据块个数为1

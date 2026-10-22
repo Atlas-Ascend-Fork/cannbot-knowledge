@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/faq/alloc_free_tensor_failure.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -40,25 +40,25 @@ SIGABRT Signal (Abort Signal from abort) catched, backtrace info:
 同一个TPosition上的所有Queue，连续调用AllocTensor接口申请的Tensor数量，根据AI处理器型号的不同，有数量约束。申请Buffer时，需要满足该约束。
 
 
-Atlas 训练系列产品不超过4个。
+Atlas训练系列产品不超过4个。
 
 
 
-Atlas 推理系列产品AI Core不超过8个。
+Atlas推理系列产品AI Core不超过8个。
 
-Atlas 推理系列产品Vector Core不超过8个。
-
-
-
-Atlas A2 训练系列产品/Atlas A2 推理系列产品不超过8个。
+Atlas推理系列产品Vector Core不超过8个。
 
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品不超过8个。
+Atlas A2系列产品不超过8个。
 
 
 
-Atlas 200I/500 A2 推理产品不超过8个。
+Atlas A3系列产品不超过8个。
+
+
+
+Atlas 200I/500 A2推理产品不超过8个。
 
 
 不满足该约束，在后续使用AllocTensor/FreeTensor可能会出现分配资源失败。比如：

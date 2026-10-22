@@ -10,11 +10,15 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/union/asc_ndim_pad_count_config.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
+source_headers:
+- include/c_api/defs/union.h
 ---
 
 # asc_ndim_pad_count_config
+
+头文件路径为：`"c_api/defs/union.h"`。
 
 asc_ndim_pad_count_config用于[asc_set_ndim_pad_count](../../vector_datamove/asc_set_ndim_pad_count.md)接口中，设置[asc_ndim_copy_gm2ub](../../vector_datamove/asc_ndim_copy_gm2ub.md)接口的各个维度左右侧的padding元素个数。
 

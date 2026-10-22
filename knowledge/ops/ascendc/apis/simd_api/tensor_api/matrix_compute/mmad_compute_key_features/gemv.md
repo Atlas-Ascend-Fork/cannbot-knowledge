@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/mmad_compute_key_features/gemv.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/tensor_api/tensor.h
@@ -23,7 +23,7 @@ source_headers:
 GEMV的核心功能体现为：当矩阵A的维度M取值为1时，接口可以手动启用GEMV功能，该操作退化为1×K维度的行向量与K×N维度矩阵之间的乘法运算。
 
 
-针对Ascend 950PR/Ascend 950DT产品，GEMV模式默认关闭。如需启用GEMV模式，需要设置`mmad_trait::disable_gemv`参数为`false`。
+针对Ascend 950PR&950DT系列产品，GEMV模式默认关闭。如需启用GEMV模式，需要设置`mmad_trait::disable_gemv`参数为`false`。
 
 
 ## 特性约束
@@ -115,6 +115,5 @@ __aicore__ inline void mmad_gemv_example(__gm__ half* a_gm, __gm__ half* b_gm, _
     mmad(atom, l0c, l0a_tensor, l0b);
 }
 ```
-
 
 - [基础APIGEMV：固定 reference 调用约束](../../../../../guides/blaze/tensor_api_gemv_reference_contract.md)

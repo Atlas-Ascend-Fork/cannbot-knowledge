@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reduction_compute/Reduce.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -62,7 +62,8 @@ __simd_callee__ inline void Reduce(S& dstReg, V srcReg, MaskReg mask)
 
 ## 数据类型
 
-**表3** ReduceType::SUM数据类型支持情况
+
+**表3** Ascend 950PR&950DT系列产品，ReduceType::SUM数据类型支持情况
 
 | dstReg | srcReg |
 | --- | --- |
@@ -75,7 +76,7 @@ __simd_callee__ inline void Reduce(S& dstReg, V srcReg, MaskReg mask)
 | int64_t | int64_t |
 | uint64_t | uint64_t |
 
-**表4** ReduceType::MAX或ReduceType::MIN数据类型支持情况
+**表4** Ascend 950PR&950DT系列产品，ReduceType::MAX或ReduceType::MIN数据类型支持情况
 
 | dstReg | srcReg |
 | --- | --- |
@@ -87,6 +88,8 @@ __simd_callee__ inline void Reduce(S& dstReg, V srcReg, MaskReg mask)
 | float | float |
 | int64_t | int64_t |
 | uint64_t | uint64_t |
+
+
 
 ## 返回值说明
 
@@ -218,7 +221,6 @@ AscendC::Reg::StoreAlign(dstAddr, dstReg, pregVL1);
         }
     }
     ```
-
 
 - [QuantMax 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/quant_max_950.md)
 - [MhcPreBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_backward_950.md)

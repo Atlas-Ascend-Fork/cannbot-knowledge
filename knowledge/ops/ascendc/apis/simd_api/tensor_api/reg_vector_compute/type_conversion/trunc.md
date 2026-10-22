@@ -10,18 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/type_conversion/trunc.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/tensor_api/arch/vector/experimental/type_conversion.h
+- include/tensor_api/experimental/arch/vector/type_conversion.h
 ---
 
 # trunc
 
 ## 功能说明
 
-头文件路径：`"tensor_api/arch/vector/experimental/type_conversion.h"`。
+头文件路径：`"tensor_api/experimental/arch/vector/type_conversion.h"`。
 
 命名空间：`asc::te::experimental`。
 
@@ -92,7 +92,7 @@ __simd_callee__ inline reg_tensor<T> trunc(reg_tensor<T> src)
 
 ## 调用示例
 
-以下示例对UB中的一段浮点数据执行向0取整。[update_mask](../mask_reg_compute/update_mask.md)`<T>(remain)`根据剩余待处理元素数生成当前循环的mask，并通过引用参数自动更新`remain`，因此完整寄存器块和尾块可以使用同一计算流程。
+以下示例对Unified Buffer（UB）中的一段浮点数据执行向0取整。[update_mask](../mask_reg_compute/update_mask.md)`<T>(remain)`根据剩余待处理元素数生成当前循环的mask，并通过引用参数自动更新`remain`，因此完整寄存器块和尾块可以使用同一计算流程。
 
 ```cpp
 template <typename SrcTensor, typename DstTensor>

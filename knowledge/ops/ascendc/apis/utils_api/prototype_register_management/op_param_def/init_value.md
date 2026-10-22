@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpParamDef/InitValue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -148,7 +148,5 @@ this->Output("z")
      .Format({ge::FORMAT_ND, ge::FORMAT_ND, ge::FORMAT_NHWC})
      .InitValue({{ScalarType::INT16, 1}, {ScalarType::FLOAT32, 3.2}, {ScalarType::INT16, 1}}); // InitValue对应的数据类型和数值也需相同
 ```
-
-
 
 - [LinalgCholesky A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/math/linalg_cholesky.md)

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_int322uint8_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -18,6 +18,7 @@ source_headers:
 ---
 
 # asc_int322uint8（废弃）
+
 ## 功能说明
 
 头文件路径为：`"c_api/reg_compute/reg_convert.h"`。

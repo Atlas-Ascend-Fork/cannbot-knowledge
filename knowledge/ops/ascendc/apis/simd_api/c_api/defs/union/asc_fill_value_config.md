@@ -10,13 +10,17 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/union/asc_fill_value_config.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
+source_headers:
+- include/c_api/defs/union.h
 ---
 
 # asc_fill_value_config
 
-asc_fill_value_config为fill_value的初始化参数结构体，包含[asc_fill_l0a](../../cube_datamove/asc_fill_l0a.md)/[asc_fill_l0b](../../cube_datamove/asc_fill_l0b.md)/[asc_fill_l1](../../cube_datamove/asc_fill_l1.md)接口需要配置的各种初始化参数。
+头文件路径为：`"c_api/defs/union.h"`。
+
+asc_fill_value_config为fill_value的初始化参数结构体，包含[asc_fill_l0a](../../cube_datamove/cube_load_aux_config/asc_fill_l0a.md)/[asc_fill_l0b](../../cube_datamove/cube_load_aux_config/asc_fill_l0b.md)/[asc_fill_l1](../../cube_datamove/cube_load_aux_config/asc_fill_l1.md)接口需要配置的各种初始化参数。
 
 ## 结构体具体定义
 

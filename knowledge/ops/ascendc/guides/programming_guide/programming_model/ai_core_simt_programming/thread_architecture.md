@@ -10,11 +10,12 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/thread_architecture.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # 线程架构<a name="ZH-CN_TOPIC_0000002554358977"></a>
+
 SIMT编程模型采用分层的抽象线程组织结构，从顶层到底层依次为：Grid（线程块网格）、Thread Block（线程块）和Thread（线程）。这种层次化的设计使得开发者可以方便地将并行计算问题映射到硬件资源上。同时，每个层次中的维度均可由开发者根据算法与数据规模自定义配置。如下图所示，其中线程块是按照一维组织排布，每个线程块的索引为0-4； 线程块内的线程是按照二维组织排布，每个线程由坐标(threadIdx.x, threadIdx.y)唯一标识。
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_thread.png)

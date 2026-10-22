@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__low2float.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -100,3 +100,10 @@ inline float __low2float(const bfloat16x2_t x)
         asc_vf_call<simt_low2float>(dim3(1024), (__gm__ bfloat16x2_t*)input, output, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (0.5, -1.0), (1.0, 2.0), (3.0, 4.0), (0.0, 3.0), (nan, 1.0), (1.0, 2.0), (inf, -inf), (nan, nan)
+result: 0.5, 1.0, 3.0, 0.0, nan, 1.0, inf, nan
+```

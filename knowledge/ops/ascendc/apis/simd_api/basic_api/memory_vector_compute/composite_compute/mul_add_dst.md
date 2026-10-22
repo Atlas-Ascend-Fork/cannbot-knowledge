@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/composite_compute/MulAddDst.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -86,7 +86,7 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
 
 
 
-**表**  Ascend 950PR/Ascend 950DT支持的数据类型约束
+**表**  Ascend 950PR&950DT系列产品支持的数据类型约束
 
 | src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
 | :----------- | :----------- | :---------- | :--- |
@@ -96,25 +96,13 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
 | int64_t      | int64_t      | int64_t     | 32   |
 | uint64_t     | uint64_t     | uint64_t    | 32   |
 
-针对Ascend 950PR/Ascend 950DT，int64_t、uint64_t数据类型仅支持tensor前n个数据计算接口。
+针对Ascend 950PR&950DT系列产品，int64_t、uint64_t数据类型仅支持tensor前n个数据计算接口。
 
 
 
 
 
-**表**  Atlas A3 训练系列产品/Atlas A3 推理系列产品支持的数据类型约束
-
-| src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
-| :----------- | :----------- | :---------- | :--- |
-| half         | half         | half        | 128  |
-| float        | float        | float       | 64   |
-| half         | half         | float       | 64   |
-
-
-
-
-
-**表**  Atlas A2 训练系列产品/Atlas A2 推理系列产品支持的数据类型约束
+**表**  Atlas A3系列产品支持的数据类型约束
 
 | src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
 | :----------- | :----------- | :---------- | :--- |
@@ -126,7 +114,19 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
 
 
 
-**表**  Atlas 200I/500 A2 推理产品支持的数据类型约束
+**表**  Atlas A2系列产品支持的数据类型约束
+
+| src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
+| :----------- | :----------- | :---------- | :--- |
+| half         | half         | half        | 128  |
+| float        | float        | float       | 64   |
+| half         | half         | float       | 64   |
+
+
+
+
+
+**表**  Atlas 200I/500 A2推理产品支持的数据类型约束
 
 | src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
 | :----------- | :----------- | :---------- | :--- |
@@ -141,7 +141,7 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
 
 
 
-**表**  Atlas 推理系列产品AI Core支持的数据类型约束
+**表**  Atlas推理系列产品AI Core支持的数据类型约束
 
 | src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
 | :----------- | :----------- | :---------- | :--- |
@@ -153,7 +153,7 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
 
 
 
-**表**  Kirin X90支持的数据类型约束
+**表**  Kirin X90处理器系列产品支持的数据类型约束
 
 | src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
 | :----------- | :----------- | :---------- | :--- |
@@ -165,7 +165,7 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
 
 
 
-**表**  Kirin 9030支持的数据类型约束
+**表**  Kirin 9030处理器系列产品支持的数据类型约束
 
 | src0数据类型 | src1数据类型 | dst数据类型 | PAR  |
 | :----------- | :----------- | :---------- | :--- |
@@ -189,21 +189,21 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
   
   - 针对如下型号，该接口不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
   
 
 - MulAddDst指令实际使用会受到[bank冲突](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/avoid_ub_bank_conflict/overview.md)影响。  
   地址不重叠场景下，无法在一拍读取dst、src0、src1三块不同地址下的数据，因此只能达到一半的理论并行度，理论并行度将在原有基础上减半；在地址重叠场景下，则保持原有理论并行度。
 - 使用tensor高维切分计算接口时，src和scalar的数据类型为half、dst的数据类型为float的情况下，一个迭代处理内最多处理64个输入数据。
 
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算接口占用8KB UB临时空间。
   - tensor前n个数据连续计算接口不涉及8KB UB临时空间的占用。
 

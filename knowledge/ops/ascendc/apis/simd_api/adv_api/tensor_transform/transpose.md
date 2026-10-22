@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/Transpose.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -279,8 +279,8 @@ enum class TransposeType : uint8_t {
 
 -   操作数地址对齐要求请参见[通用地址对齐约束](../../general_description_and_constraints.md#section796754519912)。
 
--   场景13到场景16仅在Ascend 950PR/Ascend 950DT上支持。
--   Ascend 950PR/Ascend 950DT，场景13到场景16不支持dst和src空间复用。
+-   场景13到场景16仅在Ascend 950PR&950DT系列产品上支持。
+-   Ascend 950PR&950DT系列产品，场景13到场景16不支持dst和src空间复用。
 
 
 ## 调用示例

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/system_resources_and_variables/GetArchVersion.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -61,20 +61,21 @@ AscendC::printf("core version is %u", coreVersion);
 
 不同型号服务器有不同的架构版本号取值，如下所示：
 
-- Ascend 950PR/Ascend 950DT：3510
+- Ascend 950PR&950DT系列产品：3510
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品：2201
+- Atlas A3系列产品：2201
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品：2201
+- Atlas A2系列产品：2201
 
 
-- Atlas 200I/500 A2 推理产品：3002
+- Atlas 200I/500 A2推理产品：3002
 
 
-- Atlas 推理系列产品AI Core：2002
+- Atlas推理系列产品AI Core：2002
 
 
-- Atlas 训练系列产品：1001
+- Atlas训练系列产品：1001
+
 

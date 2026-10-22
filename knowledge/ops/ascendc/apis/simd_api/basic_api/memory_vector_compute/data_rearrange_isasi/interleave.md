@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_rearrange_ISASI/Interleave.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -77,6 +77,5 @@ AscendC::Interleave(dst0Local, dst1Local, src0Local, src1Local, 512);
 输出数据dst0Local：[1 513 2 ... 768]
 输出数据dst1Local：[257 769 258 ... 1024]
 ```
-
 
 - [GroupedDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/grouped_dynamic_mx_quant_950.md)

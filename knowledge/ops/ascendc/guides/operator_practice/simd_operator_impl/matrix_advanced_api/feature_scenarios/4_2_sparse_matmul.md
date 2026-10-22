@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -90,9 +90,8 @@ platforms: []
 
 ## 参数说明<a name="zh-cn_topic_0000002298767897_section139621338103518"></a>
 
-**表1**  SparseMatmulType类型参数说明
+**表1**  SparseMatmulType类型参数说明<a name="zh-cn_topic_0000002298767897_table3658657131020"></a>
 
-<a name="zh-cn_topic_0000002298767897_table3658657131020"></a>
 <table><thead align="left"><tr id="zh-cn_topic_0000002298767897_row8658257191010"><th class="cellrowborder" valign="top" width="21.21%" id="mcps1.2.3.1.1"><p id="zh-cn_topic_0000002298767897_p191082218111"><a name="zh-cn_topic_0000002298767897_p191082218111"></a><a name="zh-cn_topic_0000002298767897_p191082218111"></a>参数</p>
 </th>
 <th class="cellrowborder" valign="top" width="78.79%" id="mcps1.2.3.1.2"><p id="zh-cn_topic_0000002298767897_p1554812516113"><a name="zh-cn_topic_0000002298767897_p1554812516113"></a><a name="zh-cn_topic_0000002298767897_p1554812516113"></a>说明</p>

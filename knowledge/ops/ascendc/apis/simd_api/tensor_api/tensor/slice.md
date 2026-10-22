@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/tensor/slice.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -29,7 +29,7 @@ slice用于从张量指定坐标处切出一个子张量。根据输入的起始
 
 ```cpp
 template <typename Tensor, typename Coord, typename Info>
-__aicore__ inline constexpr decltype(auto) slice(Tensor&& tensor, const Coord& coord, const Info& info)
+__aicore__ inline decltype(auto) slice(Tensor&& tensor, const Coord& coord, const Info& info)
 ```
 
 ## 参数说明

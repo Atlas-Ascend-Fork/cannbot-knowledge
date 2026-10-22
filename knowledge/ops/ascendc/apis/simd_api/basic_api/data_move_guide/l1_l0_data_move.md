@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/L1_L0_data_move.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -26,23 +26,23 @@ L1 Buffer与L0 Buffer之间的数据搬运提供了灵活的接口支持，能�
 
 | 数据通路 | 功能 | 描述 |
 |----------|------|------|
-| L1 Buffer->L0A Buffer | 2D格式分形矩阵搬运(LoadData（2D矩阵搬运）) | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
-| L1 Buffer->L0A Buffer | 2D格式分形矩阵搬运(LoadData（2D矩阵搬运V2）) | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
-| L1 Buffer->L0A Buffer | 2D格式分形矩阵搬运(LoadData（MX矩阵搬运）) | 负责完成矩阵计算所需的左右矩阵数据和对应的左右量化系数矩阵数据的搬运。 |
-| L1 Buffer->L0A Buffer | 2D格式分形矩阵伴转置搬运(LoadDataWithTranspose) | 负责完成普通矩阵计算所需的2D格式的数据的搬运，搬运过程中会伴随转置操作。 |
-| L1 Buffer->L0A Buffer | 3D格式分形矩阵搬运(LoadData（卷积数据搬运）) | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。 |
-| L1 Buffer->L0A Buffer | 3D格式分形矩阵搬运(LoadDataWithStride) | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置，支持配置输出矩阵K轴方向偏移量。 |
-| L1 Buffer->L0B Buffer | 2D格式分形矩阵搬运(LoadData（2D矩阵搬运）) | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
-| L1 Buffer->L0B Buffer | 2D格式分形矩阵搬运(LoadData（2D矩阵搬运V2）) | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
-| L1 Buffer->L0B Buffer | 2D格式分形矩阵搬运(LoadData（MX矩阵搬运）) | 负责完成矩阵计算所需的左右矩阵数据和对应的左右量化系数矩阵数据的搬运。 |
-| L1 Buffer->L0B Buffer | 2D格式分形矩阵伴转置搬运(LoadDataWithTranspose) | 负责完成普通矩阵计算所需的2D格式的数据的搬运，搬运过程中会伴随转置操作。 |
-| L1 Buffer->L0B Buffer | 3D格式分形矩阵搬运(LoadData（卷积数据搬运）) | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。 |
-| L1 Buffer->L0B Buffer | 3D格式分形矩阵搬运(LoadDataWithStride) | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置，支持配置输出矩阵K轴方向偏移量。 |
-| L1 Buffer->L0B Buffer | 稠密权重矩阵搬运(LoadDataWithSparse) | 用于从L1 Buffer中搬运以512Byte为单位存放的稠密权重矩阵到L0B Buffer里，同时搬运以128Byte为单位的索引矩阵到内置的专用buffer空间（用于后续MmadWithSparse接口进行读取）。 |
-| L0C Buffer->L1 Buffer | L0C Buffer->L1 Buffer随路量化激活搬运(DataCopy) | 支持多种随路能力的组合，需要设置不同的寄存器，配合DataCopy指令使能不同的数据搬运能力。 |
-| L0C Buffer->L1 Buffer | L0C Buffer->L1 Buffer随路量化激活搬运(FixPipe) | 支持多种随路能力的组合，FixPipe接口内包含了设置寄存器与数据搬运能力。 |
+| L1 Buffer->L0A Buffer | 2D格式分形矩阵搬运（LoadData（2D矩阵搬运）） | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
+| L1 Buffer->L0A Buffer | 2D格式分形矩阵搬运（LoadData（2D矩阵搬运V2）） | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
+| L1 Buffer->L0A Buffer | 2D格式分形矩阵搬运（LoadData（MX矩阵搬运）） | 负责完成矩阵计算所需的左右矩阵数据和对应的左右量化系数矩阵数据的搬运。 |
+| L1 Buffer->L0A Buffer | 2D格式分形矩阵伴转置搬运（LoadDataWithTranspose） | 负责完成普通矩阵计算所需的2D格式的数据的搬运，搬运过程中会伴随转置操作。 |
+| L1 Buffer->L0A Buffer | 3D格式分形矩阵搬运（LoadData（卷积数据搬运）） | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。 |
+| L1 Buffer->L0A Buffer | 3D格式分形矩阵搬运（LoadDataWithStride） | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置，支持配置输出矩阵K轴方向偏移量。 |
+| L1 Buffer->L0B Buffer | 2D格式分形矩阵搬运（LoadData（2D矩阵搬运）） | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
+| L1 Buffer->L0B Buffer | 2D格式分形矩阵搬运（LoadData（2D矩阵搬运V2）） | 负责完成普通矩阵计算所需的2D格式数据的搬运。 |
+| L1 Buffer->L0B Buffer | 2D格式分形矩阵搬运（LoadData（MX矩阵搬运）） | 负责完成矩阵计算所需的左右矩阵数据和对应的左右量化系数矩阵数据的搬运。 |
+| L1 Buffer->L0B Buffer | 2D格式分形矩阵伴转置搬运（LoadDataWithTranspose） | 负责完成普通矩阵计算所需的2D格式的数据的搬运，搬运过程中会伴随转置操作。 |
+| L1 Buffer->L0B Buffer | 3D格式分形矩阵搬运（LoadData（卷积数据搬运）） | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。 |
+| L1 Buffer->L0B Buffer | 3D格式分形矩阵搬运（LoadDataWithStride） | 用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置，支持配置输出矩阵K轴方向偏移量。 |
+| L1 Buffer->L0B Buffer | 稠密权重矩阵搬运（LoadDataWithSparse） | 用于从L1 Buffer中搬运以512Byte为单位存放的稠密权重矩阵到L0B Buffer里，同时搬运以128Byte为单位的索引矩阵到内置的专用buffer空间（用于后续MmadWithSparse接口进行读取）。 |
+| L0C Buffer->L1 Buffer | L0C Buffer->L1 Buffer随路量化激活搬运（DataCopy） | 支持多种随路能力的组合，需要设置不同的寄存器，配合DataCopy指令使能不同的数据搬运能力。 |
+| L0C Buffer->L1 Buffer | L0C Buffer->L1 Buffer随路量化激活搬运（FixPipe） | 支持多种随路能力的组合，FixPipe接口内包含了设置寄存器与数据搬运能力。 |
 
-## L1ToL0A 2D格式分形矩阵搬运(LoadData（2D矩阵搬运）)<a name="ZH-CN_TOPIC_0000002573902845"></a>
+## L1ToL0A 2D格式分形矩阵搬运（LoadData（2D矩阵搬运））<a name="ZH-CN_TOPIC_0000002573902845"></a>
 
 LoadData（2D矩阵搬运）能够实现L1 Buffer到L0A Buffer之间的数据搬运。负责完成普通矩阵计算所需的2D格式数据的搬运，以大小为512Byte的数据分形为单位进行搬运。
 
@@ -61,7 +61,8 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 ```
 
 
-## L1ToL0A 2D格式分形矩阵搬运(LoadData（2D矩阵搬运V2）)
+
+## L1ToL0A 2D格式分形矩阵搬运（LoadData（2D矩阵搬运V2））
 
 LoadData（2D矩阵搬运V2）能够实现L1 Buffer到L0A Buffer之间的数据搬运。负责完成普通矩阵计算所需的2D格式数据的搬运，以大小为512Byte的数据分形为单位进行搬运。
 
@@ -74,7 +75,7 @@ LoadData（2D矩阵搬运V2）能够实现L1 Buffer到L0A Buffer之间的数据�
 
 src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数。
 
-- 仅Ascend 950PR/Ascend 950DT支持
+- 仅Ascend 950PR&950DT系列产品支持
 
     ```cpp
     template <typename T>
@@ -83,7 +84,8 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
 
 
 
-## L1ToL0A 2D格式分形矩阵搬运(LoadData（MX矩阵搬运）)
+
+## L1ToL0A 2D格式分形矩阵搬运（LoadData（MX矩阵搬运））
 
 LoadData（MX矩阵搬运）负责完成矩阵计算所需的左右矩阵数据和对应的左右量化系数矩阵数据的搬运，其中左右矩阵数据以大小为512Byte的数据分形为单位进行搬运，左右量化系数矩阵以32Byte的数据分形为单位进行搬运。
 
@@ -96,14 +98,14 @@ LoadData（MX矩阵搬运）负责完成矩阵计算所需的左右矩阵数据�
 
 src和srcMx为源操作数，dst为目的操作数；loadDataParams和loadMxDataParams为搬运参数。
 
-- LoadData（MX矩阵搬运）接口（仅Ascend 950PR/Ascend 950DT支持）
+- LoadData（MX矩阵搬运）接口（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, typename U = T>
     __aicore__ inline void LoadData(const LocalTensor<U>& dst, const LocalTensor<T>& src, const LocalTensor<fp8_e8m0_t>& srcMx, const LoadData2DParamsV2& loadDataParams, const LoadData2DMxParams& loadMxDataParams)
     ```
 
-- LoadData（MX矩阵搬运）接口，支持源操作数和目的操作数数据类型不一致（仅Ascend 950PR/Ascend 950DT支持）
+- LoadData（MX矩阵搬运）接口，支持源操作数和目的操作数数据类型不一致（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, typename U>
@@ -111,7 +113,7 @@ src和srcMx为源操作数，dst为目的操作数；loadDataParams和loadMxData
     ```
 
 
-## L1ToL0A 2D格式分形矩阵伴转置搬运(LoadDataWithTranspose)<a name="ZH-CN_TOPIC_0000002543422578"></a>
+## L1ToL0A 2D格式分形矩阵伴转置搬运（LoadDataWithTranspose）<a name="ZH-CN_TOPIC_0000002543422578"></a>
 
 LoadDataWithTranspose能够实现L1 Buffer到L0A Buffer之间的数据搬运。负责完成普通矩阵计算所需的2D格式的数据搬运，搬运过程中会伴随转置操作，以大小为512Byte的数据分形为单位进行搬运。
 
@@ -130,7 +132,7 @@ __aicore__ inline void LoadDataWithTranspose(const LocalTensor<T>& dst, const Lo
 ```
 
 
-仅Ascend 950PR/Ascend 950DT支持
+仅Ascend 950PR&950DT系列产品支持
 
 ```cpp
 template <typename T>
@@ -138,7 +140,7 @@ __aicore__ inline void LoadDataWithTranspose(const LocalTensor<T>& dst, const Lo
 ```
 
 
-## L1ToL0A 3D格式分形矩阵搬运(LoadData（卷积数据搬运）)<a name="ZH-CN_TOPIC_0000002574022819"></a>
+## L1ToL0A 3D格式分形矩阵搬运（LoadData（卷积数据搬运））<a name="ZH-CN_TOPIC_0000002574022819"></a>
 
 LoadData（卷积数据搬运）本质上是用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。
 
@@ -166,7 +168,7 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
     ```
 
 
-- LoadData（卷积数据搬运）v2Pro接口（仅Ascend 950PR/Ascend 950DT支持）
+- LoadData（卷积数据搬运）v2Pro接口（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T>
@@ -175,7 +177,8 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
 
 
 
-## L1ToL0A 3D格式分形矩阵搬运(LoadDataWithStride)<a name="ZH-CN_TOPIC_0000002573312819"></a>
+
+## L1ToL0A 3D格式分形矩阵搬运（LoadDataWithStride）<a name="ZH-CN_TOPIC_0000002573312819"></a>
 
 LoadDataWithStride用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置，支持配置输出矩阵K轴方向偏移量。
 
@@ -188,7 +191,7 @@ LoadDataWithStride用于将NC1HWC0格式的Feature Map完成Image to Column展�
 
 src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数。
 
-- 仅Ascend 950PR/Ascend 950DT支持
+- 仅Ascend 950PR&950DT系列产品支持
 
     ```cpp
     template <typename T, const IsResetLoad3dConfig& defaultConfig = IS_RESER_LOAD3D_DEFAULT_CONFIG, typename U = PrimT<T>,typename Std::enable_if<Std::is_same<PrimT<T>, U>::value, bool>::type = true>
@@ -196,7 +199,7 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
     ```
 
 
-## L1ToL0B 2D格式分形矩阵搬运(LoadData（2D矩阵搬运）)<a name="ZH-CN_TOPIC_0000002543262922"></a>
+## L1ToL0B 2D格式分形矩阵搬运（LoadData（2D矩阵搬运））<a name="ZH-CN_TOPIC_0000002543262922"></a>
 
 LoadData（2D矩阵搬运）能够实现L1 Buffer到L0B Buffer之间的数据搬运。负责完成普通矩阵计算所需的2D格式数据的搬运，以大小为512Byte的数据分形为单位进行搬运。
 
@@ -215,7 +218,8 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 ```
 
 
-## L1ToL0B 2D格式分形矩阵搬运(LoadData（2D矩阵搬运V2）)
+
+## L1ToL0B 2D格式分形矩阵搬运（LoadData（2D矩阵搬运V2））
 
 LoadData（2D矩阵搬运V2）能够实现L1 Buffer到L0B Buffer之间的数据搬运。负责完成普通矩阵计算所需的2D格式数据的搬运，以大小为512Byte的数据分形为单位进行搬运。
 
@@ -228,7 +232,7 @@ LoadData（2D矩阵搬运V2）能够实现L1 Buffer到L0B Buffer之间的数据�
 
 src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数。
 
-- 仅Ascend 950PR/Ascend 950DT支持
+- 仅Ascend 950PR&950DT系列产品支持
 
     ```cpp
     template <typename T>
@@ -237,7 +241,8 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
 
 
 
-## L1ToL0B 2D格式分形矩阵搬运(LoadData（MX矩阵搬运）)
+
+## L1ToL0B 2D格式分形矩阵搬运（LoadData（MX矩阵搬运））
 
 LoadData（MX矩阵搬运）负责完成矩阵计算所需的左右矩阵数据和对应的左右量化系数矩阵数据的搬运，其中左右矩阵数据以大小为512Byte的数据分形为单位进行搬运，左右量化系数矩阵以32Byte的数据分形为单位进行搬运。
 
@@ -250,14 +255,14 @@ LoadData（MX矩阵搬运）负责完成矩阵计算所需的左右矩阵数据�
 
 src和srcMx为源操作数，dst为目的操作数；loadDataParams和loadMxDataParams为搬运参数。
 
-- LoadData（MX矩阵搬运）接口（仅Ascend 950PR/Ascend 950DT支持）
+- LoadData（MX矩阵搬运）接口（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, typename U = T>
     __aicore__ inline void LoadData(const LocalTensor<U>& dst, const LocalTensor<T>& src, const LocalTensor<fp8_e8m0_t>& srcMx, const LoadData2DParamsV2& loadDataParams, const LoadData2DMxParams& loadMxDataParams)
     ```
 
-- LoadData（MX矩阵搬运）接口，支持源操作数和目的操作数数据类型不一致（仅Ascend 950PR/Ascend 950DT支持）
+- LoadData（MX矩阵搬运）接口，支持源操作数和目的操作数数据类型不一致（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, typename U>
@@ -265,7 +270,7 @@ src和srcMx为源操作数，dst为目的操作数；loadDataParams和loadMxData
     ```
 
 
-## L1ToL0B 2D格式分形矩阵伴转置搬运(LoadDataWithTranspose)<a name="ZH-CN_TOPIC_0000002573902847"></a>
+## L1ToL0B 2D格式分形矩阵伴转置搬运（LoadDataWithTranspose）<a name="ZH-CN_TOPIC_0000002573902847"></a>
 
 LoadDataWithTranspose能够实现L1 Buffer到L0B Buffer之间的数据搬运。负责完成普通矩阵计算所需的2D格式的数据搬运，搬运过程中会伴随转置操作，以大小为512Byte的数据分形为单位进行搬运。
 
@@ -284,7 +289,7 @@ __aicore__ inline void LoadDataWithTranspose(const LocalTensor<T>& dst, const Lo
 ```
 
 
-仅Ascend 950PR/Ascend 950DT支持
+仅Ascend 950PR&950DT系列产品支持
 
 ```cpp
 template <typename T>
@@ -292,7 +297,7 @@ __aicore__ inline void LoadDataWithTranspose(const LocalTensor<T>& dst, const Lo
 ```
 
 
-## L1ToL0B 3D格式分形矩阵搬运(LoadData（卷积数据搬运）)<a name="ZH-CN_TOPIC_0000002543422580"></a>
+## L1ToL0B 3D格式分形矩阵搬运（LoadData（卷积数据搬运））<a name="ZH-CN_TOPIC_0000002543422580"></a>
 
 LoadData（卷积数据搬运）本质上是用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。
 
@@ -320,7 +325,7 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
     ```
 
 
-- LoadData（卷积数据搬运）v2Pro接口（仅Ascend 950PR/Ascend 950DT支持）
+- LoadData（卷积数据搬运）v2Pro接口（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T>
@@ -329,7 +334,8 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
 
 
 
-## L1ToL0B 3D格式分形矩阵搬运(LoadDataWithStride)<a name="ZH-CN_TOPIC_0000002573312819"></a>
+
+## L1ToL0B 3D格式分形矩阵搬运（LoadDataWithStride）<a name="ZH-CN_TOPIC_0000002573312819"></a>
 
 LoadDataWithStride用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置，支持配置输出矩阵K轴方向偏移量。
 
@@ -342,7 +348,7 @@ LoadDataWithStride用于将NC1HWC0格式的Feature Map完成Image to Column展�
 
 src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数。
 
-- 仅Ascend 950PR/Ascend 950DT支持
+- 仅Ascend 950PR&950DT系列产品支持
 
     ```cpp
     template <typename T, const IsResetLoad3dConfig& defaultConfig = IS_RESER_LOAD3D_DEFAULT_CONFIG, typename U = PrimT<T>,typename Std::enable_if<Std::is_same<PrimT<T>, U>::value, bool>::type = true>
@@ -351,7 +357,8 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
 
 
 
-## L1ToL0B 稠密权重矩阵搬运(LoadDataWithSparse)<a name="ZH-CN_TOPIC_0000002574022821"></a>
+
+## L1ToL0B 稠密权重矩阵搬运（LoadDataWithSparse）<a name="ZH-CN_TOPIC_0000002574022821"></a>
 
 用于从L1中搬运以512Byte为单位存放的稠密权重矩阵到L0B里，同时搬运以128Byte为单位的索引矩阵到内置的专用buffer空间（用于后续MmadWithSparse接口进行读取）。
 
@@ -365,11 +372,11 @@ src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数
 - 仅如下产品型号支持：
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品；
+    Atlas A3系列产品；
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品；
+    Atlas A2系列产品；
     
 
     ```cpp
@@ -405,7 +412,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<U>&
 - L0C Buffer -> L1 Buffer
     - CO1 -> C1
 
-搬运的数据为[矩阵计算](../cube_compute_isasi/index.md)的结果，以Ascend 950PR/Ascend 950DT为例，接口示例如下：
+搬运的数据为[矩阵计算](../cube_compute_isasi/index.md)的结果，以Ascend 950PR&950DT系列产品为例，接口示例如下：
 
 注意，不同产品型号的接口原型可能不同，具体介绍请参考：[Fixpipe（L0C到L1数据搬运）](../cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_l1.md)。
 

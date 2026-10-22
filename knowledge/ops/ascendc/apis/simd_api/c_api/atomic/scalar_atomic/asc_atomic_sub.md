@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/atomic/scalar_atomic/asc_atomic_sub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -64,20 +64,21 @@ __aicore__ inline int32_t asc_atomic_sub(__gm__ int32_t* address,
 
 返回`address`地址中计算前的原始数据`old_value`。
 
+## 流水类型
+
+PIPE_S
+
 ## 约束说明
 
-- `address`必须落在Global Memory地址空间。
-- `address`需按`sizeof(dtype)`字节对齐。
-- 对同一`address`的并发调用以原子方式完成“读取、计算、写回”，不会丢失更新。`dtype`为`float`时，最终结果可能因执行顺序不同而存在差异；如需确定性计算结果，需要通过同步指令控制执行顺序。
-- 本接口运行在标量流水（`PIPE_S`）上，同一标量流水内的数据依赖由指令执行顺序保证。若本接口与`PIPE_MTE2`或`PIPE_MTE3`上的数据搬运指令访问同一GM地址，且执行顺序影响结果，编译器无法自动完成跨流水同步，调用方需按实际依赖插入[asc_sync_pipe](../../sync/asc_sync_pipe.md)，或配合使用[asc_sync_notify](../../sync/asc_sync_notify.md)与[asc_sync_wait](../../sync/asc_sync_wait.md)保证执行顺序。
-- 本接口访问GM时绕过DCache，不维护缓存一致性。若其他核或其他通路通过缓存访问同一GM地址，调用方需使用[asc_dcci](../../cache_ctrl/asc_dcci.md)清理或失效对应Cache Line，并使用[asc_sync_data_barrier](../../sync/asc_sync_data_barrier.md)保证相关访存操作的执行顺序和数据可见性。详情可参考[Scalar原子操作与DCache一致性](../../../../../guides/programming_guide/advanced_programming/memory_model/cache_coherence.md#scalar原子操作与dcache一致性)。
+- 本接口运行在标量流水（`PIPE_S`）上，同一标量流水内的数据依赖由指令执行顺序保证。若本接口与`PIPE_MTE2`或`PIPE_MTE3`上的数据搬运指令访问同一GM地址，且执行顺序影响结果，编译器无法自动完成跨流水同步，调用方需按实际依赖插入[asc_sync_pipe](../../sync/intra_core_sync/asc_sync_pipe.md)，或配合使用[asc_sync_notify](../../sync/intra_core_sync/asc_sync_notify.md)与[asc_sync_wait](../../sync/intra_core_sync/asc_sync_wait.md)保证执行顺序。
+- 本接口访问GM时绕过DCache，不维护缓存一致性。若其他核或其他通路通过缓存访问同一GM地址，调用方需使用[asc_dcci](../../cache_ctrl/asc_dcci.md)清理或失效对应Cache Line，并使用[asc_sync_data_barrier](../../sync/intra_core_sync/asc_sync_data_barrier.md)保证相关访存操作的执行顺序和数据可见性。详情可参考[Scalar原子操作与DCache一致性](../../../../../guides/programming_guide/advanced_programming/memory_model/cache_coherence.md#scalar原子操作与dcache一致性)。
 
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

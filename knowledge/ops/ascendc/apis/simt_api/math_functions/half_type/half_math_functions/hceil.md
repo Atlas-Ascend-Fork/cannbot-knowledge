@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_math_functions/hceil.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -80,3 +80,10 @@ inline half hceil(half x)
         dst[idx] = hceil(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.25, 0.5, 2.5, -3.75
+result: -1, 1, 3, -3
+```

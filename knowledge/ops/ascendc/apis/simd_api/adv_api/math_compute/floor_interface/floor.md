@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Floor_interface/Floor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -29,7 +29,7 @@ source_headers:
 
 获取小于或等于x的最小的整数值，即向负无穷取整操作。计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002341752960.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002341752960.png)
 
 举例如下：
 
@@ -85,7 +85,7 @@ Floor\(-3.9\) = -4.0
 ## 约束说明
 
 
--   针对Atlas 推理系列产品AI Core，输入数据限制在\[-2147483647.0, 2147483647.0\]范围内。
+-   针对Atlas推理系列产品AI Core，输入数据限制在\[-2147483647.0, 2147483647.0\]范围内。
 
 -   **不支持源操作数与目的操作数地址重叠。**
 -   不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。
@@ -107,7 +107,6 @@ AscendC::Floor(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输入数据(srcLocal): [-1.5  -0.5  0.5  1.5  2.5  3.5  4.5  5.5]
 输出数据(dstLocal): [-2.0  -1.0  0.0  1.0  2.0  3.0  4.0  5.0]
 ```
-
 
 - [UpsampleBicubic2dAA A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa.md)
 - [UpsampleBicubic2dAAGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa_grad.md)

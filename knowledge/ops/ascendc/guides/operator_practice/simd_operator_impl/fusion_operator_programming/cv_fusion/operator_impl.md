@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/fusion_operator_programming/cv_fusion/operator_impl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -45,9 +45,8 @@ platforms: []
 -   算子类型（OpType）：MATMUL\_LEAKYRELU
 -   算子输入输出：
 
-    **表1**  MATMUL\_LEAKYRELU算子输入输出规格
+    **表1**  MATMUL\_LEAKYRELU算子输入输出规格<a name="table4934296305"></a>
 
-    <a name="table4934296305"></a>
     <table><thead align="left"><tr id="row59358913304"><th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.1"><p id="p5503181819300"><a name="p5503181819300"></a><a name="p5503181819300"></a><strong id="b1850331853010"><a name="b1850331853010"></a><a name="b1850331853010"></a>name</strong></p>
     </th>
     <th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.2"><p id="p1550381833017"><a name="p1550381833017"></a><a name="p1550381833017"></a><strong id="b7503171811309"><a name="b7503171811309"></a><a name="b7503171811309"></a>shape</strong></p>
@@ -118,9 +117,9 @@ platforms: []
 
     Leaky ReLU（带泄露线性整流函数）激活函数，是人工神经网络中一种常用的激活函数，其数学表达式和函数图像如下所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_formulaimage_0000002501251774.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/formulaimage_0000002501251774.png)
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002501411624.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002501411624.png)
 
 5.  将输出结果搬运到Global Memory。
 
@@ -143,14 +142,14 @@ Tiling策略的设计主要包括多核切分和核内切分策略。
 
 ## 算子实现<a name="zh-cn_topic_0000001644252364_section770213024816"></a>
 
-在[矩阵编程章节](../../matrix_advanced_api/index.md)，我们得知Ascend C提供一组Matmul高阶API，封装了常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作。融合算子中矩阵编程部分的实现与之类似，开发者在host侧通过调用API自动获取Tiling参数，该参数传递到kernel侧后，在初始化操作时传入，通过几个简单的API即可完成矩阵乘操作。再结合上文的融合算子的编程范式，融合算子实现的步骤如下。完整样例请参考[MatmulLeakyRelu](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/03_fusion_operation/matmul_leakyrelu_advanced_api)。
+在[矩阵编程章节](../../matrix_advanced_api/index.md)，我们得知Ascend C提供一组Matmul高阶API，封装了常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作。融合算子中矩阵编程部分的实现与之类似，开发者在host侧通过调用API自动获取Tiling参数，该参数传递到核函数（Kernel）侧后，在初始化操作时传入，通过几个简单的API即可完成矩阵乘操作。再结合上文的融合算子的编程范式，融合算子实现的步骤如下。完整样例请参考[MatmulLeakyRelu](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/03_fusion_operation/matmul_leakyrelu_advanced_api)。
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mm_flow_50.png)
 
-kernel侧实现的代码框架如下，在完成Matmul对象的初始化、左矩阵A、右矩阵B、Bias的设置后，通过单次Iterate叠加while循环的方式完成后续的Matmul计算、LeakyRelu计算、CopyOut流程。
+核函数（Kernel）侧实现的代码框架如下，在完成Matmul对象的初始化、左矩阵A、右矩阵B、Bias的设置后，通过单次Iterate叠加while循环的方式完成后续的Matmul计算、LeakyRelu计算、CopyOut流程。
 
 ```
-// kernel入口函数，mix场景，AIC:AIV=1:2
+// 核函数（Kernel）入口函数，mix场景，AIC:AIV=1:2
 __global__ __mix__(1, 2) void matmul_leakyrelu_custom(__gm__ uint8_t* a, __gm__ uint8_t* b, __gm__ uint8_t* bias,
     __gm__ uint8_t* c, __kfc_workspace__ __gm__ uint8_t* workspace, AscendC::tiling::TCubeTiling tiling)
 {
@@ -302,6 +301,7 @@ host侧实现GenerateTiling函数，在该函数中自动获取Tiling参数，�
 >    - 使用高阶API Matmul时需要设置ASCENDC\_CUBE\_ONLY，表示仅在AIC侧调用Matmul API。
 >
 >    完整样例请参考[matmul_fused_manual样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_fused_manual)。
+>
 >    ```
 >    #define ASCENDC_CUBE_ONLY // 指定Matmul运行在AIC上
 >    if ASCEND_IS_AIC {
@@ -315,3 +315,4 @@ host侧实现GenerateTiling函数，在该函数中自动获取Tiling参数，�
 >        // AIV核进行LeakyRelu计算
 >    } 
 >    ```
+>

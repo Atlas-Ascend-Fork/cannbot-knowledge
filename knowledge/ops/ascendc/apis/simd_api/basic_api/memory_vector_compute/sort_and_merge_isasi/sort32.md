@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/sort_and_merge_ISASI/Sort32.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -80,14 +80,14 @@ __aicore__ inline void Sort32(const LocalTensor<T>& dst, const LocalTensor<T>& s
     
     - 针对如下型号，当参数repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
        
-       - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+       - Atlas A3系列产品
        
        
-       - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+       - Atlas A2系列产品
        
     
     
-    - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
+    - 针对Ascend 950PR&950DT系列产品，当参数repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
     
 
 
@@ -109,7 +109,6 @@ outQueueDst.EnQue<float>(dstLocal);
 inQueueSrc0.FreeTensor(srcLocal0);
 inQueueSrc1.FreeTensor(srcLocal1);
 ```
-
 
 - [Sort 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/sort_950.md)
 - [MoeGatingTopKSoftmax 950 Direct Invoke 算子知识](../../../../../operators/direct/transformer/moe/moe_gating_top_k_softmax_950.md)

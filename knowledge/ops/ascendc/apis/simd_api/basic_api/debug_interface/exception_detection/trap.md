@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/debug_interface/exception_detection/Trap.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -62,6 +62,5 @@ if (src1Local[0] == 0) {    // 如果src1Local[0]为0，则程序终止。
     AscendC::Divs(dstLocal, src0Local, src1Local[0], count);
 }
 ```
-
 
 - [GroupQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/group_quant.md)

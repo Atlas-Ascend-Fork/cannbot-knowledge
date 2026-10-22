@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_padding/Duplicate.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -42,7 +42,8 @@ def Duplicate(scalarValue, dst, count):
         dst[i] = scalarValue
 ```
 
-针对Ascend 950PR/Ascend 950DT，为方便开发者使用，tensor前n个数据计算接口同时也支持直接传入LocalTensor，此时会将LocalTensor的第一个元素复制多次并填充到向量中。
+
+针对Ascend 950PR&950DT系列产品，为方便开发者使用，tensor前n个数据计算接口同时也支持直接传入LocalTensor，此时会将LocalTensor的第一个元素复制多次并填充到向量中。
 
 
 ## 函数原型<a name="section620mcpsimp"></a>
@@ -59,7 +60,7 @@ def Duplicate(scalarValue, dst, count):
 - tensor前n个数据计算，源操作数为LocalTensor
 
     ```cpp
-    // 该函数原型，仅支持Ascend 950PR/Ascend 950DT。
+    // 该函数原型，仅支持Ascend 950PR&950DT系列产品。
     template <typename T>
     __aicore__ inline void Duplicate(const LocalTensor<T>& dst, const LocalTensor<T>& src, const int32_t& count)
     ```
@@ -104,28 +105,28 @@ def Duplicate(scalarValue, dst, count):
 ## 数据类型
 
 
-- 针对Ascend 950PR/Ascend 950DT，T支持的数据类型为：bool、int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、complex64。其中，bool、int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、complex32、int64_t、uint64_t、complex64数据类型仅支持tensor前n个数据计算接口。
+- 针对Ascend 950PR&950DT系列产品，T支持的数据类型为：bool、int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、complex64。其中，bool、int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、complex32、int64_t、uint64_t、complex64数据类型仅支持tensor前n个数据计算接口。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- 针对Atlas A3系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- 针对Atlas A2系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
-- 针对Atlas 200I/500 A2 推理产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- 针对Atlas 200I/500 A2推理产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
-- 针对Atlas 推理系列产品AI Core，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- 针对Atlas推理系列产品AI Core，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
-- 针对Atlas 训练系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- 针对Atlas训练系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
-- 针对Kirin X90，T支持的数据类型为：half。
+- 针对Kirin X90处理器系列产品，T支持的数据类型为：half。
 
 
-- 针对Kirin 9030，T支持的数据类型为：half。
+- 针对Kirin 9030处理器系列产品，T支持的数据类型为：half。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>	 
@@ -140,14 +141,14 @@ def Duplicate(scalarValue, dst, count):
   
   - 针对如下型号，该接口不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
   
 
 
@@ -188,6 +189,7 @@ def Duplicate(scalarValue, dst, count):
 
 
 - tensor前n个数据计算样例，源操作数为Tensor
+
     ```cpp
     AscendC::Duplicate<half>(dstLocal, srcLocal, srcDataSize);
     ```
@@ -199,7 +201,6 @@ scalar: 18.0
 srcLocal: [18.0 1.0 2.0 ... 254.0 255.0]
 dstLocal: [18.0 18.0 18.0 ... 18.0 18.0]
 ```
-
 
 - [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)
 - [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)

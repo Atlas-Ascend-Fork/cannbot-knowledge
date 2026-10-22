@@ -28,3 +28,6 @@
 - [ullmin（整数数学函数）](ullmin.md)：获取两个输入数据中的最小值。 !
 - [umax（整数数学函数）](umax.md)：获取两个输入数据中的最大值。 !
 - [umin（整数数学函数）](umin.md)：获取两个输入数据中的最小值。 !
+
+- [asc_get_uintdiv_magic_and_shift](asc_get_uintdiv_magic_and_shift.md)：头文件路径为："simt_api/math_functions.h"。
+- [asc_uintdiv](asc_uintdiv.md)：头文件路径为："simt_api/math_functions.h"。

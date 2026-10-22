@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/nanf.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -82,6 +82,6 @@ inline float nanf(const char* tagp)
 输入输出示例如下：
 
 ```text
-tagp："0x1A", "123", "abc", "0"
-result: nan(0x7fc0001a) nan(0x7fc0007b) nan(0x7fc00000) nan(0x7fc00000)
+tagp: "0x1A", "123", "abc", "0"
+result: nan(0x7fc0001a), nan(0x7fc0007b), nan(0x7fc00000), nan(0x7fc00000)
 ```

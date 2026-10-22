@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_pack_to_low.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -28,6 +28,8 @@ source_headers:
 当源操作数为vector_bool时，其按bit位进行压缩，每2bit将其中的低位bit存储至目的操作数的低半部分。
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/pack_low_draft.png)
+
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -73,10 +75,10 @@ __simd_callee__ inline vector_uint8_t asc_pack_to_low(vector_uint16_t src)
 
 **表1** 参数说明
 
-| 参数名       | 输入/输出 | 描述               |
+| 参数名 | 输入/输出 | 描述 |
 | --------- | ----- | ---------------- |
-| dst       | 输出    | 目的操作数（矢量数据寄存器/掩码寄存器）。            |
-| src | 输入    | 源操作数（矢量数据寄存器/掩码寄存器）。            |
+| dst | 输出 | 目的操作数（矢量数据寄存器/掩码寄存器）。 |
+| src | 输入 | 源操作数（矢量数据寄存器/掩码寄存器）。 |
 
 矢量数据寄存器和掩码寄存器的详细说明请参见[reg数据类型定义](../../defs/type/data_type_definition.md)。
 
@@ -87,15 +89,15 @@ __simd_callee__ inline vector_uint8_t asc_pack_to_low(vector_uint16_t src)
 
 ## 约束说明
 
-- 本接口非AIV调用直接返回。
-- 本接口在Vector Function（`__simd_vf__`标记的函数）内调用，源操作数和目的操作数为矢量数据寄存器或掩码寄存器。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
+- 源操作数和目的操作数为矢量数据寄存器或掩码寄存器。
 
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

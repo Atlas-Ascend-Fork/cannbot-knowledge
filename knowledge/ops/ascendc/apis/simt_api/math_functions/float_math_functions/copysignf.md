@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/copysignf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取由第一个输入x的数值部分和第二个输入y的符号部分拼接得到的浮点数。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002518941925.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002518941925.png)
 
 ## 函数原型
 
@@ -45,11 +45,14 @@ inline float copysignf(float x, float y)
 
 ## 返回值说明
 
--   y\>=0时，返回x的绝对值Abs\(x\)。
--   y<0时，返回x绝对值的相反数，-Abs\(x\)。
--   y=nan时，返回-Abs\(x\)。
--   y=-inf时，返回-Abs\(x\)。
--   y=inf时，返回Abs\(x\)。
+返回值的数值部分为x的绝对值，符号位与y的符号位一致。
+
+- 当y的符号位为0时，返回Abs\(x\)。
+- 当y的符号位为1时，返回-Abs\(x\)。
+- y=nan(0x7fc00000)时，返回Abs\(x\)。
+- y=nan(0xffc00000)时，返回-Abs\(x\)。
+- y=-inf时，返回-Abs\(x\)。
+- y=inf时，返回Abs\(x\)。
 
 ## 约束说明
 
@@ -95,7 +98,7 @@ inline float copysignf(float x, float y)
 输入输出示例如下：
 
 ```
-x：0.25, -0.75, 1.25, -1.75
-y：1.5, 2.5, -3.5, -4.5
-result: 0.25 0.75 -1.25 -1.75
+x: 0.25, -0.75, 1.25, -1.75
+y: 1.5, 2.5, -3.5, -4.5
+result: 0.25, 0.75, -1.25, -1.75
 ```

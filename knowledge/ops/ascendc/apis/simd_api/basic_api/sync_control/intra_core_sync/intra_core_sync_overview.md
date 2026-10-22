@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/intra_core_sync_overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -40,9 +40,9 @@ AI Core内部的执行单元（如MTE2搬运单元、Vector计算单元等）以
 
 下图示例描述了一个常见的Vector计算数据流：
 
-1. 先通过DMA执行单元将数据从Global Memory搬入到Local Memory；
+1. 先通过DMA执行单元将数据从Global Memory（GM）搬入到Local Memory；
 2. 进行计算；
-3. 然后再通过DMA执行单元将计算结果从Local Memory搬出到Global Memory。
+3. 然后再通过DMA执行单元将计算结果从Local Memory搬出到GM。
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/vector_compute_data_flow.png "Vector_计算_数据流示意图")
 
@@ -80,12 +80,14 @@ AI Core内部并行的指令流水类型和解释如下所示：
     - WaitFlag：当目的流水执行到该指令时，如果发现硬件中对应标志位为0，目的流水的后续指令将一直被阻塞；如果发现硬件中对应标志位为1，则将硬件中对应标志位设置为0，同时目的流水的后续指令开始执行。
 
      
-     Ascend 950PR/Ascend 950DT新增通过[Lock](lock.md)/[Unlock](unlock.md)接口进行不同流水线间的同步控制。通过Lock锁定指定流水（阻塞后续指令），再通过Unlock释放流水，来完成流水间的同步依赖。
+     Ascend 950PR&950DT系列产品新增通过[Lock](lock.md)/[Unlock](unlock.md)接口进行不同流水线间的同步控制。通过Lock锁定指定流水（阻塞后续指令），再通过Unlock释放流水，来完成流水间的同步依赖。
      - Lock：根据MutexID获取Mutex，若Mutex已被锁定，将阻塞后续指定流水指令队列，直到前序指令中对应MutexID的Mutex被Unlock。
      - Unlock：当前流水的前置指令退出后，根据MutexID释放对应Mutex。
      
 - 单流水同步：同一核内具有数据依赖的相同类型流水指令之间的同步。
     - 通过[PipeBarrier](pipe_barrier_isasi.md)接口进行相同流水线间的同步控制。同一流水中虽然指令是顺序执行，但并不意味着后一条指令开始执行时前一条指令执行结束。PipeBarrier指令可以保证前序指令中所有数据读写全部完成，后序指令才开始执行。注意该接口不支持PIPE\_S单流水的同步。
+
+<a id="npu_arch_2201_intra_core_sync_combinations"></a>
 
 
 

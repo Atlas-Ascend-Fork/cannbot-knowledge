@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/SIMT_instruction_theoretical_perf_summary.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 
 本节汇总介绍了SIMT接口的理论性能，仅针对如下型号生效：
 
-- Ascend 950PR/Ascend 950DT
+- Ascend 950PR&950DT系列产品
 
 
 对本节提供的理论性能指标说明如下：

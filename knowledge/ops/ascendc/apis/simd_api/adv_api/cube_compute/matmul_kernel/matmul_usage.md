@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/Matmul_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-30T01:53:56Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -141,7 +141,8 @@ Matmul的计算公式为：C = A \* B + Bias，其示意图如下。
     ```
 
     
-    Atlas 推理系列产品AI Core上需要额外调用[SetLocalWorkspace](set_local_workspace.md)接口设置计算所需的UB空间。
+    Atlas推理系列产品AI Core上需要额外调用[SetLocalWorkspace](set_local_workspace.md)接口设置计算所需的UB空间。
+
     ```
     mm.SetLocalWorkspace(usedUbBufLen);
     ```
@@ -173,13 +174,13 @@ Matmul的计算公式为：C = A \* B + Bias，其示意图如下。
         在此种调用方式下，创建Matmul对象时，必须定义C矩阵的内存逻辑位置为TPosition::CO1、数据排布格式为CubeFormat::NZ、数据类型为float或int32\_t。
 
           
-        - Ascend 950PR/Ascend 950DT暂不支持该方式。
+        - Ascend 950PR&950DT系列产品暂不支持该方式。
           
           
-        - Atlas 推理系列产品AI Core暂不支持该方式。
+        - Atlas推理系列产品AI Core暂不支持该方式。
           
           
-        - Atlas 200I/500 A2 推理产品暂不支持该方式。
+        - Atlas 200I/500 A2推理产品暂不支持该方式。
           
         
 
@@ -223,39 +224,35 @@ Matmul的计算公式为：C = A \* B + Bias，其示意图如下。
 
 <a name="table98851538118"></a>
 CubeFormat::NZ格式的矩阵对齐要求为：
+
 - A矩阵/B矩阵：外轴为16的倍数，内轴为C0_size的倍数。
+- C矩阵：
+  
+  - 对于如下产品型号：
+    
+    - Atlas推理系列产品AI Core
+    
+    
+    - Atlas 200I/500 A2推理产品
+    
+    外轴为16的倍数，内轴为16的倍数。
+  
+  
+  - 对于如下产品型号：
+    
+    - Ascend 950PR&950DT系列产品
+    
+    
+    - Atlas A3系列产品
+    
+    
+    - Atlas A2系列产品
+    
+    开启channel_split功能：外轴为16的倍数，内轴为C0_size的倍数。
 
-对于如下产品型号：
-
-
-Atlas 推理系列产品AI Core
-
-
-
-Atlas 200I/500 A2 推理产品
-
-
-- C矩阵：外轴为16的倍数，内轴为16的倍数。
-
-
-对于如下产品型号：
-
-
-Ascend 950PR/Ascend 950DT
-
-
-
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
-
-
-
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
-
-
-- C矩阵（开启channel_split功能）：外轴为16的倍数，内轴为C0_size的倍数。
-- C矩阵（不开启channel_split功能）：外轴为16的倍数，对于float/int32_t类型内轴为16的倍数，对于half/bfloat16_t/int8_t/fp8_e4m3fn_t/fp8_e5m2_t/hifloat8_t类型内轴为C0_size的倍数。
-
-
+    不开启channel_split功能：外轴为16的倍数，对于float/int32_t类型内轴为16的倍数，对于half/bfloat16_t/int8_t/fp8_e4m3fn_t/fp8_e5m2_t/hifloat8_t类型内轴为C0_size的倍数。
+  
+  
 
 上述参数和概念的补充说明如下：
 

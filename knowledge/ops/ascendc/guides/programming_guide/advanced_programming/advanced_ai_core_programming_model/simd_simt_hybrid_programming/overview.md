@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ platforms: []
 >[!NOTE]说明 
 >该编程模型适用于如下型号：
      
->-   Ascend 950PR/Ascend 950DT
+>-   Ascend 950PR&950DT系列产品
      
 
 

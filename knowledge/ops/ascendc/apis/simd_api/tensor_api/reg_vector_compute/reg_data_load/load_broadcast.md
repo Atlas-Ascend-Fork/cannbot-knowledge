@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/reg_data_load/load_broadcast.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -55,39 +55,39 @@ source_headers:
 
 | 参数名 | 描述 |
 | --- | --- |
-| `brc_mode` | 广播模式，类型为`broadcast_mode`，默认值为`broadcast_mode::elem`。具体取值请参考[表3](#表3-broadcast_mode参数说明)。 |
-| `Tensor` | 源Tensor类型，由函数实参自动推导。Tensor必须位于UB。 |
-| `Coord` | 源Tensor的坐标类型，由函数实参自动推导。 |
+| brc_mode | 广播模式，类型为`broadcast_mode`，默认值为`broadcast_mode::elem`。具体取值请参考[表3](#表3-broadcast_mode参数说明)。 |
+| Tensor | 源Tensor类型，由函数实参自动推导。Tensor必须位于UB。 |
+| Coord | 源Tensor的坐标类型，由函数实参自动推导。 |
 
 **表2** 参数说明
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| `tensor` | 输入 | 源Tensor，必须位于UB。 |
-| `coord` | 输入 | 搬入起始元素在`tensor`逻辑布局中的坐标。 |
+| tensor | 输入 | 源Tensor，必须位于UB。 |
+| coord | 输入 | 搬入起始元素在`tensor`逻辑布局中的坐标。 |
 
 <a id="表3-broadcast_mode参数说明"></a>
 
 **表3** `broadcast_mode`参数说明
 
+表中的VL表示一个矢量数据寄存器的长度，单位为Byte。`int4b_t`类型的数据在寄存器中以`int4x2_t`形式存储。`int4x2_t`数据类型由两个四位整型数打包为一个8比特存储单元，`fp4x2_e2m1_t`和`fp4x2_e1m2_t`数据类型由两个独立的四位浮点数打包为一个8比特存储单元，因此，对于这三种类型，下表所述的“元素”是指一个8比特对应的搬运单元，而不是单个4比特值。
+
 | 取值 | 含义 | 搬入起始地址对齐约束（Byte） |
 | --- | --- | --- |
-| `broadcast_mode::elem` | 从UB读取一个元素，并将该元素广播到目的寄存器的所有元素位置。 | `sizeof(Tensor::data_type)` |
-| `broadcast_mode::datablock` | 从UB读取一个DataBlock（32B），并将该DataBlock重复广播到整个目的寄存器。 | 32 |
-| `broadcast_mode::elem2datablock` | 依次读取VL/32B个元素，并将每个元素分别广播到目的寄存器的一个DataBlock内。 | 16bit类型为VL/16；32bit类型为VL/8 |
+| broadcast_mode::elem | 从UB读取一个元素，并将该元素广播到目的寄存器的所有元素位置。 | 元素的大小 |
+| broadcast_mode::datablock | 从UB读取一个DataBlock（32B），并将该DataBlock重复广播到整个目的寄存器。 | 32 |
+| broadcast_mode::elem2datablock | 依次读取VL/32B个元素，并将每个元素分别广播到目的寄存器的一个DataBlock内。 | 16bit类型为VL/16；32bit类型为VL/8 |
 
 ## 数据类型
 
-| `brc_mode` | 支持的数据类型 |
+| brc_mode | 支持的数据类型 |
 | --- | --- |
-| `elem`、`datablock` | `int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`、`half`、`bfloat16_t`、`float`、`hifloat8_t`、`fp8_e4m3fn_t`、`fp8_e5m2_t`、`fp8_e8m0_t`、`int4x2_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t` |
-| `elem2datablock` | `int16_t`、`uint16_t`、`int32_t`、`uint32_t`、`half`、`bfloat16_t`、`float` |
-
-未列出的类型或模式组合会产生编译期错误。
+| elem、datablock | `int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float` |
+| elem2datablock | `int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float` |
 
 ## 返回值说明
 
-返回`reg_tensor<typename Tensor::data_type>`，其`reg`成员保存广播结果。
+通常返回`reg_tensor<typename Tensor::data_type>`；当源Tensor元素类型为`int4b_t`时，返回`reg_tensor<int4x2_t>`。其`reg`成员保存广播结果。
 
 ## 约束说明
 

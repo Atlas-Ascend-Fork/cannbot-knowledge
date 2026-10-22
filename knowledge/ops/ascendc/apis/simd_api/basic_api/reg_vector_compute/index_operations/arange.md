@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/index_operations/Arange.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -82,7 +82,6 @@ __simd_vf__ inline void ArangeVF(__ubuf__ T* dstAddr, T scalarValue, uint32_t on
     }
 }
 ```
-
 
 - [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)
 - [SwiGluGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swi_glu_grad_950.md)

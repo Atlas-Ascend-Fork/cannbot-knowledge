@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/best_practices/matmul_tuning_cases/matmul_nbuffer33.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -34,9 +34,8 @@ platforms: []
 
 本案例的算子规格如下：
 
-**表1**  算子规格
+**表1**  算子规格<a name="table101751125175213"></a>
 
-<a name="table101751125175213"></a>
 <table><thead align="left"><tr id="row8175525185219"><th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.1"><p id="p1417582516529"><a name="p1417582516529"></a><a name="p1417582516529"></a>输入</p>
 </th>
 <th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.2"><p id="p417532575212"><a name="p417532575212"></a><a name="p417532575212"></a>Shape</p>
@@ -83,9 +82,9 @@ platforms: []
 
 -   优化前的流水图如下，MatmulPolicy的默认模板下A、B矩阵全载，A、B矩阵都只搬运一次。此时MTE2执行时间较长，且流水整体呈串行。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002354202658.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002354202658.png)
 
--   优化前的Profiling数据如下，aic\_time平均耗时34.01us。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002355276604.png)
+-   优化前的Profiling数据如下，aic\_time平均耗时34.01us。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002355276604.png)
 
 ## 设计优化方案<a name="section33901368431"></a>
 
@@ -124,9 +123,9 @@ platforms: []
 
 -   优化后的流水图如下，Tiling参数不变，但由于stepM为2，NBuffer33模式会将左矩阵数据的搬运拆分为两次。可以看到，第一次MTE2结束后的计算过程（包括MTE1、MMAD和FIXPIPE）可以和第二次MTE2并行。分块搬运数据可以减少一次搬运数据导致的部分头开销，优化加载数据的性能。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002447772589.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002447772589.png)
 
--   优化后的Profiling数据如下，aic\_time平均耗时32.66us，较优化前的34.01us有所提升。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002388916821.png)
+-   优化后的Profiling数据如下，aic\_time平均耗时32.66us，较优化前的34.01us有所提升。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002388916821.png)
 
 ## 总结<a name="section8281219125011"></a>
 

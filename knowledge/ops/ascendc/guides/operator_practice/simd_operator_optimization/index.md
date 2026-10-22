@@ -1,6 +1,6 @@
 # SIMD算子性能优化
 
-- [矩阵计算](matrix_compute/index.md)：共 5 张知识卡（如 通过BT Buffer实现高效的bias计算、通过FP Buffer存放量化参数实现高效随路量化、通过L0C Buffer数据暂存实现高效的矩阵乘结果累加 等）。
+- [矩阵计算](matrix_compute/index.md)：共 6 张知识卡（如 通过BT Buffer实现高效的bias计算、通过FP Buffer存放量化参数实现高效随路量化、使用hifloat8_t实现Matmul性能优化 等）。
 - [内存访问](memory_access/index.md)：共 14 张知识卡（如 避免同地址访问、EfficientTransferApi、GM地址尽量512B对齐 等）。
 - [优化建议总览表（SIMD算子优化）](optimization_summary.md)：汇总 SIMD 算子的 Tiling、启动开销、流水编排、内存访问、矢量计算和矩阵计算优化建议。
 - [头尾开销优化](overhead_optimization/index.md)：共 5 张知识卡（如 避免TPipe在对象内创建和初始化、设置合适的核数和算子Kernel类型、设置DCI编译选项来减少算子尾开销 等）。

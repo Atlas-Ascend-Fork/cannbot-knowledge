@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetSelfDefineData.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T02:36:08Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -36,15 +36,15 @@ __aicore__ inline void SetSelfDefineData(T dataPtr)
 ```
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品不支持SetSelfDefineData\(T dataPtr\)接口原型。
+Atlas A3系列产品不支持SetSelfDefineData\(T dataPtr\)接口原型。
 
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持SetSelfDefineData\(T dataPtr\)接口原型。
+Atlas A2系列产品不支持SetSelfDefineData\(T dataPtr\)接口原型。
 
 
 
-Kirin X90产品不支持SetSelfDefineData\(T dataPtr\)接口原型。
+Kirin X90处理器系列产品不支持SetSelfDefineData\(T dataPtr\)接口原型。
 
 
 ## 参数说明

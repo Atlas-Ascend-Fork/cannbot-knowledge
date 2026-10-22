@@ -10,22 +10,26 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/enum/asc_saturation_mode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
+source_headers:
+- include/c_api/defs/enum.h
 ---
 
 # asc_saturation_mode
 
 asc_saturation_mode用于表示饱和控制所作用的模式类型，在调用[asc_set_saturation_flag](../../spr/asc_set_saturation_flag.md)和[asc_get_saturation_flag](../../spr/asc_get_saturation_flag.md)时使用。
 
+头文件路径为：`"c_api/defs/enum.h"`。
+
 ## 枚举类具体定义
 
 ```cpp
 enum class asc_saturation_mode : uint8_t {
-    FLOAT,
-    FLOAT8,
-    INT,
-    CAST
+    FLOAT = 48,
+    FLOAT8 = 50,
+    INT = 53,
+    CAST = 59
 };
 ```
 

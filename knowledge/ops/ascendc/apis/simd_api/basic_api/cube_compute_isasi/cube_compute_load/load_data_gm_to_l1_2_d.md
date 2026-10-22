@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_GMToL1_2D.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -64,35 +64,35 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const GlobalTensor<T>
 ## 数据类型<a id="zh-cn_topic_0000002567745223_section4219135304818"></a>
 
 
-针对Ascend 950PR/Ascend 950DT，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
+针对Ascend 950PR&950DT系列产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
 
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型为：b8、b16、b32。
+针对Atlas A3系列产品，支持数据类型为：b8、b16、b32。
 
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型为：b8、b16、b32。
+针对Atlas A2系列产品，支持数据类型为：b8、b16、b32。
 
 
 
-针对Atlas 200I/500 A2 推理产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
+针对Atlas 200I/500 A2推理产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
 
 
 
-针对Atlas 推理系列产品AI Core，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half。
+针对Atlas推理系列产品AI Core，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half。
 
 
 
-针对Atlas 训练系列产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half。
+针对Atlas训练系列产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half。
 
 
 
-针对Kirin X90，支持数据类型为：int8_t、half。
+针对Kirin X90处理器系列产品，支持数据类型为：int8_t、half。
 
 
 
-针对Kirin 9030，支持数据类型为：half。
+针对Kirin 9030处理器系列产品，支持数据类型为：half。
 
 
 ## 返回值说明
@@ -106,7 +106,7 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const GlobalTensor<T>
 - 目的地址必须32字节对齐。源地址必须1字节对齐，指令执行占用的流水为PIPE_MTE2。
 - 当srcStride=0时，表示连续的repeat之间读取的源操作数中的同一块数据分形。
 
-- 针对Atlas 训练系列产品不支持dstGap设置参数。
+- 针对Atlas训练系列产品不支持dstGap设置参数。
 
 
 ## 调用示例<a id="zh-cn_topic_0000002567745223_section088124295117"></a>

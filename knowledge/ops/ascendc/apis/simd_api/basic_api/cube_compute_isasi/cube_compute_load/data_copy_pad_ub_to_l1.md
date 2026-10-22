@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopyPad_UBToL1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -101,15 +101,15 @@ platforms:
 ## 数据类型
 
 
-Ascend 950PR/Ascend 950DT，支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
+Ascend 950PR&950DT系列产品，支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
 
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
+Atlas A3系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
 
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
+Atlas A2系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>
@@ -119,7 +119,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型�
 ## 约束说明<a name="section633mcpsimp"></a>
 
 
-- 特别地，针对Ascend 950PR/Ascend 950DT，设置srcStride和dstStride参数时，数据类型为int64_t，取值范围为[0, 65535]。
+- 特别地，针对Ascend 950PR&950DT系列产品，设置srcStride和dstStride参数时，数据类型为int64_t，取值范围为[0, 65535]。
 
 
 ## 调用示例<a name="section177231425115410"></a>

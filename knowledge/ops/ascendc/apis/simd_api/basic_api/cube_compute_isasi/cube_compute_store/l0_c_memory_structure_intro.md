@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/L0C_memory_structure_intro.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -22,10 +22,10 @@ platforms: []
 
 以如下产品型号为例：
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
+Atlas A3系列产品
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
+Atlas A2系列产品
 
 L0C Buffer的总容量为128K字节，由16个Bank组成。每个Bank的容量为8K字节，由128行组成，每行的宽度为64字节。这16个Bank被进一步组织为16个Bank Group。每个Bank Group包含1个Bank。
 
@@ -44,7 +44,7 @@ L0C_ADDR[16:0] = { BANK_DEPTH[6:0], BANK[3:0], BANK_WIDTH[5:0] }    // bit位顺
 
 
 
-以Ascend 950PR/Ascend 950DT为例，L0C Buffer总容量为256K字节，由16个Bank组成。每个Bank的容量为16K字节，由256行组成，每行的宽度为64字节。这16个Bank被进一步组织为16个Bank Group。每个 Bank Group包含1个Bank。
+以Ascend 950PR&950DT系列产品为例，L0C Buffer总容量为256K字节，由16个Bank组成。每个Bank的容量为16K字节，由256行组成，每行的宽度为64字节。这16个Bank被进一步组织为16个Bank Group。每个 Bank Group包含1个Bank。
 
 L0C Buffer的内存结构如[图2](#fig179810301543)所示，L0C Buffer的地址编码格式及其bit位对应的含义说明如下：
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_L1ToFixpipe.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -81,7 +81,7 @@ src数据类型支持uint64_t，dst数据类型支持uint64_t。
 ## 约束说明<a id="section_constraint"></a>
 
 
-- 针对Ascend 950PR/Ascend 950DT，blockLen参数单位为64B。
+- 针对Ascend 950PR&950DT系列产品，blockLen参数单位为64B。
 
 - dst物理内存为Fixpipe Buffer起始地址要求128字节对齐，src物理内存为L1 Buffer，起始地址要求32字节对齐。
 - blockCount取值范围：blockCount∈[1, 4095]，设置为0表示不执行，此指令将被视为NOP并报告警告。

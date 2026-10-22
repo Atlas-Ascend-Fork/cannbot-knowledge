@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/special_register_access/SetSaturationFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -35,7 +35,7 @@ source_headers:
 本接口通过模板参数`SaturationMode`设置全局饱和模式，并可通过[GetSaturationFlag](get_saturation_flag_isasi.md)查询其开启状态。该配置主要用于支持饱和模式的计算和精度转换接口；精度转换场景可配合Memory矢量计算的[Cast](../memory_vector_compute/type_conversion/cast.md)、[Truncate](../memory_vector_compute/type_conversion/truncate_isasi.md)，以及Reg矢量计算的[Cast](../reg_vector_compute/type_conversion/cast.md)、[Truncate](../reg_vector_compute/type_conversion/truncate.md)使用。
 
 
-在Ascend 950PR/Ascend 950DT上，部分精度转换接口可以使用接口自身的饱和配置，也可以使用本接口设置的全局饱和配置。可通过[SetSaturationStrategy](set_saturation_strategy.md)选择使用接口自身的饱和配置或全局饱和配置。
+在Ascend 950PR&950DT系列产品上，部分精度转换接口可以使用接口自身的饱和配置，也可以使用本接口设置的全局饱和配置。可通过[SetSaturationStrategy](set_saturation_strategy.md)选择使用接口自身的饱和配置或全局饱和配置。
 
 Reg矢量计算Cast可通过`CastTrait::satMode`设置单接口饱和模式，Memory矢量计算Cast不提供该参数，其单接口配置为饱和模式；选择全局配置时，两类Cast由本接口的`SaturationMode::FLOAT`或`SaturationMode::CAST`控制，涉及FP8类型时还需配合`SaturationMode::FLOAT8`控制NAN处理。两类Truncate均不提供单接口饱和模式参数，选择全局配置时由`SaturationMode::FLOAT`控制；其中float数据类型仅支持不饱和模式。具体支持的数据类型和转换组合以各接口资料为准。
 
@@ -68,29 +68,29 @@ __aicore__ inline void SetSaturationFlag(bool enableSat)
 - `SaturationMode::FLOAT`：
 
   
-  - 对于Ascend 950PR/Ascend 950DT，影响的数据类型为：浮点数计算时仅half；浮点数精度转换时为hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、half、bfloat16_t，其中`fp8_e8m0_t`、`fp8_e5m2_t`和`fp8_e4m3fn_t`的NAN处理需配合`SaturationMode::FLOAT8`。
+  - 对于Ascend 950PR&950DT系列产品，影响的数据类型为：浮点数计算时仅half；浮点数精度转换时为hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、half、bfloat16_t，其中`fp8_e8m0_t`、`fp8_e5m2_t`和`fp8_e4m3fn_t`的NAN处理需配合`SaturationMode::FLOAT8`。
   
 
   
-  - 对于Atlas A3 训练系列产品/Atlas A3 推理系列产品，影响的数据类型为：half、bfloat16_t。
+  - 对于Atlas A3系列产品，影响的数据类型为：half、bfloat16_t。
   
 
   
-  - 对于Atlas A2 训练系列产品/Atlas A2 推理系列产品，影响的数据类型为：half、bfloat16_t。
+  - 对于Atlas A2系列产品，影响的数据类型为：half、bfloat16_t。
   
 
 - `SaturationMode::FLOAT8`：
 
   
-  - 对于Ascend 950PR/Ascend 950DT，影响的数据类型为：fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t。
+  - 对于Ascend 950PR&950DT系列产品，影响的数据类型为：fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t。
   
 
   
-  - 对于Atlas A3 训练系列产品/Atlas A3 推理系列产品，不支持该饱和模式。
+  - 对于Atlas A3系列产品，不支持该饱和模式。
   
 
   
-  - 对于Atlas A2 训练系列产品/Atlas A2 推理系列产品，不支持该饱和模式。
+  - 对于Atlas A2系列产品，不支持该饱和模式。
   
 
 - `SaturationMode::INT`，影响的数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t。
@@ -127,7 +127,7 @@ __aicore__ inline void SetSaturationFlag(bool enableSat)
     ```
 
 
-- 对于Ascend 950PR/Ascend 950DT，通过Memory矢量计算[Cast](../memory_vector_compute/type_conversion/cast.md)体现`SaturationMode::FLOAT8`的配置效果。假设`float`类型的`srcLocal`中各元素均为nan，两个输出Tensor的数据类型均为`fp8_e5m2_t`。
+- 对于Ascend 950PR&950DT系列产品，通过Memory矢量计算[Cast](../memory_vector_compute/type_conversion/cast.md)体现`SaturationMode::FLOAT8`的配置效果。假设`float`类型的`srcLocal`中各元素均为nan，两个输出Tensor的数据类型均为`fp8_e5m2_t`。
 
     ```cpp
     // 选择全局饱和配置，并开启浮点数精度转换的饱和模式。
@@ -163,7 +163,7 @@ __aicore__ inline void SetSaturationFlag(bool enableSat)
     ```
 
 
-- 对于Ascend 950PR/Ascend 950DT，通过Memory矢量计算[Cast](../memory_vector_compute/type_conversion/cast.md)体现`SaturationMode::CAST`的配置效果。假设`int16_t`类型的`srcLocal`中各元素均为257，两个输出Tensor的数据类型均为`uint8_t`。
+- 对于Ascend 950PR&950DT系列产品，通过Memory矢量计算[Cast](../memory_vector_compute/type_conversion/cast.md)体现`SaturationMode::CAST`的配置效果。假设`int16_t`类型的`srcLocal`中各元素均为257，两个输出Tensor的数据类型均为`uint8_t`。
 
     ```cpp
     // 选择全局饱和配置。

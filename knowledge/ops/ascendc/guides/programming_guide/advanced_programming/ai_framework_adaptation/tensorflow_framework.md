@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/ai_framework_adaptation/tensorflow_framework.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -18,7 +18,7 @@ platforms: []
 
 
 >[!NOTE]说明 
->针对Ascend 950PR/Ascend 950DT，暂不支持TensorFlow框架算子调用。
+>针对Ascend 950PR&950DT系列产品，暂不支持TensorFlow框架算子调用。
 
 
 本章节介绍TensorFlow框架算子适配的流程，用于将TensorFlow框架的算子映射成CANN算子（开发者基于CANN框架自定义开发的算子），从而完成从TensorFlow框架调用到CANN算子的过程。同时给出TensorFlow框架侧算子调用的示例，便于开发者了解完整流程。
@@ -38,7 +38,7 @@ platforms: []
 
 2.  算子实现。
     -   [算子原型定义](../aclnn_operator_development/design_and_implementation/operator_prototype_definition.md)。通过原型定义来描述算子输入输出、属性等信息以及算子在AI处理器上相关实现信息，并关联tiling实现等函数。
-    -   核函数（Kernel）侧算子实现和host侧tiling实现请参考[SIMD算子实现](../../../operator_practice/simd_operator_impl/overview.md)；工程化算子开发，支持开发者调用Tiling API基于CANN提供的编程框架进行tiling开发，kernel侧也提供对应的接口方便开发者获取tiling参数，具体内容请参考[Kernel侧算子实现](../aclnn_operator_development/design_and_implementation/kernel_operator_implementation.md)和[Host侧Tiling实现](../aclnn_operator_development/design_and_implementation/host_tiling_implementation.md)，由此而带来的额外约束也在上述章节说明。
+    -   核函数（Kernel）侧算子实现和host侧tiling实现请参考[SIMD算子实现](../../../operator_practice/simd_operator_impl/overview.md)；工程化算子开发，支持开发者调用Tiling API基于CANN提供的编程框架进行tiling开发，核函数（Kernel）侧也提供对应的接口方便开发者获取tiling参数，具体内容请参考[Kernel侧算子实现](../aclnn_operator_development/design_and_implementation/kernel_operator_implementation.md)和[Host侧Tiling实现](../aclnn_operator_development/design_and_implementation/host_tiling_implementation.md)，由此而带来的额外约束也在上述章节说明。
 
 3.  [算子入图（GE图）开发](../operator_graph_development/basic_development_flow.md)。算子入图场景下，需要提供shape推导等算子入图适配函数的实现。
 4.  TensorFlow框架适配插件开发。详细说明见[适配插件开发](#section1820291291414)。
@@ -61,7 +61,7 @@ AddCustom
 │   │   ├── tensorflow_add_custom_plugin.cc  // TensorFlow框架适配插件实现文件    
 │   ├── CMakeLists.txt
 ├── op_host                      // host侧实现文件
-├── op_kernel                    // kernel侧实现文件
+├── op_kernel                    // 核函数（Kernel）侧实现文件
 └── scripts                      // 自定义算子工程打包相关脚本所在目录
 ```
 
@@ -227,7 +227,7 @@ REGISTER_CUSTOM_OP("AddCustom")   // 当前Ascend C自定义算子名
         .Attr("T: {half}")          // T类型支持范围
         .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn);  // 算子shape信息推导，BroadcastBinaryOpShapeFn为TensorFlow提供的内置函数，输出shape信息由输入shape传播推导，即输入和输出shape保持一致
     
-    // 实现一个CPU版本的kernel函数，因为Tensorflow的计算图在构建时会检查所有的算子是否有任意设备上的kernel函数（NPU核函数（Kernel）无法被感知），如果没有将会报错。这里实现一个固定返回错误的CPU kernel函数：
+    // 实现一个CPU版本的核函数（Kernel），因为Tensorflow的计算图在构建时会检查所有的算子是否有任意设备上的核函数（Kernel）（NPU核函数（Kernel）无法被感知），如果没有将会报错。这里实现一个固定返回错误的CPU核函数（Kernel）：
     class AddCustomOp : public OpKernel {
      public:
       explicit AddCustomOp(OpKernelConstruction* context) : OpKernel(context) {}

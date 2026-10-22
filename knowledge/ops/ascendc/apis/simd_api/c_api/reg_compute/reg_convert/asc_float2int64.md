@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_convert/asc_float2int64.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -41,12 +41,12 @@ def asc_float2int64_rn(dst, src, mask, src_pos):
             dst[i] = int64_t(src[2 * i + offset])  # float -> int64_t，RINT舍入
 ```
 
-本接口为`reg`矢量计算接口，仅在AIV上生效。
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
 ```c
-// 通过引用参数输出结果
+// 通过引用参数输出结果（占位符形式）
 __simd_callee__ inline void asc_float2int64_<round_mode><sat_mode>(vector_int64_t& dst,
                                                                    vector_float src,
                                                                    vector_bool mask,
@@ -57,15 +57,17 @@ __simd_callee__ inline void asc_float2int64_<round_mode><sat_mode>(vector_int64_
                                                                    vector_bool mask,
                                                                    std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
 
-// 通过函数返回值返回结果
+// 通过函数返回值返回结果（占位符形式）
 __simd_callee__ inline vector_int64_t asc_float2int64_<round_mode><sat_mode>(vector_float src,
-                                                                   vector_bool mask,
-                                                                   std::integral_constant<asc_position_mode, asc_position_mode::EVEN> src_pos)
+                                                                             vector_bool mask,
+                                                                             std::integral_constant<asc_position_mode, asc_position_mode::EVEN> src_pos)
 
 __simd_callee__ inline vector_int64_t asc_float2int64_<round_mode><sat_mode>(vector_float src,
-                                                                   vector_bool mask,
-                                                                   std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
+                                                                             vector_bool mask,
+                                                                             std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
 ```
+
+**占位符说明如下：**
 
 - `<round_mode>`表示支持的舍入模式，支持`rd`（`FLOOR`）、`rn`（`RINT`）、`rna`（`ROUND`）、`ru`（`CEIL`）和`rz`（`TRUNC`）。
 - `<sat_mode>`表示饱和/非饱和模式，为空时表示非饱和模式，取值为`_sat`时表示饱和模式。
@@ -100,10 +102,9 @@ __simd_callee__ inline void asc_float2int64_rn(vector_int64_t& dst,
 
 ## 约束说明
 
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - 位置选择标签参数仅能使用编译期常量，编译器据此在编译期分发至对应的重载。
 - 位置选择标签用于选择源操作数中参与转换的元素索引。
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
 - `src`与`dst`的数据类型需要与函数原型匹配。
 - `mask`掩码位为0时，`dst`对应元素置0。
 - `src_pos`取`ASC_POSITION_EVEN`时读取`src`的偶数索引，取`ASC_POSITION_ODD`时读取`src`的奇数索引。
@@ -114,7 +115,7 @@ __simd_callee__ inline void asc_float2int64_rn(vector_int64_t& dst,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

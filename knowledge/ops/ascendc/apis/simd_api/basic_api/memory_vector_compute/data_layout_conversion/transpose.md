@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_layout_conversion/Transpose.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -100,7 +100,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 
 
-**表**  Ascend 950PR/Ascend 950DT sharedTmpBuffer所需的内存<a id="table4"></a>
+**表**  Ascend 950PR&950DT系列产品 sharedTmpBuffer所需的内存<a id="table4"></a>
 
 | transposeType | sharedTmpBuffer所需的大小 |
 | :-- | :-- |
@@ -112,7 +112,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 
 
-**表**  Atlas A3 训练系列产品/Atlas A3 推理系列产品sharedTmpBuffer所需的内存<a id="table4"></a>
+**表**  Atlas A3系列产品sharedTmpBuffer所需的内存<a id="table4"></a>
 
 | transposeType | sharedTmpBuffer所需的大小 |
 | :-- | :-- |
@@ -124,7 +124,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 
 
-**表**  Atlas A2 训练系列产品/Atlas A2 推理系列产品sharedTmpBuffer所需的内存<a id="table4"></a>
+**表**  Atlas A2系列产品sharedTmpBuffer所需的内存<a id="table4"></a>
 
 | transposeType | sharedTmpBuffer所需的大小 |
 | :-- | :-- |
@@ -136,7 +136,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 
 
-**表**  Atlas 200I/500 A2 推理产品sharedTmpBuffer所需的内存<a id="table4"></a>
+**表**  Atlas 200I/500 A2推理产品sharedTmpBuffer所需的内存<a id="table4"></a>
 
 | transposeType | sharedTmpBuffer所需的大小 |
 | :-- | :-- |
@@ -146,7 +146,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 
 
-**表**  Atlas 推理系列产品AI Core sharedTmpBuffer所需的内存<a id="table4"></a>
+**表**  Atlas推理系列产品AI Core sharedTmpBuffer所需的内存<a id="table4"></a>
 
 | transposeType | sharedTmpBuffer所需的大小 |
 | :-- | :-- |
@@ -158,7 +158,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 
 
-**表**  Kirin X90 sharedTmpBuffer所需的内存<a id="table4"></a>
+**表**  Kirin X90处理器系列产品 sharedTmpBuffer所需的内存<a id="table4"></a>
 
 | transposeType | sharedTmpBuffer所需的大小 |
 | :-- | :-- |
@@ -170,7 +170,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 
 
-**表**  Kirin 9030 sharedTmpBuffer所需的内存<a id="table4"></a>
+**表**  Kirin 9030处理器系列产品 sharedTmpBuffer所需的内存<a id="table4"></a>
 
 | transposeType | sharedTmpBuffer所需的大小 |
 | :-- | :-- |
@@ -185,84 +185,116 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 - 普通转置：
 
   
-  Ascend 950PR/Ascend 950DT，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Ascend 950PR&950DT系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
   
-  Atlas A3 训练系列产品/Atlas A3 推理系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Atlas A3系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
   
-  Atlas A2 训练系列产品/Atlas A2 推理系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Atlas A2系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
   
-  Atlas 200I/500 A2 推理产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Atlas 200I/500 A2推理产品，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
   
-  Atlas 推理系列产品AI Core，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Atlas推理系列产品AI Core，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
   
-  Atlas 训练系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Atlas训练系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
   
-  Kirin X90，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Kirin X90处理器系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
   
-  Kirin 9030，操作数支持的数据类型为：int16_t、uint16_t、half。
+  Kirin 9030处理器系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  
+
+  
+  Kirin 9050处理器系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  
+
+  
+  KirinDev0001处理器系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  
+
+  
+  KirinDev0002处理器系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
+  
+
+  
+  KirinDev0003处理器系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
   
 
 - 增强转置：
   - transposeType为TRANSPOSE\_ND2ND\_B16：
 
     
-    Ascend 950PR/Ascend 950DT，操作数支持的数据类型为：int16_t、uint16_t、half。
+    Ascend 950PR&950DT系列产品，操作数支持的数据类型为：int16_t、uint16_t、half。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，操作数支持的数据类型为：uint16_t。
+    Atlas A3系列产品，操作数支持的数据类型为：uint16_t。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，操作数支持的数据类型为：uint16_t。
+    Atlas A2系列产品，操作数支持的数据类型为：uint16_t。
     
 
     
-    Atlas 200I/500 A2 推理产品，操作数支持的数据类型为：uint16_t。
+    Atlas 200I/500 A2推理产品，操作数支持的数据类型为：uint16_t。
     
 
     
-    Atlas 推理系列产品AI Core，操作数支持的数据类型为：uint16_t。
+    Atlas推理系列产品AI Core，操作数支持的数据类型为：uint16_t。
     
 
   - transposeType为TRANSPOSE\_NCHW2NHWC或TRANSPOSE\_NHWC2NCHW：
 
     
-    Ascend 950PR/Ascend 950DT，操作数支持的数据类型为：int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int4x2_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32。
+    Ascend 950PR&950DT系列产品，操作数支持的数据类型为：int8_t、uint8_t、fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int4x2_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    Atlas A3系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    Atlas A2系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
     
 
     
-    Atlas 推理系列产品AI Core，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    Atlas推理系列产品AI Core，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
     
 
     
-    Kirin X90，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    Kirin X90处理器系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
     
 
     
-    Kirin 9030，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    Kirin 9030处理器系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    
+
+    
+    Kirin 9050处理器系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    
+
+    
+    KirinDev0001处理器系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    
+
+    
+    KirinDev0002处理器系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+    
+
+    
+    KirinDev0003处理器系列产品，操作数支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
     
 
 ## 返回值说明

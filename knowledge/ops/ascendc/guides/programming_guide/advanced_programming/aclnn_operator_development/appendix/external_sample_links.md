@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/appendix/external_sample_links.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -70,5 +70,5 @@ platforms: []
 
 ## 其他参考
 
-- [图引擎开发指南](https://www.hiascend.com/document/redirect/CannCommunityGraphguide)。
+- [《图开发》](https://gitcode.com/cann/ge/blob/master/docs/zh/user_guides/graph_dev/README.md)。
   - 说明：Ascend Graph图开发的完整指南，适用于算子入图场景。

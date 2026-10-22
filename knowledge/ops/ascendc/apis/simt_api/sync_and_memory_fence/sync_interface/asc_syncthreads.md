@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/sync_and_memory_fence/sync_interface/asc_syncthreads.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -129,7 +129,6 @@ inline void asc_syncthreads()
     输出结果:
     [1023, 1, 1, 1 …]
     ```
-
 
 - [Sort 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/sort_950.md)
 - [NLLLoss2d 950 ACLNN 算子知识](../../../../operators/aclnn/nn/loss/nll_loss2d_950.md)

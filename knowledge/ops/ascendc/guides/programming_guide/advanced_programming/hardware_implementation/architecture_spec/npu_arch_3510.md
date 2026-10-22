@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_3510.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -31,9 +31,8 @@ platforms: []
 -   删除L1 Buffer-\> Global Memory的数据通路。
 -   SSBuffer，用于AIC和AIV的核间通信。
 -   增加SIMD Register File存储层次，在SIMD程序中，数据从Unified Buffer（UB）搬运到Register进行计算，产生的中间结果可以不用传回UB，直接在寄存器计算。
--   新增SIMT相关硬件单元。SIMT相关硬件单元介绍如下：
+-   新增SIMT相关硬件单元。SIMT相关硬件单元介绍如下：<a name="table45836437171"></a>
 
-    <a name="table45836437171"></a>
     <table><thead align="left"><tr id="row1558324391711"><th class="cellrowborder" valign="top" width="18.85%" id="mcps1.1.3.1.1"><p id="p558318431177"><a name="p558318431177"></a><a name="p558318431177"></a>SIMT硬件单元名称</p>
     </th>
     <th class="cellrowborder" valign="top" width="81.15%" id="mcps1.1.3.1.2"><p id="p3583443191718"><a name="p3583443191718"></a><a name="p3583443191718"></a>说明</p>
@@ -95,9 +94,7 @@ platforms: []
 
 开发者可以通过[平台信息获取](../../../../../apis/utils_api/platform_info/index.md)接口查询各存储单元的内存空间大小。
 
-**各存储单元的参数规格**
-
-<a name="table12348145512210"></a>
+**各存储单元的参数规格**<a name="table12348145512210"></a>
 
 | 存储单元名称 | 存储空间大小 | 对齐要求 | 核函数（Kernel）侧常量名称及大小（单位：字节） |
 | --- | --- | --- | --- |
@@ -120,9 +117,7 @@ platforms: []
 | 非对齐搬入寄存器 | 32B | 4 |
 | 非对齐搬入出寄存器 | 32B | 4 |
 
-<a id="compile-options-description"></a>
-
-> [!NOTE]说明
+> [!NOTE]说明<a id="compile-options-description"></a>
 >
 > UB总容量为256KB，其中部分空间可能用于系统预留或划分为Data Cache。因此，用户可使用的UB空间大小会随编译选项和编程场景变化。
 >
@@ -162,7 +157,7 @@ platforms: []
     这些格式针对矩阵乘法等计算密集型任务进行优化，可显著提升计算效率。
 
 -   L1 Buffer缓存推荐使用FRACTAL\_NZ格式。当L1 Buffer采用NZ格式时，数据搬运到L0A/L0B Buffer（格式要求分别为NZ/ZN格式）时，可降低格式转换开销。
--   Unified Buffer对数据格式没有要求。
+-   UB对数据格式没有要求。
 
 **存储单元的访问冲突**
 
@@ -261,7 +256,7 @@ Channel merge支持S8、U8、S4和U4数据类型，而Channel split支持FP32数
 
     ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_f32_1.png)
 
-## 指令序列深度<a name="section1073952984688"></a>
+## 指令队列深度<a name="section1073952984688"></a>
 
 以下是计算单元和搬运单元的指令队列深度：
 
@@ -313,6 +308,8 @@ Channel merge支持S8、U8、S4和U4数据类型，而Channel split支持FP32数
     -   不允许连续设置同一个EventID，因为这可能导致事件状态混乱或未被正确处理。
     -   不建议手动插入TEventID，不能手动插入6和7的TEventID，因为它们可能被系统预留或用于特殊用途。
 
+    除SetFlag/WaitFlag外，本架构还支持使用Mutex建立核内多流水同步关系。关于如何通过Mutex满足双缓冲场景下的正向数据依赖和反向数据依赖，并安全复用Buffer，请参考[基于Mutex实现多流水同步](../../advanced_kernel_programming/intra_core_sync/mutex_multi_pipeline_sync.md)。
+
 -   核间同步
 
     当不同核之间操作同一块全局内存时，可能存在读后写、写后读以及写后写等数据依赖问题，需要进行核间同步控制。
@@ -348,7 +345,7 @@ Channel merge支持S8、U8、S4和U4数据类型，而Channel split支持FP32数
 
     -   **与其它接口的flagId冲突**
 
-        Matmul高阶API和SyncAll硬件同步接口内部实现中使用了CrossCoreSetFlag和CrossCoreWaitFlag会占用一部分flagId，开发者同时使用以上两个接口与CrossCoreSetFlag/CrossCoreWaitFlag时，需注意避免flagId使用冲突，具体情况参考[CrossCoreSetFlag的flagId冲突说明](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md#flagId冲突说明)。
+        部分接口内部实现中使用了CrossCoreSetFlag和CrossCoreWaitFlag，会占用一部分flagId，开发者同时使用这些接口与CrossCoreSetFlag/CrossCoreWaitFlag时，需注意避免flagId使用冲突，各接口flagId占用的完整说明（含各NPU架构版本的差异）参考[核间同步flagId占用说明](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/key_features.md#inter_core_sync_flagid_usage)。
 
     -   **计数器限制**
 

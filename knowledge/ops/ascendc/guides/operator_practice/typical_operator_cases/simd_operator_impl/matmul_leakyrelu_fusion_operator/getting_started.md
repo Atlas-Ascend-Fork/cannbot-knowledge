@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/getting_started.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -39,6 +39,7 @@ $$
 **数据流路径**：
 
 Cube侧：
+
 ```
 GM(A:ND,half) -> L1(A:Nz,half) -> L0A(A:Nz,half) -
             │                  │                 │
@@ -56,6 +57,7 @@ GM(B:ND,half) -> L1(B:Nz,half) -> L0B(B:Zn,half) -
 ```
 
 核间同步与Vector侧：
+
 ```
 Cube核:  Fixpipe -> GM(C:ND,half)
                     │

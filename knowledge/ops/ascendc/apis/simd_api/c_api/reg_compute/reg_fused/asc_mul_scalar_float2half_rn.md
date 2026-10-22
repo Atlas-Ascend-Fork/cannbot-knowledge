@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_fused/asc_mul_scalar_float2half_rn.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,13 +24,15 @@ source_headers:
 
 头文件路径为：`"c_api/reg_compute/compute/reg_fused.h"`。
 
-根据`mask`将源操作数`src`（float类型）按元素与标量`value`相乘后，按照RINT舍入模式转换为half类型，得到计算结果。计算公式如下：
+根据`mask`将源操作数`src`（float类型）按元素与标量`value`相乘后，按照ROUND舍入模式转换为half类型，得到计算结果。计算公式如下：
 
 $$
 dst_i = round\_to\_half(src_i \times value)
 $$
 
 由于源操作数（float，32位）与目的操作数（half，16位）的位宽比为2:1，一个`vector_float`的数据转换后会填满一个`vector_half`。通过`dst_pos`参数指定结果写入`dst`中索引为偶数或奇数的位置，未写入的位置置0。
+
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -62,28 +64,17 @@ __simd_callee__ inline void asc_mul_scalar_float2half_rn(vector_half& dst,
                                                          std::integral_constant<asc_position_mode, asc_position_mode::ODD> dst_pos)
 ```
 
-### 函数原型典型示例
-
-```c
-// 示例：对float矢量数据寄存器与float标量执行乘法后转换为half类型，结果写入偶数位置
-__simd_callee__ inline void asc_mul_scalar_float2half_rn(vector_half& dst,
-                                                         vector_float src,
-                                                         float value,
-                                                         vector_bool mask,
-                                                         std::integral_constant<asc_position_mode, asc_position_mode::EVEN> dst_pos)
-```
-
 ## 参数说明
 
 **表1** 参数说明
 
-| 参数名   | 输入/输出 | 描述                                                                                                                                                     |
+| 参数名 | 输入/输出 | 描述 |
 | -------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| dst      | 输出      | 目的操作数（矢量数据寄存器，half类型）。                                                                                                                 |
-| src      | 输入      | 源操作数（矢量数据寄存器，float类型）。                                                                                                                  |
-| value    | 输入      | 源操作数（标量，float类型）。                                                                                                                            |
-| mask     | 输入      | 掩码寄存器，用于控制各元素是否参与计算。`mask`中与元素对应的比特位为1时，该元素参与计算；为0时，该元素不参与计算。                                       |
-| dst_pos  | 输入      | 数据写入位置模式，取值为`ASC_POSITION_EVEN`（偶数位置）或`ASC_POSITION_ODD`（奇数位置）。选择偶数位置时，奇数位置置0；选择奇数位置时，偶数位置置0。 |
+| dst | 输出 | 目的操作数（矢量数据寄存器，half类型）。 |
+| src | 输入 | 源操作数（矢量数据寄存器，float类型）。 |
+| value | 输入 | 源操作数（标量，float类型）。 |
+| mask | 输入 | 掩码寄存器，用于控制各元素是否参与计算。`mask`中与元素对应的比特位为1时，该元素参与计算；为0时，该元素不参与计算。 |
+| dst_pos | 输入 | 数据写入位置模式，取值为`ASC_POSITION_EVEN`（偶数位置）或`ASC_POSITION_ODD`（奇数位置）。选择偶数位置时，奇数位置置0；选择奇数位置时，偶数位置置0。 |
 
 矢量数据寄存器和掩码寄存器的详细说明请参见[reg数据类型定义](../../defs/type/data_type_definition.md)。
 
@@ -94,9 +85,7 @@ __simd_callee__ inline void asc_mul_scalar_float2half_rn(vector_half& dst,
 
 ## 约束说明
 
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
-- `mask`需通过掩码设置接口预先赋值后再传入，未赋值的掩码寄存器内容不确定，会导致有效元素位置错误。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - `mask`掩码位为0时，结果对应元素置0。
 - 当`dst_pos`为`ASC_POSITION_EVEN`时，结果写入`dst`的偶数索引位置，奇数索引位置置0；当`dst_pos`为`ASC_POSITION_ODD`时，结果写入`dst`的奇数索引位置，偶数索引位置置0。
 
@@ -105,7 +94,7 @@ __simd_callee__ inline void asc_mul_scalar_float2half_rn(vector_half& dst,
 将以下代码保存为`example.asc`后，可通过`bisheng`命令编译运行。其中，`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
@@ -143,9 +132,10 @@ __simd_vf__ inline void compute(__ubuf__ half* dst, __ubuf__ float* src)
     vector_float src_reg;
     uint32_t count = ELEMENT_COUNT;
     vector_bool mask = asc_update_mask_b32(count);
+    vector_bool mask_b16_all = asc_create_mask_b16(PAT_ALL);
     asc_loadalign(src_reg, src);
     asc_mul_scalar_float2half_rn(dst_reg, src_reg, SCALAR_VALUE, mask, ASC_POSITION_EVEN);
-    asc_storealign(dst, dst_reg, mask);
+    asc_storealign(dst, dst_reg, mask_b16_all);
 }
 
 __global__ __vector__ void asc_mul_scalar_float2half_rn_kernel(__gm__ half* dst, __gm__ float* src)

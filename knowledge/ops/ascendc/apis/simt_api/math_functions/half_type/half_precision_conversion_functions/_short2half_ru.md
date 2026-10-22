@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__short2half_ru.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -86,3 +86,10 @@ inline half __short2half_ru(const short int x)
         dst[idx] = __short2half_ru(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -4096, -2049, 0, 2049, 4096
+result: -4096, -2048, 0, 2050, 4096
+```

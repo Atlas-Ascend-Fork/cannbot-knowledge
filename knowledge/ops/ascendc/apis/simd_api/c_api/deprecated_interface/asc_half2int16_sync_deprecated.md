@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_half2int16_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_half2int16_rn_sync`、`asc_half2int16_rna_sync`、`asc_half2int16_rd_sync`、`asc_half2int16_ru_sync`和`asc_half2int16_rz_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_convert/asc_half2int16.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_half2int16_rn_sync`、`asc_half2int16_rna_sync`、`asc_half2int16_rd_sync`、`asc_half2int16_ru_sync`和`asc_half2int16_rz_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_convert/asc_half2int16.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将half类型数据转换为int16_t，并支持多种舍入模式。
 - RINT舍入模式：四舍六入五成双舍入
@@ -36,6 +36,7 @@ source_headers:
 ## 函数原型
 
 - 同步计算
+
     ```cpp
     // RINT舍入模式
     __aicore__ inline void asc_half2int16_rn_sync(__ubuf__ int16_t* dst, __ubuf__ half* src, uint32_t count)

@@ -10,18 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/type_conversion/cast.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/tensor_api/arch/vector/experimental/type_conversion.h
+- include/tensor_api/experimental/arch/vector/type_conversion.h
 ---
 
 # cast
 
 ## 功能说明
 
-头文件路径：`"tensor_api/arch/vector/experimental/type_conversion.h"`。
+头文件路径：`"tensor_api/experimental/arch/vector/type_conversion.h"`。
 
 命名空间：`asc::te::experimental`。
 
@@ -98,6 +98,8 @@ constexpr cast_options default_cast_ops = {
 | `half → int4x2_t` | `zero`、`one`、`two`、`three` | `rint`、`round`、`floor`、`ceil`、`trunc` | `not_sat`、`sat` |
 | `half → hifloat8_t` | `zero`、`one` | `round` | `not_sat`、`sat` |
 
+`cast`支持的类型为寄存器元素类型，对于`int4x2_t`相关的转换，可以通过从UB中的元素类型为`int4b_t`的Tensor搬入后，使用返回的`reg_tensor<int4x2_t>`参与转换；`cast<int4x2_t>`的结果可通过`store`写入`int4b_t` Tensor。
+
 ## 关键特性说明
 
 ### 饱和与非饱和模式<a name="饱和与非饱和模式"></a>
@@ -125,7 +127,7 @@ constexpr cast_options default_cast_ops = {
 - 位宽比为4时，可选择`zero`、`one`、`two`或`three`，对应每组中的第0至第3个位置。
 - 源、目的类型位宽相同时，使用`zero`。
 
-`cast`只完成寄存器计算，不会隐式调整UB中的数据排布。连续处理Tensor数据时，应使`local_tensor::load`、`cast_options::layout`和`local_tensor::store`的排布保持一致。常见用法如下：
+`cast`只完成寄存器计算，不会隐式调整Unified Buffer（UB）中的数据排布。连续处理Tensor数据时，应使`local_tensor::load`、`cast_options::layout`和`local_tensor::store`的排布保持一致。常见用法如下：
 
 | 转换方向 | 搬入 | 搬出 |
 | --- | --- | --- |
@@ -137,7 +139,7 @@ constexpr cast_options default_cast_ops = {
 
 对于尾块，建议按照源、目的类型中位宽较大的类型计算单寄存器逻辑元素数，并用相同类型调用`update_mask`。这样可使搬入/搬出sideband模式、`layout`和mask对应同一组逻辑元素。
 
-`int4x2_t`、`fp4x2_e2m1_t`和`fp4x2_e1m2_t`每个存储单元包含两个4 bit元素。它们与16 bit类型转换时，指令按两个元素一组读写；从16 bit类型转换到4 bit打包类型时，每组mask以偶数位为有效控制位。
+int4b_t在寄存器上以两个逻辑元素打包为一个字节，内存Tensor使用`int4b_t`，寄存器使用`int4x2_t`。`int4x2_t`、`fp4x2_e2m1_t`和`fp4x2_e1m2_t`每个存储单元包含两个4 bit元素。它们与16 bit类型转换时，指令按两个元素一组读写；从16 bit类型转换到4 bit打包类型时，每组mask以偶数位为有效控制位。
 
 ## 返回值说明
 

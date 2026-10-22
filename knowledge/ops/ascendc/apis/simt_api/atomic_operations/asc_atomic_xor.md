@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/atomic_operations/asc_atomic_xor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -91,7 +91,7 @@ UB或Global Memory上的初始数据。
 | 名称 | 说明 |
 | --- | --- |
 | `hit` | 每个元素表示一个线程是否命中事件，1为命中，0为未命中。 |
-| `parity` | Global Memory中的奇偶标志，kernel启动前清零。 |
+| `parity` | Global Memory中的奇偶标志，核函数（Kernel）启动前清零。 |
 | `n` | 输入元素个数。 |
 
 核心代码实现如下：

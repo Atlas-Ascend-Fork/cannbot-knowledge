@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__half2char_rz.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -87,3 +87,10 @@ inline signed char __half2char_rz(const half x)
         dst[idx] = __half2char_rz(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.5, -0.5, 0.5, 1.5, 127.5, inf, nan
+result: -1, 0, 0, 1, 127, 127, 0
+```

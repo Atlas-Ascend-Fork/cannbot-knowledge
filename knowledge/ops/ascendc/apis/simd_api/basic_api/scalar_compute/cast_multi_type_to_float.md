@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/scalar_compute/Cast_multi_type_to_float.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -36,11 +36,11 @@ source_headers:
 以下函数原型仅支持：
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- Atlas A2系列产品
 
  
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- Atlas A3系列产品
 
 
 bfloat16\_t类型转换为float类型：
@@ -51,7 +51,7 @@ __aicore__ inline float Cast(const bfloat16_t& bVal)
 
 
 
-以下函数原型仅支持Ascend 950PR/Ascend 950DT：
+以下函数原型仅支持Ascend 950PR&950DT系列产品：
 
 支持多种数据类型转换为float类型：
 
@@ -89,13 +89,13 @@ __aicore__ constexpr inline U Cast(T bVal)
 - 支持的操作数数据类型如下：
 
   
-  - Ascend 950PR/Ascend 950DT，支持fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、bfloat16_t。
+  - Ascend 950PR&950DT系列产品，支持fp4x2_e2m1_t、fp4x2_e1m2_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、bfloat16_t。
   
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持bfloat16_t。
+  - Atlas A3系列产品，支持bfloat16_t。
   
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持bfloat16_t。
+  - Atlas A2系列产品，支持bfloat16_t。
   
 
 

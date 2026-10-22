@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Kernel/HCCL_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -32,13 +32,13 @@ HCCL为**集合通信任务客户端**，主要对外提供了集合通信原语
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ai_core_hccl_dispatch.png "AI-Core下发HCCL通信任务机制")
 
 
-**图2** Ascend 950PR/Ascend 950DT  AI Core下发HCCL通信任务机制  
+**图2** Ascend 950PR&950DT系列产品  AI Core下发HCCL通信任务机制  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascend950pr_950dt_ai_core_hccl_dispatch.png "Ascend-950PR-Ascend-950DT-AI-Core下发HCCL通信任务机制")
 
 
 
 > [!CAUTION]注意
->对于Atlas A3 训练系列产品/Atlas A3 推理系列产品，在AI CPU作为服务端的场景中，HCCL通信API的功能依赖开放AI CPU用户态下发调度任务，存在一定的安全风险，用户需要自行确保AI Core自定义算子的安全可靠，防止恶意攻击行为。
+>对于Atlas A3系列产品，在AI CPU作为服务端的场景中，HCCL通信API的功能依赖开放AI CPU用户态下发调度任务，存在一定的安全风险，用户需要自行确保AI Core自定义算子的安全可靠，防止恶意攻击行为。
 
 
 实现AI Core下发一个通信任务的具体步骤如下：
@@ -51,7 +51,7 @@ HCCL为**集合通信任务客户端**，主要对外提供了集合通信原语
         AllGatherCustomTilingData, tilingData, tilingGM); // AllGatherCustomTilingData为对应算子头文件定义的结构体
 
     Hccl<HcclServerType::HCCL_SERVER_TYPE_AICPU> hccl; // 通过模板入参的方式选择硬件类型
-    GM_ADDR contextGM = GetHcclContext<0>(); // AscendC自定义算子kernel中，通过此方式获取HCCL context
+    GM_ADDR contextGM = GetHcclContext<0>(); // AscendC自定义算子核函数（Kernel）中，通过此方式获取HCCL context
 
     hccl.InitV2(contextGM, &tilingData);
     ```
@@ -67,7 +67,7 @@ HCCL为**集合通信任务客户端**，主要对外提供了集合通信原语
     GET_TILING_DATA_WITH_STRUCT(AllGatherCustomTilingData, tilingData, tilingGM);
 
     Hccl hccl;
-    GM_ADDR contextGM = GetHcclContext<0>(); // AscendC自定义算子kernel中，通过此方式获取HCCL context
+    GM_ADDR contextGM = GetHcclContext<0>(); // AscendC自定义算子核函数（Kernel）中，通过此方式获取HCCL context
 
     hccl.InitV2(contextGM, &tilingData);
     if (SetCcTilingV2(offsetof(AllGatherCustomTilingData, mc2CcTiling)) != HCCL_SUCCESS) {
@@ -194,7 +194,7 @@ extern "C" __global__ __aicore__ void reduce_scatter_custom(
     GET_TILING_DATA_WITH_STRUCT(ReduceScatterCustomTilingData, tilingData, tilingGM);
 
     Hccl hccl;
-    GM_ADDR contextGM = AscendC::GetHcclContext<0>(); // AscendC自定义算子kernel中，通过此方式获取HCCL context
+    GM_ADDR contextGM = AscendC::GetHcclContext<0>(); // AscendC自定义算子核函数（Kernel）中，通过此方式获取HCCL context
     if (AscendC::g_coreType == AIV) {                 // 指定AIV核通信
         hccl.InitV2(contextGM, &tilingData);
         auto ret = hccl.SetCcTilingV2(offsetof(ReduceScatterCustomTilingData, reduceScatterCcTiling));
@@ -237,7 +237,7 @@ extern "C" __global__ __aicore__ void reduce_scatter_custom(
     GET_TILING_DATA_WITH_STRUCT(ReduceScatterCustomTilingData, tilingData, tilingGM);
 
     Hccl hccl;
-    GM_ADDR contextGM = AscendC::GetHcclContext<0>(); // AscendC自定义算子kernel中，通过此方式获取HCCL context
+    GM_ADDR contextGM = AscendC::GetHcclContext<0>(); // AscendC自定义算子核函数（Kernel）中，通过此方式获取HCCL context
     if (AscendC::g_coreType == AIV) {                 // 指定AIV核通信
         hccl.InitV2(contextGM, &tilingData);
         auto ret = hccl.SetCcTilingV2(offsetof(ReduceScatterCustomTilingData, reduceScatterCcTiling));

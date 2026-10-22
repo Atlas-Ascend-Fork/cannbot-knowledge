@@ -10,15 +10,14 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/optimization_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # 优化建议总览表<a name="ZH-CN_TOPIC_0000002351966029"></a>
 
-**表1**  性能优化建议总览表
+**表1**  性能优化建议总览表<a name="table1318114421218"></a>
 
-<a name="table1318114421218"></a>
 <table><thead align="left"><tr id="row8182944131211"><th class="cellrowborder" valign="top" width="12.55%" id="mcps1.2.4.1.1"><p id="p918218445121"><a name="p918218445121"></a><a name="p918218445121"></a>分类</p>
 </th>
 <th class="cellrowborder" valign="top" width="42.89%" id="mcps1.2.4.1.2"><p id="p1165171215245"><a name="p1165171215245"></a><a name="p1165171215245"></a>分类描述</p>
@@ -58,7 +57,7 @@ platforms: []
 <td class="cellrowborder" rowspan="2" valign="top" width="42.89%" headers="mcps1.2.4.1.2 "><p id="p7261787283"><a name="p7261787283"></a><a name="p7261787283"></a><span>通过任务并行化、异步调度等方法，提升硬件资源利用率，实现更高的吞吐率。</span></p>
 <p id="p8265289289"><a name="p8265289289"></a><a name="p8265289289"></a></p>
 </td>
-<td class="cellrowborder" valign="top" width="44.56%" headers="mcps1.2.4.1.3 "><p id="p10261383288"><a name="p10261383288"></a><a name="p10261383288"></a><a href="pipeline_scheduling/enable_double_buffer.md">开启DoubleBuffer</a></p>
+<td class="cellrowborder" valign="top" width="44.56%" headers="mcps1.2.4.1.3 "><p id="p10261383288"><a name="p10261383288"></a><a name="p10261383288"></a><a href="pipeline_scheduling/enable_double_buffer.md">开启Double Buffer</a></p>
 </td>
 </tr>
 <tr id="row1136613722817"><td class="cellrowborder" valign="top" headers="mcps1.2.4.1.1 "><p id="p226138122819"><a name="p226138122819"></a><a name="p226138122819"></a><a href="pipeline_scheduling/enable_iterate_avoid_sync.md">启用Iterate或IterateAll异步接口避免AIC/AIV同步依赖</a></p>
@@ -114,11 +113,14 @@ platforms: []
 <tr id="row14158230103211"><td class="cellrowborder" valign="top" headers="mcps1.2.4.1.1 "><p id="p12515651494"><a name="p12515651494"></a><a name="p12515651494"></a><a href="vector_compute/low_latency_instruction.md">选择低延迟指令，优化归约操作性能</a></p>
 </td>
 </tr>
-<tr id="row8338204923918"><td class="cellrowborder" rowspan="5" valign="top" width="12.55%" headers="mcps1.2.4.1.1 "><p id="p0844172803015"><a name="p0844172803015"></a><a name="p0844172803015"></a><a href="matrix_compute/index.md">矩阵计算</a></p>
+<tr id="row8338204923918"><td class="cellrowborder" rowspan="6" valign="top" width="12.55%" headers="mcps1.2.4.1.1 "><p id="p0844172803015"><a name="p0844172803015"></a><a name="p0844172803015"></a><a href="matrix_compute/index.md">矩阵计算</a></p>
 </td>
-<td class="cellrowborder" rowspan="5" valign="top" width="42.89%" headers="mcps1.2.4.1.2 "><p id="p112817307307"><a name="p112817307307"></a><a name="p112817307307"></a>矩阵计算相关优化建议。</p>
+<td class="cellrowborder" rowspan="6" valign="top" width="42.89%" headers="mcps1.2.4.1.2 "><p id="p112817307307"><a name="p112817307307"></a><a name="p112817307307"></a>矩阵计算相关优化建议。</p>
 </td>
-<td class="cellrowborder" valign="top" width="44.56%" headers="mcps1.2.4.1.3 "><p id="p9338134917391"><a name="p9338134917391"></a><a name="p9338134917391"></a><a href="matrix_compute/bt_buffer_bias_compute.md">通过BT Buffer实现高效的bias计算</a></p>
+<td class="cellrowborder" valign="top" width="44.56%" headers="mcps1.2.4.1.3 "><p id="p194051412301"><a name="p194051412301"></a><a name="p194051412301"></a><a href="matrix_compute/hifloat8_matmul_optimization.md">使用hifloat8_t实现Matmul性能优化</a></p>
+</td>
+</tr>
+<tr id="row194051412300"><td class="cellrowborder" valign="top" width="44.56%" headers="mcps1.2.4.1.3 "><p id="p9338134917391"><a name="p9338134917391"></a><a name="p9338134917391"></a><a href="matrix_compute/bt_buffer_bias_compute.md">通过BT Buffer实现高效的bias计算</a></p>
 </td>
 </tr>
 <tr id="row86314411522"><td class="cellrowborder" valign="top" headers="mcps1.2.4.1.1 "><p id="p1663104165214"><a name="p1663104165214"></a><a name="p1663104165214"></a><a href="matrix_compute/fp_buffer_quantization.md">通过FP Buffer存放量化参数实现高效随路量化</a></p>

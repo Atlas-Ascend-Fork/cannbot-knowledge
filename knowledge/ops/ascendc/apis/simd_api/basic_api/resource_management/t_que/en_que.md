@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/EnQue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T08:27:47Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -130,7 +130,6 @@ pipe.InitBuffer(que, num, len);
 AscendC::LocalTensor<half> tensor1 = que.AllocTensor<half>();
 que.EnQue<AscendC::TPosition::GM, AscendC::TPosition::VECIN, half>(tensor1);// 将tensor加入VECIN的Queue中，实现内存复用
 ```
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)

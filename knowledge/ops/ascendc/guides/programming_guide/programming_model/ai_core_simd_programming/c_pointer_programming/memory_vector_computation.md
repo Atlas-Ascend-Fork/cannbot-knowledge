@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/c_pointer_programming/memory_vector_computation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -63,7 +63,7 @@ Memory矢量计算依托本地内存中的UB完成运算，开发者需先将输
 
 ## Memory数据搬运
 
-昇腾NPU提供多组专用接口，实现全局内存（GM）与统一缓存（UB）之间的数据搬运，适配各类业务场景。为保障矢量计算效率，标准流程为：数据从GM搬运至UB完成计算，计算结果再从UB回写至GM，形成完整数据链路。
+昇腾NPU提供多组专用接口，实现全局内存（GM）与UB之间的数据搬运，适配各类业务场景。为保障矢量计算效率，标准流程为：数据从GM搬运至UB完成计算，计算结果再从UB回写至GM，形成完整数据链路。
 开发者可灵活配置参数，精准控制数据块数量、长度、地址间隔等属性，实现连续数据搬运与非连续（高维切分）数据搬运，充分发挥硬件搬运与计算的协同能力，提升矢量算子整体执行效率。
 
 <table>
@@ -145,6 +145,7 @@ asc_copy_gm2ub(dst_ub, src_gm, burst_count, burst_len, src_stride, dst_stride);
 
 以上图为例，将两个数据块从GM搬运至UB，每个blockLen为54B，源操作数相邻数据块之间的间隔为1B，目的操作数相邻数据块之间的间隔为32B。
 在blockLen左侧和右侧分别填充2个和3个half类型元素，此时blockLen + leftPadding + rightPadding = 54B + 2 * 2B + 3 * 2B = 64B，满足32B对齐。
+
 ```c
 // Number of consecutive data blocks: transfer two consecutive data blocks
 uint16_t burst_count = 2;
@@ -161,6 +162,7 @@ uint8_t right_padding_num = 3;
 
 asc_copy_gm2ub_align(dst, src, burst_count, burst_len, left_padding_num, right_padding_num, false, asc_load_l2_cache_mode::NORMAL_FIRST_VICTIM, src_stride, dst_stride);
 ```
+
 > 📌 stride（前一块数据头到后一块数据头的间隔）为该接口从[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)引入，[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)使用gap（前一个数据块结束地址与后一个数据块起始地址的差值）。
 
 以上为GM向UB的数据搬入逻辑，UB向GM的数据搬出可使用同系列接口实现。更多搬运接口说明可参考[矢量数据搬运](../../../../../apis/simd_api/c_api/vector_datamove/index.md)。
@@ -216,6 +218,7 @@ Memory矢量计算包含连续计算和高维切分计算两种模式，同时�
 <img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/multi_iter_c.png" alt="多次迭代非连续场景示意图" width="800"/>
 
 通过C风格接口配置`repeat_stride`和`data_block_stride`实现上述多次迭代功能。
+
 ```c
 // In the above example with repeat interval of 9, the following configuration achieves the corresponding operation
 uint8_t repeat_time = 1;
@@ -228,6 +231,7 @@ uint8_t src1_repeat_stride = 9;
 
 asc_add(z, x, y, repeat_time, dst_block_stride, src0_block_stride, src1_block_stride, dst_repeat_stride, src0_repeat_stride, src1_repeat_stride);
 ```
+
 #### 掩码设置
 
 针对同一个迭代中的数据，可以通过mask参数进行掩码操作来控制实际参与计算的个数。下图为进行Abs计算时通过mask逐比特模式按位控制哪些元素参与计算的示意图，1表示参与计算，0表示不参与计算。
@@ -311,13 +315,18 @@ asc_set_mask_normal();
 
 连续计算是软件层提供的简化接口，使用时无需配置掩码，可直接对源操作数中连续的N个数据执行运算，并将结果连续写入目的操作数，主要用于一维数据的批量计算。
 以加法运算为例，如需对长度为4096的矢量执行加法，调用方式如下：
+
 ```c
 asc_add(z, x, y, 4096); // 4096: number of consecutive elements involved in addition.
 ```
 
 ## Memory矢量计算同步控制
 
-AI Core内部的MTE2搬运单元、矢量计算单元等均为异步并行运行，多个单元读写同一块存储资源时会产生数据依赖。因此Memory矢量计算必须借助流水同步接口，保障流程正常执行。Memory矢量计算流程比矩阵计算更简洁，分为数据搬入、计算、数据搬出三个阶段，分别对应流水线PIPE_MTE2、PIPE_V、PIPE_MTE3，需通过核内同步接口约束执行顺序，保证流程串行执行。在[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)产品中，可使用`asc_lock`与`asc_unlock`接口实现三阶段的同步控制。以下为矢量加法的完整示例：
+AI Core内部的MTE2搬运单元、矢量计算单元等均为异步并行运行，多个单元读写同一块存储资源时会产生数据依赖。因此Memory矢量计算必须借助流水同步接口，保障流程正常执行。Memory矢量计算流程比矩阵计算更简洁，分为数据搬入、计算、数据搬出三个阶段，分别对应流水线PIPE_MTE2、PIPE_V、PIPE_MTE3，需通过核内同步接口约束执行顺序，保证流程串行执行。在[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)产品中，可使用`asc_lock`与`asc_unlock`接口实现三阶段的同步控制。
+
+关于`asc_lock`/`asc_unlock`的同步原理，以及双缓冲场景中的数据依赖和Buffer复用，请参考[基于Mutex实现多流水同步](../../../advanced_programming/advanced_kernel_programming/intra_core_sync/mutex_multi_pipeline_sync.md)。
+
+以下为矢量加法的完整示例：
 
 ```c
 __global__ __vector__ void add_kernel(__gm__ float* x, __gm__ float* y, __gm__ float* z)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/GET_TILING_DATA_MEMBER.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -75,7 +75,7 @@ GET_TILING_DATA_MEMBER(struct_name, mem_name, tiling_data, tiling_arg)
 
 ## 约束说明<a name="zh-cn_topic_0000001526206862_section65498832"></a>
 
--   本函数需在算子kernel代码处使用，并且传入的tiling\_data参数不需要声明类型。
+-   本函数需在算子核函数（Kernel）代码处使用，并且传入的tiling\_data参数不需要声明类型。
 -   暂不支持核函数（Kernel）直调工程。
 
 ## 调用示例<a name="zh-cn_topic_0000001526206862_section97001499599"></a>
@@ -95,8 +95,6 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
     }
 }
 ```
-
-
 
 - [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)
 - [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)

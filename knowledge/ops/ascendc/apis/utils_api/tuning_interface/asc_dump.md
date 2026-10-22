@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/tuning_interface/asc_dump.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -68,7 +68,7 @@ __aicore__ static __attribute__((noinline)) void asc_dump(__cc__ T* input, uint3
 ```
 
 
-以下接口仅支持Ascend 950PR/Ascend 950DT。
+以下接口仅支持Ascend 950PR&950DT系列产品。
 
 ```cpp
 // BiasTable Buffer上的数据打印
@@ -82,7 +82,7 @@ __aicore__ static __attribute__((noinline)) void asc_dump(__fbuf__ T* input, uin
 
 
 
-以下接口为simd\_vf中所使用的asc\_dump接口，仅支持Ascend 950PR/Ascend 950DT。
+以下接口为simd\_vf中所使用的asc\_dump接口，仅支持Ascend 950PR&950DT系列产品。
 
 ```cpp
 // 寄存器上的数据打印
@@ -117,13 +117,14 @@ __simd_callee__ inline void asc_dump(__ubuf__ T* input, uint32_t desc, uint32_t 
 
 ## 数据类型
 
-- 针对Ascend 950PR/Ascend 950DT ：bool、int8_t、uint8_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+
+- 针对Ascend 950PR&950DT系列产品 ：bool、int8_t、uint8_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品 ：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- 针对Atlas A3系列产品 ：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品 ：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- 针对Atlas A2系列产品 ：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
 
 ## 返回值说明
@@ -133,16 +134,16 @@ __simd_callee__ inline void asc_dump(__ubuf__ T* input, uint32_t desc, uint32_t 
 ## 约束说明
 
 
--   针对Ascend 950PR/Ascend 950DT，在使用该接口打印L1 Buffer、BiasTable Buffer或Fixpipe Buffer数据时，HDK版本需要至少升级到25.7.RC1.6以上。
+-   针对Ascend 950PR&950DT系列产品，在使用该接口打印L1 Buffer、BiasTable Buffer或Fixpipe Buffer数据时，HDK版本需要至少升级到25.7.RC1.6以上。
 
 
--   针对Ascend 950PR/Ascend 950DT，打印Fixpipe Buffer中的Tensor信息场景：
+-   针对Ascend 950PR&950DT系列产品，打印Fixpipe Buffer中的Tensor信息场景：
     -   Fixpipe Buffer保存的是硬件参数位域，打印结果不一定与L1 Buffer中的原始数据按位相同。前级Quant参数每8字节保留bit[7:0]、bit[31:13]和bit[46:37]，期望值为`input & 0x00007fe0ffffe0ffULL`；前级ReLU参数每4字节保留bit[31:13]，期望值为`word & 0xffffe000U`。
 
 -   使用该接口时，在每个核上dump的数据总量不能大于30KB，请开发者自行控制打印的内容数据量，超出则不会打印。
 -   当`dump_size`的大小超过了`input`的实际元素个数时，会出现未定义问题。
 -   在计算数据量时，若dump的总长度未对齐，需要考虑padding数据的影响。当进行非对齐dump时，如果实际dump的元素长度不满足32字节对齐，系统会自动在其末尾补充一定数量的padding数据（这部分数据并不会打印），以满足对齐要求。
--   SIMD场景下，单次调用本接口打印的数据总量不可超过打印大小限制，默认为30KB。使用时应注意，如果超出这个限制，则数据不会被打印。您可以通过acl.json中的`"simd_printf_fifo_size_per_core"`字段进行配置，配置范围最小为1KB，最大为64MB（可通过[aclInit](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/latest/API/runtimeapi/aclcppdevg_03_0022.html)接口调整）。当打印数据量较大时，建议增加缓存空间。pytorch调用和算子入图场景暂不支持该配置。
+-   SIMD场景下，单次调用本接口打印的数据总量不可超过打印大小限制，默认为30KB。使用时应注意，如果超出这个限制，则数据不会被打印。您可以通过acl.json中的`"simd_printf_fifo_size_per_core"`字段进行配置，配置范围最小为1KB，最大为64MB（可通过[aclInit](https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/02_initialization_and_deinitialization.md#aclinit)接口调整）。当打印数据量较大时，建议增加缓存空间。pytorch调用和算子入图场景暂不支持该配置。
 
 
 -   SIMD VF场景下，使用`asc_dump_reg`或寄存器入参的`asc_dump`时，若`dump_size`超过一个矢量寄存器可容纳的元素数量，系统会将其自动截断为该寄存器可容纳的元素数量。

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/data_reorder/deinterleave.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -21,7 +21,7 @@ source_headers:
 
 ## 功能说明
 
-头文件路径：`"include/tensor_api/experimental/arch/vector/data_reorder.h"`。
+头文件路径：`"tensor_api/experimental/arch/vector/data_reorder.h"`。
 
 给定源操作数寄存器src0和src1，将src0和src1中的元素解交织存入结果操作数dst0和dst1中。解交织排列方式如下图所示，其中每个方格代表一个元素：
 
@@ -50,7 +50,7 @@ __simd_callee__ inline reg_pair<T> deinterleave(reg_tensor<T> src0, reg_tensor<T
 
 ## 数据类型
 
-支持的数据类型为：int8_t、uint8_t、fp8_e4m3fn_t、fp8_e8m0_t、fp8_e5m2_t、hifloat8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。s
+支持的数据类型为：int8_t、uint8_t、fp8_e4m3fn_t、fp8_e8m0_t、fp8_e5m2_t、hifloat8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 ## 返回值说明
 

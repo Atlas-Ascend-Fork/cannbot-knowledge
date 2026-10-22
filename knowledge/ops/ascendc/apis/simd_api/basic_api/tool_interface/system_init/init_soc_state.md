@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/system_init/InitSocState.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -45,7 +45,7 @@ source_headers:
 **各产品实际执行的初始化项如下：**
 
 
-**表1** 针对Ascend 950PR/Ascend 950DT本接口执行的初始化项
+**表1** 针对Ascend 950PR&950DT系列产品本接口执行的初始化项
 
 | 状态类别 | 初始化内容 |
 | ---- | ---- |
@@ -61,7 +61,7 @@ source_headers:
 
 
 
-**表2** 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品本接口执行的初始化项
+**表2** 针对Atlas A3系列产品本接口执行的初始化项
 
 | 状态类别 | 初始化内容 |
 | ---- | ---- |
@@ -74,7 +74,7 @@ source_headers:
 
 
 
-**表3** 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品本接口执行的初始化项
+**表3** 针对Atlas A2系列产品本接口执行的初始化项
 
 | 状态类别 | 初始化内容 |
 | ---- | ---- |
@@ -87,7 +87,7 @@ source_headers:
 
 
 
-**表4** 针对Atlas 推理系列产品AI Core和Atlas 推理系列产品Vector Core本接口执行的初始化项
+**表4** 针对Atlas推理系列产品AI Core和Atlas推理系列产品Vector Core本接口执行的初始化项
 
 | 状态类别 | 初始化内容 |
 | ---- | ---- |
@@ -128,7 +128,6 @@ __global__ __aicore__ void add_custom(GM_ADDR x, GM_ADDR y, GM_ADDR z)
     op.Process();
 }
 ```
-
 
 - [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)
 - [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)

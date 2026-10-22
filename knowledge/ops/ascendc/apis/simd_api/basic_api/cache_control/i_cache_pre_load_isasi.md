@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cache_control/ICachePreLoad_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -47,13 +47,13 @@ __aicore__ inline void ICachePreLoad(const int64_t preFetchLen)
 
 针对如下型号：
 
-- Ascend 950PR/Ascend 950DT
+- Ascend 950PR&950DT系列产品
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- Atlas A3系列产品
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- Atlas A2系列产品
 
 preFetchLen参数单位为2K Byte，取值满足如下要求：
 
@@ -64,7 +64,7 @@ $$
 其中，AIC和AIV的ICache大小分别为32KB和16KB。
 
 
-针对Atlas 推理系列产品AI Core，传入该参数无效，预取长度均为128Byte。
+针对Atlas推理系列产品AI Core，传入该参数无效，预取长度均为128Byte。
  
 
 ## 返回值说明<a name="section640mcpsimp"></a>
@@ -81,7 +81,6 @@ $$
 int64_t preFetchLen = 2; // 预取指令长度。
 AscendC::ICachePreLoad(preFetchLen);
 ```
-
 
 - [FlashAttn 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attn_950.md)
 - [FusedInferAttentionScore A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/fused_infer_attention_score.md)

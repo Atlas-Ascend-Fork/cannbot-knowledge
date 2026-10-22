@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/mask_operations/SetMaskCount.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -52,13 +52,12 @@ __aicore__ inline void SetMaskCount()
 - 设置为Counter模式的场景，需要在矢量计算使用完之后调用[SetMaskNorm](set_mask_norm.md)将Mask模式恢复为Normal模式，以避免影响后续计算。
 
 
-- 针对Ascend 950PR/Ascend 950DT，Mask为软仿实现，Tensor前n个数据计算接口内部不会将Mask模式切换为Normal模式。若当前场景已通过本接口设置为Counter模式，接口调用后仍为Counter模式；后续计算需要使用Normal模式时，需手动调用[SetMaskNorm](set_mask_norm.md)进行设置。
+- 针对Ascend 950PR&950DT系列产品，Mask为软仿实现，Tensor前n个数据计算接口内部不会将Mask模式切换为Normal模式。若当前场景已通过本接口设置为Counter模式，接口调用后仍为Counter模式；后续计算需要使用Normal模式时，需手动调用[SetMaskNorm](set_mask_norm.md)进行设置。
 
 
 ## 调用示例<a name="section837496171220"></a>
 
 请参考[Counter模式调用示例](set_vector_mask.md#section837496171220)。
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [ClippedSwiglu A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute/MmadMx.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -112,7 +112,7 @@ MmadMx的计算公式为：C=(scaleA⊗A)*(scaleB⊗B)+Bias，“⊗”表示广
 
 ## 数据类型<a id="zh_cn_topic_mmadmx_section_datatype"></a>
 
-**表3** MmadMx接口左矩阵、右矩阵、Scale矩阵、Bias矩阵、结果矩阵支持的精度类型组合（Ascend 950PR/Ascend 950DT）
+**表3** MmadMx接口左矩阵、右矩阵、Scale矩阵、Bias矩阵、结果矩阵支持的精度类型组合（Ascend 950PR&950DT系列产品）
 
 | 左矩阵fm | 右矩阵filter | Scale矩阵 | 偏置Bias | 结果矩阵dst |
 | ------------ | ------------ | ---------- | -------- | ----------- |

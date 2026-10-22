@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/GM_L1_or_L0_data_move.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -118,12 +118,13 @@ src和dst分别为源操作数和目的操作数；intriParams为ND2NZ搬运配�
     ```
 
 
-- 支持enableSmallC0模式（仅Ascend 950PR/Ascend 950DT支持）
+- 支持enableSmallC0模式（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, bool enableSmallC0 = false>
     __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>& src, const Nd2NzParams& intriParams)
     ```
+
 
 
 
@@ -140,12 +141,13 @@ src和dst分别为源操作数和目的操作数；intriParams为ND2NZ搬运配�
 
 src和dst分别为源操作数和目的操作数；intriParams为DN2NZ搬运配置参数。
 
-- 支持enableSmallC0模式（仅Ascend 950PR/Ascend 950DT支持）
+- 支持enableSmallC0模式（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, bool enableSmallC0 = false>
     __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>& src, const Dn2NzParams& intriParams);
     ```
+
 
 
 
@@ -162,7 +164,7 @@ src和dst分别为源操作数和目的操作数；intriParams为DN2NZ搬运配�
 
 src和dst分别为源操作数和目的操作数；dataCopyParams和padParams为搬运参数。
 
-- 仅Ascend 950PR/Ascend 950DT支持
+- 仅Ascend 950PR&950DT系列产品支持
 
     ```cpp
     template <typename T, PaddingMode mode = PaddingMode::Normal>
@@ -189,6 +191,7 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const GlobalTensor<T>
 ```
 
 
+
 ## GMToL1 NZ数据搬运(LoadData（2D矩阵搬运V2）)
 
 该接口主要实现将数据从Global Memory搬运至L1 Buffer，负责完成普通矩阵计算所需的2D格式数据的搬运，以大小为512Byte的数据分形为单位进行搬运。
@@ -202,7 +205,7 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const GlobalTensor<T>
 
 src和dst分别为源操作数和目的操作数；loadDataParams为搬运参数。
 
-- 仅Ascend 950PR/Ascend 950DT支持
+- 仅Ascend 950PR&950DT系列产品支持
 
     ```cpp
     template <typename T>
@@ -273,7 +276,7 @@ __aicore__ inline void DataCopy(const GlobalTensor<T>& dst, const LocalTensor<U>
 - L0C Buffer -> Global Memory
     - CO1 -> GM
 
-搬运的数据为[矩阵计算](../cube_compute_isasi/index.md)的结果，以Ascend 950PR/Ascend 950DT为例，接口示例如下：
+搬运的数据为[矩阵计算](../cube_compute_isasi/index.md)的结果，以Ascend 950PR&950DT系列产品为例，接口示例如下：
 
 注意，不同产品型号的接口原型可能不同，具体介绍请参考：[Fixpipe（L0C到GM数据搬运）](../cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_gm.md)。
 

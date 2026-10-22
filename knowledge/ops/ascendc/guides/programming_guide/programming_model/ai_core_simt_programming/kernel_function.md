@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/kernel_function.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -121,4 +121,5 @@ int main()
     return 0;
 }
 ```
+
 在本示例中，目标处理元素总数为1000个。按单块256线程的策略划分，Host侧实际向硬件下发了4个线程块，总计启动了$4 \times 256 = 1024$个物理线程。当程序运行至最后一个线程块即blockIdx.x为3时，该块内末尾的24个线程（从索引1000到1023）推导出的global_index将落在[1000, 1023]区间。此时，通过if (global_index < vector_length)这道边界拦截，这部分超出有效数据范围的“多余”线程将直接结束任务并安全退出。该机制在保证计算结果完备性的同时，有效规避了内存越界访问的风险。

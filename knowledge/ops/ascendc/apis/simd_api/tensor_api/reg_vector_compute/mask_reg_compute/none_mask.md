@@ -10,18 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/mask_reg_compute/none_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/tensor_api/arch/vector/experimental/mask_reg_compute.h
+- include/tensor_api/experimental/arch/vector/mask_reg_compute.h
 ---
 
 # none_mask
 
 ## 功能说明
 
-头文件路径为：`"tensor_api/arch/vector/experimental/mask_reg_compute.h"`，命名空间为`asc::te::experimental`。
+头文件路径为：`"tensor_api/experimental/arch/vector/mask_reg_compute.h"`，命名空间为`asc::te::experimental`。
 
 创建`reg_tensor<bool>`，其成员变量reg是与`DataType`元素位宽匹配的全无效掩码寄存器，等价于`make_mask<mask_pattern::none, DataType>()`。
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_convert/asc_float2int32.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/reg_compute/reg_convert.h"`。
 
-将`float`类型数据转换为`int32_t`类型，并支持多种舍入模式与饱和/非饱和模式。
+将`float`类型数据转换为`int32_t`类型，并支持多种舍入模式与饱和/非饱和模式，可通过引用参数或函数返回值输出结果。
 
 关于舍入模式和饱和/非饱和模式的详细说明，请参见[舍入模式与饱和模式](rounding_mode.md)。
 
@@ -37,20 +37,22 @@ def asc_float2int32_rn(dst, src, mask):
             dst[i] = 0
 ```
 
-本接口为`reg`矢量计算接口，仅在AIV上生效。
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
-### 模板原型
-
 ```c
-// 占位符形式
+// 通过引用参数输出结果（占位符形式）
 __simd_callee__ inline void asc_float2int32_<round_mode><sat_mode>(vector_int32_t& dst,
                                                                    vector_float src,
                                                                    vector_bool mask)
+
+// 通过函数返回值返回结果（占位符形式）
+__simd_callee__ inline vector_int32_t asc_float2int32_<round_mode><sat_mode>(vector_float src,
+                                                                             vector_bool mask)
 ```
 
-### 占位符说明
+**占位符说明如下：**
 
 - `<round_mode>`表示支持的舍入模式，支持`rn`（`RINT`）、`rna`（`ROUND`）、`rd`（`FLOOR`）、`ru`（`CEIL`）和`rz`（`TRUNC`）。
 - `<sat_mode>`表示饱和/非饱和模式，为空时表示非饱和模式，取值为`_sat`时表示饱和模式。
@@ -58,10 +60,14 @@ __simd_callee__ inline void asc_float2int32_<round_mode><sat_mode>(vector_int32_
 ### 函数原型典型示例
 
 ```c
-// 示例：向最近且偶数舍入（rn）非饱和模式。
+// 示例：向最近且偶数舍入（rn）非饱和模式，通过引用参数输出结果
 __simd_callee__ inline void asc_float2int32_rn(vector_int32_t& dst,
                                                vector_float src,
                                                vector_bool mask)
+
+// 示例：向最近且偶数舍入（rn）非饱和模式，通过函数返回值返回结果
+__simd_callee__ inline vector_int32_t asc_float2int32_rn(vector_float src,
+                                                         vector_bool mask)
 ```
 
 ## 参数说明
@@ -78,11 +84,12 @@ __simd_callee__ inline void asc_float2int32_rn(vector_int32_t& dst,
 
 ## 返回值说明
 
-无
+- 通过引用参数输出结果的函数原型无返回值。
+- 通过函数返回值输出结果的函数原型返回计算结果，返回值类型与对应引用输出函数原型中`dst`参数的类型一致（去除引用）。
 
 ## 约束说明
 
-- 本接口非AIV调用直接返回。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - `src`与`dst`的数据类型需要与函数原型匹配。
 - `mask`掩码位为0时，`dst`对应元素置0。
 - 使用饱和或非饱和模式时，需要配置`ctrl`寄存器，详细说明请参见[asc_set_ctrl](../../spr/asc_set_ctrl.md)。
@@ -92,7 +99,7 @@ __simd_callee__ inline void asc_float2int32_rn(vector_int32_t& dst,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

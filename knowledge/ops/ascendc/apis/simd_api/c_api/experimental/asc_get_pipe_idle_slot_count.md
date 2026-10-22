@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/experimental/asc_get_pipe_idle_slot_count.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -28,7 +28,7 @@ source_headers:
 本接口用于获取指定流水线对应发射队列（Issue Queue）当前的空闲槽位数量。空闲槽位表示发射队列还能接收的待发射指令数量，可用于观察队列占用情况。包含以下六个函数，各函数查询的流水线、适用的AI Core和最大空闲槽位数量如下：
 
 <a id="table1"></a>
-**表1**  接口、流水线与最大值对应关系
+**表1** 接口、流水线与最大值对应关系
 
 | 函数 | 被查询的流水线 | 适用AI Core | 最大空闲槽位数量 |
 | --- | --- | --- | --- |

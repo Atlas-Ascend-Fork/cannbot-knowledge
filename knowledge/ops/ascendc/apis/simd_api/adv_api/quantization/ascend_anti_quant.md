@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/quantization/AscendAntiQuant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -48,7 +48,7 @@ source_headers:
 
 -   PER\_TOKEN场景（按token量化）
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002069677288.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002069677288.png)
 
 -   PER\_GROUP场景（按组量化）
 
@@ -85,11 +85,11 @@ source_headers:
 
         -   k为m方向，即公式中i轴为group的计算方向：（kDim=0同时isTranspose=False）或者（kDim=1同时isTranspose= True）
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002106594713.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002106594713.png)
 
         -   k为n方向，即公式中j轴为group的计算方向：（kDim=0同时isTranspose=True）或者（kDim=1同时isTranspose =False）
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002106474749.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002106474749.png)
 
 ## 实现原理
 
@@ -105,7 +105,7 @@ source_headers:
 **图2**  isTranspose为False且输出为bfloat16的AscendAntiQuant算法框图  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendantiquant_no_transpose_bfloat16.png "isTranspose为False且输出为bfloat16的AscendAntiQuant算法框图")
 
-在Atlas A2 训练系列产品/Atlas A2 推理系列产品上，当输出为bfloat16时，计算过程分为如下几步：
+在Atlas A2系列产品上，当输出为bfloat16时，计算过程分为如下几步：
 
 1.  src精度转换：将输入的src转换为half类型，再转换为float类型，存放到tmp1；
 2.  offset精度转换：当输入的offset为向量时转换为float类型，存放到tmp2，为scalar时做Cast转换为float类型；
@@ -158,7 +158,7 @@ PER\_TOKEN/PER\_GROUP b8/float4场景的计算逻辑如下：
     -   PER\_GROUP float4场景（按组量化）
 
         
-        仅支持Ascend 950PR/Ascend 950DT
+        仅支持Ascend 950PR&950DT系列产品
         
 
         ```
@@ -169,7 +169,7 @@ PER\_TOKEN/PER\_GROUP b8/float4场景的计算逻辑如下：
     -   PER\_TOKEN/PER\_GROUP b8/float4场景（按token量化）/（按组量化）
 
         
-        仅支持Ascend 950PR/Ascend 950DT
+        仅支持Ascend 950PR&950DT系列产品
         
 
         ```
@@ -195,7 +195,7 @@ PER\_TOKEN/PER\_GROUP b8/float4场景的计算逻辑如下：
     -   PER\_GROUP float4场景（groupSize固定为32）
 
         
-        仅支持Ascend 950PR/Ascend 950DT
+        仅支持Ascend 950PR&950DT系列产品
         
 
         ```
@@ -206,7 +206,7 @@ PER\_TOKEN/PER\_GROUP b8/float4场景的计算逻辑如下：
     -   PER\_TOKEN/PER\_GROUP b8/float4场景（groupSize可配置）
 
         
-        仅支持Ascend 950PR/Ascend 950DT
+        仅支持Ascend 950PR&950DT系列产品
         
 
         ```
@@ -328,124 +328,124 @@ struct AscendAntiQuantParam {
 -   PER\_TOKEN/PER\_GROUP b8/float4场景支持情况如下：
 
     
-    - Ascend 950PR/Ascend 950DT：支持。
+    - Ascend 950PR&950DT系列产品：支持。
     
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持。
+    - Atlas A3系列产品：不支持。
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品：不支持。
+    - Atlas A2系列产品：不支持。
     
 
     
-    - Atlas 推理系列产品AI Core：不支持。
+    - Atlas推理系列产品AI Core：不支持。
     
 
 -   PER\_TOKEN/PER\_GROUP b8/float4场景，连续计算方向（即n方向）的数据量要求32B对齐。
 -   非PER\_TOKEN/PER\_GROUP b8/float4场景dst支持的数据类型<a id="li117871685514"></a>
 
     
-    - Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16\_t。
+    - Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、bfloat16\_t。
+    - Atlas A3系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、bfloat16\_t。
+    - Atlas A2系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas 推理系列产品AI Core，支持的数据类型为：half。
+    - Atlas推理系列产品AI Core，支持的数据类型为：half。
     
 
     
-    - Kirin X90，支持的数据类型为：half。
+    - Kirin X90处理器系列产品，支持的数据类型为：half。
     
 
     
-    - Kirin 9030，支持的数据类型为：half。
+    - Kirin 9030处理器系列产品，支持的数据类型为：half。
     
 
 -   非PER\_TOKEN/PER\_GROUP b8/float4场景src支持的数据类型<a id="li13336025165520"></a>
 
     
-    - Ascend 950PR/Ascend 950DT，PER\_CHANNEL和PER\_TENSOR场景下支持的数据类型为：int8\_t、fp8\_e4m3fn\_t、fp8\_e5m2\_t、hifloat8\_t；PER\_GROUP float4场景下支持的数据类型为：fp4x2\_e2m1\_t、fp4x2\_e1m2\_t。
+    - Ascend 950PR&950DT系列产品，PER\_CHANNEL和PER\_TENSOR场景下支持的数据类型为：int8\_t、fp8\_e4m3fn\_t、fp8\_e5m2\_t、hifloat8\_t；PER\_GROUP float4场景下支持的数据类型为：fp4x2\_e2m1\_t、fp4x2\_e1m2\_t。
     
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int8\_t、int4b\_t。
+    - Atlas A3系列产品，支持的数据类型为：int8\_t、int4b\_t。
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int8\_t、int4b\_t。
+    - Atlas A2系列产品，支持的数据类型为：int8\_t、int4b\_t。
     
 
     
-    - Atlas 推理系列产品AI Core，支持的数据类型为：int8\_t。
+    - Atlas推理系列产品AI Core，支持的数据类型为：int8\_t。
     
 
     
-    - Kirin X90，支持的数据类型为：int8\_t。
+    - Kirin X90处理器系列产品，支持的数据类型为：int8\_t。
     
 
     
-    - Kirin 9030，支持的数据类型为：int8\_t。
+    - Kirin 9030处理器系列产品，支持的数据类型为：int8\_t。
     
 
 -   非PER\_TOKEN/PER\_GROUP b8/float4场景offset支持的数据类型<a id="li5382122225718"></a>
 
     
-    - Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16\_t。
+    - Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、bfloat16\_t。
+    - Atlas A3系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、bfloat16\_t。
+    - Atlas A2系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas 推理系列产品AI Core，支持的数据类型为：half。
+    - Atlas推理系列产品AI Core，支持的数据类型为：half。
     
 
     
-    - Kirin X90，支持的数据类型为：half。
+    - Kirin X90处理器系列产品，支持的数据类型为：half。
     
 
     
-    - Kirin 9030，支持的数据类型为：half。
+    - Kirin 9030处理器系列产品，支持的数据类型为：half。
     
 
 -   非PER\_TOKEN/PER\_GROUP b8/float4场景scale支持的数据类型<a id="li103341450906"></a>
 
     
-    - Ascend 950PR/Ascend 950DT，PER\_CHANNEL和PER\_TENSOR场景下支持的数据类型为：half、bfloat16\_t；PER\_GROUP float4场景下支持的数据类型为：fp8\_e8m0\_t。
+    - Ascend 950PR&950DT系列产品，PER\_CHANNEL和PER\_TENSOR场景下支持的数据类型为：half、bfloat16\_t；PER\_GROUP float4场景下支持的数据类型为：fp8\_e8m0\_t。
     
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、bfloat16\_t。
+    - Atlas A3系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、bfloat16\_t。
+    - Atlas A2系列产品，支持的数据类型为：half、bfloat16\_t。
     
 
     
-    - Atlas 推理系列产品AI Core，支持的数据类型为：half。
+    - Atlas推理系列产品AI Core，支持的数据类型为：half。
     
 
     
-    - Kirin X90，支持的数据类型为：half。
+    - Kirin X90处理器系列产品，支持的数据类型为：half。
     
 
     
-    - Kirin 9030，支持的数据类型为：half。
+    - Kirin 9030处理器系列产品，支持的数据类型为：half。
     
 
 ## 调用示例

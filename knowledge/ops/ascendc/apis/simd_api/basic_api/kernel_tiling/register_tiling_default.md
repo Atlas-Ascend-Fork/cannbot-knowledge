@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/REGISTER_TILING_DEFAULT.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -27,7 +27,7 @@ source_headers:
 
 头文件路径为：`"utils/base/sys_macros.h"`。
 
-用于在kernel侧注册用户使用标准C++语法自定义的默认TilingData结构体。
+用于在核函数（Kernel）侧注册用户使用标准C++语法自定义的默认TilingData结构体。
 
 注册TilingData结构体用于告知框架侧用户使用标准C++语法来定义TilingData，同时告知框架TilingData结构体类型，用于框架做tiling数据解析。
 
@@ -68,15 +68,13 @@ REGISTER_TILING_DEFAULT(TILING_STRUCT)
 ```
 extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8_t *y, __gm__ uint8_t *z, __gm__ uint8_t *tiling)
 {
-    REGISTER_TILING_DEFAULT(optiling::TilingData); // 用于在kernel侧注册用户使用标准C++语法自定义的默认TilingData结构体
+    REGISTER_TILING_DEFAULT(optiling::TilingData); // 用于在核函数（Kernel）侧注册用户使用标准C++语法自定义的默认TilingData结构体
     GET_TILING_DATA(tilingData, tiling);
     KernelAdd op;
     op.Init(x, y, z, tilingData.blkDim, tilingData.totalSize, tilingData.splitTile);
     op.Process();
 }
 ```
-
-
 
 - [FastGelu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/fast_gelu_950.md)
 - [Im2colBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/im2col_backward_950.md)

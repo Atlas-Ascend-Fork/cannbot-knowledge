@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/scalar_compute/scalar_convert/asc_float2half.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/scalar_compute/compute/scalar_convert.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_float2half
 
 ## 功能说明
+
+头文件路径为：`"c_api/scalar_compute/compute/scalar_convert.h"`。
 
 将`float`类型的标量转换为`half`类型并返回，舍入模式固定为ODD（最近邻奇数舍入）。
 
@@ -54,7 +57,7 @@ __aicore__ inline half asc_float2half_ro(float value)
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

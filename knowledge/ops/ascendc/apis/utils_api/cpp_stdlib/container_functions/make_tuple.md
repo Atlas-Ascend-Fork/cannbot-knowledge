@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/cpp_stdlib/container_functions/make_tuple.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -38,7 +38,7 @@ __aicore__ inline constexpr tuple<unwrap_decay_t<Tps>...> make_tuple(Tps&& ...ar
 
 | 参数名 | 含义 |
 | --- | --- |
-| Tps... | Tps...为传入tuple的模板参数包，代表传递给make_tuple的参数类型，参数个数范围为[0, 64]。<br><br>Ascend 950PR/Ascend 950DT，支持的数据类型为：bool、int4b_t、int8_t、uint8_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、LocalTensor、GlobalTensor。<br><br>Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：bool、int4b_t、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、LocalTensor、GlobalTensor。<br><br>Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：bool、int4b_t、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、LocalTensor、GlobalTensor。 |
+| Tps... | Tps...为传入tuple的模板参数包，代表传递给make_tuple的参数类型，参数个数范围为[0, 64]。<br><br>Ascend 950PR&950DT系列产品，支持的数据类型为：bool、int4b_t、int8_t、uint8_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、LocalTensor、GlobalTensor。<br><br>Atlas A3系列产品，支持的数据类型为：bool、int4b_t、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、LocalTensor、GlobalTensor。<br><br>Atlas A2系列产品，支持的数据类型为：bool、int4b_t、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、LocalTensor、GlobalTensor。 |
 | args | args...是函数参数包，代表传递给make_tuple的实际参数，参数个数范围为[0, 64]。 |
 
 ## 约束说明
@@ -59,7 +59,6 @@ AscendC::Std::tuple<uint32_t, float, bool> test = AscendC::Std::make_tuple(22, 3
 ```
 
 更多调用示例请参见[示例](tuple.md#调用示例)。
-
 
 - [WeightQuantBatchMatmulNz 950 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_nz_950.md)
 - [WeightQuantBatchMatmul 950 Direct Invoke 算子知识](../../../../operators/direct/nn/matmul/weight_quant_batch_matmul_950.md)

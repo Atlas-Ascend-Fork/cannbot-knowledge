@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/Vector_logical_arch/Vector_logical_arch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ platforms: []
 Vector计算单元专用于执行向量计算。如下图所示，高亮部分展示了Vector计算单元及其关联的存储单元。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品，Vector逻辑架构如下图1所示。
+- 针对Atlas A3系列产品、Atlas A2系列产品，Vector逻辑架构如下图1所示。
 
   **图1** 向量计算单元架构图
 
@@ -36,7 +36,7 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
 
 
 
-- 针对Ascend 950PR/Ascend 950DT，Vector逻辑架构如下图2所示。
+- 针对Ascend 950PR&950DT系列产品，Vector逻辑架构如下图2所示。
 
   **图2** 向量计算单元架构图
 
@@ -63,7 +63,7 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
 为了提高数据访问的效率和吞吐量，UB采用了大小相等的内存模块（bank）结构设计。当多条读写指令同时访问UB时，由于硬件资源的限制，这些指令不能同时执行，从而引发bank冲突。在这种情况下，指令需要排队等待资源，无法在一个指令周期内完成。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- 针对Atlas A3系列产品、Atlas A2系列产品
   - UB的内存结构
 
     **图3** UB的内存结构图
@@ -81,7 +81,7 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
 
 
 
-- 针对Ascend 950PR/Ascend 950DT
+- 针对Ascend 950PR&950DT系列产品
   - UB的内存结构
 
     **图4** UB的内存结构图

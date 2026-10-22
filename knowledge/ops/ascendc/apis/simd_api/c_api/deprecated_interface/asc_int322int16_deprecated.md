@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_int322int16_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -61,15 +61,14 @@ def asc_int322int16_v2(dst, src, mask):
 
 ## 函数原型
 
-### 模板原型（占位符形式）
-
 ```c
+// 占位符形式
 __simd_callee__ inline void asc_int322int16<sat_mode><position_mode>(vector_int16_t& dst,
                                                                      vector_int32_t src,
                                                                      vector_bool mask)
 ```
 
-### 占位符说明
+**占位符说明如下：**
 
 - `<sat_mode>`表示饱和/非饱和模式，为空时表示非饱和模式，取值为`_sat`时表示饱和模式。
 - `<position_mode>`表示`dst`写入的位置，为空时，结果写入`dst`的偶数索引位置；取值为`_v2`时，结果写入`dst`的奇数索引位置。

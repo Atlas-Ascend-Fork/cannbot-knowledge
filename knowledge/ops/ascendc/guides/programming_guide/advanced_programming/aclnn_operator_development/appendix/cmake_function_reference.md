@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/appendix/cmake_function_reference.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -202,26 +202,26 @@ npu_op_kernel_options(<target_name> <op_type> [COMPUTE_UNIT <soc_version>... | S
 >
 >- 针对如下产品：在安装AI处理器的服务器执行`npu-smi info`命令进行查询，获取Name信息。实际配置值为AscendName，例如Name取值为xxxyy，实际配置值为Ascendxxxyy。<br><br>
 >    
->    Atlas A2 训练系列产品/Atlas A2 推理系列产品  
+>    Atlas A2系列产品  
 >    
 >
 >    
->    Atlas 200I/500 A2 推理产品  
+>    Atlas 200I/500 A2推理产品  
 >    
 >
 >    
->    Atlas 推理系列产品  
+>    Atlas推理系列产品  
 >    
 >
 >    
->    Atlas 训练系列产品<br><br> 
+>    Atlas训练系列产品<br><br> 
 >    
 >
 >
->- 针对<term>Atlas A3 训练系列产品</term>/<term>Atlas A3 推理系列产品</term>，在安装AI处理器的服务器执行`npu-smi info -t board -i <id> -c <chip_id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。其中：<br>`id`：设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。<br>`chip_id`：芯片id，通过`npu-smi info -m`命令查出的Chip ID即为芯片id，命令中表示为`<chip_id>`。<br><br>
+>- 针对Atlas A3系列产品，在安装AI处理器的服务器执行`npu-smi info -t board -i <id> -c <chip_id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。其中：<br>`id`：设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。<br>`chip_id`：芯片id，通过`npu-smi info -m`命令查出的Chip ID即为芯片id，命令中表示为`<chip_id>`。<br><br>
 >
 >
->- 针对Ascend 950PR/Ascend 950DT，在安装AI处理器的服务器执行`npu-smi info -t board -i <id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。<br>其中：`id`为设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。
+>- 针对Ascend 950PR&950DT系列产品，在安装AI处理器的服务器执行`npu-smi info -t board -i <id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。<br>其中：`id`为设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。
 >
 - `OPTIONS …`（必选）：传递给编译器的编译选项。
 
@@ -230,7 +230,9 @@ npu_op_kernel_options(<target_name> <op_type> [COMPUTE_UNIT <soc_version>... | S
 ```cmake
 npu_op_kernel_options(ascendc_kernels ALL OPTIONS --save-temp-files -g)   #为算子添加编译选项
 ```
+
 npu_op_kernel_options(ascendc_kernels AddCustom SOC_SERIES Ascendxxx Ascendyyy OPTIONS -DASCENDC_DEBUG)
+
 ### npu_op_kernel_sources
 
 描述核函数（Kernel）目标的源码信息，包括设置算子的核函数（Kernel）实现文件和源码路径等。
@@ -258,7 +260,9 @@ npu_op_kernel_sources(ascendc_kernels
     KERNEL_FILE add_custom.cpp
 )
 ```
+
 也可以使用`SOC_SERIES`按系列指定：
+
 ```cmake
 npu_op_kernel_sources(ascendc_kernels
     OP_TYPE AddCustom
@@ -267,6 +271,7 @@ npu_op_kernel_sources(ascendc_kernels
     KERNEL_FILE add_custom.cpp
 )
 ```
+
 ### npu_op_device_tiling_library
 
 创建Device侧Tiling库。使用该选项时，package的类型仅支持配置为RUN（run包模式）。

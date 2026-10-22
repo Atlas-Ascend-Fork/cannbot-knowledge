@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/general_description_and_constraints.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -31,7 +31,7 @@ platforms: []
 > - 基础API：不涉及
 > - 高阶API：因高阶 API 配套 Host Tiling 接口，需要链接 `libtiling_api.a`。
 
-为方便开发者使用，Ascend C基础API和高阶API均支持通过包含kernel\_operator.h文件来调用相应接口。如无特殊说明，包含该头文件即可满足接口调用需求。若API文档中有特殊说明，则应遵循API的具体说明。
+为方便开发者使用，Ascend C基础API和高阶API均支持通过包含核函数（Kernel）\_operator.h文件来调用相应接口。如无特殊说明，包含该头文件即可满足接口调用需求。若API文档中有特殊说明，则应遵循API的具体说明。
 
 ```
 #include "kernel_operator.h"
@@ -87,6 +87,7 @@ AI Core上的存储单元用于存储矢量计算、矩阵计算的源操作数�
 
 -   单次迭代内：源操作数与目的操作数必须100%完全重叠，不支持部分重叠。
 -   多次迭代间：不支持前序迭代的目的操作数与后序迭代的源操作数重叠。例如，第N次迭代的目的操作数是第N+1次的源操作数（如下图所示）。在这种情况下，第N次迭代可能会改写覆盖源操作数的数值，导致无法得到预期结果。特别地，对于部分双目计算类的API（Add、Sub、Mul、Max、Min、AddRelu、SubRelu），当数据类型为half、int32\_t、float时，支持前序迭代的目的操作数与后序迭代的源操作数重叠：仅针对目的操作数和第二个源操作数重叠的情况，且src1RepStride或者dstRepStride必须为0。
+-   多次迭代间：不支持前序迭代的目的操作数与后序迭代的目的操作数重叠。例如，第一轮循环写入的DataBlock编号为0、2、4、6、8、10、12、14，第二轮循环写入的编号为8、10、12、14、16、18、20、22，即上一轮迭代会踩踏前一轮迭代的后4个DataBlock，导致无法得到预期的结果。
 
 **图1**  地址重叠示例（不支持）<a name="fig12654416181216"></a>  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/address_overlap_unsupported.png "地址重叠示例（不支持）")

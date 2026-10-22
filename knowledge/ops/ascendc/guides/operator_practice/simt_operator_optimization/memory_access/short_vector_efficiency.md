@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/memory_access/short_vector_efficiency.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -54,6 +54,7 @@ platforms: []
   **图2** half2类型计算带宽示意图
 
   ![img](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/half2_bandwidth.png "短向量带宽示意图")
+
   ```cpp
   template<typename T, typename U>
   __global__ void add2(T* x, T* y, T* z, uint64_t size)

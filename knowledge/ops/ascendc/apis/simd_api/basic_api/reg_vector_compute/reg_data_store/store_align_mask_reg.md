@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_store/StoreAlign_MaskReg.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -98,6 +98,7 @@ StoreAlign能够实现数据从[MaskReg](../register_data_types/mask_reg.md)搬�
 ## 调用示例<a name="section642mcpsimp"></a>
 
 - 普通搬运接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void ComputeMode01(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t oneRepeatSize, uint16_t repeatTimes)
@@ -111,6 +112,7 @@ StoreAlign能够实现数据从[MaskReg](../register_data_types/mask_reg.md)搬�
     ```
 
 - PostUpdate扩展搬运接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void StoreAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t oneRepeatSize, uint16_t repeatTimes)
@@ -124,6 +126,7 @@ StoreAlign能够实现数据从[MaskReg](../register_data_types/mask_reg.md)搬�
     ```
 
 - 使用AddrReg存储偏移量接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void ComputeMode03(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t oneRepeatSize, uint16_t repeatTimes)

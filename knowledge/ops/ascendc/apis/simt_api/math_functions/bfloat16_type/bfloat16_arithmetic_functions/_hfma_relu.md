@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_arithmetic_functions/__hfma_relu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -83,3 +83,12 @@ x \* y + z的值。本接口不受全局饱和模式影响，特殊值如下：
         dst[idx] = __hfma_relu(x[idx], y[idx], z[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0.5, 1.0, -1.0, 0.0, 2.0, -2.0, 128.0, 129.0
+y: 2.0, 2.0, 2.0, 3.0, -3.0, -3.0, 129.0, 128.0
+z: -1.0, 1.0, 1.0, -2.0, 0.0, 0.0, -129.0, -128.0
+result: 0.0, 3.0, 0.0, 0.0, 0.0, 6.0, 16384.0, 16384.0
+```

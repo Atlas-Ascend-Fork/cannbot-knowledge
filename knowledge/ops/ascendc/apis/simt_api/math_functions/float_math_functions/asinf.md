@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/asinf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据的反正弦值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002516816355.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002516816355.png)
 
 arcsin\(x\)为反正弦函数的计算。
 
@@ -98,10 +98,9 @@ inline float asinf(float x)
 输入输出示例如下：
 
 ```
-x：-0.75, -0.25, 0.25, 0.75
-result: -0.8480784 -0.2526802 0.2526802 0.8480784
+x: -0.75, -0.25, 0.25, 0.75
+result: -0.8480784, -0.2526802, 0.2526802, 0.8480784
 ```
-
 
 - [Asin 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/asin_950.md)
 - [ForeachAsin 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_asin_950.md)

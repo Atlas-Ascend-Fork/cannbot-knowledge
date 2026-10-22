@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_compare/asc_lt_scalar.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -49,7 +49,6 @@ source_headers:
 | dst_repeat_stride | 输入 | 目的操作数相邻迭代间相同DataBlock的地址步长。 |
 | src_repeat_stride | 输入 | 源操作数相邻迭代间相同DataBlock的地址步长。 |
 | repeat | 输入 | 迭代次数。 |
-
 
 ## 返回值说明
 

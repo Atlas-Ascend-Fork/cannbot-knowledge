@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/compare_and_select/Compares.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -97,73 +97,73 @@ source_headers:
 ### mask/mask[]参数说明
 
 
-- 针对Ascend 950PR/Ascend 950DT，设置有效。
+- 针对Ascend 950PR&950DT系列产品，设置有效。
 
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，保留参数，设置无效。
+- 针对Atlas A3系列产品，保留参数，设置无效。
 
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，保留参数，设置无效。
+- 针对Atlas A2系列产品，保留参数，设置无效。
 
 
 
-- 针对Atlas 200I/500 A2 推理产品，设置有效。
+- 针对Atlas 200I/500 A2推理产品，设置有效。
 
 
 
-- 针对Atlas 推理系列产品AI Core，保留参数，设置无效。
+- 针对Atlas推理系列产品AI Core，保留参数，设置无效。
 
 
 
-- 针对Kirin X90，保留参数，设置无效。
+- 针对Kirin X90处理器系列产品，保留参数，设置无效。
 
 
 
-- 针对Kirin 9030，保留参数，设置无效。
+- 针对Kirin 9030处理器系列产品，保留参数，设置无效。
 
 
 ## 数据类型
 
 
-- 针对Ascend 950PR/Ascend 950DT
+- 针对Ascend 950PR&950DT系列产品
     - T支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double（只支持CMPMODE::EQ）。其中，int8\_t/uint8\_t/uint64\_t/int64\_t/double数据类型仅支持tensor前n个数据计算接口。
     - U支持的数据类型为：uint8_t。
 
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- 针对Atlas A3系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：uint8_t。
 
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- 针对Atlas A2系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：uint8_t。
 
 
 
-- 针对Atlas 200I/500 A2 推理产品
+- 针对Atlas 200I/500 A2推理产品
     - T支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
     - U支持的数据类型为：uint8_t。
 
 
 
-- 针对Atlas 推理系列产品AI Core
+- 针对Atlas推理系列产品AI Core
     - T支持的数据类型为：half、float。
     - U支持的数据类型为：uint8_t。
 
 
 
-- 针对Kirin X90
+- 针对Kirin X90处理器系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：uint8_t。
 
 
 
-- 针对Kirin 9030
+- 针对Kirin 9030处理器系列产品
     - T支持的数据类型为：half（所有CMPMODE都支持）、float（所有CMPMODE都支持）、int32_t（只支持CMPMODE::EQ）。
     - U支持的数据类型为：uint8_t。
 

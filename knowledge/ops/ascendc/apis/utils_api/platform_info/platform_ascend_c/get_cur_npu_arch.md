@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetCurNpuArch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -38,25 +38,25 @@ NpuArch GetCurNpuArch(void) const
 当前硬件平台架构号的枚举类。该枚举类和AI处理器型号的对应关系请通过CANN软件安装后文件存储路径下include/platform/soc\_spec.h头文件获取。
 
 
-- Ascend 950PR/Ascend 950DT：DAV\_3510
+- Ascend 950PR&950DT系列产品：DAV\_3510
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品：DAV\_2201
+- Atlas A3系列产品：DAV\_2201
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品：DAV\_2201
+- Atlas A2系列产品：DAV\_2201
 
 
-- Atlas 200I/500 A2 推理产品：DAV\_3002
+- Atlas 200I/500 A2推理产品：DAV\_3002
 
 
-- Atlas 推理系列产品AI Core：DAV\_2002
+- Atlas推理系列产品AI Core：DAV\_2002
 
 
-- Atlas 推理系列产品Vector Core：DAV\_2002
+- Atlas推理系列产品Vector Core：DAV\_2002
 
 
-- Atlas 训练系列产品：DAV\_1001
+- Atlas训练系列产品：DAV\_1001
 
 
 ## 约束说明<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section19165124931511"></a>
@@ -93,7 +93,6 @@ void GetInfoFun()
     // ... 根据npuArch自行设计切分策略
 }
 ```
-
 
 - [Hardtanh 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/hardtanh_950.md)
 - [Threshold 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/threshold_950.md)

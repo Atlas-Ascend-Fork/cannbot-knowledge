@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Trunc_interface/Trunc.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -27,7 +27,7 @@ source_headers:
 
 按元素做浮点数截断，即向零取整操作。计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002182888744.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002182888744.png)
 
 举例如下：
 
@@ -100,7 +100,7 @@ Trunc\(-3.9\) = -3
 ## 约束说明
 
 
--   针对Atlas 推理系列产品AI Core，输入数据限制在\[-2147483647.0, 2147483647.0\]范围内。
+-   针对Atlas推理系列产品AI Core，输入数据限制在\[-2147483647.0, 2147483647.0\]范围内。
 
 -   支持源操作数与目的操作数地址重叠。
 -   不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。

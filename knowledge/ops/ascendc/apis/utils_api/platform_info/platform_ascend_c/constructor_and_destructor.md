@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/constructor_and_destructor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -73,8 +73,6 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
     return ret;
 }
 ```
-
-
 
 - [Im2colBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/im2col_backward_950.md)
 - [Cat 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/cat_950.md)

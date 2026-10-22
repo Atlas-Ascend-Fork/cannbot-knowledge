@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/ullmin.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取两个输入数据中的最小值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002521590974.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002521590974.png)
 
 ## 函数原型
 
@@ -76,3 +76,11 @@ inline unsigned long long int ullmin(const unsigned long long int x, const unsig
         dst[idx] = ullmin(x[idx], y[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0, 12, 23, 70
+y: 5, 0, 15, 7
+result: 0, 0, 15, 7
+```

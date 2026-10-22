@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_smmu_tag_version.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -63,12 +63,12 @@ PIPE_S
 
 ## 调用示例
 
-本示例模拟运行环境兼容性诊断场景：Kernel读取SMMU标签版本并写入GM，Host侧按照返回值说明解析年、月、日和同日子版本字段。部分设备可能返回0，示例仅检查Kernel是否完成写回，不把非零值作为成功条件。
+本示例模拟运行环境兼容性诊断场景：核函数（Kernel）读取SMMU标签版本并写入GM，Host侧按照返回值说明解析年、月、日和同日子版本字段。部分设备可能返回0，示例仅检查核函数（Kernel）是否完成写回，不把非零值作为成功条件。
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
@@ -91,7 +91,7 @@ constexpr uint64_t UNSET_VALUE = ~0ULL;
 
 /*
  * 本示例说明：
- * - Kernel调用asc_get_smmu_tag_version读取SMMU标签版本。
+ * - 核函数（Kernel）调用asc_get_smmu_tag_version读取SMMU标签版本。
  * - 原始版本值写入GM并刷新对应的Cache Line。
  * - Host侧按照接口定义解析各版本字段，便于记录运行环境信息。
  */

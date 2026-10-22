@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/rsqrtf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据x的平方根的倒数。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776402.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002484776402.png)
 
 ## 函数原型
 
@@ -50,14 +50,14 @@ inline float rsqrtf(float x)
 -   当x为inf时，返回值为0。
 -   当x为-inf时，返回值为nan。
 -   当x为nan时，返回值为nan。
+-   在快速计算模式（[--cce-use-fast-math](../../../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#常用的编译选项)设置为`true`）下，当x为Subnormal数据时，接口返回值为+inf。
 
 ## 约束说明
 
-本接口支持的输入数据范围为x大于等于0，否则返回值为nan。
-
-
-针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了sqrtf，由于sqrtf不支持Subnormal场景，当输入x为Subnormal数据时，会导致本接口最终结果为+inf。
-
+-   本接口支持的输入数据范围为x大于等于0，否则返回值为nan。
+-   本接口受编译选项`--cce-use-fast-math`的影响。
+    -   --cce-use-fast-math=true：开启快速计算模式。本接口内部实现使用到了sqrtf，由于快速计算模式下sqrtf不支持Subnormal场景，因此本接口不支持输入x为Subnormal数据的场景。
+    -   --cce-use-fast-math=false：支持Subnormal场景的高精度平方根倒数运算。
 
 ## 调用示例
 
@@ -99,6 +99,6 @@ inline float rsqrtf(float x)
 输入输出示例如下：
 
 ```
-x：0.25, 1.25, 2.25, 3.25
-result: 2 0.8944272 0.6666667 0.5547002
+x: 0.25, 1.25, 2.25, 3.25
+result: 2, 0.8944272, 0.6666667, 0.5547002
 ```

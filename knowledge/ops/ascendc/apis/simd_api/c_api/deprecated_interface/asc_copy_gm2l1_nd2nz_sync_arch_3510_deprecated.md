@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_gm2l1_nd2nz_sync_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,11 +24,11 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_gm2l1_nd2nz_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_3510.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_gm2l1_nd2nz_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_gm2l1_nd2nz_arch_3510.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将数据从Global Memory搬运到L1 Buffer，并在搬运过程中将源端按N维连续排布的ND格式数据转换为L1 Buffer侧的Nz分形排布，使其满足后续矩阵计算对分形列连续性的要求。该接口也适用于卷积格式NHWC（ND）转换为NC1HWC0格式等转换场景。
 
-进行ND2Nz格式搬运前，需先通过[asc_set_gm2l1_nz_para](../cube_datamove/asc_set_gm2l1_nz_para.md)接口配置ND2Nz搬运的目的Nz矩阵的stride与ND矩阵搬运个数。
+进行ND2Nz格式搬运前，需先通过[asc_set_gm2l1_nz_para](../cube_datamove/cube_load_aux_config/asc_set_gm2l1_nz_para.md)接口配置ND2Nz搬运的目的Nz矩阵的stride与ND矩阵搬运个数。
 
 本接口仅在AIC上执行有效。
 
@@ -42,18 +42,18 @@ source_headers:
 
 ```cpp
 __aicore__ inline void asc_copy_gm2l1_nd2nz_sync(__cbuf__ <dtype>* dst,
-                                            __gm__ <dtype>* src,
-                                            uint64_t loop1_src_stride,
-                                            uint8_t l2_cache_ctl,
-                                            uint16_t n_value,
-                                            uint32_t d_value,
-                                            uint64_t loop4_src_stride,
-                                            bool enable_small_c0)
+                                                 __gm__ <dtype>* src,
+                                                 uint64_t loop1_src_stride,
+                                                 uint8_t l2_cache_ctl,
+                                                 uint16_t n_value,
+                                                 uint32_t d_value,
+                                                 uint64_t loop4_src_stride,
+                                                 bool enable_small_c0)
 ```
 
-### dtype支持的数据类型
+### dtype支持数据类型
 
-dtype支持的数据类型为`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
+`dtype`取值为：`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
 
 ### 函数原型典型示例
 
@@ -113,12 +113,12 @@ PIPE_MTE2
 - 本接口非AIC调用直接返回。
 - `dst`起始地址需要按照32字节对齐（L1 Buffer对齐要求），否则会导致搬运异常。
 - `src`起始地址需要按照1字节对齐（GM对齐要求），否则会导致搬运异常。
-- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
 - L1 Buffer容量上限：L1 Buffer总容量512KB，`dst`偏移量与搬运大小之和不可越界，否则触发异常。
 
 ### ND2Nz搬运约束
 
-- 调用本指令前，需要先调用[asc_set_gm2l1_nz_para](../cube_datamove/asc_set_gm2l1_nz_para.md)接口配置ND2Nz搬运的目的Nz矩阵步长与ND矩阵搬运个数。
+- 调用本指令前，需要先调用[asc_set_gm2l1_nz_para](../cube_datamove/cube_load_aux_config/asc_set_gm2l1_nz_para.md)接口配置ND2Nz搬运的目的Nz矩阵步长与ND矩阵搬运个数。
 - `loop1_src_stride`取值范围为[0, $2^{40}-1$]，超出取值范围的值会被截断，导致搬运结果不符合预期。
 - `n_value`取值范围为[1, 65535]，超出取值范围的值会被截断，导致搬运结果不符合预期。
 - `d_value`取值范围为[1, $2^{21}-1$]，超出取值范围的值会被截断，导致搬运结果不符合预期。
@@ -130,7 +130,7 @@ PIPE_MTE2
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng examples.asc -o main --npu-arch=dav-3510 && ./main
@@ -225,7 +225,7 @@ int main()
         }
     }
 
-    // 分配Device内存、启动Kernel并校验结果。
+    // 分配Device内存、启动核函数（Kernel）并校验结果。
     aclInit(nullptr);
     aclrtSetDevice(0);
     int8_t *a_device = nullptr, *b_device = nullptr;

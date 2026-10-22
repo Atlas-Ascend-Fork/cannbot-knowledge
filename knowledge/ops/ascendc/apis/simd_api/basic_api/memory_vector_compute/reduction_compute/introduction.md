@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/Introduction.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -29,11 +29,11 @@ platforms: []
 | [GetReduceRepeatMaxMinSpr(ISASI)](../reduction_compute_aux_config/get_reduce_repeat_max_min_spr_isasi.md) | 获取调用`ReduceRepeat<MAX/MIN>`时所有repeat内的最值及其索引，或获取调用`ReduceMax`、`ReduceMin`得到的最值。 | 1 element (1 index) |
 
 
-针对Ascend 950PR/Ascend 950DT，Memory矢量计算的归约计算接口底层均通过VF调用转换为Reg矢量计算指令执行，接口内部存在额外的VF调用开销和Unified Buffer（UB）中转（如sharedTmpBuffer）。因此Memory API不保证极致性能，对性能敏感的场景建议直接使用Reg矢量计算中的[归约计算](../../reg_vector_compute/reduction_compute/index.md)（Reg::Reduce、Reg::PairReduceElem、Reg::ReduceDataBlock）。
+针对Ascend 950PR&950DT系列产品，Memory矢量计算的归约计算接口底层均通过VF调用转换为Reg矢量计算指令执行，接口内部存在额外的VF调用开销和Unified Buffer（UB）中转（如sharedTmpBuffer）。因此Memory API不保证极致性能，对性能敏感的场景建议直接使用Reg矢量计算中的[归约计算](../../reg_vector_compute/reduction_compute/index.md)（Reg::Reduce、Reg::PairReduceElem、Reg::ReduceDataBlock）。
 
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品，在使用归约计算接口时，有如下使用建议。
+针对Atlas A3系列产品、Atlas A2系列产品，在使用归约计算接口时，有如下使用建议。
 
 - `ReduceDataBlock`
   - **推荐使用场景**：

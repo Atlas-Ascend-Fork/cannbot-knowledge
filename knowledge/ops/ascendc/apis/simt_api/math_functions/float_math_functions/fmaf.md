@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/fmaf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 对输入数据x、y、z，计算x与y相乘加上z的结果。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002531284496.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002531284496.png)
 
 ## 函数原型
 
@@ -100,12 +100,11 @@ x \* y + z的值。
 输入输出示例如下：
 
 ```
-x：0.25, 0.75, 1.25, 1.75
-y：1.5, 2.5, 3.5, 4.5
-z：-0.5, 0.5, 1.5, 2.5
-result: -0.125 2.375 5.875 10.375
+x: 0.25, 0.75, 1.25, 1.75
+y: 1.5, 2.5, 3.5, 4.5
+z: -0.5, 0.5, 1.5, 2.5
+result: -0.125, 2.375, 5.875, 10.375
 ```
-
 
 - [UpsampleLinear1dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_linear_1d_backward_950.md)
 - [UpsampleTrilinear3d 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_trilinear_3d_950.md)

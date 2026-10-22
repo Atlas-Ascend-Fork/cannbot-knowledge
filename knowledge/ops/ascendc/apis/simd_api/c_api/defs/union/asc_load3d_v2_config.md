@@ -10,11 +10,15 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/union/asc_load3d_v2_config.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
+source_headers:
+- include/c_api/defs/union.h
 ---
 
 # asc_load3d_v2_config
+
+头文件路径为：`"c_api/defs/union.h"`。
 
 asc_load3d_v2_config用于设置Load3Dv2接口的repeat参数。
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__umulhi.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入uint32类型数据x和y乘积的高32位。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002531050526.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002531050526.png)
 
 ## 函数原型
 
@@ -77,6 +77,13 @@ unsigned int __umulhi(unsigned int x, unsigned int y)
     }
     ```
 
+输入输出示例如下：
+
+```text
+x: 65536, 65536, 131072, 262144, 4294967295, 3, 5, 0
+y: 65536, 131072, 65536, 65536, 4294967295, 3, 5, 0
+result: 1, 2, 2, 4, 4294967294, 0, 0, 0
+```
 
 - [Cat 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/cat_950.md)
 - [GatherNd 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/gather_nd_950.md)

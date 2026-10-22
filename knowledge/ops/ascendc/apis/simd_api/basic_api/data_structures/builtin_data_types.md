@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_structures/builtin_data_types.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -376,6 +376,7 @@ $$
     | 0 | 8'hFE | 23'h7FFFFF | 最大正规格数 |
 
 
+
 ## 复数<a name="section8666633175111"></a>
 
 Ascend C提供了复数数据类型：complex32和complex64。
@@ -404,5 +405,5 @@ complex64 value2 = 4;
 // value2将代表实部为4，虚部为0的复数，即4+0j
 ```
 
-当前仅Ascend 950PR/Ascend 950DT支持。
+当前仅Ascend 950PR&950DT系列产品支持。
 

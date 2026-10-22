@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/kernel_direct_call_from_sample.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -47,7 +47,7 @@ AddKernelInvocationNeo
 |  ├── gen_data.py                                     // 输入数据和真值数据生成脚本文件
 |  ├── verify_result.py                                // 验证输出数据和真值数据是否一致的验证脚本
 |-- CMakeLists.txt                                        // CMake编译配置文件
-|-- add_custom.cpp                                        // 矢量算子kernel实现
+|-- add_custom.cpp                                        // 矢量算子核函数（Kernel）实现
 |-- data_utils.h                                          // 数据读入写出函数
 |-- main.cpp                                              // 主函数，调用算子的应用程序，含CPU域及NPU域调用
 |-- run.sh                                                // 编译运行算子的脚本
@@ -55,7 +55,7 @@ AddKernelInvocationNeo
 
 基于该算子工程，开发者进行算子开发的步骤如下：
 
--   完成算子kernel侧实现。
+-   完成算子核函数（Kernel）侧实现。
 -   编写算子调用应用程序main.cpp。
 -   编写CMake编译配置文件CMakeLists.txt。
 
@@ -187,16 +187,15 @@ AddKernelInvocationNeo
     >```
     >- kernel\_name：算子核函数（Kernel）的名称。
     >- numBlocks：规定了核函数（Kernel）将会在几个核上执行。每个执行该核函数（Kernel）的核会被分配一个逻辑ID，即block\_idx，可以在核函数（Kernel）的实现中调用[GetBlockIdx](../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)来获取block\_idx。
-    >- stream，类型为aclrtStream，stream用于维护一些异步操作的执行顺序，确保按照应用程序中的代码调用顺序在Device上执行。stream创建等管理接口请参考[《Runtime运行时API》](https://hiascend.com/document/redirect/CannCommunityRuntimeApi)。
+    >- stream，类型为aclrtStream，stream用于维护一些异步操作的执行顺序，确保按照应用程序中的代码调用顺序在Device上执行。stream创建等管理接口请参考[《Runtime运行时API》](https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/README.md)。
     >- argument list：参数列表，与核函数（Kernel）的参数列表保持一致。
 
 ## CMake编译配置文件编写<a name="section185111259496"></a>
 
 本节会介绍CMake文件中一些关键环境变量和Cmake命令参数的说明，通常情况下不需要开发者修改，但是这些参数可以帮助开发者更好的理解编译原理，方便有能力的开发者对Cmake进行定制化处理。
 
-**表1**  环境变量说明
+**表1**  环境变量说明<a name="table8269104175818"></a>
 
-<a name="table8269104175818"></a>
 <table><thead align="left"><tr id="row126924116583"><th class="cellrowborder" valign="top" width="24.54%" id="mcps1.2.3.1.1"><p id="p182692415584"><a name="p182692415584"></a><a name="p182692415584"></a>环境变量</p>
 </th>
 <th class="cellrowborder" valign="top" width="75.46000000000001%" id="mcps1.2.3.1.2"><p id="p12269124113588"><a name="p12269124113588"></a><a name="p12269124113588"></a>配置说明</p>
@@ -236,9 +235,8 @@ AddKernelInvocationNeo
 </tbody>
 </table>
 
-**表2**  Cmake命令语法说明
+**表2**  Cmake命令语法说明<a name="table481718169817"></a>
 
-<a name="table481718169817"></a>
 <table><thead align="left"><tr id="row1981751617812"><th class="cellrowborder" valign="top" width="24.67%" id="mcps1.2.3.1.1"><p id="p188171016288"><a name="p188171016288"></a><a name="p188171016288"></a>Cmake命令</p>
 </th>
 <th class="cellrowborder" valign="top" width="75.33%" id="mcps1.2.3.1.2"><p id="p481751615812"><a name="p481751615812"></a><a name="p481751615812"></a>语法说明</p>
@@ -273,10 +271,10 @@ AddKernelInvocationNeo
 <pre class="screen" id="screen5975184113338"><a name="screen5975184113338"></a><a name="screen5975184113338"></a>ascendc_compile_definitions(&lt;target_name&gt; [PRIVATE]
             [&lt;xxx&gt;...]) </pre>
 <p id="p1655714242611"><a name="p1655714242611"></a><a name="p1655714242611"></a><span id="ph12925144843119"><a name="ph12925144843119"></a><a name="ph12925144843119"></a>Ascend C</span>提供的编译宏介绍如下：</p>
-<a name="ul95991737102913"></a><a name="ul95991737102913"></a><ul id="ul95991737102913"><li><a name="li1103101565014"></a>HAVE_WORKSPACE用于表示kernel入口是否包含workspace入参。默认情况下为不包含；增加该编译宏后，表示包含，此时框架会获取kernel入参的倒数第一个参数（未配置<a href="#li6933155615394">HAVE_TILING</a>），或倒数第二个参数（配置HAVE_TILING），自动在kernel侧设置系统workspace，开发者在kernel侧入参处获取的workspace为偏移了系统workspace后的用户workspace。当开发者使用了Matmul核函数（Kernel）侧接口等需要系统workspace的高阶API时，建议开启此参数，入参排布、系统workspace的设置逻辑与工程化算子开发保持一致，可减少算子实现在不同开发方式间切换带来的修改成本。需要注意的是，host侧开发者仍需要自行申请workspace的空间，系统workspace大小可以通过PlatformAscendCManager的GetLibApiWorkSpaceSize接口获取。HAVE_WORKSPACE的设置样例如下：<pre class="screen" id="screen170874019451"><a name="screen170874019451"></a><a name="screen170874019451"></a>ascendc_compile_definitions(ascendc_kernels_${RUN_MODE} PRIVATE
+<a name="ul95991737102913"></a><a name="ul95991737102913"></a><ul id="ul95991737102913"><li><a name="li1103101565014"></a>HAVE_WORKSPACE用于表示核函数（Kernel）入口是否包含workspace入参。默认情况下为不包含；增加该编译宏后，表示包含，此时框架会获取核函数（Kernel）入参的倒数第一个参数（未配置<a href="#li6933155615394">HAVE_TILING</a>），或倒数第二个参数（配置HAVE_TILING），自动在核函数（Kernel）侧设置系统workspace，开发者在核函数（Kernel）侧入参处获取的workspace为偏移了系统workspace后的用户workspace。当开发者使用了Matmul核函数（Kernel）侧接口等需要系统workspace的高阶API时，建议开启此参数，入参排布、系统workspace的设置逻辑与工程化算子开发保持一致，可减少算子实现在不同开发方式间切换带来的修改成本。需要注意的是，host侧开发者仍需要自行申请workspace的空间，系统workspace大小可以通过PlatformAscendCManager的GetLibApiWorkSpaceSize接口获取。HAVE_WORKSPACE的设置样例如下：<pre class="screen" id="screen170874019451"><a name="screen170874019451"></a><a name="screen170874019451"></a>ascendc_compile_definitions(ascendc_kernels_${RUN_MODE} PRIVATE
     HAVE_WORKSPACE
 )</pre>
-</li><li id="li6933155615394"><a name="li6933155615394"></a><a name="li6933155615394"></a>HAVE_TILING用于表示kernel入口是否含有tiling入参。在配置了HAVE_WORKSPACE之后，此编译宏才会生效。默认情况下为不包含，开关关闭；增加该编译宏后，表示包含，此时框架会将kernel入参的最后一个参数当做tiling，将倒数第二个参数当做workspace。框架不会对此tiling入参做任何处理，仅通过该入参来判断workspace参数的位置，使用此编译宏可以和工程化算子开发保持入参一致，减少算子实现在不同开发方式间切换带来的修改成本。设置样例如下：<pre class="screen" id="screen8986115020458"><a name="screen8986115020458"></a><a name="screen8986115020458"></a>ascendc_compile_definitions(ascendc_kernels_${RUN_MODE} PRIVATE
+</li><li id="li6933155615394"><a name="li6933155615394"></a><a name="li6933155615394"></a>HAVE_TILING用于表示核函数（Kernel）入口是否含有tiling入参。在配置了HAVE_WORKSPACE之后，此编译宏才会生效。默认情况下为不包含，开关关闭；增加该编译宏后，表示包含，此时框架会将核函数（Kernel）入参的最后一个参数当做tiling，将倒数第二个参数当做workspace。框架不会对此tiling入参做任何处理，仅通过该入参来判断workspace参数的位置，使用此编译宏可以和工程化算子开发保持入参一致，减少算子实现在不同开发方式间切换带来的修改成本。设置样例如下：<pre class="screen" id="screen8986115020458"><a name="screen8986115020458"></a><a name="screen8986115020458"></a>ascendc_compile_definitions(ascendc_kernels_${RUN_MODE} PRIVATE
     HAVE_WORKSPACE
     HAVE_TILING
 )</pre>
@@ -309,7 +307,7 @@ AddKernelInvocationNeo
 </tbody>
 </table>
 
-简化的编译流程图如下图所示：将算子核函数（Kernel）源文件编译生成kernel侧的库文件（\*.so或\*.a库文件）；工程框架自动生成核函数（Kernel）调用接口声明头文件；编译main.cpp（算子调用应用程序）时依赖上述头文件，将编译应用程序生成的目标文件和kernel侧的库文件进行链接，生成最终的可执行文件。
+简化的编译流程图如下图所示：将算子核函数（Kernel）源文件编译生成核函数（Kernel）侧的库文件（\*.so或\*.a库文件）；工程框架自动生成核函数（Kernel）调用接口声明头文件；编译main.cpp（算子调用应用程序）时依赖上述头文件，将编译应用程序生成的目标文件和核函数（Kernel）侧的库文件进行链接，生成最终的可执行文件。
 
 **图3**  编译简化流程图<a name="fig744344916358"></a>  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/compile_simple.png "编译简化流程图")
@@ -330,7 +328,7 @@ out
 │           ├── ...
 ```
 
-对于lib目录下生成的库文件可通过msobjdump工具进一步解析得到kernel信息，具体操作参见[msobjdump工具](msobjdump_tool.md)。
+对于lib目录下生成的库文件可通过msobjdump工具进一步解析得到核函数（Kernel）信息，具体操作参见[msobjdump工具](msobjdump_tool.md)。
 
 ## 输入数据和真值数据生成以及验证脚本文件<a name="section1234873541816"></a>
 
@@ -403,9 +401,8 @@ bash run.sh --run-mode=npu  --soc-version=<soc_version> --install-path=<install_
 bash run.sh -r npu  -v <soc_version> -i <install_path> -b Debug -p <install-prefix>
 ```
 
-**表3**  脚本参数介绍
+**表3**  脚本参数介绍<a name="table98393011180"></a>
 
-<a name="table98393011180"></a>
 <table><thead align="left"><tr id="row98396051814"><th class="cellrowborder" valign="top" width="16.14%" id="mcps1.2.4.1.1"><p id="p283916071814"><a name="p283916071814"></a><a name="p283916071814"></a>参数名</p>
 </th>
 <th class="cellrowborder" valign="top" width="11.690000000000001%" id="mcps1.2.4.1.2"><p id="p1872572854511"><a name="p1872572854511"></a><a name="p1872572854511"></a>参数简写</p>
@@ -468,13 +465,13 @@ bash run.sh -r npu  -v <soc_version> -i <install_path> -b Debug -p <install-pref
 基于核函数（Kernel）直调样例工程，通过ACLRT\_LAUNCH\_KERNEL接口调用核函数（Kernel）时，可实现CPU与NPU域的代码的统一，且该方式仅支持以下型号：
 
 
--   Atlas A3 训练系列产品/Atlas A3 推理系列产品
+-   Atlas A3系列产品
 
 
--   Atlas A2 训练系列产品/Atlas A2 推理系列产品
+-   Atlas A2系列产品
 
 
--   Atlas 推理系列产品
+-   Atlas推理系列产品
 
 
 下面代码以add\_custom算子为例，介绍算子核函数（Kernel）在CPU侧验证时，算子调用的应用程序如何编写（通过ACLRT\_LAUNCH\_KERNEL接口调用核函数（Kernel）的方式）。您在实现自己的应用程序时，需要关注由于算子核函数（Kernel）不同带来的修改，包括算子核函数（Kernel）名，入参出参的不同等，合理安排相应的内存分配、内存拷贝和文件读写等，相关API的调用方式直接复用即可。

@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/BroadCastVecToMM_ISASI.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - 310p
 ---
@@ -56,7 +56,7 @@ __aicore__ inline void BroadCastVecToMM(const LocalTensor<T> &dst, const LocalTe
 
 ## 数据类型
 
-Atlas 推理系列产品AI Core，支持的数据类型为：half、int32_t、float。
+Atlas推理系列产品AI Core，支持的数据类型为：half、int32_t、float。
 
 ## 约束说明<a name="section633mcpsimp"></a>
 

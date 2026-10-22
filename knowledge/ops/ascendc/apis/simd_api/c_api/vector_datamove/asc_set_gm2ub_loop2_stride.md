@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_set_gm2ub_loop2_stride.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -48,7 +48,7 @@ __aicore__ inline void asc_set_gm2ub_loop2_stride(uint64_t loop2_src_stride,
 | 参数名 | 输入/输出 | 描述 |
 |---|---|---|
 | loop2_src_stride | 输入 | 外层循环中相邻迭代源操作数的数据块间隔，单位为字节，取值范围为[0, $2^{40}−1$]。 |
-| loop2_dst_stride | 输入 | 外层循环中相邻迭代目的操作数的数据块间隔，单位为字节，取值范围为[0, $2^{24}−1$]，且必须32字节对齐。 |
+| loop2_dst_stride | 输入 | 外层循环中相邻迭代目的操作数的数据块间隔，单位为字节，取值范围为[0, $2^{21}−1$]，且必须32字节对齐。 |
 
 ## 返回值说明
 
@@ -71,7 +71,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

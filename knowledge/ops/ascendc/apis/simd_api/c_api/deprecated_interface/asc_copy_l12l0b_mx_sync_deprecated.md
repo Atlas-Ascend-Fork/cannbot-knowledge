@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l12l0b_mx_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_l12l0b_mx_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l12l0b_mx.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l12l0b_mx_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_l12l0b_mx.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 负责完成MX矩阵计算过程中所需的右矩阵对应的量化系数的搬运，数据通路为L1 Buffer->L0B_MX Buffer。其中右量化系数矩阵以32字节（固定数据类型为`fp8_e8m0_t`、分形大小为2×16的）的数据分形为单位进行搬运。
 
@@ -34,7 +34,7 @@ $$
 L0B\_MX\ Buffer\ Address = L0B\ Buffer\ Address / 16
 $$
 
-本接口为MX矩阵计算量化系数搬运接口，需要与对应数据搬运接口[asc_copy_l12l0b](../cube_datamove/asc_copy_l12l0b/asc_copy_l12l0b_2d_arch_3510.md)配合使用。
+本接口为MX矩阵计算量化系数搬运接口，需要与对应数据搬运接口[asc_copy_l12l0b](../cube_datamove/cube_compute_load/asc_copy_l12l0b_2d_arch_3510.md)配合使用。
 
 本接口仅在AIC上执行有效。
 
@@ -54,7 +54,7 @@ __aicore__ inline void asc_copy_l12l0b_mx_sync(uint64_t dst,
 
 ## 参数说明
 
-**表1**  参数说明
+**表1** 参数说明
 
 | 参数名 | 输入/输出 | 含义 |
 | --- | --- | --- |
@@ -81,13 +81,13 @@ PIPE_MTE1
 
 - 本接口非AIC调用直接返回。
 - `src`位于L1 Buffer，dst位于L0B_MX Buffer，二者位于不同的物理存储单元，不存在地址重叠。
-- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
 - L0B_MX Buffer容量上限：L0B_MX Buffer总容量4KB，`dst`偏移量与搬运大小之和不可越界，否则触发地址溢出异常。
 - L1 Buffer容量上限：L1 Buffer总容量512KB，`src`偏移量与源矩阵占用大小之和不可越界，否则触发地址溢出异常。
 
 ### 搬运约束
 
-- 本接口需要与对应数据搬运接口[asc_copy_l12l0b](../cube_datamove/asc_copy_l12l0b/asc_copy_l12l0b_2d_arch_3510.md)配合使用，使量化系数与右矩阵数据写入相互映射的L0B_MX Buffer和L0B Buffer地址。
+- 本接口需要与对应数据搬运接口[asc_copy_l12l0b](../cube_datamove/cube_compute_load/asc_copy_l12l0b_2d_arch_3510.md)配合使用，使量化系数与右矩阵数据写入相互映射的L0B_MX Buffer和L0B Buffer地址。
 - `x_step`或`y_step`配置为0时，本接口被视为NOP（空操作）。0不在有效取值范围内，不应在有效任务中配置为0，以免产生无效指令并影响性能。
 - 量化系数矩阵的最小搬运粒度为1个2×16分形。矩阵边缘不足一个分形时，源矩阵需要补齐到完整分形。
 - 量化系数矩阵的分形固定为2×16，对应L0B Buffer的分形为32×16，占L0B Buffer地址的1/16。dst与dst_stride需按地址映射关系设置，否则触发搬运异常。
@@ -97,7 +97,7 @@ PIPE_MTE1
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-Ascend 950PR/Ascend 950DT产品对应的NPU架构为`dav-3510`，编译运行命令如下：
+Ascend 950PR&950DT系列产品对应的NPU架构为`dav-3510`，编译运行命令如下：
 
 ```bash
 bisheng examples.asc -o main --npu-arch=dav-3510 && ./main
@@ -216,7 +216,7 @@ int main()
         }
     }
 
-    // 分配Device内存、执行Kernel并取回结果。
+    // 分配Device内存、执行核函数（Kernel）并取回结果。
     aclInit(nullptr);
     aclrtSetDevice(0);
     uint8_t *a_device = nullptr, *b_device = nullptr;

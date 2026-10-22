@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpParamDef/ScalarList.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -48,7 +48,5 @@ OpParamDef算子定义，OpParamDef请参考[OpParamDef](index.md)。
 this->Input("x")
     .ScalarList()
 ```
-
-
 
 - [ForeachPowScalarList A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_list.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/fusion_operator_programming/general_fusion/feature_scenarios.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -24,15 +24,15 @@ platforms: []
 当前，该能力的支持情况如下：
 
 
-Ascend 950PR/Ascend 950DT不支持通算融合算子的重执行。
+Ascend 950PR&950DT系列产品不支持通算融合算子的重执行。
 
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品支持通算融合算子的重执行。
+Atlas A3系列产品支持通算融合算子的重执行。
 
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持通算融合算子的重执行。
+Atlas A2系列产品不支持通算融合算子的重执行。
 
 
 **图1**  通信任务重执行机制<a name="zh-cn_topic_0000002400328453_fig774612491699"></a>  

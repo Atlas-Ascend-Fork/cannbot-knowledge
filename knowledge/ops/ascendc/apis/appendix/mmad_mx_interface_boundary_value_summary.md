@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/mmad_mx_interface_boundary_value_summary.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,10 +19,11 @@ platforms: []
 本节汇总介绍了MmadMx计算接口在边界值输入下的输出结果，数据类型见基础API下的[MmadMx](../simd_api/basic_api/cube_compute_isasi/mmad_compute/mmad_mx.md#数据类型)，以下内容针对如下型号生效：
 
 
-- Ascend 950PR/Ascend 950DT
+- Ascend 950PR&950DT系列产品
 
 
 ## 边界值说明
+
 - fp4x2_e1m2_t和fp4x2_e2m1_t数据类型没有+inf/-inf/nan定义，从其他数据类型的+inf/-inf/nan转换为这两种数据类型时会被直接转换为边界值或0。值转换情况如下表所示：
     
     **表1**  fp4x2_e1m2_t和fp4x2_e2m1_t数据类型边界值转换结果

@@ -10,13 +10,14 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/ascend_c_overview_and_learning_path.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # Ascend C概述
 
 ## CANN概述
+
 AI（Artificial Intelligence，人工智能）芯片是专为加速人工智能计算任务设计的专用处理器，凭借高度并行化的硬件架构，可高效应对深度学习场景中的大规模张量运算。NPU（Neural-Network Processing Unit，神经网络处理器）作为AI芯片的典型代表，其核心优势在于适配神经网络任务的高效执行；昇腾AI处理器作为专用NPU，内部集成大量高性能计算核心，进一步强化了这一硬件优势，为AI任务的高效运行提供坚实支撑。
 
 在神经网络模型中，算子是构成模型的基础计算单元，封装了针对张量数据的特定数学操作逻辑，如卷积、矩阵乘、激活函数等。神经网络模型的推理与训练过程，本质上是一系列算子按照预设逻辑有序执行、协同完成计算任务的过程。为充分释放昇腾NPU的硬件算力，需构建一套能够高效衔接上层AI框架与底层硬件的软件平台，而CANN（Compute Architecture for Neural Networks）正是华为专为昇腾NPU打造的全栈软件解决方案。
@@ -24,6 +25,7 @@ AI（Artificial Intelligence，人工智能）芯片是专为加速人工智能�
 CANN基于分层架构设计，实现了上层应用与底层硬件的无缝衔接。向上，兼容PyTorch等主流AI框架，确保应用层的兼容性与易用性；向下，深度适配昇腾AI处理器，充分发挥硬件的计算潜能，进而构建起CPU与NPU深度融合的异构计算体系。在该体系中，CANN通过Runtime运行时接口驱动CPU与NPU高效协同调度：CPU完成数据准备、任务拆解与调度后，将算子任务下发至NPU加速执行；计算完成后，结果由CPU回收或根据业务需求进行进一步处理。这一协同机制贯穿算子、模型、应用全层级，有效达成计算性能与运行效率的最优平衡，为昇腾AI处理器算力的充分释放提供核心软件支撑。
 
 ## Ascend C简介
+
 大模型时代，算力需求正以前所未有的速度激增。如何开发高性能算子，充分释放硬件每一分潜能，已成为决定AI应用落地的关键。为帮助开发者高效构建可直接运行于NPU的高性能算子，Ascend C应运而生。Ascend C是CANN生态下，面向昇腾AI处理器推出的专用算子开发语言，原生兼容C与C++标准规范。此外，Ascend C秉持**开放芯片完备编程能力，支撑极致性能**的设计理念，构建多层级API体系，满足多场景算子开发诉求，让您能够根据项目需求、团队技能和性能目标，在开发效率与运行性能之间灵活权衡，实现最优平衡。
 
 为满足不同场景的诉求，Ascend C构建了从单指令抽象、单核公共算法到多核算子的多层级API体系，其总体逻辑架构如下：
@@ -41,22 +43,28 @@ CANN基于分层架构设计，实现了上层应用与底层硬件的无缝衔�
 > [!NOTE]说明
 > Ascend C支持在如下AI处理器型号上使用：
 > 
-> - Ascend 950PR/Ascend 950DT
+> - Ascend 950PR&950DT系列产品
 > 
 > 
-> - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+> - Atlas A3系列产品
 > 
 > 
-> - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+> - Atlas A2系列产品
 > 
 > 
-> - Atlas 200I/500 A2 推理产品
+> - Atlas 200I/500 A2推理产品
 > 
 > 
-> - Atlas 推理系列产品
+> - Atlas推理系列产品
 > 
 > 
-> - Atlas 训练系列产品
+> - Atlas训练系列产品
+> 
+> 
+> - Kirin X90处理器系列产品：支持
+> 
+> 
+> - Kirin 9030处理器系列产品：支持
 > 
 
 ---
@@ -161,7 +169,7 @@ CANN基于分层架构设计，实现了上层应用与底层硬件的无缝衔�
 </div>
 <div style="flex: 1; min-width: 200px;">
 <a href="../../apis/index.md" style="display: block; padding: 10px; background: #fff; border-radius: 5px; color: #3b82f6; text-decoration: none; margin-bottom: 10px; font-size: 14px;">📖 Ascend C API参考</a>
-<a href="https://hiascend.com/document/redirect/CannCommunityadev" style="display: block; padding: 10px; background: #fff; border-radius: 5px; color: #3b82f6; text-decoration: none; margin-bottom: 10px; font-size: 14px;">🚀 CANN Runtime接口</a>
+<a href="https://gitcode.com/cann/runtime/blob/master/docs/zh/api_ref/README.md" style="display: block; padding: 10px; background: #fff; border-radius: 5px; color: #3b82f6; text-decoration: none; margin-bottom: 10px; font-size: 14px;">🚀 CANN Runtime接口</a>
 </div>
 </div>
 </div>

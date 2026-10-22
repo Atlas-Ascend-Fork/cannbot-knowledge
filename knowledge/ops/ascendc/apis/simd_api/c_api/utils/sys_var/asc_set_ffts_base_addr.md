@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_set_ffts_base_addr.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/utils/sys_var.h"`。
 
-在[asc_sync_block_wait](../../sync/asc_sync_block_wait.md)和[asc_sync_block_arrive](../../sync/asc_sync_block_arrive.md)之前使用，设置核间同步寄存器的基地址。需要在Host侧调用接口aclrtGetHardwareSyncAddr获取，并作为参数传入。
+在[asc_sync_block_wait](../../sync/inter_core_sync/asc_sync_block_wait.md)和[asc_sync_block_arrive](../../sync/inter_core_sync/asc_sync_block_arrive.md)之前使用，设置核间同步寄存器的基地址。需要在Host侧调用接口aclrtGetHardwareSyncAddr获取，并作为参数传入。
 
 ```cpp
 aclError aclrtGetHardwareSyncAddr(void **addr);
@@ -54,7 +54,7 @@ PIPE_S
 
 ## 约束说明
 
-- 在使用[asc_sync_block_wait](../../sync/asc_sync_block_wait.md)和[asc_sync_block_arrive](../../sync/asc_sync_block_arrive.md)之前必须使用本接口设置基地址。
+- 在使用[asc_sync_block_wait](../../sync/inter_core_sync/asc_sync_block_wait.md)和[asc_sync_block_arrive](../../sync/inter_core_sync/asc_sync_block_arrive.md)之前必须使用本接口设置基地址。
 
 ## 调用示例
 

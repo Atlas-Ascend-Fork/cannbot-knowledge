@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_math_functions/hcos.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据的三角函数余弦值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002533480325.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002533480325.png)
 
 ## 函数原型
 
@@ -82,3 +82,10 @@ inline half hcos(half x)
         dst[idx] = hcos(x[idx]); // 对src源地址的第idx个元素取三角函数余弦值
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.25, 0.5, 2.5, -3.75
+result: 0.31543, 0.877441, -0.80127, -0.820801
+```

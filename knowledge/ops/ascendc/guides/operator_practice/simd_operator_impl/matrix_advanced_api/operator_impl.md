@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/operator_impl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -18,13 +18,13 @@ platforms: []
 
 ## 实现流程<a name="zh-cn_topic_0000001622514006_section6935163720564"></a>
 
-上文介绍了Matmul矩阵乘的数据切分方案和数据流。Ascend C提供一组Matmul高阶API，封装了这些常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作。开发者在host侧通过调用API自动获取Tiling参数，该参数传递到kernel侧后，在初始化操作时传入，通过几个简单的API即可完成矩阵乘操作。完整样例请参考[LINK](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/02_matrix/matmul_advanced_api)。
+上文介绍了Matmul矩阵乘的数据切分方案和数据流。Ascend C提供一组Matmul高阶API，封装了这些常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作。开发者在host侧通过调用API自动获取Tiling参数，该参数传递到核函数（Kernel）侧后，在初始化操作时传入，通过几个简单的API即可完成矩阵乘操作。完整样例请参考[LINK](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/02_matrix/matmul_advanced_api)。
 
 **图1**  矩阵编程流程示意图<a name="zh-cn_topic_0000001622514006_fig264116391245"></a>  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_prog_flow.png "矩阵编程流程示意图")
 
-host侧自动获取Tiling参数的关键步骤介绍如下：
-<a name="zh-cn_topic_0000001622514006_li19113114819525"></a>
+host侧自动获取Tiling参数的关键步骤介绍如下：<a name="zh-cn_topic_0000001622514006_li19113114819525"></a>
+
 1.  **创建Tiling对象**。
 
     ```
@@ -74,8 +74,7 @@ host侧自动获取Tiling参数的关键步骤介绍如下：
     tilingData.SaveToBuffer(tilingBuf, tcubeTilingSize);
     ```
 
-<a name="zh-cn_topic_0000001622514006_li1032116474330"></a>
-kernel侧使用Matmul API矩阵乘运算的具体步骤如下：
+核函数（Kernel）侧使用Matmul API矩阵乘运算的具体步骤如下：<a name="zh-cn_topic_0000001622514006_li1032116474330"></a>
 
 1.  **创建Matmul对象。**
 
@@ -143,7 +142,7 @@ kernel侧使用Matmul API矩阵乘运算的具体步骤如下：
 
 ## 设置Shape信息<a name="zh-cn_topic_0000001622514006_section736714343331"></a>
 
-在实现Host Tiling时可以设置Shape信息，用于Tiling计算；kernel侧运行时也可以修改部分Shape信息，用于尾块设置、Matmul复用（多个Matmul计算复用一个Matmul对象）等场景。本节对涉及到的Shape概念进行介绍，并给出host侧和kernel侧设置Tiling信息的指导。
+在实现Host Tiling时可以设置Shape信息，用于Tiling计算；核函数（Kernel）侧运行时也可以修改部分Shape信息，用于尾块设置、Matmul复用（多个Matmul计算复用一个Matmul对象）等场景。本节对涉及到的Shape概念进行介绍，并给出host侧和核函数（Kernel）侧设置Tiling信息的指导。
 
 -   orgShape：M、N、K
 -   singleCoreShape：singleCoreM、singleCoreN、singleCoreK
@@ -156,7 +155,7 @@ kernel侧使用Matmul API矩阵乘运算的具体步骤如下：
 
 除此之外，单核的Matmul Tiling时，实际参与Matmul计算的shape可以是原始shape中的一部分，singleM, singleN, singleK用于表达实际参与Matmul计算的shape，如下图所示。在单核的情况下，singleM, singleN, singleK会透传给singleCoreM, singleCoreN, singleCoreK。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002533171617.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002533171617.png)
 
 -   核函数（Kernel）运行时设置
     -   [SetTail](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tail.md)、[SetSingleShape](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_single_shape.md)都是运行时修改singleCoreM、singleCoreN、singleCoreK，处理尾块时使用[SetTail](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tail.md)，Matmul复用（多个Matmul计算复用一个Matmul对象）的场景可以使用SetSingleShape重新设置。

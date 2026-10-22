@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/scatter_gather/Gather.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -82,30 +82,31 @@ def Gather(dst, src, count, srcOffset, srcBaseAddr):
 | src | 输入 | 源操作数，类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。<br><br>LocalTensor的起始地址需要按照32字节对齐。<br><br>数据类型和dst保持一致。 |
 | srcOffset | 输入 | 每个元素在src中对应的地址偏移，类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。<br><br>LocalTensor的起始地址需要32字节对齐。<br><br>该偏移量是相对于src的起始基地址srcBaseAddr而言的。单位为字节。取值要求见[约束说明](#约束说明)。 |
 | srcBaseAddr | 输入 | 用于指定Gather操作中源操作数的起始位置，单位为字节。取值应保证src元素类型位宽对齐，否则会导致非预期行为。 |
-| count | 输入 | 参与计算的元素个数。<br><br>参数取值范围和操作数的数据类型有关，数据类型不同，能够处理的元素个数最大值不同，最大处理的数据量不能超过UB大小限制。 |
+| count | 输入 | 参与计算的元素个数。<br><br>参数取值范围和操作数的数据类型有关，数据类型不同，能够处理的元素个数最大值不同，最大处理的数据量不能超过Unified Buffer（UB）大小限制。 |
 | mask/mask[] | 输入 | mask用于控制每次迭代内参与计算的元素。<br><br>设置详见[掩码操作](../mask_operations/index.md)。 |
 | repeatTime | 输入 | 指令迭代次数。针对不同的型号，每个迭代处理的DataBlock可能存在差异，详见[约束说明](#约束说明)。|
 | dstRepStride | 输入 | 相邻迭代间的地址步长，单位是DataBlock（32Bytes）。 |
 
 ## 数据类型
 
-Ascend 950PR/Ascend 950DT，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。数据类型int8\_t、uint8\_t仅支持tensor前n个数据计算接口。
+
+Ascend 950PR&950DT系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。数据类型int8\_t、uint8\_t仅支持tensor前n个数据计算接口。
 
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+Atlas A3系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+Atlas A2系列产品，支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
 
-Atlas 200I/500 A2 推理产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
+Atlas 200I/500 A2推理产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float。
 
 
 
-Atlas 推理系列产品AI Core，支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
+Atlas推理系列产品AI Core，支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
 
 
 ## 约束说明<a name="section633mcpsimp"></a>
@@ -114,27 +115,27 @@ Atlas 推理系列产品AI Core，支持的数据类型为：int16_t、uint16_t�
 - 不支持源操作数与目的操作数使用同一块内存地址。
 - srcOffset的取值要求如下：
   - 取值应保证src元素类型位宽对齐。
-  - 偏移地址后不能超出Unified Buffer（UB）大小数据的范围。
+  - 偏移地址后不能超出UB大小数据的范围。
   
   - 针对以下型号，地址偏移的取值范围：当操作数为8位时，取值范围为[0, 2^16-1]；当操作数为16位时，取值范围为[0, 2^17-1]，当操作数为32位或者64位时，不能超出uint32_t的范围。
     
-    - Ascend 950PR/Ascend 950DT
+    - Ascend 950PR&950DT系列产品
     
     
-    - Atlas 200I/500 A2 推理产品
+    - Atlas 200I/500 A2推理产品
     
   
 
   
   - 针对以下型号，地址偏移的取值范围：不能超出uint32_t的范围。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
     
-    - Atlas 推理系列产品AI Core
+    - Atlas推理系列产品AI Core
     
   
 - srcBaseAddr的取值应保证src元素类型位宽对齐，否则会导致非预期行为，程序没有崩溃报错，但数据发生错位，导致结果张量不符合预期。
@@ -145,38 +146,38 @@ Atlas 推理系列产品AI Core，支持的数据类型为：int16_t、uint16_t�
   
   - 针对如下型号，当参数count或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
 
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
   
 
 
 
 - 针对以下型号，当操作数为**8位**时，每次迭代完成**4个DataBlock**的数据收集；其他情况下，每次迭代完成8个DataBlock的数据收集。
   
-  - Ascend 950PR/Ascend 950DT
+  - Ascend 950PR&950DT系列产品
   
   
-  - Atlas 200I/500 A2 推理产品
+  - Atlas 200I/500 A2推理产品
   
 
 
 
 - 针对以下型号，每次迭代完成8个DataBlock的数据收集。
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  - Atlas A3系列产品
   
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  - Atlas A2系列产品
   
   
-  - Atlas 推理系列产品AI Core
+  - Atlas推理系列产品AI Core
   
 
 
@@ -227,6 +228,5 @@ Atlas 推理系列产品AI Core，支持的数据类型为：int16_t、uint16_t�
 进行Gather计算后，输出数据(dstLocal):
 [127 126 125 ... 2 1 0]
 ```
-
 
 - [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)

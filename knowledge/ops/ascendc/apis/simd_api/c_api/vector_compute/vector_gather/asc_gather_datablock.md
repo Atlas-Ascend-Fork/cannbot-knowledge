@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_gather/asc_gather_datablock.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -57,6 +57,7 @@ source_headers:
 PIPE_V
 
 ## 约束说明
+
 - src_offset取值应保证src元素类型位宽对齐。
 - src加上src_offset偏移后的地址不能超出Unified Buffer（UB）大小数据的范围。
 - dst、src的起始地址需要32字节对齐。

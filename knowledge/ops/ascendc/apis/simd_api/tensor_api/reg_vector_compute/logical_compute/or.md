@@ -10,18 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/logical_compute/or.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/tensor_api/experimental/vector_compute.h
+- include/tensor_api/experimental/arch/vector/logical_compute.h
+- include/tensor_api/experimental/vector_ops.h
 ---
 
 # or
 
 ## 功能说明
 
-头文件路径：`"tensor_api/experimental/vector_compute.h"`。
+头文件路径：`"tensor_api/experimental/arch/vector/logical_compute.h"`。
 
 该接口根据src0.mask，对源操作数src0、src1进行按位或（|）操作，并返回计算结果。T不为bool时，对两个矢量数据寄存器按元素计算；T为bool时，对两个掩码寄存器的有效bit计算。计算公式如下：
 
@@ -64,11 +65,12 @@ __simd_callee__ inline reg_tensor<T> operator|(
 
 - `src0.mask`需通过`with_mask`接口预先设置。未设置时，mask的内容不确定，会导致参与计算的元素位置错误。
 - 参与计算的数据量由矢量长度VL决定。T不为bool时，元素个数为VL除以sizeof(T)；T为bool时，参与计算的bit数为VL。
+- `src0.mask`未选中的位置不参与计算，返回值对应位置置零。
 
 ## 调用示例
 
 ```cpp
-#include "tensor_api/experimental/vector_compute.h"
+#include "tensor_api/experimental/vector_ops.h"
 
 template <typename InputTensor, typename OutputTensor>
 __simd_vf__ inline void or_example(InputTensor input0, InputTensor input1, OutputTensor output)

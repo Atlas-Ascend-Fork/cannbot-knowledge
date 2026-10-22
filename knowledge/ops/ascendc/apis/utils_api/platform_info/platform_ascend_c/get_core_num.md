@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetCoreNum.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -36,19 +36,19 @@ uint32_t GetCoreNum(void) const
 ## 返回值说明<a name="zh-cn_topic_0000001647201621_zh-cn_topic_0000001442758437_section25791320141317"></a>
 
 
-Atlas 训练系列产品，耦合模式，返回AI Core的核数
+Atlas训练系列产品，耦合模式，返回AI Core的核数
 
 
-Atlas 推理系列产品，耦合模式，返回AI Core的核数
+Atlas推理系列产品，耦合模式，返回AI Core的核数
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品，分离模式，返回Vector Core的核数
+Atlas A2系列产品，分离模式，返回Vector Core的核数
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品，分离模式，返回Vector Core的核数
+Atlas A3系列产品，分离模式，返回Vector Core的核数
 
 
-Ascend 950PR/Ascend 950DT，分离模式，返回Vector Core的核数
+Ascend 950PR&950DT系列产品，分离模式，返回Vector Core的核数
 
 
 ## 约束说明<a name="zh-cn_topic_0000001647201621_zh-cn_topic_0000001442758437_section19165124931511"></a>
@@ -82,7 +82,6 @@ void GetInfoFun()
     // ... 根据核数自行设计切分策略
 }
 ```
-
 
 - [RopeWithSinCosCache A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache.md)
 - [RopeWithSinCosCache 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache_950.md)

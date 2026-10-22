@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/cpp_stdlib/math_functions/ceil_div.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -59,7 +59,7 @@ __host__ __aicore__ inline constexpr auto ceil_div(const T& a, const U& b);
 - 当b为0时，结果为0。
 - 对于有符号输入，调用方需确保a >= 0且b > 0。
 
-- 针对Ascend 950PR/Ascend 950DT，vector侧使用时，该接口入参仅支持`uint32_t`类型，在VF场景下返回值需使用`static_cast`转换为`uint16_t`类型并确保向上取整结果在`uint16_t`可表示范围内；该约束源于VF Hardware Loop编码规范，更多规范内容可参考[《Hardware Loop编码规范》](../../../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/vf_loop_optimization.md#section11326136133217)。
+- 针对Ascend 950PR&950DT系列产品，vector侧使用时，该接口入参仅支持`uint32_t`类型，在VF场景下返回值需使用`static_cast`转换为`uint16_t`类型并确保向上取整结果在`uint16_t`可表示范围内；该约束源于VF Hardware Loop编码规范，更多规范内容可参考[《Hardware Loop编码规范》](../../../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/vf_loop_optimization.md#section11326136133217)。
 
 
 ## 调用示例

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_compare_functions/__hisnan.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -74,5 +74,11 @@ inline bool __hisnan(half x)
     }
     ```
 
+输入输出示例如下：
+
+```text
+x: -1.25, nan, inf, -inf
+result: false, true, false, false
+```
 
 - [ForeachMinimumList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_minimum_list_950.md)

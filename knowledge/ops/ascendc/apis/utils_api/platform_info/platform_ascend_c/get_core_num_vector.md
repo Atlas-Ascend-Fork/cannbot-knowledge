@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetCoreNumVector.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -23,7 +23,7 @@ source_headers:
 
 用于获取硬件平台独立的Vector Core的核数。
 
-该接口仅在Atlas 推理系列产品有效，其他硬件平台型号均返回0。
+该接口仅在Atlas推理系列产品有效，其他硬件平台型号均返回0。
 
 ## 函数原型<a name="zh-cn_topic_0000001817714666_zh-cn_topic_0000001442758437_section13230182415108"></a>
 
@@ -42,22 +42,22 @@ uint32_t GetCoreNumVector(void) const
 ## 约束说明<a name="zh-cn_topic_0000001817714666_zh-cn_topic_0000001442758437_section19165124931511"></a>
 
 
-Atlas 训练系列产品，不支持该接口，返回0
+Atlas训练系列产品，不支持该接口，返回0
 
 
-Atlas 推理系列产品，支持该接口，返回硬件平台Vector Core的核数
+Atlas推理系列产品，支持该接口，返回硬件平台Vector Core的核数
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持该接口，返回0
+Atlas A2系列产品不支持该接口，返回0
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品不支持该接口，返回0
+Atlas A3系列产品不支持该接口，返回0
 
 
-Atlas 200I/500 A2 推理产品不支持该接口，返回0
+Atlas 200I/500 A2推理产品不支持该接口，返回0
 
 
-Ascend 950PR/Ascend 950DT不支持该接口，返回0
+Ascend 950PR&950DT系列产品不支持该接口，返回0
 
 
 ## 调用示例<a name="zh-cn_topic_0000001817714666_zh-cn_topic_0000001442758437_section320753512363"></a>

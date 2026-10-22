@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/basic_arithmetic/Mins_flexible_scalar.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,7 +81,7 @@ $dst_i = \operatorname{Min}(scalar, src_i)$
 ## 数据类型
 
 
-针对Ascend 950PR/Ascend 950DT，支持的数据为int8_t、uint8_t、int16_t、half、bfloat16_t、int32_t、float、int64_t、uint64_t。其中int8_t、uint8_t、int64_t、uint64_t数据类型仅支持tensor前n个数据计算接口。
+针对Ascend 950PR&950DT系列产品，支持的数据为int8_t、uint8_t、int16_t、half、bfloat16_t、int32_t、float、int64_t、uint64_t。其中int8_t、uint8_t、int64_t、uint64_t数据类型仅支持tensor前n个数据计算接口。
 
 
 ## 返回值说明<a name="section194321251175110"></a>
@@ -97,11 +97,11 @@ $dst_i = \operatorname{Min}(scalar, src_i)$
 - 本接口传入LocalTensor单点数据作为标量时，idx参数需要传入编译期已知的常量，传入变量时需要声明为constexpr。
 
 
-- 针对Ascend 950PR/Ascend 950DT：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 针对Ascend 950PR&950DT系列产品：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
+- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算占用8KB UB。
   - tensor前n个数据连续计算不涉及8KB UB的占用。
-- 针对Ascend 950PR/Ascend 950DT，tensor前n个数据计算API中的isSetMask参数不生效，保持默认值即可。
+- 针对Ascend 950PR&950DT系列产品，tensor前n个数据计算API中的isSetMask参数不生效，保持默认值即可。
 
 
 ## 调用示例<a name="section633mcpsimp"></a>

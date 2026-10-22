@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__uint2half_rz_sat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -66,4 +66,11 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
         dst[idx] = __uint2half_rz_sat(x[idx]);
     }
+    ```
+
+    输入输出示例如下：
+
+    ```text
+    x: 0, 1, 2049, 4097, 65535
+    result: 0, 1, 2048, 4096, 65504
     ```

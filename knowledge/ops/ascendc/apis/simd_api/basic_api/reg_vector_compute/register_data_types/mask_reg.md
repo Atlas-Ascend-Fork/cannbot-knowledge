@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/register_data_types/MaskReg.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -29,12 +29,16 @@ MaskReg寄存器用于指示在计算过程中哪些元素参与计算，宽度�
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/maskreg_process.png "MaskReg计算过程")
 
 ## 函数原型<a name="section620mcpsimp"></a>
+
 - CreateMask接口
+
   ```cpp
   template <typename T, MaskPattern mode = MaskPattern::ALL, const RegTrait& regTrait = RegTraitNumOne>
   __simd_callee__ inline MaskReg CreateMask()
   ```
+
 - UpdateMask接口
+
   ```cpp
   template <typename T, const RegTrait& regTrait = RegTraitNumOne>
   __simd_callee__ inline MaskReg UpdateMask(uint32_t& scalarValue)
@@ -171,6 +175,7 @@ __simd_callee__ inline void Add(U& dstReg, U& srcReg0, U& srcReg1, MaskReg& mask
       }
     }
     ```
+
   >[!NOTE]说明
   >
   >当数据类型为int16_t（操作数为16位）时，每次循环内能够处理的元素个数Mask∈[1, 128]。当count>128时，仍按一次repeat（128元素）执行，不支持超过128元素的Mask控制。
@@ -260,12 +265,13 @@ __simd_callee__ inline void Add(U& dstReg, U& srcReg0, U& srcReg1, MaskReg& mask
   ```
 
 
+
 ### NPU架构版本2201与NPU架构版本3510之间Mask机制对比
 
 本节对比[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)在Normal模式的逐bit计算中Mask机制，与[NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)基于Reg矢量计算中Mask机制的差异。
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- 针对Atlas A2系列产品
 
   - Mask寄存器长度为256bit。
 
@@ -273,7 +279,7 @@ __simd_callee__ inline void Add(U& dstReg, U& srcReg0, U& srcReg1, MaskReg& mask
 
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- 针对Atlas A3系列产品
 
   - Mask寄存器长度为256bit。
 
@@ -281,7 +287,7 @@ __simd_callee__ inline void Add(U& dstReg, U& srcReg0, U& srcReg1, MaskReg& mask
 
 
 
-- 针对Ascend 950PR/Ascend 950DT
+- 针对Ascend 950PR&950DT系列产品
 
   - MaskReg寄存器长度为VL/8，即256bit。
 

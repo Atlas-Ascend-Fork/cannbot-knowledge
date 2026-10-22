@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__byte_perm.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -96,3 +96,12 @@ unsigned int __byte_perm(unsigned int x, unsigned int y, unsigned int s)
         dst[idx] = __byte_perm(x[idx], y[idx], s[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0, 1, 258, 66051
+y: 0, 1, 772, 67305985
+s: 0, 1, 2731, 2105376
+result: 0, 16843008, 33554432, 16974083
+```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_aux_config/SetFixPipeAddr.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 ---
@@ -61,7 +61,7 @@ __aicore__ inline void SetEleSrcPara(const LocalTensor<half>& eleWiseData, uint1
 }
 ```
 
-- 针对Atlas 200I/500 A2 推理产品，完整示例如下。随路格式转换数据搬运，通路：L0C Buffer-\>GM。
+- 针对Atlas 200I/500 A2推理产品，完整示例如下。随路格式转换数据搬运，通路：L0C Buffer-\>GM。
 
     示例：Mmad含有矩阵乘偏置，左矩阵和右矩阵的数据类型为int8\_t，结果矩阵的数据类型为int32\_t。量化模式DEQF16，scalar量化参数为0.5，将Mmad计算出的结果由int32\_t量化成half并搬出。
 

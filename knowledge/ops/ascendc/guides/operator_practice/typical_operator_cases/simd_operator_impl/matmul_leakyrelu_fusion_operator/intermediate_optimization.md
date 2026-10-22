@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/intermediate_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -37,6 +37,7 @@ platforms: []
 中级性能优化采用CV融合-GM中转方式（A2/A3/Ascend 950PR均支持）。AIC侧通过Fixpipe将L0C计算结果写入GM，AIV侧从GM读取数据到Unified Buffer（UB）后进行GELU计算，再将结果写回GM。
 
 数据流路径：
+
 ```
 GM ──(MTE2)──> L1 ──(MTE1)──> L0A/L0B ──(Cube)──> L0C ──(Fixpipe)──> GM ──(MTE2)──> UB ──(Gelu)──> UB ──(MTE3)──> GM
 ```

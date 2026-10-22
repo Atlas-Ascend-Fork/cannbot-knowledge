@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/tensor/make_mem_ptr.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -44,14 +44,14 @@ make_mem_ptr提供三种调用形式：
 
   ```cpp
   template <typename PtrPattern, typename Iterator>
-  __aicore__ inline constexpr auto make_mem_ptr(Iterator iterator)
+  __aicore__ inline auto make_mem_ptr(Iterator iterator)
   ```
 
 - 从已有迭代器中自动推导物理位置：
 
   ```cpp
   template <typename Iterator>
-  __aicore__ inline constexpr auto make_mem_ptr(Iterator iterator)
+  __aicore__ inline auto make_mem_ptr(Iterator iterator)
   ```
 
 ## 参数说明
@@ -67,7 +67,7 @@ make_mem_ptr提供三种调用形式：
 | location::l0scalea | L0 ScaleA Buffer | MX矩阵计算ScaleA缓存 |
 | location::l0scaleb | L0 ScaleB Buffer | MX矩阵计算ScaleB缓存 |
 | location::l0c | L0C Buffer | 矩阵计算结果缓存 |
-| location::ub | UB | 统一缓存，矢量计算的数据存储区 |
+| location::ub | Unified Buffer（UB） | 统一缓存，矢量计算的数据存储区 |
 | location::bias | BiasTable Buffer | 偏置表缓存，带偏置矩阵计算的偏置存放区 |
 | location::fixbuf | Fixpipe Buffer | Fixpipe输出缓存，L0C到GM/UB的中转区 |
 

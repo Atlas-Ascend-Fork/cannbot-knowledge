@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_2D_BitMode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -136,7 +136,7 @@ Load2DBitModeConfig1结构体参数的含义与LoadData2DParamsV2结构体中的
 
 - 操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md)。
 
-- 针对Ascend 950PR/Ascend 950DT，仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer数据通路。
+- 针对Ascend 950PR&950DT系列产品，仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer数据通路。
 
 
 ## 调用示例<a id="section6461234123118"></a>

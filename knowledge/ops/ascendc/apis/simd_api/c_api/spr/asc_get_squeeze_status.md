@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/spr/asc_get_squeeze_status.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -50,12 +50,12 @@ PIPE_S
 
 ## 调用示例
 
-本示例模拟稀疏数据压缩场景：输入包含256个`uint16_t`数据，掩码选择每4个数据中的第1个，连续筛选并搬出64个有效数据。Kernel通过`asc_get_squeeze_status`获取已搬出的有效字节数，Host侧检查返回值是否为128字节。筛选流程完成后，需要调用[asc_squeeze_and_storeunalign_finalize](../reg_compute/reg_permute_sel/asc_squeeze_and_storeunalign_finalize.md)搬出尾块。
+本示例模拟稀疏数据压缩场景：输入包含256个`uint16_t`数据，掩码选择每4个数据中的第1个，连续筛选并搬出64个有效数据。核函数（Kernel）通过`asc_get_squeeze_status`获取已搬出的有效字节数，Host侧检查返回值是否为128字节。筛选流程完成后，需要调用[asc_squeeze_and_storeunalign_finalize](../reg_compute/reg_permute_sel/asc_squeeze_and_storeunalign_finalize.md)搬出尾块。
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行。产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

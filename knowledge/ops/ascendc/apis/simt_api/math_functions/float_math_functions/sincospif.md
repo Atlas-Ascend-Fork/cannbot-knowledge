@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/sincospif.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据与π相乘的三角函数正弦值和余弦值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776398.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002484776398.png)
 
 ## 函数原型
 
@@ -46,8 +46,12 @@ inline void sincospif(float x, float *s, float *c)
 
 ## 返回值说明
 
--   当x\*π超出float最大范围或超出float最小范围时，输出值为nan。
--   当输入x为inf、-inf、nan时，输出值为nan。
+- 当输入x为有限值且Abs\(x\)\>=2^24时，输出参数s为0.0，输出参数c为1.0。
+- 当输入x为整数且|Abs\(x\)\<2^24时，输出参数s为0.0。
+- 当输入x为整数且|Abs\(x\)\<2^24时，若x为偶数，输出参数c返回1.0；若x为奇数，输出参数c返回-1.0。
+- 当输入x=n+0.5，n为偶数，输出参数s返回1.0，n为奇数，输出参数s返回-1.0。
+- 当输入x=n+0.5，输出参数c返回0.0。
+- 当输入x为inf、-inf或nan时，输出参数s和c均为nan。
 
 ## 约束说明
 
@@ -93,7 +97,7 @@ inline void sincospif(float x, float *s, float *c)
 输入输出示例如下：
 
 ```
-x：0.25, 0.75, 1.25, 1.75
-sin_result: 0.7071068 0.7071068 -0.7071069 -0.7071065
-cos_result: 0.7071068 -0.7071068 -0.7071066 0.707107
+x: 0.25, 0.75, 1.25, 1.75
+sin_result: 0.7071068, 0.7071068, -0.7071069, -0.7071065
+cos_result: 0.7071068, -0.7071068, -0.7071066, 0.707107
 ```

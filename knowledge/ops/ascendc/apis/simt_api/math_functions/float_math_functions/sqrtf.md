@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/sqrtf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据`x`的平方根。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002516816361.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002516816361.png)
 
 ## 函数原型
 
@@ -98,10 +98,9 @@ inline float sqrtf(float x)
 输入输出示例如下：
 
 ```
-x：0.25, 1.25, 2.25, 3.25
-result: 0.5 1.118034 1.5 1.802776
+x: 0.25, 1.25, 2.25, 3.25
+result: 0.5, 1.118034, 1.5, 1.802776
 ```
-
 
 - [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)
 - [RmsNorm 950 Direct Invoke 算子知识](../../../../operators/direct/nn/norm/rms_norm_950.md)

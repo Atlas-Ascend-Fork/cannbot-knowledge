@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_structures/LocalTensor/SetBufferLen.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -26,7 +26,7 @@ source_headers:
 
 ## 功能说明<a name="section618mcpsimp"></a>
 
-设置Buffer长度。当用户调用operator\[\]函数创建新LocalTensor时，建议调用该接口设置新LocalTensor长度，便于编译器对内存及同步进行自动优化。
+设置Buffer的元素个数。当用户调用operator\[\]函数创建新LocalTensor时，建议调用该接口设置新LocalTensor的元素个数，便于编译器对内存及同步进行自动优化。
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -68,7 +68,7 @@ __aicore__ inline void SetBufferLen(uint32_t dataLen)
 ## 调用示例<a name="section17531157161314"></a>
 
 ```cpp
-// 示例SetBufferLen如下示例将申请的Tensor长度修改为1024(单位为字节)
+// 如下示例将申请的Tensor长度修改为1024个元素，float类型对应4096字节
 AscendC::LocalTensor<float> tmpBuffer2 = tempBmm2Queue.AllocTensor<float>();
 tmpBuffer2.SetBufferLen(1024);
 ```

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/quick_start/simd_programming/hello_world.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -27,27 +27,25 @@ platforms: []
 - **Device端核函数（Kernel）实现**：
 
     后缀名为`*.asc`的代码文件包含Host端与Device端代码，其Device端部分示例如下：
+
     ```cpp
     __global__ __vector__ void hello_world()
     {
         printf("Hello World!!!\n");
     }
     ```
+
     > [!NOTE]说明
     > - SIMD算子的核函数（Kernel）需要额外的修饰符，如[`__vector__`](../../../programming_guide/language_extension/simd_builtin_keywords.md)修饰符说明该算子仅在向量计算单元上执行。
     
 - **Host端代码实现**：
  
     Host端通过<<<>>>语法糖调用Device端代码片段。
+
     ```cpp
     int main(int argc, char const* argv[])
     {
         ...
-        constexpr uint32_t numBlocks = 8;
-        ...
-        
-        aclrtStream stream = nullptr;
-        aclrtCreateStream(&stream);
         // Launch kernel <<<numBlocks, dynUBufSize, stream>>>
         // numBlocks : Number of blocks. Default to 8 in this example.
         // dynUBufSize : Dynamic unified buffer size. Default to 0 in this example.
@@ -57,24 +55,44 @@ platforms: []
     }
     ```
 
-- **算子编译与运行**：
- 
+- **算子编译与运行**：  
+
+    本样例完整代码（hello_world.asc）如下：
+    ```cpp
+    #include "utils/debug/asc_printf.h"
+    #include "acl/acl.h"
+
+    __global__ __vector__ void hello_world() { printf("Hello World!!!\n"); }
+
+    int main(int argc, char const* argv[])
+    {
+        aclInit(nullptr);
+        aclrtSetDevice(0); // Acquire runtime management resources.
+        hello_world<<<8, 0, nullptr>>>();
+        aclrtSynchronizeDevice();
+        aclrtResetDevice(0); // Release runtime resources.
+        aclFinalize();
+        return 0;
+    }
+    ```
+    运行如下命令进行编译运行：
     ```bash
     bisheng hello_world.asc --npu-arch=dav-2201 -o demo
     ./demo
     ```
+
     执行本样例，将打印了核号和`Hello World!!!`信息。
 
     > [!NOTE]说明
     >- 该样例支持如下型号：
     >    
-    >    - Ascend 950PR/Ascend 950DT
+    >    - Ascend 950PR&950DT系列产品
     >    
     >    
-    >    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    >    - Atlas A3系列产品
     >    
     >    
-    >    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    >    - Atlas A2系列产品
     >    
     > - 编译选项`--npu-arch`用于指定NPU架构版本，`dav-`后为架构版本号，请替换为您实际使用的版本。各AI处理器型号对应的架构版本号请通过[AI处理器型号和 \_\_NPU\_ARCH\_\_ 的对应关系](../../../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)查询。
 

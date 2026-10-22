@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_math_functions/htanh.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据的双曲正切值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002576421043.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002576421043.png)
 
 ## 函数原型
 
@@ -81,3 +81,10 @@ inline bfloat16_t htanh(bfloat16_t x)
         dst[idx] = htanh(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0.0, 0.5, -0.5, 1.0, -1.0, 2.0, -2.0, 4.0
+result: 0.0, 0.462891, -0.462891, 0.761719, -0.761719, 0.964844, -0.964844, 1.0
+```

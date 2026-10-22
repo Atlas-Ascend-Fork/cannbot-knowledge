@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__int2bfloat16_rz.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,3 +81,10 @@ inline bfloat16_t __int2bfloat16_rz(const int x)
         dst[idx] = __int2bfloat16_rz(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 129, 257, 258, 259, -129, -258, 1000000, -1000000
+result: 129.0, 256.0, 258.0, 258.0, -129.0, -258.0, 999424.0, -999424.0
+```

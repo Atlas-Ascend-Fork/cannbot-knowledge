@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_math_functions/hexp10.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 指定输入x，获取10的x次方。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002545900862.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002545900862.png)
 
 ## 函数原型
 
@@ -56,9 +56,7 @@ inline bfloat16_t hexp10(bfloat16_t x)
 
 ## 约束说明
 
-
-针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。
-
+无
 
 ## 调用示例
 
@@ -91,3 +89,10 @@ inline bfloat16_t hexp10(bfloat16_t x)
         dst[idx] = hexp10(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -3.0, -2.0, -1.0, 0.0, 0.5, 1.0, 2.0, 3.0
+result: 0.000999451, 0.0100098, 0.100098, 1.0, 3.15625, 10.0, 100.0, 1000.0
+```

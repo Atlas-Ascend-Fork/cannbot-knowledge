@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Tiling/SetBiasType.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 
 ## 功能说明
 
-设置Bias的位置，数据格式，数据类型等信息，这些信息需要和kernel侧的设置保持一致。
+设置Bias的位置，数据格式，数据类型等信息，这些信息需要和核函数（Kernel）侧的设置保持一致。
 
 ## 函数原型
 

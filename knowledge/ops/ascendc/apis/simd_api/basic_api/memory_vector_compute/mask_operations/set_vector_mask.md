@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/mask_operations/SetVectorMask.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -85,7 +85,7 @@ source_headers:
 - 该接口仅在矢量计算API的isSetMask模板参数为false时生效，使用完成后需要使用[ResetMask](reset_mask.md)将mask恢复为默认值。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品，mask = 0表示指令不会执行计算操作，该接口将被视为NOP（空操作）。
+- 针对Atlas A3系列产品、Atlas A2系列产品，mask = 0表示指令不会执行计算操作，该接口将被视为NOP（空操作）。
 
 
 ## 调用示例<a name="section837496171220"></a>
@@ -142,7 +142,6 @@ source_headers:
     ```
 
 更多示例请参考[接口外设置Mask](../simd_compute/mask.md#接口外设置mask)。
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [ClippedSwiglu A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu.md)

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/matrix_compute_move_out_interface_boundary_value_summary.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -22,14 +22,14 @@ platforms: []
 
 | 搬运路径 | 基础API | C API |
 |---|---|---|
-| L0C Buffer->GM | [Fixpipe（L0C到GM）](../simd_api/basic_api/cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_gm.md) | [asc_copy_l0c2gm](../simd_api/c_api/cube_datamove/asc_copy_l0c2gm/asc_copy_l0c2gm_arch_3510.md) |
-| L0C Buffer->L1 Buffer | [Fixpipe（L0C到L1）](../simd_api/basic_api/cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_l1.md) | [asc_copy_l0c2l1](../simd_api/c_api/cube_datamove/asc_copy_l0c2l1/asc_copy_l0c2l1_arch_3510.md) |
-| L0C Buffer->UB | [Fixpipe（L0C到UB）](../simd_api/basic_api/cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_ub.md) | [asc_copy_l0c2ub](../simd_api/c_api/cube_datamove/asc_copy_l0c2ub.md) |
+| L0C Buffer->GM | [Fixpipe（L0C到GM）](../simd_api/basic_api/cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_gm.md) | [asc_copy_l0c2gm](../simd_api/c_api/cube_datamove/cube_compute_store/asc_copy_l0c2gm_arch_3510.md) |
+| L0C Buffer->L1 Buffer | [Fixpipe（L0C到L1）](../simd_api/basic_api/cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_l1.md) | [asc_copy_l0c2l1](../simd_api/c_api/cube_datamove/cube_compute_store/asc_copy_l0c2l1_arch_3510.md) |
+| L0C Buffer->UB | [Fixpipe（L0C到UB）](../simd_api/basic_api/cube_compute_isasi/cube_compute_store/fixpipe_l0_c_to_ub.md) | [asc_copy_l0c2ub](../simd_api/c_api/cube_datamove/cube_compute_store/asc_copy_l0c2ub.md) |
 
 以下内容针对如下型号生效：
 
 
-- Ascend 950PR/Ascend 950DT
+- Ascend 950PR&950DT系列产品
 
 
 ## 概述

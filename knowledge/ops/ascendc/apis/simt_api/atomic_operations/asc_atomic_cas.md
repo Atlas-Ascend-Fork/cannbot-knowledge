@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/atomic_operations/asc_atomic_cas.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -153,7 +153,6 @@ owner before: 0
 owner after: 101/102/103中的一个 // 表明只有一个线程抢占成功
 claim_result: 仅一个元素为1
 ```
-
 
 - [ScatterMax 950 ACLNN 算子知识](../../../operators/aclnn/nn/index/scatter_max_950.md)
 - [ScatterMin 950 ACLNN 算子知识](../../../operators/aclnn/nn/index/scatter_min_950.md)

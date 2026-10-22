@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/reg_vector_compute_interface_mergemode_support_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -77,7 +77,7 @@ platforms: []
 
 | 接口     | 硬件支持的模板参数枚举值 | 软件支持的模板参数枚举值 |
 | :------- | :----------------------- | :----------------------- |
-| Cast     | MaskMergeMode::ZEROING   | 无                       |
+| Cast     | MaskMergeMode::ZEROING   | MaskMergeMode::MERGING   |
 | Truncate | MaskMergeMode::ZEROING   | 无                       |
 
 **表6**  归约计算接口MergeMode支持情况
@@ -93,4 +93,3 @@ platforms: []
 | 接口      | 硬件支持的模板参数枚举值                       | 软件支持的模板参数枚举值 |
 | :-------- | :--------------------------------------------- | :----------------------- |
 | Duplicate | MaskMergeMode::ZEROING、MaskMergeMode::MERGING | 无                       |
-

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/fusion_operator_programming/general_fusion/operator_impl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 ---
@@ -19,7 +19,7 @@ platforms:
 
 在通算融合类算子的实现中，通信操作使用[Hccl高阶API](../../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/hccl_usage.md)，矩阵乘计算操作使用[Matmul高阶API](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/index.md)。关于更多集合通信的内容和相关概念请参考[《HCCL集合通信库》](https://gitcode.com/cann/hccl/blob/master/docs/zh/user_guide/README.md)。通算融合算子的开发过程与一般算子相同，但请注意，当前通算融合算子暂不支持[核函数（Kernel）直调](../../../../programming_guide/appendix/kernel_direct_call_from_sample.md)和[入图（GE图）开发](../../../../programming_guide/advanced_programming/operator_graph_development/overview.md)，仅支持[单算子API调用](../../../../programming_guide/advanced_programming/aclnn_operator_development/invocation/single_operator_api_call.md)。
 
-下文将以AllGatherMatmulCustom算子（简称AllGatherMatmul）的实现为例，从算子分析、数据流分析、创建算子工程、原型定义、Tiling实现、核函数（Kernel）实现、编译与运行等方面介绍通算融合算子的设计和实现流程。本样例中算子的完整代码请参见[AllGatherMatmul样例](https://gitcode.com/cann/ops-transformer/tree/master/mc2/all_gather_matmul_v2)。该样例仅支持在**Atlas A2 训练系列产品/Atlas A2 推理系列产品**上运行。
+下文将以AllGatherMatmulCustom算子（简称AllGatherMatmul）的实现为例，从算子分析、数据流分析、创建算子工程、原型定义、Tiling实现、核函数（Kernel）实现、编译与运行等方面介绍通算融合算子的设计和实现流程。本样例中算子的完整代码请参见[AllGatherMatmul样例](https://gitcode.com/cann/ops-transformer/tree/master/mc2/all_gather_matmul_v2)。该样例仅支持在**Atlas A2系列产品**上运行。
 
 ## 算子分析<a name="zh-cn_topic_0000002400208581_section59611034123213"></a>
 
@@ -50,9 +50,8 @@ platforms:
     -   算子涉及Matmul左右矩阵在外部存储和内部存储间的数据搬运，查看Ascend C  API参考中的数据搬运接口，需要使用[DataCopy](../../../../../apis/simd_api/basic_api/data_move_guide/overview/data_move_concept.md)来实现数据搬运。
     -   计算过程涉及矩阵计算操作，查看Ascend C  API参考中的矩阵计算相关接口，需要使用[Matmul高阶API](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/index.md)实现矩阵乘计算。
 
-**表1**  AllGatherMatmulCustom算子规格
+**表1**  AllGatherMatmulCustom算子规格<a name="zh-cn_topic_0000002400208581_zh-cn_topic_0000001514387805_zh-cn_topic_0229825559_zh-cn_topic_0229823837_zh-cn_topic_0211294710_table164881913121819"></a>
 
-<a name="zh-cn_topic_0000002400208581_zh-cn_topic_0000001514387805_zh-cn_topic_0229825559_zh-cn_topic_0229823837_zh-cn_topic_0211294710_table164881913121819"></a>
 <table><tbody><tr id="zh-cn_topic_0000002400208581_zh-cn_topic_0000001514387805_zh-cn_topic_0229825559_zh-cn_topic_0229823837_zh-cn_topic_0211294710_row1848911314188"><th class="firstcol" valign="top" id="mcps1.2.6.1.1"><p id="zh-cn_topic_0000002400208581_zh-cn_topic_0000001514387805_zh-cn_topic_0229825559_zh-cn_topic_0229823837_zh-cn_topic_0211294710_p54891613141818"><a name="zh-cn_topic_0000002400208581_zh-cn_topic_0000001514387805_zh-cn_topic_0229825559_zh-cn_topic_0229823837_zh-cn_topic_0211294710_p54891613141818"></a><a name="zh-cn_topic_0000002400208581_zh-cn_topic_0000001514387805_zh-cn_topic_0229825559_zh-cn_topic_0229823837_zh-cn_topic_0211294710_p54891613141818"></a>算子类型（OpType）</p>
 </th>
 <td class="cellrowborder" colspan="4" valign="top" headers="mcps1.2.6.1.1 "><p id="zh-cn_topic_0000002400208581_p13423114244112"><a name="zh-cn_topic_0000002400208581_p13423114244112"></a><a name="zh-cn_topic_0000002400208581_p13423114244112"></a><span>AllGatherMatmulCustom</span></p>
@@ -690,7 +689,7 @@ extern "C" __global__ __aicore__ void all_gather_matmul_custom(__gm__ uint8_t* a
     ├── CustomOp                 // msOpGen生成的AllGatherMatmul自定义算子工程 
     │   ├── cmake 
     │   ├── op_host             // host侧实现文件 
-    │   ├── op_kernel           // kernel侧实现文件 
+    │   ├── op_kernel           // 核函数（Kernel）侧实现文件
     │   ├── scripts             // 自定义算子工程打包相关脚本所在目录 
     │   ├── build.sh            // 编译入口脚本 
     │   ├── CMakeLists.txt      // 算子工程的CMakeLists.txt 

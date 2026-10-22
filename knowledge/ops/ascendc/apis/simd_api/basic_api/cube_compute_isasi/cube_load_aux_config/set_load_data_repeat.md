@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_load_aux_config/SetLoadDataRepeat.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -57,19 +57,19 @@ __aicore__ inline void SetLoadDataRepeat(const LoadDataRepeatParam& repeatParams
 ### dstStride参数支持度说明
 
 
-- 针对Ascend 950PR/Ascend 950DT，新增dstStride参数，调用该接口必须配置参数dstStride。
+- 针对Ascend 950PR&950DT系列产品，新增dstStride参数，调用该接口必须配置参数dstStride。
 
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，不支持该参数。
+- 针对Atlas A2系列产品，不支持该参数。
 
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，不支持该参数。
+- 针对Atlas A3系列产品，不支持该参数。
 
 
 
-- 针对Atlas 200I/500 A2 推理产品，不支持该参数。
+- 针对Atlas 200I/500 A2推理产品，不支持该参数。
 
 
 ## 返回值说明
@@ -82,25 +82,25 @@ __aicore__ inline void SetLoadDataRepeat(const LoadDataRepeatParam& repeatParams
 - repeatTime=0表示LoadData（卷积数据搬运）不执行搬运，LoadData（卷积数据搬运）接口将被视为NOP（空操作）。
 
 
-- 针对Ascend 950PR/Ascend 950DT，调用LoadData（卷积数据搬运）指令时，必须配置本接口中dstStride参数。
+- 针对Ascend 950PR&950DT系列产品，调用LoadData（卷积数据搬运）指令时，必须配置本接口中dstStride参数。
 
 
 - 不同芯片型号，repeatStride的单位不同，具体参考如下：
     
     
-    - Ascend 950PR/Ascend 950DT，repeatStride的单位为32/sizeof(data_type)个元素。
+    - Ascend 950PR&950DT系列产品，repeatStride的单位为32/sizeof(data_type)个元素。
     
 
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品，repeatStride的单位为32/sizeof(data_type)个元素。
+    - Atlas A2系列产品，repeatStride的单位为32/sizeof(data_type)个元素。
     
 
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品，repeatStride的单位为32/sizeof(data_type)个元素。
+    - Atlas A3系列产品，repeatStride的单位为32/sizeof(data_type)个元素。
     
 
     
-    - Atlas 200I/500 A2 推理产品，repeatStride的单位为64/sizeof(data_type)个元素。
+    - Atlas 200I/500 A2推理产品，repeatStride的单位为64/sizeof(data_type)个元素。
     
 
 ## 调用示例<a name="section642mcpsimp"></a>
@@ -125,6 +125,5 @@ AscendC::SetLoadDataRepeat(repeatParams);
 
 AscendC::LoadData(a2Local, a1Local, loadDataParams);
 ```
-
 
 - [Conv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/conv_2d_950.md)

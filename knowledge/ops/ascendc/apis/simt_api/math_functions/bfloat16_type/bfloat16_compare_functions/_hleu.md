@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_compare_functions/__hleu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -77,3 +77,11 @@ bool __hleu(bfloat16_t x, bfloat16_t y)
         dst[idx] = __hleu(x[idx], y[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.0, 0.5, 2.0, 2.0, nan, 1.0, inf, -inf
+y: 0.5, 0.5, 2.0, 3.0, 1.0, nan, inf, 0.0
+result: true, true, true, true, true, true, true, true
+```

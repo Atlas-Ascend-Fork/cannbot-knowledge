@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_gather_datablock_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_gather_datablock_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_gather/asc_gather_datablock.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_gather_datablock_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_gather/asc_gather_datablock.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 给定一个输入的矢量和一个地址偏移矢量，根据偏移地址按照DataBlock的粒度将输入矢量收集到目的矢量中。
 
@@ -59,6 +59,7 @@ source_headers:
 PIPE_V
 
 ## 约束说明
+
 - src_offset取值应保证src元素类型位宽对齐。
 - src加上src_offset偏移后的地址不能超出Unified Buffer（UB）大小数据的范围。
 - dst、src的起始地址需要32字节对齐。

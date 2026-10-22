@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_UBToL1_continuous.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -61,19 +61,20 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>&
 源矩阵和目的矩阵支持的数据类型保持一致。
 
 
-针对Ascend 950PR/Ascend 950DT，支持数据类型为：bool、int8_t、uint8_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
+针对Ascend 950PR&950DT系列产品，支持数据类型为：bool、int8_t、uint8_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
 
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、bfloat16_t、float、double。
+针对Atlas A3系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、bfloat16_t、float、double。
 
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、bfloat16_t、float、double。
+针对Atlas A2系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、bfloat16_t、float、double。
 
 
 
-针对Atlas 推理系列产品AI Core，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
+针对Atlas推理系列产品AI Core，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
+
 
 
 ## 返回值说明
@@ -90,18 +91,18 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>&
 - 针对如下产品型号：
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品；
+    Atlas A3系列产品；
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品；
+    Atlas A2系列产品；
     
 
     在跨卡通信算子开发场景，DataCopy类接口支持跨卡数据搬运，仅支持HCCS物理链路，不支持其他通路；开发者开发过程中，需要关注涉及卡间通信的物理通路，可通过npu-smi info -t topo命令查询HCCS物理链路。
 
 
 
-- 针对Ascend 950PR/Ascend 950DT，在UB->L1 Buffer的数据搬运时，可以通过配置编译选项[ENABLE_CV_COMM_VIA_SSBUF](../../../../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#内置编译宏开关)来选择两种搬运通路，当ENABLE_CV_COMM_VIA_SSBUF配置为true时，使用SSBuffer进行通信，数据通过UB->L1 Buffer之间的硬件通道进行搬运（推荐），参考样例[硬通道搬运](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_ub2l1)；当ENABLE_CV_COMM_VIA_SSBUF为false时，数据搬运到L1 Buffer经过GM，该场景下需要借助Matmul高阶API进行注册操作。
+- 针对Ascend 950PR&950DT系列产品，在UB->L1 Buffer的数据搬运时，可以通过配置编译选项[ENABLE_CV_COMM_VIA_SSBUF](../../../../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#内置编译宏开关)来选择两种搬运通路，当ENABLE_CV_COMM_VIA_SSBUF配置为true时，使用SSBuffer进行通信，数据通过UB->L1 Buffer之间的硬件通道进行搬运（推荐），参考样例[硬通道搬运](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_ub2l1)；当ENABLE_CV_COMM_VIA_SSBUF为false时，数据搬运到L1 Buffer经过GM，该场景下需要借助Matmul高阶API进行注册操作。
 
 
 ## 调用示例

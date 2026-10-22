@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -46,9 +46,7 @@ Matmul量化/反量化包含两种模式：同一系数的量化/反量化模式
 
 需要对矩阵计算结果进行量化/反量化操作的场景，当前该场景下，Matmul输入输出矩阵支持的数据类型如下表所示。
 
-**表2**  Matmul量化/反量化支持的数据类型
-
-<a name="zh-cn_topic_0000002298767893_table1996113269499"></a>
+**表2**  Matmul量化/反量化支持的数据类型<a name="zh-cn_topic_0000002298767893_table1996113269499"></a>
 
 | A矩阵 | B矩阵 | C矩阵 | 支持平台 |
 | --- | --- | --- | --- |

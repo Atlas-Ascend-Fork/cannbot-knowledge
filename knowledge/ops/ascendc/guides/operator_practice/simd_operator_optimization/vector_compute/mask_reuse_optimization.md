@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/vector_compute/mask_reuse_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,10 +19,10 @@ platforms: []
 >[!NOTE]说明 
 >该性能优化建议适用于如下产品型号：
 >
->- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+>- Atlas A3系列产品
 >
 >
->- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+>- Atlas A2系列产品
 >
 
 【优先级】高

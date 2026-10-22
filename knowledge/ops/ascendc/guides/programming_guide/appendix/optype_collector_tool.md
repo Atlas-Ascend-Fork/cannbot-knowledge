@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/optype_collector_tool.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -75,26 +75,26 @@ optype_collector工具用于采集内置/自定义算子包中指定AI处理器�
     >
     >- 针对如下产品：在安装AI处理器的服务器执行`npu-smi info`命令进行查询，获取Name信息。实际配置值为AscendName，例如Name取值为xxxyy，实际配置值为Ascendxxxyy。<br><br>
     >    
-    >    Atlas A2 训练系列产品/Atlas A2 推理系列产品  
+    >    Atlas A2系列产品  
     >    
     >
     >    
-    >    Atlas 200I/500 A2 推理产品  
+    >    Atlas 200I/500 A2推理产品  
     >    
     >
     >    
-    >    Atlas 推理系列产品  
+    >    Atlas推理系列产品  
     >    
     >
     >    
-    >    Atlas 训练系列产品<br><br> 
+    >    Atlas训练系列产品<br><br> 
     >    
     >
     >
-    >- 针对<term>Atlas A3 训练系列产品</term>/<term>Atlas A3 推理系列产品</term>，在安装AI处理器的服务器执行`npu-smi info -t board -i <id> -c <chip_id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。其中：<br>`id`：设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。<br>`chip_id`：芯片id，通过`npu-smi info -m`命令查出的Chip ID即为芯片id，命令中表示为`<chip_id>`。<br><br>
+    >- 针对Atlas A3系列产品，在安装AI处理器的服务器执行`npu-smi info -t board -i <id> -c <chip_id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。其中：<br>`id`：设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。<br>`chip_id`：芯片id，通过`npu-smi info -m`命令查出的Chip ID即为芯片id，命令中表示为`<chip_id>`。<br><br>
     >
     >
-    >- 针对Ascend 950PR/Ascend 950DT，在安装AI处理器的服务器执行`npu-smi info -t board -i <id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。<br>其中：`id`为设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。
+    >- 针对Ascend 950PR&950DT系列产品，在安装AI处理器的服务器执行`npu-smi info -t board -i <id>`命令进行查询，获取Chip Name和NPU Name信息，实际配置值为`Chip Name_NPU Name`。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。<br>其中：`id`为设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。
     >
 
 -   **输出内置算子OpType清单的命令**
@@ -149,9 +149,7 @@ optype_collector工具用于采集内置/自定义算子包中指定AI处理器�
     | ---- | ---- | ---- |
     | `--detect-conflicts {soc_version}` | 必选 | 检测指定AI处理器版本下自定义算子OpType是否与CANN内置算子OpType或其他自定义算子OpType重名。`{soc_version}`表示待检测的AI处理器型号，可填写CANN支持的产品AI处理器型号。 |
 
-## 返回值<a name="section_optype_collector_return_code"></a>
-
-<a name="table_optype_collector_return_code"></a>
+## 返回值<a name="section_optype_collector_return_code"></a><a name="table_optype_collector_return_code"></a>
 
 | 返回值 | 说明 |
 | ---- | ---- |
@@ -161,9 +159,7 @@ optype_collector工具用于采集内置/自定义算子包中指定AI处理器�
 
 ## 输出说明<a name="section_optype_collector_output"></a>
 
-工具执行后会根据命令模式输出如下信息。
-
-<a name="table_optype_collector_output"></a>
+工具执行后会根据命令模式输出如下信息。<a name="table_optype_collector_output"></a>
 
 | 输出项 | 说明 |
 | ---- | ---- |

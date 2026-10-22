@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TPipe/Reset.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -33,7 +33,7 @@ source_headers:
 完成资源的释放与eventId等变量的初始化操作，恢复到TPipe的初始化状态。
 
 
-针对Ascend 950PR/Ascend 950DT，调用该接口后，CTRL\[48\]保持原值，CTRL\[60\]复位为1。CTRL寄存器比特位说明请见[SetCtrlSpr](../../special_register_access/set_ctrl_spr_isasi.md)。
+针对Ascend 950PR&950DT系列产品，调用该接口后，CTRL\[48\]保持原值，CTRL\[60\]复位为1。CTRL寄存器比特位说明请见[SetCtrlSpr](../../special_register_access/set_ctrl_spr_isasi.md)。
 
 
 ## 函数原型<a name="section620mcpsimp"></a>
@@ -63,7 +63,6 @@ for (int i = 0; i < 2; i++) {
     pipe.Reset();
 }
 ```
-
 
 - [MaskedSelect 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/masked_select_950.md)
 - [SwigluGroupQuantGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swiglu_group_quant_grad_950.md)

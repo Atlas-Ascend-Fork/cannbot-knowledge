@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__umul64hi.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入uint64类型数据`x`和`y`乘积的高64位。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002531050522.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002531050522.png)
 
 ## 函数原型
 
@@ -76,3 +76,11 @@ unsigned long long __umul64hi(unsigned long long x, unsigned long long y)
         dst[idx] = __umul64hi(x[idx], y[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 4294967296, 4294967296, 8589934592, 17179869184, 18446744073709551615, 3, 5, 0
+y: 4294967296, 8589934592, 4294967296, 4294967296, 18446744073709551615, 3, 5, 0
+result: 1, 2, 2, 4, 18446744073709551614, 0, 0, 0
+```

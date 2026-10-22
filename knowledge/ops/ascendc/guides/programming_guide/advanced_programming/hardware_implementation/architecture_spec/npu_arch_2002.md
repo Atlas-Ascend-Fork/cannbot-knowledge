@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_2002.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 本节介绍\_\_NPU\_ARCH\_\_版本号为2002的硬件架构和其功能说明。对应的产品型号为:
 
 
--   Atlas 推理系列产品
+-   Atlas推理系列产品
 
 
 ## 硬件架构图<a name="section166031113713"></a>
@@ -47,9 +47,8 @@ platforms: []
 
 开发者可以通过[平台信息获取](../../../../../apis/utils_api/platform_info/index.md)接口查询各存储单元的内存空间大小。
 
-**各存储单元的最小访问粒度（对齐要求）**
+**各存储单元的最小访问粒度（对齐要求）**<a name="table12348145512210"></a>
 
-<a name="table12348145512210"></a>
 <table><thead align="left"><tr id="row3348175522218"><th class="cellrowborder" valign="top" width="49.980000000000004%" id="mcps1.1.3.1.1"><p id="p5348145515229"><a name="p5348145515229"></a><a name="p5348145515229"></a>存储单元</p>
 </th>
 <th class="cellrowborder" valign="top" width="50.019999999999996%" id="mcps1.1.3.1.2"><p id="p16348125520221"><a name="p16348125520221"></a><a name="p16348125520221"></a>对齐要求</p>

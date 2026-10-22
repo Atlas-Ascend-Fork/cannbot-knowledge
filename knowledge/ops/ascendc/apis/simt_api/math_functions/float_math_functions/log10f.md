@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/log10f.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取以10为底，输入数据的对数。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002516816341.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002516816341.png)
 
 ## 函数原型
 
@@ -94,9 +94,8 @@ inline float log10f(float x)
 输入输出示例如下：
 
 ```
-x：1, 2, 3, 4
-result: 0 0.30103 0.4771213 0.60206
+x: 1, 2, 3, 4
+result: 0, 0.30103, 0.4771213, 0.60206
 ```
-
 
 - [ForeachLog10 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log10_950.md)

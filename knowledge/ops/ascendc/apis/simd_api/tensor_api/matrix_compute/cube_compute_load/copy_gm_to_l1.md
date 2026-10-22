@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/cube_compute_load/copy_gm_to_l1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -46,7 +46,7 @@ Tensor API通过`copy`接口统一执行不同通路数据搬运。该接口用�
         const DstTensor& dst, const SrcTensor& src)
     ```
 
-- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait执行Global Memory到L1 Buffer搬运。
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用[默认trait](../../algorithm.md#copy_traits)执行Global Memory到L1 Buffer搬运。
 
     ```cpp
     template <typename DstTensor, typename SrcTensor>
@@ -109,7 +109,7 @@ Global Memory到L1 Buffer通路使用`copy_gm_to_l1{}`作为`operation`，使用
 
 | 参数名 | 输入/输出 | 描述 |
 | :--- | :---: | :--- |
-| atom | 输入 | 搬运原子对象，可由`make_copy`接口构造。 |
+| atom | 输入 | 搬运原子对象，封装特定搬运通路的Operation、Trait与可选运行时Params组合，可由`make_copy`接口构造，详见[Algorithm](../../algorithm.md#copy_atom)。 |
 | dst | 输出 | 目的张量，存储位置为`location::l1`。 |
 | src | 输入 | 源张量，存储位置为`location::gm`。 |
 | dst_coord | 输入 | 搬运区域在目的张量中的起始坐标，也可传入`zero_coord`。 |

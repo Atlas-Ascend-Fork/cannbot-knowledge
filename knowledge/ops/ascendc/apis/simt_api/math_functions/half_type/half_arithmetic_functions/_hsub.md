@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_arithmetic_functions/__hsub.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -124,3 +124,11 @@ half __hsub(const half x, const half y)
         dst[idx] = __hsub(x[idx], y[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: -1.25, 0.5, 2.5, -3.75
+y: -0.5, 0.5, 1.25, 2.0
+result: -0.75, 0, 1.25, -5.75
+```

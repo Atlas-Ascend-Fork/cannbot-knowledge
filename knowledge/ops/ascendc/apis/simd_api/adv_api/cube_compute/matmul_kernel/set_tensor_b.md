@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetTensorB.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -42,11 +42,11 @@ __aicore__ inline void SetTensorB(SrcBT bScalar)
 ```
 
 
-Atlas 推理系列产品AI Core不支持SetTensorB\(SrcBT bScalar\)接口原型。
+Atlas推理系列产品AI Core不支持SetTensorB\(SrcBT bScalar\)接口原型。
 
 
 
-Atlas 200I/500 A2 推理产品，不支持SetTensorB\(SrcBT bScalar\)接口原型。
+Atlas 200I/500 A2推理产品，不支持SetTensorB\(SrcBT bScalar\)接口原型。
 
 
 ## 参数说明
@@ -77,61 +77,61 @@ Atlas 200I/500 A2 推理产品，不支持SetTensorB\(SrcBT bScalar\)接口原�
 -   gm和rightMatrix支持的数据类型<a id="li12616155731720"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16_t、int8_t、float、fp8_e4m3fn_t、fp8_e5m2_t、hifloat8_t。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16_t、int8_t、float、fp8_e4m3fn_t、fp8_e5m2_t、hifloat8_t。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int4b_t、half、bfloat16_t、int8_t、float。
+    Atlas A3系列产品，支持的数据类型为：int4b_t、half、bfloat16_t、int8_t、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int4b_t、half、bfloat16_t、int8_t、float。
+    Atlas A2系列产品，支持的数据类型为：int4b_t、half、bfloat16_t、int8_t、float。
     
 
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、int8_t、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、int8_t、float。
     
 
     
-    Atlas 200I/500 A2 推理产品，支持的数据类型为：half、bfloat16_t、int8_t、float。
+    Atlas 200I/500 A2推理产品，支持的数据类型为：half、bfloat16_t、int8_t、float。
     
 
     
-    Kirin X90，支持的数据类型为：half、int8_t。
+    Kirin X90处理器系列产品，支持的数据类型为：half、int8_t。
     
 
     
-    Kirin 9030，支持的数据类型为：half。
+    Kirin 9030处理器系列产品，支持的数据类型为：half。
     
 
 -   bScalar支持的数据类型<a id="li12616155731723"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、float。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float。
+    Atlas A3系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float。
+    Atlas A2系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas 推理系列产品AI Core，不支持该参数。
+    Atlas推理系列产品AI Core，不支持该参数。
     
 
     
-    Atlas 200I/500 A2 推理产品，不支持该参数。
+    Atlas 200I/500 A2推理产品，不支持该参数。
     
 
     
-    Kirin X90，支持的数据类型为：half。
+    Kirin X90处理器系列产品，支持的数据类型为：half。
     
 
     
-    Kirin 9030，支持的数据类型为：half。
+    Kirin 9030处理器系列产品，支持的数据类型为：half。
     
 
 
@@ -155,7 +155,6 @@ mm.SetTensorB(local_a, isTransposeB);
 // 示例三：设置标量数据
 mm.SetTensorB(scalar_a, isTransposeB);
 ```
-
 
 - [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)
 - [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Kernel/BatchWrite.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -26,11 +26,11 @@ source_headers:
 集合通信BatchWrite的任务下发接口，返回该任务的标识handleId给用户。BatchWrite实现了一种点对点通信，这是一种直接传输数据的通信模式，能够同时将多份数据发送到不同的Global Memory地址上。
 
 
-对于Atlas A3 训练系列产品/Atlas A3 推理系列产品，BatchWrite通信支持在相同或不同的昇腾AI Server之间进行。
+对于Atlas A3系列产品，BatchWrite通信支持在相同或不同的昇腾AI Server之间进行。
 
 
 
-对于Atlas A2 训练系列产品/Atlas A2 推理系列产品，BatchWrite通信必须在不同昇腾AI Server（通常是8卡或16卡的昇腾NPU设备组成的服务器形态的统称）之间进行。
+对于Atlas A2系列产品，BatchWrite通信必须在不同昇腾AI Server（通常是8卡或16卡的昇腾NPU设备组成的服务器形态的统称）之间进行。
 
 
 **图1**  BatchWrite示意图  
@@ -61,7 +61,7 @@ __aicore__ inline HcclHandle BatchWrite(GM_ADDR batchWriteInfo, uint32_t itemNum
 
 
 ```
-// Atlas A3 训练系列产品/Atlas A3 推理系列产品
+// Atlas A3系列产品
 struct BatchWriteItem {
     uint64_t type;
     uint32_t res1[5];
@@ -77,7 +77,7 @@ struct BatchWriteItem {
 
 
 ```
-// Atlas A2 训练系列产品/Atlas A2 推理系列产品
+// Atlas A2系列产品
 struct BatchWriteItem {
     uint64_t localBuf;
     uint64_t remoteBuf;
@@ -98,7 +98,7 @@ struct BatchWriteItem {
 -   若HCCL对象的[config模板参数](hccl_template_params.md#hccl-template-params)未指定下发通信任务的核，该接口只能在AIC核或者AIV核两者之一上调用。若HCCL对象的[config模板参数](hccl_template_params.md#hccl-template-params)中指定了下发通信任务的核，则该接口可以在AIC核和AIV核上同时调用，接口内部会根据指定的核的类型，只在AIC核、AIV核二者之一下发该通信任务。
 -   一个通信域内，所有Prepare接口和InterHcclGroupSync接口的总调用次数不能超过63。
 
--   对于Atlas A2 训练系列产品/Atlas A2 推理系列产品，当前接口仅支持不同AI Server间的通信，同时通信任务信息中指定的目的卡号不能是本卡号。
+-   对于Atlas A2系列产品，当前接口仅支持不同AI Server间的通信，同时通信任务信息中指定的目的卡号不能是本卡号。
 
 -   通信任务信息写入batchWriteInfo前，必须通过调用[DataCacheCleanAndInvalid](../../../basic_api/cache_control/data_cache_clean_and_invalid.md)接口，保证预期的数据成功刷新到Global Memory上。
 
@@ -107,7 +107,7 @@ struct BatchWriteItem {
 
 -   不同AI Server之间的点对点通信
 
-    在Atlas A2 训练系列产品/Atlas A2 推理系列产品上，假设本卡要将不同的数据分别发送到其它AI Server的2卡、3卡的指定位置，通过调用一次BatchWrite接口，实现批量点对点通信。
+    在Atlas A2系列产品上，假设本卡要将不同的数据分别发送到其它AI Server的2卡、3卡的指定位置，通过调用一次BatchWrite接口，实现批量点对点通信。
 
     ```
     struct BatchWriteItem {
@@ -186,7 +186,7 @@ struct BatchWriteItem {
 
 -   <a name="batchwrite_multi_queue"></a>多个队列的点对点通信
 
-    在Atlas A3 训练系列产品/Atlas A3 推理系列产品上，假设要将一段数据分别拷贝到两个不同的Global Memory上，可以通过调用一次BatchWrite接口，实现批量点对点通信。
+    在Atlas A3系列产品上，假设要将一段数据分别拷贝到两个不同的Global Memory上，可以通过调用一次BatchWrite接口，实现批量点对点通信。
 
     ```
     struct BatchWriteItem {
@@ -276,8 +276,6 @@ struct BatchWriteItem {
         return ge::GRAPH_SUCCESS;
     }
     ```
-
-
 
 - [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)
 - [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)

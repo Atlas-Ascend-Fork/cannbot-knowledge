@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_gm2l1_sync_2d_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_gm2l1_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_gm2l1/asc_copy_gm2l1_2d_arch_3510.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_gm2l1_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_gm2l1_2d_arch_3510.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将数据从Global Memory搬运到L1 Buffer。以512字节的分形为单位，从GM中按行列方向的起始位置、步长切分提取多个分形矩阵搬运到L1 Buffer，搬运过程中不支持分形格式转换，用于矩阵计算所需的2D格式数据加载。
 
@@ -32,9 +32,8 @@ source_headers:
 
 ## 函数原型
 
-### 模板原型（占位符形式）
-
 ```cpp
+// 占位符形式
 __aicore__ inline void asc_copy_gm2l1_sync(__cbuf__ <dtype>* dst,
                                            __gm__ <dtype>* src,
                                            uint32_t m_start_position,
@@ -46,9 +45,9 @@ __aicore__ inline void asc_copy_gm2l1_sync(__cbuf__ <dtype>* dst,
                                            uint8_t l2_cache_ctl)
 ```
 
-### dtype支持的数据类型
+### dtype支持数据类型
 
-dtype支持的数据类型为`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`void`。
+`dtype`取值为：`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`void`。
 
 ## 参数说明
 
@@ -90,7 +89,7 @@ PIPE_MTE2
 - 本接口非AIC调用直接返回。
 - dst起始地址需32字节对齐（L1 Buffer对齐要求），否则会导致搬运异常。
 - src起始地址需1字节对齐（Global Memory对齐要求），否则会导致搬运异常。
-- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
 - L1 Buffer容量上限：L1 Buffer总容量512KB，dst偏移量与搬运大小之和不可越界，否则触发异常。
 
 ### 2D矩阵搬运模式约束
@@ -106,14 +105,14 @@ PIPE_MTE2
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng examples.asc -o main --npu-arch=dav-3510 && ./main
 ```
 
 
-样例中A、B、C矩阵的shape均为[128,128]，数据格式均为Nz。A和B在GM中以Nz格式存储，分别按8个分形列循环调用本接口的2D矩阵搬运重载搬运到L1 Buffer，每次搬运一个分形列。随后A经[asc_copy_l12l0a](../cube_datamove/asc_copy_l12l0a/asc_copy_l12l0a_2d_arch_3510.md)搬运到L0A Buffer，B经[asc_copy_l12l0b_transpose](../cube_datamove/asc_copy_l12l0b/asc_copy_l12l0b_2d_arch_3510.md)搬运到L0B Buffer，调用[asc_mmad](../cube_compute/asc_mmad.md)完成计算。C从L0C Buffer搬出到GM时关闭Nz2ND和Nz2DN，保持Nz格式。样例单核占用64KB L1 Buffer、32KB L0A Buffer、32KB L0B Buffer和64KB L0C Buffer。样例依次复用`EVENT_ID0`完成MTE2到MTE1、MTE1到M、M到FIX的同步。
+样例中A、B、C矩阵的shape均为[128,128]，数据格式均为Nz。A和B在GM中以Nz格式存储，分别按8个分形列循环调用本接口的2D矩阵搬运重载搬运到L1 Buffer，每次搬运一个分形列。随后A经[asc_copy_l12l0a](../cube_datamove/cube_compute_load/asc_copy_l12l0a_2d_arch_3510.md)搬运到L0A Buffer，B经[asc_copy_l12l0b_transpose](../cube_datamove/cube_compute_load/asc_copy_l12l0b_2d_arch_3510.md)搬运到L0B Buffer，调用[asc_mmad](../cube_compute/mmad_compute/asc_mmad.md)完成计算。C从L0C Buffer搬出到GM时关闭Nz2ND和Nz2DN，保持Nz格式。样例单核占用64KB L1 Buffer、32KB L0A Buffer、32KB L0B Buffer和64KB L0C Buffer。样例依次复用`EVENT_ID0`完成MTE2到MTE1、MTE1到M、M到FIX的同步。
 
 ```cpp
 #include <cstdint>

@@ -82,10 +82,8 @@
 - [asc_copy_gm2ub_sync_arch_2201（废弃）](asc_copy_gm2ub_sync_arch_2201_deprecated.md)：头文件路径为："c_api/composite/vector_compute_composite.h"。
 - [asc_copy_gm2ub_sync_arch_3510（废弃）](asc_copy_gm2ub_sync_arch_3510_deprecated.md)：头文件路径为："c_api/composite/vector_compute_composite.h"。
 - [asc_copy_l0c2gm_sync_arch_2201（废弃）](asc_copy_l0c2gm_sync_arch_2201_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
-- [asc_copy_l0c2gm_sync_arch_3510（废弃）](asc_copy_l0c2gm_sync_arch_3510_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
 - [asc_copy_l0c2l1_sync_arch_2201（废弃）](asc_copy_l0c2l1_sync_arch_2201_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
 - [asc_copy_l0c2l1_sync_arch_3510（废弃）](asc_copy_l0c2l1_sync_arch_3510_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
-- [asc_copy_l0c2ub_sync（废弃）](asc_copy_l0c2ub_sync_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
 - [asc_copy_l12bt_sync_arch_2201（废弃）](asc_copy_l12bt_sync_arch_2201_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
 - [asc_copy_l12bt_sync_arch_3510（废弃）](asc_copy_l12bt_sync_arch_3510_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
 - [asc_copy_l12fb_sync_arch_2201（废弃）](asc_copy_l12fb_sync_arch_2201_deprecated.md)：头文件路径为："c_api/composite/cube_datamove_composite.h"。
@@ -220,3 +218,23 @@
 - [asc_uint82half_sync（废弃）](asc_uint82half_sync_deprecated.md)：头文件路径为："c_api/composite/vector_compute_composite.h"。
 - [asc_uint82uint32（废弃）](asc_uint82uint32_deprecated.md)：头文件路径为："c_api/reg_compute/reg_convert.h"。
 - [asc_vdeq_int162b8_sync（废弃）](asc_vdeq_int162b8_sync_deprecated.md)：头文件路径为："c_api/composite/vector_compute_composite.h"。
+
+- [asc_copy_gm2l1_arch_3510（2D矩阵搬运模式）（废弃）](asc_copy_gm2l1_2d_deprecated.md)：asc_copy_gm2l1使用uint8_t decomp_mode和uint8_t l2_cache_ctl的旧常规重载及其asc_copy_gm2l1_sync接口已废弃。请使用带asc_load_l2_cache_mode l2_cache_mode参数的asc_copy_gm2l1_arch_3510（2D矩阵搬运模式）接口。
+- [asc_copy_gm2l1_align（废弃）](asc_copy_gm2l1_align_deprecated.md)：asc_copy_gm2l1_align的旧常规重载和asc_copy_gm2l1_align_sync接口已废弃。请使用带asc_load_l2_cache_mode l2_cache_mode参数的asc_copy_gm2l1_align接口；同步场景请额外调用asc_sync。
+- [asc_copy_gm2l1_dn2nz（废弃）](asc_copy_gm2l1_dn2nz_deprecated.md)：asc_copy_gm2l1_dn2nz的旧常规重载和asc_copy_gm2l1_dn2nz_sync接口已废弃。请使用带asc_load_l2_cache_mode l2_cache_mode参数的asc_copy_gm2l1_dn2nz接口；同步场景请额外调用asc_sync。
+- [asc_copy_gm2l1_arch_3510（高维切分数据搬运）（废弃）](asc_copy_gm2l1_highdim_deprecated.md)：asc_copy_gm2l1使用uint8_t pad_func_mode的旧常规重载及其asc_copy_gm2l1_sync接口已废弃。请使用带asc_channel_pad_mode pad_mode参数的asc_copy_gm2l1接口。
+- [asc_copy_gm2l1_nd2nz_arch_3510（废弃）](asc_copy_gm2l1_nd2nz_deprecated.md)：asc_copy_gm2l1_nd2nz的旧常规重载和asc_copy_gm2l1_nd2nz_sync接口已废弃。请使用带asc_load_l2_cache_mode l2_cache_mode参数的asc_copy_gm2l1_nd2nz接口；同步场景请额外调用asc_sync。
+- [asc_copy_l0c2gm（废弃）](asc_copy_l0c2gm_deprecated.md)：asc_copy_l0c2gm的旧参数形式及asc_copy_l0c2gm_sync接口已废弃。请使用asc_copy_l0c2gm接口和asc_sync接口替代。
+- [asc_copy_l0c2l1（废弃）](asc_copy_l0c2l1_deprecated.md)：asc_copy_l0c2l1的旧参数形式及asc_copy_l0c2l1_sync接口已废弃。请使用asc_copy_l0c2l1接口和asc_sync接口替代。
+- [asc_copy_l0c2ub（废弃）](asc_copy_l0c2ub_deprecated.md)：asc_copy_l0c2ub的旧参数形式及asc_copy_l0c2ub_sync接口已废弃。请使用asc_copy_l0c2ub接口和asc_sync接口替代。
+- [asc_enable_fp8（废弃）](asc_enable_fp8_deprecated.md)：asc_enable_fp8接口已废弃。请使用asc_disable_hif8接口替代。
+- [asc_enable_hf32_trans（废弃）](asc_enable_hf32_trans_deprecated.md)：asc_enable_hf32_trans接口已废弃。请使用asc_set_hf32_round_mode接口替代。
+- [asc_set_fp32_mode（废弃）](asc_set_fp32_mode_deprecated.md)：asc_set_fp32_mode接口已废弃。请使用asc_disable_hf32接口替代。
+- [asc_set_l0c2gm_channel_para（废弃）](asc_set_l0c2gm_channel_para_deprecated.md)：asc_set_l0c2gm_channel_para接口已废弃。请使用asc_set_l0c_copy_channel_para接口替代。
+- [asc_set_l0c2gm_config（废弃）](asc_set_l0c2gm_config_deprecated.md)：asc_set_l0c2gm_config接口已废弃。请使用asc_set_l0c_copy_config接口替代。
+- [asc_set_l0c2gm_lrelu_alpha（废弃）](asc_set_l0c2gm_lrelu_alpha_deprecated.md)：asc_set_l0c2gm_lrelu_alpha接口已废弃。请使用asc_set_l0c_copy_lrelu_alpha接口替代。
+- [asc_set_l0c2gm_nz2nd（废弃）](asc_set_l0c2gm_nz2nd_deprecated.md)：asc_set_l0c2gm_nz2nd接口已废弃。请使用asc_set_l0c_copy_nz_para接口替代。
+- [asc_set_l0c2gm_quant_post（废弃）](asc_set_l0c2gm_quant_post_deprecated.md)：asc_set_l0c2gm_quant_post接口已废弃，暂无替代接口。
+- [asc_set_l0c2gm_relu_alpha（废弃）](asc_set_l0c2gm_relu_alpha_deprecated.md)：asc_set_l0c2gm_relu_alpha接口已废弃。请使用asc_set_l0c_copy_relu_alpha接口替代。
+- [asc_set_l12l0_padding_val（废弃）](asc_set_l12l0_padding_val_deprecated.md)：asc_set_l12l0_padding_val接口已废弃。请使用asc_set_l12l0b_3d_padding接口替代。
+- [asc_set_l13d_padding（废弃）](asc_set_l13d_padding_deprecated.md)：asc_set_l13d_padding接口已废弃。请使用asc_set_l12l0a_3d_padding接口替代。

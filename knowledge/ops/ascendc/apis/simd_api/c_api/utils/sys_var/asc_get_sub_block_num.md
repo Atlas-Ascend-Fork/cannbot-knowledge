@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_sub_block_num.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -26,7 +26,7 @@ source_headers:
 
 头文件路径为：`"c_api/utils/sys_var.h"`。
 
-在[分离模式](../../../../../guides/programming_guide/advanced_programming/hardware_implementation/basic_architecture.md)下读取当前AI Core上Cube Core（AIC）或Vector Core（AIV）的数量。该值在kernel启动前配置，运行中不可修改。
+在[分离模式](../../../../../guides/programming_guide/advanced_programming/hardware_implementation/basic_architecture.md)下读取当前AI Core上Cube Core（AIC）或Vector Core（AIV）的数量。该值在核函数（Kernel）启动前配置，运行中不可修改。
 
 ## 函数原型
 
@@ -39,7 +39,6 @@ __aicore__ inline int64_t asc_get_sub_block_num()
 无
 
 ## 返回值说明
-
 
 不同核函数（Kernel）类型下，在AIC和AIV上调用该接口的返回值如下：
 
@@ -56,7 +55,7 @@ PIPE_S
 
 ## 约束说明
 
-- 本接口读取的subblock维度保存在只读特殊寄存器中，由系统控制器（System Controller，SC）在kernel启动前配置，kernel运行期间不可修改，连续两次调用返回值相同。
+- 本接口读取的subblock维度保存在只读特殊寄存器中，由系统控制器（System Controller，SC）在核函数（Kernel）启动前配置，核函数（Kernel）运行期间不可修改，连续两次调用返回值相同。
 - 返回值反映当前AI Core的subblock数量，仅在[分离模式](../../../../../guides/programming_guide/advanced_programming/hardware_implementation/basic_architecture.md)下有意义。非分离模式下返回值的语义以SC配置为准。
 
 ## 调用示例
@@ -64,7 +63,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

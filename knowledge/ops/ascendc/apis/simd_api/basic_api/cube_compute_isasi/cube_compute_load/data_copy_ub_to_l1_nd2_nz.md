@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_UBToL1_ND2NZ.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -87,15 +87,15 @@ ND2NZ转换示意图如下，样例中参数设置值和解释说明如下：
 源矩阵和目的矩阵支持的数据类型保持一致。
 
 
-针对Ascend 950PR/Ascend 950DT，支持数据类型为：bool、int8_t、uint8_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32。
+针对Ascend 950PR&950DT系列产品，支持数据类型为：bool、int8_t、uint8_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t、fp8_e8m0_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32。
 
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
+针对Atlas A3系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
 
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
+针对Atlas A2系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、half、bfloat16_t、float。
 
 
 ## 返回值说明
@@ -117,7 +117,7 @@ $$
 - 搬运至L1 Buffer的数据不能重叠，如果存在重叠写入，硬件不会产生任何警告或错误，并且不保证重叠数据的写入顺序。
 
 
-- 针对Ascend 950PR/Ascend 950DT，支持ub->L1 Buffer的1:2硬通道的方式；同时提供1:1的兼容模式，解决A2/A3的代码迁移兼容问题，这种模式通过Global Memory进行中转，效率稍低。
+- 针对Ascend 950PR&950DT系列产品，支持UB->L1 Buffer的1:2硬通道的方式；同时提供1:1的兼容模式，解决A2/A3的代码迁移兼容问题，这种模式通过Global Memory进行中转，效率稍低。
 
 
 - Nd2NzParams结构体参数的值需在取值范围内，参数取值范围如[表4](#table_ub_nd2nz_range)所示。

@@ -11,13 +11,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/faq/matmul_advanced_api_precision.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # 含有Matmul高阶API的算子精度问题<a name="ZH-CN_TOPIC_0000002070127457"></a>
 
-本节针对含有Matmul高阶API的算子，为排查算子精度问题是否为算子中Matmul高阶API调用方式导致，提供初步的问题定界和定位指导。如未特殊说明，下面均以Atlas A2 训练系列产品/Atlas A2 推理系列产品上的案例为例。
+本节针对含有Matmul高阶API的算子，为排查算子精度问题是否为算子中Matmul高阶API调用方式导致，提供初步的问题定界和定位指导。如未特殊说明，下面均以Atlas A2系列产品上的案例为例。
 
 具体排查过程主要有如下六个步骤：
 
@@ -224,7 +224,7 @@ platforms: []
             input_bias = np.random.randint(-10, 10, [N]).astype(np.float32)
             alpha = 0.001
             golden = (np.matmul(input_a.astype(np.float32), input_b.astype(np.float32)) + input_bias).astype(np.float32)
-            # golden = np.where(golden >= 0, golden, golden * alpha) # 与kernel保持一致，golden生成也需注释相应的LeakyRelu计算
+            # golden = np.where(golden >= 0, golden, golden * alpha) # 与核函数（Kernel）保持一致，golden生成也需注释相应的LeakyRelu计算
             os.system("mkdir -p input")
             os.system("mkdir -p output")
             input_a.tofile("./input/x1_gm.bin")

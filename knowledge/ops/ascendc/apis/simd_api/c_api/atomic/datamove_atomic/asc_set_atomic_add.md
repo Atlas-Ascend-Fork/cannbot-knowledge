@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/atomic/datamove_atomic/asc_set_atomic_add.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -57,13 +57,13 @@ PIPE_S
 
 - 各个产品由于硬件架构不同，支持的数据通路也不同，具体情况如下：
     
-    - Ascend 950PR/Ascend 950DT，支持的数据通路为UB/L0C Buffer->GM。
+    - Ascend 950PR&950DT系列产品，支持的数据通路为UB/L0C Buffer->GM。
     
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
+    - Atlas A3系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
+    - Atlas A2系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
     
 - 本接口调用后会对后续所有目的地址为GM的搬运指令开启原子操作，可以调用[asc_disable_dma_atomic](asc_disable_dma_atomic.md)接口关闭原子操作。
 - 该接口执行前不会自动将GM上已有数据置零。若开发者期望在原子累加前GM上的原始数据为零，则需手动清零。
@@ -92,7 +92,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

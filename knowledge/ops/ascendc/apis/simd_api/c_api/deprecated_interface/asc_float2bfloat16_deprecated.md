@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_float2bfloat16_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -62,15 +62,14 @@ def asc_float2bfloat16_rn_v2(dst, src, mask):
 
 ## 函数原型
 
-### 模板原型（占位符形式）
-
 ```c
+// 占位符形式
 __simd_callee__ inline void asc_float2bfloat16_<round_mode><sat_mode><position_mode>(vector_bfloat16_t& dst,
                                                                                      vector_float src,
                                                                                      vector_bool mask)
 ```
 
-### 占位符说明
+**占位符说明如下：**
 
 - `<round_mode>`表示支持的舍入模式，支持`rd`（`FLOOR`）、`rn`（`RINT`）、`rna`（`ROUND`）、`ru`（`CEIL`）和`rz`（`TRUNC`）。
 - `<sat_mode>`表示饱和/非饱和模式，为空时表示非饱和模式，取值为`_sat`时表示饱和模式。

@@ -10,13 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/hardware_constraints/npu_arch_2002.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # NPU架构版本2002<a name="ZH-CN_TOPIC_0000002507560474"></a>
 
-本节介绍硬件约束以及解决方案建议。对应的产品型号为：Atlas 推理系列产品。
+本节介绍硬件约束以及解决方案建议。对应的产品型号为：Atlas推理系列产品。
 
 -   全局变量使用约束
 

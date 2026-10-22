@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/avoid_same_address_access.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -21,13 +21,13 @@ platforms: []
 >[!NOTE]说明 
 >该性能优化指导适用于如下产品型号：
 >
->- Ascend 950PR/Ascend 950DT
+>- Ascend 950PR&950DT系列产品
 >
 >
->- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+>- Atlas A3系列产品
 >
 >
->- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+>- Atlas A2系列产品
 >
 
 【描述】MTE2、MTE3、Scalar等单元访问Global Memory数据时，其地址请求会按照512字节粒度对齐后进行处理。当同时访问Global Memory的数据，且地址处于连续的512字节范围内时，由于数据一致性的原因，多个请求会被串行处理，进而影响数据搬运效率。
@@ -42,13 +42,12 @@ platforms: []
 
 **调整数据访问顺序**
 
-本节以Atlas A2 训练系列产品/Atlas A2 推理系列产品或Atlas A3 训练系列产品/Atlas A3 推理系列产品上一个形状为 [6144, 512]的half类型输入进行GM到Unified Buffer（UB）搬运这一种场景为例，说明如何通过调整数据访问顺序规避同地址访问冲突，该场景使用48个核参与搬运，即`numBlocks=48`。
+本节以Atlas A2系列产品或Atlas A3系列产品上一个形状为 [6144, 512]的half类型输入进行GM到Unified Buffer（UB）搬运这一种场景为例，说明如何通过调整数据访问顺序规避同地址访问冲突，该场景使用48个核参与搬运，即`numBlocks=48`。
 
 为了体现同地址冲突的影响，上述场景关闭L2Cache hint。输入每行数据大小为1024字节（512个half），Tile为 \([128, 64]\)，通过`DataCopyPad`完成GM到UB搬运。每个核都会完整载入一遍输入矩阵，N方向按64列切分，单次搬运数据量为`128 * 64 * 2`字节。原始实现中，所有核按相同的mBlockIdx顺序访问同一输入矩阵，容易在同一时刻访问相同的GM地址段；优化实现中，每个核按 \((mBlockIdx + blockIdx) \% numBlocks\)在块组内轮转访问顺序，降低同地址访问冲突概率。
 
-下文示意图中，M0-M47表示输入矩阵沿M方向切分后的48个分块，T0-T47表示时间轴上的48个搬运时刻。
+下文示意图中，M0-M47表示输入矩阵沿M方向切分后的48个分块，T0-T47表示时间轴上的48个搬运时刻。<a name="table69111151111819"></a>
 
-<a name="table69111151111819"></a>
 <table><thead align="left"><tr id="row199098514189"><th class="cellrowborder" valign="top" width="8.303319380901392%" id="mcps1.1.4.1.1"><p id="p7909145111187"><a name="p7909145111187"></a><a name="p7909145111187"></a>实现方案</p>
 </th>
 <th class="cellrowborder" valign="top" width="45.28375352866739%" id="mcps1.1.4.1.2"><p id="p18909175121819"><a name="p18909175121819"></a><a name="p18909175121819"></a>原始实现</p>

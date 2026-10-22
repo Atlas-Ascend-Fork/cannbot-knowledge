@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/compare_and_select/Select.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -53,35 +53,35 @@ source_headers:
     ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_mode2.png)
 
 
-Ascend 950PR/Ascend 950DT，支持模式0、1、2。
+Ascend 950PR&950DT系列产品，支持模式0、1、2。
 
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持模式0、1、2。
+Atlas A3系列产品，支持模式0、1、2。
 
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持模式0、1、2。
+Atlas A2系列产品，支持模式0、1、2。
 
 
 
-Atlas 200I/500 A2 推理产品，支持模式0、1、2。
+Atlas 200I/500 A2推理产品，支持模式0、1、2。
 
 
 
-Atlas 推理系列产品AI Core，支持模式0、1、2。
+Atlas推理系列产品AI Core，支持模式0、1、2。
 
 
 
-Atlas 训练系列产品，仅支持模式0。
+Atlas训练系列产品，仅支持模式0。
 
 
 
-Kirin X90，支持模式0、1、2。
+Kirin X90处理器系列产品，支持模式0、1、2。
 
 
 
-Kirin 9030，支持模式0、1、2。
+Kirin 9030处理器系列产品，支持模式0、1、2。
 
 
 ## 函数原型<a name="section620mcpsimp"></a>
@@ -175,35 +175,35 @@ Kirin 9030，支持模式0、1、2。
 
 - T支持的数据类型为：
   
-  - Ascend 950PR/Ascend 950DT，支持的数据类型为：int8_t/uint8_t/int16_t/uint16_t/half/bfloat16_t/int32_t/uint32_t/float/complex32/int64_t/uint64_t/complex64。其中，int8\_t/uint8\_t/complex32/int64\_t/uint64\_t/complex64数据类型仅支持tensor前n个数据计算接口。
+  - Ascend 950PR&950DT系列产品，支持的数据类型为：int8_t/uint8_t/int16_t/uint16_t/half/bfloat16_t/int32_t/uint32_t/float/complex32/int64_t/uint64_t/complex64。其中，int8\_t/uint8\_t/complex32/int64\_t/uint64\_t/complex64数据类型仅支持tensor前n个数据计算接口。
   
     
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half/float。
+  - Atlas A3系列产品，支持的数据类型为：half/float。
   
     
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half/float。
+  - Atlas A2系列产品，支持的数据类型为：half/float。
   
     
   
-  - Atlas 200I/500 A2 推理产品，支持的数据类型为：half/float。
+  - Atlas 200I/500 A2推理产品，支持的数据类型为：half/float。
   
     
   
-  - Atlas 推理系列产品AI Core，支持的数据类型为：half/float。
+  - Atlas推理系列产品AI Core，支持的数据类型为：half/float。
   
     
   
-  - Atlas 训练系列产品，支持的数据类型为：half/float。
+  - Atlas训练系列产品，支持的数据类型为：half/float。
   
     
   
-  - Kirin X90，支持的数据类型为：int8_t/uint8_t/int16_t/uint16_t/half/int32_t/uint32_t/float。
+  - Kirin X90处理器系列产品，支持的数据类型为：int8_t/uint8_t/int16_t/uint16_t/half/int32_t/uint32_t/float。
   
     
   
-  - Kirin 9030，支持的数据类型为：int8_t/uint8_t/int16_t/uint16_t/half/int32_t/uint32_t/float。
+  - Kirin 9030处理器系列产品，支持的数据类型为：int8_t/uint8_t/int16_t/uint16_t/half/int32_t/uint32_t/float。
     
 
 - U支持的数据类型为：uint8_t、uint16_t、uint32_t、uint64_t。
@@ -219,30 +219,30 @@ Kirin 9030，支持模式0、1、2。
 - 操作数地址重叠约束请参考[通用地址重叠约束](../../../general_description_and_constraints.md)。
 
 
-- 当参数count或repeatTime取值为0时，针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，不保证该接口将被视为NOP（空操作）。
+- 当参数count或repeatTime取值为0时，针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，不保证该接口将被视为NOP（空操作）。
 
 
 - 对Unified Buffer（UB）空间的占用说明。
   
   - 针对如下型号，对于模式1和模式2，使用时需要预留8KB的UB空间，作为接口的临时数据存放区：
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
     
-    - Atlas 推理系列产品AI Core
+    - Atlas推理系列产品AI Core
     
   
     
-  - 针对Ascend 950PR/Ascend 950DT：
+  - 针对Ascend 950PR&950DT系列产品：
     - 不传入mask参数的tensor高维切分计算接口占用8KB UB临时空间。
     - tensor前n个数据计算接口以及传入mask参数的tensor高维切分计算接口不涉及8KB UB临时空间的占用。
     
 
 
-- Atlas 200I/500 A2 推理产品不支持如下函数原型：
+- Atlas 200I/500 A2推理产品不支持如下函数原型：
   - tensor高维切分计算Select模式1中，不传入mask参数的函数原型（需配合[SetVectorMask](../mask_operations/set_vector_mask.md)、[SetCmpMask_ISASI](set_cmp_mask_isasi.md)使用）。
   - tensor高维切分计算Select模式0和模式2中，不传入mask参数的函数原型（需配合[SetVectorMask](../mask_operations/set_vector_mask.md)、[SetCmpMask_ISASI](set_cmp_mask_isasi.md)使用）。
 

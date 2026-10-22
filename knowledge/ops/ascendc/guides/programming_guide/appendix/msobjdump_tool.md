@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/msobjdump_tool.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -21,7 +21,7 @@ platforms:
 
 # msobjdump工具<a name="ZH-CN_TOPIC_0000002028951292"></a>
 
-本工具主要针对工程编译生成的算子ELF文件（Executable and Linkable Format）提供解析和解压功能，并将结果信息以可读形式呈现，方便开发者直观获得kernel文件信息。当前支持解析融合编译工程和自定义算子工程生成的相关产物。
+本工具主要针对工程编译生成的算子ELF文件（Executable and Linkable Format）提供解析和解压功能，并将结果信息以可读形式呈现，方便开发者直观获得核函数（Kernel）文件信息。当前支持解析核函数（Kernel）直调工程和自定义算子工程生成的相关产物。
 
 >[!NOTE]说明 
 >- ELF文件是一种用于二进制文件、可执行文件、目标代码、共享库和核心转储的文件格式，包括常见的\*.a、\*.so文件等。ELF文件常见构成如下：
@@ -72,7 +72,7 @@ platforms:
 
     | 参数（区分大小写） | 可选/必选 | 说明 |
     | ---- | ---- | ---- |
-    | `--dump-elf <elf_file>`，`-d` | 必选 | 解析ELF文件中包含的device信息，如文件名、文件类型、文件长度、符号表等，并终端打屏显示。<br>`<elf_file>`表示待解析ELF文件路径，如`/home/op_api/lib_api.so`。支持两种打印模式：<br>简单打印：默认仅打印部分device信息。<br>全量打印：与`--verbose`配套使用，开启全量device信息打屏显示。<br>融合编译工程和自定义算子工程的打印字段分别参见<a href="#table94384560259">表4</a>和<a href="#table-aclnn-meta-fields">表5</a>。 |
+    | `--dump-elf <elf_file>`，`-d` | 必选 | 解析ELF文件中包含的device信息，如文件名、文件类型、文件长度、符号表等，并终端打屏显示。<br>`<elf_file>`表示待解析ELF文件路径，如`/home/op_api/lib_api.so`。支持两种打印模式：<br>简单打印：默认仅打印部分device信息。<br>全量打印：与`--verbose`配套使用，开启全量device信息打屏显示。<br>核函数（Kernel）直调工程和自定义算子工程的打印字段分别参见<a href="#table94384560259">表4</a>和<a href="#table-aclnn-meta-fields">表5</a>。 |
     | `--verbose`，`-V` | 可选 | 必须与`--dump-elf`配套使用，用于开启ELF文件中全量打印device信息功能。 |
 
 -   **解压ELF文件的命令**
@@ -94,47 +94,43 @@ platforms:
     msobjdump --list-elf <elf_file>
     ```
 
-    **表3**  参数说明
-
-    <a name="table121952819427"></a>
+    **表3**  参数说明<a name="table121952819427"></a>
 
     | 参数（区分大小写） | 可选/必选 | 说明 |
     | ---- | ---- | ---- |
     | `--list-elf <elf_file>`，`-l` | 必选 | 获取ELF文件中包含的device信息文件列表，并打印显示。<br>`<elf_file>`表示待打印的ELF文件路径，如`/home/op_api/lib_api.so`。 |
 
-**表4**  融合编译工程支持的ELF解析字段说明<a name="table94384560259"></a>
+**表4**  核函数（Kernel）直调工程支持的ELF解析字段说明<a name="table94384560259"></a>
 
 | 字段名 | 含义 | 是否必选 | 打印说明 |
 | ---- | ---- | ---- | ---- |
-| `.ascend.meta. ${id}` | 表示算子kernel函数名称，其中`${id}`表示meta信息的索引值。 | 是 | 不设置`--verbose`，默认打印。 |
+| `.ascend.meta. ${id}` | 表示算子核函数（Kernel）名称，其中`${id}`表示meta信息的索引值。 | 是 | 不设置`--verbose`，默认打印。 |
 | `VERSION` | 表示版本号。 | 是 | 不设置`--verbose`，默认打印。 |
 | `RUNTIME_IMPLICIT_INFO` | 表示运行时隐式信息标志。取值如下：<br>`1`：`SIMD Printf Flag`，表示SIMD侧Printf标志。<br>`2`：`Hardware Sync Flag`，表示硬同步标志。<br>`3`：`L2Cache Hint Flag`，表示L2 Cache命中标志。<br>`4`：`SIMT Printf Flag`，表示SIMT侧Printf标志。<br>`5`：`SIMD Assert Flag`，表示SIMD侧Assert标志。<br>其他取值打印原始数值。 | 否 | 不设置`--verbose`，默认打印。 |
-| `KERNEL_TYPE` | 表示kernel函数运行时core类型，取值参见<a href="#table187419221164">表6</a>。 | 否 | 不设置`--verbose`，默认打印。 |
+| `KERNEL_TYPE` | 表示核函数（Kernel）运行时core类型，取值参见<a href="#table187419221164">表6</a>。 | 否 | 不设置`--verbose`，默认打印。 |
 | `CROSS_CORE_SYNC` | 表示硬同步syncall类型。<br>`USE_SYNC`：使用硬同步。<br>`NO_USE_SYNC`：不使用硬同步。<br> | 否 | 不设置`--verbose`，默认打印。 |
-| `MIX_TASK_RATION` | 表示kernel函数运行时的Cube核/Vector核占比分配类型。 | 否 | 不设置`--verbose`，默认打印。 |
+| `MIX_TASK_RATION` | 表示核函数（Kernel）运行时的Cube核/Vector核占比分配类型。 | 否 | 不设置`--verbose`，默认打印。 |
 | `elf header infos` | 包括ELF Header、Section Headers、Key to Flags、Program Headers、Symbol表等信息。 | 否 | 设置`--verbose`，开启全量打印。 |
 
 **表5**  自定义算子工程支持的ELF解析字段说明<a name="table-aclnn-meta-fields"></a>
 
 | 字段名 | 含义 | 是否必选 | 打印说明 |
 | ---- | ---- | ---- | ---- |
-| `.ascend.meta. ${id}` | 表示算子kernel函数名称，其中`${id}`表示meta信息的索引值。 | 是 | 不设置`--verbose`，默认打印。 |
+| `.ascend.meta. ${id}` | 表示算子核函数（Kernel）名称，其中`${id}`表示meta信息的索引值。 | 是 | 不设置`--verbose`，默认打印。 |
 | `VERSION` | 表示版本号。<br> | 否 | 不设置`--verbose`，默认打印。 |
 | `DEBUG` | 调试相关信息，包含如下两部分内容：<br>`debugBufSize`：调试信息需要的内存空间。<br>`debugOptions`：调试开关状态。取值如下：<br>`0`：调试开关关闭。<br>`1`：通过DumpTensor、printf打印进行调试。<br>`2`：通过assert断言进行调试。<br>`4`：通过时间戳打点功能进行调试。<br>`8`：通过内存越界检测进行调试。<br> | 否 | 不设置`--verbose`，默认打印。 |
-| `DYNAMIC_PARAM` | 算子kernel函数是否启用动态参数。取值分别为：<br>`0`：关闭动态参数模式。<br>`1`：开启动态参数模式。<br> | 否 | 不设置`--verbose`，默认打印。 |
-| `OPTIONAL_PARAM` | 可选参数信息，包含如下两部分内容：<br>`optionalInputMode`：可选输入在算子kernel函数中是否需要占位。<br>`0`：可选输入不占位。<br>`1`：可选输入占位。<br>`optionalOutputMode`：可选输出在算子kernel函数中是否需要占位。<br>`0`：可选输出不占位。<br>`1`：可选输出占位。<br> | 否 | 不设置`--verbose`，默认打印。 |
+| `DYNAMIC_PARAM` | 算子核函数（Kernel）是否启用动态参数。取值分别为：<br>`0`：关闭动态参数模式。<br>`1`：开启动态参数模式。<br> | 否 | 不设置`--verbose`，默认打印。 |
+| `OPTIONAL_PARAM` | 可选参数信息，包含如下两部分内容：<br>`optionalInputMode`：可选输入在算子核函数（Kernel）中是否需要占位。<br>`0`：可选输入不占位。<br>`1`：可选输入占位。<br>`optionalOutputMode`：可选输出在算子核函数（Kernel）中是否需要占位。<br>`0`：可选输出不占位。<br>`1`：可选输出占位。<br> | 否 | 不设置`--verbose`，默认打印。 |
 | `RUNTIME_IMPLICIT_INFO` | 表示运行时隐式信息标志。取值如下：<br>`1`：`SIMD Printf Flag`，表示SIMD侧Printf标志。<br>`2`：`Hardware Sync Flag`，表示硬同步标志。<br>`3`：`L2Cache Hint Flag`，表示L2 Cache命中标志。<br>`4`：`SIMT Printf Flag`，表示SIMT侧Printf标志。<br>`5`：`SIMD Assert Flag`，表示SIMD侧Assert标志。<br>其他取值打印原始数值。 | 否 | 不设置`--verbose`，默认打印。 |
-| `KERNEL_TYPE` | 表示kernel函数运行时core类型，取值参见<a href="#table187419221164">表6</a>。 | 否 | 不设置`--verbose`，默认打印。 |
+| `KERNEL_TYPE` | 表示核函数（Kernel）运行时core类型，取值参见<a href="#table187419221164">表6</a>。 | 否 | 不设置`--verbose`，默认打印。 |
 | `CROSS_CORE_SYNC` | 表示硬同步syncall类型。<br>`USE_SYNC`：使用硬同步。<br>`NO_USE_SYNC`：不使用硬同步。<br> | 否 | 不设置`--verbose`，默认打印。 |
-| `MIX_TASK_RATION` | 表示kernel函数运行时的Cube核/Vector核占比分配类型。 | 否 | 不设置`--verbose`，默认打印。 |
+| `MIX_TASK_RATION` | 表示核函数（Kernel）运行时的Cube核/Vector核占比分配类型。 | 否 | 不设置`--verbose`，默认打印。 |
 | `DETERMINISTIC_INFO` | 表示算子是否为确定性计算。<br>`0`：不确定计算。<br>`1`：确定性计算。<br> | 否 | 不设置`--verbose`，默认打印。 |
 | `BLOCK_NUM` | 表示算子执行核数，该字段当前暂不支持实际执行核数的打印，只打印默认值`0xFFFFFFFF`。<br> | 否 | 不设置`--verbose`，默认打印。 |
 | `FUNCTION_ENTRY` | 算子TilingKey的值。<br> | 否 | 不设置`--verbose`，默认打印。 |
 | `elf header infos` | 包括ELF Header、Section Headers、Key to Flags、Program Headers、Symbol表等信息。 | 否 | 设置`--verbose`，开启全量打印。 |
 
-**表6**  kernel type信息
-
-<a name="table187419221164"></a>
+**表6**  核函数（Kernel）类型信息<a name="table187419221164"></a>
 
 | KERNEL_TYPE | 说明 |
 | ---- | ---- |
@@ -146,11 +142,11 @@ platforms:
 | `AIC_ROLLBACK` | 算子执行时会同时启动AI Core和Vector Core，此时AI Core会当成Cube Core使用。 |
 | `AIV_ROLLBACK` | 算子执行时会同时启动AI Core和Vector Core，此时AI Core会当成Vector Core使用。 |
 
-## 使用样例（融合编译工程）<a name="section_fusion_compile_msobjdump"></a>
+## 使用样例（核函数（Kernel）直调工程）<a name="section_fusion_compile_msobjdump"></a>
 
-以融合编译工程生成的可执行文件为例，假设`${build_dir}`为工程构建目录，编译生成的可执行文件名为`demo`。对于该类产物，工具会基于可执行文件中的device相关信息进行解析，其中`--dump-elf`用于展示binary meta与function meta信息，`--list-elf`用于查看可提取的device文件名，`--extract-elf`用于将解析出的device文件落盘。调用样例可参考[msobjdump样例](https://gitcode.com/cann/asc-tools/tree/master/examples/04_msobjdump)。
+以核函数（Kernel）直调工程生成的可执行文件为例，假设`${build_dir}`为工程构建目录，编译生成的可执行文件名为`demo`。对于该类产物，工具会基于可执行文件中的device相关信息进行解析，其中`--dump-elf`用于展示binary meta与function meta信息，`--list-elf`用于查看可提取的device文件名，`--extract-elf`用于将解析出的device文件落盘。调用样例可参考[msobjdump样例](https://gitcode.com/cann/asc-tools/tree/master/examples/04_msobjdump)。
 
--   **解析融合编译工程产物**
+-   **解析核函数（Kernel）直调工程产物**
 
     支持两种打印方式，请按需选取，解析字段含义参见[表4](#table94384560259)。
 
@@ -231,7 +227,7 @@ platforms:
         ......
         ```
 
--   **获取融合编译工程产物中的device文件列表**
+-   **获取核函数（Kernel）直调工程产物中的device文件列表**
 
     ```
     msobjdump --list-elf ${build_dir}/demo
@@ -243,7 +239,7 @@ platforms:
     ELF file    0: demo.aicore.o
     ```
 
--   **解压融合编译工程产物中的device文件并落盘**
+-   **解压核函数（Kernel）直调工程产物中的device文件并落盘**
 
     ```
     msobjdump --extract-elf ${build_dir}/demo

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/basic_arithmetic/Prelu_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -54,7 +54,7 @@ __aicore__ inline void Prelu(const LocalTensor<T>& dst, const LocalTensor<T>& sr
 ## 数据类型
 
 
-针对Ascend 950PR/Ascend 950DT，支持的数据为half、float。
+针对Ascend 950PR&950DT系列产品，支持的数据为half、float。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>

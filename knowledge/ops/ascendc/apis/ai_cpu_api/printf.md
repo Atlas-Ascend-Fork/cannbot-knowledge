@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/AI-CPU-API/printf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -110,6 +110,5 @@ fmt string 291
 fmt string 3.140000
 TEST 0xdfffd6fddd1c
 ```
-
 
 - [printf（AI CPU API）：固定 reference 调用约束](../../guides/diagnostics/aicpu_printf_reference_contract.md)

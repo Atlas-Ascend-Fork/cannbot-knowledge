@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_gm2ub_sync_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -23,7 +23,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_copy_gm2ub_sync`接口已废弃，请使用[对应的非同步接口](../vector_datamove/asc_copy_gm2ub/asc_copy_gm2ub_arch_3510.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_gm2ub_sync`接口已废弃，请使用[对应的非同步接口](../vector_datamove/asc_copy_gm2ub/asc_copy_gm2ub_arch_3510.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将数据从Global Memory (GM) 搬运到 Unified Buffer（UB）。
 
@@ -56,7 +56,7 @@ PIPE_MTE2
 ## 约束说明
 
 - 各存储单元的空间大小和对齐要求请参考[存储单元说明](../general_description_and_constraints.md#存储单元说明)。
-- 如果本指令与其他指令存在UB地址重叠，必须插入同步指令[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)，保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在UB地址重叠，必须插入同步指令[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)，保证多个指令串行化，防止出现异常数据。
 - 同步计算包含同步等待。
 - 当采用前n个数据搬运接口时，搬运数据大小要求32字节对齐。
 - 当dst_stride不等于burst_len时，dst_stride要求32字节对齐。

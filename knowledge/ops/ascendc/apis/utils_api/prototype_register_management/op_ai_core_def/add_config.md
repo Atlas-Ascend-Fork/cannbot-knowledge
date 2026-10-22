@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpAICoreDef/AddConfig.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -119,7 +119,6 @@ void AddConfig(const char *soc, OpAICoreConfig &aicore_config)
 </tr>
 </tbody>
 </table>
-
 
 - [UpsampleLinear1dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_linear_1d_backward_950.md)
 - [Cat 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/cat_950.md)

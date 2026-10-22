@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__low2half.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -102,3 +102,10 @@ inline half __low2half(const half2 x)
         asc_vf_call<simt_low2half>(dim3(1024), (__gm__ half2*)input, output, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-2.5, -1.5), (-0.5, 0.5), (1.5, 2.5), (inf, nan)
+result: -2.5, -0.5, 1.5, inf
+```

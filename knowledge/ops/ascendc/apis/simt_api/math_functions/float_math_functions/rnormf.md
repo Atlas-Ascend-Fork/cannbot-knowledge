@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/rnormf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据a中前n个元素的平方和a\[0\]^2 + a\[1\]^2 + ...+ a\[n-1\]^2的平方根的倒数。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002516816371.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002516816371.png)
 
 ## 函数原型
 
@@ -58,9 +58,6 @@ a\[0\]^2 + a\[1\]^2 + ...+ a\[n-1\]^2的平方根的倒数。
 
 -   输入数据a的长度必须大于等于参数n。
 -   若n过大，接口性能无法保证。
-
--   针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了除法运算符，由于除法运算符不支持Subnormal场景，当输入a的所有元素均为Subnormal数据时，本接口最终结果为nan。
-
 
 ## 调用示例
 
@@ -102,7 +99,7 @@ a\[0\]^2 + a\[1\]^2 + ...+ a\[n-1\]^2的平方根的倒数。
 输入输出示例如下：
 
 ```
-n：1, 2, 3, 1
-vector_data：[[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]]
-result: 1 0.2773501 0.1414214 0.25
+n: 1, 2, 3, 1
+vector_data: [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]]
+result: 1, 0.2773501, 0.1414214, 0.25
 ```

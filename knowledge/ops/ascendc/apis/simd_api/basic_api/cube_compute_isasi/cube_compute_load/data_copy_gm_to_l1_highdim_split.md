@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_GMToL1_highdim_split.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -75,31 +75,33 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 源矩阵和目的矩阵支持的数据类型保持一致。
 
 
-针对Ascend 950PR/Ascend 950DT，支持数据类型为：b8、b16、b32、b64。
+针对Ascend 950PR&950DT系列产品，支持数据类型为：b8、b16、b32、b64。
 
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型为：b8、b16、b32、b64。
+针对Atlas A3系列产品，支持数据类型为：b8、b16、b32、b64。
 
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型为：b8、b16、b32、b64。
+针对Atlas A2系列产品，支持数据类型为：b8、b16、b32、b64。
 
 
 
-针对Atlas 推理系列产品AI Core，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
+针对Atlas推理系列产品AI Core，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
 
 
 
-针对Atlas 训练系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
+针对Atlas训练系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
 
 
 
-针对Kirin X90，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
+针对Kirin X90处理器系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
 
 
 
-针对Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
+针对Kirin 9030处理器系列产品，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t、half、float、double。
+
+
 
 
 ## 返回值说明
@@ -129,11 +131,11 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 - 针对如下产品型号：
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品；
+    Atlas A3系列产品；
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品；
+    Atlas A2系列产品；
     
 
     在跨卡通信算子开发场景，DataCopy类接口支持跨卡数据搬运，仅支持HCCS物理链路，不支持其他通路；开发者开发过程中，需要关注涉及卡间通信的物理通路，可通过npu-smi info -t topo命令查询HCCS物理链路。

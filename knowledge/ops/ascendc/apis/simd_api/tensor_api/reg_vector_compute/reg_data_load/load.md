@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/reg_data_load/load.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -57,46 +57,49 @@ source_headers:
 
 | 参数名 | 描述 |
 | --- | --- |
-| `sideband_mode` | 搬入模式，类型为`load_sideband_mode`，默认值为`load_sideband_mode::direct`。具体取值请参考[表3](#表3-load_sideband_mode参数说明)。 |
-| `Tensor` | 源Tensor类型，由函数实参自动推导。Tensor必须位于UB。 |
-| `Coord` | 源Tensor的坐标类型，由函数实参自动推导。 |
+| sideband_mode | 搬入模式，类型为`load_sideband_mode`，默认值为`load_sideband_mode::direct`。具体取值请参考[表3](#表3-load_sideband_mode参数说明)。 |
+| Tensor | 源Tensor类型，由函数实参自动推导。Tensor必须位于UB。 |
+| Coord | 源Tensor的坐标类型，由函数实参自动推导。 |
 
 **表2** 参数说明
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| `tensor` | 输入 | 源Tensor，必须位于UB。 |
-| `coord` | 输入 | 搬入起始元素在`tensor`逻辑布局中的坐标。 |
+| tensor | 输入 | 源Tensor，必须位于UB。 |
+| coord | 输入 | 搬入起始元素在`tensor`逻辑布局中的坐标。 |
 
 <a id="表3-load_sideband_mode参数说明"></a>
 
 **表3** `load_sideband_mode`参数说明
 
+表中的VL表示一个矢量数据寄存器的长度，单位为Byte。`int4b_t`类型的数据在寄存器中以`int4x2_t`形式存储。`int4x2_t`数据类型由两个四位整型数打包为一个8比特存储单元，`fp4x2_e2m1_t`和`fp4x2_e1m2_t`数据类型由两个独立的四位浮点数打包为一个8比特存储单元，因此，对于这三种类型，下表所述的“元素”是指一个8比特对应的搬运单元，而不是单个4比特值；补零、重复、采样和交织等操作均以该搬运单元为粒度。
+
 | 取值 | 含义 | 搬入起始地址对齐约束（Byte） |
 | --- | --- | --- |
-| `load_sideband_mode::direct` | 正常模式，从UB连续读取VL数据量并搬入一个`reg_tensor`。 | 32 |
-| `load_sideband_mode::deintlv` | 解交织模式，从UB连续读取2\*VL数据量，将偶数索引和奇数索引的元素分别搬入返回值的`first`和`second`成员。 | 32 |
-| `load_sideband_mode::downsample` | 2倍下采样模式，从UB读取2\*VL数据量，每隔一个元素保留一个元素，得到VL数据量。 | 32 |
-| `load_sideband_mode::unpack` | 2倍展开模式，从UB读取VL/2数据量，在每个源元素后补一个0，展开为VL数据量。 | min(32, VL/2) |
-| `load_sideband_mode::unpack4` | 4倍展开模式，从UB读取VL/4数据量，在每个源元素后补三个0，展开为VL数据量。 | min(32, VL/4) |
-| `load_sideband_mode::upsample` | 2倍上采样模式，从UB读取VL/2数据量，每个源元素在目的寄存器中重复两次。 | min(32, VL/2) |
+| load_sideband_mode::direct | 正常模式，从UB连续读取VL数据量并搬入一个`reg_tensor`。 | 32 |
+| load_sideband_mode::deintlv | 解交织模式，从UB连续读取2\*VL数据量，将偶数索引和奇数索引的元素分别搬入返回值的`first`和`second`成员。 | 32 |
+| load_sideband_mode::downsample | 2倍下采样模式，从UB读取2\*VL数据量，每隔一个元素保留一个元素，得到VL数据量。 | 32 |
+| load_sideband_mode::unpack | 2倍展开模式，从UB读取VL/2数据量，在每个源元素后补一个0元素，展开为VL数据量。 | min(32, VL/2) |
+| load_sideband_mode::unpack4 | 4倍展开模式，从UB读取VL/4数据量，在每个源元素后补三个0元素，展开为VL数据量。 | min(32, VL/4) |
+| load_sideband_mode::upsample | 2倍上采样模式，从UB读取VL/2数据量，每个源元素在目的寄存器中重复两次。 | min(32, VL/2) |
 
 ## 数据类型
 
-Tensor元素类型与寄存器元素类型保持一致。不同模式支持的数据类型如下，未列出的类型或模式组合会产生编译期错误。
+下表列出源Tensor的元素类型。不同模式支持的数据类型如下，未列出的类型或模式组合会产生编译期错误。
 
-| `sideband_mode` | 支持的数据类型 |
+| sideband_mode | 支持的数据类型 |
 | --- | --- |
-| `direct` | `int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`、`int64_t`、`uint64_t`、`half`、`bfloat16_t`、`float`、`hifloat8_t`、`fp8_e4m3fn_t`、`fp8_e5m2_t`、`fp8_e8m0_t`、`int4x2_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t` |
-| `deintlv` | `int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`、`half`、`bfloat16_t`、`float`、`hifloat8_t`、`fp8_e4m3fn_t`、`fp8_e5m2_t`、`fp8_e8m0_t`、`int4x2_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t` |
-| `downsample`、`upsample` | 8bit和16bit元素类型，包括对应位宽的整数、浮点和打包4bit类型 |
-| `unpack` | 8bit、16bit和32bit元素类型，包括对应位宽的整数、浮点和打包4bit类型 |
-| `unpack4` | 8bit元素类型，包括`int8_t`、`uint8_t`、`hifloat8_t`、三种FP8类型和三种打包4bit类型 |
+| direct | `int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t` |
+| deintlv | `int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float` |
+| downsample、upsample | `int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t` |
+| unpack | `int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float` |
+| unpack4 | `int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t` |
 
 ## 返回值说明
 
-- `deintlv`模式返回`reg_pair<typename Tensor::data_type>`，其`first.reg`和`second.reg`分别保存偶数索引和奇数索引元素的搬入结果。
-- 其他模式返回`reg_tensor<typename Tensor::data_type>`，其`reg`成员保存搬入结果。
+- 对于非`int4b_t`类型，`deintlv`模式返回`reg_pair<typename Tensor::data_type>`，其`first.reg`和`second.reg`分别保存偶数索引和奇数索引元素的搬入结果。
+- 对于非`int4b_t`类型，其他模式返回`reg_tensor<typename Tensor::data_type>`，其`reg`成员保存搬入结果。
+- 当源Tensor元素类型为`int4b_t`时，`deintlv`模式返回`reg_pair<int4x2_t>`，其他模式返回`reg_tensor<int4x2_t>`。
 
 ## 约束说明
 
@@ -136,6 +139,6 @@ __simd_vf__ inline void LoadDeinterleaved(const SrcTensor& src)
     auto mask = asc::te::experimental::all_mask<T>();
     value.first.with_mask(mask);
     value.second.with_mask(mask);
-    // value.first和value.second分别保存偶数索引和奇数索引的元素。
+    // value.first和value.second分别保存偶数索引和奇数索引的搬运单元。
 }
 ```

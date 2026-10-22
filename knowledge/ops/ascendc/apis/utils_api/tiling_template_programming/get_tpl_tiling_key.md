@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_template_programming/GET_TPL_TILING_KEY.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/utils/tiling/template_argument.h
@@ -97,8 +97,6 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
     return ge::GRAPH_SUCCESS;
 }
 ```
-
-
 
 - [CircularPad2dBackward 950 ACLNN 算子知识](../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)
 - [Prelu 950 ACLNN 算子知识](../../../operators/aclnn/nn/activation/prelu_950.md)

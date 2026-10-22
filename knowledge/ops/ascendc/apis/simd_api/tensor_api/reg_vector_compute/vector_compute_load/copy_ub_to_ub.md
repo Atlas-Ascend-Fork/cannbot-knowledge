@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/vector_compute_load/copy_ub_to_ub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 ## 功能说明
 
-头文件路径为：`tensor_api/tensor.h`，命名空间为`asc::te`。
+头文件路径为：`tensor_api/algorithm/copy.h`，命名空间为`asc::te`。
 
 该接口用于在Unified Buffer（UB）内部进行高维切分数据搬运。接口根据源、目的Tensor的存储位置自动选择`copy_ub_to_ub`通路，并根据Layout推导数据块个数、单块长度以及源、目的块间间隔，支持连续和非连续搬运。
 
@@ -69,21 +69,25 @@ UB到UB通路使用`copy_ub_to_ub{}`作为搬运操作对象，默认trait为`ub
 
 ### 参数推导
 
-目的Tensor的Layout自动推导这些底层多块搬运参数。对于整Tensor搬运，各Layout模式的推导规则如下。表中的单块长度和块间间隔先按字节计算，再转换为32字节的DataBlock传递给底层指令。
+`copy`根据源、目的Tensor的Layout自动推导[asc_copy_ub2ub高维切分数据搬运](../../../c_api/vector_datamove/asc_copy_ub2ub.md#参数说明)所需的搬运参数，无需手动传入。对于整Tensor搬运，各Layout模式的推导规则如下。
 
 | Layout模式 | 数据块个数 | 单块长度（字节） | 源、目的块间间隔（字节） |
 | :--- | :--- | :--- | :--- |
 | ND | Layout的总行数 | Layout的总列数 × 元素字节数 | 对应Tensor的行步长 × 元素字节数 - 单块长度 |
-| DN | Layout的总列数 | Layout的总行数 × 元素字节数 | 对应Tensor的列步长 × 元素字节数 |
-| NZ | 分形格式的外层列数 | 总行数 × 内层列数 × 元素字节数 | 对应Tensor的外层列步长 × 元素字节数 |
-| ZN | 分形格式的外层行数 | 总列数 × 内层行数 × 元素字节数 | 对应Tensor的外层行步长 × 元素字节数 |
+| DN | Layout的总列数 | Layout的总行数 × 元素字节数 | 对应Tensor的列步长 × 元素字节数 - 单块长度 |
+| NZ | 分形格式的外层列数 | 总行数 × 内层列数 × 元素字节数 | 对应Tensor的外层列步长 × 元素字节数 - 单块长度 |
+| ZN | 分形格式的外层行数 | 总列数 × 内层行数 × 元素字节数 | 对应Tensor的外层行步长 × 元素字节数 - 单块长度 |
 
-推导结果与`DataCopyParams`的对应关系如下：
+推导结果与`asc_copy_ub2ub`高维切分数据搬运参数的对应关系如下：
 
-- 数据块个数对应`blockCount`。
-- 单块长度除以32后对应`blockLen`。
-- 源、目的块间间隔分别除以32后对应`srcGap`和`dstGap`。
-- 使用区域搬运重载时，接口根据`src_coord`、`dst_coord`和`copy_shape`解析起始地址和搬运区域，并根据区域Shape推导数据块个数和单块长度；块间间隔仍由源、目的Layout决定。
+| 推导结果 | 对应参数 | 换算关系 |
+| :--- | :--- | :--- |
+| 数据块个数 | `burst_count` | 无需换算。 |
+| 单块长度（字节） | `burst_len` | 单块长度除以32，单位为DataBlock（32字节）。 |
+| 源块间间隔（字节） | `src_gap` | 源块间间隔除以32，单位为DataBlock（32字节）。 |
+| 目的块间间隔（字节） | `dst_gap` | 目的块间间隔除以32，单位为DataBlock（32字节）。 |
+
+使用区域搬运重载时，接口根据`src_coord`、`dst_coord`和`copy_shape`解析起始地址和搬运区域，并根据区域Shape推导数据块个数和单块长度；块间间隔仍由源、目的Layout决定。
 
 ## 数据类型
 
@@ -91,7 +95,7 @@ UB到UB通路使用`copy_ub_to_ub{}`作为搬运操作对象，默认trait为`ub
 
 | 源/目的Layout | 支持的数据类型 |
 | :--- | :--- |
-| ND、DN、NZ、ZN | `fp4x2_e1m2_t`、`fp4x2_e2m1_t`、`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t` |
+| ND、DN、NZ、ZN | `int4b_t`、`fp4x2_e1m2_t`、`fp4x2_e2m1_t`、`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t` |
 
 ## 返回值说明
 
@@ -137,6 +141,8 @@ ZN Layout将逻辑二维Shape拆分为`((C0, ceil_div(M, C0)), (16, ceil_div(N, 
 源Tensor和目的Tensor必须均为ZN Layout，接口只在相同分形格式之间搬运，不改变分形排布。
 
 ## 调用示例
+
+以下示例在UB内完成数据搬运：源与目的张量位于同一UB地址空间，搬运参数（blockCount、blockLen、srcGap、dstGap）由layout的shape与stride自动推导，无需显式配置。完整Tensor搬运形式如下：
 
 ```cpp
 #include "tensor_api/tensor.h"

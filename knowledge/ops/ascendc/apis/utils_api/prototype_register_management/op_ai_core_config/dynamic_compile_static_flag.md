@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpAICoreConfig/DynamicCompileStaticFlag.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -55,7 +55,5 @@ OpAICoreConfig类，请参考[OpAICoreConfig](index.md)。
 ## 约束说明<a name="zh-cn_topic_0000001575931912_zh-cn_topic_0000001576875005_zh-cn_topic_0000001525424352_section19165124931511"></a>
 
 无
-
-
 
 - [ForeachSigmoid 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_sigmoid_950.md)

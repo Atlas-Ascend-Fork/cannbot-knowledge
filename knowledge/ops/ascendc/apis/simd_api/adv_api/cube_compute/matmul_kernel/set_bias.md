@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetBias.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -54,33 +54,33 @@ __aicore__ inline void SetBias(const LocalTensor<BiasT>& inputBias)
 -   在Matmul Tiling计算中，必须配置TCubeTiling结构中的[isBias](../matmul_tiling/t_cube_tiling_struct.md#p2051215216314)参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。
 -   传入的Bias地址空间大小需要保证不小于singleN。
 
--   对于Ascend 950PR/Ascend 950DT，Bias矩阵的内存逻辑位置为TSCM且数据类型为float或int32\_t时，Bias矩阵的LocalTensor空间必须64字节对齐。
+-   对于Ascend 950PR&950DT系列产品，Bias矩阵的内存逻辑位置为TSCM且数据类型为float或int32\_t时，Bias矩阵的LocalTensor空间必须64字节对齐。
 
 
 -   支持的数据类型<a id="li12616155731720"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16_t、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16_t、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
+    Atlas A3系列产品，支持的数据类型为：half、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
+    Atlas A2系列产品，支持的数据类型为：half、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
     
 
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、float、int32_t，对于包含biasGlobal参数的原型，仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、float、int32_t，对于包含biasGlobal参数的原型，仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
     
 
     
-    Atlas 200I/500 A2 推理产品，支持的数据类型为：half、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
+    Atlas 200I/500 A2推理产品，支持的数据类型为：half、float、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
     
 
     
-    Kirin X90，支持的数据类型为：half、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
+    Kirin X90处理器系列产品，支持的数据类型为：half、int32_t，其中仅在A、B的数据类型为int8_t时，Bias的数据类型可以设置为int32_t。
     
 
 

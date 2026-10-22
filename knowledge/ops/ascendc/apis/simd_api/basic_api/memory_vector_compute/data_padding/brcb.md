@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_padding/Brcb.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -89,22 +89,22 @@ __aicore__ inline void Brcb(const LocalTensor<T>& dst, const LocalTensor<T>& src
 ## 数据类型
 
 
-- 针对Ascend 950PR/Ascend 950DT，T支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- 针对Ascend 950PR&950DT系列产品，T支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- 针对Atlas A3系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+- 针对Atlas A2系列产品，T支持的数据类型为：int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
 
 
-- 针对Atlas 推理系列产品AI Core，T支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
+- 针对Atlas推理系列产品AI Core，T支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float。
 
 
-- 针对Kirin X90，T支持的数据类型为：uint16_t、half、uint32_t、float。
+- 针对Kirin X90处理器系列产品，T支持的数据类型为：uint16_t、half、uint32_t、float。
 
 
-- 针对Kirin 9030，T支持的数据类型为：uint16_t、half、uint32_t、float。
+- 针对Kirin 9030处理器系列产品，T支持的数据类型为：uint16_t、half、uint32_t、float。
 
 
 ## 返回值说明<a name="section459672612511"></a>
@@ -117,22 +117,23 @@ __aicore__ inline void Brcb(const LocalTensor<T>& dst, const LocalTensor<T>& src
 - 不支持源操作数与目的操作数使用同一块内存地址。
 - BrcbRepeatParams结构体内参数dstBlkStride不支持设置为0，若设置成0可能产生未定义行为。
 
-- 针对Atlas 推理系列产品AI Core，使用时需要预留8KB的Unified Buffer（UB）空间，作为接口的临时数据存放区。
+- 针对Atlas推理系列产品AI Core，使用时需要预留8KB的Unified Buffer（UB）空间，作为接口的临时数据存放区。
 
 
 - 当参数repeatTime取值为0时，该接口的行为如下：
   
   - 针对如下型号，该接口不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
   
+
 
 ## 关键特性说明
 
@@ -184,7 +185,6 @@ AscendC::Brcb(dstLocal, srcLocal, 2, {1, 8});
 进行Brcb计算后，输出数据(dstLocal):
 [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 ... 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16]
 ```
-
 
 - [FusedLinearOnlineMaxSum A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_online_max_sum.md)
 - [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)

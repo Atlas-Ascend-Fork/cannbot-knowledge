@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/histogram_compute/Histograms.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -101,6 +101,5 @@ __simd_vf__ inline void HistogramsVF(__ubuf__ U* dstAddr, __ubuf__ T* srcAddr, u
     AscendC::Reg::StoreAlign(dstAddr, dstReg, mask1);
 }
 ```
-
 
 - [ScatterNdUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/scatter_nd_update_950.md)

@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_2D.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -35,7 +35,7 @@ source_headers:
 
 - 支持GM->L0A Buffer、GM->L0B Buffer、L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer。
 
-- 特别针对Ascend 950PR/Ascend 950DT：仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer。
+- 特别针对Ascend 950PR&950DT系列产品：仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer。
 
 
 对于不同的数据类型，每个数据分形对应的矩阵如下：
@@ -57,7 +57,7 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const GlobalTensor<T>
 ```
 
 
-针对Ascend 950PR/Ascend 950DT：
+针对Ascend 950PR&950DT系列产品：
 
 ```cpp
 template <typename T>
@@ -90,35 +90,35 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 ## 数据类型
 
 
-Ascend 950PR/Ascend 950DT，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
+Ascend 950PR&950DT系列产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
 
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型为：int4b_t、uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float；**注：int4b_t仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer通路。**
+Atlas A3系列产品，支持数据类型为：int4b_t、uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float；**注：int4b_t仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer通路。**
 
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型为：int4b_t、uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float；**注：int4b_t仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer通路。**
+Atlas A2系列产品，支持数据类型为：int4b_t、uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float；**注：int4b_t仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer通路。**
 
 
 
-Atlas 200I/500 A2 推理产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
+Atlas 200I/500 A2推理产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half、bfloat16_t、uint32_t、int32_t、float。
 
 
 
-Atlas 训练系列产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half。
+Atlas训练系列产品，支持数据类型为：uint8_t、int8_t、uint16_t、int16_t、half。
 
 
 
-Atlas 推理系列产品AI Core，支持数据类型为：int4b_t、uint8_t、int8_t、uint16_t、int16_t、half；**注：int4b_t仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer通路。**
+Atlas推理系列产品AI Core，支持数据类型为：int4b_t、uint8_t、int8_t、uint16_t、int16_t、half；**注：int4b_t仅支持L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer通路。**
 
 
 
-Kirin X90，支持数据类型为：int8_t、half。
+Kirin X90处理器系列产品，支持数据类型为：int8_t、half。
 
 
 
-Kirin 9030，支持数据类型为：half。
+Kirin 9030处理器系列产品，支持数据类型为：half。
 
 
 ## 返回值说明
@@ -133,16 +133,16 @@ Kirin 9030，支持数据类型为：half。
 - 当源地址位于GM时，指令执行占用的流水为PIPE_MTE2；当源地址位于L1 Buffer时，指令执行占用的流水为PIPE_MTE1。
 - 当srcStride=0时，表示连续的repeat之间读取源操作数中的同一块数据分形。
 
-- 对于Atlas 推理系列产品AI Core，在配合Mmad接口使用、B矩阵数据类型为S4场景下，如果通过ifTranspose参数启用转置，只支持64×64的分形。
+- 对于Atlas推理系列产品AI Core，在配合Mmad接口使用、B矩阵数据类型为S4场景下，如果通过ifTranspose参数启用转置，只支持64×64的分形。
 
 - 不同型号的物理存储位置不同，开发者可以参考如下：
     - 支持的物理存储位置为Global Memory（TPosition: GM）/L1 Buffer（TPosition: A1/B1）。
     
-    - 特别针对Ascend 950PR/Ascend 950DT，支持的物理存储位置为L1 Buffer（TPosition: A1/B1）。
+    - 特别针对Ascend 950PR&950DT系列产品，支持的物理存储位置为L1 Buffer（TPosition: A1/B1）。
     
 
 
-- 特别针对Ascend 950PR/Ascend 950DT，设置dstGap参数无效。
+- 特别针对Ascend 950PR&950DT系列产品，该接口为兼容性实现，相较于Atlas A3系列产品和Atlas A2系列产品，由于L0A Buffer上支持的分形由Zz改为了Nz，所以不能直接复用算子实现代码，需要根据分型变化重新适配，具体适配方案请参考[基础API迁移指导](../../../../../guides/cross_gen_migration_guide/3510_arch_migration/2201_to_3510_guide/basic_api_migration.md#矩阵计算)中矩阵计算小节。
 
 
 ## 关键特性说明

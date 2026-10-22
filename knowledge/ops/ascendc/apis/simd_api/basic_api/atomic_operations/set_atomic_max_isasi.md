@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/atomic_operations/SetAtomicMax_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -54,20 +54,23 @@ __aicore__ inline void SetAtomicMax()
 ## 约束说明<a name="section633mcpsimp"></a>
 
 
-- Ascend 950PR/Ascend 950DT，支持的数据通路为UB/L0C Buffer->GM。
+- Ascend 950PR&950DT系列产品，支持的数据通路为UB/L0C Buffer->GM。
 
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
+- Atlas A3系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
 
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
+- Atlas A2系列产品，支持的数据通路为UB/L0C Buffer/L1 Buffer->GM。
 
 
 - 使用完后，建议通过[DisableDmaAtomic](disable_dma_atomic.md)关闭原子最大操作，以免影响后续相关功能。
 - 该接口执行前不会自动清零GM数据。开发者需根据算子逻辑判断是否清零，如需清零，请在执行前手动完成。
 - SetAtomicMax内部已集成与[SetAtomicType](set_atomic_type.md)相同的功能。建议调用上述接口时，通过设置模板参数显式指定原子操作的数据类型，无需额外调用SetAtomicType接口。
+
+- 针对[NPU架构版本2201](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)，整数类型和bfloat16_t数据类型**默认均为非饱和模式**，原子最大操作时的饱和模式无法通过[SetSaturationStrategy](../special_register_access/set_saturation_strategy.md)或[SetCtrlSpr](../special_register_access/set_ctrl_spr_isasi.md)设置，需要通过`npu-smi`命令进行设备级设置，具体设置方法请参考[SetAtomicAdd约束说明](set_atomic_add.md#npu_smi_saturation_mode)。
+
 
 ## 调用示例<a name="section177231425115410"></a>
 
@@ -106,7 +109,6 @@ Src1: [2,2,2,2,2,...,2] // 256个2
 ```
 
 完整样例请参考[DataMovementWithAtomicOperations样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/06_atomic/data_movement_with_atomic_operations)。
-
 
 - [DynamicQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dynamic_quant_950.md)
 - [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/REGIST_MATMUL_OBJ.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-30T01:53:56Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -35,7 +35,7 @@ REGIST_MATMUL_OBJ(tpipe, workspace, ...)
 | --- | --- | --- |
 | tpipe | 输入 | Tpipe对象。 |
 | workspace | 输入 | 系统workspace指针。 |
-| ... | 输入 | 可变参数，传入Matmul对象和与之对应的Tiling结构，要求Tiling结构的数据类型为[TCubeTiling结构](../matmul_tiling/t_cube_tiling_struct.md#tcubetiling-struct)。<br><br>Tiling参数可以通过Host侧[GetTiling](../matmul_tiling/get_tiling.md)接口获取，并传递到kernel侧使用。 |
+| ... | 输入 | 可变参数，传入Matmul对象和与之对应的Tiling结构，要求Tiling结构的数据类型为[TCubeTiling结构](../matmul_tiling/t_cube_tiling_struct.md#tcubetiling-struct)。<br><br>Tiling参数可以通过Host侧[GetTiling](../matmul_tiling/get_tiling.md)接口获取，并传递到核函数（Kernel）侧使用。 |
 
 ## 返回值说明
 
@@ -45,7 +45,7 @@ REGIST_MATMUL_OBJ(tpipe, workspace, ...)
 
 -   在分离模式中，本接口必须在[InitBuffer](../../../basic_api/resource_management/t_pipe/init_buffer.md)接口前调用。
 -   在程序中，最多支持定义4个Matmul对象。
--   在Matmul的内部实现中使用了[CrossCoreSetFlag](../../../basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)和[CrossCoreWaitFlag](../../../basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)进行核间同步控制，因此开发者同时使用CrossCoreSetFlag（或CrossCoreWaitFlag）和Matmul时，需注意避免核间同步flagId冲突。Matmul高阶API内部占用的flagId范围与定义的Matmul对象数目相关。假设定义了N个Matmul对象，则Matmul高阶API内部占用的flagId范围为\[0, 2 \* N - 1\]。Matmul最多支持定义4个对象，此时flagId占用范围为\[0, 7\]。
+-   在Matmul的内部实现中使用了[CrossCoreSetFlag](../../../basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)和[CrossCoreWaitFlag](../../../basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)进行核间同步控制，因此开发者同时使用CrossCoreSetFlag（或CrossCoreWaitFlag）和Matmul时，需注意避免flagId冲突，各接口flagId占用的完整说明（含各NPU架构版本差异）参见[核间同步flagId占用说明](../../../basic_api/sync_control/inter_core_sync/key_features.md#inter_core_sync_flagid_usage)。
 -   当代码中只有一个Matmul对象时，本接口可以不传入tiling参数，通过[Init](init.md)接口单独传入tiling参数。
 -   当代码中有多个Matmul对象时，必须满足Matmul对象与其tiling参数一一对应，依次传入，具体方式请参考调用示例。
 -   在分离模式中，调用本接口后，AIC核不会主动执行接口，仅在AIV核执行到下述接口后，才会触发AIC核的执行，其他接口则不会在AIC核上执行。
@@ -64,7 +64,6 @@ REGIST_MATMUL_OBJ(&pipe, GetSysWorkSpacePtr(), mm1, mm1tiling, mm2, mm2tiling, m
 REGIST_MATMUL_OBJ(&pipe, GetSysWorkSpacePtr(), mm);
 mm.Init(&tiling);
 ```
-
 
 - [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)
 - [grouped_matmul_add 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)

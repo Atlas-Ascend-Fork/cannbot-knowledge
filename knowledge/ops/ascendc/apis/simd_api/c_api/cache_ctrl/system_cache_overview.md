@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cache_ctrl/system_cache_overview.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -20,7 +20,7 @@ platforms: []
 
 Cache（缓存）的主要作用是在搬运单元或Scalar单元与外部存储之间提供一层高速缓冲，以降低数据访问延迟并提高带宽利用率。通常情况下，被频繁访问的数据会写入Cache，搬运单元或Scalar单元在执行过程中优先从Cache中读取数据；当Cache未命中时，再从外部存储加载数据并更新到Cache中。
 
-[表1](#table_cache_type)展示了不同类型的Cache的功能，不同产品中支持的Cache类型不同，具体情况如下：
+[表1](#table_cache_type)展示了不同类型的Cache的功能，其中Data Cache（DCache）和Instruction Cache（ICache）分别用于缓存数据和指令。不同产品中支持的Cache类型不同，具体情况如下：
 
 以[NPU架构版本3510](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)为例，图1展示了AI Core中支持的五类Cache（L2 Cache、DCache、ICache、SIMT DCache、NDDMA Cache）在硬件架构中的位置关系。
 
@@ -34,13 +34,13 @@ Cache（缓存）的主要作用是在搬运单元或Scalar单元与外部存储
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/atlas_a2_a3_cache_architecture_diagram.png "atlas_a2_a3_cache_architecture_diagram")
 
 
-**表1**  Cache类型及功能说明<a name="table_cache_type"></a>
+**表1** Cache类型及功能说明<a name="table_cache_type"></a>
 
 | Cache类型 | 说明 |
 |------------|------|
 | L2 Cache | L2 Cache作为二级缓存，专门用于存储频繁访问的数据和指令，以便减少对GM的读写。<br>&bull;通过MTE2单元读取GM时，优先从L2 Cache中读取数据；当L2 Cache未命中时，再从GM加载数据并更新到L2 Cache中。<br>&bull;通过Scalar单元读取GM时，优先从DCache中读取数据；当DCache未命中时，再从L2 Cache中读取数据。当L2 Cache也未命中时，再从GM加载数据并更新到L2 Cache和DCache中。<br>&bull;通过Scalar单元读取GM指令时，优先从ICache中读取指令；当ICache未命中时，再从L2 Cache中读取指令。当L2 Cache也未命中时，再从GM加载指令并更新到L2 Cache和ICache中。 |
-| DCache | DCache（Data Cache）用于缓存Scalar单元近期可能被重复访问的数据段。<br>通过Scalar单元读取GM时，优先从DCache中读取数据；当DCache未命中时，再从L2 Cache中读取数据。当L2 Cache也未命中时，再从GM加载数据并更新到L2 Cache和DCache中。 |
-| ICache | ICache（Instruction Cache）用于缓存Scalar单元最近使用或频繁使用的指令。<br>通过Scalar单元读取GM指令时，优先从ICache中读取指令；当ICache未命中时，再从L2 Cache中读取指令。当L2 Cache也未命中时，再从GM加载指令并更新到L2 Cache和ICache中。 |
+| DCache | DCache用于缓存Scalar单元近期可能被重复访问的数据段。<br>通过Scalar单元读取GM时，优先从DCache中读取数据；当DCache未命中时，再从L2 Cache中读取数据。当L2 Cache也未命中时，再从GM加载数据并更新到L2 Cache和DCache中。 |
+| ICache | ICache用于缓存Scalar单元最近使用或频繁使用的指令。<br>通过Scalar单元读取GM指令时，优先从ICache中读取指令；当ICache未命中时，再从L2 Cache中读取指令。当L2 Cache也未命中时，再从GM加载指令并更新到L2 Cache和ICache中。 |
 | SIMT DCache | SIMT访问GM需要经过SIMT DCache中转。数据流经由GM到SIMT DCache，再从SIMT DCache到SIMT寄存器，SIMT DCache充当中间缓冲层，减少对GM的直接访问次数。 |
 | NDDMA Cache | NDDMA Cache用于缓存最近或即将被[asc_ndim_copy_gm2ub](../vector_datamove/asc_ndim_copy_gm2ub.md)接口搬运的数据。 |
 
@@ -50,7 +50,7 @@ Cache（缓存）的主要作用是在搬运单元或Scalar单元与外部存储
 
 表2介绍了缓存的四种基础操作及其核心功能。
 
-**表2**  Cache操作及功能说明
+**表2** Cache操作及功能说明
 
 | 操作名称 | 功能说明 |
 |---------|---------|
@@ -111,7 +111,7 @@ Cache一致性是多核中确保数据正确性的核心机制。简单来说，
 
 表3按照Cache类型（L2 Cache、DCache、ICache、NDDMA Cache）汇总了与缓存控制相关的接口及其功能说明。
 
-**表3**  缓存控制接口汇总
+**表3** 缓存控制接口汇总
 
 | Cache类型 | 接口名称 | 功能简述 |
 |-----------|---------|---------|

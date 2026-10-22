@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/load/asc_loadunalign_pre.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -35,6 +35,8 @@ source_headers:
 - **源地址预处理模式**：以UB源地址作为起始地址，为[asc_loadunalign](asc_loadunalign.md)或[asc_loadunalign_postupdate](asc_loadunalign_postupdate.md)的连续非对齐搬入模式准备前置数据缓存。
 - **地址寄存器偏移预处理模式**：以UB源地址与地址寄存器记录的元素偏移量共同确定起始地址，为`asc_loadunalign_postupdate`的地址寄存器偏移搬入模式准备前置数据缓存。需要与[asc_update_addr_reg](../reg_addr_reg/asc_update_addr_reg.md)配合使用。
 
+本接口为Reg矢量搬运接口，仅在AIV上生效。
+
 ## 函数原型
 
 ### 源地址预处理模式
@@ -46,7 +48,7 @@ __simd_callee__ inline void asc_loadunalign_pre(vector_load_unalign& dst,
 
 #### dtype支持数据类型
 
-dtype支持的数据类型为`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t`。
+`dtype`取值为：`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t`。
 
 #### 函数原型典型示例
 
@@ -66,7 +68,7 @@ __simd_callee__ inline void asc_loadunalign_pre(vector_load_unalign& dst,
 
 #### dtype支持数据类型
 
-dtype支持的数据类型为`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t`。
+`dtype`取值为：`int4b_t`、`int8_t`、`uint8_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t`、`hifloat8_t`、`fp8_e8m0_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`、`int64_t`。
 
 #### 函数原型典型示例
 
@@ -106,11 +108,10 @@ __simd_callee__ inline void asc_loadunalign_pre(vector_load_unalign& dst,
 
 ### 通用约束
 
-- 本接口仅在AIV上生效，非AIV调用直接返回。
-- 本接口在Vector Function（`__simd_vf__`标记的函数）内调用。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - 实际访问地址在接口内部向低地址方向对齐到32字节边界后读取数据。传入的`src`或`src`与`offset`确定的地址必须按dtype对齐，对齐后的32字节读取范围必须在UB地址空间内，否则会报错。
 - UB容量上限为256KB，用户可用容量随编译选项与编程场景变化（默认预留6KB SIMD VF栈 + 2KB Ascend C预留，可用248KB；SIMD+SIMT混编时再划分32KB～128KB作Data Cache，可用容量进一步减少）。UB地址偏移后不可超过实际可用容量，否则会报错。
-- 如果本指令与其他指令存在UB地址重叠，必须插入同步指令[asc_mem_bar](../reg_sync/asc_mem_bar.md)，保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在数据依赖，需要插入同步指令[asc_mem_bar](../reg_sync/asc_mem_bar.md)，保证多个指令串行化，防止出现异常数据。
 
 ### 源地址预处理模式
 
@@ -124,6 +125,7 @@ __simd_callee__ inline void asc_loadunalign_pre(vector_load_unalign& dst,
 - 本接口和紧随其后的首次搬入必须使用相同的`src`和`offset`。
 - 同一循环迭代内，后续搬入继续使用[asc_loadunalign_postupdate](asc_loadunalign_postupdate.md)按`inc`更新后的`offset`时，可以复用更新后的`src0`；如果`src`或`offset`被另行修改，必须根据修改后的实际读取地址重新初始化`src0`。
 - 当dtype为`int64_t`时，由于地址寄存器更新接口不支持b64模式，需要使用[asc_update_addr_reg_b32](../reg_addr_reg/asc_update_addr_reg.md)生成地址寄存器。一个b64元素占用两个b32寻址单元，因此传入`asc_update_addr_reg_b32`的各维偏移量必须设置为期望的b64元素偏移量的2倍。
+
     ```c
     vector_int64_t src_reg;
     vector_bool mask_b32 = asc_create_mask_b32(PAT_ALL);
@@ -145,7 +147,7 @@ __simd_callee__ inline void asc_loadunalign_pre(vector_load_unalign& dst,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

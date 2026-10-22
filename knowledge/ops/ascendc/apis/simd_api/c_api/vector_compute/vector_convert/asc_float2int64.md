@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_convert/asc_float2int64.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -31,7 +31,6 @@ source_headers:
 * FLOOR舍入模式：向负无穷舍入
 * CEIL舍入模式：向正无穷舍入
 * TRUNC舍入模式：向零舍入
-
 
 ## 函数原型
 

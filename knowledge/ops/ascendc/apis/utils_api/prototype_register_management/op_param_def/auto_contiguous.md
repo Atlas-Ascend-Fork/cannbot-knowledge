@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpParamDef/AutoContiguous.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -44,8 +44,6 @@ OpParamDef算子定义，OpParamDef请参考[OpParamDef](index.md)。
 ## 约束说明<a name="zh-cn_topic_0000001711819448_zh-cn_topic_0000001526594958_zh-cn_topic_0000001525424352_section19165124931511"></a>
 
 当一个Input调用了AutoContigous\(\)后，其他未调用IgnoreContiguous\(\)的Input也会在框架中默认进行非连续tensor转连续tensor的处理。
-
-
 
 - [Rasterizer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/rasterizer.md)
 - [StridedSliceAssignV2 A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/strided_slice_assign_v2.md)

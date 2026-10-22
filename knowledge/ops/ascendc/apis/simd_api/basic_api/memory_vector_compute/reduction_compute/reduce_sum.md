@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceSum.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -76,7 +76,7 @@ source_headers:
 | dst | 输出 | 目的操作数。<br>类型为[LocalTensor](../../data_structures/local_tensor/index.md)，支持的TPosition为VECIN、VECCALC、VECOUT。 |
 | src | 输入 | 源操作数。<br>类型为[LocalTensor](../../data_structures/local_tensor/index.md)，支持的TPosition为VECIN、VECCALC、VECOUT。 |
 | sharedTmpBuffer | 输入 | 指令执行期间存储中间结果，用于内部计算所需操作空间，需特别注意空间大小。详情请参考[关键特性说明](#关键特性说明)。<br>类型为[LocalTensor](../../data_structures/local_tensor/index.md)，支持的TPosition为VECIN、VECCALC、VECOUT。 |
-| count | 输入 | 参与计算的元素个数。关于该参数的具体说明请参考[连续计算](../simd_compute/continuous_compute.md)。最大处理的数据量不能超过UB大小限制。 |
+| count | 输入 | 参与计算的元素个数。关于该参数的具体说明请参考[连续计算](../simd_compute/continuous_compute.md)。最大处理的数据量不能超过Unified Buffer（UB）大小限制。 |
 | mask/mask[] | 输入 | `mask`用于控制每次迭代内参与计算的源操作数。详细设置参考[掩码概述](../simd_compute/mask.md)。 |
 | repeatTime | 输入 | 迭代次数。关于该参数的具体描述请参考[高维切分](../simd_compute/high_dim_split.md)。**注：与高维切分中不同的是，`repeatTime`可以支持更大的取值范围，保证不超过int32_t的最大值即可。** |
 | srcRepStride | 输入 | 源操作数相邻迭代间的地址步长，即源操作数每次迭代跳过的DataBlock数目。取值范围为[0, $2^{16}-1$]。 |
@@ -88,28 +88,28 @@ source_headers:
 支持的数据类型如下：
 
 
-- Ascend 950PR/Ascend 950DT，支持half、float、int32_t、uint32_t、int64_t、uint64_t。数据类型int64_t、uint64_t仅支持tensor前n个数据计算接口。
+- Ascend 950PR&950DT系列产品，支持half、float、int32_t、uint32_t、int64_t、uint64_t。数据类型int64_t、uint64_t仅支持tensor前n个数据计算接口。
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持half、float。
+- Atlas A3系列产品，支持half、float。
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持half、float。
+- Atlas A2系列产品，支持half、float。
 
 
-- Atlas 200I/500 A2 推理产品，支持half、float。
+- Atlas 200I/500 A2推理产品，支持half、float。
 
 
-- Atlas 推理系列产品AI Core，支持half、float。
+- Atlas推理系列产品AI Core，支持half、float。
 
 
-- Atlas 训练系列产品，支持half。
+- Atlas训练系列产品，支持half。
 
 
-- Kirin X90，支持half、float。
+- Kirin X90处理器系列产品，支持half、float。
 
 
-- Kirin 9030，支持half、float。
+- Kirin 9030处理器系列产品，支持half、float。
 
 
 ## 返回值说明
@@ -127,39 +127,39 @@ source_headers:
   
   - 针对如下型号，当参数count或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
 
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数count或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
   
 
 
-- `srcRepStride`取值范围为[0, $2^{16}-1$]，需要结合Unified Buffer（UB）的实际大小避免出现越界。
+- `srcRepStride`取值范围为[0, $2^{16}-1$]，需要结合UB的实际大小避免出现越界。
 
 
 - 针对以下型号，模板参数`isSetMask`参数不生效，保持默认值即可：
   
-  - Ascend 950PR/Ascend 950DT
+  - Ascend 950PR&950DT系列产品
   
   
-  - Atlas 200I/500 A2 推理产品
+  - Atlas 200I/500 A2推理产品
   
   
-  - Atlas 推理系列产品AI Core
+  - Atlas推理系列产品AI Core
   
   
-  - Atlas 训练系列产品
+  - Atlas训练系列产品
   
   
-  - Kirin X90
+  - Kirin X90处理器系列产品
   
   
-  - Kirin 9030
+  - Kirin 9030处理器系列产品
   
 
 
@@ -192,31 +192,31 @@ source_headers:
 **不同硬件形态对应的`ReduceSum`相加方式如下：**
 
 
-- Ascend 950PR/Ascend 950DT，按场景采用不同的累加方式：
+- Ascend 950PR&950DT系列产品，按场景采用不同的累加方式：
   - int64_t、uint64_t采用方式三。
   - [Counter模式](../simd_compute/mask.md#mask-mode)且数据量在256~1024字节之间采用方式三；否则采用方式二。
   - [Normal模式](../simd_compute/mask.md#mask-mode)采用方式二。
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，tensor前n个数据计算接口采用方式一，tensor高维切分计算接口采用方式二。
+- Atlas A3系列产品，tensor前n个数据计算接口采用方式一，tensor高维切分计算接口采用方式二。
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，tensor前n个数据计算接口采用方式一，tensor高维切分计算接口采用方式二。
+- Atlas A2系列产品，tensor前n个数据计算接口采用方式一，tensor高维切分计算接口采用方式二。
 
 
-- Atlas 200I/500 A2 推理产品，采用方式二。
+- Atlas 200I/500 A2推理产品，采用方式二。
 
 
-- Atlas 推理系列产品AI Core，采用方式二。
+- Atlas推理系列产品AI Core，采用方式二。
 
 
-- Atlas 训练系列产品，采用方式二。
+- Atlas训练系列产品，采用方式二。
 
 
-- Kirin X90，采用方式二。
+- Kirin X90处理器系列产品，采用方式二。
 
 
-- Kirin 9030，采用方式二。
+- Kirin 9030处理器系列产品，采用方式二。
 
 
 ## 调用示例

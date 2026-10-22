@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/data_filter/GetSelectMaxMinTmpSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/adv_api/select/selectwithbytesmask_tiling.h
@@ -21,10 +21,10 @@ source_headers:
 
 ## 功能说明
 
-kernel侧Select接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。
+核函数（Kernel）侧Select接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到核函数（Kernel）侧使用。
 
 -   为保证功能正确，申请的临时空间大小不能小于最小临时空间大小；
--   在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间申请。
+-   在最小临时空间-最大临时空间范围内，随着临时空间增大，核函数（Kernel）侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间申请。
 
 ## 函数原型
 
@@ -72,7 +72,7 @@ kernel侧Select接口的计算需要开发者申请临时空间，本接口用�
 | srcTypeSize | 输入 | 输入srcTensor的数据类型大小，比如数据类型为half，此处应传入2。 |
 | maskShape | 输入 | 输入maskTensor的shape信息，参数类型为[AscendC::TensorShape](../data_structures/tensor_shape.md)。 |
 | maskTypeSize | 输入 | 输入maskTensor的数据类型大小，比如数据类型为bool，此处应传入1。 |
-| isReuseMask | 输入 | 是否复用maskTensor输入的空间。与kernel侧保持一致。 |
+| isReuseMask | 输入 | 是否复用maskTensor输入的空间。与核函数（Kernel）侧保持一致。 |
 | maxValue | 输出 | Select接口能完成计算所需最大临时空间大小。<br> 说明：maxValue仅作为参考值，有可能大于UB剩余空间的大小，该场景下，开发者需要根据UB剩余空间的大小来选取合适的临时空间大小。 |
 | minValue | 输出 | Select接口能完成计算所需最小临时空间大小。 |
 

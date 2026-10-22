@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/TILING_KEY_IS.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -28,7 +28,7 @@ source_headers:
 
 头文件路径为：`"utils/base/sys_macros.h"`。
 
-在核函数（Kernel）中判断本次执行时的tiling\_key是否等于host侧运行时设置的某个key，从而标识tiling\_key==key的一条kernel分支。
+在核函数（Kernel）中判断本次执行时的tiling\_key是否等于host侧运行时设置的某个key，从而标识tiling\_key==key的一条核函数（Kernel）分支。
 
 ## 函数原型<a name="zh-cn_topic_0000001610027821_section1630753514297"></a>
 
@@ -106,8 +106,6 @@ ge::graphStatus TilingFunc(gert::TilingContext* context)
     }
 }
 ```
-
-
 
 - [Resize 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/resize_950.md)
 - [CircularPad2d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_2d.md)

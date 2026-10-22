@@ -11,16 +11,16 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/type/data_type_definition.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
 
-# Reg数据类型定义
+# 寄存器类型定义
 
 ## 矢量数据寄存器
 
-矢量数据寄存器用于存储矢量数据，其长度为`VL`（Vector Length）。在Ascend 950PR/Ascend 950DT产品中，`VL`为256字节，可存储`VL / sizeof(dtype)`个`dtype`类型的元素。例如，`vector_float`可存储`256 / sizeof(float) = 64`个`float`类型的元素。
+矢量数据寄存器用于存储矢量数据，其长度为`VL`（Vector Length）。在Ascend 950PR&950DT系列产品中，`VL`为256字节，可存储`VL / sizeof(dtype)`个`dtype`类型的元素。例如，`vector_float`可存储`256 / sizeof(float) = 64`个`float`类型的元素。
 
 矢量数据寄存器类型按位宽类别分类如下：
 

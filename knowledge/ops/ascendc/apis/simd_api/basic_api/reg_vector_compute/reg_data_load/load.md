@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_load/Load.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"basic_api/reg_compute/kernel_reg_compute_datacopy_intf.h"`。
 
-Reg矢量计算数据搬运接口，支持从Unified Buffer（UB）非32字节对齐的源地址srcAddr搬运至RegTensor，搬运量为VL（256B）。连续搬运时，用户需手动更新srcAddr地址。
+Reg矢量计算数据搬运接口，支持从Unified Buffer（UB）非32字节对齐的源地址srcAddr搬运至RegTensor。当RegTensor模板参数regTrait为RegTraitNumOne时，搬运量为VL（256B）；当regTrait为RegTraitNumTwo时，搬运量为2*VL（512B）。连续搬运时，用户需手动更新srcAddr地址。
 
 该接口封装了[LoadUnAlignPre和LoadUnAlign](load_un_align_continuous.md)。
 
@@ -53,7 +53,10 @@ __simd_callee__ inline void Load(U& dstReg, __ubuf__ T* srcAddr)
 
 ## 数据类型
 
-目的操作数与源操作数的数据类型需要保持一致。支持的数据类型为：b8、b16、b32、b64。
+目的操作数与源操作数的数据类型需要保持一致。
+
+- 当RegTensor模板参数regTrait为RegTraitNumOne时，支持的数据类型为：b8、b16、b32、b64。
+- 当RegTensor模板参数regTrait为RegTraitNumTwo时，支持的数据类型为：complex32、b64。
 
 ## 返回值说明
 
@@ -61,14 +64,15 @@ __simd_callee__ inline void Load(U& dstReg, __ubuf__ T* srcAddr)
 
 ## 约束说明
 
-- dstReg不支持RegTraitNumTwo。
+- 当RegTensor模板参数regTrait为RegTraitNumTwo时，srcAddr起始位置需要保证至少有2*VL（512B）可读数据。
 - 接口内部定义了一个[UnalignRegForLoad](../register_data_types/unalign_reg_for_load_unalign_reg_for_store.md)，该寄存器数量上限为4，超出后编译器将报错。
 
 ## 调用示例
 
 ```cpp
 template<typename T>
-__simd_vf__ inline void LoadStoreVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t count, uint16_t repeatTimes)
+__simd_vf__ inline void LoadStoreVF(
+    __ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t count, uint16_t repeatTimes)
 {
     AscendC::Reg::RegTensor<T> srcReg;
     for (uint16_t i = 0; i < repeatTimes; i++) {
@@ -77,6 +81,5 @@ __simd_vf__ inline void LoadStoreVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, ui
     }
 }
 ```
-
 
 - [MhcPreBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_backward_950.md)

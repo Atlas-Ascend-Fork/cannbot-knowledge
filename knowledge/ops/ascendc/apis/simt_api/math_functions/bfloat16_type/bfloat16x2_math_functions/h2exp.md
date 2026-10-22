@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_math_functions/h2exp.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 指定输入x，对x的各元素，获取e的该元素次方。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002545900876.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002545900876.png)
 
 ## 函数原型
 
@@ -58,9 +58,7 @@ inline bfloat16x2_t h2exp(bfloat16x2_t x)
 
 ## 约束说明
 
-
-针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。
-
+无
 
 ## 调用示例
 
@@ -93,3 +91,10 @@ inline bfloat16x2_t h2exp(bfloat16x2_t x)
         dst[idx] = h2exp(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.25, 0.5), (2.5, -3.75), (-2, 1.25), (0.75, -0.25)
+result: (0.287109, 1.64844), (12.1875, 0.0235596), (0.135742, 3.48438), (2.10938, 0.777344)
+```

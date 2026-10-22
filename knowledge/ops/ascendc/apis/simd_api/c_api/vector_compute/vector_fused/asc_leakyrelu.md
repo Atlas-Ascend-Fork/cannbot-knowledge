@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_fused/asc_leakyrelu.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -35,6 +35,7 @@ src_i ,\quad src_i>0\\
 $$
 
 ## 函数原型
+
 - 前n个数据计算
 
     ```cpp
@@ -51,7 +52,6 @@ $$
 
 ## 参数说明
 
-
 **表1** 参数说明
 
 | 参数名       | 输入/输出 | 描述                |
@@ -65,7 +65,6 @@ $$
 | dst_repeat_stride  | 输入 | 目的操作数相邻迭代间相同DataBlock的地址步长。 |
 | src_repeat_stride | 输入 | 源操作数相邻迭代间相同DataBlock的地址步长。 |
 | repeat             | 输入 | 迭代次数。 |
-
 
 ## 返回值说明
 

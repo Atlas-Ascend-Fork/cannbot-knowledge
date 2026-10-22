@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__ffs.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -103,4 +103,20 @@ int __ffs(long x)
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
         dst[idx] = __ffs(x[idx]);
     }
+    ```
+
+输入输出示例如下：
+
+- 当输入数据类型为`int`时：
+
+    ```text
+    x: 0, 1, 2, 8, 15
+    result: 0, 1, 2, 4, 1
+    ```
+
+- 当输入数据类型为`long long`时：
+
+    ```text
+    x: 0, 1, 2, 8, 15
+    result: 0, 1, 2, 4, 1
     ```

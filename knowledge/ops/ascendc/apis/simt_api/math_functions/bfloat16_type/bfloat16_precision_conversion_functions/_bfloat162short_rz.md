@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__bfloat162short_rz.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -87,3 +87,10 @@ inline short int __bfloat162short_rz(const bfloat16_t x)
         dst[idx] = __bfloat162short_rz(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0.5, 1.5, 2.5, -1.5, -2.5, 127.5, -127.5, inf
+result: 0, 1, 2, -1, -2, 127, -127, 32767
+```

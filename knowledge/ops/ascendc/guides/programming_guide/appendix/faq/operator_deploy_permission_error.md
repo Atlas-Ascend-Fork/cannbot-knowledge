@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/faq/operator_deploy_permission_error.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -36,15 +36,13 @@ platforms: []
 
 ## 处理步骤<a name="section12149153520416"></a>
 
--   方法一：使用--install-path参数指定安装目录（参考[指定目录安装](../../advanced_programming/aclnn_operator_development/compilation_and_deployment/basic_process.md#custom-install-path)）。运行用户需要对指定的安装路径有可读写权限。安装后执行生成的`set_env.bash`脚本，由该脚本配置算子运行时查找路径。
+-   方法一（推荐）：使用--install-path参数指定用户自有且权限受控的安装目录（参考[指定目录安装](../../advanced_programming/aclnn_operator_development/compilation_and_deployment/basic_process.md#custom-install-path)）。部署用户需要对指定的安装路径有读、写和执行权限。安装后执行生成的`set_env.bash`脚本，由该脚本配置算子运行时查找路径。
 
     ```
     ./custom_opp_<target os>_<target architecture>.run --install-path=<path>
     source <path>/vendors/<vendor_name>/bin/set_env.bash
     ```
 
--   方法二：联系CANN软件包安装用户修改默认安装路径下的vendors目录权限，比如修改为777：
+-   方法二：如需部署到默认安装路径，请联系CANN软件包安装用户或管理员，由其统一部署自定义算子包。确需授权其他用户部署时，应遵循最小权限原则，仅向可信用户授予必要权限。
 
-    ```
-    chmod 777 /usr/local/Ascend/cann/opp/vendors/
-    ```
+    **安全提示：**请勿将共享的vendors目录权限设置为777，也不要对该目录递归开放所有用户的写权限。父目录写权限可能允许非授权用户新增或重命名算子目录、替换加载配置，影响其他用户的算子加载。运行用户仅需使用算子包时，不应授予部署目录的写权限。

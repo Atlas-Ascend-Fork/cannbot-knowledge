@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_math_functions/h2rsqrt.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据x各元素的平方根的倒数。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002576421069.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002576421069.png)
 
 ## 函数原型
 
@@ -59,9 +59,7 @@ inline bfloat16x2_t h2rsqrt(bfloat16x2_t x)
 
 本接口支持的输入数据范围为x大于等于0，否则返回值为nan。
 
-
-针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了sqrtf，由于sqrtf不支持Subnormal场景，当输入x为Subnormal数据时，会导致本接口最终结果为+inf。
-
+无
 
 ## 调用示例
 
@@ -88,3 +86,10 @@ inline bfloat16x2_t h2rsqrt(bfloat16x2_t x)
         dst[idx] = h2rsqrt(x[idx]);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.25, 0.5), (2.5, -3.75), (-2, 1.25), (0.75, -0.25)
+result: (nan, 1.41406), (0.632813, nan), (nan, 0.894531), (1.15625, nan)
+```

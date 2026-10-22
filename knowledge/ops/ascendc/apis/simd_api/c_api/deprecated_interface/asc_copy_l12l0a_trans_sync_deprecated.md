@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l12l0a_trans_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_l12l0a_trans_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l12l0a_trans.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l12l0a_trans_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_l12l0a_trans.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 该接口实现带转置的2D格式数据从L1 Buffer到L0A Buffer的加载。
 

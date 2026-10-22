@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/GM_UB_data_move.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-30T01:53:56Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -50,7 +50,7 @@ Global Memory（GM）与Unified Buffer（UB）之间的数据搬运提供了多�
 - UB -> Global Memory
     - VECOUT -> GM
     
-    - CO2 -> GM（仅Atlas 推理系列产品AI Core支持）
+    - CO2 -> GM（仅Atlas推理系列产品AI Core支持）
     
 
 搬运的数据用于[矢量计算](../memory_vector_compute/index.md)，具体的接口请参考：[DataCopy（GM与UB连续数据搬运）](../memory_vector_compute/data_move/data_copy_gm_and_ub_continuous.md)。
@@ -84,7 +84,7 @@ src和dst分别为源操作数和目的操作数；count为连续搬运的元素
 - UB -> Global Memory
     - VECOUT -> GM
     
-    - CO2 -> GM（仅Atlas 推理系列产品AI Core支持）
+    - CO2 -> GM（仅Atlas推理系列产品AI Core支持）
     
 
 搬运的数据用于[矢量计算](../memory_vector_compute/index.md)，具体的接口请参考：[DataCopy（GM与UB高维切分数据搬运）](../memory_vector_compute/data_move/data_copy_gm_and_ub_highdim_split.md)。
@@ -116,7 +116,7 @@ src和dst分别为源操作数和目的操作数；repeatParams为DataCopyParams
 - UB -> Global Memory
     - VECOUT -> GM
     
-    - CO2 -> GM（仅Atlas 推理系列产品AI Core支持）
+    - CO2 -> GM（仅Atlas推理系列产品AI Core支持）
     
 
 搬运的数据用于[矢量计算](../memory_vector_compute/index.md)，具体的接口请参考：[DataCopy（GM与UB切片数据搬运）](../memory_vector_compute/data_move/data_copy_gm_and_ub_slice.md)。
@@ -158,7 +158,7 @@ src和dst分别为源操作数和目的操作数；intriParams为Nd2NzParams类�
     ```
 
 
-- 支持enableSmallC0模式（仅Ascend 950PR/Ascend 950DT支持）
+- 支持enableSmallC0模式（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, bool enableSmallC0 = false>
@@ -175,7 +175,7 @@ src和dst分别为源操作数和目的操作数；intriParams为Nd2NzParams类�
 - UB -> Global Memory
     - VECOUT -> GM
     
-    - CO2 -> GM（仅Atlas 推理系列产品AI Core支持）
+    - CO2 -> GM（仅Atlas推理系列产品AI Core支持）
     
 
 搬运的数据用于[矢量计算](../memory_vector_compute/index.md)，具体的接口请参考：[DataCopy（UB->GM随路转换NZ2ND搬运）](../memory_vector_compute/data_move/data_copy_ub_to_gm_nz2_nd.md)。
@@ -218,7 +218,7 @@ src和dst分别为源操作数和目的操作数；params为NdDmaParams类型的
 该接口提供将数据从Global Memory非对齐搬运至UB的功能，可以根据开发者的需要自行填充数据。当每个搬运的数据块长度（blockLen）非32字节对齐时，每一个数据块都需要填充数据至32字节对齐。
 
 
-特别地，针对Ascend 950PR/Ascend 950DT，支持Compact模式，该模式支持单个数据块非32字节对齐，将所有数据块合并成一个连续数据块，在该数据块右侧填充数据至32字节对齐。
+特别地，针对Ascend 950PR&950DT系列产品，支持Compact模式，该模式支持单个数据块非32字节对齐，将所有数据块合并成一个连续数据块，在该数据块右侧填充数据至32字节对齐。
 
 
 具体支持的数据通路为（以[逻辑位置TPosition](../aux_data_structures/t_position.md)表示）：
@@ -227,7 +227,7 @@ src和dst分别为源操作数和目的操作数；params为NdDmaParams类型的
     - GM -> VECIN
     - GM -> VECOUT
     
-    - GM -> VECCALC（仅Ascend 950PR/Ascend 950DT支持）
+    - GM -> VECCALC（仅Ascend 950PR&950DT系列产品支持）
     
 
 搬运的数据用于[矢量计算](../memory_vector_compute/index.md)，具体的接口请参考：[DataCopyPad（GM -> UB非对齐数据搬运）](../memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)。
@@ -242,7 +242,7 @@ src和dst分别为源操作数和目的操作数；dataCopyParams为DataCopyExtP
     ```
 
 
-- 支持配置设置数据搬运模式mode（仅Ascend 950PR/Ascend 950DT支持）
+- 支持配置设置数据搬运模式mode（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, PaddingMode mode = PaddingMode::Normal>
@@ -274,7 +274,7 @@ src和dst分别为源操作数和目的操作数；dataCopyParams为DataCopyExtP
     ```
 
 
-- 支持配置设置数据搬运模式mode（仅Ascend 950PR/Ascend 950DT支持）
+- 支持配置设置数据搬运模式mode（仅Ascend 950PR&950DT系列产品支持）
 
     ```cpp
     template <typename T, PaddingMode mode = PaddingMode::Normal>

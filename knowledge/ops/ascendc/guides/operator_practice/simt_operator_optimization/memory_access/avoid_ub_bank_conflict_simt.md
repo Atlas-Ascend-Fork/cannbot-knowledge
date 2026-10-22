@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/memory_access/avoid_ub_bank_conflict_simt.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ platforms: []
 【描述】SIMT编程模式下，一个Warp内的多个线程可能在同一条Unified Buffer（UB）访问指令中同时访问UB。对于使用UB中转做转置、重排等操作的算子，即使GM读写已经连续，仍需要分析UB访问模式，避免UB内部访问成为新的性能瓶颈。
 
 
-下图为UB bank结构示意图。Ascend 950PR/Ascend 950DT的UB划分为16个bank，并组织为8个bank group；SIMT编程模式下，每个bank进一步划分为4个subbank。若同一个Warp内多个线程在同一条UB访问指令中访问同一个bank group的相同编号subbank，硬件需要排队处理，从而形成subbank冲突并增加访问延迟。
+下图为UB bank结构示意图。Ascend 950PR&950DT系列产品的UB划分为16个bank，并组织为8个bank group；SIMT编程模式下，每个bank进一步划分为4个subbank。若同一个Warp内多个线程在同一条UB访问指令中访问同一个bank group的相同编号subbank，硬件需要排队处理，从而形成subbank冲突并增加访问延迟。
 
 **图 1** bank结构示意图
 ![img](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bank_struct.png "bank结构示意图")

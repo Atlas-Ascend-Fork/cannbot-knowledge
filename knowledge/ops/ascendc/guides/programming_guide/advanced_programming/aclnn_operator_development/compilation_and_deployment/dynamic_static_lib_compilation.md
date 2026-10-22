@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/compilation_and_deployment/dynamic_static_lib_compilation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -32,13 +32,13 @@ platforms: []
 
 算子动态库和静态库编译支持以下产品范围：
 
-- Ascend 950PR/Ascend 950DT
+- Ascend 950PR&950DT系列产品
 
 
-- Atlas A3训练系列产品 / Atlas A3推理系列产品
+- Atlas A3系列产品
 
 
-- Atlas A2训练系列产品 / Atlas A2推理系列产品
+- Atlas A2系列产品
 
 
 开始前需完成以下准备：
@@ -167,6 +167,7 @@ target_link_libraries(op_runner PRIVATE # op_runner需要替换成调用方的�
     ${vendor_name}::${vendor_name}  # 已自动包含相关的target依赖，需要把${vendor_name}替换为实际的算子package名称
 )
 ```
+
 `${vendor_name}::${vendor_name}`在`TYPE STATIC`模式下指向`lib${vendor_name}.a`。
 静态库集成的完整样例可参考[custom_op_static_lib](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op_static_lib)。
 
@@ -205,7 +206,7 @@ export ASCEND_CUSTOM_OPP_PATH=${CMAKE_INSTALL_PREFIX}/lib/:${ASCEND_CUSTOM_OPP_P
 ASCEND_CUSTOM_OPP_PATH=<path1>/vendors/vendor_name1:<path2>/lib/:<path3>/vendors/vendor_name3:<path4>/lib/
 ```
 
-如果开发者通过Ascend Graph进行图开发，除了配置环境变量的方式，也可以采用直接在应用程序的编译文件中链接动态库libcust_opapi.so的方式。Ascend Graph图开发的相关信息请参考[《图引擎开发指南》](https://www.hiascend.com/document/redirect/CannCommunityGraphguide)。动态库链接方式的so加载优先级高于环境变量配置方式。
+如果开发者通过Ascend Graph进行图开发，除了配置环境变量的方式，也可以采用直接在应用程序的编译文件中链接动态库libcust_opapi.so的方式。Ascend Graph图开发的相关信息请参考[《图开发》](https://gitcode.com/cann/ge/blob/master/docs/zh/user_guides/graph_dev/README.md)。动态库链接方式的so加载优先级高于环境变量配置方式。
 
 ## 多厂商和同名动态库处理
 

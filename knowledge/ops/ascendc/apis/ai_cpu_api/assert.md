@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/AI-CPU-API/assert.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -65,7 +65,7 @@ assert(expr)
 ## 约束说明<a name="section43265506459"></a>
 
 -   该接口仅支持通过<<<...\>\>\>调用，并在异构编译场景使用。
--   kernel开发不要包含系统的assert.h，会导致宏定义冲突。
+-   核函数（Kernel）开发不要包含系统的assert.h，会导致宏定义冲突。
 -   assert接口调用形式与C语言一致，不需要使用AscendC命名空间。
 
 -   该接口使用Dump功能，所有使用Dump功能的接口在每个核上单次Dump的数据量不可超过1M。请开发者自行控制待打印的内容数据量，超出则不会打印。
@@ -79,7 +79,7 @@ assert(expr)
 
 ## 调用示例<a name="section82241477610"></a>
 
-在算子kernel侧实现代码中需要增加断言的地方使用assert检查代码示例如下：
+在算子核函数（Kernel）侧实现代码中需要增加断言的地方使用assert检查代码示例如下：
 
 ```
 int assertFlag = 10;
@@ -92,7 +92,5 @@ assert(assertFlag == 12);
 ```
 [ASSERT]` assertFlag == 12 ' at /home/.../test.cpp:36
 ```
-
-
 
 - [assert（AI CPU API）：固定 reference 调用约束](../../guides/diagnostics/aicpu_assert_reference_contract.md)

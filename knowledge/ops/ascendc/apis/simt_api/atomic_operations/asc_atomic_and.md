@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/atomic_operations/asc_atomic_and.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,7 +81,7 @@ UB或Global Memory上的初始数据。
 | 名称 | 说明 |
 | --- | --- |
 | `flags` | Global Memory中的共享状态位。 |
-| `clear_bits` | 每个元素表示需要清除的bit，kernel内部会转换为AND掩码。 |
+| `clear_bits` | 每个元素表示需要清除的bit，核函数（Kernel）内部会转换为AND掩码。 |
 | `n` | 掩码数量。 |
 
 核心代码实现如下：

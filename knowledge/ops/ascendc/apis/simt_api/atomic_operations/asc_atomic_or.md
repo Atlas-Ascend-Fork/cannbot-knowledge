@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/atomic_operations/asc_atomic_or.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -81,7 +81,7 @@ UB或Global Memory上的初始数据。
 | 名称 | 说明 |
 | --- | --- |
 | `observed_flags` | 每个元素表示一个线程观察到的特征位。 |
-| `flags` | Global Memory中的汇总bitmask，kernel启动前清零。 |
+| `flags` | Global Memory中的汇总bitmask，核函数（Kernel）启动前清零。 |
 | `n` | 特征来源数量。 |
 
 核心代码实现如下：
@@ -130,6 +130,5 @@ UB或Global Memory上的初始数据。
 observed_flags: 0x1, 0x4, 0x2
 flags: 0x7 // 表明3个线程观察到的特征位被合并
 ```
-
 
 - [TopK 950 Direct Invoke 算子知识](../../../operators/direct/math/math/top_k_950.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopyPad_GMToL1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -107,7 +107,7 @@ __aicore__ inline void DataCopyPad(const LocalTensor<T>& dst, const GlobalTensor
 
 ## 调用示例<a name="section177231425115410"></a>
 
-示例场景如[图 1](#fig_paddingmode_demo)所示，该接口仅支持Ascend 950PR/Ascend 950DT。
+示例场景如[图 1](#fig_paddingmode_demo)所示，该接口仅支持Ascend 950PR&950DT系列产品。
 
 Normal模式调用示例如下：
 

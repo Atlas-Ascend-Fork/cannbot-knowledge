@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_simt_hybrid_optimization/memory_access/ub_memory_access.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 >[!NOTE]说明 
 >该性能优化建议适用于如下型号：
      
->-   Ascend 950PR/Ascend 950DT
+>-   Ascend 950PR&950DT系列产品
      
 
 
@@ -147,8 +147,8 @@ __aicore__ inline void process_tiles(__gm__ int32_t* x, __gm__ int32_t* y, __gm_
         __ubuf__ int32_t* z_local = ((tile_idx & 1) == 0 ? z_ping : z_pong);
 
         asc_sync_wait(PIPE_V, PIPE_MTE2, event_id);
-        asc_copy_gm2ub_align(x_local, x_gm + tile_offset, 1, tile_bytes, 0, 0, false, CACHE_MODE_DISABLE, 0, 0);
-        asc_copy_gm2ub_align(y_local, y_gm + tile_offset, 1, tile_bytes, 0, 0, false, CACHE_MODE_DISABLE, 0, 0);
+        asc_copy_gm2ub_align(x_local, x_gm + tile_offset, 1, tile_bytes, 0, 0, false, asc_load_l2_cache_mode::NOTALLOC_DROP, 0, 0);
+        asc_copy_gm2ub_align(y_local, y_gm + tile_offset, 1, tile_bytes, 0, 0, false, asc_load_l2_cache_mode::NOTALLOC_DROP, 0, 0);
         asc_sync_notify(PIPE_MTE2, PIPE_V, event_id);
 
         asc_sync_wait(PIPE_MTE2, PIPE_V, event_id);
@@ -159,7 +159,7 @@ __aicore__ inline void process_tiles(__gm__ int32_t* x, __gm__ int32_t* y, __gm_
 
         asc_sync_notify(PIPE_V, PIPE_MTE3, event_id);
         asc_sync_wait(PIPE_V, PIPE_MTE3, event_id);
-        asc_copy_ub2gm_align(z_gm + tile_offset, z_local, 1, tile_bytes, 0, 0, 0);
+        asc_copy_ub2gm_align(z_gm + tile_offset, z_local, 1, tile_bytes, asc_store_l2_cache_mode::NORMAL_FIRST_VICTIM, 0, 0);
         asc_sync_notify(PIPE_MTE3, PIPE_V, event_id);
     }
 

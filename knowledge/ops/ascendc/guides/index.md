@@ -4,9 +4,9 @@
 - [cross gen migration guide](cross_gen_migration_guide/index.md)：Ascend C的核心设计目标之一是实现跨代兼容。然而，每一代芯片在微架构上都存在独特的硬件特性，因此无法保证所有接口仅通过重编译就能达成完全的跨代兼容。基于这一前提，本手册旨在为Ascend C算子开发者提供系统化指导，帮助将算子Kernel代码从当前芯片平滑移植到目标代际芯片上运行，实现高效、可控的迁移。（共 18 张知识卡：A3→A5 移植先看驻留量，不是先看算法、arch22 → arch35 AscendC Migration and Backward-Generation Reference、Ascend C API兼容性策略 等）
 - [getting started](getting_started/index.md)：共 7 张知识卡（如 Ascend C概述、环境准备 等）。
 - [msprof Agent 使用指南](msprof_agent_guide.md)：让 Agent 用 msprof 做性能分析而不撑爆 context 的指南：先用系统级 msprof 定位瓶颈，落到单算子再用算子级 msopprof（等同 msprof op）展开；核心是分层读取——优先只读 op_statistic 聚合 csv，再按需 grep op_summary 取关键指标，避免读二进制 trace。
-- [operator practice](operator_practice/index.md)：共 129 张知识卡（如 本文档组织结构（算子实践）、异构计算（算子实践）、Host Tiling 单元测试开发 等）。
+- [operator practice](operator_practice/index.md)：共 133 张知识卡（如 本文档组织结构（算子实践）、异构计算（算子实践）、Host Tiling 单元测试开发 等）。
 - [精度验证](precision/index.md)：共 44 张知识卡（如 aclnn 接口调用指南、激活参考实现的权重状态、边界与稳定公式、APACE 编码 golden 与容差边界 等）。
-- [programming guide](programming_guide/index.md)：共 121 张知识卡（如 本文档组织结构（编程指南） 等）。
+- [programming guide](programming_guide/index.md)：共 125 张知识卡（如 本文档组织结构（编程指南） 等）。
 - [快速开始](quick_start.md)：根据本地是否有NPU设备和使用目标选择对应的环境准备方式：
 - [AscendC SIMD Development Reference](simd_development_reference.md)：AscendC SIMD 开发参考，主张 arch35/A5 上多算子计算链默认走 Regbase MicroAPI 而非 Membase LocalTensor（后者每步 UB 往返加 PipeBarrier，实测拖累可达数十倍）；另含量化 kernel 常用 SIMD API 与 MXFP4 范式。
 - [technical appendix](technical_appendix/index.md)：共 8 张知识卡，分布在 2 个子目录（concepts_and_terms、cpp_standard_support）。

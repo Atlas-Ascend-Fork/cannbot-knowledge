@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_repeat_reduce_max_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_repeat_reduce_max_index_value_sync`、`asc_repeat_reduce_max_value_index_sync`、`asc_repeat_reduce_max_only_value_sync`和`asc_repeat_reduce_max_only_index_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_reduce/asc_repeat_reduce_max.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_repeat_reduce_max_index_value_sync`、`asc_repeat_reduce_max_value_index_sync`、`asc_repeat_reduce_max_only_value_sync`和`asc_repeat_reduce_max_only_index_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_reduce/asc_repeat_reduce_max.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 对每个Repeat内所有元素求最大值，以及Repeat内的首个最大值元素在当前Repeat中的索引index。一次Repeat计算256字节。
 
@@ -75,7 +75,6 @@ PIPE_V
 - dst的起始地址，输入类型为half时需要4字节对齐，输入类型为float时需要8字节对齐。
 - src的起始地址需要32字节对齐。
 
-
 ## 调用示例
 
 ```cpp
@@ -85,16 +84,8 @@ __ubuf__ half src[total_length];
 constexpr uint32_t dst_length = 4;
 __ubuf__ half dst[dst_length];
 
-// 使用高维切分计算接口，需设置mask
-asc_set_mask_norm();
-asc_set_vector_mask(0xffffffffffffffff, 0xffffffffffffffff);    // 设置每个迭代内所有元素均参与计算。
-
-uint8_t repeat = 2;
-// 单位为sizeof(half)*2 = 4字节，连续存放
-uint16_t dst_repeat_stride = 1;
-uint16_t src_block_stride = 1;
-uint16_t src_repeat_stride = 8;
-asc_repeat_reduce_max_value_index_sync(dst, src, repeat, dst_repeat_stride, src_block_stride, src_repeat_stride);
+// 同步接口使用 count 指定参与计算的元素总数，无需手动设置 mask。
+asc_repeat_reduce_max_value_index_sync(dst, src, total_length);
 ```
 
 结果示例：

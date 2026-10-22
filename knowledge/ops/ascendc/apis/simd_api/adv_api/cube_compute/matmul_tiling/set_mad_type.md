@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Tiling/SetMadType.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/adv_api/matmul/matmul_tiling_base.h
@@ -24,7 +24,7 @@ source_headers:
 设置是否开启HF32模式。**当前版本暂不支持。**
 
 
-对于Ascend 950PR/Ascend 950DT，本接口可用于设置是否开启HF32模式（**当前版本暂不支持**）、设置是否开启MxMatmul场景。在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景，从而保证该场景下正确计算并返回Tiling参数。
+对于Ascend 950PR&950DT系列产品，本接口可用于设置是否开启HF32模式（**当前版本暂不支持**）、设置是否开启MxMatmul场景。在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景，从而保证该场景下正确计算并返回Tiling参数。
 
 
 ## 函数原型
@@ -56,6 +56,7 @@ enum class MatrixMadType : int32_t {
 ## 约束说明
 
 无
+
 
 
 ## 调用示例

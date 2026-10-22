@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/SuperKernel/SK_BIND.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -61,7 +61,7 @@ platforms:
 ```cpp
 #include "kernel_operator.h"
 
-// 原普通kernel保留（用于非SuperKernel场景）
+// 原普通核函数（Kernel）保留（用于非SuperKernel场景）
 __global__ __vector__ void add_custom(GM_ADDR x, GM_ADDR y, GM_ADDR z, uint32_t totalLength) 
 { 
     KernelAdd op; 

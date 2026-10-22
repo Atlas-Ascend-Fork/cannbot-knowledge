@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_paradigm.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -210,4 +210,5 @@ __aicore__ inline void MatmulLeakyKernel<aType, bType, cType, biasType>::Process
 ```
 
 ## 小结
+
 本章内容完全承接上一章的队列管道底层原理，将理论中的Stage流水线拆分、数据依赖与同步等，落地为Ascend C统一的工程编程范式。无论是简单矢量算子、高密度矩阵算子，还是复杂融合算子，其本质都是经典C/C++队列管道模型在AI Core异构硬件上的不同形态实现：通过标准化三段式流水、队列数据同步、统一资源管控，屏蔽底层复杂的并行时序与内存冲突问题，让开发者以统一、简洁、可复用的流水线思维，高效开发高性能算子。

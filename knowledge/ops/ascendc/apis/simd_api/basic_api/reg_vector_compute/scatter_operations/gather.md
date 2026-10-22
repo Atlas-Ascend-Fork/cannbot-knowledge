@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/scatter_operations/Gather.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -57,8 +57,11 @@ __simd_callee__ inline void Gather(S& dstReg, S& srcReg, V& indexReg)
 
 ## 数据类型
 
-- 源操作数和目的操作数支持的数据类型为：b8、b16、b32。
-- 索引值支持的数据类型为：uint8_t、uint16_t、uint32_t。
+
+- Ascend 950PR&950DT系列产品，源操作数和目的操作数支持的数据类型为：b8、b16、b32。
+- Ascend 950PR&950DT系列产品，索引值支持的数据类型为：uint8_t、uint16_t、uint32_t。
+
+
 
 ## 返回值说明
 

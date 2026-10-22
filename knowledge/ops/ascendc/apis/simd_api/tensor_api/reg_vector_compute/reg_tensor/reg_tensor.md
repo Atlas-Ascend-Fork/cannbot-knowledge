@@ -10,18 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/reg_tensor/reg_tensor.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/tensor_api/arch/vector/experimental/reg_tensor.h
+- include/tensor_api/experimental/arch/vector/reg_tensor.h
 ---
 
 # reg_tensor
 
 ## 功能说明
 
-头文件路径为：`"tensor_api/arch/vector/experimental/reg_tensor.h"`，命名空间为`asc::te::experimental`。
+头文件路径为：`"tensor_api/experimental/arch/vector/reg_tensor.h"`，命名空间为`asc::te::experimental`。
 
 `reg_tensor<DataType>`是矢量寄存器值的轻量级封装。同时保存矢量数据寄存器`reg`和掩码寄存器`mask`，当`DataType`为`bool`时，`reg_tensor<bool>`的reg和mask均为掩码寄存器。
 
@@ -72,6 +72,8 @@ struct reg_tensor {
 | `hifloat8_t` | `vector_hifloat8_t` |
 | `fp8_e4m3fn_t`、`fp8_e5m2_t`、`fp8_e8m0_t` | 对应的`vector_fp8_*`类型 |
 | `int4x2_t`、`fp4x2_e2m1_t`、`fp4x2_e1m2_t` | 对应的`vector_int4x2_t`或`vector_fp4x2_*`类型 |
+
+Tensor元素类型为`int4b_t`，寄存器对应的元素类型为`vector_int4x2_t`，`int4b_t`不作为`reg_tensor`的寄存器元素类型。
 
 ## 约束说明
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half2_arithmetic_functions/__hmulx2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -106,3 +106,11 @@ half2 __hmulx2(const half2 x, const half2 y)
         asc_vf_call<simt_hmulx2>(dim3(1024), (__gm__ half2*)x, (__gm__ half2*)y, (__gm__ half2*)dst, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.25, 0.5), (2.5, -3.75), (-2, 1.25), (0.75, -0.25)
+y: (0.5, -2), (1.25, 3), (1.5, -1), (-0.5, 2.25)
+result: (-0.625, -1), (3.125, -11.25), (-3, -1.25), (-0.375, -0.5625)
+```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_load_aux_config/Fill.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -102,16 +102,16 @@ __aicore__ inline void Fill(const LocalTensor<T>& dst, const InitConstValueParam
     - 特别地，针对如下型号，仅支持配置迭代次数和初始化值。
         
         
-        - Atlas 训练系列产品。
+        - Atlas训练系列产品。
         
         
-        - Atlas 推理系列产品AI Core。
+        - Atlas推理系列产品AI Core。
         
     
 
 - 支持的物理存储位置为：L1 Buffer（TPosition: A1/B1）、L0A Buffer（TPosition: A2）、L0B Buffer（TPosition: B2）。
     
-    - 特别针对Ascend 950PR/Ascend 950DT，支持物理存储位置为：L1 Buffer（TPosition: A1/B1）。
+    - 特别针对Ascend 950PR&950DT系列产品，支持物理存储位置为：L1 Buffer（TPosition: A1/B1）。
     
     - 如果物理存储位置为L1 Buffer（TPosition: A1/B1），起始地址需要满足32B对齐；
     - 如果物理存储位置为L0A Buffer（TPosition: A2）、L0B Buffer（TPosition: B2），起始地址需要满足512B对齐。

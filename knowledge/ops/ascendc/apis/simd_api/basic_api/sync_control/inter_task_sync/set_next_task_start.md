@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_task_sync/SetNextTaskStart.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a3
@@ -45,27 +45,27 @@ SuperKernel是一种算子的二进制融合技术，与源码融合不同，它
 - 该原型支持如下产品型号：
 
     
-    Ascend 950PR/Ascend 950DT 
+    Ascend 950PR&950DT系列产品 
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品 
+    Atlas A3系列产品 
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品 
+    Atlas A2系列产品 
     
 
     
-    Atlas 200I/500 A2 推理产品 
+    Atlas 200I/500 A2推理产品 
     
 
     
-    Kirin X90 
+    Kirin X90处理器系列产品 
     
 
     
-    Kirin 9030 
+    Kirin 9030处理器系列产品 
     
 
     ```cpp
@@ -78,15 +78,15 @@ SuperKernel是一种算子的二进制融合技术，与源码融合不同，它
 - 该原型支持如下产品型号：
 
     
-    Atlas 推理系列产品AI Core 
+    Atlas推理系列产品AI Core 
     
 
     
-    Atlas 推理系列产品Vector Core 
+    Atlas推理系列产品Vector Core 
     
 
     
-    Atlas 训练系列产品 
+    Atlas训练系列产品 
     
 
     ```cpp
@@ -114,20 +114,20 @@ SuperKernel是一种算子的二进制融合技术，与源码融合不同，它
 
 ## 约束说明<a name="section633mcpsimp"></a>
 
-- 该接口适用于TorchAir图模式开发场景，且需在启用SuperKernel特性后方可生效。具体内容请参考[图内标定SuperKernel范围](https://www.hiascend.com/document/detail/zh/Pytorch/latest/devguide/TorchAir/docs/zh/ascend_ir/features/advanced/super_kernel_scope.md)。
+- 该接口适用于TorchAir图模式开发场景，且需在启用SuperKernel特性后方可生效。具体内容请参考[图内标定SuperKernel范围](https://gitcode.com/Ascend/torchair/blob/master/docs/zh/ascend_ir/features/advanced/super_kernel_scope.md)。
 - 在算子运行过程中，需要保证此接口在每个核上都被调用，且每个核上仅被调用一次。
 - 若子核函数（Kernel）某个TilingKey分支调用了此接口，则开发者需要保证当前算子可能会运行的所有TilingKey均调用了此接口，否则会出现因同步指令数量不匹配而卡住的现象。
+- 本接口内部实现会占用核间同步flagId，若与CrossCoreSetFlag/CrossCoreWaitFlag同时使用需注意避免flagId冲突，详见[核间同步flagId占用说明](../inter_core_sync/key_features.md#inter_core_sync_flagid_usage)。
 
 ## 调用示例<a name="section837496171220"></a>
 
 ```cpp
 AscendC::DataCopy(dstGlobal, dstLocal, TOTAL_LENGTH);
-// 在最后一条搬运指令后调用，使之后的指令可与后续子kernel并行执行。
+// 在最后一条搬运指令后调用，使之后的指令可与后续子核函数（Kernel）并行执行。
 AscendC::SetNextTaskStart();
 ```
 
 完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
-
 
 - [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)
 - [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)

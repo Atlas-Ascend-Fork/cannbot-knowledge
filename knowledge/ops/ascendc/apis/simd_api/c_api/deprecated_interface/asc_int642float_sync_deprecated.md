@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_int642float_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_int642float_rd_sync`、`asc_int642float_rn_sync`、`asc_int642float_rna_sync`、`asc_int642float_ru_sync`和`asc_int642float_rz_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_convert/asc_int642float.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_int642float_rd_sync`、`asc_int642float_rn_sync`、`asc_int642float_rna_sync`、`asc_int642float_ru_sync`和`asc_int642float_rz_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_convert/asc_int642float.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将int64_t类型数据转换为float类型。
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/spr/asc_set_saturation_flag.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -31,11 +31,10 @@ source_headers:
 
 | saturation_mode | enable_sat=true | enable_sat=false | 说明 |
 | :--- | :--- | :--- | :--- |
-| FLOAT | 饱和 | 非饱和 | 浮点计算及部分浮点精度转换场景的饱和控制，默认为非饱和状态。浮点数计算时支持half数据类型；浮点数精度转换时支持hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、half、bfloat16_t数据类型。。 |
+| FLOAT | 饱和 | 非饱和 | 浮点计算及部分浮点精度转换场景的饱和控制，默认为非饱和状态。浮点数计算时支持half数据类型；浮点数精度转换时支持hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、half、bfloat16_t数据类型。 |
 | FLOAT8 | 饱和 | 非饱和 | fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t相关场景的饱和控制，默认为饱和状态。 |
 | INT | 饱和 | 截断 | 整数计算溢出时的饱和/截断控制，默认为非饱和状态。 |
 | CAST | 饱和 | 截断 | 浮点转整数或整数转整数时的精度转换饱和控制，默认为饱和状态。仅在饱和策略为`USE_GLOBAL`时生效。 |
-
 
 ## 函数原型
 
@@ -63,6 +62,7 @@ PIPE_S
 ## 约束说明
 
 - `enable_sat`是API语义参数：同一布尔值在不同模式下的关闭语义不同（INT为截断，FLOAT/FLOAT8/CAST为非饱和或截断），请以表1为准。
+- 当对`FLOAT`开启饱和模式前，需要通过[asc_set_saturation_strategy](asc_set_saturation_strategy.md)开启全局饱和配置方可生效；当`saturation_mode`为`FLOAT8`时，还需要先对`FLOAT`开启饱和模式才能生效。
 - 当`saturation_mode`为`CAST`时，还需将饱和策略设置为`asc_override_strategy::USE_GLOBAL`，CAST才会生效。可通过[asc_set_saturation_strategy](asc_set_saturation_strategy.md)配置。
 - 本接口仅修改对应模式的饱和配置，不影响其他模式。
 

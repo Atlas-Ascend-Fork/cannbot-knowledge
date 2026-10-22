@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/composite_compute/ExpSub_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -60,7 +60,8 @@ __aicore__ inline void ExpSub(const LocalTensor<T>& dst, const LocalTensor<U>& s
 
 ## 数据类型
 
-Ascend 950PR/Ascend 950DT，T和U支持的数据类型为：half、float。
+
+Ascend 950PR&950DT系列产品，T和U支持的数据类型为：half、float。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>

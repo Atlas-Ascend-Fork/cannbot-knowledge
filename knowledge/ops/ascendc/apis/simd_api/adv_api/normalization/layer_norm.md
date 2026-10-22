@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/normalization/LayerNorm.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -31,21 +31,21 @@ platforms:
 
     本接口实现了对shape大小为\[B，S，H\]输入数据的LayerNorm归一化，其计算公式如下，其中γ为缩放系数，β为平移系数，ε为防除零的权重系数：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001729631329.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000001729631329.png)
 
     其中，如下两个参数分别代表输入在H轴的均值和方差。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001729515829.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000001729515829.png)
 
 -   对shape为\[A，R\]的输入数据，输出归一化结果、均值、标准差的倒数或方差
 
     本接口实现了对shape为\[A，R\]输入数据的LayerNorm归一化，其计算公式如下，其中γ为缩放系数，β为平移系数，ε为防除零的权重系数：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002045806762.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002045806762.png)
 
     其中，如下三个参数分别代表输入在R轴的均值，方差和标准差的倒数。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002081933649.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002081933649.png)
 
 ## 实现原理
 
@@ -210,24 +210,24 @@ platforms:
     -   支持的数据类型<a id="li171091334377"></a>
 
         
-        Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16\_t、float。
+        Ascend 950PR&950DT系列产品，支持的数据类型为：half、bfloat16\_t、float。
         
 
         
-        Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为: half、float。
+        Atlas A3系列产品，支持的数据类型为: half、float。
         
 
         
-        Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为: half、float。
+        Atlas A2系列产品，支持的数据类型为: half、float。
         
 
         
-        Atlas 推理系列产品AI Core，支持的数据类型为: half、float。
+        Atlas推理系列产品AI Core，支持的数据类型为: half、float。
         
 
 
 
--   针对Ascend 950PR/Ascend 950DT，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
+-   针对Ascend 950PR&950DT系列产品，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
     -   配置为`false`时，计算过程中保留Subnormal，并按照其实际数值参与后续计算。
     -   配置为`true`时，启用FTZ（Flush-To-Zero）模式，计算过程中产生或参与运算的Subnormal将按0处理，可能导致计算结果与保留Subnormal时存在精度差异。
 
@@ -301,7 +301,6 @@ platforms:
         tiling          // [输入] Tiling策略信息
     );
     ```
-
 
 - [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)
 - [AdaLayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/ada_layer_norm_950.md)

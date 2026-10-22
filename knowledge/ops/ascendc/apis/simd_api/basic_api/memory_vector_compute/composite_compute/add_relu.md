@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/composite_compute/AddRelu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -78,7 +78,7 @@ $$
 | :----- | :-------- | :--- |
 | dst | 输出 | 目的操作数。<br>类型为[LocalTensor](../../data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。 |
 | src0、src1 | 输入 | 源操作数。<br>类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。<br>LocalTensor的起始地址需要32字节对齐。 |
-| count | 输入 | 参与计算的元素个数。<br>**注：参数取值范围和操作数的数据类型有关，数据类型不同，能够处理的元素个数最大值不同，最大处理的数据量不能超过UB大小限制。** |
+| count | 输入 | 参与计算的元素个数。<br>**注：参数取值范围和操作数的数据类型有关，数据类型不同，能够处理的元素个数最大值不同，最大处理的数据量不能超过Unified Buffer（UB）大小限制。** |
 | mask[]/mask | 输入 | mask用于控制每次迭代内参与计算的元素。<br>设置详见[掩码操作](../simd_compute/mask.md) |
 | repeatTime | 输入 | 重复迭代次数。<br>矢量计算单元，每次读取连续的256Bytes数据进行计算，为完成对输入数据的处理，必须通过多次迭代（repeat）才能完成所有数据的读取与计算。repeatTime表示迭代的次数。<br>关于该参数的具体描述请参考[高维切分API](../simd_compute/high_dim_split.md)。 |
 | repeatParams | 输入 | 控制操作数地址步长的参数。[BinaryRepeatParams](../../aux_data_structures/binary_repeat_params.md)类型，包含操作数相邻迭代间相同datablock的地址步长，操作数同一迭代内不同datablock的地址步长等参数。<br>相邻迭代间的地址步长参数说明请参考[repeatStride](../simd_compute/high_dim_split.md)；同一迭代内DataBlock的地址步长参数说明请参考[dataBlockStride](../simd_compute/high_dim_split.md)。 |
@@ -86,23 +86,23 @@ $$
 ## 数据类型
 
 
-Ascend 950PR/Ascend 950DT，支持的数据类型为：int16_t、half、float、int64_t、uint64_t。其中，int64\_t、uint64\_t数据类型仅支持tensor前n个数据计算接口。
+Ascend 950PR&950DT系列产品，支持的数据类型为：int16_t、half、float、int64_t、uint64_t。其中，int64\_t、uint64\_t数据类型仅支持tensor前n个数据计算接口。
 
 
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int16_t、half、float。
+Atlas A3系列产品，支持的数据类型为：int16_t、half、float。
 
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int16_t、half、float。
+Atlas A2系列产品，支持的数据类型为：int16_t、half、float。
 
 
 
-Atlas 200I/500 A2 推理产品，支持的数据类型为：half、float。
+Atlas 200I/500 A2推理产品，支持的数据类型为：half、float。
 
 
 
-Atlas 推理系列产品 AI Core，支持的数据类型为：int16_t、half、float。
+Atlas推理系列产品AI Core，支持的数据类型为：int16_t、half、float。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>
@@ -118,18 +118,18 @@ Atlas 推理系列产品 AI Core，支持的数据类型为：int16_t、half、f
   
   - 针对如下型号，该接口不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
   
 
 
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对UB空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算接口占用8KB UB临时空间。
   - tensor前n个数据连续计算接口不涉及8KB UB临时空间的占用。
 

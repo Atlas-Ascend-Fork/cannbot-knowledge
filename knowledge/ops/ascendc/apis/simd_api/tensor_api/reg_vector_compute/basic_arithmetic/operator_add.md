@@ -10,18 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/basic_arithmetic/operator_add.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/tensor_api/experimental/vector_compute.h
+- include/tensor_api/experimental/arch/vector/basic_arithmetic.h
+- include/tensor_api/experimental/vector_ops.h
 ---
 
 # operator+
 
 ## 功能说明
 
-头文件路径：`"tensor_api/experimental/vector_compute.h"`。
+头文件路径：`"tensor_api/experimental/arch/vector/basic_arithmetic.h"`。
 
 该接口根据输入reg_tensor携带的mask，对两个源操作数进行按元素求和操作，并返回计算结果。支持reg_tensor与reg_tensor、reg_tensor与标量、标量与reg_tensor三种操作数组合。计算公式如下：
 
@@ -90,7 +91,7 @@ $$
 ## 调用示例
 
 ```cpp
-#include "tensor_api/experimental/vector_compute.h"
+#include "tensor_api/experimental/vector_ops.h"
 
 template <typename InputTensor, typename OutputTensor>
 __simd_vf__ inline void add_example(InputTensor input, OutputTensor output)

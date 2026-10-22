@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reduction_compute/ReduceDataBlock.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -56,7 +56,8 @@ __simd_callee__ inline void ReduceDataBlock(U& dstReg, U srcReg, MaskReg mask)
 
 ## 数据类型
 
-**表3** ReduceType::SUM数据类型支持情况
+
+**表3** Ascend 950PR&950DT系列产品，版本ReduceType::SUM数据类型支持情况
 
 | dstReg | srcReg |
 | --- | --- |
@@ -67,7 +68,7 @@ __simd_callee__ inline void ReduceDataBlock(U& dstReg, U srcReg, MaskReg mask)
 | uint32_t | uint16_t |
 | float | float |
 
-**表4** ReduceType::MAX或ReduceType::MIN数据类型支持情况
+**表4** Ascend 950PR&950DT系列产品，ReduceType::MAX或ReduceType::MIN数据类型支持情况
 
 | dstReg | srcReg |
 | --- | --- |
@@ -77,6 +78,8 @@ __simd_callee__ inline void ReduceDataBlock(U& dstReg, U srcReg, MaskReg mask)
 | int32_t | int32_t |
 | uint32_t | uint32_t |
 | float | float |
+
+
 
 ## 返回值说明
 
@@ -137,6 +140,5 @@ __simd_vf__ inline void ReduceDataBlockVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAd
     }
 }
 ```
-
 
 - [FlatQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/flat_quant_950.md)

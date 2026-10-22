@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Asinh_interface/GetAsinhTmpBufferFactorSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/adv_api/math/asinh_tiling.h
@@ -21,7 +21,7 @@ source_headers:
 
 ## 功能说明
 
-kernel侧Asinh接口的计算需要开发者预留/申请临时空间，最大临时空间（maxTmpBuffer）和输入所占空间（inputSize \* typeSize）存在以下关系：
+核函数（Kernel）侧Asinh接口的计算需要开发者预留/申请临时空间，最大临时空间（maxTmpBuffer）和输入所占空间（inputSize \* typeSize）存在以下关系：
 
 **maxTmpBuffer = maxLiveNodeCount \* inputSize \* typeSize + extraBuffer**
 

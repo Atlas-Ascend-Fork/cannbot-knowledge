@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/activation_functions/SoftMax_interface/SoftmaxFlashV2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -31,11 +31,11 @@ SoftmaxFlash增强版本，对应FlashAttention-2算法。将输入tensor\[m<sub
 
 -   update为false：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002023909837.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002023909837.png)
 
 -   update为true：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002023912661.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002023912661.png)
 
 当输入shape为ND格式时，内部的reduce过程按last轴进行；当输入shape为NZ格式时，内部的reduce过程按照last轴和first轴进行，reduce过程可以参考[SoftMax](soft_max.md)中的图示说明。
 
@@ -106,11 +106,11 @@ def softmax_flash_2(src, inmax=None, insum=None, update=None):
         ```
 
         
-        Atlas 200I/500 A2 推理产品不支持该接口。
+        Atlas 200I/500 A2推理产品不支持该接口。
         
 
         
-        Atlas 推理系列产品AI Core不支持该接口。
+        Atlas推理系列产品AI Core不支持该接口。
         
 
     -   LocalTensor的数据类型不同，不输出ReduceMax
@@ -136,11 +136,11 @@ def softmax_flash_2(src, inmax=None, insum=None, update=None):
         ```
 
         
-        Atlas 200I/500 A2 推理产品不支持该接口。
+        Atlas 200I/500 A2推理产品不支持该接口。
         
 
         
-        Atlas 推理系列产品AI Core不支持该接口。
+        Atlas推理系列产品AI Core不支持该接口。
         
 
     -   LocalTensor的数据类型不同，不输出ReduceMax
@@ -158,9 +158,9 @@ def softmax_flash_2(src, inmax=None, insum=None, update=None):
 
 接口框架申请的方式，开发者需要预留临时空间；通过sharedTmpBuffer传入的情况，开发者需要为tensor申请空间。临时空间大小BufferSize的获取方式如下：通过[SoftmaxFlashV2 Tiling接口](softmax_flash_v2_tiling_interface.md)中提供的GetSoftMaxFlashV2MinTmpSize/GetSoftMaxFlashV2MaxTmpSize接口获取所需最小和最大临时空间大小，最小空间可以保证功能正确，最大空间用于提升性能。
 
-另外提供了一个kernel侧tiling计算的接口，当kernel侧的输入shape与通过host侧TilingData传入的shape不一致时，可使用该接口在kernel侧重新计算tiling。该接口的参数含义请参考[SoftmaxFlashV2 Tiling接口](softmax_flash_v2_tiling_interface.md)。
+另外提供了一个核函数（Kernel）侧tiling计算的接口，当核函数（Kernel）侧的输入shape与通过host侧TilingData传入的shape不一致时，可使用该接口在核函数（Kernel）侧重新计算tiling。该接口的参数含义请参考[SoftmaxFlashV2 Tiling接口](softmax_flash_v2_tiling_interface.md)。
 
--   **kernel侧tiling计算接口**
+-   **核函数（Kernel）侧tiling计算接口**
 
     ```
     __aicore__ inline constexpr SoftMaxTiling SoftMaxFlashV2TilingFunc(const SoftMaxShapeInfo& shapeInfo, const uint32_t dataTypeSize1, const uint32_t dataTypeSize2, const uint32_t localWorkSpaceSize, const bool isUpdate = false, const bool isBasicBlock = false, const bool isDataFormatNZ = false, const bool isFlashOutputBrc = false)
@@ -177,7 +177,7 @@ def softmax_flash_2(src, inmax=None, insum=None, update=None):
 | isReuseSource | 该参数预留，传入默认值false即可。 |
 | isBasicBlock | srcTensor和dstTensor的shape信息和Tiling切分策略满足基本块要求的情况下，可以设置为true开启该参数用于提升性能，默认为false表示不开启。是否满足基本块的要求，可以采用如下两种方式之一判断：<br>srcTensor和dstTensor的shape信息[m,n]需要满足如下条件：尾轴长度n小于2048并且大于等于256/sizeof(T)（即half场景下n最小为128，float场景下n最小为64），同时n是64的倍数；非尾轴长度的乘积m为8的倍数。<br><br>在Tiling实现中，通过调用[IsBasicBlockInSoftMax](is_basic_block_in_soft_max.md)判断Tiling切分策略是否满足基本块的切分要求。 |
 | isDataFormatNZ | 当前输入输出的数据格式是否为NZ格式，默认数据格式为ND，即默认取值为false。 |
-| config | 结构体模板参数，此参数可选配，SoftmaxConfig类型，具体定义如下方代码所示，其中参数的含义为：<br>isCheckTiling：是否需要检查shape和tiling的一致性；若不一致，API内会根据shape重新计算所需tiling。默认取值true：API内部会检查一致性。<br>oriSrcM：原始非尾轴长度的乘积。设置该参数后，将shape常量化，编译过程中使用常量化的shape。<br>oriSrcK：原始尾轴长度。设置该参数后，将shape常量化，编译过程中使用常量化的shape。<br>mode：输出shape的处理模式。当输入输出的数据格式为NZ格式时，不支持配置mode参数。SoftmaxMode类型，取值如下：<br>SOFTMAX_NORMAL ：默认值，常规模式，对输出数据做Broadcast，使得输出shape由(m, 1)拓展成(m, 8)（输出为float数据类型）或者(m, 16)（输出为half数据类型）。<br>SOFTMAX_OUTPUT_WITHOUT_BRC ：非拓展模式，不对输出数据做Broadcast，输出shape均为(m, 1)，相应的输入参数（例如inExpSumTensor、inMaxTensor），shape也均为(m, 1)。<br><br>此参数一般用于配合kernel侧tiling计算的接口使用。<br><br>注意：设置了oriSrcM与oriSrcK后，模板参数isBasicBlock不生效，计算数据是否为基本块由API内部判断并处理。 |
+| config | 结构体模板参数，此参数可选配，SoftmaxConfig类型，具体定义如下方代码所示，其中参数的含义为：<br>isCheckTiling：是否需要检查shape和tiling的一致性；若不一致，API内会根据shape重新计算所需tiling。默认取值true：API内部会检查一致性。<br>oriSrcM：原始非尾轴长度的乘积。设置该参数后，将shape常量化，编译过程中使用常量化的shape。<br>oriSrcK：原始尾轴长度。设置该参数后，将shape常量化，编译过程中使用常量化的shape。<br>mode：输出shape的处理模式。当输入输出的数据格式为NZ格式时，不支持配置mode参数。SoftmaxMode类型，取值如下：<br>SOFTMAX_NORMAL ：默认值，常规模式，对输出数据做Broadcast，使得输出shape由(m, 1)拓展成(m, 8)（输出为float数据类型）或者(m, 16)（输出为half数据类型）。<br>SOFTMAX_OUTPUT_WITHOUT_BRC ：非拓展模式，不对输出数据做Broadcast，输出shape均为(m, 1)，相应的输入参数（例如inExpSumTensor、inMaxTensor），shape也均为(m, 1)。<br><br>此参数一般用于配合核函数（Kernel）侧tiling计算的接口使用。<br><br>注意：设置了oriSrcM与oriSrcK后，模板参数isBasicBlock不生效，计算数据是否为基本块由API内部判断并处理。 |
 
 ```
 struct SoftmaxConfig {
@@ -242,7 +242,7 @@ struct SoftMaxShapeInfo {
 
 
 
--   针对Ascend 950PR/Ascend 950DT，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
+-   针对Ascend 950PR&950DT系列产品，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
     -   配置为`false`时，计算过程中保留Subnormal，并按照其实际数值参与后续计算。
     -   配置为`true`时，启用FTZ（Flush-To-Zero）模式，计算过程中产生或参与运算的Subnormal将按0处理，可能导致计算结果与保留Subnormal时存在精度差异。
 
@@ -379,7 +379,6 @@ struct SoftMaxShapeInfo {
      [0.01538  0.01538  0.01538  ... 0.01637  0.01637  0.01637 ]
      [0.01538  0.01538  0.01538  ... 0.01637  0.01637  0.01637 ]]
     ```
-
 
 - [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)
 - [NsaSelectedAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention_infer.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TBuf/Get.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -124,7 +124,6 @@ AscendC::LocalTensor<int32_t> tensor1 = calcBuf.Get<int32_t>();
 // 用户指定tensor1的第256个int32_t的偏移位置为tensor2的首地址，实际上tensor2可以使用的内存大小为1024字节，两个tensor首地址相差256 * sizeof(int32_t)字节
 auto tensor2 = tensor1[256];
 ```
-
 
 - [Rasterizer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/rasterizer.md)
 - [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)

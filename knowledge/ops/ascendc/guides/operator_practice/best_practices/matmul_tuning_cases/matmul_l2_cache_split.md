@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/best_practices/matmul_tuning_cases/matmul_l2_cache_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -29,9 +29,8 @@ platforms: []
 
 本案例的算子规格如下：
 
-**表1**  算子规格
+**表1**  算子规格<a name="table101751125175213"></a>
 
-<a name="table101751125175213"></a>
 <table><thead align="left"><tr id="row8175525185219"><th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.1"><p id="p1417582516529"><a name="p1417582516529"></a><a name="p1417582516529"></a>输入</p>
 </th>
 <th class="cellrowborder" valign="top" width="25%" id="mcps1.2.5.1.2"><p id="p417532575212"><a name="p417532575212"></a><a name="p417532575212"></a>Shape</p>
@@ -71,7 +70,7 @@ platforms: []
 
 当前案例基于Tiling全量常量化进一步优化，Tiling全量常量化请参考[Matmul高阶API开启Tiling全量常量化](matmul_tiling_constant.md)案例。优化前的Profiling数据如下，C列的aic\_time是867us，K列的aic\_mte2\_time是861.9us，MTE2占比为99%，MTE2数据搬运是当前算子性能的瓶颈。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002410305297.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002410305297.png)
 
 ## 设计优化方案<a name="section6251134218311"></a>
 
@@ -188,7 +187,7 @@ Matmul API开启L2 Cache切分的完整样例请参考[L2 Cache切分的算子�
 
 优化后的Profiling数据如下，C列的aic\_time为805.6us，相比于优化前，总执行时间降低了约7.1%，MTE2搬运时间降低了约10.7%。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002376979814.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/image_0000002376979814.png)
 
 ## 总结<a name="section1593812115413"></a>
 

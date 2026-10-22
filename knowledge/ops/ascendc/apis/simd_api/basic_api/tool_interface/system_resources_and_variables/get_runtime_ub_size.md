@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/system_resources_and_variables/GetRuntimeUBSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -40,7 +40,7 @@ __aicore__ inline uint32_t GetRuntimeUBSize()
 运行时UB空间的大小，单位为Byte。
 
 
-Ascend 950PR/Ascend 950DT架构下，[SIMD与SIMT混合场景](../../../../simt_api/simd_simt_hybrid_programming_intro/index.md)中，获取到的UB大小上限为216KB，非SIMD与SIMT混合场景返回值为固定值248KB。
+Ascend 950PR&950DT系列产品架构下，[SIMD与SIMT混合场景](../../../../simt_api/simd_simt_hybrid_programming_intro/index.md)中，获取到的UB大小上限为216KB，非SIMD与SIMT混合场景返回值为固定值248KB。
 
 
 ## 约束说明

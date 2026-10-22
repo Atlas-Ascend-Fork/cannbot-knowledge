@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpDef/Input.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -54,5 +54,5 @@ OpParamDef &Input(const char *name)
 
 ## 约束说明<a name="zh-cn_topic_0000001549188224_zh-cn_topic_0000001526111046_zh-cn_topic_0000001525424352_section19165124931511"></a>
 
-参数注册的顺序需要和算子kernel入口函数一致。
+参数注册的顺序需要和算子核函数（Kernel）入口函数一致。
 

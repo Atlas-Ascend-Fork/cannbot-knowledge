@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_transto5hd_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -25,7 +25,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_transto5hd_b8_sync`、`asc_transto5hd_b16_sync`和`asc_transto5hd_b32_sync`接口已废弃。请使用[asc_transto5hd](../vector_compute/vector_permute_sel/asc_transto5hd.md)接口和[asc_sync](../sync/asc_sync.md)接口替代。**
+**`asc_transto5hd_b8_sync`、`asc_transto5hd_b16_sync`和`asc_transto5hd_b32_sync`接口已废弃。请使用[asc_transto5hd](../vector_compute/vector_permute_sel/asc_transto5hd.md)接口和[asc_sync](../sync/intra_core_sync/asc_sync.md)接口替代。**
 
 数据格式转换，一般用于将NCHW格式转换成NC1HWC0格式。特别的，也可以用于二维矩阵数据块的转置。本接口单次Repeat内可处理512Byte的数据（16个DataBlock），根据数据类型不同，支持不同shape的矩阵转置（比如数据类型为half时，单次Repeat可完成16*16大小的矩阵转置），同时还可以支持多次Repeat操作。
 
@@ -44,13 +44,14 @@ NCHW格式转换成NC1HWC0格式时，如果是数据类型的位宽为32位或�
 ## 函数原型
 
 - 同步计算
+
 ```cpp
 __aicore__ inline void asc_transto5hd_b32_sync(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
-    uint16_t dst_stride, uint16_t src_stride)
+                                               uint16_t dst_stride, uint16_t src_stride)
 __aicore__ inline void asc_transto5hd_b16_sync(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
-    uint16_t dst_stride, uint16_t src_stride)
+                                               uint16_t dst_stride, uint16_t src_stride)
 __aicore__ inline void asc_transto5hd_b8_sync(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
-    uint16_t dst_stride, uint16_t src_stride, bool dst_high_half, bool src_high_half)
+                                              uint16_t dst_stride, uint16_t src_stride, bool dst_high_half, bool src_high_half)
 ```
 
 ## 参数说明
@@ -61,11 +62,11 @@ __aicore__ inline void asc_transto5hd_b8_sync(ub_addr8_t dst, ub_addr8_t src, ui
 | ------------ | ------------ | ------------ |
 |dst|输出|目的地址寄存器。|
 |src|输入|源地址寄存器。|
-|repeat|输入|重复迭代次数， repeat∈[0,255]。<br>注意事项：<br>&bull;当repeat为1时，目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置加上dst_stride/src_stride。如果要让目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置，需要将dst_stride/src_stride置为0。<br>&bull;当repeat大于1时，第一次repeat中目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置，第二次会加上dst_stride/src_stride。以此类推。|
+|repeat|输入|重复迭代次数，repeat∈[0,255]。<br>注意事项：<br>&bull;当repeat为1时，目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置加上dst_stride/src_stride。如果要让目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置，需要将dst_stride/src_stride置为0。<br>&bull;当repeat大于1时，第一次repeat中目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置，第二次会加上dst_stride/src_stride。以此类推。|
 |dst_stride|输入|相邻迭代间，目的操作数相同DataBlock地址Stride，单位：DataBlock。<br>相邻迭代间相同DataBlock的地址步长参数的详细说明请参考[repeatStride](../general_description_and_constraints.md#repeatStride)。|
 |src_stride|输入|相邻迭代间，源操作数相同DataBlock地址Stride，单位：DataBlock。<br>相邻迭代间相同DataBlock的地址步长参数的详细说明请参考[repeatStride](../general_description_and_constraints.md#repeatStride)。|
-|dst_high_half|输入|指定每个dst地址中的数据存储到DataBlock的高半部还是低半部，该配置只配置int8_t/uint8_t的数据类型。<br>支持的数据类型为bool，有以下两种取值：<br>&bull; true:表示存储于DataBlock的高半部。<br>&bull; false:表示存储于DataBlock的低半部。|
-|src_high_half|输入|指定每个src地址中的数据存储到DataBlock的高半部还是低半部，该配置只配置int8_t/uint8_t的数据类型。<br>支持的数据类型为bool，有以下两种取值：<br>&bull; true:表示存储于DataBlock的高半部。<br>&bull;false:表示存储于DataBlock的低半部。|
+|dst_high_half|输入|指定每个dst地址中的数据存储到DataBlock的高半部还是低半部，该配置仅在操作数数据类型为int8_t/uint8_t时支持。<br>该参数为bool类型，有以下两种取值：<br>&bull; true：表示存储于DataBlock的高半部。<br>&bull; false：表示存储于DataBlock的低半部。|
+|src_high_half|输入|指定每个src地址中的数据存储到DataBlock的高半部还是低半部，该配置仅在操作数数据类型为int8_t/uint8_t时支持。<br>该参数为bool类型，有以下两种取值：<br>&bull; true：表示存储于DataBlock的高半部。<br>&bull; false：表示存储于DataBlock的低半部。|
 
 ## 返回值说明
 

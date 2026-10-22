@@ -10,13 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/stride.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # stride
 
-stride用于定义张量各维度在内存中的步长，用于描述同一维度相邻元素在内存中的间隔。
+stride用于定义张量各维度在内存中的步长，用于描述同一维度相邻元素在内存中的间隔。单位为元素。
 
 头文件路径为：`tensor_api/tensor.h`。
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/SIMD_compute/mask.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -43,14 +43,14 @@ Mask（掩码）是Ascend C中用于控制数据元素是否参与计算的标�
 > 
 > - 针对如下型号，Mask为硬件原生支持能力。调用Tensor前n个数据计算接口时，接口内部会将Mask设置为Counter模式，并在计算完成后恢复为系统默认的Normal模式。
 >   
->   - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+>   - Atlas A3系列产品
 >   
 >   
->   - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+>   - Atlas A2系列产品
 >   
 > 
 > 
-> - 在Ascend 950PR/Ascend 950DT上，Mask为保证兼容性采用软仿实现，其硬件底层提供的能力与Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品存在一定差异。推荐使用Tensor前n个数据计算接口，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容。Tensor前n个数据计算接口内部不会将Mask模式切换为Normal模式。若调用该接口前已通过[SetMaskCount](../mask_operations/set_mask_count.md)设置为Counter模式，接口调用后仍为Counter模式；后续计算需要使用Normal模式时，需手动调用[SetMaskNorm](../mask_operations/set_mask_norm.md)进行设置。
+> - 在Ascend 950PR&950DT系列产品上，Mask为保证兼容性采用软仿实现，其硬件底层提供的能力与Atlas A2系列产品和Atlas A3系列产品存在一定差异。推荐使用Tensor前n个数据计算接口，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容。Tensor前n个数据计算接口内部不会将Mask模式切换为Normal模式。若调用该接口前已通过[SetMaskCount](../mask_operations/set_mask_count.md)设置为Counter模式，接口调用后仍为Counter模式；后续计算需要使用Normal模式时，需手动调用[SetMaskNorm](../mask_operations/set_mask_norm.md)进行设置。
 > 
 
 ### 掩码配置方式

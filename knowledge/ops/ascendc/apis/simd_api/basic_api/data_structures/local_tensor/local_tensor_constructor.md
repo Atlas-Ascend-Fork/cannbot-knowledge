@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_structures/LocalTensor/LocalTensor_constructor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -224,7 +224,7 @@ AscendC::LocalTensor<float> tmpBuffer1 = tempBmm2Queue.AllocTensor<float>();
 AscendC::LocalTensor<half> tmpHalfBuffer;
 tmpHalfBuffer.SetAddrWithOffset(tmpBuffer1, calcSize * 2);
 
-// 示例16 SetBufferLen如下示例将申请的Tensor长度修改为1024(单位为字节)
+// 示例16 SetBufferLen：将申请的Tensor长度修改为1024个元素，float类型对应4096字节
 AscendC::LocalTensor<float> tmpBuffer2 = tempBmm2Queue.AllocTensor<float>();
 tmpBuffer2.SetBufferLen(1024);
 
@@ -263,7 +263,6 @@ auto tensorTraitMake = AscendC::MakeTensorTrait<float, AscendC::TPosition::VECIN
 uint32_t addr = 128;
 auto tensor1 = AscendC::LocalTensor<decltype(tensorTraitMake)>(addr);
 ```
-
 
 - [QuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_950.md)
 - [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)

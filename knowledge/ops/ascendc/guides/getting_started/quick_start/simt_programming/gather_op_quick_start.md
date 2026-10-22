@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/quick_start/simt_programming/gather_op_quick_start.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -139,7 +139,7 @@ platforms: []
     > [!NOTE]说明
     > - 该样例支持以下型号：
     >     
-    >     - Ascend 950PR/Ascend 950DT
+    >     - Ascend 950PR&950DT系列产品
     >     
     > - 编译选项`--npu-arch`用于指定NPU架构版本，`dav-`后为架构版本号，请替换为您实际使用的版本。各AI处理器型号对应的架构版本号请通过[AI处理器型号和 \_\_NPU\_ARCH\_\_ 的对应关系](../../../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)查询。
     > - 编译选项`--enable-simt`用于启用SIMT编程场景。

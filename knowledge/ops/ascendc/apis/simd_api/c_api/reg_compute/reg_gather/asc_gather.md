@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_gather/asc_gather.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -28,9 +28,11 @@ source_headers:
 
 **寄存器源收集模式**：源操作数与目的操作数均为矢量数据寄存器。按 `index` 矢量寄存器中保存的逐元素索引，从`src`矢量数据寄存器中选择对应位置的元素写入`dst`对应位置，不使用掩码。
 
-**图 1**  寄存器源收集模式
+**图 1** 寄存器源收集模式
 
 ![寄存器源收集模式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_gather_vec.png)
+
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -46,6 +48,7 @@ __simd_callee__ inline vector_<dtype> asc_gather(vector_<dtype> src,
 ```
 
 ### 支持数据类型列表
+
 **表1** 寄存器源收集模式支持数据类型列表
 
 | dtype | index_dtype |
@@ -82,7 +85,7 @@ __simd_callee__ inline vector_int16_t asc_gather(vector_int16_t src,
 
 **表2** 参数说明
 
-| 参数名  | 输入/输出 | 描述 |
+| 参数名 | 输入/输出 | 描述 |
 | :----- | :------- | :------- |
 | dst | 输出 | 目的操作数（矢量数据寄存器）。 |
 | src | 输入 | 源操作数（矢量数据寄存器），dtype须与dst一致。 |
@@ -99,9 +102,8 @@ __simd_callee__ inline vector_int16_t asc_gather(vector_int16_t src,
 
 ### 通用约束
 
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
-- 本接口在Vector Function（`__simd_vf__` 标记的函数）内调用，源/目的均为矢量数据寄存器。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
+- 源/目的均为矢量数据寄存器。
 
 ### 寄存器源收集模式约束
 
@@ -112,7 +114,7 @@ __simd_callee__ inline vector_int16_t asc_gather(vector_int16_t src,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
@@ -205,6 +207,5 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
 
 - [AscGather：固定 reference 调用约束](../../../../../guides/regbase/asc_gather_reference_contract.md)

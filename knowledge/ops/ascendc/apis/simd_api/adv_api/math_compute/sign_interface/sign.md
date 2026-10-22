@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Sign_interface/Sign.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -29,9 +29,9 @@ source_headers:
 
 按元素执行Sign操作，Sign是指返回输入数据的符号，如果为0则返回0，如果为正数则返回1，如果为负数则返回-1。计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002386224424.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002386224424.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002227274457.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002227274457.png)
 
 ## 函数原型
 
@@ -102,27 +102,27 @@ source_headers:
 -   支持的数据类型<a id="li11479111011360"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、float、int64\_t。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：half、float、int64\_t。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float。
+    Atlas A3系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float。
+    Atlas A2系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、float。
     
 
     
-    Kirin X90，支持的数据类型为：half、float。
+    Kirin X90处理器系列产品，支持的数据类型为：half、float。
     
 
     
-    Kirin 9030，支持的数据类型为：half、float。
+    Kirin 9030处理器系列产品，支持的数据类型为：half、float。
     
 
 ## 调用示例
@@ -150,7 +150,6 @@ AscendC::Sign(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输入数据(srcLocal): [-inf, -2.0, -0.0, 0.0, nan, -nan, 2.0, inf]
 输出数据(dstLocal): [-1, -1, 0, 0, 0, 0, 1, 1]
 ```
-
 
 - [ForeachSign A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_sign.md)
 - [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)

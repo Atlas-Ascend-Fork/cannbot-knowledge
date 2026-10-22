@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Kernel/Wait.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -56,7 +56,7 @@ __aicore__ inline int32_t Wait(HcclHandle handleId)
 REGISTER_TILING_DEFAULT(ReduceScatterCustomTilingData); // ReduceScatterCustomTilingData为对应算子头文件定义的结构体
 GET_TILING_DATA_WITH_STRUCT(ReduceScatterCustomTilingData, tilingData, tilingGM);
 Hccl hccl;
-GM_ADDR contextGM = AscendC::GetHcclContext<0>(); // AscendC自定义算子kernel中，通过此方式获取HCCL context
+GM_ADDR contextGM = AscendC::GetHcclContext<0>(); // AscendC自定义算子核函数（Kernel）中，通过此方式获取HCCL context
 __gm__ void* mc2InitTiling = (__gm__ void*)(&tiling->mc2InitTiling);
 __gm__ void* mc2CcTiling = (__gm__ void*)(&(tiling->mc2CcTiling));
 hccl.InitV2(contextGM, &tilingData);
@@ -77,7 +77,6 @@ if (AscendC::g_coreType == AIC) {
     hccl.Finalize(); // 后续无其他通信任务，通知服务端执行上述ReduceScatter任务之后即可退出
 }
 ```
-
 
 - [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)
 - [AlltoAllMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_matmul.md)

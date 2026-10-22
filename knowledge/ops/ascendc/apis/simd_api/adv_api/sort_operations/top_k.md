@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/sort_operations/TopK.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -51,7 +51,7 @@ source_headers:
 
 ## 实现原理
 
-TopK提供了两种不同的排序算法，MERGE\_SORT算法和RADIX\_SELECT算法，两种算法在执行速度、时间复杂度和算法稳定性上表现不同。MERGE\_SORT算法的时间复杂度是O\(![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002108561704.png)\)，是一种稳定的排序算法，执行速度相对较慢；RADIX\_SELECT算法的时间复杂度是O\(n\)，通常不关心稳定性，执行速度较快。
+TopK提供了两种不同的排序算法，MERGE\_SORT算法和RADIX\_SELECT算法，两种算法在执行速度、时间复杂度和算法稳定性上表现不同。MERGE\_SORT算法的时间复杂度是O\(![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002108561704.png)\)，是一种稳定的排序算法，执行速度相对较慢；RADIX\_SELECT算法的时间复杂度是O\(n\)，通常不关心稳定性，执行速度较快。
 
 -   **MERGE\_SORT算法**
 
@@ -70,27 +70,27 @@ TopK提供了两种不同的排序算法，MERGE\_SORT算法和RADIX\_SELECT算�
         1.  模板参数isInitIndex为false，需生成0到inner - 1的索引；
 
             
-            Ascend 950PR/Ascend 950DT采用方式一。
+            Ascend 950PR&950DT系列产品采用方式一。
             
 
             
-            Atlas A3 训练系列产品/Atlas A3 推理系列产品采用方式二。
+            Atlas A3系列产品采用方式二。
             
 
             
-            Atlas A2 训练系列产品/Atlas A2 推理系列产品采用方式二。
+            Atlas A2系列产品采用方式二。
             
 
             
-            Atlas 推理系列产品采用方式二。
+            Atlas推理系列产品采用方式二。
             
 
             
-            Kirin X90采用方式一。
+            Kirin X90处理器系列产品采用方式一。
             
 
             
-            Kirin 9030采用方式一。
+            Kirin 9030处理器系列产品采用方式一。
             
 
             -   方式一：使用CreateVecIndex生成0到inner - 1的索引。
@@ -100,27 +100,27 @@ TopK提供了两种不同的排序算法，MERGE\_SORT算法和RADIX\_SELECT算�
         3.  对输入数据完成全排序。
 
             
-            Ascend 950PR/Ascend 950DT采用方式一。
+            Ascend 950PR&950DT系列产品采用方式一。
             
 
             
-            Atlas A3 训练系列产品/Atlas A3 推理系列产品采用方式二。
+            Atlas A3系列产品采用方式二。
             
 
             
-            Atlas A2 训练系列产品/Atlas A2 推理系列产品采用方式二。
+            Atlas A2系列产品采用方式二。
             
 
             
-            Atlas 推理系列产品采用方式二。
+            Atlas推理系列产品采用方式二。
             
 
             
-            Kirin X90采用方式一。
+            Kirin X90处理器系列产品采用方式一。
             
 
             
-            Kirin 9030采用方式一。
+            Kirin 9030处理器系列产品采用方式一。
             
 
             方式一：
@@ -137,7 +137,7 @@ TopK提供了两种不同的排序算法，MERGE\_SORT算法和RADIX\_SELECT算�
         6.  isLargest参数为false，则给数据乘以-1还原数据。
 
         
-        注意：Atlas 推理系列产品上使用ProposalConcat基础API将data和index组合起来后，再使用RpSort16基础API对数据排序；使用MrgSort4进行归并；使用ProposalExtract基础API提取data和index。
+        注意：Atlas推理系列产品上使用ProposalConcat基础API将data和index组合起来后，再使用RpSort16基础API对数据排序；使用MrgSort4进行归并；使用ProposalExtract基础API提取data和index。
         
 
     -   计算TopK SMALL模式，过程如下：
@@ -145,27 +145,27 @@ TopK提供了两种不同的排序算法，MERGE\_SORT算法和RADIX\_SELECT算�
         1.  模板参数isInitIndex为false，需生成0到inner - 1的索引，并使用Copy指令将数据复制为outter条；
 
             
-            Ascend 950PR/Ascend 950DT采用方式一。
+            Ascend 950PR&950DT系列产品采用方式一。
             
 
             
-            Atlas A3 训练系列产品/Atlas A3 推理系列产品采用方式二。
+            Atlas A3系列产品采用方式二。
             
 
             
-            Atlas A2 训练系列产品/Atlas A2 推理系列产品采用方式二。
+            Atlas A2系列产品采用方式二。
             
 
             
-            Atlas 推理系列产品采用方式二。
+            Atlas推理系列产品采用方式二。
             
 
             
-            Kirin X90采用方式一。
+            Kirin X90处理器系列产品采用方式一。
             
 
             
-            Kirin 9030采用方式一。
+            Kirin 9030处理器系列产品采用方式一。
             
 
             -   方式一：使用CreateVecIndex生成0到inner - 1的索引。
@@ -177,13 +177,13 @@ TopK提供了两种不同的排序算法，MERGE\_SORT算法和RADIX\_SELECT算�
         5.  isLargest参数为false，则给输入数据乘以-1还原数据。
 
         
-        注意：Atlas 推理系列产品上使用ProposalConcat基础API将data和index组合起来后，再使用RpSort16基础API对数据排序；由于small模式下inner为32，RpSort16排序后为每16个数据有序，因此在步骤3和步骤4之间，使用MrgSort4基础API进行一次归并排序。
+        注意：Atlas推理系列产品上使用ProposalConcat基础API将data和index组合起来后，再使用RpSort16基础API对数据排序；由于small模式下inner为32，RpSort16排序后为每16个数据有序，因此在步骤3和步骤4之间，使用MrgSort4基础API进行一次归并排序。
         
 
 -   **RADIX\_SELECT算法**
 
     
-    该算法仅在Ascend 950PR/Ascend 950DT上支持。
+    该算法仅在Ascend 950PR&950DT系列产品上支持。
     
 
     **图3**  TopK算法框图  
@@ -292,7 +292,7 @@ struct TopKInfo {
 -   inf在Topk中被认为是极大值。
 -   nan在topk中排序时无论是降序还是升序，均被排在前面。
 
--   对于Atlas 推理系列产品AI Core：
+-   对于Atlas推理系列产品AI Core：
     -   输入srcLocal类型是half，模板参数isInitIndex值为false时，传入的topKInfo.inner不能大于2048。
 
     -   输入srcLocal类型是half，模板参数isInitIndex值为true时，传入的srcIndexLocal中的索引值不能大于2048。
@@ -301,27 +301,27 @@ struct TopKInfo {
 -   支持的数据类型<a id="li197551749192811"></a>
 
     
-    Ascend 950PR/Ascend 950DT，MERGE\_SORT算法当前支持的数据类型为half、float。RADIX\_SELECT算法当前支持的数据类型为uint8\_t、int8\_t、uint16\_t、int16\_t、uint32\_t、int32\_t、bfloat16\_t、half、float、uint64\_t、int64\_t。
+    Ascend 950PR&950DT系列产品，MERGE\_SORT算法当前支持的数据类型为half、float。RADIX\_SELECT算法当前支持的数据类型为uint8\_t、int8\_t、uint16\_t、int16\_t、uint32\_t、int32\_t、bfloat16\_t、half、float、uint64\_t、int64\_t。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float。
+    Atlas A3系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float。
+    Atlas A2系列产品，支持的数据类型为：half、float。
     
 
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：half、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：half、float。
     
 
     
-    Kirin X90，支持的数据类型为：half。
+    Kirin X90处理器系列产品，支持的数据类型为：half。
     
 
     
-    Kirin 9030，支持的数据类型为：half。
+    Kirin 9030处理器系列产品，支持的数据类型为：half。
     
 
 ## 调用示例<a name="section94691236101419"></a>
@@ -429,7 +429,6 @@ AscendC::TopK<T, isInitIndex, isHasfinish, isReuseSrc, AscendC::TopKMode::TOPK_N
 | --- | --- |
 | 输入 | 模板参数T：float；模板参数isInitIndex：true；模板参数isHasfinish：false；模板参数topkMode：TopKMode::TOPK_NSMALL；模板参数topkConfig: defaultTopKConfig；输入数据finishLocal: `LocalTensor<bool> finishLocal`，不需要赋值。输入数据k：8。<br>输入数据topKInfo：<br>int32_t outter = 4;<br>int32_t inner = 32;<br>int32_t n = 17;<br>输入数据isLargest：true<br>输入数据srcLocal：此处n=17，不是32的整数倍时，将其向上补齐到32，填充内容为-inf。<br>[[ 55492.18     27748.229   -51100.11     19276.926    14828.149<br>  -20771.824    57553.4     -21504.092   -57423.414      142.36443<br>   -5223.254    54669.473    54519.184    10165.924     -658.4564<br>    2264.2397  -52942.883           -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf]<br> [-52849.074    57778.72     37069.496    16273.109   -25150.637<br>  -35680.5     -15823.097     4327.308   -35853.86     -7052.2627<br>   44148.117   -17515.457   -18926.059    -1650.6737   21753.582<br>   -2589.2822   39390.4             -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf]<br> [-17539.186   -15220.923    29945.332    -4088.1514   28482.525<br>   29750.484   -46082.03     31141.16     23140.047     8461.174<br>   39955.844    29401.35     53757.543    33584.566    -3543.6284<br>  -38318.344    22212.41            -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf]<br> [ -9970.768    -9191.963   -17903.045     2211.4912   47037.562<br>  -41114.824    13305.985    59926.07    -24316.797    -6462.8896<br>    5699.733    -5873.5015   15695.861   -38492.004    19581.654<br>  -36877.68     27090.158           -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf         -inf         -inf         -inf<br>          -inf         -inf]]<br>输入数据srcIndexLocal：<br>[[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23<br>  24 25 26 27 28 29 30 31]<br> [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23<br>  24 25 26 27 28 29 30 31]<br> [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23<br>  24 25 26 27 28 29 30 31]<br> [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23<br>  24 25 26 27 28 29 30 31]] |
 | 输出数据 | 输出数据dstValueLocal：输出每行数据的前8个最大值。<br>[[57553.4    55492.18   54669.473  54519.184  27748.229  19276.926<br>  14828.149  10165.924 ]<br> [57778.72   44148.117  39390.4    37069.496  21753.582  16273.109<br>   4327.308  -1650.6737]<br> [53757.543  39955.844  33584.566  31141.16   29945.332  29750.484<br>  29401.35   28482.525 ]<br> [59926.07   47037.562  27090.158  19581.654  15695.861  13305.985<br>   5699.733   2211.4912]]<br>输出数据dstIndexLocal：输出每行数据的前8个最大值索引。<br>[[ 6  0 11 12  1  3  4 13]<br> [ 1 10 16  2 14  3  7 13]<br> [12 10 13  7  2  5 11  4]<br> [ 7  4 16 14 12  6 10  3]] |
-
 
 - [TopK 950 Direct Invoke 算子知识](../../../../operators/direct/math/math/top_k_950.md)
 - [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)

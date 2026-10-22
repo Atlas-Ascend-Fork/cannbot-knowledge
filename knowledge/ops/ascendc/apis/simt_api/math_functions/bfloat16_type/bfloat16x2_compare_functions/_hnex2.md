@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_compare_functions/__hnex2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -121,3 +121,11 @@ bfloat16x2_t __hnex2(bfloat16x2_t x, bfloat16x2_t y)
         asc_vf_call<simt_hnex2>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, (__gm__ bfloat16x2_t*)dst, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (-1.0, 0.0), (1.0, -1.0), (inf, -inf), (nan, 0.5)
+y: (1.0, 0.0), (1.0, -2.0), (inf, inf), (0.5, nan)
+result: (1, 0), (0, 1), (0, 1), (0, 0)
+```

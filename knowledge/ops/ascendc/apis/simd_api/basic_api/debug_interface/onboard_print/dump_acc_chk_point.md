@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/debug_interface/onboard_print/DumpAccChkPoint.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -31,11 +31,12 @@ source_headers:
 
 该接口Dump指定Tensor的内容。同时支持打印自定义的标签（仅支持uint32_t数据类型的信息），比如打印当前行号等。区别于[DumpTensor](dump_tensor.md)，使用该接口可以支持指定偏移位置的Tensor打印。
 
-在算子kernel侧实现代码中需要打印偏移后Tensor数据的地方，调用DumpAccChkPoint接口打印相关内容。样例如下：
+在算子核函数（Kernel）侧实现代码中需要打印偏移后Tensor数据的地方，调用DumpAccChkPoint接口打印相关内容。样例如下：
 
 ```cpp
 AscendC::DumpAccChkPoint(srcLocal, 5, 32, dataLen);
 ```
+
 > [!CAUTION]注意
 > 该接口主要用于调试分析，开启后会对算子性能产生一定影响，通常在调试阶段使用，生产环境建议关闭。<br>
 > 默认情况下，调用该接口就会打印相关内容，开发者可以参考[关闭ASCENDC_DUMP说明](../disable_ascendc_dump.md)，按需关闭该接口功能。
@@ -69,17 +70,17 @@ __aicore__ inline void DumpAccChkPoint(const GlobalTensor<T> &tensor, uint32_t i
 ## 数据类型
 
 
-- Ascend 950PR/Ascend 950DT，T支持的数据类型为：bool、int8_t、uint8_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- Ascend 950PR&950DT系列产品，T支持的数据类型为：bool、int8_t、uint8_t、hifloat8_t、fp8_e8m0_t、fp8_e5m2_t、fp8_e4m3fn_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- Atlas A3系列产品，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- Atlas A2系列产品，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
-- Atlas 推理系列产品AI Core，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- Atlas推理系列产品AI Core，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
-- Kirin X90，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- Kirin X90处理器系列产品，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
-- Kirin 9030，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
+- Kirin 9030处理器系列产品，T支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。
 
 ## 返回值说明<a name="section640mcpsimp"></a>
 
@@ -89,7 +90,7 @@ __aicore__ inline void DumpAccChkPoint(const GlobalTensor<T> &tensor, uint32_t i
 
 - 当前仅支持打印存储位置为Unified Buffer（UB）/L1 Buffer/L0C Buffer/Global Memory的Tensor信息。
 
-- 针对Ascend 950PR/Ascend 950DT，使用该接口打印L1 Tensor数据时，HDK版本需要至少升级到25.7.RC1.6以上。
+- 针对Ascend 950PR&950DT系列产品，使用该接口打印L1 Tensor数据时，HDK版本需要至少升级到25.7.RC1.6以上。
 
 - 操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md#section796754519912)。
 - 单次调用DumpAccChkPoint打印的数据总量不可超过30KB（还包括少量框架需要的头尾信息，通常可忽略）。使用时应注意，如果超出这个限制，则数据不会被打印。
@@ -108,6 +109,7 @@ AscendC::DumpAccChkPoint(srcLocal, index, countOff, dumpSize);
 ```
 
 打印结果如下：
+
 ```plain
 DumpTensor: desc=56, addr=0x40, data_type=float16, position=UB, dump_size=15
 [4.710938, 4.707031, 4.773438, 2.271484, 4.347656, 2.359375, 1.284180, 1.073242, 1.242188, 2.298828, 0.521973, 1.099609, 1.880859, 1.226562, 3.916016]

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/debug_interface/disable_ascendc_dump.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ platforms: []
 
 - CMake编译选项控制方式
     - 核函数（Kernel）直调工程
-        修改CMakeList.txt文件中中ascendc_compile_definitions命令增加ASCENDC_DUMP=0宏定义来关闭ASCENDC_DUMP开关。示例如下：
+        修改CMakeLists.txt文件中ascendc_compile_definitions命令增加ASCENDC_DUMP=0宏定义来关闭ASCENDC_DUMP开关。示例如下：
         ```plain
         // 关闭所有算子的打印功能
         ascendc_compile_definitions({kernel_target_name} PRIVATE
@@ -43,7 +43,7 @@ platforms: []
         ```
 
     - 宏定义控制方式
-        在kernel代码文件的开头位置添加#define ASCENDC_DUMP 0,示例如下：
+        在核函数（Kernel）代码文件的开头位置添加#define ASCENDC_DUMP 0,示例如下：
         ```cpp
         #define ASCENDC_DUMP 0 // 在包含头文件之前添加
         #include "..." // 包含所需的头文件

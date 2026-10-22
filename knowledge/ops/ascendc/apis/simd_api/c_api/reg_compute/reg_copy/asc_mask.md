@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_copy/asc_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,16 +24,16 @@ source_headers:
 
 头文件路径为：`"c_api/reg_compute/reg_copy.h"`。
 
-将src中被mask筛选的有效元素复制到返回值对应位置，未被mask筛选的位置置为0（ZEROING模式），并通过函数返回值返回结果。支持以下两种模式：
+将src中被mask筛选的有效元素复制到返回值对应位置，未被mask筛选的位置根据源/目的寄存器不同有不同的行为，最终通过函数返回值返回结果。支持以下两种模式：
 
-- 矢量数据寄存器复制到矢量数据寄存器：将src中被mask筛选的有效元素复制到返回值对应位置，未被mask筛选的位置保持原值。
+- 矢量数据寄存器复制到矢量数据寄存器：将src中被mask筛选的有效元素复制到返回值对应位置，未被mask筛选的位置值未定义。
 - 掩码寄存器复制到掩码寄存器：将src中被mask筛选的bit复制到返回值中，未被mask筛选的位置置为0。支持带mask和不带mask两种重载：
     - 带mask：将src中被mask筛选的bit复制到返回值。对于b8模式，mask的每个bit控制src的一个bit；对于b16模式，mask的每2bit为一组、仅LSB控制src的一个bit；对于b32模式，mask的每4bit为一组、仅LSB控制src的一个bit。
     - 不带mask：将src的所有bit复制到返回值。
 
-本接口与[asc_copy](asc_copy.md)的矢量数据寄存器复制到矢量数据寄存器模式及掩码寄存器复制到掩码寄存器模式功能相同，区别在于本接口通过函数返回值返回结果。
+本接口与[asc_copy](asc_copy.md)的掩码寄存器复制到掩码寄存器模式功能相同，区别在于本接口通过函数返回值返回结果。
 
-本接口为Reg矢量计算接口，仅在AIV上生效。
+本接口为Reg矢量搬运接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -41,11 +41,12 @@ source_headers:
 
 ```c
 __simd_callee__ inline vector_<dtype> asc_mask(vector_<dtype> src,
-                                                vector_bool mask)
+                                               vector_bool mask)
 ```
 
 #### dtype支持数据类型
-dtype支持的数据类型：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float。
+
+`dtype`取值为：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
 
 #### 函数原型典型示例
 
@@ -70,7 +71,7 @@ __simd_callee__ inline vector_bool asc_mask(vector_bool src)
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
 | src | 输入 | 源矢量数据寄存器。 |
-| mask | 输入 | 源掩码寄存器，用于指示在计算过程中哪些元素参与计算。对应位置为1时参与计算，为0时不参与计算。mask未筛选的元素在返回值保持原值。 |
+| mask | 输入 | 源掩码寄存器，用于指示在计算过程中哪些元素参与计算。对应位置为1时参与计算，为0时不参与计算。未被mask筛选的位置值未定义。 |
 
 **表2** 参数说明（掩码寄存器复制到掩码寄存器）
 
@@ -88,18 +89,18 @@ __simd_callee__ inline vector_bool asc_mask(vector_bool src)
 
 ## 约束说明
 
-- 本接口仅在AIV上生效，非AIV调用直接返回。
-- 本接口在Vector Function（`__simd_vf__`标记的函数）内调用，src为矢量数据寄存器或掩码寄存器。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
+- src为矢量数据寄存器或掩码寄存器。
 
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
-bisheng example.asc -o main --npu-arch=dav-3510&& ./main
+bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
 
 

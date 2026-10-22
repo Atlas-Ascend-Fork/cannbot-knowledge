@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/compare_and_select/Compare_store_to_register.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -94,16 +94,16 @@ source_headers:
 - 本接口将结果写入128bit的CmpMask寄存器中，可以用[GetCmpMask](get_cmp_mask_isasi.md)接口获取寄存器保存的数据。
 
 
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT，该接口占用8KB UB临时空间。
+- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR&950DT系列产品，该接口占用8KB UB临时空间。
 
 
 
 - 针对如下型号，当参数count或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
   
-  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  - Atlas A3系列产品
   
   
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  - Atlas A2系列产品
   
 
 

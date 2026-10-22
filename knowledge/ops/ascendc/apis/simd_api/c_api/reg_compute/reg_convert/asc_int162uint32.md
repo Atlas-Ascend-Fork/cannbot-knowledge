@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_convert/asc_int162uint32.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -39,7 +39,7 @@ def asc_int162uint32(dst, src, mask, src_pos):
             dst[i] = uint32_t(src[2 * i + offset])
 ```
 
-本接口为`reg`矢量计算接口，仅在AIV上生效。
+本接口为Reg矢量计算接口，仅在AIV上生效。
 
 ## 函数原型
 
@@ -57,12 +57,12 @@ __simd_callee__ inline void asc_int162uint32(vector_uint32_t& dst,
 
 // 通过函数返回值返回结果
 __simd_callee__ inline vector_uint32_t asc_int162uint32(vector_int16_t src,
-                                             vector_bool mask,
-                                             std::integral_constant<asc_position_mode, asc_position_mode::EVEN> src_pos)
+                                                        vector_bool mask,
+                                                        std::integral_constant<asc_position_mode, asc_position_mode::EVEN> src_pos)
 
 __simd_callee__ inline vector_uint32_t asc_int162uint32(vector_int16_t src,
-                                             vector_bool mask,
-                                             std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
+                                                        vector_bool mask,
+                                                        std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
 ```
 
 ## 参数说明
@@ -85,9 +85,8 @@ __simd_callee__ inline vector_uint32_t asc_int162uint32(vector_int16_t src,
 
 ## 约束说明
 
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
 - 位置选择标签参数仅能使用编译期常量，编译器据此在编译期分发至对应的重载。
-- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
-- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
 - `src`与`dst`的数据类型需要与函数原型匹配。
 - `mask`掩码位为0时，`dst`对应元素置0。
 - 选择读取`src`的奇数索引位置时，偶数索引位置的元素不参与计算；选择读取偶数索引位置时，奇数索引位置的元素不参与计算。
@@ -97,7 +96,7 @@ __simd_callee__ inline vector_uint32_t asc_int162uint32(vector_int16_t src,
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

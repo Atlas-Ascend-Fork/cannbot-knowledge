@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_key_features/NZ2NZ.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -24,10 +24,10 @@ platforms: []
 
 以如下产品型号为例：
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
+Atlas A3系列产品
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
+Atlas A2系列产品
 
 NZ2NZ转化过程可以参考以下伪代码：
 
@@ -58,7 +58,7 @@ for (j = 0; j < mSize; j++) {
 
 
 
-以Ascend 950PR/Ascend 950DT为例，NZ2NZ转化过程可以参考以下伪代码：
+以Ascend 950PR&950DT系列产品为例，NZ2NZ转化过程可以参考以下伪代码：
 
 ```cpp
 for (j = 0; j < mSize; j++) {

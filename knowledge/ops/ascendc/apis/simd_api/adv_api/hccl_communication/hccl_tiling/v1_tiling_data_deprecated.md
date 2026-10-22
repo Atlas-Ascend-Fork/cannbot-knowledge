@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/v1_TilingData_deprecated.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -79,7 +79,7 @@ AI CPU启动下发通信任务前，需获取固定的通信配置[Mc2Msg](#tabl
 -   算子的Tiling Data结构需要按顺序完整包含[Mc2Msg参数](#table4835205712588)。
 -   AI CPU需获取固定数据结构的通信配置，算子注册Tiling Data时保持该结构的一致性。
 
--   Atlas A3 训练系列产品/Atlas A3 推理系列产品暂不支持该版本TilingData。
+-   Atlas A3系列产品暂不支持该版本TilingData。
 
 
 ## 调用示例

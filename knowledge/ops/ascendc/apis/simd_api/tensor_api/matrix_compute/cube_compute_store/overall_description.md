@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/cube_compute_store/overall_description.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -18,7 +18,7 @@ platforms: []
 
 矩阵计算的搬出接口主要实现L0C Buffer与Global Memory、Unified Buffer（UB）之间的数据高效传输。
 
-针对Ascend 950PR/Ascend 950DT：
+针对Ascend 950PR&950DT系列产品：
 
 **图1**  矩阵计算搬出整体流程图
 

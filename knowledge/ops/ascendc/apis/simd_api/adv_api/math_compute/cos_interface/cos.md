@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Cos_interface/Cos.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -29,11 +29,11 @@ source_headers:
 
 按元素做三角函数余弦运算，计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002218333665.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002218333665.png)
 
 Cos\(x\)的泰勒展开式为：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002376868752.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002376868752.png)
 
 ## 函数原型
 
@@ -110,17 +110,17 @@ enum class CosAlgo {
 ## 约束说明
 
 
--   对于Ascend 950PR/Ascend 950DT，模板参数config中使用多项式拟合算法POLYNOMIAL\_APPROXIMATION时，必须保证输入源数据的值域在\[-65504.0, 65504.0\]范围内。
+-   对于Ascend 950PR&950DT系列产品，模板参数config中使用多项式拟合算法POLYNOMIAL\_APPROXIMATION时，必须保证输入源数据的值域在\[-65504.0, 65504.0\]范围内。
 
 -   对于以下产品，输入源数据必须保持值域在\[-65504.0, 65504.0\]范围内。
         
-    -   Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    -   Atlas A3系列产品
         
         
-    -   Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    -   Atlas A2系列产品
         
         
-    -   Atlas 推理系列产品AI Core
+    -   Atlas推理系列产品AI Core
         
 
 -   **不支持源操作数与目的操作数地址重叠。**
@@ -146,7 +146,6 @@ AscendC::Cos<half, false, config>(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输入数据(srcLocal): [0.00            0.01            0.02             ...  5.10            5.11]
 输出数据(dstLocal): [1.00000000e+00  9.99949992e-01  9.99800026e-01   ...  3.77977639e-01  3.87216508e-01]
 ```
-
 
 - [SimThreadExponential 950 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)
 - [ForeachCos A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cos.md)

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_unsqueeze.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -50,8 +50,9 @@ __simd_callee__ inline void asc_unsqueeze(vector_<dtype>& dst,
                                           vector_bool mask)
 ```
 
-#### dtype支持数据类型
-dtype支持的数据类型：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t。返回值类型接口通过函数名后缀区分数据类型，对应关系如下：
+### dtype支持数据类型
+
+`dtype`取值为：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`。返回值类型接口通过函数名后缀区分数据类型，对应关系如下：
 
 | 函数名后缀 | 数据类型 |
 |---|---|
@@ -62,7 +63,7 @@ dtype支持的数据类型：int8_t、uint8_t、int16_t、uint16_t、int32_t、u
 | u32 | uint32_t |
 | s32 | int32_t |
 
-#### 函数原型典型示例
+### 函数原型典型示例
 
 ```c
 // 示例：对int8_t矢量数据寄存器执行解压缩，通过函数返回值返回结果。
@@ -90,15 +91,15 @@ __simd_callee__ inline void asc_unsqueeze(vector_int8_t& dst,
 
 ## 约束说明
 
-- 本接口仅在AIV上生效，非AIV调用直接返回。
-- 本接口在Vector Function（`__simd_vf__`标记的函数）内调用，dst与mask为矢量数据寄存器/掩码寄存器。
+- Reg矢量计算C API通用约束请参见[通用约束](../overview.md#通用约束)。
+- dst与mask为矢量数据寄存器/掩码寄存器。
 
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510&& ./main
@@ -192,6 +193,5 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
 
 - [AscUnsqueeze：固定 reference 调用约束](../../../../../guides/regbase/asc_unsqueeze_reference_contract.md)

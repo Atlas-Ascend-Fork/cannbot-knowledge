@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceRepeat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -85,32 +85,32 @@ source_headers:
 **支持的数据类型如下：**
 
 
-- Ascend 950PR/Ascend 950DT，支持int16_t、uint16_t、half、int32_t、uint32_t、float。
+- Ascend 950PR&950DT系列产品，支持int16_t、uint16_t、half、int32_t、uint32_t、float。
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持half、float。
+- Atlas A3系列产品，支持half、float。
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持half、float。
+- Atlas A2系列产品，支持half、float。
 
 
-- Atlas 200I/500 A2 推理产品，支持half、float。
+- Atlas 200I/500 A2推理产品，支持half、float。
 
 
-- Atlas 推理系列产品AI Core，支持half、float。
+- Atlas推理系列产品AI Core，支持half、float。
 
 
-- Atlas 训练系列产品，支持half。
+- Atlas训练系列产品，支持half。
 
 
-- Kirin X90，支持half、float。
+- Kirin X90处理器系列产品，支持half、float。
 
 
-- Kirin 9030，支持half、float。
+- Kirin 9030处理器系列产品，支持half、float。
 
 
 
-**针对Ascend 950PR/Ascend 950DT：**
+**针对Ascend 950PR&950DT系列产品：**
 
 - 在`reduceType`取`MAX`或`MIN`时目的操作数与源操作数的数据类型需要保持一致。
 - 在`reduceType`取`SUM`时，支持如下数据类型组合：
@@ -128,25 +128,25 @@ source_headers:
 **针对如下型号，目的操作数与源操作数的数据类型需要保持一致。**
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- Atlas A3系列产品
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- Atlas A2系列产品
 
 
-- Atlas 200I/500 A2 推理产品
+- Atlas 200I/500 A2推理产品
 
 
-- Atlas 推理系列产品AI Core
+- Atlas推理系列产品AI Core
 
 
-- Atlas 训练系列产品
+- Atlas训练系列产品
 
 
-- Kirin X90
+- Kirin X90处理器系列产品
 
 
-- Kirin 9030
+- Kirin 9030处理器系列产品
 
 
 
@@ -186,20 +186,20 @@ source_headers:
   
   - 针对如下型号，当参数mask或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
 
   
-  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数mask或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品，该接口通过VF调用[Reg矢量计算](../../reg_vector_compute/index.md)API实现兼容，当参数mask或repeatTime取值为0时，不保证该接口被视为NOP（空操作）。
   
 
 
 
-- 对UB空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对UB空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算占用8KB UB。
   - tensor前n个数据连续计算不涉及8KB UB的占用。
 
@@ -208,28 +208,28 @@ source_headers:
   - 索引按操作数的数据类型存储，读取索引需要将类型转换到整型，请参考[关键特性说明](#关键特性说明)。
   - 不同芯片支持的`ReduceOrder`如下：
     
-    - Ascend 950PR/Ascend 950DT，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`、`ORDER_ONLY_VALUE`、`ORDER_ONLY_INDEX`。
+    - Ascend 950PR&950DT系列产品，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`、`ORDER_ONLY_VALUE`、`ORDER_ONLY_INDEX`。
     
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`、`ORDER_ONLY_VALUE`、`ORDER_ONLY_INDEX`。
+    - Atlas A3系列产品，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`、`ORDER_ONLY_VALUE`、`ORDER_ONLY_INDEX`。
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`、`ORDER_ONLY_VALUE`、`ORDER_ONLY_INDEX`。
+    - Atlas A2系列产品，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`、`ORDER_ONLY_VALUE`、`ORDER_ONLY_INDEX`。
     
     
-    - Atlas 200I/500 A2 推理产品，支持`ORDER_VALUE_INDEX`、`ORDER_ONLY_VALUE`。
+    - Atlas 200I/500 A2推理产品，支持`ORDER_VALUE_INDEX`、`ORDER_ONLY_VALUE`。
     
     
-    - Atlas 推理系列产品AI Core，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`。
+    - Atlas推理系列产品AI Core，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`。
     
     
-    - Atlas 训练系列产品，支持`ORDER_VALUE_INDEX`。
+    - Atlas训练系列产品，支持`ORDER_VALUE_INDEX`。
     
     
-    - Kirin X90，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`。
+    - Kirin X90处理器系列产品，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`。
     
     
-    - Kirin 9030，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`。
+    - Kirin 9030处理器系列产品，支持`ORDER_VALUE_INDEX`、`ORDER_INDEX_VALUE`。
     
 
 ## 关键特性说明
@@ -249,16 +249,16 @@ source_headers:
 
     特别地
     
-    - 针对Ascend 950PR/Ascend 950DT，`ORDER_ONLY_INDEX`（仅返回最值索引）情况下，当操作数数据类型为`int16_t`，`uint16_t`，`half`时，读取index都需要使用`reinterpret_cast<uint32_t*>`。
+    - 针对Ascend 950PR&950DT系列产品，`ORDER_ONLY_INDEX`（仅返回最值索引）情况下，当操作数数据类型为`int16_t`，`uint16_t`，`half`时，读取index都需要使用`reinterpret_cast<uint32_t*>`。
     
 
     
     - 针对如下型号，`ORDER_ONLY_INDEX`（仅返回最值索引）情况下，读取索引值index时都需要使用`reinterpret_cast<uint32_t*>`。
       
-      - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+      - Atlas A3系列产品
       
       
-      - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+      - Atlas A2系列产品
       
     
 

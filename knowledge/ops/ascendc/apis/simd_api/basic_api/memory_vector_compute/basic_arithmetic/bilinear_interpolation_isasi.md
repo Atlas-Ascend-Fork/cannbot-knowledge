@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/basic_arithmetic/BilinearInterpolation_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -183,16 +183,16 @@ hRepeat = 2；vRepeat = 2；mask = 128；vROffset = 128。
 ### sharedTmpBuffer空间说明
 
 
-- 针对Ascend 950PR/Ascend 950DT，不需要分配临时空间。
+- 针对Ascend 950PR&950DT系列产品，不需要分配临时空间。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，需要保证至少分配了src0.GetSize() * 32 + src1.GetSize() * 32字节的空间。
+- 针对Atlas A3系列产品，需要保证至少分配了src0.GetSize() * 32 + src1.GetSize() * 32字节的空间。
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，需要保证至少分配了src0.GetSize() * 32 + src1.GetSize() * 32字节的空间。
+- 针对Atlas A2系列产品，需要保证至少分配了src0.GetSize() * 32 + src1.GetSize() * 32字节的空间。
 
 
-- 针对Atlas 推理系列产品AI Core，需要保证至少分配了src0OffsetLocal.GetSize() * sizeof(uint32_t)字节的空间。
+- 针对Atlas推理系列产品AI Core，需要保证至少分配了src0OffsetLocal.GetSize() * sizeof(uint32_t)字节的空间。
 
 
 ## 数据类型

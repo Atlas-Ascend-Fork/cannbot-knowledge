@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/debug_and_tuning/performance_tuning.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -64,8 +64,7 @@ platforms: []
     └──visualize_data.bin         # MindStudio Insight呈现文件
     ```
     
-**表2 msopprof文件介绍**
-<a name="table244174535419"></a>
+**表2 msopprof文件介绍**<a name="table244174535419"></a>
 <table><thead align="left"><tr id="row17451145145411"><th class="cellrowborder" valign="top" width="24.54%" id="mcps1.2.3.1.1"><p id="p18451345115414"><a name="p18451345115414"></a><a name="p18451345115414"></a>名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="75.46000000000001%" id="mcps1.2.3.1.2"><p id="p4451245115415"><a name="p4451245115415"></a><a name="p4451245115415"></a>说明</p>
@@ -101,7 +100,7 @@ platforms: []
 
 <tr id="row124534535416"><td class="cellrowborder" valign="top" width="24.54%" headers="mcps1.2.3.1.1 "><p id="p144516455548"><a name="p144516455548"></a><a name="p144516455548"></a>MemoryUB.csv</p>
 </td>
-<td class="cellrowborder" valign="top" width="75.46000000000001%" headers="mcps1.2.3.1.2 "><p id="p845134505416"><a name="p845134505416"></a><a name="p845134505416"></a>mte/vector/scalar采集ub读写带宽速率，可参考MemoryUB（UB读写带宽速率）。
+<td class="cellrowborder" valign="top" width="75.46000000000001%" headers="mcps1.2.3.1.2 "><p id="p845134505416"><a name="p845134505416"></a><a name="p845134505416"></a>mte/vector/scalar采集UB读写带宽速率，可参考MemoryUB（UB读写带宽速率）。</p>
 </td>
 </tr>
 
@@ -176,9 +175,8 @@ platforms: []
 
         其中仿真编译所依赖的库介绍如下，开启仿真编译时，需要优先链接，确保优先使用仿真库的符号，防止出现运行时coredump等异常情况。
 
-        **表3 仿真编译依赖库介绍**
+        **表3 仿真编译依赖库介绍**<a name="table84131311195116"></a>
 
-        <a name="table84131311195116"></a>
         <table><thead align="left"><tr id="row4413911115113"><th class="cellrowborder" valign="top" width="45.97%" id="mcps1.2.3.1.1"><p id="p1841381120511"><a name="p1841381120511"></a><a name="p1841381120511"></a>名称</p>
         </th>
         <th class="cellrowborder" valign="top" width="54.03%" id="mcps1.2.3.1.2"><p id="p15413191116515"><a name="p15413191116515"></a><a name="p15413191116515"></a>作用描述</p>
@@ -237,6 +235,7 @@ platforms: []
        ├──trace.json           # Edge/Chrome Trace Viewer/Perfetto呈现文件
        └──visualize_data.bin   # MindStudio Insight呈现文件
     ```
+
 **表4 msopprof simulator文件介绍**
 
 | 名称 | 说明 |

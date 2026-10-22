@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/reduction_operations/Sum_interface/Sum.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -137,7 +137,6 @@ AscendC::Sum(yLocal, xLocal, sharedTmpBuffer, params);
                      [4 5 6 0 0 0 0 0 0 0 0 0 0 0 0 0]]
 输出数据dstLocal: [6 15 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
 ```
-
 
 - [MultiScaleDeformableAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/vfusion/multi_scale_deformable_attention_grad.md)
 - [AttentionToFfn A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)

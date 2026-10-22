@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/basic_arithmetic/Div.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -114,28 +114,28 @@ $dst_i = src0_i / src1_i$
 ## 数据类型
 
 
-- 针对Ascend 950PR/Ascend 950DT，T支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float、complex32、int64_t、uint64_t、complex64。数据类型complex32、int64_t、uint64_t、complex64仅支持tensor前n个数据计算接口和整个tensor参与计算的运算符重载。
+- 针对Ascend 950PR&950DT系列产品，T支持的数据类型为：int16_t、uint16_t、half、int32_t、uint32_t、float、complex32、int64_t、uint64_t、complex64。数据类型complex32、int64_t、uint64_t、complex64仅支持tensor前n个数据计算接口和整个tensor参与计算的运算符重载。
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，T支持的数据类型为：half、float。
+- 针对Atlas A3系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，T支持的数据类型为：half、float。
+- 针对Atlas A2系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Atlas 200I/500 A2 推理产品，T支持的数据类型为：half、float。
+- 针对Atlas 200I/500 A2推理产品，T支持的数据类型为：half、float。
 
 
-- 针对Atlas 推理系列产品AI Core，T支持的数据类型为：half、float。
+- 针对Atlas推理系列产品AI Core，T支持的数据类型为：half、float。
 
 
-- 针对Atlas 训练系列产品，T支持的数据类型为：half、float。
+- 针对Atlas训练系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Kirin X90，T支持的数据类型为：half、float。
+- 针对Kirin X90处理器系列产品，T支持的数据类型为：half、float。
 
 
-- 针对Kirin 9030，T支持的数据类型为：half、float。
+- 针对Kirin 9030处理器系列产品，T支持的数据类型为：half、float。
 
 
 ## 返回值说明<a name="section640mcpsimp"></a>
@@ -153,26 +153,27 @@ $dst_i = src0_i / src1_i$
   
   - 针对如下型号，当参数count或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
   
 
 
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算占用8KB UB。
   - tensor前n个数据连续计算不涉及8KB UB的占用。
 
 
 
+
 ## 关键特性<a id="div-key-features"></a>
 
-针对Ascend 950PR/Ascend 950DT，有如下关键特性：
+针对Ascend 950PR&950DT系列产品，有如下关键特性：
 
 ### 最大精度误差
 
@@ -226,7 +227,7 @@ DivAlgo::INTRINSIC为默认算法。--cce-ftz=false时保留Subnormal；--cce-ft
     ```
 
     
-    以下示例仅支持Ascend 950PR/Ascend 950DT
+    以下示例仅支持Ascend 950PR&950DT系列产品
 
     ```cpp
     // Div 0ulp.
@@ -251,7 +252,6 @@ DivAlgo::INTRINSIC为默认算法。--cce-ftz=false时保留Subnormal；--cce-ft
 输入数据src1Local：[2.0 2.0 2.0 ... 2.0]
 输出数据dstLocal：[0.5 1.0 1.5 ... 256.0]
 ```
-
 
 - [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)
 - [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpDef/Attr.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ platforms: []
 
 注册算子属性参数。
 
-当需要设置的参数不参与kernel侧计算时，可以将该参数注册为算子属性参数。
+当需要设置的参数不参与核函数（Kernel）侧计算时，可以将该参数注册为算子属性参数。
 
 ## 函数原型<a name="zh-cn_topic_0000001705099477_zh-cn_topic_0000001576870901_zh-cn_topic_0000001575944081_section13230182415108"></a>
 

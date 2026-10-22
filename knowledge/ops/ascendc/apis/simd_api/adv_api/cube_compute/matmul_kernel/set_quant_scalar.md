@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetQuantScalar.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -88,7 +88,6 @@ if (tiling.isBias) {
 mm.IterateAll(gm_c);
 mm.End();
 ```
-
 
 - [InplaceQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/inplace_quant_matmul_all_reduce_add_rms_norm.md)
 - [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)

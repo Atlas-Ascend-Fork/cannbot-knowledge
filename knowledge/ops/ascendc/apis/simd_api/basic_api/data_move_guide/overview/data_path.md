@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/overview/data_path.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -22,7 +22,7 @@ platforms: []
 
 AI Core是昇腾处理器的核心计算单元，以[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)为例，其内部分层存储架构如图1所示，主要包含以下组成部分：
 
-- **计算单元（图中黄色高亮）：**  包括Cube（矩阵）计算单元、Vector（矢量）计算单元和Scalar（标量）计算单元，分别负责矩阵乘加、向量运算和标量控制流。
+- **计算单元（图中绿色高亮）：**  包括Cube（矩阵）计算单元、Vector（矢量）计算单元和Scalar（标量）计算单元，分别负责矩阵乘加、向量运算和标量控制流。
 - **存储单元：**  按层级由外到内依次为Global Memory（GM，位于AI Core外部）、L1 Buffer、L0A/L0B/L0C Buffer、Unified Buffer（UB）、BiasTable Buffer、Fixpipe Buffer等。各存储单元的容量与对齐要求各异，详情参见[内存层级架构](overall_constraints.md#地址对齐约束)。
 - **搬运单元（图中黄色高亮）：**  包括MTE1（Memory Transfer Engine 1）、MTE2、MTE3和FixPipe，负责数据在不同存储单元之间的DMA传输。其中MTE2负责GM  ->  Local Memory方向的搬运，MTE3负责Local Memory -> GM方向的搬运，MTE1负责L1 Buffer -> L0 Buffer方向的数据搬运，FixPipe负责将计算结果从L0C Buffer中通过[随路量化](../../cube_compute_isasi/cube_store_key_features/accompanying_quantization.md)和[随路激活](../../cube_compute_isasi/cube_store_key_features/accompanying_relu.md)的方式搬出。
 
@@ -46,7 +46,7 @@ AI Core是昇腾处理器的核心计算单元，以[NPU架构版本2201](../../
 
   > [!NOTE]说明
   > - 同一个物理内存可能对应多个不同的[TPosition](../../aux_data_structures/t_position.md)，例如UB同时映射到VECIN、VECCALC和VECOUT三个逻辑位置，分别代表矢量计算的输入、中间计算和输出阶段。L1 Buffer同时映射到A1、B1、C1和TSCM，具体含义取决于当前所服务的计算流程（矩阵左/右矩阵暂存或共享通信）。这种设计使得同一物理内存可以在不同计算阶段被赋予不同的逻辑语义，开发者可根据编程模型的阶段需求选择合适的TPosition。
-  > - 同一个逻辑位置，在不同产品型号中可能对应不同的物理内存，例如逻辑位置CO2在Atlas A2 训练系列产品/Atlas A2 推理系列产品中映射到Global Memory，而在Atlas训练及推理系列产品中映射到UB，详细情况请参考[逻辑位置和物理存储的映射关系](../../../general_description_and_constraints.md#section1359919519819)。
+  > - 同一个逻辑位置，在不同产品型号中可能对应不同的物理内存，例如逻辑位置CO2在Atlas A2系列产品中映射到Global Memory，而在Atlas训练及推理系列产品中映射到UB，详细情况请参考[逻辑位置和物理存储的映射关系](../../../general_description_and_constraints.md#section1359919519819)。
 
 ## 数据通路与搬运流水
 

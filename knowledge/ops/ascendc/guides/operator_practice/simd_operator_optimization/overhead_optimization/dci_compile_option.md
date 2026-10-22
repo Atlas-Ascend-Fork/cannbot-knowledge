@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/overhead_optimization/dci_compile_option.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 >[!NOTE]说明 
 >该性能优化建议适用于如下型号：
 >
->- Ascend 950PR/Ascend 950DT
+>- Ascend 950PR&950DT系列产品
 >
 
 【优先级】高

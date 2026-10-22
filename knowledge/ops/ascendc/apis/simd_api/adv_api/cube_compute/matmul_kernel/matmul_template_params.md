@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/Matmul_template_params.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -38,43 +38,44 @@ platforms:
 -   MatmulCallBackFunc回调函数信息（可选），用于配置A矩阵从GM拷贝到L1 Buffer（A1）、B矩阵从GM拷贝到L1 Buffer（B1）、计算结果从L0C Buffer（CO1）拷贝到GM的自定义函数。当前支持如下产品型号：
 
     
-    Ascend 950PR/Ascend 950DT
+    Ascend 950PR&950DT系列产品
     
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    Atlas A3系列产品
     
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    Atlas A2系列产品
     
     
-    Kirin X90
+    Kirin X90处理器系列产品
     
 
 -   MatmulPolicy信息（可选），用于配置Matmul可拓展模块策略。不配置使用默认模板策略。当前支持如下产品型号：
 
     
-    Ascend 950PR/Ascend 950DT
+    Ascend 950PR&950DT系列产品
     
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    Atlas A3系列产品
     
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    Atlas A2系列产品
     
     
-    Atlas 200I/500 A2 推理产品
+    Atlas 200I/500 A2推理产品
     
     
-    Atlas 推理系列产品AI Core
+    Atlas推理系列产品AI Core
     
     
-    Kirin X90
+    Kirin X90处理器系列产品
     
 
 
 ## 函数原型
 
 Matmul模板参数如下：
+
 ```
 template <class A_TYPE, class B_TYPE, class C_TYPE, class BIAS_TYPE = C_TYPE, const auto& MM_CFG = CFG_NORM, class MM_CB = MatmulCallBackFunc<nullptr, nullptr, nullptr>, MATMUL_POLICY_DEFAULT_OF(MatmulPolicy)>
 ```

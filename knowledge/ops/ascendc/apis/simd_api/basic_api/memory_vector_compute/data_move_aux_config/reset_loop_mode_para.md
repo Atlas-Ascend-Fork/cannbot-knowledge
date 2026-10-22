@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move_aux_config/ResetLoopModePara.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -58,7 +58,6 @@ __aicore__ inline void ResetLoopModePara(DataCopyMVType type)
 ## 调用示例<a name="section1227835243314"></a>
 
 ResetLoopModePara需与[SetLoopModePara](set_loop_mode_para.md)搭配使用，请参考[SetLoopModePara调用示例](set_loop_mode_para.md#section1227835243314)。
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [ConfusionTranspose 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/confusion_transpose_950.md)

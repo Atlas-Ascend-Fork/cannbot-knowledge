@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/fp8_type/fp8_conversion_functions/__asc_cvt_float2_to_fp8x2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -94,3 +94,10 @@ SIMT编程场景当前不支持使用该接口。
         asc_vf_call<simt_asc_cvt_float2_to_fp8x2>(dim3(1024), (__gm__ float2*)input, output, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x(float2)：(-1.5, 0.5), (17.25, -17.25), (600.0, -600.0), (nan, inf)
+result(float8_e4m3x2_t)：(-1.5, 0.5), (18, -18), (nan, nan), (nan, nan)
+```

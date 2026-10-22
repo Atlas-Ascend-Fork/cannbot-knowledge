@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/layout.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/tensor_api/tensor.h
@@ -123,8 +123,8 @@ private:
 
   | 参数名 | 输入/输出 | 描述 |
   | :----- | :------- | :------- |
-  | shape | 输入 | 张量的形状信息，必须为Std::tuple类型。 |
-  | stride | 输入 | 张量的步长信息，必须为Std::tuple类型。 |
+  | shape | 输入 | 张量的形状信息，必须为Std::tuple类型。单位为元素个数。 |
+  | stride | 输入 | 张量的步长信息，必须为Std::tuple类型。单位为元素个数。 |
 
 - 返回值说明
 

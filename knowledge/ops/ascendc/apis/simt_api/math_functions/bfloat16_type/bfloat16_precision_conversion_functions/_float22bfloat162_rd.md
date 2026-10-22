@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__float22bfloat162_rd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -104,3 +104,10 @@ inline bfloat16x2_t __float22bfloat162_rd(const float2 x)
         asc_vf_call<simt_float22bfloat162_rd>(dim3(1024), (__gm__ float2*)input, (__gm__ bfloat16x2_t*)output, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: (128.25, nan), (128.5, inf), (128.75, -0.0), (-128.5, 0.0), (0.0, -128.5), (-0.0, 128.75), (inf, 128.5), (nan, 128.25)
+result: (128.0, nan), (128.0, inf), (128.0, -0.0), (-129.0, 0.0), (0.0, -129.0), (-0.0, 128.0), (inf, 128.0), (nan, 128.0)
+```

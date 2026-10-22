@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/make_stride.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -44,8 +44,8 @@ __aicore__ inline constexpr stride<FirstStride, Strides...> make_stride(
 
 | 参数名 | 输入/输出 | 描述 |
 |--------|-----------|------|
-| first_stride | 输入 | 第一个维度的步长或子结构。 |
-| strides... | 输入 | 其余维度的步长或子结构。 |
+| first_stride | 输入 | 第一个维度的步长或子结构。步长单位为元素个数。 |
+| strides... | 输入 | 其余维度的步长或子结构。步长单位为元素个数。 |
 
 ## 返回值说明
 

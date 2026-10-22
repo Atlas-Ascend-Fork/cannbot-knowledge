@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/AllocTensor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T08:27:47Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -92,31 +92,31 @@ source_headers:
 
 -   同一个TPosition上的所有Queue，连续调用AllocTensor接口申请的Tensor数量，根据AI处理器型号的不同，有数量约束。申请Buffer时，需要满足该约束。
     
-    - Ascend 950PR/Ascend 950DT不超过8个。
+    - Ascend 950PR&950DT系列产品不超过8个。
     
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品不超过8个。
+    - Atlas A3系列产品不超过8个。
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品不超过8个。
+    - Atlas A2系列产品不超过8个。
     
     
-    - Atlas 200I/500 A2 推理产品不超过8个。
+    - Atlas 200I/500 A2推理产品不超过8个。
     
     
-    - Atlas 推理系列产品AI Core不超过8个。
+    - Atlas推理系列产品AI Core不超过8个。
     
     
-    - Atlas 推理系列产品Vector Core不超过8个。
+    - Atlas推理系列产品Vector Core不超过8个。
     
     
-    - Atlas 训练系列产品不超过4个。
+    - Atlas训练系列产品不超过4个。
     
     
-    - Kirin X90不超过8个。
+    - Kirin X90处理器系列产品不超过8个。
     
     
-    - Kirin 9030不超过8个。
+    - Kirin 9030处理器系列产品不超过8个。
         
 -   non-inplace接口分配的Tensor内容可能包含随机值。
 -   non-inplace接口，需要将TQueBind的depth模板参数设置为非零值；inplace接口，需要将TQueBind的depth模板参数设置为0。
@@ -195,7 +195,6 @@ non-inplace接口返回值为LocalTensor对象，inplace接口没有返回值。
     AscendC::LocalTensor<half> tensor1;
     que.AllocTensor<half>(tensor1); // AllocTensor分配Tensor长度为1024Bytes
     ```
-
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)

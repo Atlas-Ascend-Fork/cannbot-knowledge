@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/atomic_operations/asc_atomic_sub.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -104,7 +104,7 @@ inline bfloat16x2_t asc_atomic_sub(bfloat16x2_t* address, bfloat16x2_t val)
 | 名称 | 说明 |
 | --- | --- |
 | `requests` | 每个元素表示一条资源申请需要扣减的配额。 |
-| `remaining` | Global Memory中的剩余配额，kernel启动前初始化。 |
+| `remaining` | Global Memory中的剩余配额，核函数（Kernel）启动前初始化。 |
 | `n` | 申请条数。 |
 
 核心代码实现如下：

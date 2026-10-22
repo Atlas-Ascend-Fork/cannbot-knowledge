@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/asc_how_to_choose_api.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -48,7 +48,7 @@ Ascend C以「兼容标准C/C++语法、最小化语法扩展」为核心设计�
 | **算子模板库（ATVC/ATVOSS/BLAZE等）** | 算法开发人员 | 提供覆盖Vector、Cube等计算范式的典型算子高性能模板实现，支持基于模板的定制化扩展，快速适配业务场景的高性能算力需求，同时沉淀端到端性能优化最佳实践 |
 | **高阶API** | 算法开发人员 | 封装Softmax、Matmul等通用单核计算算法原语，屏蔽底层硬件实现细节，支撑开发者快速搭建算法逻辑，高效完成功能验证与方案原型落地，缩短从想法到可运行算子的周期 |
 
-此外，联合生态正持续建设Kernel编程C++标准库**asc-stl**、设备侧线性代数库**asc-mathdx**等基础组件，不断丰富Ascend C算子编程生态。
+此外，联合生态正持续建设核函数（Kernel）编程C++标准库**asc-stl**、设备侧线性代数库**asc-mathdx**等基础组件，不断丰富Ascend C算子编程生态。
 
 ---
 
@@ -111,7 +111,6 @@ graph TD
 
 - **原生C语言范式兼容**：支持标准C语言算子开发模式，原生支持数组式内存分配与指针式计算原语；全量接口统一采用`asc_xxx`前缀的snake_case命名规范，语义明确、辨识度高，降低开发者理解与接入成本。
 - **体系化SIMD向量化接口**：提供覆盖全场景的连续矢量计算接口矩阵，满足绝大多数常规算子的开发需求。以基础矢量加法接口为例：`asc_add(__ubuf__ half* dst, __ubuf__ half* src0, __ubuf__ half* src1, uint32_t count)`，接口定义直观，调用逻辑简洁。
-- **分级同步机制设计**：兼顾开发效率与性能可控性，提供分层同步能力。面向快速开发与功能验证场景，内置简化同步管理机制，配套提供`_sync`后缀的一体化计算接口（如`asc_add_sync(...)`），开发者无需显式管控同步时序，即可快速完成功能落地。
 - **高级数据排布管控能力**：面向极致性能调优场景，提供携带`repeat`/`stride`等控制参数的高级计算接口，支持灵活配置数据访问步长、重复计算模式与内存排布策略，支撑开发者深度定制计算逻辑，充分挖掘硬件算力上限。
 
 **适用场景**
@@ -121,7 +120,6 @@ graph TD
 
 **参考示例**
 
-- [SIMD Add算子示例（同步一体化计算接口）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/01_add/c_api_sync_add/c_api_add.asc)
 - 更多示例详见[examples目录](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples)
 
 ### Tensor API：带Layout语义的C++底层编程接口（全自主资源管控）
@@ -137,7 +135,7 @@ graph TD
 - **Layout一等公民设计**：将数据布局（Layout）纳入Tensor原生属性体系，通过统一的布局抽象与代数运算能力，自动化简化内存索引推导与布局变换逻辑，显著降低复杂数据排布场景的开发复杂度，提升代码可维护性。
 - **零成本编译抽象**：从arch到algorithm全层均为轻量编译封装；无虚函数、无动态内存分配，运行性能与手写C代码完全等价。
 - **三层解耦，关注点分离**：硬件指令(arch)、原子层(atom)、算法层(algorithm)独立演化；新架构仅需新增arch层变化，atom与algorithm层代码几乎无需修改。
-- **乐高式高度可组合**：任意atom可适配任意algorithm，任意layout可结合任意atom；通过模块化积木式拼接构建内核，大幅度降低kernel开发成本。
+- **乐高式高度可组合**：任意atom可适配任意algorithm，任意layout可结合任意atom；通过模块化积木式拼接构建内核，大幅度降低核函数（Kernel）开发成本。
 - **天然架构可移植性**：用户代码面向algorithm/atom接口编程，硬件差异由arch层代码特化屏蔽；良好支持跨架构、跨芯片代码迁移与复用。
 
 **适用场景**

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopy_L0CToL1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -62,7 +62,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 - [SetFixpipeNz2ndFlag](../cube_store_aux_config/set_fixpipe_nz2nd_flag.md)：寄存器设置接口，通过调用该接口设置随路NZ2ND格式转换配置，使用随路NZ2ND需要设置。
 
 
-针对Atlas 200I/500 A2 推理产品，还支持如下两个接口：
+针对Atlas 200I/500 A2推理产品，还支持如下两个接口：
 
 - [SetFixPipeClipRelu](../cube_store_aux_config/set_fix_pipe_clip_relu.md)：寄存器设置接口，通过调用该接口设置ClipReLU操作的最大值。
 
@@ -108,7 +108,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 **源矩阵与目的矩阵支持的数据类型组合**
 
 
-针对Ascend 950PR/Ascend 950DT，DataCopy接口支持的数据类型组合如下：
+针对Ascend 950PR&950DT系列产品，DataCopy接口支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
@@ -118,7 +118,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 
 
 
-针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，DataCopy接口支持的数据类型组合如下：
+针对Atlas A3系列产品，DataCopy接口支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
@@ -128,7 +128,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 
 
 
-针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，DataCopy接口支持的数据类型组合如下：
+针对Atlas A2系列产品，DataCopy接口支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
@@ -138,12 +138,14 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 
 
 
-针对Atlas 200I/500 A2 推理产品，DataCopy接口支持的数据类型组合如下：
+针对Atlas 200I/500 A2推理产品，DataCopy接口支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
 | float | int8_t、uint8_t、half、bfloat16_t。 |
 | int32_t | int8_t、uint8_t、half。 |
+
+
 
 
 
@@ -164,10 +166,10 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 
 - 针对如下产品型号，特殊值/边界值约束说明如下：
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    Atlas A3系列产品
     
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    Atlas A2系列产品
     
     对于浮点类型inf/nan输入输出，可以通过CTRL寄存器（控制寄存器）的CTRL\[48\]比特位进行设置，控制浮点数量化搬出时的饱和模式：
 
@@ -182,7 +184,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
     对于整数类型只有饱和模式。
 
 
-- Ascend 950PR/Ascend 950DT特殊值/边界值约束说明：
+- Ascend 950PR&950DT系列产品特殊值/边界值约束说明：
 
     对于浮点类型inf/nan输入输出，可以通过CTRL寄存器（控制寄存器）的CTRL\[48\]比特位进行设置，控制浮点数量化搬出时的饱和模式；
 
@@ -197,6 +199,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
         ```
 
     对于整数类型只有饱和模式。
+
 
 
 
@@ -220,5 +223,4 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
     AscendC::SetFixpipePreQuantFlag(deqScalar);
     AscendC::DataCopy(c1Local, c, dataCopyParams);
     ```
-
 

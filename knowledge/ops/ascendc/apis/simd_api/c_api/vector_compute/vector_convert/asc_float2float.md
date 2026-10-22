@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_convert/asc_float2float.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -25,7 +25,7 @@ source_headers:
 
 头文件路径为：`"c_api/vector_compute/compute/vector_convert.h"`。
 
-对float类型数据进行精度转换处理,支持多种舍入模式：
+对float类型数据进行精度转换处理，支持多种舍入模式：
 
 - RINT舍入模式：四舍六入五成双舍入
 - ROUND舍入模式：四舍五入舍入

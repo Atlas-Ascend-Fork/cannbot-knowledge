@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l12bt_sync_arch_2201_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,13 +24,14 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_l12bt_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l12bt/asc_copy_l12bt_arch_2201.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l12bt_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_l12bt_arch_2201.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 将数据从L1 Buffer搬运到BiasTable Buffer中，BiasTable Buffer用于存放矩阵计算中的Bias。
 
 ## 函数原型
 
 - 同步搬运
+
     ```cpp
     __aicore__ inline void asc_copy_l12bt_sync(uint64_t dst, __cbuf__ void* src, uint32_t size)
     ```
@@ -62,13 +63,10 @@ PIPE_MTE1
 ## 调用示例
 
 ```cpp
-constexpr uint16_t n_burst = 1;
-constexpr uint16_t len_burst = 1;
-constexpr uint16_t source_gap = 0;
-constexpr uint16_t dst_gap = 1;
-constexpr uint16_t conv_control = 0;
+// 同步接口按字节数连续搬运，此处搬运一个32字节数据块。
+constexpr uint32_t copy_size = 32;
 __cbuf__ half src[256];
 __biasbuf__ half dst[256];
 uint64_t dst_addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(dst)) / 16;
-asc_copy_l12bt_sync(dst_addr, src, conv_control, n_burst, len_burst, source_gap, dst_gap);
+asc_copy_l12bt_sync(dst_addr, src, copy_size);
 ```

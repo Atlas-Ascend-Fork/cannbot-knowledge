@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/language_extension/simd_simt_hybrid_builtin_keywords.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -40,7 +40,7 @@ SIMT VF函数定义中的关键修饰符说明如下：
 | \_\_simt_vf\_\_ | 函数标识符，标识SIMT VF函数。 |
 | inline | 建议内联，实际是否内联由编译器决定。 |
 | \_\_gm\_\_ | 内存空间修饰符，标识内存空间为GM。 |
-| \_\_ubuf\_\_ | 内存空间修饰符，标识内存空间为UB。 |
+| \_\_ubuf\_\_ | 内存空间修饰符，标识内存空间为Unified Buffer（UB）。 |
 
 只支持在核函数（Kernel）或\_\_aicore\_\_函数中调用SIMT VF函数，调用接口为[asc\_vf\_call](../../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/kernel_function_config.md#asc_vf_call调用)，示例如下：
 
@@ -50,7 +50,7 @@ asc_vf_call<function_name>(dim3(blockDim), arg1, arg2, ...);
 
 SIMT VF函数有以下约束：
 
--   入参仅支持Ascend C的[内置数据类型](simt_builtin_keywords.md#section1835494915576)（int32\_t、uint32\_t、float、half等）及其组成的指针、数组、结构体类型，且指针类型必须指向GM或者Unified Buffer（UB）内存。
+-   入参仅支持Ascend C的[内置数据类型](simt_builtin_keywords.md#section1835494915576)（int32\_t、uint32\_t、float、half等）及其组成的指针、数组、结构体类型，且指针类型必须指向GM或者UB内存。
 -   函数返回类型必须是void。
 -   SIMT VF内只能调用\_\_simt\_callee\_\_函数或\_\_callee\_\_函数。
 
@@ -139,6 +139,7 @@ kernel_name<<<block_num, dyn_ub_size, stream>>>(args...);
 ## VF函数的asc\_vf\_call调用
 
 ### SIMT VF的asc\_vf\_call调用
+
 SIMD与SIMT混合编程以SIMD核函数（Kernel）作为Device侧入口，在核函数（Kernel）或`__aicore__`函数中通过`asc_vf_call`启动SIMT VF子任务，通过参数配置，启动指定数目的线程，执行指定的SIMT VF函数。其函数原型如下：
 
 ```cpp

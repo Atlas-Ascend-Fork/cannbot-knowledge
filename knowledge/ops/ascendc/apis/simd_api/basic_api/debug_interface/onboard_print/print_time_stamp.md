@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/debug_interface/onboard_print/PrintTimeStamp.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -42,7 +42,7 @@ descId is 11, rsv is 0, timeStamp is 815603975350485, pcPtr is 19792358553124, e
 
 > [!CAUTION]注意
 > 该接口主要用于调试分析，开启后会对算子性能产生一定影响，通常在调试阶段使用，生产环境建议关闭。<br>
-> 默认情况下，该功能关闭，开发者可以通过修改CMakeList.txt文件或xxx.cmake文件，在target_compile_definitions命令中增加-DASCENDC_TIME_STAMP_ON来开启打点功能。示例如下：<br>
+> 默认情况下，该功能关闭，开发者可以通过修改CMakeLists.txt文件或xxx.cmake文件，在target_compile_definitions命令中增加-DASCENDC_TIME_STAMP_ON来开启打点功能。示例如下：<br>
 > ```
 > target_compile_definitions({kernel_target_name} PRIVATE
 >   -DASCENDC_TIME_STAMP_ON

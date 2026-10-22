@@ -10,12 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_system_clock.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/utils/sys_var.h
 - include/c_api/asc_simd.h
 ---
 
@@ -23,18 +24,20 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/utils/sys_var.h"`。
+
 读取当前系统时钟计数器，返回`int64_t`类型的当前时间值（单位：微秒）。该接口在底层读取系统cycle计数器后，按当前芯片的时钟频率进行换算，直接返回微秒级时间值，无需调用方自行换算。
 
 
-- 针对Ascend 950PR/Ascend 950DT，时钟频率为1GHz，换算系数为1000，即`clock = cycle / 1000`。
+- 针对Ascend 950PR&950DT系列产品，时钟频率为1GHz，换算系数为1000，即`clock = cycle / 1000`。
 
 
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，时钟频率为50MHz，换算系数为50，即`clock = cycle / 50`。
+- 针对Atlas A3系列产品，时钟频率为50MHz，换算系数为50，即`clock = cycle / 50`。
 
 
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，时钟频率为50MHz，换算系数为50，即`clock = cycle / 50`。
+- 针对Atlas A2系列产品，时钟频率为50MHz，换算系数为50，即`clock = cycle / 50`。
 
 
 本接口与[asc_get_system_cycle](asc_get_system_cycle.md)的区别在于：`asc_get_system_cycle`返回原始cycle计数值，需要调用方根据芯片频率自行换算为时间；`asc_get_system_clock`在接口内部完成换算，直接返回微秒级时间值。本接口在AIC与AIV上均可调用，返回值含义一致。
@@ -60,7 +63,7 @@ PIPE_S
 ## 约束说明
 
 - 本接口为只读查询接口，读取的是系统时钟计数器并按芯片频率换算，不修改任何寄存器或存储状态，可在AIC与AIV上下文中调用。
-- 返回值随系统时钟持续递增，同一kernel内多次调用返回值单调不减。
+- 返回值随系统时钟持续递增，同一核函数（Kernel）内多次调用返回值单调不减。
 - 本接口与`asc_get_system_cycle`读取的是同一个底层计数器，区别仅在于本接口在内部完成了频率换算，返回值为微秒，而`asc_get_system_cycle`返回原始cycle值。
 
 ## 调用示例
@@ -68,7 +71,7 @@ PIPE_S
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main

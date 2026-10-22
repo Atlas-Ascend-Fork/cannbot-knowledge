@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_or_sync_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/vector_compute_composite.h"`。
 
-**`asc_or_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_logic/asc_or.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_or_sync`接口已废弃，请使用[对应的非同步接口](../vector_compute/vector_logic/asc_or.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 每对元素按位或运算，计算公式如下：
 $$
@@ -34,6 +34,7 @@ $$
 ## 函数原型
 
 - 同步计算
+
   ```cpp
   __aicore__ inline void asc_or_sync(__ubuf__ int16_t* dst, __ubuf__ int16_t* src0, __ubuf__ int16_t* src1, uint32_t count)
   __aicore__ inline void asc_or_sync(__ubuf__ uint16_t* dst, __ubuf__ uint16_t* src0, __ubuf__ uint16_t* src1, uint32_t count)

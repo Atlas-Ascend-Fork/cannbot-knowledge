@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/quick_start.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -219,7 +219,7 @@ git clone https://gitcode.com/cann/asc-devkit.git
 > [!NOTE] 使用前须知
 > 如您使用**容器化技术**，容器中已为您安装好依赖，可跳过此步骤。
 
-以下为本开源仓源码编译和examples算子样例编译运行的基础依赖条件，您可参考仓库内[DevContainer Python依赖（以 Python 3.12 为例）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/.devcontainer/requirements.txt)：
+以下为本开源仓源码编译和examples算子样例编译运行的基础依赖条件。Python依赖可参考仓库内[DevContainer Python依赖（以 Python 3.12 为例）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/.devcontainer/requirements.txt)：
 
 - python >= 3.9.0
 - gcc >= 7.3.0 / g++ >= 7.3.0 (注意：要求gcc与g++版本一致)

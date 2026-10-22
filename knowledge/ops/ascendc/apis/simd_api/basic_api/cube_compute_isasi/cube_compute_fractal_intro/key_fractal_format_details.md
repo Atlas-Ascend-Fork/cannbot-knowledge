@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_fractal_intro/key_fractal_format_details.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -25,25 +25,25 @@ platforms: []
 - Zz × Zn = Nz（A × B = C）组合  
   矩阵乘法A × B = C要求：左矩阵A使用Zz格式，右矩阵B使用Zn格式，结果矩阵C使用Nz格式，如图1所示。这种分形格式组合适用于：
   
-  - Atlas A2训练系列产品/Atlas A2推理系列产品
+  - Atlas A2系列产品
   
   
-  - Atlas A3训练系列产品/Atlas A3推理系列产品
+  - Atlas A3系列产品
   
   
-  - Atlas 200I/500 A2 推理产品
+  - Atlas 200I/500 A2推理产品
   
   
-  - Atlas 推理系列产品
+  - Atlas推理系列产品
   
   
-  - Atlas 训练系列产品
+  - Atlas训练系列产品
   
   
-  - Kirin X90
+  - Kirin X90处理器系列产品
   
   
-  - Kirin 9030
+  - Kirin 9030处理器系列产品
   
 
   **图1** 矩阵乘法场景涉及的数据格式<a name="zh-cn_topic_0000002545089965_fig18172115901518"></a>  
@@ -52,7 +52,7 @@ platforms: []
 
 
 - Nz × Zn = Nz（A × B = C）组合  
-  针对Ascend 950PR/Ascend 950DT，矩阵乘法C = A×B要求：左矩阵A使用Nz格式，右矩阵B使用Zn格式，结果矩阵C使用Nz格式，如图2所示：
+  针对Ascend 950PR&950DT系列产品，矩阵乘法C = A×B要求：左矩阵A使用Nz格式，右矩阵B使用Zn格式，结果矩阵C使用Nz格式，如图2所示：
 
   **图2** 矩阵乘法场景涉及的数据格式<a name="zh-cn_topic_0000002545089965_fig11172355102017"></a>  
   ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fractals_involved_in_matrix_calculation_950.png "矩阵乘法场景涉及的数据格式-27")
@@ -89,7 +89,8 @@ platforms: []
 ![列优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/column_major_layout.png)
 - 场景：通常存在于Global Memory（GM）中。若此输入要作为矩阵计算的输入，需要转换成Nz格式。
 
-- 转换示例：针对Ascend 950PR/Ascend 950DT，可以使用[矩阵搬入DataCopy DN2NZ接口](../cube_compute_load/data_copy_gm_to_l1_dn2_nz.md)将其转换为Nz格式以适配Cube单元。
+- 转换示例：针对Ascend 950PR&950DT系列产品，可以使用[矩阵搬入DataCopy DN2NZ接口](../cube_compute_load/data_copy_gm_to_l1_dn2_nz.md)将其转换为Nz格式以适配Cube单元。
+
 
 
 
@@ -112,7 +113,7 @@ platforms: []
 
     通过公式表达转换过程如下：
 
-    ```py
+    ```text
     (…, B, M, K)->pad->(…, B, M1 * M0, K1 * K0)->reshape->(…, B, M1, M0, K1, K0)->transpose->(…, B, M1, K1, M0, K0)
     ```
 
@@ -142,7 +143,7 @@ platforms: []
 
     通过公式表达转换过程如下：
 
-    ```py
+    ```text
     (…, B, K, N)->pad->(…, B, K1 * K0, N1 * N0)->reshape->(…, B, K1, K0, N1, N0)->transpose->(…, B, K1, N1, N0, K0)
     ```
 
@@ -159,7 +160,7 @@ platforms: []
     - **L0C Buffer：** 存储矩阵乘法的结果（分形固定为16x16）。
     - **L1 Buffer / GM：** 数据流转的通用中间格式（分形为16xK0，K0的大小取决于数据类型位宽）。
     
-    - **L0A Buffer：** 仅Ascend 950PR/Ascend 950DT下使用，用于存储左矩阵（分形为16xK0，K0的大小取决于数据类型位宽）。
+    - **L0A Buffer：** 仅Ascend 950PR&950DT系列产品下使用，用于存储左矩阵（分形为16xK0，K0的大小取决于数据类型位宽）。
     
 - **设计原理：**
     - Nz是昇腾芯片架构内部的“中间标准格式”。它是对“线性数据（ND）”和“计算专用数据（Zz/Zn）”的一种折中。
@@ -172,7 +173,7 @@ platforms: []
 >- 在L1 Buffer中，Nz格式被采用以便于将数据搬运到L0A Buffer和L0B Buffer时，能够方便地转换为对应的Zz和Zn格式。此时，分形形状为16 x \(32B / sizeof\(Datatype\)\)，大小为512字节。
 >因此，当数据从L0C Buffer搬运到L1 Buffer时，其分形大小可能会发生变化。
 
->- 针对Ascend 950PR/Ascend 950DT，Nz格式在L0A Buffer中用于存储左矩阵。
+>- 针对Ascend 950PR&950DT系列产品，Nz格式在L0A Buffer中用于存储左矩阵。
 
 
 ## Nz格式转换详解与示例<a name="zh-cn_topic_0000002545089965_section18217312102718"></a>
@@ -183,7 +184,7 @@ platforms: []
 
 - **转换公式：**
     
-    ```py
+    ```text
     (…, B, M, N)->pad->(…, B, M1 * M0, N1 * N0)->reshape->(…, B, M1, M0, N1, N0)->transpose->(…, B, N1, M1, M0, N0)
     ```
 
@@ -200,7 +201,7 @@ platforms: []
 
     原始Tensor数据打印如下：
 
-    ```py
+    ```text
     [[  0.   1.   2.   3.   4.   5.   6.   7.   8.   9.  10.  11.  12.  13.
     14.  15.  16.  17.  18.  19.  20.  21.  22.  23.  24.  25.  26.  27.]
     ...
@@ -229,7 +230,7 @@ platforms: []
 
     转换后Tensor打印如下：
 
-    ```py
+    ```text
     [[[[  0.   1.   2. ...  13.  14.  15.]
     [ 28.  29.  30. ...  41.  42.  43.]
     [ 56.  57.  58. ...  69.  70.  71.]

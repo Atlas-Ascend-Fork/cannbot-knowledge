@@ -5,4 +5,4 @@
 - [float类型数学库函数](float_math_functions/index.md)：共 94 张知识卡（如 __fdividef、__saturatef、abs 等）。
 - [fp8类型](fp8_type/index.md)：共 15 张知识卡（如 fp8数据类型简介（FP8类型） 等）。
 - [half类型](half_type/index.md)：共 235 张知识卡，分布在 7 个子目录（half2_arithmetic_functions、half2_compare_functions、half2_math_functions 等）。
-- [整型数学库函数](integer_math_functions/index.md)：共 28 张知识卡（如 __brev（整数数学函数）、__byte_perm、__clz（整数数学函数） 等）。
+- [整型数学库函数](integer_math_functions/index.md)：共 30 张知识卡（如 __brev（整数数学函数）、__byte_perm、__clz（整数数学函数） 等）。

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__bfloat162half_rd_sat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -71,4 +71,11 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
         dst[idx] = __bfloat162half_rd_sat(x[idx]);
     }
+    ```
+
+    输入输出示例如下：
+
+    ```text
+    x: 0, -0, 65536, 65536, 9.96920997e+37, inf, -inf, nan
+    result: 0, -0, 65504, 65504, 65504, 65504, -65504, 0
     ```

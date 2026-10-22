@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/deprecated_interface/tensor_slice_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -31,10 +31,10 @@ source_headers:
 
 ```cpp
 template <typename Coord, typename Info>
-__aicore__ inline constexpr decltype(auto) Slice(const Coord& coord, const Info& info);
+__aicore__ inline decltype(auto) Slice(const Coord& coord, const Info& info);
 
 template <typename Coord, typename Info>
-__aicore__ inline constexpr decltype(auto) Slice(const Coord& coord, const Info& info) const;
+__aicore__ inline decltype(auto) Slice(const Coord& coord, const Info& info) const;
 ```
 
 ## 参数说明

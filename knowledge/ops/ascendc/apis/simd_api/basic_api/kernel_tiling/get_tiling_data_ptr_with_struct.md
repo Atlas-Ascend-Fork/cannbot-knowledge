@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/GET_TILING_DATA_PTR_WITH_STRUCT.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -106,8 +106,6 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
     op.Process();
 }
 ```
-
-
 
 - [ReplicationPad2d 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)
 - [MishBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/mish_backward.md)

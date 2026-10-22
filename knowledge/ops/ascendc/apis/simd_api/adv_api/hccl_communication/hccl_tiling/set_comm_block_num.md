@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/SetCommBlockNum.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 source_headers:
 - include/adv_api/hccl/hccl_tiling.h
@@ -45,7 +45,7 @@ uint32_t SetCommBlockNum(uint16_t num)
 ## 约束说明
 
 
-本接口仅在Atlas A3 训练系列产品/Atlas A3 推理系列产品上通信类型为HCCL\_CMD\_BATCH\_WRITE时生效。
+本接口仅在Atlas A3系列产品上通信类型为HCCL\_CMD\_BATCH\_WRITE时生效。
 
 
 ## 调用示例

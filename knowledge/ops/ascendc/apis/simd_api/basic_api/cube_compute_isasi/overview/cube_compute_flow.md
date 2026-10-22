@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/overview/cube_compute_flow.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -33,7 +33,7 @@ Ascend C针对矩阵计算编程模型提供了四类接口，分别承载Cube�
 
 # Mx矩阵计算流程<a name="ZH-CN_TOPIC_0000002568950892"></a>
 
-Mx矩阵计算仅在Ascend 950PR/Ascend 950DT型号支持。
+Mx矩阵计算仅在Ascend 950PR&950DT系列产品型号支持。
 
 MxMmad（全称Microscaling Mmad）为带有量化系数的矩阵乘法，即左矩阵和右矩阵均有对应的量化系数矩阵，左量化系数矩阵scaleA和右量化系数矩阵scaleB。MxMmad场景中，左量化系数矩阵与左矩阵乘积，右量化系数矩阵与右矩阵乘积，对两个乘积的结果做矩阵乘法。Ascend C针对Mx矩阵计算编程模型提供了对应Mx类接口，如下图所示：
 
@@ -52,7 +52,7 @@ MxMmad（全称Microscaling Mmad）为带有量化系数的矩阵乘法，即左
 
 # 4选2稀疏矩阵计算流程<a name="ZH-CN_TOPIC_0000002538231116"></a>
 
-稀疏矩阵是一种特殊类型的矩阵，即矩阵中包含较多的零元素。4选2结构化稀疏矩阵计算，要求一个连续的4个权重或激活值的组（通常是张量中的一行或一列）中，最多只有2个值为非零，其余2个强制为零。针对Atlas A2训练系列产品/Atlas A2推理系列产品和Atlas A3训练系列产品/Atlas A3推理系列产品，Ascend C针对4选2稀疏矩阵计算编程模型提供了对应sparse类接口，如下图所示：
+稀疏矩阵是一种特殊类型的矩阵，即矩阵中包含较多的零元素。4选2结构化稀疏矩阵计算，要求一个连续的4个权重或激活值的组（通常是张量中的一行或一列）中，最多只有2个值为非零，其余2个强制为零。针对Atlas A2系列产品和Atlas A3系列产品，Ascend C针对4选2稀疏矩阵计算编程模型提供了对应sparse类接口，如下图所示：
 
 **图 3** 4选2稀疏矩阵基础计算流程图<a name="zh-cn_topic_0000002566526987_fig12280145134813"></a>  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sparse_matrix_computation_workflow.png "4选2稀疏矩阵基础计算流程图")

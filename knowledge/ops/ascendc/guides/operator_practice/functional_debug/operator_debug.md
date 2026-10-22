@@ -10,13 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/functional_debug/operator_debug.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
 # 算子调试<a name="ZH-CN_TOPIC_0000001846719824"></a>
 
-从[异构计算](../heterogeneous_computing.md)章节可以了解到Ascend C算子主要包括Tiling和Kernel实现两部分组成。
+从[异构计算](../heterogeneous_computing.md)章节可以了解到Ascend C算子主要包括Tiling和核函数（Kernel）实现两部分组成。
 
 Tiling实现运行在Host侧CPU上，一般使用传统的调测手段（比如gdb工具）即可完成调试。
 

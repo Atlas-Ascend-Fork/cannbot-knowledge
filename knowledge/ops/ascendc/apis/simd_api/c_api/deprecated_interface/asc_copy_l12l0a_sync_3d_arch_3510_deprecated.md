@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l12l0a_sync_3d_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_l12l0a_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l12l0a/asc_copy_l12l0a_3d_arch_3510.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l12l0a_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_l12l0a_3d_arch_3510.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 3D卷积数据搬运是用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。见图1。
 
@@ -34,7 +34,7 @@ source_headers:
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_demo.png "copyl12l0a_3d功能示意图")
 
-3D img2col搬运模式下，Feature Map的属性描述（fm_w、fm_h及四周padding）需通过[asc_set_l13d_fmatrix](../cube_datamove/asc_set_l13d_fmatrix.md)预先配置，填充值与填充模式需通过[asc_set_l12l0a_3d_padding](../cube_datamove/asc_set_l12l0a_3d_padding.md)预先配置；如需使用repeat模式，repeat方向、次数与步长需通过[asc_set_l13d_rpt](../cube_datamove/asc_set_l13d_rpt.md)预先配置。
+3D img2col搬运模式下，Feature Map的属性描述（fm_w、fm_h及四周padding）需通过[asc_set_l13d_fmatrix](../cube_datamove/cube_load_aux_config/asc_set_l13d_fmatrix.md)预先配置，填充值与填充模式需通过[asc_set_l12l0a_3d_padding](../cube_datamove/cube_load_aux_config/asc_set_l12l0a_3d_padding.md)预先配置；如需使用repeat模式，repeat方向、次数与步长需通过[asc_set_l13d_rpt](../cube_datamove/cube_load_aux_config/asc_set_l13d_rpt.md)预先配置。
 
 本接口仅在AIC上执行有效。
 
@@ -62,9 +62,9 @@ __aicore__ inline void asc_copy_l12l0a_sync(__ca__ <dtype>* dst,
                                             uint16_t channel_size)
 ```
 
-#### dtype支持的数据类型
+#### dtype支持数据类型
 
-dtype支持的数据类型为`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
+`dtype`取值为：`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
 
 ## 参数说明
 
@@ -87,7 +87,7 @@ dtype支持的数据类型为`int8_t`、`uint8_t`、`hifloat8_t`、`fp8_e5m2_t`�
 | `filter_size_w` | 输入 | 是否在`filter_w`的基础上将卷积核width增加256个元素。<br>&nbsp;&nbsp;&bull; `true`：增加；<br>&nbsp;&nbsp;&bull; `false`：不增加。 |
 | `filter_size_h` | 输入 | 是否在`filter_h`的基础上将卷积核height增加256个元素。<br>&nbsp;&nbsp;&bull; `true`：增加；<br>&nbsp;&nbsp;&bull; `false`：不增加。 |
 | `transpose` | 输入 | 是否启用转置功能，对整个目标矩阵进行转置。<br>&nbsp;&nbsp;&bull; `false`：不开启转置；<br>&nbsp;&nbsp;&bull; `true`：开启转置。 |
-| `f_matrix_ctrl` | 输入 | 3D数据搬运Feature Map的属性描述寄存器组选择位，一般设置为`false`。<br>&nbsp;&nbsp;&bull; `true`：从右矩阵中获取Feature Map的属性描述，配合[asc_set_l13d_fmatrix_b](../cube_datamove/asc_set_l13d_fmatrix_b.md)、[asc_set_l12l0b_3d_padding](../cube_datamove/asc_set_l12l0b_3d_padding.md)、[asc_set_l13d_rpt_b](../cube_datamove/asc_set_l3d_rpt_b.md)使用；<br>&nbsp;&nbsp;&bull; `false`：从左矩阵中获取FeatureMap的属性描述，配合[asc_set_l13d_fmatrix](../cube_datamove/asc_set_l13d_fmatrix.md)、[asc_set_l12l0a_3d_padding](../cube_datamove/asc_set_l12l0a_3d_padding.md)、[asc_set_l13d_rpt](../cube_datamove/asc_set_l13d_rpt.md)使用。 |
+| `f_matrix_ctrl` | 输入 | 3D数据搬运Feature Map的属性描述寄存器组选择位，一般设置为`false`。<br>&nbsp;&nbsp;&bull; `true`：从右矩阵中获取Feature Map的属性描述，配合[asc_set_l13d_fmatrix_b](../cube_datamove/cube_load_aux_config/asc_set_l13d_fmatrix_b.md)、[asc_set_l12l0b_3d_padding](../cube_datamove/cube_load_aux_config/asc_set_l12l0b_3d_padding.md)、[asc_set_l13d_rpt_b](../cube_datamove/cube_load_aux_config/asc_set_l3d_rpt_b.md)使用；<br>&nbsp;&nbsp;&bull; `false`：从左矩阵中获取FeatureMap的属性描述，配合[asc_set_l13d_fmatrix](../cube_datamove/cube_load_aux_config/asc_set_l13d_fmatrix.md)、[asc_set_l12l0a_3d_padding](../cube_datamove/cube_load_aux_config/asc_set_l12l0a_3d_padding.md)、[asc_set_l13d_rpt](../cube_datamove/cube_load_aux_config/asc_set_l13d_rpt.md)使用。 |
 | `channel_size` | 输入 | 源操作数的通道数N。<br>对于b32类型，`channel_size`除8的余数应当为0或4，最大值可取为65532。<br>对于b16类型，`channel_size`除16的余数应当为0，4或8，最大值可取为65528。<br>对于b8类型，`channel_size`除32的余数应当为0，4，8或16，最大值可取为65520。 |
 
 ## 返回值说明
@@ -105,14 +105,14 @@ PIPE_MTE1
 - 本接口非AIC调用直接返回。
 - dst起始地址需512字节对齐（L0A Buffer对齐要求），否则会导致搬运异常。
 - src起始地址需32字节对齐（L1 Buffer对齐要求），否则会导致搬运异常。
-- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
+- 如果本指令与其他指令存在目的地址重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个指令串行化，防止出现异常数据。
 - L0A Buffer容量上限：L0A Buffer总容量64KB，dst偏移量与搬运大小之和不可越界，否则触发异常。
 - L1 Buffer容量上限：L1 Buffer总容量512KB，src偏移量与源矩阵占用大小之和不可越界，否则触发异常。
 
 ### 3D img2col搬运模式约束
 
-- 此接口必须先调用[asc_set_l13d_rpt](../cube_datamove/asc_set_l13d_rpt.md)接口配置dst_stride参数，dst_stride为输出矩阵在height维度对齐后的大小。
-- 此接口需要先调用配套的寄存器设置接口[asc_set_l13d_fmatrix](../cube_datamove/asc_set_l13d_fmatrix.md)与[asc_set_l12l0a_3d_padding](../cube_datamove/asc_set_l12l0a_3d_padding.md)预先配置feature map描述、填充值与填充模式，否则会导致搬运接口不符合预期。如需使用repeat模式，须先调用[asc_set_l13d_rpt](../cube_datamove/asc_set_l13d_rpt.md)接口配置repeat方向、次数与步长。
+- 此接口必须先调用[asc_set_l13d_rpt](../cube_datamove/cube_load_aux_config/asc_set_l13d_rpt.md)接口配置dst_stride参数，dst_stride为输出矩阵在height维度对齐后的大小。
+- 此接口需要先调用配套的寄存器设置接口[asc_set_l13d_fmatrix](../cube_datamove/cube_load_aux_config/asc_set_l13d_fmatrix.md)与[asc_set_l12l0a_3d_padding](../cube_datamove/cube_load_aux_config/asc_set_l12l0a_3d_padding.md)预先配置feature map描述、填充值与填充模式，否则会导致搬运接口不符合预期。如需使用repeat模式，须先调用[asc_set_l13d_rpt](../cube_datamove/cube_load_aux_config/asc_set_l13d_rpt.md)接口配置repeat方向、次数与步长。
 - `k_extension`、`m_extension`或`channel_size`为`0`，`filter_w`为`0`且`filter_size_w`为`false`，或`filter_h`为`0`且`filter_size_h`为`false`时不执行搬运，本接口被视为NOP（空操作）。
 - 对于b32类型，`channel_size`除8的余数应当为0或4，最大值可取为65532。对于b16类型，`channel_size`除16的余数应当为0，4或8，最大值可取为65528。对于b8类型，`channel_size`除32的余数应当为0，4，8或16，最大值可取为65520。否则会导致搬运结果不符合预期。
 - `stride_w`与`stride_h`不可为0，传入0硬件按1处理。
@@ -149,7 +149,7 @@ PIPE_MTE1
 
 ![ ](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/load3d_03.png "卷积计算分块")
 
-对于L0A Buffer中的feature map来说有两种方案，水平分块和垂直分块。分别对应[asc_set_l13d_rpt](../cube_datamove/asc_set_l13d_rpt.md)参数中rpt_mode的0和1。
+对于L0A Buffer中的feature map来说有两种方案，水平分块和垂直分块。分别对应[asc_set_l13d_rpt](../cube_datamove/cube_load_aux_config/asc_set_l13d_rpt.md)参数中rpt_mode的0和1。
 
 注：下图中的分形矩阵大小为4x4，实际应该为16x16 (对于u8/s8类型为16x32)
 
@@ -208,7 +208,7 @@ Feature Map属性描述、Pad属性描述与Repeat Mode设置寄存器，作为I
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 
-以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+以Ascend 950PR&950DT系列产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng examples.asc -o main --npu-arch=dav-3510 && ./main

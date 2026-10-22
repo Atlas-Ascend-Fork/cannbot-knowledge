@@ -56,3 +56,8 @@
 - [asc_int82int32](asc_int82int32.md)：根据mask将src中参与计算的int8_t类型元素转换为int32_t类型，结果写入dst。由于源操作数与目的操作数的类型位宽比为1:4，src中的元素按索引分为四组，参数src_quarter_pos从src中离散选取每隔4个元素的索引位置读取数据，具体为索引0、4、8、…，索引1、5、9、…，索引2、6、10、…或索引3、7、11、…。
 - [asc_uint322uint8](asc_uint322uint8.md)：根据mask将src中参与计算的uint32_t类型元素转换为uint8_t类型，结果写入dst。由于源操作数与目的操作数的类型位宽比为4:1，dst中的元素按索引分为四组，参数dst_quarter_pos从dst中离散选取每隔4个元素的索引位置写入转换结果，具体为索引0、4、8、…，索引1、5、9、…，索引2、6、10、…或索引3、7、11、…，其他位置置零。
 - [asc_uint82uint32](asc_uint82uint32.md)：根据mask将src中参与计算的uint8_t类型元素转换为uint32_t类型，结果写入dst。由于源操作数与目的操作数的类型位宽比为1:4，src中的元素按索引分为四组，参数src_quarter_pos从src中离散选取每隔4个元素的索引位置读取数据，具体为索引0、4、8、…，索引1、5、9、…，索引2、6、10、…或索引3、7、11、…。
+
+- [asc_half2int4x2](asc_half2int4x2.md)：头文件路径为："c_api/reg_compute/reg_convert.h"。
+- [asc_int4x22bfloat16](asc_int4x22bfloat16.md)：头文件路径为："c_api/reg_compute/reg_convert.h"。
+- [asc_int4x22half](asc_int4x22half.md)：头文件路径为："c_api/reg_compute/reg_convert.h"。
+- [asc_int4x22int16](asc_int4x22int16.md)：头文件路径为："c_api/reg_compute/reg_convert.h"。

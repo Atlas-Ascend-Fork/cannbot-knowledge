@@ -10,16 +10,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/enum/asc_store_l2_cache_mode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
+source_headers:
+- include/c_api/defs/enum.h
 ---
 
 # asc_store_l2_cache_mode
 
-asc_store_l2_cache_mode用于表示数据从Unified Buffer（UB）搬运到GM时的L2 cache策略，可用于：
+asc_store_l2_cache_mode用于表示数据从Unified Buffer（UB）或L0C Buffer搬运到GM时的L2 Cache策略，可用于：
 
 - 向量搬运接口，例如[asc_copy_ub2gm_align](../../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_3510.md)。
+- 支持L2 Cache配置的矩阵搬出接口，例如NPU架构3510下的[asc_copy_l0c2gm](../../cube_datamove/cube_compute_store/asc_copy_l0c2gm_arch_3510.md)。
 - 标量访存路径的store策略配置与查询，例如[asc_set_scalar_cache_mode](../../cache_ctrl/asc_set_scalar_cache_mode.md)和[asc_get_scalar_store_cache_mode](../../cache_ctrl/asc_get_scalar_store_cache_mode.md)。
+
+头文件路径为：`"c_api/defs/enum.h"`。
 
 ## 枚举类具体定义
 
@@ -36,7 +41,7 @@ enum class asc_store_l2_cache_mode : uint8_t {
 
 **表1** 枚举值说明
 
-|枚举值|L2 cache策略|
+|枚举值|L2 Cache策略|
 |------|-----------|
 | NORMAL_FIRST_VICTIM | 启用L2 Cache，并且将分配的Cache Line标记为高替换优先级。 |
 | NORMAL_LAST_VICTIM | 启用L2 Cache，并且将分配的Cache Line标记为低替换优先级。 |

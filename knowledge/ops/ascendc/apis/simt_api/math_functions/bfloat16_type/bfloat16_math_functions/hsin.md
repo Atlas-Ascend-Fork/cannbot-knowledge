@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_math_functions/hsin.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 获取输入数据的三角函数正弦值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002576421051.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/formulaimage_0000002576421051.png)
 
 ## 函数原型
 
@@ -79,3 +79,10 @@ inline bfloat16_t hsin(bfloat16_t x)
         dst[idx] = hsin(x[idx]); // 对src源地址的第idx个元素取三角函数正弦值
     }
     ```
+
+输入输出示例如下：
+
+```text
+x: 0.0, 0.5, -0.5, 1.0, -1.0, 2.0, -2.0, 3.0
+result: 0.0, 0.478516, -0.478516, 0.839844, -0.839844, 0.910156, -0.910156, 0.141602
+```

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l0c2l1_sync_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -23,7 +23,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_l0c2l1_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l0c2l1/asc_copy_l0c2l1_arch_3510.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l0c2l1_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_store/asc_copy_l0c2l1_arch_3510.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 该接口用于将矩阵计算的结果从L0C Buffer搬运至L1 Buffer中，并且在搬运过程中支持与其它接口组合使用，配置多种随路能力。（目前针对量化模式的支持尚不完全，具体支持情况请以[函数原型](#函数原型)中包含的接口为准）
 
@@ -90,7 +90,7 @@ __aicore__ inline void asc_copy_l0c2l1_sync(__cbuf__ int4b_t* dst,
                                             bool enable_nz2dn)
 ```
 
-### dtype支持的数据类型
+### dtype支持数据类型
 
 `src_dtype`支持`int32_t`、`float`。
 

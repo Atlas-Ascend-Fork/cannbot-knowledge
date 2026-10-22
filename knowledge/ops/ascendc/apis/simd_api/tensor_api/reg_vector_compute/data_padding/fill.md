@@ -10,18 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/data_padding/fill.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
-- include/tensor_api/experimental/arch/vector/compare_and_select.h
+- include/tensor_api/experimental/arch/vector/data_padding.h
 ---
 
 # fill
 
 ## 功能说明
 
-头文件路径：`"include/tensor_api/experimental/arch/vector/compare_and_select.h"`。
+头文件路径：`"tensor_api/experimental/arch/vector/data_padding.h"`。
 
 支持scalar和tensor两种模式：
 

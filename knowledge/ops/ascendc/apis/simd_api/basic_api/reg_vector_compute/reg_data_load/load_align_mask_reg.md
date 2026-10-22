@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_load/LoadAlign_MaskReg.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -112,6 +112,7 @@ LoadAlign能够实现数据从Unified Buffer（UB）搬运至[MaskReg](../regist
 ## 调用示例<a name="section642mcpsimp"></a>
 
 - 普通搬运接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void ComputeMode01(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t oneRepeatSize, uint16_t repeatTimes)
@@ -125,6 +126,7 @@ LoadAlign能够实现数据从Unified Buffer（UB）搬运至[MaskReg](../regist
     ```
 
 - PostUpdate扩展搬运接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void StoreAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t oneRepeatSize, uint16_t repeatTimes)
@@ -138,6 +140,7 @@ LoadAlign能够实现数据从Unified Buffer（UB）搬运至[MaskReg](../regist
     ```
 
 - 使用AddrReg存储偏移量接口
+
     ```cpp
     template <typename T>
     __simd_vf__ inline void ComputeMode03(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint16_t oneRepeatSize, uint16_t repeatTimes)

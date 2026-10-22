@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cache_control/PRELOAD.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -45,20 +45,20 @@ source_headers:
 
 针对如下型号：
 
-- Ascend 950PR/Ascend 950DT
+- Ascend 950PR&950DT系列产品
 
 
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+- Atlas A3系列产品
 
 
-- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- Atlas A2系列产品
 
 
 `len`的单位为2K Byte，取值应小于ICache大小除以2K。其中，AIC和AIV的ICache大小分别为32KB和16KB。
 
 
 
-- 针对Atlas 推理系列产品 AI Core，`len`不控制预取长度，预取长度固定为128Byte。
+- 针对Atlas推理系列产品AI Core，`len`不控制预取长度，预取长度固定为128Byte。
 
 
 ## 返回值说明
@@ -67,7 +67,7 @@ source_headers:
 
 ## 约束说明
 
-仅支持在Kernel侧调用。
+仅支持在核函数（Kernel）侧调用。
 
 ## 调用示例
 

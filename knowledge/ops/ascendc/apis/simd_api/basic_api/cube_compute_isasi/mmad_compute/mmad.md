@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute/Mmad.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -39,7 +39,7 @@ C = A \times B + C
 $$
 
 
-针对Ascend 950PR/Ascend 950DT：
+针对Ascend 950PR&950DT系列产品：
 
 **表1** 矩阵计算矩阵A、B、C解释说明
 
@@ -49,18 +49,18 @@ $$
 | B | L0B Buffer | K x N | Zn | <a href="#zh_cn_topic_mmad_section5">数据类型</a> |
 | C | L0C Buffer | M x N，可支持使用偏置矩阵Bias进行初始化，维度为1 x N | Nz | <a href="#zh_cn_topic_mmad_section5">数据类型</a> |
 
-**图1** Mmad接口矩阵乘分形示意图（Ascend 950PR/Ascend 950DT）<a id="zh_cn_topic_mmad_section2_figure1"></a>
+**图1** Mmad接口矩阵乘分形示意图（Ascend 950PR&950DT系列产品）<a id="zh_cn_topic_mmad_section2_figure1"></a>
 
-![Mmad接口计算分形示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_demo_a5.png)
+![Mmad接口计算分形示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_demo_950.png)
 
 
 
 针对如下产品型号，矩阵说明见下表：
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
+Atlas A3系列产品
 
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
+Atlas A2系列产品
 
 **表2** 矩阵计算矩阵A、B、C解释说明
 
@@ -134,20 +134,20 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 | n | 右矩阵Width，取值范围：n∈[0, 4095]。默认值为0。 |
 | k | 左矩阵Width、右矩阵Height，取值范围：k∈[0, 4095]。默认值为0。 |
 | cmatrixInitVal | 是否开启C矩阵默认初始化清零操作。默认值为 true。<br>&nbsp;&nbsp;&bull; true：C矩阵默认初始化为0；<br>&nbsp;&nbsp;&bull; false：C矩阵不进行默认操作，通过设置cmatrixSource参数进行初始化。 |
-| cmatrixSource | 配置C矩阵初始值是否来源于BT Buffer。默认值为false。<br>&nbsp;&nbsp;&bull; false：不对L0C Buffer进行初始化操作；<br>&nbsp;&nbsp;&bull; true：使用BT Buffer(TPosition:C2)的数据对L0C Buffer进行初始化操作。<br><br>Atlas 训练系列产品，仅支持配置为false。<br><br>Atlas 推理系列产品AI Core，仅支持配置为false。<br><br>Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持配置为true/false。<br><br>Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持配置为true/false。<br><br>Atlas 200I/500 A2 推理产品，支持配置为true/false。<br><br>Ascend 950PR/Ascend 950DT，支持配置为true/false。<br><br>Kirin X90仅支持配置为false。<br><br>Kirin 9030仅支持配置为false。<br><br>注意：带Bias输入的接口配置该参数无效，会根据bias输入的位置来判断C矩阵初始值是否来源于BT Buffer。 |
+| cmatrixSource | 配置C矩阵初始值是否来源于BT Buffer。默认值为false。<br>&nbsp;&nbsp;&bull; false：不对L0C Buffer进行初始化操作；<br>&nbsp;&nbsp;&bull; true：使用BT Buffer(TPosition:C2)的数据对L0C Buffer进行初始化操作。<br><br>Atlas训练系列产品，仅支持配置为false。<br><br>Atlas推理系列产品AI Core，仅支持配置为false。<br><br>Atlas A2系列产品，支持配置为true/false。<br><br>Atlas A3系列产品，支持配置为true/false。<br><br>Atlas 200I/500 A2推理产品，支持配置为true/false。<br><br>Ascend 950PR&950DT系列产品，支持配置为true/false。<br><br>Kirin X90处理器系列产品仅支持配置为false。<br><br>Kirin 9030处理器系列产品仅支持配置为false。<br><br>注意：带Bias输入的接口配置该参数无效，会根据bias输入的位置来判断C矩阵初始值是否来源于BT Buffer。 |
 | isBias | 该参数废弃，新开发内容不要使用该参数。如果需要累加初始矩阵，请使用带Bias的接口来实现；也可以通过cmatrixInitVal和cmatrixSource参数配置C矩阵的初始值来源来实现。推荐使用带Bias的接口，相比于配置cmatrixInitVal和cmatrixSource参数更加简单方便。<br><br>配置是否需要累加初始矩阵，默认值为false，取值说明如下：<br>&nbsp;&nbsp;&bull; false：矩阵乘，无需累加初始矩阵，C = A \* B。<br>&nbsp;&nbsp;&bull; true：矩阵乘加，需要累加初始矩阵，C += A \* B。 |
-| disableGemv | M=1时，该参数用来配置Mmad计算是否开启[GEMV](../mmad_compute_key_features/gemv.md#ZH-CN_TOPIC_0000002538231187)模式。<br>&nbsp;&nbsp;&bull; false：开启GEMV模式。<br>&nbsp;&nbsp;&bull; true：关闭GEMV模式。<br><br>该参数仅支持如下型号：<br><br>Ascend 950PR/Ascend 950DT |
-| unitFlag | unitFlag可以控制Mmad指令和Fixpipe指令细粒度的并行，开启该功能后，硬件每计算完一个分形，计算结果就会被搬出。取值说明如下：<br>&nbsp;&nbsp;&bull; 0（2'b00）：不开启unitFlag；<br>&nbsp;&nbsp;&bull; 2（2'b10）：开启unitFlag，硬件执行完指令之后，不复位单元标记位；<br>&nbsp;&nbsp;&bull; 3（2'b11）：开启unitFlag，硬件执行完指令之后，复位单元标记位。<br><br>开启该功能时，须将Mmad指令和Fixpipe指令的unitFlag值设置为2或3。<br><br>该参数仅支持如下型号：<br><br>Ascend 950PR/Ascend 950DT<br><br>Atlas A2 训练系列产品/Atlas A2 推理系列产品<br><br>Atlas A3 训练系列产品/Atlas A3 推理系列产品。参数设置方案和特性细节可参考：[UnitFlag特性说明](../mmad_compute_key_features/unit_flag.md#ZH-CN_TOPIC_00000025690709788) |
-| kDirectionAlign | K方向对齐的核心功能是通过`kDirectionAlign`参数控制在使用float数据类型时，L0A Buffer和L0B Buffer矩阵在K方向上的对齐方式。<br><br>取值说明如下：<br>&nbsp;&nbsp;&bull; false：默认值，K方向对齐到`ceil(K / 8) * 8`。<br>&nbsp;&nbsp;&bull; true：K方向对齐到`ceil(K/16)*16`。<br><br>Atlas 训练系列产品，仅支持配置为false。<br><br>Atlas 推理系列产品AI Core，仅支持配置为false。<br><br>Atlas A2 训练系列产品/Atlas A2 推理系列产品，仅支持配置为true/false。<br><br>Atlas A3 训练系列产品/Atlas A3 推理系列产品，仅支持配置为true/false。<br><br>Atlas 200I/500 A2 推理产品，仅支持配置为false。<br><br>Ascend 950PR/Ascend 950DT，仅支持配置为false。<br><br>Kirin X90支持配置为true/false。<br><br>Kirin 9030支持配置为true/false。<br><br>特性细节可参考：[kDirectionAlign特性说明](../mmad_compute_key_features/k_direction_alignment_constraint.md#ZH-CN_TOPIC_0000002569070973)。 |
-| fmOffset | 左矩阵offset（整个左矩阵对应一个值），支持Scalar（应与src_fm.dtype一致）/立即数，默认0。<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2 训练系列产品/Atlas A2 推理系列产品及往后产品不做处理。 |
-| enSsparse | 开启结构化稀疏特性，默认false；<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2 训练系列产品/Atlas A2 推理系列产品及往后产品不做处理。 |
-| enWinogradA | 指示矩阵a是否通过winograd_feature_map_transform()生成，用于支持winograd特性，bool类型，默认false；<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2 训练系列产品/Atlas A2 推理系列产品及往后产品不做处理。 |
-| enWinogradB | 指示矩阵b是否通过winograd_weight_transform()生成，用于支持winograd特性，bool类型，默认false；<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2 训练系列产品/Atlas A2 推理系列产品及往后产品不做处理。 |
+| disableGemv | M=1时，该参数用来配置Mmad计算是否开启[GEMV](../mmad_compute_key_features/gemv.md#ZH-CN_TOPIC_0000002538231187)模式。<br>&nbsp;&nbsp;&bull; false：开启GEMV模式。<br>&nbsp;&nbsp;&bull; true：关闭GEMV模式。<br><br>该参数仅支持如下型号：<br><br>Ascend 950PR&950DT系列产品 |
+| unitFlag | unitFlag可以控制Mmad指令和Fixpipe指令细粒度的并行，开启该功能后，硬件每计算完一个分形，计算结果就会被搬出。取值说明如下：<br>&nbsp;&nbsp;&bull; 0（2'b00）：不开启unitFlag；<br>&nbsp;&nbsp;&bull; 2（2'b10）：开启unitFlag，硬件执行完指令之后，不复位单元标记位；<br>&nbsp;&nbsp;&bull; 3（2'b11）：开启unitFlag，硬件执行完指令之后，复位单元标记位。<br><br>开启该功能时，须将Mmad指令和Fixpipe指令的unitFlag值设置为2或3。<br><br>该参数仅支持如下型号：<br><br>Ascend 950PR&950DT系列产品<br><br>Atlas A2系列产品<br><br>Atlas A3系列产品。参数设置方案和特性细节可参考：[UnitFlag特性说明](../mmad_compute_key_features/unit_flag.md#ZH-CN_TOPIC_00000025690709788) |
+| kDirectionAlign | K方向对齐的核心功能是通过`kDirectionAlign`参数控制在使用float数据类型时，L0A Buffer和L0B Buffer矩阵在K方向上的对齐方式。<br><br>取值说明如下：<br>&nbsp;&nbsp;&bull; false：默认值，K方向对齐到`ceil(K / 8) * 8`。<br>&nbsp;&nbsp;&bull; true：K方向对齐到`ceil(K/16)*16`。<br><br>Atlas训练系列产品，仅支持配置为false。<br><br>Atlas推理系列产品AI Core，仅支持配置为false。<br><br>Atlas A2系列产品，仅支持配置为true/false。<br><br>Atlas A3系列产品，仅支持配置为true/false。<br><br>Atlas 200I/500 A2推理产品，仅支持配置为false。<br><br>Ascend 950PR&950DT系列产品，仅支持配置为false。<br><br>Kirin X90处理器系列产品支持配置为true/false。<br><br>Kirin 9030处理器系列产品支持配置为true/false。<br><br>特性细节可参考：[kDirectionAlign特性说明](../mmad_compute_key_features/k_direction_alignment_constraint.md#ZH-CN_TOPIC_0000002569070973)。 |
+| fmOffset | 左矩阵offset（整个左矩阵对应一个值），支持Scalar（应与src_fm.dtype一致）/立即数，默认0。<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2系列产品及往后产品不做处理。 |
+| enSsparse | 开启结构化稀疏特性，默认false；<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2系列产品及往后产品不做处理。 |
+| enWinogradA | 指示矩阵a是否通过winograd_feature_map_transform()生成，用于支持winograd特性，bool类型，默认false；<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2系列产品及往后产品不做处理。 |
+| enWinogradB | 指示矩阵b是否通过winograd_weight_transform()生成，用于支持winograd特性，bool类型，默认false；<br><br>注：未使用，兼容旧款产品接口传入，Atlas A2系列产品及往后产品不做处理。 |
 
 ## 数据类型<a id="zh_cn_topic_mmad_section5"></a>
 
 
-**表5** dst、fm、filter支持的精度类型组合（Ascend 950PR/Ascend 950DT）
+**表5** dst、fm、filter支持的精度类型组合（Ascend 950PR&950DT系列产品）
 
 | 左矩阵fm type | 右矩阵filter type | 结果矩阵dst type |
 | --- | --- | --- |
@@ -161,7 +161,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 | fp8_e5m2_t | fp8_e5m2_t | float |
 | hifloat8_t | hifloat8_t | float |
 
-**表6** dst、fm、filter、bias支持的精度类型组合（Ascend 950PR/Ascend 950DT）
+**表6** dst、fm、filter、bias支持的精度类型组合（Ascend 950PR&950DT系列产品）
 
 | 左矩阵fm type | 右矩阵filter type | bias type | 结果矩阵dst type |
 | --- | --- | --- | --- |
@@ -178,7 +178,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
-**表7** dst、fm、filter支持的精度类型组合（Atlas A2 训练系列产品/Atlas A2 推理系列产品）（Atlas A3 训练系列产品/Atlas A3 推理系列产品）（Atlas 200I/500 A2 推理产品）
+**表7** dst、fm、filter支持的精度类型组合（Atlas A2系列产品）（Atlas A3系列产品）（Atlas 200I/500 A2推理产品）
 
 | 左矩阵fm type | 右矩阵filter type | 结果矩阵dst type |
 | --- | --- | --- |
@@ -188,7 +188,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 | bfloat16_t | bfloat16_t | float |
 | int4b_t | int4b_t | int32_t |
 
-**表8** dst、fm、filter、bias支持的精度类型组合（Atlas A2 训练系列产品/Atlas A2 推理系列产品）（Atlas A3 训练系列产品/Atlas A3 推理系列产品）（Atlas 200I/500 A2 推理产品）
+**表8** dst、fm、filter、bias支持的精度类型组合（Atlas A2系列产品）（Atlas A3系列产品）（Atlas 200I/500 A2推理产品）
 
 | 左矩阵fm type | 右矩阵filter type | bias type | 结果矩阵dst type |
 | --- | --- | --- | --- |
@@ -200,7 +200,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
-**表9** dst、fm、filter支持的精度类型组合（Atlas 推理系列产品AI Core）
+**表9** dst、fm、filter支持的精度类型组合（Atlas推理系列产品AI Core）
 
 | 左矩阵fm type | 右矩阵filter type | 结果矩阵dst type |
 | --- | --- | --- |
@@ -214,7 +214,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
-**表10** dst、fm、filter支持的精度类型组合（Atlas 训练系列产品）
+**表10** dst、fm、filter支持的精度类型组合（Atlas训练系列产品）
 
 | 左矩阵fm type | 右矩阵filter type | 结果矩阵dst type |
 | --- | --- | --- |
@@ -227,7 +227,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
-**表11** dst、fm、filter、bias支持的精度类型组合（Kirin X90）
+**表11** dst、fm、filter、bias支持的精度类型组合（Kirin X90处理器系列产品）
 
 | 左矩阵fm type | 右矩阵filter type | bias type | 结果矩阵dst type |
 | --- | --- | --- | --- |
@@ -237,7 +237,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
-**表12** dst、fm、filter、bias支持的精度类型组合（Kirin 9030）
+**表12** dst、fm、filter、bias支持的精度类型组合（Kirin 9030处理器系列产品）
 
 | 左矩阵fm type | 右矩阵filter type | bias type | 结果矩阵dst type |
 | --- | --- | --- | --- |
@@ -309,7 +309,6 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 ## 调用示例
 
 矩阵乘的样例请参考[Mmad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad)。
-
 
 - [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)
 - [ConvDepthwise2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/conv_depthwise2d_950.md)

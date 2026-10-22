@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/fp8_type/fp8_conversion_functions/__hif822float2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 source_headers:
@@ -67,7 +67,7 @@ SIMT编程场景当前不支持使用该接口。
     {
         uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
         // 每个线程处理1个hifloat8x2_t类型的数据，即2个hifloat8_t类型的数据，因此idx >= input_total_length / 2的线程不处理数据
-        if (idx > input_total_length /2) {
+        if (idx >= input_total_length / 2) {
             return;
         }
         output[idx] = __hif822float2(input[idx]);
@@ -77,3 +77,10 @@ SIMT编程场景当前不支持使用该接口。
         asc_vf_call<simt_hif822float2>(dim3(1024), (__gm__ hifloat8x2_t*)input, (__gm__ float2*)output, input_total_length);
     }
     ```
+
+输入输出示例如下：
+
+```text
+x(hifloat8x2_t)：(0, 1), (0.25, -0.75), (inf, -inf), (nan, 8)
+result(float2)：(0.0, 1.0), (0.25, -0.75), (inf, -inf), (nan, 8.0)
+```

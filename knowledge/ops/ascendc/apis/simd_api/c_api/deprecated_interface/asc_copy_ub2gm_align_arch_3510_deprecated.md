@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_ub2gm_align_arch_3510_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 ---
@@ -21,7 +21,7 @@ platforms:
 
 **高维切分搬运接口已废弃，请使用`asc_store_l2_cache_mode`类型枚举值进行L2 Cache管理策略配置，新接口形式请参见[asc_copy_ub2gm_align高维切分数据搬运接口](../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_3510.md#高维切分数据搬运)。**
 
-提供数据非对齐搬运的功能，将数据从Unified Buffer (UB)搬运到Global Memory (GM)，并支持8位/16位/32位数据类型搬运。
+提供数据非对齐搬运的功能，将数据从Unified Buffer（UB）搬运到Global Memory (GM)，并支持8位/16位/32位数据类型搬运。
 
 本接口为高维切分搬运方式，不支持设置填充值。若搬运数据长度非32字节对齐，硬件在读取UB数据时补充dummy假数据，将搬运数据补齐至32字节对齐。写入GM时会丢弃补充的dummy假数据。可通过配置参数`src_stride`选择Normal模式或Compact模式：
 
@@ -82,5 +82,5 @@ PIPE_MTE3
 
 - 各存储单元的空间大小和对齐要求请参考[存储单元说明](../general_description_and_constraints.md#存储单元说明)。
 - 当`n_burst`、`len_burst`中任意一个值为0时，该接口被视为NOP（空操作）。
-- 如果需要执行多条`asc_copy_ub2gm_align`指令，且`asc_copy_ub2gm_align`指令的目的地址存在重叠，需要插入同步指令（[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)），保证多个`asc_copy_ub2gm_align`指令的串行化，防止出现异常数据。
+- 如果需要执行多条`asc_copy_ub2gm_align`指令，且`asc_copy_ub2gm_align`指令的目的地址存在重叠，需要插入同步指令（[asc_sync_notify](../sync/intra_core_sync/asc_sync_notify.md)和[asc_sync_wait](../sync/intra_core_sync/asc_sync_wait.md)），保证多个`asc_copy_ub2gm_align`指令的串行化，防止出现异常数据。
 - 当`src_stride`不等于`len_burst`时，`src_stride`要求32字节对齐。

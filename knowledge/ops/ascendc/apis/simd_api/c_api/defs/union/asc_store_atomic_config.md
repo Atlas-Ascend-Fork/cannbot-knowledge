@@ -10,11 +10,15 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/union/asc_store_atomic_config.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
+source_headers:
+- include/c_api/defs/union.h
 ---
 
 # asc_store_atomic_config
+
+头文件路径为：`"c_api/defs/union.h"`。
 
 asc_store_atomic_config参数包含原子操作启用位与原子操作类型，用于[asc_get_store_atomic_config](../../atomic/scalar_atomic/asc_get_store_atomic_config.md)接口使用。
 

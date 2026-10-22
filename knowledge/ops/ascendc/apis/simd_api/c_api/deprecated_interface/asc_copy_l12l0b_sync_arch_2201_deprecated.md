@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_copy_l12l0b_sync_arch_2201_deprecated.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"c_api/composite/cube_datamove_composite.h"`。
 
-**`asc_copy_l12l0b_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/asc_copy_l12l0b/asc_copy_l12l0b_arch_2201.md)和同步接口[asc_sync](../sync/asc_sync.md)替代。**
+**`asc_copy_l12l0b_sync`接口已废弃，请使用[对应的非同步接口](../cube_datamove/cube_compute_load/asc_copy_l12l0b_arch_2201.md)和同步接口[asc_sync](../sync/intra_core_sync/asc_sync.md)替代。**
 
 用于搬运存放在L1 Buffer里的512B大小的矩阵到L0B Buffer里。包含2D格式搬运、3D格式搬运。
 
@@ -99,7 +99,7 @@ PIPE_MTE1
 ## 约束说明
 
 - 各存储单元的空间大小和对齐要求请参考[存储单元说明](../general_description_and_constraints.md#存储单元说明)。
-- 本接口不支持2D格式搬运的转置场景，若要实现请参考[asc_copy_l12l0b_trans](../cube_datamove/asc_copy_l12l0b_trans/asc_copy_l12l0b_trans_arch_2201.md)。
+- 本接口不支持2D格式搬运的转置场景，若要实现请参考[asc_copy_l12l0b_trans](../cube_datamove/cube_compute_load/asc_copy_l12l0b_trans_arch_2201.md)。
 
 ## 3D数据格式说明
 
@@ -134,8 +134,6 @@ repeatMode =0时，每次repeat会改变在filter窗口中读取数据点的位�
 repeatMode =1的时候filter窗口中读取数据的位置保持不变，每个repeat在feature map中前进C0个元素。
 
 ![ ](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/load3d_05.png)
-
-
 
 ## 调用示例
 

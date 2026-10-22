@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -18,9 +18,7 @@ platforms: []
 
 SIMD与SIMT混合编程涉及多种类型的函数，它们之间遵循严格的调用关系和层级约束。本章节将介绍整体函数类型和调用关系，再详细展开每种函数的定义、调用语法及约束。
 
-SIMD与SIMT混合编程中涉及的函数类型如下表所示：
-
-<a name="zh-cn_topic_0000002571578013_table1818191292017"></a>
+SIMD与SIMT混合编程中涉及的函数类型如下表所示：<a name="zh-cn_topic_0000002571578013_table1818191292017"></a>
 
 | 修饰符 | 函数功能 | 调用方式 |
 | --- | --- | --- |
@@ -51,9 +49,7 @@ SIMD与SIMT混合编程中涉及的函数类型如下表所示：
 __global__ __vector__ void kernel_name(__gm__ type* param1, __gm__ type* param2, ...);
 ```
 
-关键修饰符说明如下：
-
-<a name="zh-cn_topic_0000002571578013_table4811406341"></a>
+关键修饰符说明如下：<a name="zh-cn_topic_0000002571578013_table4811406341"></a>
 
 | 修饰符 | 作用 | 必需性 |
 | --- | --- | --- |
@@ -72,9 +68,7 @@ __global__ __vector__ void kernel_name(__gm__ type* param1, __gm__ type* param2,
 kernel_name<<<block_num, dyn_ub_size, stream>>>(args...);
 ```
 
-核函数（Kernel）调用符内的配置参数说明如下：
-
-<a name="zh-cn_topic_0000002571578013_table942016184315"></a>
+核函数（Kernel）调用符内的配置参数说明如下：<a name="zh-cn_topic_0000002571578013_table942016184315"></a>
 
 | 参数 | 类型 | 说明 | 约束 |
 | --- | --- | --- | --- |
@@ -93,9 +87,7 @@ __simt_vf__ __launch_bounds__(MAX_THREAD_COUNT) inline void function_name(
     type scalar_param, ...);
 ```
 
-SIMT VF函数定义中的关键修饰符说明如下：
-
-<a name="zh-cn_topic_0000002571578013_table7661145014492"></a>
+SIMT VF函数定义中的关键修饰符说明如下：<a name="zh-cn_topic_0000002571578013_table7661145014492"></a>
 
 | 修饰符 | 作用 |
 | --- | --- |
@@ -103,7 +95,7 @@ SIMT VF函数定义中的关键修饰符说明如下：
 | `__launch_bounds__(N)` | 指定最大线程数（可选，默认1024） |
 | `inline` | 建议内联，实际是否内联由编译器决定 |
 | `__gm__` | 内存空间修饰符，标识内存空间为GM |
-| `__ubuf__` | 内存空间修饰符，标识内存空间为UB |
+| `__ubuf__` | 内存空间修饰符，标识内存空间为Unified Buffer（UB） |
 
 通过SIMT的[asc\_vf\_call](../../../../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/kernel_function_config.md#asc-vf-call)接口在核函数（Kernel）或\_\_aicore\_\_函数中调用，调用示例如下：
 
@@ -117,7 +109,7 @@ asc_vf_call<function_name>(dim3(thread_num), arg1, arg2, ...);
 
 SIMT VF函数有以下约束：
 
--   入参仅支持Ascend C的[内置数据类型](../../../language_extension/simd_simt_hybrid_builtin_keywords.md#zh-cn_topic_0000002571575581_section1880403364916)（int32\_t、uint32\_t、float、half等）及其组成的指针、数组、结构体类型，且指针类型必须指向GM或者Unified Buffer（UB）内存。
+-   入参仅支持Ascend C的[内置数据类型](../../../language_extension/simd_simt_hybrid_builtin_keywords.md#zh-cn_topic_0000002571575581_section1880403364916)（int32\_t、uint32\_t、float、half等）及其组成的指针、数组、结构体类型，且指针类型必须指向GM或者UB内存。
 -   不支持将核函数（Kernel）中局部变量的地址或引用传递给VF函数。
 -   函数返回类型必须是void。
 -   SIMT VF内只能调用\_\_simt\_callee\_\_函数或\_\_callee\_\_函数。

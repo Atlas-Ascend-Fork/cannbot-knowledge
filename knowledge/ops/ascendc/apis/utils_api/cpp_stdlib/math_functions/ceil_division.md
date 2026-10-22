@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/cpp_stdlib/math_functions/CeilDivision.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -71,7 +71,6 @@ __aicore__ inline void AddCustomImpl(__local_mem__ T *dst, __local_mem__ T *src0
     }
 }
 ```
-
 
 - [Xlog1py 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/xlog1py_950.md)
 - [BlockSparseAttention 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)

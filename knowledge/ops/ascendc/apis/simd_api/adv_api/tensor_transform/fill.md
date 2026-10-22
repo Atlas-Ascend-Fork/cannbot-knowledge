@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/Fill.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -61,16 +61,16 @@ __aicore__ inline void Fill(GlobalTensor<T>& gmWorkspaceAddr, const uint64_t siz
 -   支持的数据类型<a id="li194619420173"></a>
 
     
-    Ascend 950PR/Ascend 950DT，支持的数据类型为：uint8\_t、int8\_t、uint16\_t、int16\_t、bfloat16\_t、half、uint32\_t、int32\_t、float、uint64\_t、int64\_t。
+    Ascend 950PR&950DT系列产品，支持的数据类型为：uint8\_t、int8\_t、uint16\_t、int16\_t、bfloat16\_t、half、uint32\_t、int32\_t、float、uint64\_t、int64\_t。
     
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：uint16\_t、int16\_t、half、uint32\_t、int32\_t、float。
+    Atlas A3系列产品，支持的数据类型为：uint16\_t、int16\_t、half、uint32\_t、int32\_t、float。
     
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：uint16\_t、int16\_t、half、uint32\_t、int32\_t、float。
+    Atlas A2系列产品，支持的数据类型为：uint16\_t、int16\_t、half、uint32\_t、int32\_t、float。
     
     
-    Atlas 推理系列产品AI Core，支持的数据类型为：uint16\_t、int16\_t、half、uint32\_t、int32\_t、float。
+    Atlas推理系列产品AI Core，支持的数据类型为：uint16\_t、int16\_t、half、uint32\_t、int32\_t、float。
     
 
 ## 调用示例
@@ -99,7 +99,6 @@ AscendC::Fill(zGm, INIT_SIZE, (float)(AscendC::GetBlockIdx()));
  6. 6. 6. ... 6. 6. 6.
  7. 7. 7. ... 7. 7. 7.]
 ```
-
 
 - [IndexFill 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/index_fill_950.md)
 - [FlashAttentionScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)

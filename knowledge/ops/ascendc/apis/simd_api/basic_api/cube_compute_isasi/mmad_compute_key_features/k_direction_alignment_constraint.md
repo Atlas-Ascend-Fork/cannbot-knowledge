@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute_key_features/k_direction_alignment_constraint.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -19,10 +19,10 @@ platforms: []
 
 **特性说明：**
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品/Atlas A3 训练系列产品/Atlas A3 推理系列产品，Mmad接口支持开启此特性。
+Atlas A2系列产品/Atlas A3系列产品，Mmad接口支持开启此特性。
 
 
-Ascend 950PR/Ascend 950DT产品上L0A Buffer为NZ排布，非ZZ排布，A矩阵转置非对齐float数据类型场景，L0A Buffer在K方向8对齐，无需开启此特性去确保计算正确性。
+Ascend 950PR&950DT系列产品上L0A Buffer为NZ排布，非ZZ排布，A矩阵转置非对齐float数据类型场景，L0A Buffer在K方向8对齐，无需开启此特性去确保计算正确性。
 
 
 K方向对齐的核心功能是通过kDirectionAlign参数控制在使用float数据类型（其他数据类型无需关注此特性）时，L0A Buffer和L0B Buffer矩阵在K方向上的对齐方式。

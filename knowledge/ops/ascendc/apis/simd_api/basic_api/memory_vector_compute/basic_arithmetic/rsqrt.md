@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/basic_arithmetic/Rsqrt.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -123,18 +123,18 @@ T支持的数据类型为：half、float。
   
   - 针对如下型号，当参数count或repeatTime取值为0时，不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
     
-    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    - Atlas A3系列产品
     
     
-    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    - Atlas A2系列产品
     
   
   
-  - 针对Ascend 950PR/Ascend 950DT：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
+  - 针对Ascend 950PR&950DT系列产品：该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，软仿行为不保证该接口被视为NOP（空操作）。
   
 
 
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - tensor高维切分计算占用8KB UB。
   - tensor前n个数据连续计算不涉及8KB UB的占用。
 
@@ -143,9 +143,10 @@ T支持的数据类型为：half、float。
 - 使用Rsqrt时，half的算子结果对比误差不满足双千分之一的要求，float的算子结果对比误差不满足双万分之一的要求，如果需要高精度，建议使用[Div](div.md)和[Sqrt](sqrt.md)替代实现。
 
 
+
 ## 关键特性<a id="rsqrt-key-features"></a>
 
-针对Ascend 950PR/Ascend 950DT，有如下关键特性：
+针对Ascend 950PR&950DT系列产品，有如下关键特性：
 
 ### 最大精度误差
 
@@ -201,7 +202,7 @@ RsqrtAlgo::INTRINSIC为默认算法。--cce-ftz=false时保留Subnormal；--cce-
     ```
 
     
-    以下示例仅支持Ascend 950PR/Ascend 950DT
+    以下示例仅支持Ascend 950PR&950DT系列产品
 
     ```cpp
     static constexpr RsqrtConfig config = { RsqrtAlgo::FAST_INVERSE };

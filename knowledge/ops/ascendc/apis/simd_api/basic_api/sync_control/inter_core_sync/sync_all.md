@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/SyncAll.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -94,7 +94,7 @@ SyncAll硬件同步和软件同步接口的内部实现不同，约束条件也�
 - 软件同步接口约束：
     - gmWorkspace缓存申请的空间大小要求大于等于GetBlockNum()*32Bytes，并且缓存的值需要初始化为0。目前常见的有两种初始化方式：
         - 通过在host侧进行初始化操作，确保传入该接口时，gmWorkspace缓存已经初始化为0；
-        - 在kernel侧初始化的时候对gmWorkspace缓存初始化，需要注意的是，每个核上都需要初始化全部的gmWorkspace缓存空间。
+        - 在核函数（Kernel）侧初始化的时候对gmWorkspace缓存初始化，需要注意的是，每个核上都需要初始化全部的gmWorkspace缓存空间。
     - ubWorkspace申请的空间大小要求大于等于GetBlockNum()*32Bytes。
     - 在纯Vector算子场景中，若所有AIV核默认参与同步，推荐采用性能更优的硬件同步接口；若需指定部分AIV核参与同步，则应使用软件同步接口，并通过入参usedCores完成配置。
     - usedCores传入数值不能超过算子调用时指定的逻辑AI Core中AIV的数量：GetBlockNum()*GetTaskRatio()，不传此参数表示全核软同步。
@@ -112,32 +112,8 @@ SyncAll硬件同步和软件同步接口的内部实现不同，约束条件也�
         - ≥2个并发算子使用了核间同步功能。
 
         具体而言，在多流场景下，某条流的核间同步算子虽分配到n个物理核，但可能仅有n-m个核先被调度执行，而其余m个核因被其他流的核间同步算子抢占而尚未启动。先启动的n-m个核执行到核间同步时等待剩余m核完成，而剩余m核因被其他流的核间同步算子占用而无法释放，形成死锁。
-        核函数（Kernel）直调场景下通过[\_\_schedmode\_\_\(mode\)](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)限定符来设置batchmode模式；工程化算子开发场景下，通过TilingContext的SetScheduleMode接口来设置batchmode模式，具体请参考[《基础数据结构和接口》](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/900beta2/API/basicdataapi/atlasopapi_07_00001.html)。
-<a id="syncall_flagId冲突说明"></a>
-    - SyncAll硬件同步接口内部实现中使用了[CrossCoreSetFlag](cross_core_set_flag_isasi.md)和[CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)进行核间同步控制，因此开发者同时使用CrossCoreSetFlag（或CrossCoreWaitFlag）和SyncAll硬件同步接口时，需注意避免以下[flagId](cross_core_set_flag_isasi.md#flagId取值范围说明)冲突：
-        
-        - 针对[NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)，SyncAll硬件同步接口的flagId占用情况如表3所示：
-
-            **表3**  SyncAll硬件同步接口flagId占用情况
-
-            | SyncAll 使用场景 | 占用flagId汇总 | 各计算核flagId占用情况 |
-            | :--- | :--- | :--- |
-            | isAIVOnly=true | 14 | AIV：14 |
-            | isAIVOnly=false（核函数（Kernel）使用`__mix__(1, 1)`修饰时） | 11、12、13 | AIC：11、12、13；AIV：12、13 |
-            | isAIVOnly=false（核函数（Kernel）使用`__mix__(1, 2)`修饰时） | 11、12、13、28、29 | AIC：11、12、13、28、29；AIV：12、13 |
-
-        
-        
-        - 针对[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)，SyncAll硬件同步接口的flagId占用情况如表4所示：
-
-            **表4**  SyncAll硬件同步接口flagId占用情况
-
-            | SyncAll 使用场景 | 占用flagId汇总 | 各计算核flagId占用情况 |
-            | :--- | :--- | :--- |
-            | isAIVOnly=true | 14 | AIV：14 |
-            | isAIVOnly=false | 11、12、13 | AIC：11、12、13；AIV：12、13 |
-
-        
+        核函数（Kernel）直调场景下通过[\_\_schedmode\_\_\(mode\)](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)限定符来设置batchmode模式；工程化算子开发场景下，通过TilingContext的SetScheduleMode接口来设置batchmode模式，具体请参考[《基础数据结构和接口》](https://gitcode.com/cann/metadef/blob/master/docs/zh/api/README.md)。
+    - SyncAll硬件同步接口内部实现中使用了[CrossCoreSetFlag](cross_core_set_flag_isasi.md)和[CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)进行核间同步控制，因此开发者同时使用CrossCoreSetFlag（或CrossCoreWaitFlag）和SyncAll硬件同步接口时，需注意避免flagId冲突，各接口flagId占用的完整说明参见[核间同步flagId占用说明](key_features.md#inter_core_sync_flagid_usage)。
 
 - 硬件同步接口和软件同步接口公共约束：使用该接口进行多核控制时，算子调用时指定的逻辑AI Core核数numBlocks必须保证不大于实际运行该算子的AI处理器核数，否则框架进行多轮调度时会插入异常同步，导致核函数（Kernel）“卡死”现象。
 
@@ -158,7 +134,6 @@ AscendC::SyncAll(syncGlobal, workLocal);
 ```
 
 完整样例请参考[SyncAll样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/sync_all)。
-
 
 - [Rasterizer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/rasterizer.md)
 - [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)

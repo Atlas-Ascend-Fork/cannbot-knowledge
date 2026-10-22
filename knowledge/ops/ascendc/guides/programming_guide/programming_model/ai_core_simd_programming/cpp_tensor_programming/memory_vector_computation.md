@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/memory_vector_computation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms: []
 ---
 
@@ -28,7 +28,7 @@ Memory矢量计算的数据流为：数据搬入 → 计算 → 数据搬出。�
 
 ## Memory矢量计算内存管理
 
-Memory矢量编程的核心是基于Local Memory（UB）完成矢量计算，要求开发者先将输入数据从Global Memory（以下简称GM）搬入UB，再通过Vector计算指令执行运算。UB的管理依赖LocalTensor对象实现，开发者可通过LocalMemAllocator分配器申请UB空间，为后续矢量计算提供存储载体。
+Memory矢量编程的核心是基于UB完成矢量计算，要求开发者先将输入数据从Global Memory（以下简称GM）搬入UB，再通过Vector计算指令执行运算。UB的管理依赖LocalTensor对象实现，开发者可通过LocalMemAllocator分配器申请UB空间，为后续矢量计算提供存储载体。
 
 ### 基础Tensor(不带Layout)定义
 
@@ -198,6 +198,7 @@ AscendC::Add(dstLocal, src0Local, src1Local, mask, repeatTime, { dstBlockStride,
 掩码由固定位宽的数值表示：有效位（通常为1）：对应元素正常参与计算。无效位（通常为0）：对应元素被屏蔽，不执行操作。
 
 掩码设置提供了两种模式：**Counter模式**和**Normal模式**。C++ Tensor矢量计算接口通过模板参数`isSetMask`控制掩码由开发者手动设置还是接口内部自动设置。以如下`Adds`接口为例，默认`isSetMask = true`表示由接口内部设置Counter或Normal模式；若开发者需自行控制两种模式的切换，则将`isSetMask`设为`false`。后续示例均以开发者自行控制切换为例。
+
 ```cpp
 template <typename T = BinaryDefaultType, bool isSetMask = true, const BinaryConfig& config = DEFAULT_BINARY_CONFIG, typename U, typename S, typename V>
 __aicore__ inline void Adds(const U& dst, const S& src0, const V& src1, uint64_t mask[], const uint8_t repeatTime, const UnaryRepeatParams& repeatParams)
@@ -283,7 +284,7 @@ AscendC::Add(dstLocal, src0Local, src1Local, 4096);
 
 AI Core内部执行单元（如MTE2搬运单元、Vector计算单元等）采用异步并行方式运行，当不同单元读写同一存储资源时，易产生数据依赖问题。因此，Memory矢量计算需通过流水同步接口协调执行顺序，确保计算流程正确。Memory矢量计算流程较Cube矩阵计算更为简洁，主要包含三步：数据搬入（Global Memory → UB）、计算（UB）、数据搬出（UB → Global Memory）。三个步骤分别对应PIPE_MTE2、PIPE_V、PIPE_MTE3流水线，需通过核内同步接口协调执行顺序，确保各步骤按序完成。
 
-当开发者进行一个矢量加法计算时（[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)产品），可通过`Mutex::Lock`&`Mutex::Unlock`的方式完成对这三个步骤的同步。[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)产品可使用`SetFlag`&`WaitFlag`实现相同同步效果，详见[同步机制](cpp_tensor_programming_overview.md#同步机制)。
+当开发者进行一个矢量加法计算时（[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)产品），可通过`Mutex::Lock`&`Mutex::Unlock`的方式完成对这三个步骤的同步。关于以上三个步骤流水间的数据依赖、双缓冲资源复用和`MutexID`规划，请参考[基于Mutex实现多流水同步](../../../advanced_programming/advanced_kernel_programming/intra_core_sync/mutex_multi_pipeline_sync.md)。[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)产品可使用`SetFlag`&`WaitFlag`实现相同同步效果，详见[同步机制](cpp_tensor_programming_overview.md#同步机制)。
 
 ```cpp
 __global__ __vector__ void add_kernel(__gm__ float* x, __gm__ float* y, __gm__ float* z)

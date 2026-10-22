@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/compare_and_select/GatherMask.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-20T07:46:54Z'
 platforms:
 - '950'
 - a2
@@ -39,23 +39,23 @@ source_headers:
     - 7：11111111…1111 \# 每个repeat内取全部元素
 
     
-    Ascend 950PR/Ascend 950DT，支持模式1-7。
+    Ascend 950PR&950DT系列产品，支持模式1-7。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持模式1-7。
+    Atlas A3系列产品，支持模式1-7。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持模式1-7。
+    Atlas A2系列产品，支持模式1-7。
     
 
     
-    Atlas 推理系列产品AI Core，支持模式1-6。
+    Atlas推理系列产品AI Core，支持模式1-6。
     
 
     
-    Atlas 200I/500 A2 推理产品，支持模式1-7。
+    Atlas 200I/500 A2推理产品，支持模式1-7。
     
 
 - 用户自定义模式：对应函数原型中src1Pattern的数据类型为LocalTensor，迭代间间隔由src1RepeatStride决定，迭代内src1Pattern连续消耗。
@@ -70,23 +70,23 @@ GatherMask接口计算过程如下图所示，参数设置为：mask=70，repeat
 repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决定。
 
     
-    Ascend 950PR/Ascend 950DT，支持配置方式一。
+    Ascend 950PR&950DT系列产品，支持配置方式一。
     
 
     
-    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持配置方式一。
+    Atlas A3系列产品，支持配置方式一。
     
 
     
-    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持配置方式一。
+    Atlas A2系列产品，支持配置方式一。
     
 
     
-    Atlas 200I/500 A2 推理产品，支持配置方式一。
+    Atlas 200I/500 A2推理产品，支持配置方式一。
     
 
     
-    Atlas 推理系列产品AI Core，支持配置方式二。
+    Atlas推理系列产品AI Core，支持配置方式二。
     
 
 图1采用内置固定模式2进行计算，每个repeat取奇数索引元素。
@@ -161,7 +161,7 @@ repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决�
 
 
 
-**表**  Ascend 950PR/Ascend 950DT数据类型组合情况
+**表**  Ascend 950PR&950DT系列产品数据类型组合情况
 
 | src0数据类型 | src1Pattern数据类型 | dst数据类型 |
 | --- | --- | --- |
@@ -179,7 +179,7 @@ repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决�
 
 
 
-**表**  Atlas A3 训练系列产品/Atlas A3 推理系列产品数据类型组合情况
+**表**  Atlas A3系列产品数据类型组合情况
 
 | src0数据类型 | src1Pattern数据类型 | dst数据类型 |
 | --- | --- | --- |
@@ -195,7 +195,7 @@ repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决�
 
 
 
-**表**  Atlas A2 训练系列产品/Atlas A2 推理系列产品数据类型组合情况
+**表**  Atlas A2系列产品数据类型组合情况
 
 | src0数据类型 | src1Pattern数据类型 | dst数据类型 |
 | --- | --- | --- |
@@ -211,7 +211,7 @@ repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决�
 
 
 
-**表**  Atlas 200I/500 A2 推理产品数据类型组合情况
+**表**  Atlas 200I/500 A2推理产品数据类型组合情况
 
 | src0数据类型 | src1Pattern数据类型 | dst数据类型 |
 | --- | --- | --- |
@@ -226,7 +226,7 @@ repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决�
 
 
 
-**表**  Atlas 推理系列产品AI Core数据类型组合情况
+**表**  Atlas推理系列产品AI Core数据类型组合情况
 
 | src0数据类型 | src1Pattern数据类型 | dst数据类型 |
 | --- | --- | --- |
@@ -261,7 +261,7 @@ repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决�
 - 若调用该接口前为Counter模式，在调用该接口后需要显式设置回Counter模式（接口内部执行结束后会设置为Normal模式）。
 
 
-- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR/Ascend 950DT：
+- 对Unified Buffer（UB）空间的占用说明。针对Ascend 950PR&950DT系列产品：
   - 内置固定模式占用8KB UB临时空间。
   - 用户自定义模式不涉及8KB UB临时空间的占用。
 
@@ -314,7 +314,6 @@ repeatTimes值不生效，指令的迭代次数由源操作数和mask共同决�
     2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40 42 44 46 48 50 52 54 56 58 60 62 64 66 68 70 72 74 76 78 80 82 84 86 88 90 92 94 96 98 100 102 104 106 108 110 112 114 116 118 120 122 124 126 128 130 132 134 136 138 140 142 144 146 148 150 152 154 156 158 160 162 164 166 168 170 172 174 176 178 180 182 184 186 188 190 192 194 196 198 200 202 204 206 208 210 212 214 216 218 220 222 224 226 228 230 232 234 236 238 240 242 244 246 248 250 252 254 256 undefined ..undefined]
     输出数据rsvdCnt：128
     ```
-
 
 - [InplaceIndexFill 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/inplace_index_fill_950.md)
 - [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)
