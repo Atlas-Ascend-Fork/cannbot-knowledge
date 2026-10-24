@@ -8,4 +8,4 @@
 - [TileLang](tilelang/index.md)：TileLang 算子编程 DSL 的结构入口。
 - [PyPTO](pypto/index.md)：PyPTO 算子编程 DSL 的结构入口。
 - [CATLASS](catlass/index.md)：CATLASS C++ 模板算子编程栈的结构入口（知识卡待内容 PR 合入）。
-- [CATLASS DSL](catlass-dsl/index.md)：CATLASS Python 算子编程 DSL 的结构入口（知识卡待内容 PR 合入）。
+- [CATLASS DSL](catlass-dsl/index.md)：CATLASS Python 算子编程 DSL 的 API、核心概念、算子实现样例、优化策略与排障 Runbook（共 82 张知识卡）。
