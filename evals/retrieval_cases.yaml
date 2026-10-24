@@ -8,7 +8,7 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------------------------------------
 
-# 32 条轨迹查询 + 38 个人工场景，固定 top5；source 保留轨迹定位信息。
+# 32 条轨迹查询 + 40 个人工场景，固定 top5；source 保留轨迹定位信息。
 # expected 中每张卡都必须命中；expected_any 中每组至少命中一张，组间仍为 AND。
 # 期望为人工标注，未做独立复核；返回其他未标注候选不自动判负。
 # 这里只测试检索，不把参数错误、候选命中或缺口场景当作问答成功。
@@ -18,6 +18,38 @@ quality:
   min_recall_at_k: 0.54
   min_mrr: 0.45
 cases:
+- id: manual_catlass_bsa_scope
+  description: CATLASS 块稀疏注意力设计前确认 Arch22 范围与使用边界。
+  source:
+    kind: manual
+    part_id: catlass_migration_20261023
+  query: block_sparse_attention Arch22 范围与使用边界
+  filters:
+    domain: ops
+    technology: catlass
+    type: operators
+    platform: a2
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/catlass/operators/direct/transformer/attention/sparse_attention_scope_and_evidence
+- id: manual_catlass_sparse_mla_interface
+  description: 设计 SparseFlashMLA 时显式查询该家族的 draft 接口卡。
+  source:
+    kind: manual
+    part_id: catlass_migration_20261023
+  query: SparseFlashMLA 完整接口与一般 SWA 契约
+  filters:
+    domain: ops
+    technology: catlass
+    type: operators
+    platform: a2
+    status: draft
+    match: text
+    k: 5
+  expected:
+  - ops/catlass/operators/direct/transformer/attention/sparse_flash_mla_interface
 - id: trace_000
   description: Host Tiling 的 workspace 大小应该如何设置？ SwishRmsnorm Host Tiling UT 已完成构建安装，当前查询未传目标平台参数。
   source:

@@ -1,0 +1,30 @@
+# CATLASS C++ 注意力算子
+
+- [Block Sparse Attention Grad 模式](block_sparse_attention_grad_block_sparse_patterns.md)：块稀疏注意力梯度的二值 block mask 语义、稀疏任务切分、反向计算链及 FP32 workspace 精度边界。
+- [FA dense 前向 A2/A3 实现模式](flash_attention_flash_attention_infer_patterns.md)：dense flash attention 前向（QK^T→online softmax→PV，MHA/GQA/fused attention）的 BNSD 接口契约、AIC/AIV 分核、online softmax 状态递推、workspace 与同步协议、PAGED/尾块/mask 处理、aclnnFlashAttentionScore 精度标杆、性能 gate 口径与 FA0-FA13 检查表。
+- [FA 变体族 A2/A3 手搓配方精要](flash_attention_fa_variants_patterns.md)：FA 变体（FA-Paged 标准/GQA/Causal、fa-sink、fa-varlen TND、fa-q8、FFA 双 KV、MLA latent 压缩分页）的手搓配方精要：算法差异、分核组织（S1 单遍/s1s2 双层/flash-decoding）、契约转换、关键修复、死锁前提与验收口径。
+- [FA-SageAttention Ascend 950 量化注意力实现模式](flash_attention_fa_sageattention_patterns.md)：SageAttention（K 平滑 + INT8 QK + online softmax + FP16 PV）在 dav-3510 上的双 kernel 架构、量化路径与 comp 补偿代数、CrossCore mode4 协议、8 条不变量 I1-I8、精度取证方法与平台坑排障路由。
+- [FAG dense 反向 Ascend 950 实现模式](flash_attention_grad_flash_attention_grad_patterns.md)：dense flash attention backward 的 ABI、反向公式、Tile 级 C++ 组装、五次 MMAD 数据链、L0C/UB/L1 预算、raw-NZ 存序、FagPostKernel、同步协议、失败表现与验收矩阵。
+- [Linear Attention 矩阵逆模式](linear_attention_matrix_inverse_patterns.md)：单位下三角矩阵块化求逆及 Vector/Cube Stage。
+- [SWA 分块优化与性能验收](sparse_flash_mla_performance.md)：一般 SWA 和连续 prefill 的布局、复用、分核与流水优化，以及5+5采样和逐例性能证据校验。
+- [SWA 流水协议、片上结构与状态模型](sparse_flash_mla_pipeline.md)：跨任务双槽、三 actor 握手、QK/PV 片上资源、尾块和模型验证边界。
+- [SparseFlashMLA 五阶段工作流与调用材料](sparse_flash_mla_workflow.md)：数学分类、知识检索、五阶段产物、调用输入和成对交付边界。
+- [SparseFlashMLA 分阶段开发与工程集成](sparse_flash_mla_development.md)：计算阶段、动态调度、组件约束、公开主核与 metadata 接线、SDK 工具准备和正式部署。
+- [SparseFlashMLA 完整接口与一般 SWA 契约](sparse_flash_mla_interface.md)：主算子和 metadata 的完整 Python/ACLNN 接口，以及一般 SWA 的布局、stride、有效长度、sink 和 LSE。
+- [SparseFlashMLA 用例构造与完整验证](sparse_flash_mla_validation.md)：基础矩阵、负例、动态诊断 ABI、输入与标杆准备、ABAB、流水、sanitizer、原 ATK 和性能门禁。
+- [SparseFlashMla 配套 metadata 算子与调度协议](sparse_flash_mla_metadata.md)：SparseFlashMla 配套 metadata 算子与调度协议；适用于共享 KV 的窗口、连续压缩与稀疏压缩三模式。
+- [block_sparse_attention Arch22 CATLASS 组件映射](sparse_attention_catlass_components.md)：按稀疏映射、实际模板能力、资源和数值契约选择 QK/PV 与非 GEMM 组件。
+- [block_sparse_attention Arch22 Golden 与验证](sparse_attention_golden_and_validation.md)：冻结实际输入、参考实现和比较器，覆盖布局、压缩索引、数值模式与 O/LSE。
+- [block_sparse_attention Arch22 blockX/blockY 泛化约束](sparse_attention_blockxy_generalization.md)：blockX/blockY 泛化为 128 倍数时的接口约束、天然支持点、必须参数化点与容量硬边界。
+- [block_sparse_attention Arch22 任务边界与槽复用同步模式](sparse_attention_task_boundary_sync_patterns.md)：FAI 型三槽距离-2 流水在任务切换与槽环回绕处的同步不变量、易漏竞态点与症状-嫌疑映射。
+- [block_sparse_attention Arch22 优化变换的准入与判定纪律](sparse_attention_optimization_admission_rules.md)：在本类算子上做性能变换时的准入清单：低精度预乘的舍入放大、原语表达可行性、每窗口成本的消融归因方法、设备侧测量口径与负结论记账。
+- [block_sparse_attention Arch22 分段流水与向量归约实测事实](sparse_attention_device_pipeline_and_reduce_facts.md)：在 DAV_2201 上做 QK→softmax→PV→finalize 融合时，可用的段间同步形态，以及 level-2 归约、WholeReduce、Fixpipe C 布局与在线 softmax 的实测语义与容错要点。
+- [block_sparse_attention Arch22 多行 Vector epilogue](sparse_attention_vector_epilogue_design.md)：用明确的状态布局、真实列归约和缓冲生命周期设计多行 softmax、rescale 与 LSE。
+- [block_sparse_attention Arch22 宿主暂存区尺寸与分批驻留模式](sparse_attention_host_workspace_and_batching_patterns.md)：逐次调用的暂存区随规模线性增长时的宿主侧风险：32 位尺寸回绕以设备侧核内异常暴露、分批驻留的容量切分与 id 域纪律、异步执行下宿主元数据上传的隐藏竞争，以及小效应改动前的测量纪律。
+- [block_sparse_attention Arch22 性能假设与验证](sparse_attention_performance_hypotheses.md)：用成本模型和完整调用测量选择优化候选，明确资源、数值、同步风险与否证条件。
+- [block_sparse_attention Arch22 执行与完整调用测量](sparse_attention_execution_and_measurement.md)：核对真实装载、异步缓冲和设备任务覆盖，保证正确性与性能结果绑定当前实现。
+- [block_sparse_attention Arch22 稀疏任务与四阶段流水](sparse_attention_scheduling_and_pipeline.md)：建立 Q 行所有权、逻辑 KV 流、GM 槽、在线状态及跨核通知的生命周期约束。
+- [block_sparse_attention Arch22 范围与使用边界](sparse_attention_scope_and_evidence.md)：确认块稀疏注意力的输入域、知识读取顺序和实现验证条件。
+- [block_sparse_attention Arch22 语义与十二分派](sparse_attention_semantics_and_dispatch.md)：定义非量化块稀疏注意力的布局、长度、mask、精度组合及 O/LSE 边界。
+- [block_sparse_attention Arch22 高吞吐流水结构规则](sparse_attention_throughput_structure_rules.md)：主 kernel 每块对有效算力偏低（约两倍级）时的高吞吐结构机制与七条可迁移设计规则。
+- [分段与稀疏 KV 的统一归一化 Attention](sparse_flash_mla_computation.md)：分段与稀疏 KV 的统一归一化 Attention；适用于共享 KV 的窗口、连续压缩与稀疏压缩三模式。

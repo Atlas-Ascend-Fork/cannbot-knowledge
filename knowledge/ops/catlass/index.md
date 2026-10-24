@@ -1,3 +1,5 @@
-# CATLASS
+# CATLASS C++ 知识
 
-本目录是已注册的 CATLASS C++ 模板算子编程栈技术路由入口，知识卡待内容 PR 合入。
+- [接口知识](apis/index.md)：CATLASS C++ 组件接口与约束。
+- [算子知识](operators/index.md)：注意力算子家族的设计与实现知识。
+- [工作流指南](guides/index.md)：五阶段开发与验证指南。
