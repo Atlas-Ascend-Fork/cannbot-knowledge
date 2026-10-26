@@ -9,4 +9,5 @@ __pycache__/
 *.tmp
 cann-docs-raw/
 /cann-ops-raw/
+/cann-runtime-raw/
 local-tools/

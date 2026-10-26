@@ -323,7 +323,11 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/runtime/apis",
             "knowledge/runtime/runbooks",
         }
-        self.assertTrue(all(not (ROOT / path).exists() for path in not_precreated))
+        self.assertTrue(not_precreated.isdisjoint(actual))
+        for path in not_precreated:
+            directory = ROOT / path
+            if directory.exists():
+                self.assertTrue(any(card.name != "index.md" for card in directory.rglob("*.md")), path)
 
     def test_repository_contains_ascendc_reference_corpus(self) -> None:
         cards = [

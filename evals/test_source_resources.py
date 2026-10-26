@@ -478,7 +478,7 @@ class OperatorSourceCorpusTests(unittest.TestCase):
         cls.operators = api_links.cards_below(ROOT, "knowledge/ops/ascendc/operators")
         cls.definitions = {
             item["repository"]: item for item in cls.contract.local_sources.values()
-            if item.get("kind") == "git"
+            if item.get("kind") == "git" and item["root"].startswith("cann-ops-raw/ascendc/")
         }
 
     def test_direct_and_aclnn_share_one_registered_baseline_per_repository(self):

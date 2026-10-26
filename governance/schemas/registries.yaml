@@ -123,6 +123,14 @@ local_sources:
     repository: https://gitcode.com/cann/ops-transformer
     revisions:
       - be33d95bb755cedec3108f70805c1874d1792540
+  runtime:
+    description: 固定到 Runtime 知识来源提交的 CANN runtime 源码与公开文档
+    kind: git
+    root: cann-runtime-raw/runtime
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/cann/runtime
+    revisions:
+      - b523035a08ef573b6bc476c8ab2a34733ba069a4
   cann_docs_raw:
     description: 从官方持续更新归档恢复的 Ascend C 文档
     root: cann-docs-raw
