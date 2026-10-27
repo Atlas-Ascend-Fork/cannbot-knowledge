@@ -109,6 +109,27 @@ class KnowledgeGraphTests(unittest.TestCase):
         self.assertEqual(0, ignored.returncode, ignored.stderr)
         self.assertEqual(2, len(ignored.stdout.splitlines()))
 
+    def test_duplicate_reference_definitions_keep_first_graph_target(self) -> None:
+        self.append(
+            API,
+            f"[target][ref]\n\n[ref]: /{OPERATOR}.md\n"
+            f"[REF]: /{UNLINKED}.md",
+        )
+        before = {p: p.read_bytes() for p in (self.root / "knowledge").rglob("*.md")}
+        result = self.run_graph("build")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(
+            [{"source": API, "relation": "links_to", "target": OPERATOR}],
+            self.graph()["edges"],
+        )
+        first = (self.root / "artifacts/graphs/graph.json").read_bytes()
+        result = self.run_graph("build")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(first, (self.root / "artifacts/graphs/graph.json").read_bytes())
+        self.assertEqual(before, {
+            p: p.read_bytes() for p in (self.root / "knowledge").rglob("*.md")
+        })
+
     def test_unlinked_cards_build_without_judgments_and_ignore_old_cache(self) -> None:
         output = self.root / "artifacts/graphs"
         output.mkdir(parents=True)

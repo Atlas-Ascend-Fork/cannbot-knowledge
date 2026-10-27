@@ -149,10 +149,11 @@ def _targets_with_lines(text: str) -> list[tuple[str, bool, int]]:
         (match.start(), _markdown_destination(match.group(3)), bool(match.group(1)))
         for match in INLINE_LINK_RE.finditer(masked)
     ]
-    definitions = {
-        _reference_label(match.group(1)): (match.group(2) or match.group(3))
-        for match in REFERENCE_DEFINITION_RE.finditer(masked)
-    }
+    definitions: dict[str, str] = {}
+    for match in REFERENCE_DEFINITION_RE.finditer(masked):
+        definitions.setdefault(
+            _reference_label(match.group(1)), match.group(2) or match.group(3)
+        )
     for match in REFERENCE_LINK_RE.finditer(masked):
         label = _reference_label(match.group(3) or match.group(2))
         target = definitions.get(label)
