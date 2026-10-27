@@ -15,3 +15,5 @@
 - [Reduction + Elementwise 融合算子优化](reduction_sum_fused.md)：Reduction+Elementwise融合算子优化：先逐元素操作再归约，行二次切分+计算重组，grid=40且SUB切分不含尾块时性能最优（47.58us），融合优化逻辑以reduce为主，适用于需要先逐元素计算再reduce的融合场景
 - [大规模 Sum 归约优化](reduction_sum_large.md)：大规模归约（sum）非reduce轴很大优化：计算重组减少归约次数，在优先占满UB前提下为reduce轴分配较大切分尺寸（BLOCK_SIZE_N=1024最优685.65us），适用于非reduce轴非常大（6万+）、reduce轴中等（千级）的2D归约场景
 - [Weighted SwiGLU Backward 融合算子优化](reduction_weighted_swiglu.md)：3D融合算子（Weighted SwiGLU Backward）优化：Reshape降维将前两维合并简化并行策略，行二次切分避免超UB，在优先占满UB前提下为reduce轴分配较大切分尺寸，grid数较大时可能性能更优，适用于3D张量逐元素+reduce融合的场景
+
+- [BlockSparseAttentionGrad 算子（block-sparse-attention-bwd） 实现手册](sparse_attention_grad_optimization.md)：BlockSparseAttentionGrad（BNSD/MHA/D=128、bx/by 16~128 可非对称、17 case）实测：kv 主序表若用 strided 列 gather 建表会 ub overflow（401KB，带循环或无循环 P2=128 均复现），改用 device 侧 uint8 掩码转置 kernel + 连续行 load 后一次编过；dk/dv kernel 必须独立选 tile（BMK=min(bx,64)；BT 取整除 by 的最大值：by≤32 取 by，否则依次试 32/48/16）否则 224KB 越界；17/17 精度通过，基线 geomean 0.034x（Phase 3 未优化）。
