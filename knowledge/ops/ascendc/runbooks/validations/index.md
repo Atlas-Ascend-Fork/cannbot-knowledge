@@ -205,3 +205,12 @@
 - [精度判决只能来自 RunSpec 绑定的比较器；抵消尾输出上未绑定口径可量级失真（本例 10/50 vs 50/50）](precision_verdict_must_come_from_the_runspec_bound_comparator.md)：同一份 kernel 字节与同一份候选输出，用未绑定的 compare_tensors 得 10/50、用 RunSpec 绑定的 eco_open_source_v1 得 50/50；根因是相对误差聚合在零附近被放大。
 
 - [V351 single-launch FA-class kernel — all-zero output diagnosis checklist when build+dispatch PASS](v351_single_launch_fa_all_zero_output_checklist_001.md)：V351 single-launch FA-class kernel — all-zero output diagnosis checklist when build+dispatch PASS
+
+- [int8 连续输出的四字节打包、对齐门控与标量回退](aligned_subword_output_packing.md)：从普通 Gather 实现提炼四字节输出打包的完整门控，区分读端宽度和写端合并，并保留非对齐及短尾的逐元素写回。
+- [完整块与安全尾块分开选搬运路径，循环可保持统一](aligned_tile_copy_safe_tail.md)：以普通 AdamW 的变长循环说明 DataCopy 与精确字节尾搬运的边界；复制路径分域不要求拆成两个独立循环，也不承诺固定提速。
+- [Cumsum 扫描轴移至末轴的布局闭包](cumsum_axis_last_layout_closure.md)：按 wrapper、Host 物理重排、Kernel 连续扫描和逆置换追踪 Cumsum 指定轴的完整坐标映射。
+- [融合 Q/K 仿射参数的独立持久存储](independent_affine_parameter_storage.md)：追踪四组仿射参数的独立分配、临时区复用及 query/key 消费分发，并提供可独立执行的 CPU 结构检查。
+- [NLLLoss 索引取值与单元素暂存容量](nllloss_indexed_scalar_staging.md)：从 NLLLoss 的有效 target、ignore 分支和物理地址公式推导单元素读取，限定 input/weight 两个队列的暂存容量。
+- [分核 partial 的初始化、参与者集合与最终归并](inter_core_reduction_contract.md)：用普通 UnsortedSegmentSum 的 int64 两阶段实现说明分片布局、空核和初始化顺序；按源码观察给出采用检查，不冒充修复轨迹或设备归因结果。
+- [直接 DFT 的向量化轴、FP32 入口与缓冲预算](rfft_dft_vectorization_axes_and_buffer_budget.md)：从两份完整实现比较按输入位置归约与按频率 Lane 累加的依赖，并核对真实 FP32 入口、对齐长度和 InitBuffer 请求边界。
+- [重复索引更新的目标行所有权](target_row_ownership_for_duplicate_indices.md)：在 dense 唯一 AIV 编号前提下，用目标行取模归属保证同一目标的更新由同一 owner 按输入顺序处理。

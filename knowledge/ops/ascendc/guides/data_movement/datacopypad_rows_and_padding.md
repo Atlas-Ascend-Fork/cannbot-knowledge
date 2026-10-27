@@ -14,8 +14,10 @@ sources:
   role: supporting
 - resource: https://gitcode.com/qq_41667743/cannbot-knowledge/blob/a70025d581ae45da8a93b4938b5ba19da6fa6f92/knowledge/ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md
   role: supporting
+- resource: https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopyPad_GMToUB.md
+  role: constraint
 created_at: '2026-09-11T01:01:58Z'
-updated_at: '2026-09-11T01:01:58Z'
+updated_at: '2026-10-17T19:12:09Z'
 platforms: []
 ---
 
@@ -42,6 +44,10 @@ UB→GM 的非对齐写回丢弃的是接口规定的 dummy，而不是任意自
 ## 参数范围与批量成本
 
 Host 应在窄化转换之前检查 `blockCount`、`blockLen`、stride、padding 字段与完整地址计算的范围。来源参数表记录了 4095 个 block、普通参数 65535 和扩展 blockLen 2097151 等上限；这些必须对应到实际 SDK、接口和平台核对，不能由 C++ 字段是 uint16/uint32 推断全部位模式都有效。超范围时按行或列拆批，并重新推导每一批的两端起点；padding 的 uint8 字段也不能一概解释为 255 字节。
+
+固定版本官方 GM→UB `DataCopyPad` 文档的 `DataCopyPadExtParams<T>` 表5规定：`leftPadding`、`rightPadding` 的单位均为元素个数，每一侧占用的字节数均不能超过32B。对该普通重载，需分别检查 `leftPadding*sizeof(T)<=32` 与 `rightPadding*sizeof(T)<=32`；FP32 每侧最多8元素，FP16/BF16每侧最多16元素。能转换为字段类型不能代替这项范围检查，也不能用一个很大的 `rightPadding` 一次初始化整个目标槽。仍需同时核对UB容量、实际目的地址及计算的有效范围。
+
+这一范围来自固定官方参数合同；没有恢复本地旧会话的硬件失败探针，因此不把它表述为旧会话的实测结论。官方同页对 Ascend 950PR/950DT 的 `PaddingMode::Compact` 另有约束：`dstStride`、`leftPadding`、`rightPadding` 无效；不能把普通模式的逐侧字段检查机械套作该模式的配置方法。
 
 将合法多行合成一次搬运可能减少下发和事件开销；扩大行距到 64B 等值则是需要测量的候选，会增加 UB 占用，可能挤压主 tile。不能为了对齐而向上移动真实 GM 数据起点，也不能把逐行搬运一律禁用：复杂 stride、接口限制或诊断阶段可能需要显式逐行地址。
 

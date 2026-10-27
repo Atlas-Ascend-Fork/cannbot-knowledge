@@ -16,7 +16,7 @@
 - [量化模式分发与反量化广播坐标](quantized_dispatch_and_dequant_broadcast.md)：区分类型别名、实际低位计算、行列 scale 与高阶接口的空间和平台合同。
 - [Fixpipe 随路量化通路与参数寿命](fixpipe_quantization_path_and_parameter_lifetime.md)：在已有硬件量化说明上保留参数搬运、格式匹配及部分融合的条件。
 - [dtype 直传与 Wrapper 转换流量](dtype_passthrough_and_wrapper_traffic.md)：将低精度数据直接传给 Kernel，保存内部 FP32 计算与原有舍入语义。
-- [初等函数稳定变换与语义保留](elementary_stability_without_semantic_clamping.md)：纠正 Exp 范围、无条件 epsilon/截断及 Sinh 套用 Softmax 平移的错误。
+- [初等函数稳定变换与语义保留](elementary_stability_without_semantic_clamping.md)：纠正 Exp 范围、无条件 epsilon/截断及 Sinh 平移错误，补充负状态抵消与输出 dtype 的分离诊断。
 - [误差指标与实际表示的测试输入](error_metrics_and_represented_test_inputs.md)：修正容差公式、空/非有限值统计和数据生成中改变 shape 或退化为零的陷阱。
 - [MX Scale 的范围条件与反例证据](mx_scale_range_and_counterexample_evidence.md)：从目标量化范围推导 scale 下界，区分保守指数偏移与完整 E8M0 编码规则。
 - [GLU 近零重算与局部近似的数值合同](glu_near_zero_recompute_contract.md)：保留 FP16 输入逐 K 重算及 Swish 近零公式的严格适用域和同步变化。

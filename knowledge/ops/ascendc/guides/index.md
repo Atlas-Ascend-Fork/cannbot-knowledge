@@ -45,7 +45,7 @@
 
 - [data movement](data_movement/index.md)：共 8 张知识卡（如 批量搬运、LoopMode 与交错 Scale 偏移、DataCopyPad 多行搬运的有效长度、padding 与物理行距、DataCopyPad 的版本、重载与尾部真实范围 等）。
 
-- [testing](testing/index.md)：共 30 张知识卡（如 APACE 多rank启动与 context 复用范围、APACE 对标路径与失败证据边界、算子测试的行为断点与属性交叉覆盖 等）。
+- [testing](testing/index.md)：共 32 张知识卡（如 APACE 多rank启动与 context 复用范围、APACE 对标路径与失败证据边界、算子测试的行为断点与属性交叉覆盖 等）。
 
 - [compilation](compilation/index.md)：共 2 张知识卡（如 APACE 构建根目录与版本化符号、Softmax 模板ABI与独立头文件依赖）。
 

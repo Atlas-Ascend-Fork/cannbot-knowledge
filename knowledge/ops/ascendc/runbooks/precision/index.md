@@ -101,7 +101,7 @@
 - [noTrans extract 与 NDExtLayoutPtn 方向不匹配](notrans_extract_ndextlayoutptn.md)：aclblasStrsm blocked 路径 noTrans misaligned 尝试 extract A/B 到对齐 workspace 再走 GEMM(transA=0)，extract 行主序存储与 blocked GEMM 的 NDExtLayoutPtn 读取方向不一致致精度大错（outliers 占比 48%~69%）；trans path 靠 transA=1 转置存储恰好匹配而工作；noTrans misaligned 一律回退 SIMT，extract+GEMM 路线 banned。
 - [多核 numPerCore 须对齐 Philox group 4](numpercore_philox_group_4.md)：bit-exact 复现原生随机算子时，host 自算的多核 numPerCore 必须向上对齐到 Philox group size 4，否则跨核元素落入不同 counter group，从某元素起全线偏移。
 - [numpy legacy 标量提升致 lr_adj 1-ULP 偏差](numpy_legacy_lr_adj_1_ulp.md)：numpy 1.26.x legacy promotion 将 Python float 与 np.float32 标量运算提升为 FP64 再降级回 FP32，与 kernel 纯 FP32 标量路径产生 1-ULP 偏差，在 var_out 近零抵消处被放大为 mare 4e-3。判别要点是 golden 标量运算走了 FP64-then-cast 而 kernel 走 pure-FP32。
-- [累计极值 NaN 语义须用 self-NE 合成选择掩码](ordered_compare_alone_cannot_propagate_nan_prefix_state.md)：累计极值 Vector scan 在有限值全部正确、全 NaN 输入却同时出现 NaN 位置和索引失配时，用显式 is-current-NaN、is-running-NaN 与有限 LE 合成选择掩码。
+- [累计极值 NaN 掩码须先验证平台比较语义](ordered_compare_alone_cannot_propagate_nan_prefix_state.md)：保留950的self-NE掩码修复；A2/CANN9.1前n Compare实测连NaN的NE也为假，移植前须校准重载。
 - [per-core zero-out 经 grid-stride ZeroOutS](per_core_zero_out_grid_stride_zeroout_simt_overshoot.md)：用既有 grid-stride ZeroOutSimt 做 per-core 子区域零化会因内部跨核 idx 越界而漏零，导致归约结果错误，须保留 Phase1 后 SyncAll。
 - [philox offset 推进量须固定 12 而非元素数](philox_offset_12.md)：自定义 exponential_ host 用 philox_engine_inputs(totalElements) 推进 generator offset，但原生 aclnnSimThreadExponential 每次调用固定推进 offset 12（与 tensor size 无关），导致多次连续调用从第 2 次起 0% 匹配。
 - [Philox offset 须放 counter 2:3 而非 0:1](philox_offset_counter_2_3_0_1.md)：自定义 Philox kernel 把 generator offset 放入 PhiloxCounter 的 position 字段 counter[0:1]，原生 aclnnSimThreadExponential 放入 subsequence 字段 counter[2:3]，导致 offset=0 时逐元素匹配、offset!=0 时 0% 匹配；用单核逐字段试错对比判别。
@@ -120,7 +120,7 @@
 - [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](repeated_overwrite_updates_need_ordered_ub_merge.md)：重复 overwrite 可在逐目标块 UB 内按序合并，但必须具备显式 TQue/事件依赖、每块唯一输出所有权和确定块间次序；否则仅作安全回退候选。
 - [A3 RMSNorm 不要用分母正值保护吞掉 NaN 传播](rmsnorm_nan_propagation_not_positive_guard.md)：RMSNorm 的规约含 NaN 时，denom > 0 的倒数保护会把 NaN 分母映射成 0，破坏整行 NaN 传播；在 epsilon 保证有限零输入分母为正的前提下直接求倒数。
 - [RoPE DIST_INTLV_B16 store mask 致零值](rope_dist_intlv_b16_store_mask.md)：MLA 融合算子 rms_norm_rope_k_store_kv_cache（dav-3510/Ascend950/CANN 9.1.0）的 DoRope64 用 DIST_INTLV_B16 interleave store 把 even/odd 配对 RoPE 结果交错写回 bf16，bs=64 的 k_rope_cache 出现 index 27+ 起的稳定零值模式（golden 非零、npu=0.000000 FAIL，每 4 元素出现 2 个零）；DIST_INTLV_B32 在 fp32 域直接产生垃圾值。判别=用 debug_rope.py 逐元素对比 NPU RoPE 输出与 golden，定位零值起始 index 与每 4 元素 2 零的重复模式，结合 store 路径（DIST_INTLV_B16 interleave）确认是 store mask 与 64 维 interleaved 布局不兼容，非 V 流水线 race（加 PipeBarrier<PIPE_V> 仍失败）。
-- [dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数](rsqrt_fast_approximation_use_sqrt_reciprocal.md)：RmsNorm 的 fp32 rstd 使用不带 config 的 Rsqrt 后呈现约 2^-9 量化偏差；改为 Sqrt、标量读回与 1.0f/s 后恢复 fp32 精度。
+- [Rsqrt 精度差异须区分 Sqrt 后取倒数路径](rsqrt_fast_approximation_use_sqrt_reciprocal.md)：保留a3的Sqrt加标量倒数修复；新增a2/CANN9.1原生三路径探针，向量Div与Reciprocal误差不可混同。
 - [标量 S pipe 误用 TQue 导致输出全常数](scalar_s_pipe_requires_explicit_mte_dependencies.md)：标量 C++ 直接访问 UB 时，TQue 的 V-pipe 事件不能覆盖 S pipe；改用 TBuf 与 PIPE_ALL 串行化 DMA、标量计算和写回。
 - [Scatter 非散射维可缩小，更新量须按 indices 计算](scatter_update_count_must_follow_indices_shape.md)：将 Scatter 的非散射维错误约束为与 data 等长会拒绝合法输入，并按 data 行数展开索引造成越界；应分离输出行数与更新行数。
 - [Select cmpmask 不偏移致分支反转诊断](select_cmpmask.md)：arch35/dav_c100 上 Select(VSEL_CMPMASK_SPR) 在 count>128 时 L1 出现约 1.2% element mismatch 与 mask 分支反转；通过 n 规模扫描与 VselImpl 源码读取定位为 repeatRounding 循环中 sel 指针不偏移、后续 repeat 复用首块 cmpmask。
@@ -465,6 +465,16 @@
 - [bf16 reference for PURE-COPY ops (pad/tile/repeat/broadcast) can legally run the NPU fp32-roundtrip](ol_679_bf16_reference_for_pure_copy_ops_pad_tile_repeat.md)：纯拷贝类算子（pad/tile/repeat）的 bf16 参考可以合法走 NPU fp32 往返（bf16→fp32 无损，实测位一致）；算术类不适用
 - [A fp32 "precision FAIL" against a fp64 golden on a multi-term-reduction op is a TRIAGE problem before it is a kernel bug — bisect the cancellation floor first, then (on vendor-suite lanes) declare the op-author tolerance from the measured envelopes](ol_681_a_fp32_precision_fail_against_a_fp64_golden_on_a.md)：含 cancellation 元素的 fp32 算子，fp64 golden 默认阈值可能对任何正确实现都不可达（torch eager fp32 自己都超标）——先证阈值可达性再修 kernel
 
+- [固定减1e-4不能补偿BF16归约边界](fixed_negative_bias_breaks_bf16_midpoint_rounding.md)：NPU固定反例显示减常量把正确BF16舍入移到错误一侧，同输入归约组织也可跨中点。
+- [Conv和Matmul乘法精度须绑定模式与数值指纹](hf32_mode_requires_fresh_process_numeric_fingerprint.md)：同输入fresh进程HF32开关改变Conv及Matmul单乘积，dtype和属性读回不足以证明实际参考精度。
+- [int64 先保位拆平面再作精确标量比较](int64_bitplane_scalar_maximum.md)：用 UB ReinterpretCast 提取高低位，先比较有符号高位再比较无符号低位，避免从窄化值猜原 int64。
+- [IoU 用三方探针对齐半精度面积合同](iou_half_reference_three_way_probe.md)：在固定版本当前后端上，对照逐步半精度、逐步单精度和无面积偏移参考，避免从输出落点猜内部精度。
+- [L1 预取分片须用非退化输入单独验算](l1_prefetch_subtile_controlled_failure.md)：同一 Cube 内核在预取深度一时精确通过，深度二失败；先恢复分支控制，再定位子 tile 搬运。
+- [FP16输入不保证NMS采用FP16的IoU阈值路径](nms_fp16_input_does_not_define_iou_precision.md)：真实npu_nms_v4两框阈值反例排除逐阶段half及最终half模拟，仅约束受测平台与版本。
+- [Sigmoid 正指数重排在饱和区产生 NaN](sigmoid_positive_exp_rewrite_overflow.md)：同输入对比高阶 Sigmoid、负指数 Div 链与正指数商，区分代数等价和设备有限精度等价。
+- [4097拆分不等于全数值域的11bit舍入](veltkamp_split_not_unconditional_rne11_quantizer.md)：subnormal保留位数不同且大有限值乘4097溢出，CPU与NPU框架链共同反驳无条件等价。
+
+- [宽 NZ 子块错读：分离基址与平面跨度](wide_nz_b_subtile_base_plane_stride_diagnostic.md)：用固定A的Cube投影分别核对宽L1缓存的B子块基址和读取跨度；仅改C0基址仍可能错读，结论限定已实测的ND2NZ与helper参数。
 - [ARM64 Torch bmm 的 FMA 归约顺序失配判别](torch_arm64_bmm_fma_reduction_order.md)：固定 Torch2.10 ARM64 原dtype CPU bmm 合同时，诊断FP32顺序FMA与FP16四路partial的舍入路径；原完整50 CPU41→50通过、zero全拒绝，native两腿12/50、性能未测、实际内层CPU微核未知。
 
 - [V351 AIV `WholeReduceMax<float>` silently truncates per-repeat when `mask > 64` — split into chunked-reduce + scalar combine](v351_aiv_wholereducemax_fp32_mask_cap_truncation_001.md)：V351 AIV `WholeReduceMax<float>` silently truncates per-repeat when `mask > 64` — split into chunked-reduce + scalar combine

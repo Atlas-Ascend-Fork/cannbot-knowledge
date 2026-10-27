@@ -40,3 +40,7 @@
 - [APACE 对标路径与失败证据边界](apace_reference_baselines_and_failure_evidence.md)：APACE 对标路径与失败证据边界的来源实例与适用边界。
 
 - [随机数分布检验的样本、参数与批量判定](random_distribution_tests_and_batch_contract.md)：区分随机数分布检验与逐位比较，明确样本、分布参数、单次显著性和批量次数的一致性。
+
+- [用 MoE 路由反例证明内核接口的信息充分性](moe_routing_interface_information_sufficiency.md)：以固定原版 MoE 路由合同和无相等键的 CPU 反例，证明遗漏专家数据的扩展接口不能唯一决定重排输出。
+
+- [先界定未定义占位输出的比较合同](undefined_placeholder_output_comparison_contract.md)：通过非零 shape 占位输出与扩展调用前返回的独立源码，区分内容无定义、数值失败和真实内核执行。

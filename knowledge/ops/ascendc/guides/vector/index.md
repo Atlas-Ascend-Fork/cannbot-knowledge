@@ -13,7 +13,7 @@
 
 - [SwiGLU 双分支语义与高阶临时空间](swiglu_two_branches_and_api_scratch.md)：区别单独 SiLU 和双输入 SwiGLU，明确 beta、布局、别名及双缓冲范围。
 
-- [Counter Mask 的作用域与尾部计数](counter_mask_scope_and_tail_counts.md)：保留总元素模式、手动 mask 重载、模式恢复与混合 dtype 边界。
+- [Counter Mask 的作用域与尾部计数](counter_mask_scope_and_tail_counts.md)：区分 Normal、Counter 与 Compare/Select 重载的实际覆盖，保留 A2/A3 与 950 的文档边界。
 - [UB 计算链融合与队列交接](ub_chain_fusion_and_queue_handoffs.md)：保留中间值免 GM 往返、混合类型与多队列所有权的完整条件。
 
 - [解交织模式与 Host 预计算保留](deinterleave_patterns_and_host_precompute_preservation.md)：纠正 GatherMask 参数含义，保存四分量物理跨度及迁移后的完整数据流。

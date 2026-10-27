@@ -131,4 +131,5 @@
 - [内核运行期故障初判：先读 plog 提取 errorStr/errorcode 再二分 kernel](kernel_runtime_fault_plog_first_triage.md)：任何 AscendC kernel 运行期故障（507015/507035/EZ9999/aicore exception/errcode）第一步是读设备/主机日志提取 errorStr：从 ASCEND_PROCESS_LOG_PATH / ASCEND_WORK_PATH / $HOME/ascend/log 解析 LOG_ROOT，find -mmin 5 找最新 debug/plog 文件，再按 errorStr→故障类映射表对号入座，不要上来就二分 kernel 计算/DataCopy。
 - [MIX_AIC_1_2：SetBlockDim 传 AIC 数（框架按 1:2 扩展发射），printf 缺失不等于核没跑](mix_set_block_dim_aic_count_printf_flush.md)：SetBlockDim 的 block_dim 是 AIC 数，框架按 AIC:AIV=1:2 扩展发射——传非 AIC 数会得到看起来'被忽略'的发射数；CANN printf 缓冲只在 kernel 正常结束时刷出，hang/crash 时最后一个核的日志会丢——缺 printf 不能证明核未被派发。两个误读都会产出假 infra-root-cause 结论。
 
+- [CO1 复用诊断：追踪就绪与回收双向事件](co1_ready_reuse_event_diagnostic.md)：在纯 AIC 的 CO1/Fixpipe 双缓冲中，沿安装头文件核对 M_FIX 就绪和 FIX_M 复用事件，并把屏障面板通过限定为观测。
 - [V351 arch35 service-class structure (cube_block + vector_block + vf/* MicroAPI vector fission) for backward op-family port targets](v351_arch35_regbase_service_class_skeleton_001.md)：V351 arch35 service-class structure (cube_block + vector_block + vf/* MicroAPI vector fission) for backward op-family port targets

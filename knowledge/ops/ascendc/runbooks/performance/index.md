@@ -169,3 +169,10 @@
 - [Multi-core data-movement partitioning — K-aligned row groups + DataCopy-only stores (NO scalar GM store)](p_p277_multi_core_data_movement_partitioning_k_aligned.md)：dav-m200 多核搬运 kernel 的铁律是零标量 GM 写、全走对齐 DataCopy；推论是每个核的输出范围必须按 32B 块整数倍对齐切分（K 对齐行组）
 - [Slab-window k-partition for dn>=1 scatter/gather-class ops](p_p279_slab_window_k_partition_for_dn_1_scatter_gather.md)：连续内存上 dn≥1 的 scatter/gather，利用地址可计算性让每个输出窗口只扫自己重叠的 k 区间——省掉全 K×核数重复扫描和逐命中 GM RMW，单所有者天然确定性
 - [Host-precompute dim-only fp64 tables and carry them via a tiling data array — never compute dim-only pow/exp tables on-device in fp32 when a Ratio-vs-fp32-competitor gate applies](p_p280_host_precompute_dim_only_fp64_tables_and_carry_t.md)：参考实现里 fp64 精度的逐维常数表（如 sinusoidal 频率表）在设备上用 fp32 现算会差 1 ulp 并被大角度放大——解法是 host 侧 fp64 算好单次转 fp32 经 tiling 数组带进 kernel
+
+- [显式负指数链未降低 Sigmoid 调用成本](sigmoid_explicit_no_cost_advantage.md)：独立构建和等值输入测量表明，当前绑定下展开负指数基础链未形成高阶显式 scratch Sigmoid 的完整调用成本优势。
+
+- [索引预取同时保留消费关系与下一批边界](bounded_index_prefetch_consumption.md)：预加载的索引值应进入真实地址计算；首批、下一批和标量尾部各有边界，源码可证消费关系，缓存命中与性能需另证。
+- [索引 Gather 的独立 load 展开与标量尾部](independent_index_load_mlp.md)：把索引、数据和输出分组展开，显式保留地址独立性与短尾回退；展开宽度是候选参数，不能从源码断言硬件重叠或提速。
+- [完整工作集驻留 UB 前核对分配账与流式回退](resident_working_set_and_streaming_fallback.md)：从固定 GroupNorm 源码整理驻留工作集、dtype 条件暂存和流式分支参数区的完整静态账目，明确驻留条件与超预算停止边界。
+- [短向量链先固定数值与存储合同，再消除重复工作](semantic_vector_pass_reduction.md)：用普通 Sigmoid 的原位短链和常驻 ones 展示可审阅的中间存储与重复初始化模式；不把实数恒等式、源码 pass 数或整算子成绩当作单机制收益。
