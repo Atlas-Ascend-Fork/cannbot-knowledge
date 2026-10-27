@@ -4,8 +4,8 @@
 
 - [IR 工作流](ir/index.md)：Triton-Ascend 编译 IR 的提取、分析与迁移工作流。
 - [开发工作流](workflows/index.md)：环境搭建、调试、Profiling、GPU→NPU 迁移。
-- [设计期约束](constraints/index.md)：跨算子与分类别的设计期硬约束（stage: design，53 张）。
-- [单算子实现手册](operator_playbooks/index.md)：按算子类别组织的实现 playbook（59 张）。
+- [设计期约束](constraints/index.md)：跨算子与分类别的设计期硬约束（stage: design，54 张）。
+- [单算子实现手册](operator_playbooks/index.md)：按算子类别组织的实现 playbook（60 张）。
 - [算子专项设计](operator_design/index.md)：按算子类型的设计页，含经验路由与适用条件（14 张）。
 - [GPU→NPU 迁移对照](migration/index.md)：含实测 Diff 点与收益的迁移对照卡（5 张）。
 - [工具参考（skill 参考 verbatim 归档）](tooling/index.md)：MFU/仿真器/精度调试/任务构建的 skill 参考文档 verbatim 归档（11 张，不提炼）。

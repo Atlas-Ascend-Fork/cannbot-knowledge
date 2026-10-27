@@ -57,3 +57,4 @@
 - [`DC-49` diffusion_embedding 类算子设计约束](diffusion_embedding_constraints.md)：扩散模型条件嵌入（timestep 正弦嵌入 + 小 MLP + 并行投影）：skinny-M 禁 tl.dot 走向量外积、段级深度融合、逐舍入点 dtype 契约、共享 K 多路 pass-merge、tile 整域 law。
 - [`DC-50` patch_window_attention 类算子设计约束](patch_window_attention_constraints.md)：CV-Attn 卷积-块化窗口 transformer（MobileViT 系）：复合点积双 B 指针禁令、拼接缓冲紧凑布局、元素级 gather 禁令、fp32 ieee dot、attn 按 n 单块特化。
 - [`DC-51` position_channel_attention 类算子设计约束](position_channel_attention_constraints.md)：CV-Attn 无投影位置/通道双分支（DAModule/DANet 系）：双分支统一物理布局、PV 二段拆分、conv implicit GEMM+RNG 复刻、tile 收紧、双路径分派、分段精度契约。
+- [`DC-52` kda 类算子设计约束](kda_constraints.md)：KDA/GDN 分块前向（块内 Aqk/L + 三角求逆 + 块间状态 scan）：dot 预算 ≤6/chunk、求逆用 Neumann 截断、多右端合并、有界 kgt、C 固定 64 与 BKX=K、守卫式零 carry 快路径。

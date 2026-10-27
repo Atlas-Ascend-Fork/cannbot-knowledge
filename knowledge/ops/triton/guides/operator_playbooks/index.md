@@ -49,6 +49,10 @@ global_constraints.md（`../constraints/global_constraints.md`）。
 - [IndexPut / Scatter 算子（index-write） 实现手册](index_computation__indexput_scatter.md)：算子类别: indexwrite（按索引向输出写入或原子累加。
 - [Sort / TopK 算子（index-sort） 实现手册](index_computation__sort_topk.md)：算子类别: indexsort（基于比较重排并返回索引。
 
+## kda（1 张）
+
+- [ChunkKdaFwd 算子（分块 KDA 前向） 实现手册](kda__chunk_kda_fwd.md)：典型特征: q/k/v/g [B,T,H,K] + beta [B,T,H]，C=64 分块，块内 Aqk/L 两个 gram + (I+L)⁻¹ + w/u 求解，块间 [K,V] 状态 scan；实测 MFU 1.995% -> 5.152%。
+
 ## linear_recurrent（1 张）
 
 - [FusedRecurrentGatedDeltaRule 算子（Gated Delta Rule） 实现手册](linear_recurrent__fused_recurrent_gated_delta_rule.md)：典型特征: 每 (b,vh) 一套 [K,V] fp32 状态，T 步串行递推，delta rule rank-1 修正，状态驻留 UB 单融合 persistent kernel。

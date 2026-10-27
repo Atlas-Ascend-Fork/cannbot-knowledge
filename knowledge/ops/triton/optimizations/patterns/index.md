@@ -22,6 +22,7 @@
 - [950 SIMT-only 离散访存（Ascend 950 SIMT-Only Discrete Access Pattern）（950 专属）](force_simt_only_discrete_access_950.md)：Ascend 950 上以 force_simt_only=True 启动离散访存 UB staging kernel，并重调 num_warps 与 grid 分解。
 - [GQA/MQA KV 共享行批处理（GQA/MQA KV-Shared Row Batching）](gqa_kv_shared_row_batching.md)：把共享同一 KV head 的独立 query 行批入同一 program，使只读 K/V tile 每份只加载一次。
 - [Grid 摊平与 UB 批量搬运（Grid Flattening And UB Buffering Pattern）](grid_flatten_and_ub_buffering.md)：把逻辑工作摊平到物理核并以更宽的 UB store 批量搬运小行传输，降低启动开销、提高单核工作密度。
+- [守卫式零 Carry 快路径（Guarded Zero-Carry Fast Path）](guarded_zero_carry_fast_path.md)：分块递推中当 chunk 间状态 carry 可被运行时上界 Bmax/(1-gl_max) 证明可忽略时，把串行 scan 塌缩为逐块 o=Aqk@u 的完全并行计算，并保留精确 scan 回退。
 - [Hi/Lo 分裂 Matmul（Hi/Lo Split Matmul (Split2 / Split3)）](hilo_split_matmul.md)：用取整 fp16 高位与残差部分逼近 fp32 操作数，以两到三个原生 fp16 tl.dot 组合出 fp32 累加结果。
 - [Host 侧 Launch 合并（Host Launch Coalescing）](host_launch_coalescing.md)：把 Python/wrapper 循环对同一小 kernel 的重复 launch 合并为一次 device grid，由 program 自行解码段身份。
 - [隐式 Transpose 消除（Implicit Transpose Elimination Pattern）](implicit_transpose_elimination.md)：让操作数以 Cube 需要的物理布局进入 kernel，或把不可避免的转置放到最便宜的算子与路径上，消除编译器注入的布局变换。
@@ -35,6 +36,7 @@
 - [活跃长度 Tiling（Live-Length Tiling）](live_length_tiling.md)：按各轴实际存活逻辑长度选择 tile 宽度，替代遗留最大值或一刀切 2 的幂规则，避免 masked 空车道主导工作量。
 - [逻辑布局 Tiling（Logical-Layout Tiling Pattern）](logical_layout_tiling.md)：当逻辑操作是仿射数据搬运时，用布局感知的多维 tile 取代标量密集的 1D 线性索引遍历。
 - [仅 Mask 仿射寻址（Mask-Only Affine Addressing）](mask_only_affine_addressing.md)：删除已带边界 mask 的访存指针表达式中的逐 lane 索引 clamp，保留原始仿射偏移，让谓词承担越界保护。
+- [共享左矩阵的多右端合并（Multi-RHS Shared-Left Merge）](multi_rhs_shared_left_merge.md)：多个线性求解共享同一左矩阵时，按列拼接右端做一次 [C,C]×[C,K+V] dot，FLOPs 不变而 dot 调用减半，规避 Ascend 上每个 dot 的固定搬运/同步开销。
 - [归一化底数约定消融（Normalization Base Convention Ablation）](normalization_base_convention_ablation.md)：把自然底与 base-2 两套完整指数归一化实现作为整体约定消融，保持标量数学与向量路径语义一致。
 - [尾块重叠加载免 Mask（Overlap Tail Load for Idempotent Reductions）](overlap_tail_load_mask_free.md)：行/段幂等归约在 BLOCK < length ≤ 2·BLOCK 且不对齐时，重叠加载尾块并免 mask 合并计算。
 - [打包 Key 单次 Argmax 归约（Packed-Key Single Reduction for Extremum-with-Index）](packed_key_argmax_single_reduction.md)：把带首次出现位置的极值归约打包为单次 key 归约，或以 pair32/pair64 双归约规避慢的宽整数比较路径。
