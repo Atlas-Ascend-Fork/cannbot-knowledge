@@ -132,5 +132,6 @@ bash check.sh
 - [Frontmatter 与证据](governance/specs/frontmatter.md)：字段组合、生命周期、来源、标签、平台和版本。
 - [Schema、Registry 与 Contract](governance/specs/schemas.md)：机器事实源、受控词表和规则执行关系。
 - [Knowledge Skills](governance/specs/skills.md)：Query、通用 Ingest、仓内 trace producer、Operator producer、Lint 和安装模式。
+- [精炼规约(预案)](governance/specs/refinery.md)：去中心知识精炼分支、独立成品目录与周期回灌的预案;未启用,获准并通过验收前不改变现行治理。
 
 本仓采用 [CANN Open Software License Agreement 2.0](LICENSE)。
