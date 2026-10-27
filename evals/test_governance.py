@@ -1843,6 +1843,33 @@ platforms: [a2]
         self.assertIn("source.fetch_script_missing", missing_codes)
         self.assertIn("source.fetch_script_mode", mode_codes)
 
+    def test_log_order_is_p1_but_invalid_time_remains_p0(self) -> None:
+        module = load_lint_module()
+        cases = (
+            (("08:00", "09:00"), {("log_order", "P1", "log.order")}, False),
+            (("25:00",), {("logs", "P0", "log.entry")}, True),
+        )
+        for times, expected, blocking in cases:
+            with self.subTest(times=times), tempfile.TemporaryDirectory() as temporary:
+                root = self.make_root(temporary)
+                (root / "logs").mkdir()
+                (root / "logs/2026-08-22.md").write_text(
+                    "# 2026-08-22\n\n" + "".join(
+                        f"## [{time}] governance | Entry\n\n"
+                        "### Summary\n\nSummary.\n\n"
+                        "### Details\n\nDetails.\n\n"
+                        for time in times
+                    ),
+                    encoding="utf-8",
+                )
+                linter = module.Linter(root, False)
+                linter.validate_logs()
+                self.assertEqual(expected, {
+                    (finding["check"], finding["tier"], finding["code"])
+                    for finding in linter.findings
+                })
+                self.assertEqual(blocking, linter.has_p0())
+
     def test_log_entries_require_summary_and_details(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = self.make_root(temporary)

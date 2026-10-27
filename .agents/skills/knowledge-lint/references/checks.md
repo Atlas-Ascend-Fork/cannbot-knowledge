@@ -24,7 +24,8 @@
 | `index_entry_description` | P1 | 每个索引条目带有摘要 |
 | `local_sources` | P0 | 本地来源获取脚本、归档标记或 Git 固定提交/来源/干净工作区、已恢复文件合法 |
 | `links` | P0 | 代码块（含列表缩进围栏）、行内代码和图片之外的 Markdown 本地目标位于 `knowledge/` 且存在并为文件；知识卡可额外链接登记的固定提交源码文件，未恢复时只检查登记路径，索引无此例外；Finding 保留引用行号和原始目标 |
-| `logs` | P0 | 日志文件名、H1、entry、Summary/Details 和倒序合法 |
+| `logs` | P0 | 日志文件名、H1、entry 和 Summary/Details 合法 |
+| `log_order` | P1 | 同一天的日志条目按时间倒序；同一时间允许并列 |
 | `index_sync` | P0 | 生成式索引与知识树同步；仅在其他检查无 P0 时执行 |
 
 当前没有 P2 格式检查项。

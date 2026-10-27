@@ -67,7 +67,7 @@ stages:
               git clean -ffdx
               git read-tree --reset -u "$MERGE_SHA^1"
               git clean -ffdx
-              git restore --source="$MERGE_SHA" --staged --worktree -- knowledge
+              git restore --source="$MERGE_SHA" --staged --worktree -- knowledge logs
           - name: Run FormatCheck
             env:
               RESULT_DIR: ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/format

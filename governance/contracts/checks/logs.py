@@ -18,6 +18,15 @@ from pathlib import Path
 from ..knowledge import Contract, Issue
 
 
+def _entry_time(line: str) -> str | None:
+    match = re.match(r"## \[(\d{2}:\d{2})\] [^|]+ \| .+", line)
+    if match:
+        hour, minute = (int(value) for value in match.group(1).split(":"))
+        if hour < 24 and minute < 60:
+            return match.group(1)
+    return None
+
+
 def check_repository(contract: Contract) -> list[tuple[Path, Issue]]:
     log_root = contract.root / "logs"
     if not log_root.is_dir():
@@ -37,18 +46,13 @@ def check_repository(contract: Contract) -> list[tuple[Path, Issue]]:
         entries = [index for index, line in enumerate(lines) if line.startswith("## ")]
         for position, index in enumerate(entries):
             line = lines[index]
-            match = re.match(r"## \[(\d{2}:\d{2})\] [^|]+ \| .+", line)
-            valid_time = False
-            if match:
-                hour, minute = (int(value) for value in match.group(1).split(":"))
-                valid_time = hour < 24 and minute < 60
-            if not valid_time:
+            time = _entry_time(line)
+            if time is None:
                 results.append(
                     (path, Issue("log.entry", f"invalid log entry heading: {line}"))
                 )
             else:
-                assert match is not None
-                times.append(match.group(1))
+                times.append(time)
             end = entries[position + 1] if position + 1 < len(entries) else len(lines)
             section_headings = [
                 item for item in lines[index + 1 : end] if item.startswith("### ")
@@ -72,7 +76,20 @@ def check_repository(contract: Contract) -> list[tuple[Path, Issue]]:
             results.append(
                 (path, Issue("log.entry", "log file requires at least one entry"))
             )
-        elif times != sorted(times, reverse=True):
+    return results
+
+
+def check_order(contract: Contract) -> list[tuple[Path, Issue]]:
+    results: list[tuple[Path, Issue]] = []
+    for path in sorted((contract.root / "logs").glob("*.md")):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}\.md", path.name):
+            continue
+        times = [
+            time
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if (time := _entry_time(line)) is not None
+        ]
+        if times != sorted(times, reverse=True):
             results.append(
                 (path, Issue("log.order", "log entries must be newest first"))
             )

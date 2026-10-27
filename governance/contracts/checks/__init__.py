@@ -139,6 +139,7 @@ CHECKS: tuple[Check, ...] = (
     ),
     Check("links", "P0", document=links.check),
     Check("logs", "P0", repository=logs.check_repository),
+    Check("log_order", "P1", repository=logs.check_order),
     Check(
         "index_sync",
         "P0",

@@ -159,7 +159,7 @@ class Linter:
         for check in self.checks:
             if (
                 check.repository is None
-                or check.id == "logs"
+                or check.id in {"logs", "log_order"}
                 or check.requires_clean
             ):
                 continue
@@ -168,7 +168,7 @@ class Linter:
 
     def validate_logs(self) -> None:
         for check in self.checks:
-            if check.id != "logs" or check.repository is None:
+            if check.id not in {"logs", "log_order"} or check.repository is None:
                 continue
             for path, issue in check.repository(self.contract):
                 self.record(check, path, issue)
