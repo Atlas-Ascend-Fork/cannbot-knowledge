@@ -10,9 +10,11 @@ sources:
   role: primary
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/06-fused-attention.py
   role: example
+- resource: https://gitcode.com/cann/cannbot-skills/blob/f5004b2c00eae3d62ec95992fd2d488fa8f7b4fe/plugins-official/triton-op-generator/template/block_sparse_attention.md
+  role: primary
 created_at: '2026-08-20T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
-platforms: [a2, a3]
+updated_at: '2026-10-27T10:09:29Z'
+platforms: [a2, a3, '950']
 ---
 
 # block_sparse_attention 类算子设计约束（三·稀疏类·块跳过/top-k）
@@ -53,6 +55,7 @@ platforms: [a2, a3]
 | `sp-paged-topk` | KV 经 `block_table` 分页寻址，且给的是 **k→q 方向**的 CSR（`indptr`/`indices`），需反推每个 query 的选中块 | 表用**无 dot 的 Triton kernel** 在 device 侧建；⚠️ 不要做跨 program 原子归约（§5.2） |
 | `sp-pooled-topk` | 无现成掩码，参考实现先把 Q/K 沿序列维池化成打分矩阵再 `torch.topk(...)` + `scatter_` | top-k 自己实现；⚠️ **紧致化不能用 `tl.cumsum`**（§4.3） |
 | `sp-bwd` | 入参含 `softmax_max` / `softmax_sum` / 前向输出，出 `dq`/`dk`/`dv`；掩码语义与前向同一套 | m/l/O 预给 → 不需要 online softmax；需要**转置的选择表** |
+| `sp-index-given` | token 索引 `sparse_indices` 或块索引 `topk_idx` 已作为输入给定 | 无需建表；满足 §3.5 条件时评估该节骨架，随机索引路径参考 [gather 连续化](../../optimizations/operator_optimization/device_side_gather.md)。形态与预算见 §0.3 |
 
 ### §0.1 判别特征（决定用不用本文件）
 
@@ -76,6 +79,15 @@ platforms: [a2, a3]
 | **Q3** | 每个 query 的选中块数 topK 与因果可见块数 n_vis 的关系？ | 决定用**逐 tile 扫描**还是**逐 token 压缩表**（§3.2 判据） |
 | **Q4** | 参考实现的 attention 在什么精度上算？ | 决定 `p` 是否需要二段拆分（§6.2），以及 fp16 下拆分是否安全 |
 | **Q5** | 参考实现里有没有"顺手写出来的布局重解释"？ | paged KV 的 `k[pages].reshape(nb*blk, Hkv, D)` 会把页内两轴换序，**必须逐位复刻**（§8） |
+
+### §0.3 选择表已给定时的形态与预算
+
+`sp-index-given` 无需执行 L1.2 的 device 侧建表步骤。先区分 token 索引与块索引；原模板的随机 token 索引形态为：
+
+- `sparse_indices` 是上游 `lightning_indexer` 的 top-k 产物，保存行内下标或 `-1` 填充。
+- `KV_N=1` 时全部 Q 头共享同一稀疏集合；常见形态为 token-wise，即 `sparse_block_size=1`。
+
+gather 路径的 UB 预算应包含地址张量。
 
 ---
 
@@ -132,6 +144,8 @@ tile 可行域由 UB 预算决定，而 UB 预算**随编译器版本变**。同
 
 ### L1.1 ★★★ program 粒度必须提到掩码块粒度，**禁止逐 token 发 program**
 
+本条针对掩码块可由多个 query 共享、矩阵行维来自 query 的形态。§3.5 的单 query GQA 骨架用同组 heads 组成 `tl.dot` 的行维，不能仅因每个 program 对应一个 query 就视为下述 M=1 坏味道；能否合并 query 仍须核对选择表语义。
+
 坏味道：`grid = (total_q, H)` / `grid = (B*S, H)`，kernel 里只处理一行 query。
 
 ```python
@@ -150,6 +164,8 @@ for task in range(pid, total_tasks, NUM_CORES):
 判据：只要 grid 里出现 `total_q` / `seq_len` 这一维且掩码是块粒度的，一定能合并；合并上限就是掩码块粒度，再大要跨掩码行、得拆表。
 
 ### L1.2 ★★★ 索引 / 掩码表**必须在 device 侧构建**，禁止挪到 host
+
+本条约束算子内部需要生成选择表的形态；输入已给定的选择表按 §0.3 直接使用，无需重复建表。
 
 这是本类算子最容易出现的**不合规**写法，务必先看清楚。
 
@@ -193,7 +209,7 @@ s = tl.dot(q, kt)
 ```
 反向里 `q/k/v/dout` 同理（实测某反向实现四个量全部 `.to(tl.float32)` 后再 dot，是明确的浪费）。
 
-### L1.4 ★ `p`（softmax 输出）不能直接降到输入 dtype，用 hi+lo 二段拆分
+### L1.4 ★ `p`（softmax 输出）默认采用 hi+lo 二段拆分
 
 `p` 是真 fp32 量，`p.to(bf16)` 的 2^-9 相对误差在 PV 里被 `Σp|v| / |Σpv|` **放大约 20 倍**（实测 rel 2~4%，bf16 阈值才 7.8e-3）。
 
@@ -206,7 +222,11 @@ pv = tl.dot(ph, v) + tl.dot(pl, v)      # 代价：PV 的 Cube 工作量 ×2
 
 ⚠️ **fp16 上二段拆分不是无条件安全的**：实测某反向算子的 `P` 取值可低到 **4e-21**，远低于 fp16 最小非规格化数（约 6e-8），`ph = P.to(fp16)` 直接变 0、`pl` 随之失真。**拆分前必须先看该量的动态范围**；bf16 指数位多（最小非规格化数约 9e-41）不受影响。
 
+特定页内连续路径的 PV/LSE 候选方案及验证边界见 §3.5；只有目标环境完整精度复验通过后才采用该例外，其他路径仍采用本节的 hi/lo 拆分。
+
 ### L1.5 ★ 选择表的行粒度必须与 kernel 的 `BLOCK_M` 严格一致
+
+本条核对 query 与选择表的对应关系。§3.5 用 GQA heads 组成矩阵行维时，仍须保持每个 query 使用自己的选择表行，不能把 head 维块大小当作 query 的选择表粒度。
 
 最容易犯、且**错误形态会伪装成精度问题**的一个 bug：表按掩码块粒度（128）建行，kernel 里 `m0 = qb * BLOCK_M`（BLOCK_M=64），于是每个 128 行组只有第一个 tile 被算，其余行留在 `torch.empty` 的**未初始化内存**里。
 
@@ -286,6 +306,72 @@ dP = dout @ vᵀ ;  dS = P * (dP - delta)
 dV = Pᵀ @ dout ;  dQ = dS @ k * scale ;  dK = dSᵀ @ q * scale
 ```
 dq / dk / dv 三个 kernel 会**各自重算一遍 S 和 P**（实测占 impl 侧 ~95%）：dq 与 dk 可以融合成一个 kernel（dS 只算一次），dv 只需要 P。dk/dv 的 kernel 需要**转置的选择表**（每个 (b, k_block, h) 对应哪些 q_block）。⚠️ 它同样受 L1.2 约束：**必须在 device 侧再建一个 kernel 把它算出来**，不能在 host 上把 q 主序表转置一遍。做法与 q 主序表完全对称——同一份块级判据 `_blk_keep`，只是把 `(b, q_tile, h)` 的任务分解换成 `(b, k_tile, h)`；两张表各发一个 kernel，合计几十 µs 量级。
+
+### §3.5 页内连续、topk 已给定时的参考骨架
+
+本节保留原测算子的四步参考骨架，不新增 Layer 1 通用红线。满足以下取数条件时才评估；不满足时用 §3.1，随机 gather 路径另见 [device_side_gather.md](../../optimizations/operator_optimization/device_side_gather.md)。各步骤还须满足下述输入与精度前提。
+
+- 块下标 `topk_idx` 已经是入参，kernel 里不再建选择表；
+- KV 经 `block_table` 落到物理页，页内 token 连续；
+- 每个 query 另有因果位置：prefill 的 `q_abs = prefix_len + q_offset`，decode 的 `kv_len`。
+
+四步按此顺序叠加测量，§5.1 的数字是相对上一步，不是交换顺序的结论。收益和失效见 §5.1 末四行、§5.2。Ascend950PR 上 `gqa_sparse_fwd` / `gqa_sparse_decode`，vs NVIDIA L20 GPU 基线的 10 个 shape 几何平均：只换 grid 为 0.2110 / 0.3289，四步做完为 1.1713 / 1.0318。
+
+**(1) 循环上界用该 query 的有效块数。** 不要 `for _ in range(MAX_TOPK)` 再 `if _ < real_topk` 把 `tl.dot` 包起来。
+
+下列原始公式由因果可见块数与 `MAX_TOPK` 推导上界，只有输入契约保证有效项数恰等于该上界、有效项紧致排列在所读前缀且选择表长度足够时，才能将其当作 `real_topk`。原记录未完整说明这些保证，复用前必须核对；否则应使用实际有效项数及相应有效性检查，不能用可见长度代替真实计数。
+
+```python
+# prefill：q_abs = prefix_len + 本 program 的 q 下标
+real_topk = tl.minimum(MAX_TOPK, (q_abs + BLOCK_K) // BLOCK_K)
+for _ in range(real_topk):
+    blk = tl.load(topk_ptr).to(tl.int32)
+    topk_ptr += stride_k
+# decode：kv_len = 本 query 可见的 KV 长度
+real_topk = tl.minimum(MAX_TOPK, (kv_len + BLOCK_K - 1) // BLOCK_K)
+chunk_end = tl.minimum(chunk_start + chunk_size, real_topk)
+for _ in tl.range(chunk_start, chunk_end):
+    ...
+```
+
+**(2) 原测候选：PV 用输入 dtype，并且 softmax 用 exp2/log2。** `m_i` / `lse_i` 初值用 `NEG`（`-3e38`）。初值用 0 会在 log-sum-exp 里多算一块来自 0 的质量。prefill 上只把 PV 改成 native dtype、softmax 仍用线性 `l_i`，精度 0/18。decode 的 s2 是 exp2/log2 配 `v.to(fp32)`，精度能过；s3 起改成 `p.to(v.dtype)`，要和这套 LSE 一起。没有这条页表取数路径时，仍用 L1.4 的 hi/lo。
+
+```python
+qk = tl.dot(q, k) * (sm_scale * 1.4426950408889634)  # sm_scale * log2(e)
+m_ij = tl.maximum(m_i, tl.max(qk, 1))
+p = tl.exp2(qk - m_ij[:, None])
+l_ij = tl.sum(p, 1)
+acc = acc * tl.exp2(m_i - m_ij)[:, None]
+acc += tl.dot(p.to(v.dtype), v)   # 不要 tl.dot(p, v.to(fp32))
+lse_i = m_ij + tl.log2(tl.exp2(lse_i - m_ij) + l_ij)
+m_i = m_ij
+# prefill 循环结束后：acc *= tl.exp2(m_i - lse_i)[:, None]
+# decode：scale = tl.where(lse_i > NEG, tl.exp2(m_i - lse_i), 0)
+```
+
+页内连续性不能保证 PV 量化后的误差满足验收要求。上述组合只作为原测候选；更换 dtype、shape 或工具链后，须按原验收规则完成目标用例的完整精度复验，不能用性能采集时的精度闸门代替。空选择行的输出与 LSE 也须对齐参考语义。
+
+**(3) 块号与页表有效时，prefill 的 K/V token 轴 load mask 只留 `pos < seq_len`，因果放在 qk 上。** 下列示例要求所读 prefill 块号非负且未越界，`block_table` 对应物理页有效。存在 `-1` 填充、无效块或页表项时，必须保留相应有效性检查并安全处理寻址；仅 `pos < seq_len` 不能排除负数位置。其他维度的尾部保护也不能随因果掩码一起删除。
+
+页内 K/V 是连续的；原测 Ascend950PR 实现把 `pos <= q_abs` 写进 `tl.load` mask 时观察到 Vector 逐点搬运。该组测量未单独注明工具链版本，目标环境应通过编译产物与 Profiling 确认，不能按型号直接推定。decode 的已测版本仍保留无效块号：`mask=(pos < kv_len) & (blk >= 0)`，不要改成只判断长度。块号仍然标量 load，再经 `block_table` 换成物理页。
+
+```python
+pos = blk * BLOCK_K + tl.arange(0, BLOCK_K)
+pos_mask = pos < seq_len
+k = tl.load(..., mask=pos_mask[None, :], other=0.0)
+qk = tl.dot(q, k) * (sm_scale * 1.4426950408889634)
+qk = qk + tl.where((pos <= q_abs)[None, :], 0, NEG)
+qk = qk + tl.where(pos_mask[None, :], 0, NEG)
+```
+
+只写因果比较、不把 `pos < seq_len` 加回 qk 时，块尾落在因果窗内的位置会把填 0 的 K 当成有效分数。两行都要加。
+
+**(4) 同一组 GQA head 的 Q/O 用 `make_block_ptr`。** prefill 的 Q 是 `(q_len, GQA_GROUP, HEAD_DIM)`，块形状 `(1, BLOCK_H, BLOCK_D)`。decode 每个 program 一个 query，形状是 `(GQA_GROUP, head_dim)`，块形状 `(BLOCK_H, BLOCK_D)`。不要 `hqs = tl.minimum(pid_h + offs, pid_h + GQA_GROUP - 1)` 再 gather。O 和 decode 的 LSE 同样用块指针写回。和 topk 循环写在一起若编译失败，保留前三条即可。
+
+只改 grid、不改上面四条，加速比几乎不动（prefill 0.2110、decode 0.3289）。用 `float("-inf")` 代替 `NEG` 并先把 qk 置 0 再 `tl.dot`，比第 (3) 条更差。
+
+
+**证据边界**：上述数值沿用原 PR 的历史测量，没有在本次迁移中重跑 NPU 实验；目标 1.52 尚未达到。各档性能采集走带精度闸门的 `benchmark.py`，没有各档单独的 `verify_result.json`。报告中的 18/18 对应优化前生成代码，不代表本节最终版本另经完整精度复验；只改 PV 的 0/18 同样是生成阶段记录。
 
 ---
 
@@ -390,6 +476,8 @@ lo = tl.where(take, mid, lo);  hi = tl.where(take, hi, mid)
 
 ### §5.1 按收益排序（★ = 高收益）
 
+第 11–14 项仅在满足 §3.5 的全部取数条件时评估，并分别遵守该节的有效项、地址安全和精度验证前提；各行适用条件是附加条件，历史收益不作为目标环境保证。
+
 | # | 方向 | 实测增益 | 适用条件 |
 |---|---|---|---|
 | 1 | ★★★ program 粒度提到掩码块粒度 + 全面 `tl.dot` 化 | **26.25×**（几何平均） | grid 里有 `total_q` 这一维 |
@@ -400,8 +488,12 @@ lo = tl.where(take, mid, lo);  hi = tl.where(take, hi, mid)
 | 6 | ★ 整行全掩码用 −3e38 + m 下钳 | 省一个 `[BM,BN]` 与一个 `[BM,D]` 张量 | 总是 |
 | 7 | ★ paged KV 预转置成块内连续 | MTE2 从 256B 粒度变整块搬运 | `Hkv > 1` |
 | 8 | ★ 任务序 kv_head 最外层 | KV 工作集驻 L2 | 有 GQA / paged KV |
-| 9 | `p` 二段拆分 | 精度必需（不是性能） | bf16 输入；fp16 先查动态范围 |
+| 9 | `p` 二段拆分 | 默认精度方案（不是性能项） | bf16 输入；fp16 先查动态范围；§3.5 的限定例外须经完整精度复验 |
 | 10 | CV 指令重排（dot 提前） | 成本极低，收益不可预期 | 总是可以试 |
+| 11 | ★★ prefill：K/V 的 token 轴 load mask 只留 `pos < seq_len`，因果用 qk 上的 `where`（§3.5） | prefill 的 10 个 GPU shape 加速比 **0.2607 → 0.7902** | 所读块号及页表有效，且 load mask 里写了 `pos <= q_abs`；保留其他尾部保护。decode 保留 `(pos < kv_len) & (blk >= 0)` |
+| 12 | ★ 循环上界改为该 query 的有效块数（§3.5） | decode **0.3289 → 0.5243**；prefill 0.2110 → 0.2152 | 当前循环仍扫满 `MAX_TOPK`；使用真实有效项数，示例公式另须满足 §3.5 第(1)步的输入保证 |
+| 13 | ★ `tl.dot(p.to(v.dtype), v)` 与 exp2/log2 的 LSE 一起改（§3.5） | decode **0.5243 → 0.8771**；prefill 0.2152 → 0.2607 | 当前 PV 是 `v.to(fp32)`；组合调整后完整精度复验，不单独改 PV |
+| 14 | ★ 同一组 GQA head 的 Q/O 用 `make_block_ptr`（§3.5） | prefill **0.7902 → 1.1713**；decode 0.8771 → 1.0318 | 前三条已经写上，Q 仍用 `tl.minimum` gather |
 
 ### §5.2 ⛔ 证伪方向全表（**这一节比 §5.1 更值钱**）
 
@@ -415,6 +507,10 @@ lo = tl.where(take, mid, lo);  hi = tl.where(take, hi, mid)
 | `tl.atomic_add` 抢占式紧致化（替代 cumsum） | 语义**正确**，但同址 lane 高度竞争，**触发 Vector core 看门狗**，不可用 |
 | `enable_ubuf_saving` 编译开关 | 在 bishengir **0.1.0 上根本不可用**（`Unknown command line argument`，编译直接失败）；1.2.0 上可用，且是 128×128 能编过的前提。**开关的可用性先于收益** |
 | `BM=BN=128` 用于 paged topK 形态 | ⛔ `ub overflow`（编译器已自动关掉 code-motion 和 multi-buffer 重试仍失败）。同一个 128×128 在 `sp-blockmask` 形态上却能编过 ⇒ **可编域是"形态 × 编译器"的函数，不能跨算子照抄** |
+| 只把 grid 改成 prefill `(q_len, nkv, batch)` 或 decode `(total_q * chunks, nkv)`，其余照旧 | ⛔ vs NVIDIA L20 基线的几何平均几乎不动：prefill 0.2086 → 0.2110，decode 0.3366 → 0.3289 |
+| prefill 上只把 PV 改成 `tl.dot(p.to(v.dtype), v)`，softmax 仍用线性 `l_i` | ⛔ 精度 0/18。要改就和 §3.5 的 exp2/log2 一起 |
+| 用 `float("-inf")` 代替 `NEG=-3e38`，并且先把 qk 置 0 再 `tl.dot` | ⛔ 比 `NEG` 的简单 mask 更慢 |
+| decode 的无效块号是 `-1`，load mask 只留 `pos < kv_len` | ⛔ 保留 `(pos < kv_len) & (blk >= 0)`。只判断长度没有更快的测量 |
 
 ### §5.3 天花板估算：先算账再动手
 
@@ -441,8 +537,8 @@ lo = tl.where(take, mid, lo);  hi = tl.where(take, hi, mid)
 | 量 | 是否需要提精度 | 理由 |
 |---|---|---|
 | q / k / v / dout | **否** | 本来就是 bf16/fp16 存储，升 fp32 一位有效数字都不增加 |
-| `p`（softmax 输出） | **是**，hi+lo 二段拆分 | 真 fp32 量，误差被 `Σp\|v\|/\|Σpv\|` 放大 ~20× |
-| `dS`（反向） | 同 `p` | 同理 |
+| `p`（softmax 输出） | 默认采用 hi+lo 二段拆分；§3.5 的候选例外须经完整精度复验 | 真 fp32 量，误差被 `Σp\|v\|/\|Σpv\|` 放大 ~20× |
+| `dS`（反向） | 按 L1.4 的精度与动态范围要求处理；不沿用 §3.5 的前向 PV 例外 | 同理 |
 | 累加器 | 全程 fp32 | — |
 
 ### §6.3 定位手法：dump kernel 的中间量，不要只看最终输出
@@ -472,6 +568,7 @@ lo = tl.where(take, mid, lo);  hi = tl.where(take, hi, mid)
 | 编译报 `Unknown command line argument '--enable-...'` | 编译器版本不支持该开关 | S5，先确认编译器来自 pip 包还是 PATH |
 | 精度全过但 speedup 反而变好 | 12 个 case 编译失败被排除在几何平均之外 | 看 speedup 前先看 `passed_cases == total_cases` |
 | `aic_scalar_ratio` 很高 | **不一定**是标量运算多，常常是同步等待被计进标量管线 | 下结论前先 dump IR 确认 |
+| prefill 的 K/V `tl.load` mask 里有 `pos <= q_abs`，kernel 远慢于同 shape 的参照 | 原测 Ascend950PR 实现观察到页内连续 K/V 被编成 Vector 逐点搬运；目标工具链需复核 | 满足 §3.5 全部前提后评估；保留块号、页表与其他维度的安全保护 |
 
 ---
 
