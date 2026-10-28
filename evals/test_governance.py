@@ -324,10 +324,52 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/runtime/runbooks",
         }
         self.assertTrue(not_precreated.isdisjoint(actual))
-        for path in not_precreated:
-            directory = ROOT / path
-            if directory.exists():
-                self.assertTrue(any(card.name != "index.md" for card in directory.rglob("*.md")), path)
+        materialized = {
+            path
+            for path in not_precreated
+            if (ROOT / path).is_dir()
+            and any(
+                item.is_file() and item.name != "index.md"
+                for item in (ROOT / path).rglob("*.md")
+            )
+        }
+        self.assertTrue(all((ROOT / path / "index.md").is_file() for path in materialized))
+        self.assertTrue(all(not (ROOT / path).exists() for path in not_precreated - materialized))
+
+    def test_optional_routes_require_real_cards_and_indexes(self) -> None:
+        cases = (
+            ("absent", True),
+            ("empty", False),
+            ("index_only", False),
+            ("markdown_directory", False),
+            ("card_without_index", False),
+            ("nested_card", True),
+        )
+        for state, accepted in cases:
+            with self.subTest(state=state), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                for relative in self.contract.structural_directories():
+                    directory = root / relative
+                    directory.mkdir(parents=True, exist_ok=True)
+                    (directory / "index.md").write_text("# 入口\n", encoding="utf-8")
+                route = root / "knowledge/common/toolchains"
+                if state != "absent":
+                    route.mkdir(parents=True)
+                if state in {"index_only", "markdown_directory", "nested_card"}:
+                    (route / "index.md").write_text("# 工具链\n", encoding="utf-8")
+                if state == "markdown_directory":
+                    (route / "fake.md").mkdir()
+                if state in {"card_without_index", "nested_card"}:
+                    directory = route / "concepts"
+                    directory.mkdir()
+                    (directory / "index.md").write_text("# 概念\n", encoding="utf-8")
+                    (directory / "actual.md").write_text("# 测试卡\n", encoding="utf-8")
+                with mock.patch(f"{__name__}.ROOT", root):
+                    if accepted:
+                        self.test_registered_structure_is_materialized()
+                    else:
+                        with self.assertRaises(AssertionError):
+                            self.test_registered_structure_is_materialized()
 
     def test_repository_contains_ascendc_reference_corpus(self) -> None:
         cards = [

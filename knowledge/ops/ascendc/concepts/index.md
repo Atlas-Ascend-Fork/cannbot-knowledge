@@ -10,3 +10,5 @@ Ascend C 算子开发的稳定概念、编程模型与决策框架。
 - [PROBE REPORT — Q3 Scalar broadcast sync-bypass (K_base vs K_muls_flex vs K_brcb)](scalar_broadcast_sync_bypass.md)：950PR 实测：逐行标量缩放用一次性 Brcb+宽 Mul 比 GetValue+Muls 快 25.3×；灵活标量 Muls 无同步旁路优势（假设证伪）。
 - [PROBE REPORT — Q2 UB bank count / width / conflict behavior](ub_bank_conflict_behavior.md)：950PR UB stride 扫描：dense 比任意 strided 快 ~22%，mod-4 plateau ~6%，排除单端口 K=8/16 假设；bank 数/宽度未能反推（INCONCLUSIVE_PARTIAL）。
 - [PROBE REPORT — V351 DataCopyPad UB→GM non-aligned tail](datacopypad_ub_to_gm_unaligned_tail.md)：950PR（V351）实测：DataCopyPad UB→GM 非 32B 对齐 blockLen 精确写入、不越界不报错；V220 的 EC-23 规避不适用于 V351。
+
+- [编程模型](programming_model/index.md)：同一算子里 SIMD 与 SIMT 混合编程的机制与边界：按规则逐元素与不规则/分支任务映射，入口和 VF 调用受函数层级、地址空间、启动配置、Thread Block/Warp 与 UB 约束。
