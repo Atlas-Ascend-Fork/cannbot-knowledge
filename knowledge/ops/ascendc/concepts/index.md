@@ -12,3 +12,5 @@ Ascend C 算子开发的稳定概念、编程模型与决策框架。
 - [PROBE REPORT — V351 DataCopyPad UB→GM non-aligned tail](datacopypad_ub_to_gm_unaligned_tail.md)：950PR（V351）实测：DataCopyPad UB→GM 非 32B 对齐 blockLen 精确写入、不越界不报错；V220 的 EC-23 规避不适用于 V351。
 
 - [编程模型](programming_model/index.md)：同一算子里 SIMD 与 SIMT 混合编程的机制与边界：按规则逐元素与不规则/分支任务映射，入口和 VF 调用受函数层级、地址空间、启动配置、Thread Block/Warp 与 UB 约束。
+
+- [存储层级](memory_hierarchy/index.md)：共 2 张知识卡，涵盖按产品族区分的 Cube 分形与 ZN/NZ 组合，以及按接口范围约束的 L1/L0A/L0B/L0C 结构、通路、对齐和随路操作单位。
