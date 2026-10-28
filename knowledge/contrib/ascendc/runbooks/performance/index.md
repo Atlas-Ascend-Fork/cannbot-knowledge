@@ -1,6 +1,6 @@
 # 性能优化 Playbook
 
-进化策略的分步落地 SOP（原 evolution-strategies `references/playbooks/`，文件名小写化，正文已占位符化）。
+包含进化策略的分步落地 Playbook，以及 Kernel `clock`/`asc_time_stamp` 的测量与无输出诊断。
 
 ## Runbook
 
@@ -146,3 +146,5 @@
 - [P97 Playbook: 零拷贝子张量切片 + 批量向量运算](p97_zero_copy_subtensor.md)：P97 用 `LocalTensor<T> view = tensor[offset]` 零拷贝切片替代逐元素标量 g…
 - [P98 Playbook: 混合标量/向量路径自适应调度](p98_hybrid_scalar_vector_dispatch.md)：P98 根据 per-tile workload 大小自动选择标量路径或向量路径，消除向量化在极小 workload…
 - [P99 Playbook: BroadCast + 批量向量运算替代逐行标量循环](p99_broadcast_batch_vector_ops.md)：P99 把小向量（如 `rstd[gRows]`）广播到大矩阵（`[gRows, D]`）后，用 1 条 `Mul`/…
+
+- [Kernel 周期与时间戳测量：clock 与 asc_time_stamp](kernel_clock_and_time_stamp_measurement.md)：在 Kernel 内用 clock 测同线程局部代码的相对周期差、用 asc_time_stamp 输出结构化时间戳时，如何摆正测量区、排除同步/冷启动/编译优化/测量次数的干扰，并定位"时间戳没有输出"；同时划清 clock 不是 profiling 采集器这一边界。
