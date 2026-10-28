@@ -32,6 +32,7 @@ from . import (
     path,
     platforms,
     profile,
+    scope,
     source_navigation,
     sources,
     tags,
@@ -105,6 +106,7 @@ class Check:
 CHECKS: tuple[Check, ...] = (
     Check("path", "P0", document=path.check, card=path.check),
     Check("profile", "P0", document=profile.check, card=profile.check),
+    Check("scope", "P0", document=scope.check, card=scope.check),
     Check("body", "P0", document=body.check, card=body.check_card),
     Check("images", "P0", document=images.check, card=images.check),
     Check("tags", "P0", document=tags.check, card=tags.check),

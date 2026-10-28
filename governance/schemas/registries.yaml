@@ -90,6 +90,58 @@ scopes:
     description: 具身智能模型与系统知识
     domains: [model]
 
+scope_schemas:
+  # Scope 可选且可部分声明；各领域独立注册维度与匹配 kind，不以填写率验收。
+  # routes 绑定 domain/route；可选 domains 仅绑定领域的无 route 直接 Profile。
+  # kind 只能选择安装的 Contract 中受审查的处理器，不接受模块路径或表达式。
+  model.inference.v1:
+    description: 模型推理知识的适用条件，查询仅排除明确冲突并保留未知项
+    routes: [model/inference]
+    dimensions:
+      phase:
+        kind: enum
+        values: [prefill, decode]
+        aliases: {预填充: prefill, 解码: decode}
+      objective:
+        kind: enum
+        values: [throughput, latency, ttft, tpot, memory, bringup]
+        aliases: {吞吐: throughput, 时延: latency, 显存: memory}
+      context_length:
+        kind: enum
+        values: [short_context, long_context, ultra_long_context]
+        aliases: {短上下文: short_context, 长上下文: long_context, 超长上下文: ultra_long_context}
+      batch_size:
+        kind: enum
+        values: [small_batch, large_batch]
+      concurrency:
+        kind: enum
+        values: [single_request, high_concurrency]
+      model_features:
+        kind: required_set
+        values: [dense, moe, mla, dsa, dit, multimodal]
+        query_none_of: true
+      execution_mode:
+        kind: enum
+        values: [eager, ge_graph, npugraph_ex]
+        aliases: {GE: ge_graph}
+      quantization:
+        kind: enum
+        values: [bf16, w8a8, w8a8c8, fp8, mxfp4]
+      parallelism:
+        kind: required_set
+        values: [tp, ep, dp, cp, kvp]
+        query_none_of: true
+        card_none_of: true
+      serving_mode:
+        kind: enum
+        values: [offline, online]
+      deployment_topology:
+        kind: required_set
+        values: [afd, pd_disaggregated, pd_hybrid]
+      framework:
+        kind: enum
+        values: [cann_executor, sglang, vllm]
+
 local_sources:
   ops_cv:
     description: 固定到算子知识来源提交的 CANN ops-cv 源码

@@ -41,6 +41,8 @@
 
 Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾，不要自行选择其中一份绕过。先定位唯一事实源，再在同一变更中修正执行逻辑、文档和回归。
 
+场景适用条件 `scope` 是可选字段，只填写来源支持且有过滤价值的部分条件，不要求每张卡填写，不以填写率验收；未知不补成 `any`，也不写入查询专用的否定条件。各领域独立在 Registry 的 `scope_schemas` 中定义 namespace、适用范围、维度和匹配语义，与路径 route 的 `scopes` 分区区分。Schema、Profile 和同版本 Contract 共同校验，匹配扩展只能使用受审查的 Contract 处理器；消费端是否启用场景过滤以其实际公开接口为准。
+
 ## 修改知识卡
 
 1. 先用 `knowledge-query` 搜索同一主题，阅读候选卡和来源，再明确采用 create、update、merge、split、deprecate 或 defer。不要只因标题不同就新建卡片，也不要自动覆盖已有卡片。

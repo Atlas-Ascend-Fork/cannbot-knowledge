@@ -33,6 +33,8 @@ python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> --sample 1
 4. 修改 Skill 时运行 skill-creator 的 quick validation、相关回归和本仓统一质量门禁。
 5. 用户要提交或整理问题时，按 [Issue 报告](references/issue-report.md)收集已有运行材料与实际复现率；补充复现仍受当前任务授权和本 Skill 只读边界约束。关键材料缺失则输出 `needs-info`，不凭记忆补齐或虚增运行次数。
 
+可选 `scope` 由同版本 Contract 校验；允许的 Profile、namespace、路径绑定和维度配置分别以治理事实源为准。缺字段或缺少部分维度不报质量错误；非法声明仍拒绝。具体边界见 [Frontmatter](../../../governance/specs/frontmatter.md#场景适用条件scope)。
+
 ## 页面内容检查
 
 仅当用户明确要求内容或语义检查并指定页面时使用；普通 Lint 和 Issue 工作流仍只执行确定性检查。

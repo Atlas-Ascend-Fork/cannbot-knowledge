@@ -37,6 +37,8 @@ python3 <skill-dir>/scripts/knowledge_ingest.py --knowledge-root <repo> create \
 
 审阅 dry-run 后移除 `--dry-run`。`create` 子命令以排他原子写入创建候选卡，不覆盖已有文件，也不更新 index 或日志。默认 `draft`；只有来源、平台、正文与 Profile 门禁均满足后才显式使用 `--status stable`。
 
+候选卡可在 Profile 允许时声明 `scope`，由同版本 Contract 校验。只提取来源支持且有过滤价值的条件，不要求每张卡填写或补齐维度；按领域选取注册 Schema。字段及准入边界见[路径与 Frontmatter Profile](references/frontmatter-profiles.md)，不把声明存在当成 Query 已启用过滤。
+
 ## 收尾门禁
 
 - Ingest 的验证由全库确定性命令和仓库 `evals/` 承担，不维护 Skill 内独立测试目录；统一入口仍为根 `bash check.sh`。日常修改仅做必要的定向检查，以下完整收尾流程在提交或推送上库前统一执行，用户明确要求提前全量验证时除外。

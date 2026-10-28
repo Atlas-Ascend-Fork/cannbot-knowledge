@@ -23,6 +23,7 @@ from yaml.constructor import ConstructorError
 from yaml.nodes import MappingNode
 
 from .schema import SchemaValidator
+from .scope import ScopeRegistry
 
 
 ID_RE = re.compile(r"^[a-z0-9_-]+$")
@@ -139,6 +140,23 @@ class Contract:
         self.operator_families = set(self.operator_categories)
         self.runbook_areas = self._string_set("runbook_areas")
         self._validate_registry_contract()
+        self.scope_registry = ScopeRegistry(self.registries.get("scope_schemas", {}))
+        for namespace, definition in self.scope_registry.definitions.items():
+            for domain in definition.get("domains", []):
+                if domain not in self.domains or not self.domains[domain].get("direct_types"):
+                    raise ValueError(f"{namespace} has an unregistered direct-profile domain: {domain}")
+            for binding in definition.get("routes", []):
+                parts = binding.split("/")
+                if len(parts) != 2:
+                    raise ValueError(f"{namespace} requires domain/route bindings")
+                domain, route = parts
+                registered = {**self.technologies, **self.scopes}.get(route, {})
+                if domain not in self.domains or domain not in registered.get("domains", []):
+                    raise ValueError(f"{namespace} has an unregistered route: {binding}")
+
+    def parse_scope(self, text: str, *, query: bool = False) -> dict[str, Any]:
+        """Reject duplicate keys for JSON/YAML Scope inputs through one parser."""
+        return self.scope_registry.normalize(_yaml_load(text), query=query)
 
     def _section(self, name: str) -> dict[str, Any]:
         value = self.registries.get(name)

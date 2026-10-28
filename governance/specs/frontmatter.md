@@ -41,17 +41,73 @@ platforms: []
 
 | 路径 Profile | OKF `type` | 额外必选字段 | 可选字段 |
 |---|---|---|---|
-| `concepts` | `Concept` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `concepts` | `Concept` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
 | `apis` | `API` | `platforms` | `cann_versions`, `source_headers`, `aliases`, `verified`, `replaced_by` |
 | `examples` | `Example` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by` |
+| `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by`, `scope` |
+| `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by`, `scope` |
 | `interoperability` | `Interoperability` | `platforms`, `source_technology`, `target_technology` | `cann_versions`, `verified`, `replaced_by` |
 | `glossaries` | `Glossary` | 无 | `aliases`, `verified`, `replaced_by` |
 
 新增字段必须先有稳定语义和实际消费者，再同时修改 Schema、Profile、Contract、文档和回归；不能为单张卡增加临时字段。
+
+## 场景适用条件（`scope`）
+
+`scope` 是可选的适用条件声明，不代替路径、平台、标签、来源或复核事件。字段结构由 Schema 定义，维度类型、值和别名由 Registry 的 `scope_schemas` 定义，统一 Scope Contract 执行维度校验与三态匹配。当前仅注册 `model.inference.v1`，绑定 `model/inference` 路由；字段只用于 Profile 允许的卡片，不为其他领域预注册占位 namespace。
+
+维护时遵守三条原则：
+
+1. **可选**：不是每张卡都需要 Scope；没有明确限制或没有过滤价值时可以省略，不以填写率作为卡片质量或迁移完成标准。
+2. **允许部分声明**：来源支持且能帮助过滤的条件即可提取，不要求全部维度已知。例如只声明 `phase: [prefill]`，Contract 与已确认的 Decode 条件比较时仍能识别冲突；查询额外指定了卡片未声明的执行模式时，比较结果保留为未知。不得为凑齐字段补写 `any`、否定条件或未核实的范围。
+3. **按领域扩展**：各领域独立定义 namespace、适用范围、维度和匹配语义。公共部分只共享对象外壳、场景 AND/OR 组合与三态结果协议；不要求其他领域使用 Prefill、Decode、MoE 等模型推理字段。已有匹配类型不足时，在受审查的 Contract 处理器中扩展，再由 Registry 选择，不在知识卡中保存可执行判断。注册与权限边界见 [机器契约](schemas.md)。
+
+以下维度、词表和否定权限属于当前模型推理 Schema；其他领域按各自注册定义使用。
+
+```yaml
+scope:
+  schema: model.inference.v1
+  any_of:
+    - all_of:
+        phase: [prefill]
+        execution_mode: [ge_graph]
+        objective: [ttft]
+        context_length: [long_context]
+        batch_size: [small_batch]
+    - all_of:
+        phase: [decode]
+        execution_mode: [eager]
+        model_features:
+          all_of: [moe, mla]
+```
+
+多个场景分支之间是 OR；分支内不同维度是 AND；普通枚举数组内是 OR；`required_set` 的 `all_of` 表示必需集合。`model_features`、`parallelism`、`deployment_topology` 是集合维度。序列长度、batch、并发、服务形态和部署拓扑分别声明，定性值不隐含数值阈值。`objective` 在 Contract 中按精确值匹配；`latency` 不隐含 `ttft` 或 `tpot`，来源支持多个目标时在卡片显式列出，例如 `objective: [latency, tpot]`。
+
+卡片缺少维度表示未声明，查询缺少卡片所需条件表示前提未确认，两者均不能推导普遍适用。枚举维度的 `[any]` 独占使用，表示来源足以支持结论不受该维度限制；集合维度不接受 `any`。集合否定条件由 Registry 分别声明卡片和查询的准入：`model_features.none_of` 仍仅用于显式已确认的查询，卡片只声明必需模型特征；`parallelism.none_of` 可用于来源支持的卡片和显式已确认的查询，表示列出的并行方式没有启用。未提及某个特征或并行方式仍是未知。
+
+```yaml
+scope:
+  schema: model.inference.v1
+  any_of:
+    - all_of:
+        phase: [prefill]
+        parallelism:
+          none_of: [cp]
+```
+
+上例要求 Prefill 且未启用 CP，不代表单卡，也不排除 TP、EP 等其他并行。集合内可同时写 `all_of` 与 `none_of`，分别表示必须启用与必须未启用，两者为 AND；`none_of` 列出的每一项都须确认未启用。至少出现一项非空列表，且不能要求和排除同一个值。不能根据来源没有提及某种并行就为卡片补否定条件。
+
+| 查询已确认条件 | 卡片要求 `parallelism.none_of: [cp]` 时 |
+| --- | --- |
+| `parallelism.all_of: [cp]` | `conflict`，明确冲突 |
+| `parallelism.none_of: [cp]` | 满足这一项限制；其他维度继续核对 |
+| 只声明 `parallelism.all_of: [tp]` | `unknown`，TP 不证明 CP 已关闭 |
+| 没有声明 `parallelism` | `unknown`，CP 状态待确认 |
+
+Scope Contract 的比较结果为 `match`、`unknown` 或 `conflict`。缺少卡片 Scope、缺少必要条件或不同的已注册 namespace 均保留未知，非法 Scope 报错。匹配表示声明条件相容，不替代正文、来源与版本核对，也不证明性能已经验证。
+
+当前基础治理在加载卡片、Lint 和构图时校验该字段，并提供统一的三态比较接口。Query 的现有公开接口不接受场景 Scope 过滤参数；卡片声明 Scope 不代表检索已启用该过滤。检索参数及结果结构以 Query Skill 的实际能力为准，无 Scope 的原查询流程保持不变。
 
 ## 生命周期与信任
 

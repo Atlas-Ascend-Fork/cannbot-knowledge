@@ -8,17 +8,23 @@
 
 | 路径 Profile | OKF type | 额外必填 | 允许可选 |
 |---|---|---|---|
-| `concepts` | `Concept` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `concepts` | `Concept` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
 | `apis` | `API` | `platforms` | `cann_versions`, `source_headers`, `aliases`, `verified`, `replaced_by` |
 | `examples` | `Example` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by` |
+| `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by`, `scope` |
+| `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by`, `scope` |
 | `interoperability` | `Interoperability` | `platforms`, `source_technology`, `target_technology` | `cann_versions`, `verified`, `replaced_by` |
 | `glossaries` | `Glossary` | 无 | `aliases`, `verified`, `replaced_by` |
 
 路径选择 Profile，Profile 的 `okf_type` 生成卡片 `type`；不得手工创造另一种映射。平台无关写 `[agnostic]`，未知写 `[]` 并保持 `draft`。
+
+## 场景适用条件
+
+`scope` 可选且允许部分声明，只填写来源支持并有过滤价值的条件；未知维度省略，不以 `any` 或否定条件补齐。不同领域使用各自注册的 Schema、适用范围和维度语义，共享形状和三态协议。具体语法见治理 [Frontmatter](../../../../governance/specs/frontmatter.md#场景适用条件scope) 与 [机器契约](../../../../governance/specs/schemas.md)，不在 producer 中维护第二份词表。
+
+当前 `create` 参数保持原样，不提供场景 Scope 选项；审阅后人工补充的声明仍由完整候选校验、Lint、索引及构图复用同一 Contract 验证。
 
 ## Trust
 

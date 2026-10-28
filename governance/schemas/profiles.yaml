@@ -22,7 +22,7 @@ profiles:
   concepts:
     okf_type: Concept
     required: [platforms]
-    optional: [cann_versions, aliases, verified, replaced_by]
+    optional: [cann_versions, aliases, verified, replaced_by, scope]
   apis:
     okf_type: API
     required: [platforms]
@@ -34,7 +34,7 @@ profiles:
   guides:
     okf_type: Guide
     required: [platforms]
-    optional: [cann_versions, aliases, verified, replaced_by]
+    optional: [cann_versions, aliases, verified, replaced_by, scope]
   operators:
     okf_type: Operator
     required: [platforms]
@@ -42,11 +42,11 @@ profiles:
   optimizations:
     okf_type: Optimization
     required: [platforms]
-    optional: [cann_versions, verified, replaced_by]
+    optional: [cann_versions, verified, replaced_by, scope]
   runbooks:
     okf_type: Runbook
     required: [platforms]
-    optional: [aliases, verified, replaced_by]
+    optional: [aliases, verified, replaced_by, scope]
   interoperability:
     okf_type: Interoperability
     required: [platforms, source_technology, target_technology]
