@@ -980,3 +980,6 @@
 - [dav-m200 — a CPU-staged tensor's host `data_ptr()` passed to the kernel as a GM operand is read as GM SILENTLY: output all-NaN, kernel completes, zero error codes (scalar GM loads perform no pointer-provenance validation)](pb_189_dav_m200_a_cpu_staged_tensor_s_host_data_ptr_pas.md)：kernel 全程跑完、输出稳定全 NaN、零错误码——只有 CPU 侧来的操作数坏了（GM 标量读 corruption 特征）。
 
 - [Generated AscendC SoC constructor versus initialized-runtime DSO loading](generated_ascendc_soc_constructor_initialized_npu_load.md)：Distinguish CPU-only constructor abort from a same-byte DSO loaded after NPU initialization; preserve load, numerical and cause boundaries.
+
+- [Ascend C Device 侧 C++ 标准级别与语法限制判定](cpp_standard_support_and_syntax_restrictions.md)：核对 Ascend C Host/Device 编译标准：Device 默认 C++17，可选 C++11/14/20；区分纯 SIMT 与 SIMD/SIMT 混合编程的运行时递归边界，并检查核函数 POD 入参、SIMT VF 地址空间与结构体限制。附编译选项、诊断步骤和静默栈地址错误的验证边界。
+- [Ascend C API 废弃接口的发现、替换与重验流程](deprecated_interface_detection_and_replacement.md)：迁移 Ascend C API 时结合废弃声明告警、接口级清单与基础 API 命名变更表定位调用点；按旧重载、产品范围和目标签名选择替代。同步复合接口替换需重新核对 asc_sync 的全流水语义，并分别验证编译、依赖顺序、数值和性能。
