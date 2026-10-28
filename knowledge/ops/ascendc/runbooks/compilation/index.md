@@ -983,3 +983,5 @@
 
 - [Ascend C Device 侧 C++ 标准级别与语法限制判定](cpp_standard_support_and_syntax_restrictions.md)：核对 Ascend C Host/Device 编译标准：Device 默认 C++17，可选 C++11/14/20；区分纯 SIMT 与 SIMD/SIMT 混合编程的运行时递归边界，并检查核函数 POD 入参、SIMT VF 地址空间与结构体限制。附编译选项、诊断步骤和静默栈地址错误的验证边界。
 - [Ascend C API 废弃接口的发现、替换与重验流程](deprecated_interface_detection_and_replacement.md)：迁移 Ascend C API 时结合废弃声明告警、接口级清单与基础 API 命名变更表定位调用点；按旧重载、产品范围和目标签名选择替代。同步复合接口替换需重新核对 asc_sync 的全流水语义，并分别验证编译、依赖顺序、数值和性能。
+
+- [2201→3510 架构迁移检查清单](arch_migration_2201_to_3510_checklist.md)：把 2201 上跑通的 Ascend C 算子迁到 3510（Ascend 950PR&950DT）时的逐项检查清单：API 兼容策略分层、编译入口与编译选项、被删除的基础 API 通路、L0A 分形与 UB/对齐、Subnormal 精度行为、高阶 API 算子族差异、同步与缓存约束；每项给出「怎么判断」与「不合规怎么改」。

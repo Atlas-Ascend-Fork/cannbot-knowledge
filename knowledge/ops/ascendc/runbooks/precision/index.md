@@ -478,3 +478,5 @@
 - [ARM64 Torch bmm 的 FMA 归约顺序失配判别](torch_arm64_bmm_fma_reduction_order.md)：固定 Torch2.10 ARM64 原dtype CPU bmm 合同时，诊断FP32顺序FMA与FP16四路partial的舍入路径；原完整50 CPU41→50通过、zero全拒绝，native两腿12/50、性能未测、实际内层CPU微核未知。
 
 - [V351 AIV `WholeReduceMax<float>` silently truncates per-repeat when `mask > 64` — split into chunked-reduce + scalar combine](v351_aiv_wholereducemax_fp32_mask_cap_truncation_001.md)：V351 AIV `WholeReduceMax<float>` silently truncates per-repeat when `mask > 64` — split into chunked-reduce + scalar combine
+
+- [Reg 矢量接口硬件精度与软仿精度差异](reg_vector_hardware_vs_soft_simulation_precision.md)：Reg 矢量计算接口的硬件指令路径与软仿（编译器或多指令拼接）路径在 denormal、ulp、bf16 中间位宽与舍入、归约顺序及乘累加结构上可能有不同精度标准；给出按目标实现核对的步骤和路径变化后重验的边界，仅适用 Ascend 950PR&950DT。
