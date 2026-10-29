@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/369
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -28,11 +28,11 @@ platforms:
 单卡显存容不下该 14B I2V 在该分辨率 / 帧数 / 步数下的推理占用。两条处置：
 
 - **降分辨率到标称之下**：把单卡配置的 `size` 降到 640×360（≈360P，低于标称的 832×480 / 1280×720），单卡显存足以容纳，可完成单卡推理。即为塞进单卡而牺牲到标称之下的规格。
-- **大规格转多卡序列并行**：更大的 1280×720 不在单卡跑，改走多卡 [ulysses](../../concepts/parallelism/ulysses.md) 序列并行（如 ulysses degree 4）。视频 DiT 接 Ulysses SP 的实现见 [video-dit-ulysses-sequence-parallel](../../optimizations/experience/rules/video_dit_ulysses_sequence_parallel.md)。
+- **大规格转多卡序列并行**：更大的 1280×720 不在单卡跑，改走多卡 [ulysses](../../concepts/parallelism/ulysses.md) 序列并行（如 ulysses degree 4）。视频 DiT 接 Ulysses SP 的实现见 [video-dit-ulysses-sequence-parallel](../../optimizations/rules/video_dit_ulysses_sequence_parallel.md)。
 
 ## 可迁移判断
 
-做视频 DiT 单卡 bringup 时：别默认「标称 supported 的分辨率单卡就能跑」——大参数量 I2V 在单卡下可能需要降到标称之下的分辨率，或直接规划多卡序列并行来承接大规格。TaylorSeer 缓存 offload、量化是另两条降显存路径，见 [video-dit-taylorseer-cache-offload](../../guides/experience/interventions/video_dit_taylorseer_cache_offload.md) / [video-dit-fp8-mxfp8-quantization](../../guides/experience/interventions/video_dit_fp8_mxfp8_quantization.md)。
+做视频 DiT 单卡 bringup 时：别默认「标称 supported 的分辨率单卡就能跑」——大参数量 I2V 在单卡下可能需要降到标称之下的分辨率，或直接规划多卡序列并行来承接大规格。TaylorSeer 缓存 offload、量化是另两条降显存路径，见 [video-dit-taylorseer-cache-offload](../../optimizations/cases/video_dit_taylorseer_cache_offload.md) / [video-dit-fp8-mxfp8-quantization](../../optimizations/rules/video_dit_fp8_mxfp8_quantization.md)。
 
 ## 参考实现及其约束
 

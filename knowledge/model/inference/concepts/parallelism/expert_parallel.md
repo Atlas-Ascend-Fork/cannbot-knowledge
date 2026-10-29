@@ -1,7 +1,10 @@
 ---
 type: Concept
-title: Expert Parallel
-description: 将 MoE（Mixture of Experts）模型的专家分布到不同的卡上，每张卡负责一部分专家的计算。适用于参数规模大但每个 token 只激活部分专家的 MoE 架构。
+title: MoE 专家并行（Expert Parallel / EP）：Prefill 与 Decode 的专家切分和通信
+description: EP 将 MoE 专家分布到多个 Rank，通过 dispatch/combine 分发和收回 token；不以 MLA 为前提，Attention 结构及其 TP/DP 是独立维度。说明 Prefill、Decode 的已知部署方案及与 TP 的分工；吞吐和时延仍取决于负载均衡、通信与具体实现，不能仅由启用 EP 推定收益。
+aliases:
+- Expert Parallel
+- EP
 tags:
 - task.design
 - topic.parallelism
@@ -15,17 +18,21 @@ sources:
   role: supporting
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md
   role: supporting
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/agentic/optimization_report.md
+  role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T11:07:34Z'
 platforms:
 - agnostic
 ---
 
-# Expert Parallel
+# MoE 专家并行（Expert Parallel / EP）
 
 ## Summary
 
 将 MoE（Mixture of Experts）模型的专家分布到不同的卡上，每张卡负责一部分专家的计算。适用于参数规模大但每个 token 只激活部分专家的 MoE 架构。
+
+EP 的前提是 MoE 专家结构，不是 MLA Attention。Qwen3-Next、Gemma-4 等非 MLA 模型也有 Decode EP 实例，见下方固定部署；不能将 MLA 优化的适用条件套到 EP。Attention DP 只复制相应模块，而路由专家仍按 EP 分布，内存预算见[数据并行](data_parallel.md)。
 
 ## Mechanism
 
@@ -48,7 +55,7 @@ platforms:
 
 - AllToAll 通信开销是主要瓶颈
 - 负载均衡依赖 Router 的质量
-- 需配合 Double Routing 等技术优化通信效率
+- 按阶段核对通信路径：Prefill 可用 Double Routing，Decode 的固定实现多采用融合 dispatch/combine；不能把一种路由路径当作所有阶段的必要条件
 
 ## Evidence
 
@@ -57,7 +64,7 @@ platforms:
 ## Known Deployments
 
 - **Qwen3-Next Decode**（[qwen3-next](../models/qwen3_next.md)）：`--moe-a2a-backend deepep --deepep-mode auto`，典型 ep_size=16（16die）。配合 [moe-multi-stream](../techniques/moe_multi_stream.md) 将 shared expert 与 dispatch/combine AllToAll 重叠。A8 量化下 dispatch 切换为 `DEEP_NORMAL_MODE_USE_INT8_QUANT=1`。
-- **DeepSeek-R1 Prefill**（[deepseek-r1](../models/deepseek_r1.md)）：MoE-EP32。采用 [double-routing](../techniques/double_routing.md)：每卡 2 次 init-routing + 2 次 finalize-routing，相比 AllGather 方案峰值显存更低、通信量更小。核心融合算子 `npu_moe_init_routing_v2` / `npu_moe_re_routing` / `npu_moe_finalize_routing` + `dist.all_to_all_single`。
+- **DeepSeek-R1 Prefill**（[deepseek-r1](../models/deepseek_r1.md)）：MoE-EP32。采用 [double-routing](../techniques/double_routing.md)：每卡 两轮路由与顺序恢复，末轮调用一次 npu_moe_finalize_routing，相比 AllGather 方案峰值显存更低、通信量更小。核心融合算子 `npu_moe_init_routing_v2` / `npu_moe_re_routing` / `npu_moe_finalize_routing` + `dist.all_to_all_single`。
 - **DeepSeek-R1 Decode**（大 EP 128）：`decode_r1_rank_128_128ep_a8w8c8_mtp*.yaml`，每卡 256/128=2 个 routed expert + 1 个 shared expert。使用一体化算子 `npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（见 [moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)），专家计算走 `npu_grouped_matmul`（支持 A8 pertoken_scale）；注意 `HCCL_BUFFSIZE` 配置。可开 `HCCL_OP_EXPANSION_MODE=AIV`（利用 Device Vector Core 加速集合通信）进一步压缩通信时延。
 - **Gemma-4-26B-A4B Decode**（[gemma4-26b-a4b](../models/gemma4_26b_a4b.md)）：EP=8，128 experts / 8 = 16 experts/rank。Decode 在 `mc2`（[moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)）与 `local_experts`（每 rank 算全部本地 expert + 末次 AllReduce、对 ge_graph fullgraph 友好）两路径间按 `experts_per_rank ≤ 24` 自动切换。
 - **Hy3-preview Decode**（[hy3-preview](../models/hy3_preview.md)）：`moe_ep_size=16`（全卡 EP），192 experts / 16 = 12 experts/rank；`moe_tp_size=1`（expert intermediate=1536 太小，TP 会切碎矩阵）。ge_graph 下走 MC2 dispatch/combine（[moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)）替代手动 all_to_all，eager 下走手动 all_to_all。

@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/72
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -65,7 +65,7 @@ bringup 早期的一类报错根因是**缺文件 / 文件不完整 / 环境残�
 ## 相关经验
 
 - 初始化/HCCL 报错根因在驱动/设备层见 [bringup-error-root-cause-env-driver-platform](bringup_error_root_cause_env_driver_platform.md)。
-- set-env 清缓存与 weight_convert 需 source setenv 见 [quant-weight-conversion-path-selection](../../guides/experience/interventions/quant_weight_conversion_path_selection.md)。
+- set-env 清缓存与 weight_convert 需 source setenv 见 [quant-weight-conversion-path-selection](../../guides/deployment/quant_weight_conversion_path_selection.md)。
 
 ## Evidence
 

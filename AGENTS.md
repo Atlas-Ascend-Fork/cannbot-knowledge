@@ -41,7 +41,9 @@
 
 Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾，不要自行选择其中一份绕过。先定位唯一事实源，再在同一变更中修正执行逻辑、文档和回归。
 
-场景适用条件 `scope` 是可选字段，只填写来源支持且有过滤价值的部分条件，不要求每张卡填写，不以填写率验收；未知不补成 `any`，也不写入查询专用的否定条件。各领域独立在 Registry 的 `scope_schemas` 中定义 namespace、适用范围、维度和匹配语义，与路径 route 的 `scopes` 分区区分。Schema、Profile 和同版本 Contract 共同校验，匹配扩展只能使用受审查的 Contract 处理器；消费端是否启用场景过滤以其实际公开接口为准。
+场景适用条件 `scope` 的词表使用 Registry 的 `scope_schemas`，与路径 route 的 `scopes` 分区区分。Scope 的校验和三态匹配共用 Contract；无显式查询 Scope 时保持原查询行为，有显式已确认条件时仅排除明确冲突并保留未知项。卡片只写来源支持的条件，不以缺字段或检索相关推导普遍适用，也不把查询专用的否定条件写进卡片。
+
+`scope` 保持可选，不要求每张卡填写，不以填写率作为质量或迁移完成标准。有来源依据且有过滤价值的部分条件即可声明，不要求补齐全部维度，也不为凑齐条件填写 `any`。不同领域独立定义 Schema、适用范围、维度及匹配语义，不套用模型推理词表；共享对象外壳和三态结果协议，特殊匹配通过同版本 Contract 内受审查的处理器扩展，不在 Query、Lint 或单张卡中增加局部解释。
 
 ## 修改知识卡
 
@@ -58,6 +60,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 - 文件名使用小写 `snake_case`，自由主题的集合目录使用复数；Registry 控制的 Operator 源码分类保持其注册 ID。Registry 中注册的所有 domain 根目录必须保留 `index.md`；只有 `ops` 和 `model` 预建注册 route，其他领域的下一层目录随首张真实知识创建。
 - Operator 和 Runbook 只能使用 Registry 中声明的附加层级；`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可增加小写 `snake_case` 主题层级，其他路径 Profile 默认直接放卡片。
+- 附加层级还须遵守 Registry `paths.forbidden_sections` 的 domain/route/Profile 约束；模型推理 Guide 与 Optimization 不再创建 `experience` 层，其他领域不自动继承此限制。
 - `index.md` 只存在于 `knowledge/`。每个目录都必须有一个索引，完整且无重复地列出直接子目录和直接知识卡，并为每项提供摘要；domain 根和 `ops`/`model` 预建 route 可只有 index，且不表示已有知识覆盖。
 - `index.md` 供人阅读：本次新增或修改的一级标题、导航项名称和摘要应以中文表述，API 名、芯片型号、代码符号和报错原文等必要技术标识保留原文。知识卡的 `title`、`description` 会成为索引新增条目的默认文案，新增或修改卡片时应写成中文可读的标题和摘要；确需保留英文原题时，在索引的显示名称和摘要中补足中文说明。
 - 只有 `knowledge/index.md` 声明 `okf_version: "0.2"`，其他索引不带 Frontmatter，所有索引均不参与知识检索。

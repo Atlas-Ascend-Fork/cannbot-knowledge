@@ -1,7 +1,11 @@
 ---
 type: Concept
 title: SparseAttnSharedKV (SAS) Kernel
-description: '`SparseAttnSharedKV`（SAS）是 DeepSeek-V4 的统一 Shared-KV Attention 融合算子，一套接口覆盖滑窗、压缩及压缩后稀疏 Attention，并原生支持 Attention Sink。A3 非量化路径采用 QK MatMul→online softmax→PV MatMul→rescale 四阶段；950PR/DT 伪量化路径增加前置反量化，共五阶段。场景由原始/压缩 KV、窗口、压缩比、稀疏索引、sink 和 metadata 等参数组合控制，AICPU metadata 算子负责值依赖分核。PyPTO 分为 SWA、CFA、SCFA 三种场景，TileLang 另有 block=64 的 V4-Flash 实现。SAS 不等同于 V3.2-Exp DSA 使用的 SparseFlashAttention。'
+description: '`SparseAttnSharedKV`（SAS）是 DeepSeek-V4 的统一 Shared-KV Attention 融合算子，一套接口覆盖滑窗、压缩及压缩后稀疏
+  Attention，并原生支持 Attention Sink。A3 非量化路径采用 QK MatMul→online softmax→PV MatMul→rescale
+  四阶段；950PR/DT 伪量化路径增加前置反量化，共五阶段。场景由原始/压缩 KV、窗口、压缩比、稀疏索引、sink 和 metadata 等参数组合控制，AICPU
+  metadata 算子负责值依赖分核。PyPTO 分为 SWA、CFA、SCFA 三种场景，TileLang 另有 block=64 的 V4-Flash 实现。SAS
+  不等同于 V3.2-Exp DSA 使用的 SparseFlashAttention。'
 tags:
 - task.implementation
 - topic.attention
@@ -12,12 +16,11 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-22T01:37:00Z'
 platforms:
 - a3
 - '950'
 ---
-
 # SparseAttnSharedKV (SAS) Kernel
 
 ## Summary
@@ -102,10 +105,11 @@ SAS 通过入参组合覆盖 V4 不同 Attention 场景。源文档列出的关�
 SAS 与 LI 属"值依赖算子"：仅靠输入 shape 无法得到好的分核策略，还需运行时**实际上下文长度**。本次将值依赖的分核计算独立为 **AICPU Scheduler 算子** `npu_sparse_attn_sharedkv_metadata`（伪量化版 `npu_kv_quant_sparse_attn_sharedkv_metadata`），其输出含分核 metadata 供 NPU 算子使用。AICPU Scheduler 作为跨 SAS / LI 复用的技术机制（两段拆分、metadata 复用、与 LI AICore 内分核下沉的区分）详见 [aicpu-scheduler](../techniques/aicpu_scheduler.md)：
 
 ```python
-# run in aicpu
-metadata = torch_npu.npu_sparse_attn_sharedkv_metadata(......)
-# run in aicore
-npu_result, softmax_lse = torch.ops.custom.npu_sparse_attn_sharedkv(..., metadata=metadata, ...)
+# 调用形态示意：两个字典需由固定版本的模型构造，不是完整启动代码。
+metadata = torch.ops.custom.npu_sparse_attn_sharedkv_metadata(**metadata_kwargs)
+npu_result, softmax_lse = torch.ops.custom.npu_sparse_attn_sharedkv(
+    **sas_kwargs, metadata=metadata
+)
 ```
 
 只需 shape 的部分（max workspace / tiling key / block dim / tiling data）由 Host 执行；值依赖的分核策略由 AICPU 执行，既保证算子入图（对 aclgraph 等图模式友好），又使该耗时被掩盖。单次推理中每种计算模式的 Scheduler 算子只需执行一次、可复用。
@@ -114,13 +118,13 @@ npu_result, softmax_lse = torch.ops.custom.npu_sparse_attn_sharedkv(..., metadat
 
 PyPTO 发挥开发灵活性，将 SAS 在不同压缩比层下的 attention **拆为三个场景化算子**（作为 SAS 在 PyPTO 框架下的等价实现，按 `compress_ratio` 分派）：
 
-| 算子 | 全称 | 触发场景 | 实测 Duration |
-| ---- | ---- | ---- | ---- |
-| **SWA** | sliding window attention | `compress_ratio = 1` | 65 us |
-| **CFA** | compressed flash attention | `compress_ratio = 128`（HCA） | 90 us |
-| **SCFA** | sparse compressed flash attention | `compress_ratio = 4`（CSA） | 160 us |
+| 算子 | 全称 | 触发场景 |
+| --- | --- | --- |
+| SWA | sliding window attention | compress_ratio=1 |
+| CFA | compressed flash attention | compress_ratio=128 |
+| SCFA | sparse compressed flash attention | compress_ratio=4 |
 
-> Duration 实测场景（源 `pypto_operator_guide.md`）：**单 die、B=64、S1=2（MTP1 Decode q_len）、S2=8192、D=512**。三行 us 数为该 Decode 场景下的实测值，非通用吞吐限定。
+Duration 与完整工作负载统一见[PyPTO V4 平台待核验观测](../../optimizations/benchmark_observations/pypto_v4_operator_source_observations.md)。
 
 - **SWA**：通过掩码实现 Prefill 阶段与不同 MTP 配置下的高效滑窗注意力。
 - **CFA**：KV cache 有两个来源 —— `ori_kv`（原始 KV，滑窗选取）与 `cmp_kv`（Compressor 压缩后 KV，需满足因果注意力）。

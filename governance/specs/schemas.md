@@ -28,8 +28,8 @@ Contract 直接消费这些声明，只保留现有的可加载性和 `okf_type`
 | `domains` | 顶层领域、允许直辖的 `direct_types` 及是否 `precreate_routes` | 路径校验、domain 过滤、协作骨架 |
 | `technologies` | DSL、语言、框架或引擎及允许的 domain | route、technology 和跨技术端点校验 |
 | `scopes` | `shared`、平台、工具链、推理/训练等非技术 route | route、scope 和 shared 过滤 |
-| `scope_schemas` | 场景 Scope namespace、适用路径、维度类型、值与别名 | 卡片适用条件校验及 Contract 三态比较；与路径 route 的 `scopes` 分区独立 |
-| `paths` | Operator call mode、family→category 映射和 Runbook area | 受控附加层级校验 |
+| `scope_schemas` | 场景 Scope namespace、绑定路由、维度类型、规范值和确定性别名 | 适用条件校验、三态匹配和显式查询过滤；与路径 route 的 `scopes` 分区独立 |
+| `paths` | Operator call mode、family→category 映射、Runbook area 和按 domain/route/Profile 绑定的 `forbidden_sections` | 受控附加层级与已停用 section 校验 |
 | `platforms` | 卡片适用平台 ID | Frontmatter 校验和 platform 过滤 |
 | `tags` | task、topic、paradigm 三个维度的规范标签 | 标签校验、任务映射、过滤和召回 |
 
@@ -47,19 +47,19 @@ technology 与 scope 的 ID 不得重叠；每个 route 必须声明允许出现
 
 新增注册值必须同时满足：现有值无法准确表达需求、归属和语义明确、有真实知识或确定性消费者即将使用，并在同一变更补充接受/拒绝测试和检索回归。若属于 `ops` 或 `model`，还要同步其 route 结构入口；其他领域由维护者随真实内容创建路径。不要只为来源别名、任意占位或一次性任务扩充 Registry。
 
-Scope 的公共对象和场景分支形状由 Frontmatter Schema 定义；各 namespace 的适用范围、维度配置、值与别名由 `scope_schemas` 独立定义。`contracts/scope.py` 组织校验与三态匹配，`contracts/scope_matchers.py` 的受控处理器表按维度 `kind` 分派定义校验、值归一化和比较；卡片加载、Ingest、Lint 与构图共用这一路径，不各自定义语法。Contract 提供比较接口，Query 的场景 Scope 参数及过滤接入由其公开消费能力决定。
+Scope 的公共对象和场景分支形状由 Frontmatter Schema 定义；各 namespace 的适用范围、维度配置、值与别名由 `scope_schemas` 独立定义。`contracts/scope.py` 组织校验与三态匹配，`contracts/scope_matchers.py` 的受控处理器表按维度 `kind` 分派定义校验、值归一化和比较；卡片加载、Ingest、Lint、索引、构图和 Query 共用这一路径，不各自定义语法；显式查询条件由同一 Contract 规范化和比较。
 
 现有处理器为 `enum` 与 `required_set`。枚举使用独占 `[any]`，必需集合使用非空 `all_of`，并由维度的布尔配置 `query_none_of`、`card_none_of` 分别控制查询与卡片能否声明非空 `none_of`。允许否定的集合可只写 `none_of`，或与 `all_of` 同时声明；正反集合不得相交，缺失成员不表示未启用。当前模型推理的 `parallelism` 对卡片和查询均允许否定，`model_features` 仍只允许查询否定，其他维度不自动获得此权限。这些模型字段和权限不约束其他领域的维度设计。
 
 namespace 至少声明一种非空适用范围：`routes` 绑定合法的 `domain/route`；`domains` 只绑定 Registry 允许直接承载 Profile 的领域及其无 route 路径，例如 Runtime 的直接 Concept 或 Runbook。两者可同时声明，但不会隐式扩展到未列出的 route；Profile 自身仍须允许 `scope`。新增领域应随真实过滤需求登记 namespace 和回归，不为未来领域建立占位 Schema。未注册 schema、处理器类型、非法值或错误路径绑定失败关闭。
 
-领域新增匹配语义时，在当前安装的 Contract 包内增加确定性处理器并登记到受控表，使用 `normalize` 校验及规范化卡片/查询条件，使用 `compare` 返回 `DimensionMatch`。处理器独立检查其配置与值形状，可以使用不同于枚举、集合的条件结构；必须以明确原因报告未知或冲突，不能把缺证据当作匹配。公共聚合仍保持场景内 AND、场景间 OR、任一明确冲突不被未知掩盖，且不跨 namespace 推断。处理器不得联网、执行上游源码或写知识卡；Registry、知识卡、查询参数及外部知识根不能指定 Python 模块、文件路径或执行任意表达式。扩展必须覆盖接受、拒绝、未知、原有语义兼容及实际消费者；修改同版本 Contract 后由维护者重建索引。
+领域新增匹配语义时，在当前安装的 Contract 包内增加确定性处理器并登记到受控表，使用 `normalize` 校验及规范化卡片/查询条件，使用 `compare` 返回 `DimensionMatch`。处理器独立检查其配置与值形状，可以使用不同于枚举、集合的条件结构；必须以明确原因报告未知或冲突，不能把缺证据当作匹配。公共聚合仍保持场景内 AND、场景间 OR、任一明确冲突不被未知掩盖，且不跨 namespace 推断。处理器不得联网、执行上游源码或写知识卡；Registry、知识卡、查询参数及外部知识根不能指定 Python 模块、文件路径或执行任意表达式。扩展必须覆盖接受、拒绝、未知、原有语义兼容及检索过滤；修改同版本 Contract 后由维护者重建索引。
 
-Scope 本身始终可选，可只写有来源依据且有过滤价值的部分条件。Lint 不把缺少 Scope 或缺少维度视为质量错误，不以填写率验收；当前 Query 仍使用原有过滤与排序，不能从字段存在推断场景过滤已接入。
+Scope 本身始终可选，可只写有来源依据且有过滤价值的部分条件。Lint 不把缺少 Scope 或缺少维度视为质量错误，检索不会因填写完整而增加分数；实际效果用错误候选是否被排除、相关结果是否保留来验证，不设全量填写要求。
 
 集合匹配分别检查卡片要求启用与未启用的成员。查询明确关闭必需成员、或明确启用卡片禁止的成员时为冲突；任何必需状态未确认时为未知。只要任一必要条件明确冲突，就不能用另一项未知掩盖冲突；多个场景仍逐对匹配，不跨分支合并条件。
 
-Registry 或 Contract 更新后，原索引按治理指纹失效，必须由维护者重建；Query 不自行重建。旧 receipt 仍按完整 provenance 校验，不跨治理版本自动放行。回退前先移除依赖新 Schema 的声明，再还原同版本治理文件并重建索引；不得让旧消费者静默忽略无法识别的条件。
+只使用原有正向集合的卡片和查询保留原语义。Registry 或 Contract 更新后，原索引按治理指纹失效，必须由维护者重建；Query 不自行重建。旧 receipt 仍按完整 provenance 校验，不跨治理版本自动放行。回退时先撤下新增卡片否定声明，再还原同版本 Registry/Contract 并重建索引，不能让旧消费者忽略无法识别的条件。
 
 ## 执行关系
 
@@ -111,6 +111,8 @@ JSON Schema 只能检查单个对象的形状，不能独立完成：
 - `verified` 事件对应的复核实际发生。
 
 后一类问题必须由贡献者和 reviewer 判断。机器声明、Contract 和 Spec 不一致时，应在同一变更修复事实源、执行逻辑、文档和回归，而不是选择其中一份绕过。
+
+推理 Scope 的真实语料回归独立检查显式过滤、未知保留、冲突审计和原算子查询，保留原检索语料及其质量阈值。用例中的预期机器状态只证明契约行为；人工适用性评测仍需结合正文和来源单独判定，不能用机器状态替代人工标签或宣称 A/B 改善。
 
 ## 修改规则
 

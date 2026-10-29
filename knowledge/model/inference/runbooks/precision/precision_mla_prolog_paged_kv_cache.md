@@ -25,7 +25,7 @@ platforms:
 
 ## 适用场景
 
-在昇腾上给 [MLA](../../concepts/modules/mla.md) 模型启用 [MLA-Prolog](../../concepts/kernels/mla_prolog.md) 融合算子（`npu_mla_prolog_v3`）+ [Paged Attention](../../concepts/techniques/npu_graph_mode.md) 压缩 KV cache，遇到精度对不上 baseline。MLA 的压缩 KV cache 被多条写入路径共用、NZ 分形布局随 dtype 变、缩放约定跨路径要一致、融合本身还会引入非 bit-exact——下面五个点是最常见的精度分叉源。CP 场景下 prefill 的两段式 KV 写另见 [mla-prolog-zigzag-cp-kv-write](../../optimizations/experience/rules/mla_prolog_zigzag_cp_kv_write.md)。
+在昇腾上给 [MLA](../../concepts/modules/mla.md) 模型启用 [MLA-Prolog](../../concepts/kernels/mla_prolog.md) 融合算子（`npu_mla_prolog_v3`）+ [Paged Attention](../../concepts/techniques/npu_graph_mode.md) 压缩 KV cache，遇到精度对不上 baseline。MLA 的压缩 KV cache 被多条写入路径共用、NZ 分形布局随 dtype 变、缩放约定跨路径要一致、融合本身还会引入非 bit-exact——下面五个点是最常见的精度分叉源。CP 场景下 prefill 的两段式 KV 写另见 [mla-prolog-zigzag-cp-kv-write](../../optimizations/rules/mla_prolog_zigzag_cp_kv_write.md)。
 
 ## 1. prefill 的 cache_mode 要按 CP 规模选 PA_BSND / PA_NZ
 

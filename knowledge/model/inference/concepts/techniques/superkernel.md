@@ -1,7 +1,10 @@
 ---
 type: Concept
 title: SuperKernel
-description: 'TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 将计算子图整体融合为单个大 kernel** 的优化能力。目标是减少算子间任务调度的等待时间与下发开销，尤其针对 Decode 阶段大量细碎算子（MLA prolog、FA、MoE dispatch/combine、GroupedMatMul、finalize 等）叠加时的 host 下发与调度开销。 在 DeepSeek-R1 Decode W8A8C8 + MTP1 的 benchmark YAML (`decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`) 中默认 `enable_superkernel: True`。'
+description: 'TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 优化计算融合与任务调度**
+  的优化能力。目标是减少算子间任务调度的等待时间与下发开销，尤其针对 Decode 阶段大量细碎算子（MLA prolog、FA、MoE dispatch/combine、GroupedMatMul、finalize
+  等）叠加时的 host 下发与调度开销。 在 DeepSeek-R1 Decode W8A8C8 + MTP1 的 benchmark YAML (`decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`)
+  中默认 `enable_superkernel: True`。'
 tags:
 - task.optimization
 - topic.attention
@@ -14,18 +17,19 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - a3
 ---
-
 # SuperKernel
 
 ## Summary
 
-TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 将计算子图整体融合为单个大 kernel** 的优化能力。目标是减少算子间任务调度的等待时间与下发开销，尤其针对 Decode 阶段大量细碎算子（MLA prolog、FA、MoE dispatch/combine、GroupedMatMul、finalize 等）叠加时的 host 下发与调度开销。
+TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 优化计算融合与任务调度** 的优化能力。目标是减少算子间任务调度的等待时间与下发开销，尤其针对 Decode 阶段大量细碎算子（MLA prolog、FA、MoE dispatch/combine、GroupedMatMul、finalize 等）叠加时的 host 下发与调度开销。
 
 在 DeepSeek-R1 Decode W8A8C8 + MTP1 的 benchmark YAML (`decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`) 中默认 `enable_superkernel: True`。
+
+Scope 不保证其中全部算子融合为单个 kernel；固定 LongCat 来源明确部分算子尚不支持完全融合。
 
 ## Mechanism
 
@@ -38,7 +42,7 @@ switch = enable_superkernel
 scope = f"scope_name"
 options = f"scope_options"
 with superkernel_scope(switch, scope, options):
- your modules
+    ...  # 此处放入待融合模块；完整边界按固定模型核对
 ```
 
 实际用例（`models/deepseek_r1/models/modeling_deepseek.py:L1605`）：
@@ -72,7 +76,7 @@ with superkernel_scope(self.enable_superkernel and not forward_metadata.is_prefi
 
 ## Known Results
 
-README 与 decode 优化文档未给出 SuperKernel 单项提升数据。在叠加 W8A8C8 + MTP1 + perfect eplb 的完整 benchmark 下，Decode TPOT 44.9 ms / 2138 tokens/p/s（见 [deepseek-r1](../models/deepseek_r1.md)）。**SuperKernel 单项收益数据缺失，待验证**。
+固定来源没有SuperKernel单项受控收益；完整组合结果见[R1 Decode 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark.md)，不能归因给该融合开关。
 
 ## Evidence
 

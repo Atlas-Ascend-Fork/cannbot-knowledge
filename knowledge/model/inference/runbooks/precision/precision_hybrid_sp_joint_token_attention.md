@@ -23,7 +23,7 @@ platforms:
 
 ## 适用场景
 
-给 [DiT](../../concepts/modules/dit.md) 视频/图像生成上混合序列并行（[Ulysses](../../concepts/parallelism/ulysses.md) 沿 head 做 all_to_all + [Ring](../../concepts/parallelism/ring_attention.md) all_gather）时，模型把文本/全局 token 作为 joint tensor 传入、需被所有序列分片共同 attend。若序列并行实现对 joint token 处理不当，会在**不报错的前提下**破坏 joint attention、造成精度损失。长序列视频 DiT 接 Ulysses SP 的拓扑/pad 校验见 [video-dit-ulysses-sequence-parallel](../../optimizations/experience/rules/video_dit_ulysses_sequence_parallel.md)。
+给 [DiT](../../concepts/modules/dit.md) 视频/图像生成上混合序列并行（[Ulysses](../../concepts/parallelism/ulysses.md) 沿 head 做 all_to_all + [Ring](../../concepts/parallelism/ring_attention.md) all_gather）时，模型把文本/全局 token 作为 joint tensor 传入、需被所有序列分片共同 attend。若序列并行实现对 joint token 处理不当，会在**不报错的前提下**破坏 joint attention、造成精度损失。长序列视频 DiT 接 Ulysses SP 的拓扑/pad 校验见 [video-dit-ulysses-sequence-parallel](../../optimizations/rules/video_dit_ulysses_sequence_parallel.md)。
 
 ## 失败签名：joint K/V 在 SP 集合通信之前拼进序列 K/V
 

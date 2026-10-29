@@ -8,9 +8,9 @@
 
 | ID | 等级 | 检查内容 |
 |---|---|---|
-| `path` | P0 | domain-route、Profile、内容型 section、Operator/Runbook 附加层级和小写 snake_case 卡名合法 |
+| `path` | P0 | domain-route、Profile、内容型 section、Registry 声明的已停用 section、Operator/Runbook 附加层级和小写 snake_case 卡名合法 |
 | `profile` | P0 | YAML mapping 无重复 key；JSON Schema、公共/Profile 必选字段、非空标题摘要和路径到 OKF type 的映射一致；缺失与空白分别报告 |
-| `scope` | P0 | 可选声明的 namespace、Profile/路径绑定、分支、维度和值符合 Schema、Registry 与 Contract；未知或缺失条件不补全，不允许卡片使用查询专用否定 |
+| `scope` | P0 | 可选场景 Scope 的 namespace、Profile/路径绑定、分支、维度、类型和值符合 Schema、Registry 与 Contract；缺失条件不补全，拒绝查询专用否定及混合通配值 |
 | `body` | P0 | 正文非空且围栏外至少有一个 H1；除 Registry 文档归档主来源的 API/Guide 受控转换可保留来源中的多个 H1 外，其余卡恰有一个 H1；摘要不含发布占位，正文无 Git 冲突标记或压平到单行的 Markdown 表格 |
 | `images` | P0 | Markdown/HTML 图片使用含 40 位 commit 和具体文件路径的 HTTPS Git raw URL，忽略代码中的伪图片 |
 | `tags` | P0 | 标签受控、无重复，且至少包含一个 task 和一个 topic |

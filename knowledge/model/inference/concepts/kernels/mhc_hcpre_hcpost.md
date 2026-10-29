@@ -1,7 +1,11 @@
 ---
 type: Concept
 title: HcPre / HcPost (mHC 融合算子)
-description: '`HcPre` 与 `HcPost` 是 DeepSeek-V4 mHC 残差结构的成对融合算子，完成 Attention/MoE 子层前后的多路↔单路变换。HcPre 融合 RMSNorm、hc_fn 线性变换、Sinkhorn-Knopp 和 pre 加权求和，输出 y、post、comb；HcPost 用 post 扩展子层输出并与 comb 残差合并，目标是让中间数据留在 UBuffer。A3 AscendC 采用 Cube:Vector=1:2 流水，Decode 切 K、Prefill 切 token；PyPTO 以 MPMD 并行 Vector RMSNorm 与 Cube MatMul，并用 split-K 和静态展开。hc_post 的 VF 报告提升 22.7%。Native 与 PyPTO 的首轮 Sinkhorn 归一顺序不同，应以各自代码为准。'
+description: '`HcPre` 与 `HcPost` 是 DeepSeek-V4 mHC 残差结构的成对融合算子，完成 Attention/MoE 子层前后的多路↔单路变换。HcPre
+  融合 RMSNorm、hc_fn 线性变换、Sinkhorn-Knopp 和 pre 加权求和，输出 y、post、comb；HcPost 用 post 扩展子层输出并与
+  comb 残差合并，目标是让中间数据留在 UBuffer。A3 AscendC 采用 Cube:Vector=1:2 流水，Decode 切 K、Prefill
+  切 token；PyPTO 以 MPMD 并行 Vector RMSNorm 与 Cube MatMul，并用 split-K 和静态展开。VF 的历史测量另见来源观测。Native
+  与 PyPTO 的首轮 Sinkhorn 均先行归一再列归一，数值实现细节以各自代码为准。'
 tags:
 - task.implementation
 - topic.model_architecture
@@ -15,12 +19,11 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md
   role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-22T10:35:31Z'
 platforms:
 - a3
 - '950'
 ---
-
 # HcPre / HcPost (mHC 融合算子)
 
 ## Summary
@@ -58,48 +61,11 @@ Decode 场景 m（token 数）较小，故在 **K 轴上做多核切分**提升�
 - **阶段一**：搬运 → 类型转换 → Cube 计算形成 CV 流水，中间内存较小、基本 L2 命中，提升流水效率。
 - **阶段二**：提前搬运 `x`，掩盖 `pre`、`post`、`combine` 的 Vector 计算开销。
 
-**性能（源文档实测，hc=4, d=4096）：**
-
-| 规格 b·s | 性能 (us) |
-| ---- | ---- |
-| 16 | 32.8 |
-| 32 | 37 |
-| 64 | 44 |
-| 128 | 60 |
-
-### Prefill 场景模板（分 token）
-
-Prefill 场景按 **token 进行分核**形成 CV 流水。当前实现中一阶段与二阶段的 Vector 计算**串行**执行；源文档列出后续优化方向：让两个 V 核分别承担一阶段、二阶段的 Vector 计算，流水执行进一步掩盖开销。
-
-**性能（源文档实测，hc=4, d=4096）：**
-
-| 规格 b·s | 性能 (us) |
-| ---- | ---- |
-| 4K | 1254.916 |
-| 16K | 4784.204 |
-| 64K | 18545.39 |
-
-## HcPost AscendC 实现：消除内存墙
-
-`HcPost` 在小算子下的瓶颈是内存墙；融合后 Vector 中间计算结果常驻 UBuffer（核内 buffer），减少 HBM 访存，极大提升性能。
-
-Tiling：在 b、s、d 轴上分核，b、s 合并为 `bs` 轴，在 `(bs, d)` 上做 tile 块划分，每块大小 `(m, n)`。极小 case 多核切分时在启动开销与处理开销间权衡——每核最低搬运数据量 4KB、`n` 长度数据量不小于 1KB 且 512B 对齐。按 hc 轴 buffer 占用与流水掩盖的权衡分两类模板：
-
-1. **hc 较小**：一次性把 `residual` 的 tile 块 `(m, hc, n)` 全部搬入；
-2. **hc 泛化（UB 可能不够）**：在 `residual` 的 hc 轴上开循环流水，每次搬入 t 个。
-
-**性能（源文档实测，hc=4, d=4096）：**
-
-| 规格 b·s | 性能 (us) | | 规格 b·s | 性能 (us) |
-| ---- | ---- | --- | ---- | ---- |
-| 8 | 5.09 | | 128 | 13.85 |
-| 16 | 5.37 | | 4K | 319.86 |
-| 32 | 6.99 | | 16K | 1264.68 |
-| 64 | 9.16 | | 64K | 5044.53 |
+来源 shape 扫描统一见[A3 LI/HcPost 来源观测](../../optimizations/benchmark_observations/ascendc_a3_li_hcpost_source_observations.md)；不在机制卡重复维护性能表。
 
 ## PyPTO 实现（hc_pre / hc_post）
 
-PyPTO 以较少代码量（`hc_pre` 约 0.4 KLOC）实现 `hc_pre`，单 die、B=64、MTP1、S2=8K 场景下实测 70 us。关键技巧（实现见 `ops/pypto_python/impl/hc_pre_pypto.py`）：
+PyPTO 以较少代码量（`hc_pre` 约 0.4 KLOC）实现 `hc_pre`，该固定单 die 工作负载的测量统一见[PyPTO V4 待核验观测](../../optimizations/benchmark_observations/pypto_v4_operator_source_observations.md)。关键技巧（实现见 `ops/pypto_python/impl/hc_pre_pypto.py`）：
 
 - **MPMD 流水并行**：计算流程第一步是 Vector 计算（RMSNorm 分母）、第二步 `x @ hc_fn` 是 Cube 矩阵乘，二者无依赖。PyPTO 框架支持两任务同时执行，无需手动插入同步。
 - **指令优化（免显式广播）**：Sinkhorn-Knopp 涉及大量重复的归约串联逐元素乘除；通过 pass 优化与 PTO 指令（`set_operation_config(combine_axis=True)`）避免显式广播，实现高性能逐元素计算。
@@ -107,7 +73,7 @@ PyPTO 以较少代码量（`hc_pre` 约 0.4 KLOC）实现 `hc_pre`，单 die、B
 - **Prefill 转置技巧（guide/test 示例路径）**：Prefill 的 `t`（0 轴）通常较大，而 Sinkhorn-Knopp 归约轴很小（`hc_mult=4`）。采用数学等价的转置技巧，在矩阵乘中直接算 `hc_fn^T @ x^T`（代码 `hc_pre_kernel_prefill` 用 `matmul(hc_fn, x_fp32, b_trans=True)` 产 `(mix_hc, t)`），使 `t` 置于尾轴、归约轴变为 -2/-3 轴，提高计算效率。注意 `hc_pre_kernel_prefill` 在仓内仅由 `test_hc_pre_pypto.py` 调用，是 guide / test 示例路径；PyPTO 的生产入口是 `hc_pre_kernel`（见下条）。
 - **生产入口与 Unrollist 动态转静态**：PyPTO 生产入口为 `hc_pre_kernel`（`hc_pre_pypto.py:132`，被生产 wrapper 在 `:402` 调用；用 `matmul(x_fp32, hc_fn, b_trans=True)` + `enable_split_k`），其 `unroll_list=[256, 64, 16, 4, 1]` 对动态值 `t` 多分档 + 静态 Tile 切分以适应不同 `t`。示例路径 `hc_pre_kernel_prefill` 则用 `unroll_list=[128, 1]`。这一"动态值多分档 + 静态 Tile 切分"思路使 Prefill/Decode 的 `t` 差异（一套切分难以两端兼优）在各场景均达较优性能。
 
-`hc_post` 在仓内**只有 Native 与 AscendC 两版实现，没有 PyPTO 版**（`mhc.py` 仅注册 `hc_post`(native) 与 `hc_post_ascendc`，且 `ops/pypto_python` 内无 `hc_post` 注册；代码注释明确 "hc_post currently support Native and AscendC version"）。PyPTO guide 中关于 `hc_post` 计算式 `y = post·x + sum(comb·residual)`、以及毕昇 PTO 编译器 VF 自动融合相比未使能提升 **22.7%** 的论述，描述的是 PTO-ISA / VF 融合能力本身（"PTO-ISA 跨 A2/A3/950D 代际兼容、兼容不降速"），而非仓内已落地的 `hc_post` PyPTO 算子。框架语义见 [pypto](../frameworks/pypto.md)。
+`hc_post` 在仓内**只有 Native 与 AscendC 两版实现，没有 PyPTO 版**（`mhc.py` 仅注册 `hc_post`(native) 与 `hc_post_ascendc`，且 `ops/pypto_python` 内无 `hc_post` 注册；代码注释明确 "hc_post currently support Native and AscendC version"）。PyPTO guide 中关于 `hc_post` 计算式 `y = post·x + sum(comb·residual)`、以及毕昇 PTO 编译器 VF 自动融合相比未使能提升 **来源观测中的相对值** 的论述，描述的是 PTO-ISA / VF 融合能力本身（"PTO-ISA 跨 A2/A3/950D 代际兼容、兼容不降速"），而非仓内已落地的 `hc_post` PyPTO 算子。框架语义见 [pypto](../frameworks/pypto.md)。
 
 > Sinkhorn-Knopp 归一化顺序（PyPTO guide L190「每次迭代先逐行归一化再逐列归一化」；mHC guide 未展开此算法）：三路代码首步**一致**，均先行归一再列归一、再进入 iters-1 轮行(-1)→列(-2)交替——Native（`mhc.py:44-51`）首次行归一用 `softmax(-1)`+eps、PyPTO（`hc_pre_pypto.py:51-57`）用数值稳定 `exp(x − row_max) / row_sum`、TileLang（`hc_split_sinkhorn_kernel.py:114-119`）reduce_max→sub→exp→reduce_sum，三者数学等价且与文档「先行后列」一致（softmax(-1) 即首轮行归一，**无首步顺序差异**）。详细公式见 [mhc](../modules/mhc.md)。
 
@@ -140,7 +106,7 @@ mHC `HcPre` / `HcPost` 的分核**基于 shape 即可确定（非值依赖）**�
 ## Evidence
 
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_mHC_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_mHC_guide.md)（frontmatter 主源：HcPre/HcPost 融合范围与价值、A3 分离架构 CV 流水、Decode 切 K / Prefill 分 token 双模板、Tiling 与流水、性能 us 表）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md)（hc_pre MPMD 流水、免广播指令优化、Decode 切 K、Prefill 转置技巧、Unrollist；hc_post VF 自动融合 +22.7%；hc_pre 实测 70 us / 0.4 KLOC）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md)（hc_pre MPMD 流水、免广播指令优化、Decode 切 K、Prefill 转置技巧、Unrollist；hc_post VF 自动融合 +来源观测中的相对值；hc_pre 实测 70 us / 0.4 KLOC）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/op_impls/mhc.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/op_impls/mhc.py)（`hc_pre` 三注册键 `native`/`hc_pre_ascendc`(`npu_hc_pre`)/`hc_pre_pypto_a3`；`hc_post` 两注册键 `native`/`hc_post_ascendc`(`npu_hc_post`)；接口产出 `(y, post, comb)` / `y`）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/pypto_python/impl/hc_pre_pypto.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/ops/pypto_python/impl/hc_pre_pypto.py)（生产入口 `hc_pre_kernel`（`:132`，生产 wrapper 在 `:402` 调用）`matmul(x_fp32, hc_fn, b_trans=True)` + `enable_split_k` + `unroll_list=[256,64,16,4,1]`；`hc_pre_kernel_prefill`（`:249`）`matmul(hc_fn, x_fp32, b_trans=True)` 转置 + `unroll_list=[128,1]`，仅由 `example/test_hc_pre_pypto.py:224` 调用（guide/test 示例路径）；`ops/pypto_python` 内无 `hc_post` 注册；`set_operation_config(combine_axis=True)`；`hc_split_sinkhorn` 首步行归一→列归一）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（`OpKernel.hc_pre`/`hc_post` 每层两轮调用 `hc_attn_*`/`hc_ffn_*`；`hc_head` 单独的 Pre 风格收敛函数 L1478-1483；进网络 `unsqueeze(2).repeat(1,1,hc_mult,1)`）

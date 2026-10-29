@@ -60,7 +60,7 @@ NEEDED_HCCL_BUFFSIZE = (maxBs * tokenNeedSizeDispatch * ep_worldsize * localMoeE
 
 ## 关联
 
-- 该显式 buffer 后来归位到独立的 `moe_ep_group_mc2` 域（只给 MC2 路径放大、普通 EP 域回落默认），见 [mc2-dedicated-comm-domain](../../optimizations/experience/rules/mc2_dedicated_comm_domain.md)。
+- 该显式 buffer 后来归位到独立的 `moe_ep_group_mc2` 域（只给 MC2 路径放大、普通 EP 域回落默认），见 [mc2-dedicated-comm-domain](../../optimizations/rules/mc2_dedicated_comm_domain.md)。
 - 多个 MoE 模型 README 记录同一「HCCL_BUFFSIZE is too SMALL」失败签名——这是跨 MoE 模型可复用的失败签名、非一次性 changelog。
 
 ## Evidence

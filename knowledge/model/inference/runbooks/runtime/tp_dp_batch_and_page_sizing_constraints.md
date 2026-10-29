@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/284
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -40,7 +40,7 @@ TP+DP 离线推理、`attn_dp_size > 1`、输入非打包（`packed_sequence=Fal
 
 ### B. 省显存把 batch 降到 1 的连锁约束
 
-为省显存把 `batch_size` 调到 1 时：若 `attn_tp_size=1`（此时 `attn_dp_size=world_size`）则 `batch_size % attn_dp_size` 不成立、直接 `ValueError`。要真正把 batch 降到 `attn_dp_size` 以下须**同时增大 `attn_tp_size`**——但 `attn_tp_size>1` 又与 `oproj_tp_size>1` 互斥。三个旋钮相互牵制，调一个要连带检查另两个。
+为省显存把 `batch_size` 调到 1 时：若 `attn_tp_size=1`（此时 `attn_dp_size=world_size`）则 `batch_size % attn_dp_size` 不成立、直接 `ValueError`。要真正把 batch 降到 `attn_dp_size` 以下须**同时增大 `attn_tp_size`**——所引用 check_parallel_settings 分支还限制 `attn_tp_size>1` 与 `oproj_tp_size>1` 的组合；该限制只适用于实际执行该校验的模型与版本。三个旋钮相互牵制，调一个要连带检查另两个。
 
 ### C. DLLM（LLaDA2.x）paged 注意力 page_size ≤ block_size
 
@@ -54,16 +54,16 @@ TP+DP 离线推理、`attn_dp_size > 1`、输入非打包（`packed_sequence=Fal
 ## 风险 / 边界
 
 - 整除约束系于 executor 当前非打包路径实现，TND 路径不适用；迁移前确认走的是哪条布局。
-- `attn_tp>1` 与 `oproj_tp>1` 互斥是本仓约束，与 DP-attention+TP-oproj 混合并行相关（见相关经验）。
+- `attn_tp>1` 与 `oproj_tp>1` 互斥只属于所引 check_parallel_settings 分支，不能推广全仓。固定 LongCat 的 check_longcat_parallel_settings 允许两者均大于 1 且要求相等，须核对模型自己的校验入口。
 
 ## 相关经验
 
-- TND packed-sequence 统一布局（免整除约束的默认路径）见 [tnd-packed-sequence-standard-and-bsnd-shim](../../optimizations/experience/rules/tnd_packed_sequence_standard_and_bsnd_shim.md)。
-- DP-attention + TP-oproj/MLP 混合（`oproj_tp` 语义）见 [dp-attention-tp-oproj-mlp-hybrid](../../optimizations/experience/rules/dp_attention_tp_oproj_mlp_hybrid.md)。
+- TND packed-sequence 统一布局（免整除约束的默认路径）见 [tnd-packed-sequence-standard-and-bsnd-shim](../../optimizations/rules/tnd_packed_sequence_standard_and_bsnd_shim.md)。
+- DP-attention + TP-oproj/MLP 混合（`oproj_tp` 语义）见 [dp-attention-tp-oproj-mlp-hybrid](../../optimizations/rules/local_tp_memory_heavy_projections.md)。
 
 ## Evidence
 
-- `diff 事实`（@2c45117）：`check_parallel_settings` 强制 `batch_size % attn_dp_size==0`、`attn_tp>1` 与 `oproj_tp>1` 互斥。
+- `diff 事实`（@2c45117）：`check_parallel_settings` 强制 `batch_size % attn_dp_size==0`、该入口内 `attn_tp>1` 与 `oproj_tp>1` 的互斥校验，不适用于采用其他模型校验器的所有路径。
 - `diff 事实`（@628e400）：`executor/infer.py` 双整除约束、TND 免除。
 - `diff 事实`（@8cd85a8）：DLLM scheduler 守护 `page_size` 回落到 `block_size`。
 - 溯源下探：[cann-recipes-infer-issue-54-bug-report-deepseek-v3-2-exp-w8a8c8-8p-16](https://gitcode.com/cann/cann-recipes-infer/issues/54)、[cann-recipes-infer-pr-300-refactor-support-tp-dp-inference-for-qwen3-moe-with-offline-mode](https://gitcode.com/cann/cann-recipes-infer/merge_requests/300)、[cann-recipes-infer-pr-284-feat-llada2-x-sglang-ascend](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)

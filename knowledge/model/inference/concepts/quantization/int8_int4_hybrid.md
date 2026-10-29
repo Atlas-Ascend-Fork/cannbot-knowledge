@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T09:02:45Z'
 platforms:
 - a3
 ---
@@ -83,14 +83,7 @@ DeepSeek-V4 在 [atlas-a3](../platforms/atlas_a3.md) Pod 平台上的两档整�
 
 ## Known Results
 
-Atlas-A3 Pod，64 卡，DP+EP，**W8A8C16**（DeepSeek-V4 Flash，LI Cache Int8 / KV Cache BF16；MTP1，强制 EPLB，源 Benchmark）：
-
-| Global Batch Size | Chips | MTP | DataType | SeqLen | TPOT (ms) | Throughput (Tokens/p/s) |
-| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| 7168 | 64 | 1 | W8A8C16 | 8192 | 27.82 | 4025 |
-| 8192 | 64 | 1 | W8A8C16 | 8192 | 29.17 | 4388 |
-
-源未给 Hybrid INT8-INT4（Pro）的独立 Benchmark 数据（gap）。
+来源自报的性能与完整负载条件统一维护在[分平台性能观测](../../optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark.md)。本机制卡只维护模块精度与格式边界，不重复性能表，也不将来源数字表述为性能保证。
 
 ## Evidence
 

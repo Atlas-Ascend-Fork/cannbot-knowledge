@@ -100,14 +100,12 @@ scope:
 
 | 查询已确认条件 | 卡片要求 `parallelism.none_of: [cp]` 时 |
 | --- | --- |
-| `parallelism.all_of: [cp]` | `conflict`，明确冲突 |
+| `parallelism.all_of: [cp]` | `conflict`，明确冲突并排除 |
 | `parallelism.none_of: [cp]` | 满足这一项限制；其他维度继续核对 |
 | 只声明 `parallelism.all_of: [tp]` | `unknown`，TP 不证明 CP 已关闭 |
 | 没有声明 `parallelism` | `unknown`，CP 状态待确认 |
 
-Scope Contract 的比较结果为 `match`、`unknown` 或 `conflict`。缺少卡片 Scope、缺少必要条件或不同的已注册 namespace 均保留未知，非法 Scope 报错。匹配表示声明条件相容，不替代正文、来源与版本核对，也不证明性能已经验证。
-
-当前基础治理在加载卡片、Lint 和构图时校验该字段，并提供统一的三态比较接口。Query 的现有公开接口不接受场景 Scope 过滤参数；卡片声明 Scope 不代表检索已启用该过滤。检索参数及结果结构以 Query Skill 的实际能力为准，无 Scope 的原查询流程保持不变。
+无显式查询 Scope 时，Query 保留原有过滤和排序；显式传入确认后的条件时，只排除 `conflict`，保留 `match` 和 `unknown`，并回显原因、场景分支及待确认前提。相关旧卡片和其他已注册 namespace 的相关卡片保留为未知项，不能跨 schema 猜测。非法 Scope 报错，不降级为未知。Scope 条件匹配不替代正文、来源和版本核对，也不证明已做性能验证。Query 的参数与返回结构见其 Skill 文档。
 
 ## 生命周期与信任
 

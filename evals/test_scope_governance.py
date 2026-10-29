@@ -397,7 +397,14 @@ class ScopeGovernanceWorkflowTests(unittest.TestCase):
         value["unexpected_field"] = True
         self.assertIn("frontmatter.schema", {item.code for item in self.contract.validate_card(self.relative, value, self.body)})
 
-    def test_legacy_experience_paths_remain_valid_until_knowledge_migration(self):
+    def test_legacy_experience_paths_remain_valid_when_not_retired_in_registry(self):
+        # The Scope foundation remains compatible before a route opts into retirement.
+        # Production model/inference now enables that separate migration rule.
+        path = self.root / "governance/schemas/registries.yaml"
+        registry = yaml.safe_load(path.read_text())
+        registry["paths"].pop("forbidden_sections", None)
+        path.write_text(yaml.safe_dump(registry, allow_unicode=True))
+        self.contract = Contract(self.root)
         for section, kind in [("guides/experience/interventions", "Guide"),
                               ("optimizations/experience/rules", "Optimization")]:
             relative = Path("knowledge/model/inference") / section

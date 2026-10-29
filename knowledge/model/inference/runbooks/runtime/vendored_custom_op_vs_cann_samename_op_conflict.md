@@ -60,7 +60,7 @@ platforms:
 
 ## 适用边界
 
-仓内 `ops/ascendc` 仍 vendored 十余个自定义算子（`indexer_compress_epilog` / `kv_compress_epilog` / [gather_selection_kv_cache](../../concepts/kernels/gather_selection_kv_cache.md) / [hc_pre / hc_post](../../concepts/kernels/mhc_hcpre_hcpost.md) / `moe_gating_top_k_hash` / `swiglu_clip_quant` 等）。凡「仓内自带副本」与「CANN 库同名算子」并存者，命名空间碰撞与跨仓接口漂移都是**可复发**的失败类——把「自带算子 vs CANN 库同名算子解析/接口不匹配」列为算子运行失败的**首查根因**，而非默认任意 CANN 安装都兼容。别名挂载机制不随某个样例算子被删而失效，对当前保留的其它自带算子同样成立。部署镜像 CANN 包过旧、被迫保留自带副本过渡的情形见 [ascend-deployment-image-version-alignment](../../optimizations/experience/rules/ascend_deployment_image_version_alignment.md)；跨平台 / 跨 CANN 版本的构建期失败见 [ascendc-custom-op-cross-platform-cann-build](../compilation/ascendc_custom_op_cross_platform_cann_build.md)。
+仓内 `ops/ascendc` 仍 vendored 十余个自定义算子（`indexer_compress_epilog` / `kv_compress_epilog` / [gather_selection_kv_cache](../../concepts/kernels/gather_selection_kv_cache.md) / [hc_pre / hc_post](../../concepts/kernels/mhc_hcpre_hcpost.md) / `moe_gating_top_k_hash` / `swiglu_clip_quant` 等）。凡「仓内自带副本」与「CANN 库同名算子」并存者，命名空间碰撞与跨仓接口漂移都是**可复发**的失败类——把「自带算子 vs CANN 库同名算子解析/接口不匹配」列为算子运行失败的**首查根因**，而非默认任意 CANN 安装都兼容。别名挂载机制不随某个样例算子被删而失效，对当前保留的其它自带算子同样成立。部署镜像 CANN 包过旧、被迫保留自带副本过渡的情形见 [ascend-deployment-image-version-alignment](ascend_deployment_image_version_alignment.md)；跨平台 / 跨 CANN 版本的构建期失败见 [ascendc-custom-op-cross-platform-cann-build](../compilation/ascendc_custom_op_cross_platform_cann_build.md)。
 
 ## Evidence
 

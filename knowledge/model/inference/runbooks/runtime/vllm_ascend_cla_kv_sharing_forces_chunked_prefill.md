@@ -77,7 +77,7 @@ def _build_attn_state(self, ...):
 
 ## 相关经验
 
-- 分页 KV cache 的读/写算子契约与块管理见 [昇腾 Paged-Attention KV cache：block_table/slot_mapping 同 vLLM](../../optimizations/experience/rules/ascend_paged_attention_kv_cache.md)——CLA 共享层最终读的正是这套分页物理块。
+- 分页 KV cache 的读/写算子契约与块管理见 [昇腾 Paged-Attention KV cache：block_table/slot_mapping 同 vLLM](../../optimizations/rules/ascend_paged_attention_kv_cache.md)——CLA 共享层最终读的正是这套分页物理块。
 
 ## Evidence
 

@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: C8 KV-cache 量化前置：MLA 系模型必须 enable_mla_prolog=True，否则 bringup 抛 ValueError
-description: C8 KV-cache 量化前置：MLA 系模型必须 enable_mla_prolog=True，否则 bringup 抛 ValueError。给 MLA 系模型（DeepSeekRunner 路径：DeepSeek-R1 / Kimi-K2-Thinking / DeepSeek-V3.2-Exp）开 C8（KV-cache int8）量化时，bring-up 阶段主动抛： ValueError("if kv_cache_quant_mode is C8, then enable_mla_prolog must be set to True.")
+description: C8 KV-cache 量化前置：MLA 系模型必须 enable_mla_prolog=True，否则 bringup 抛 ValueError。给 MLA 系模型（DeepSeekRunner 路径：DeepSeek-R1 / Kimi-K2-Thinking / DeepSeek-V3.2-Exp）开 C8（KV-cache int8）量化且 enable_mla_prolog=False 时，bring-up 阶段主动抛： ValueError("if kv_cache_quant_mode is C8, then enable_mla_prolog must be set to True.")
 tags:
 - task.debugging
 - topic.attention
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/90
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -23,7 +23,7 @@ platforms:
 
 ## 信号（现象）
 
-给 [MLA](../../concepts/modules/mla.md) 系模型（`DeepSeekRunner` 路径：DeepSeek-R1 / Kimi-K2-Thinking / DeepSeek-V3.2-Exp）开 C8（KV-cache int8）量化时，bring-up 阶段主动抛：
+给 [MLA](../../concepts/modules/mla.md) 系模型（`DeepSeekRunner` 路径：DeepSeek-R1 / Kimi-K2-Thinking / DeepSeek-V3.2-Exp）开 C8（KV-cache int8）量化且 enable_mla_prolog=False 时，bring-up 阶段主动抛：
 
 ```
 ValueError("if kv_cache_quant_mode is C8, then enable_mla_prolog must be set to True.")
@@ -49,8 +49,8 @@ C8 KV-cache 走 [mla-prolog](../../concepts/kernels/mla_prolog.md) 路径——�
 
 ## 相关经验
 
-- C8 与 PyPTO Lightning Indexer 互斥见 [c8-kvcache-disables-pypto-lightning-indexer](../../optimizations/experience/anti_patterns/c8_kvcache_disables_pypto_lightning_indexer.md)。
-- C8 scale 的来源/复用/离线预取见 [c8-kv-scale-provenance-reuse-offline](../../guides/experience/interventions/c8_kv_scale_provenance_reuse_offline.md)。
+- C8 与 PyPTO Lightning Indexer 互斥见 [c8-kvcache-disables-pypto-lightning-indexer](../../optimizations/anti_patterns/c8_kvcache_disables_pypto_lightning_indexer.md)。
+- C8 scale 的来源/复用/离线预取见 [c8-kv-scale-provenance-reuse-offline](../../optimizations/rules/c8_kv_scale_provenance_reuse_offline.md)。
 
 ## Evidence
 

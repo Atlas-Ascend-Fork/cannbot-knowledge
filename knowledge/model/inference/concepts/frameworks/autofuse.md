@@ -1,7 +1,12 @@
 ---
 type: Concept
 title: AutoFuse（Inductor NPU 自动融合编译组件）
-description: 'AutoFuse 是面向昇腾 NPU 的 PyTorch Inductor JIT 自动融合组件，将 InductorLoopIR 降为 AscendLoopIR，经 Schedule 模板选择、UB 复用和 ATT 自动 Tiling 后生成 AscendC Kernel。调度以 ComputeType、AxisGroup 和 Merge 规则产生 TilingCase，求解器结合 LocalBuffer、核数、切分与流水耗时选择方案。它主要覆盖 Pointwise/Reduce 等可连续编译区域，避免断图和反复编译；当前 152 个 LoopIR 中覆盖 46 个。DeepSeek-V4 的 hc_post 片段在 Atlas A3 典型 shape 下由 30 us 降至 7.5 us（dynamic=False）或 10 us（dynamic=True），但端到端收益尚未验证。AutoFuse 与 GE/npugraph_ex 图后端是并列路径。'
+description: AutoFuse 是面向昇腾 NPU 的 PyTorch Inductor JIT 自动融合组件，将 InductorLoopIR 降为
+  AscendLoopIR，经 Schedule 模板选择、UB 复用和 ATT 自动 Tiling 后生成 AscendC Kernel。调度以 ComputeType、AxisGroup
+  和 Merge 规则产生 TilingCase，求解器结合 LocalBuffer、核数、切分与流水耗时选择方案。它主要覆盖 Pointwise/Reduce
+  等可连续编译区域，避免断图和反复编译；当前 152 个 LoopIR 中覆盖 46 个。DeepSeek-V4 的 hc_post 片段在 Atlas A3 典型
+  shape 下由 30 us 降至 7.5 us（dynamic=False）或 10 us（dynamic=True），但端到端收益尚未验证。AutoFuse
+  与 GE/npugraph_ex 图后端是并列路径。
 tags:
 - task.implementation
 - topic.architecture
@@ -14,11 +19,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md
   role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-22T10:35:31Z'
 platforms:
 - a3
 ---
-
 # AutoFuse（Inductor NPU 自动融合编译组件）
 
 ## Summary
@@ -31,26 +35,7 @@ platforms:
 
 ## 使能方式
 
-据 guide/README 文档说明的使能方式：PyTorch 前端增加一行导入即可注册基于 AutoFuse 的 Inductor NPU 后端扩展，随后对目标函数加 `@torch.compile` 装饰。（注：`import inductor_npu_ext` 仅出现在 guide/README 文档片段中；cann-recipes-infer 的 InductorAF 参考模型 `model.py` 仅含 `@torch.compile`，未含该后端扩展 import。）
-
-```python
-import inductor_npu_ext  # 注册基于 AscendC 的 inductor 编译后端扩展
-
-@torch.compile
-def hc_post(x, residual, post, comb):
-    y = post.unsqueeze(-1) * x.unsqueeze(-2) + torch.sum(comb.unsqueeze(-1) * residual.unsqueeze(-2), dim=2)
-    return y.type_as(x)
-```
-
-编译范围选择建议（与图模式的"避免断图/重编译"原则一致）：
-
-- 编译范围内图结构稳定，不含执行时分支选择、`.item()` 内存同步等行为，避免过多 Graph Break。
-- 避免编译范围过大——范围越大，dynamo guard 叠加越多，越易触发 re-compile。
-- 优先选择含较多 Pointwise / Reduce 计算的范围，Inductor 对这类计算的融合效果好，编译代价小、收益高。
-
-在 `models/deepseek-v4-flash-tilelang-and-inductorAF/` 参考模型中，加 `@torch.compile` 的不止 `hc_post`：实际编译范围包含 `Expert.forward`、`RMSNorm.forward`、`Transformer.hc_head`、`hc_pre`、`hc_post`（README §适配 inductor 编译的改动）。其中 `hc_pre` 用到的 TileLang 算子 `hc_split_sinkhorn` 被封装为 torch 自定义算子（`torch.library.Library("tl","FRAGMENT")` 注册，暴露为 `torch.ops.tl.hc_split_sinkhorn`），作为自定义函数与 `torch.compile` 配合以减少 dynamo 断图。
-
-> AutoFuse 当前覆盖 152 个 LoopIR 中的 46 个（guide Highlights，未给完整清单），未来将逐步补齐至与 LoopIR 完整对等——这是当前完备度边界，覆盖范围会随版本变化；端到端多片段收益待验证。
+后端扩展负责接入 Inductor 编译链；具体导入、编译范围选择和验收由[部分编译规则](../../optimizations/rules/inductor_autofuse_partial_compile_scope.md)维护。固定模型中仅含装饰器不等于它自带后端注册。
 
 ## JIT 算子生成的三阶段
 
@@ -106,7 +91,7 @@ Cost(MTE2) = ((DataSize / T + h) * Count) + H
 
 其中 `带宽 T` 是与向量化宽度对齐、分核数、GM/UB 非连续性相关的因变量。计算类 API 对**稳定基础 API** 采集性能数据建模，对**易变 API** 基于调用逻辑计算入参/调用次数生成完整模型。
 
-**轴排序求解器**先定切分轴优先级（父轴>子轴是功能性硬约束；规约化轴>非规约化轴、广播轴>非广播轴、非最内轴>最内轴、搬运 API 尾轴同优先级，均为启发式规则），再分**核内 Tiling**（逆序遍历，优先把变量调至最大值并判断硬件约束，不满足则二分调整）与**分核 Tiling**（识别多核相关变量，按从大到小遍历，优先选占用核数更大的记录，超物理核数则返回）。另有 `UB 占用核数占用权衡算法`（精细控核+UB）与 `对称切分`（尾轴转置场景，多尾轴同优先级切分）。
+**轴排序求解器**按策略确定轴优先级；这里的优先级表示优先不切该轴。固定来源以适合 API 头开销较大场景的 **UB 优先贪心算法**为例：父轴优先于子轴是功能性约束，规约化轴、广播轴、非最内轴等排序属于该策略的启发式。该示例的核内 Tiling 逆序遍历变量，在硬件约束内调大取值，不满足时二分调整；分核 Tiling 再遍历多核变量，优先选择核数较大的可行记录。这不是所有轴排序算法的共同流程；来源另列 UB/核数权衡和对称切分策略。
 
 ### Codegen：impl_graph → AscendC kernel
 
@@ -125,13 +110,7 @@ AscendLoopIR 是一套基于 Loop 定义的 IR，其 type 映射到明确的 vec
 
 ## 典型片段收益
 
-DeepSeek-V4 的 `hc_post` 片段含多个小算子组合，适合 AutoFuse 融合。对 `hc_post` 加 `@torch.compile` 后的实测（昇腾 A3、基于 `hc_post` 典型输入 shape：`x=(1,1,4096)` bf16 / `residual=(1,1,4,4096)` bf16 / `post=(1,1,4)` fp32 / `comb=(1,1,4,4)` fp32，README §基准脚本）：
-
-| 模型部分 | 未编译耗时 | 编译后（dynamic=False） | 提升 | 编译后（dynamic=True） | 提升 |
-| --- | --- | --- | --- | --- | --- |
-| hc_post | 30 us | 7.5 us | 4x | 10 us | 3x |
-
-> 该数据前提为昇腾 A3 平台、`hc_post` 单算子上述典型输入 shape；端到端多片段收益待验证。cann-recipes-infer 的 `hc_post` 已有 AscendC 手写融合算子实现（见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)）；此处 AutoFuse 是**自动融合**路径，与手写 AscendC 算子为并列两种实现来路。
+[A3 部分编译和 hc_post 来源观测](../../optimizations/benchmark_observations/autofuse_a3_source_benchmark.md)维护输入、baseline、计时和限制。
 
 ## Evidence
 

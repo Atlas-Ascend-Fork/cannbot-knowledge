@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Weight Prefetch (npu_prefetch)
-description: 该优化提供网络 weight 预取功能，在算子计算的同时，**利用空闲的带宽，提前将一些访存 bound 算子的权重从 HBM 搬运到 L2 Cache 中**，提升算子性能。`npu_prefetch` 技术的详细介绍，请参考 官方文档。LongCat-Flash 通过 `enable_prefetch` 开关使能该优化。
+description: 权重预取利用前序计算的带宽窗口提前搬运后续权重，解释缓存与依赖机制；调试规则、LongCat 参数和 AFD 故障入口分别引用规范卡。
 tags:
 - task.optimization
 - topic.attention
@@ -14,11 +14,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-22T01:37:00Z'
 platforms:
 - a3
 ---
-
 # Weight Prefetch (npu_prefetch)
 
 ## Summary
@@ -27,54 +26,30 @@ platforms:
 
 ## Mechanism
 
-以下图为例，`Matmul` 的权重有 20 MB，前序的算子 `RmsNorm` 对内存带宽的需求较小，执行时间为 10us，此时可以通过预取技术，将 `Matmul` 的权重提前写入到 L2 Cache 中，**理想情况下，最大可预取的大小为 `HBM_bandwidth / time_available`**，实际可预取大小因网络与前序算子对带宽的占用程度而异。假设此时可预取的大小为 10 MB，与 `RmsNorm` 并行执行，则在 `Matmul` 算子执行时，只需要再额外读 10 MB 权重，访存的耗时开销减少明显。
+预取在权重被消费前，把数据从 HBM 搬到 L2，利用前序计算留下的带宽窗口减少后续等待。可搬运字节数由可用带宽与窗口时长共同约束，还受缓存容量、其他访问和依赖顺序影响；不能用固定时间或缓存大小推导通用收益。
 
 ![weight prefetch 原理示意](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/longcat-flash/figures/prefetch_demo.jpg)
 *来源：[`docs/models/longcat-flash/figures/prefetch_demo.jpg`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/figures/prefetch_demo.jpg)（cann-recipes-infer @ 2f82d10）*
 
 ## 预取分析与调试流程
 
-判断预取的大小和位置是否合理，可以通过 profiling 分析，如果与预取并行的算子性能有明显劣化，则需要进一步调整预取的位置（可以将预取的位置提前开始，或与劣化算子错开），如没有可调整的位置，则需要减少预取的大小使得并行算子尽量不劣化。如果想要获取最大化的预取收益，可以通过实验对比调整。**如果前序算子是访存密集型，如 Matmul 等，则不适合并行，避免带宽抢占导致劣化。**
-
-预取分析和调试的通用流程：
-
-```mermaid
-flowchart LR
- S[分析 profiling] --> B{前序算子是否<br/>访存密集？}
- B -->|是| C[无预取空间]
- B -->|否| D[预取理论大小]
- D --> E{性能是否<br/>有劣化？}
- E -->|否| F[完成预取]
- E -->|是| G[调小预取的大小<br/>或调整预取位置]
- G --> E
-```
-
-> 注：各模型的预取情况可能有所不同，可按需调整上述流程。
+[预取窗口与预算规则](../../optimizations/rules/decode_weight_prefetch_ordering.md)维护 profiling 判断、调整和回退。
 
 ## LongCat-Flash 的预取位置
 
-LongCat-Flash 模型对访存 bound 的算子如 **QuantBatchMatmul (QBMM)、MLAProlog、Matmul** 等算子提前预取了对应的权重。其中 **MLAProlog 算子包含了多个矩阵乘计算，搬运 bound 较大，因此提前预取了前置的 QBMM 的权重**，为 MLAProlog 提供了更大的预取空间，获取较大的性能收益。具体的预取大小及预取位置，可在 `models/modeling_longcat_flash.py` 中搜索 `npu_prefetch` 接口查看。
-
-`modeling_longcat_flash.py` 中这些预取大小为硬编码的承重参数：router `classifier.weight`~18 MB、下一段 attention 的 `q_a_proj`~18 MB、`q_b_proj`~36 MB、`kv_a_proj_with_mqa`~7 MB。设计上以**前一算子的输出作为预取触发依赖**（`npu_prefetch` 的 dependency tensor）——router 预取依赖 `o_proj`、本段 attention 权重预取依赖 `dsq`、跨层预取**下一层** attention（`next_layer.self_attn[0]`）权重时则以 `down_proj` 为依赖锚点，从而构成跨层流水的预取链。
-
-![LongCat-Flash 的预取位置](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/longcat-flash/figures/prefetch.png)
-*来源：[`docs/models/longcat-flash/figures/prefetch.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/figures/prefetch.png)（cann-recipes-infer @ 2f82d10）*
+[LongCat 实现案例](../../optimizations/cases/longcat_a3_decode_weight_prefetch.md)维护权重定位、开关和消费依赖。
 
 ## AFD 下的 FFN 侧预取
 
-使能 [afd](afd.md) 之后，Attention 侧解除控核后算子耗时下降，FFN 侧可能成为新的瓶颈。此时对 **MoE GMM / Matmul 等访存 bound 算子在通信间隙时提前预取权重**，可进一步降低 FFN 侧整体耗时。AFD 场景下 Attention 侧的权重预取保持与非分离场景一致。
+[AFD 后 FFN 拖尾诊断](../../runbooks/performance/afd_ffn_side_bottleneck_prefetch.md)维护探针与调整。
 
 ## Applicable Scenarios
 
-- Decode 阶段访存 bound 算子（MLAProlog、FA、MM、QBMM、TBMM、GMM 等）
-- 前序算子为**计算密集**、带宽空闲的场景（如 LN、softmax、element-wise）
-- `exe_mode: "ge_graph"` 或 eager 均适用
+在明确的实现和负载下存在权重搬运等待时，该机制可用于分析候选窗口。已核验的具体适用范围以规则和案例为准，不从机制本身声明所有 eager、图后端或阶段已验证。
 
 ## Constraints
 
-- **前序算子为访存密集型（如 Matmul）时不适合预取**，避免带宽抢占导致前序算子劣化
-- 预取大小过大会挤占前序算子带宽，需要 profiling 迭代调整
-- AFD 场景下 FFN 侧（MoE GMM / Matmul）的预取位置与非分离场景不同，需针对性标定
+带宽争用、缓存容量及依赖生命周期决定是否有效；参数和调整步骤由规范规则/案例维护。
 
 ## Known Results
 

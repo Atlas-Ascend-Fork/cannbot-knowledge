@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/353
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -36,10 +36,10 @@ platforms:
 
 ## 修法（两维方向相反，须一起记）
 
-- **序列维 = 软约束（可软填充吸收）**：在 head-to-seq all-to-all **之前**把 Q/K/V 的序列维零填充到 `ulysses_world_size` 整数倍，seq-to-head all-to-all **之后**按原序列长切回。尾部零填充落在注意力输出的无效区间，不影响有效 token 结果。对任何"序列长任意、又要跑标准 Ulysses"的场景通用。
+- **序列维 = 软约束（可软填充吸收）**：在 head-to-seq all-to-all **之前**把 Q/K/V 的序列维零填充到 `ulysses_world_size` 整数倍，seq-to-head all-to-all **之后**按原序列长切回。还必须通过 mask 或算子实际长度参数排除 padding K/V；仅裁剪输出不能保证有效 token 不变。未屏蔽的零 key 仍以 exp(0) 进入 softmax 分母，应先核对目标 attention 的 mask/长度契约再采用该方案。
 - **head 维 = 硬约束（须 UAA 放开，或改配置/并行度）**：不整除只能调模型配置 / Ulysses 并行度，或走 **UAA（Ulysses-Anything Attention）**——把 head 补齐到 `world_size` 整数倍再切本地片、算完 unpad：
   - **补的 head 数须 < 每卡本地 head 数**，否则拒绝（如 `h=30, ws=8` 补 2 允许；`h=30, ws=16` 补 14 被 `raise`）。
-  - **各 rank 序列长动态收集**：动态 shape 下各 rank `s_local` 可不等，先 all_gather 收各 rank 实际长度（`_gather_size_by_comm`）再按 split_sizes 做 `all_to_all_single`；输出侧按各 rank 实际长度 all_gather 后 cat，而非等分。
+  - **各 rank 序列长动态收集**：动态 shape 下各 rank `s_local` 可不等，先 all_gather 收各 rank 实际长度（`_gather_size_by_comm`）再按 split_sizes 做 `all_to_all_single`；输出侧的 `_all_to_all_o_anything` 先 all_gather 长度，再用 `all_to_all_single` 反向交换输出、reshape 并裁掉填充 head。`all_gather_anything` 是另一辅助函数，不能代替该注意力输出交换步骤。
   - **稀疏度向量按实际本地 head 数对齐**：叠加块稀疏时，不能假定各 rank 本地 head 数相等，要跨 rank 收集实际本地 head 数算出每 rank `head_start/head_end` 再切，支持不均匀切分。
   - **约束：UAA 仅支持纯 Ulysses**，不支持 Ulysses + [Ring](../../concepts/parallelism/ring_attention.md) 混合序列并行。
 
@@ -47,7 +47,7 @@ platforms:
 
 ## 参考实现
 
-模块 `module/unified_sp/core.py::UnifiedSPAttention`（`ulysses_world_size` / `ring_world_size` 两个并行度）+ `module/unified_sp/uaa.py`（`_maybe_pad_qkv_head` / all_to_all-anything / patch 对齐 split）。落地于 [HunyuanVideo](../../concepts/models/hunyuan_video.md)（head=24）、[Wan2.2-I2V](../../concepts/models/wan2_2_i2v.md) 视频 [DiT](../../concepts/modules/dit.md)。手段改自 `vipshop/cache-dit`。序列并行本体见 [video-dit-ulysses-sequence-parallel](../../optimizations/experience/rules/video_dit_ulysses_sequence_parallel.md)；与块稀疏同用见 [blockwise-sparse-attention-ulysses-integration](../../guides/experience/interventions/blockwise_sparse_attention_ulysses_integration.md)。
+模块 `module/unified_sp/core.py::UnifiedSPAttention`（`ulysses_world_size` / `ring_world_size` 两个并行度）+ `module/unified_sp/uaa.py`（`_maybe_pad_qkv_head` / all_to_all-anything / patch 对齐 split）。落地于 [HunyuanVideo](../../concepts/models/hunyuan_video.md)（head=24）、[Wan2.2-I2V](../../concepts/models/wan2_2_i2v.md) 视频 [DiT](../../concepts/modules/dit.md)。手段改自 `vipshop/cache-dit`。序列并行本体见 [video-dit-ulysses-sequence-parallel](../../optimizations/rules/video_dit_ulysses_sequence_parallel.md)；与块稀疏同用见 [blockwise-sparse-attention-ulysses-integration](../../guides/integration/blockwise_sparse_attention_ulysses_integration.md)。
 
 ## 相关经验
 

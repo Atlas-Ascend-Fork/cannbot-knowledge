@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/6
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -34,7 +34,7 @@ platforms:
 
 ## 根因
 
-- **静默**：warmup 前向本身耗时随序列长度线性增长，而该阶段未打任何进度日志 → 没有可观测信号区分「在算」与「卡住」。这不是性能 bug，是可观测性缺失。
+- **静默**：长序列可能增加 warmup 前向耗时，具体关系取决于模型、阶段和执行路径，来源没有给出线性计时证据，而该阶段未打任何进度日志 → 没有可观测信号区分「在算」与「卡住」。这不是性能 bug，是可观测性缺失。
 - **冗余**：若多个 warmup minibatch 只为触发同一套算子编译/图捕获，它们的前向输出对后续无实际依赖，重复跑等价前向对 warmup 目的无增益。
 
 ## 修法 / 手段
@@ -50,7 +50,7 @@ platforms:
 ## 相关经验
 
 - 「拉起后长时间无输出、疑似 hang」的通用辨别（区分 warmup / 环境驱动初始化 / 真故障）见 [bringup-error-root-cause-env-driver-platform](../runtime/bringup_error_root_cause_env_driver_platform.md)。
-- warmup 之后进入 decode 稳态期还能进一步跳 guard 复评省 host 开销，见 [aclgraph-decode-steady-state-skip-guard-reinplace](../../guides/experience/interventions/aclgraph_decode_steady_state_skip_guard_reinplace.md)（二者都以「warm-up 已把该编译的都编译完」为前提）。
+- warmup 之后进入 decode 稳态期还能进一步跳 guard 复评省 host 开销，见 [aclgraph-decode-steady-state-skip-guard-reinplace](../../optimizations/rules/aclgraph_decode_steady_state_skip_guard_reinplace.md)（二者都以「warm-up 已把该编译的都编译完」为前提）。
 
 ## Evidence
 

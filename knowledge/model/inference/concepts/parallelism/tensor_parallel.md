@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Tensor Parallel
-description: 将模型权重沿 Head 或隐藏维度切分到多张卡上并行计算的策略，是 NPU 推理中最基础的并行方式。几乎所有模型的 Attention 和 FFN 层都使用 TP。
+description: 将模型权重沿 Head 或隐藏维度切分到多张卡上并行计算的策略，是 NPU 推理中最基础的并行方式。具体使用模块与阶段由模型实现决定，也可与 DP/EP 配合。
 tags:
 - task.design
 - topic.parallelism
@@ -16,11 +16,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/qwen3-next/qwen3_next_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-11T00:00:00Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - a3
 ---
-
 # Tensor Parallel
 
 ## Summary
@@ -40,24 +39,24 @@ platforms:
 
 ## Applicable Scenarios
 
-- 所有 LLM 的 Attention/FFN 层
-- 模型参数量超过单卡 HBM 容量时必须使用
+- 支持对应分片算子和通信路径的 Attention/FFN 层
+- 参数超出单卡容量时可与其他切分策略比较，不由容量问题单独决定必须采用 TP
 - Decode 阶段的基础并行策略
 
 ## Configuration
 
-- TP size 受 Attention Head 数量限制（如 Qwen3-Next 的 16 heads 限制最大 TP16）
+- 按 head 切分的 Attention TP 受该实现的 head 布局限制；o_proj、MLP、embedding 等独立 TP 组还需按各自接口判断。
 - 典型取值：TP2、TP4、TP8
 
 ## Constraints
 
 - TP 通信（AllReduce）开销随 TP size 增大而增加
 - 不解决 Sequence 维度的内存瓶颈（长序列需配合 CP）
-- Head 数量是 TP size 的上限
+- Head 数量不能作为所有模块 TP 组的通用上限；模型特定上限按对应 Guide 和固定实现核对。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 所有模型均使用 TP 策略
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — README 列有 Qwen Dense 等 TP 示例，也列出 SANA-Video 的单卡/DP 和 R1 的 Prefill DP、Decode EP；不能概括为所有模型都使用 TP
 
 ## Known Deployments
 

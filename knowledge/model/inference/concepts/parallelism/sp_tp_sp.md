@@ -1,7 +1,9 @@
 ---
 type: Concept
 title: SP-TP-SP Hybrid Split (Prefill MLA)
-description: DeepSeek-R1 Prefill 阶段 MLA 部分针对 DP 切分在短序列混合/请求数少场景下 **计算负载不均 + TTFT 被拉长** 问题提出的混合切分策略：把 batch 与 seq_len 合轴变为 token 数，按卡数 **SP** 切 token 均匀分发；FlashAttention 计算走 **TP** 切 head；FA 结束后 AllToAll 再转回 **SP** 给 o_proj。"SP → TP（FA）→ SP" 三段式得名。
+description: DeepSeek-R1 Prefill 阶段 MLA 部分针对 DP 切分在短序列混合/请求数少场景下 **计算负载不均 + TTFT 被拉长**
+  问题提出的混合切分策略：把 batch 与 seq_len 合轴变为 token 数，按卡数 **SP** 切 token 均匀分发；FlashAttention
+  计算走 **TP** 切 head；FA 结束后 AllToAll 再转回 **SP** 给 o_proj。"SP → TP（FA）→ SP" 三段式得名。
 tags:
 - task.design
 - topic.parallelism
@@ -14,11 +16,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T01:37:00Z'
 platforms:
 - agnostic
 ---
-
 # SP-TP-SP Hybrid Split (Prefill MLA)
 
 ## Summary
@@ -86,7 +87,7 @@ flowchart LR
 
 ## Known Results
 
-源文档未单列 SP-TP-SP 相对 DP 的数值对比。实际 benchmark 数据（见 [deepseek-r1](../models/deepseek_r1.md)）为 DP+EP + micro-batch 路径。SP-TP-SP 的典型收益描述为"长序列 TTFT 更短"和"MLA 负载均匀"。
+源文档未单列 SP-TP-SP 相对 DP 的数值对比。实际 benchmark 数据（见[R1 Prefill 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark.md)）为 DP+EP + micro-batch 路径。SP-TP-SP 的典型收益描述为"长序列 TTFT 更短"和"MLA 负载均匀"。
 
 ## Evidence
 

@@ -56,7 +56,7 @@ platforms:
 - [MoE + 投机解码：draft dummy_run 误带 profile-run 语义触发](../precision/mtp_draft_dummy_run_in_profile_run_random_experts.md)
 - [序列并行(FlashComm V1)分支用只查环境变量的窄谓词门控：漏掉 shared_ex](../precision/sp_gate_narrow_env_predicate_misses_shared_expert_dp.md)
 
-- 另见 [量化 MoE 专家 GMM 的 phase-gated bias 跳过：Prefill 去 bias 提速、Decode 保留](../../optimizations/experience/rules/w4a8_moe_gmm_prefill_skip_bias.md)。
+- 另见 [量化 MoE 专家 GMM 的 phase-gated bias 跳过：Prefill 去 bias 提速、Decode 保留](../../optimizations/rules/w4a8_moe_gmm_prefill_skip_bias.md)。
 
 
 ## Evidence

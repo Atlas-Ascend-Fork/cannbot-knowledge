@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: TorchAir
-description: '**Torch Ascend Intermediate Representation**，是 Ascend Extension for PyTorch（torch_npu）的图模式能力扩展库，提供昇腾设备亲和的 `torch.compile` 后端，实现 PyTorch 网络在 NPU 上的图模式推理加速与性能优化。 DeepSeek-R1 Decode 阶段走 TorchAir 图模式以规避 eager 下的 host 下发 bound，是 W8A8C8 + MTP1 benchmark 达到 TPOT 44.9 ms 的基础条件之一。'
+description: TorchAir 提供昇腾 torch.compile 后端；解释 GE 与图重放的机制及版本命名差异，模型部署和收益分别查阅对应入口。
 tags:
 - task.implementation
 - topic.architecture
@@ -14,18 +14,17 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-21T10:09:34Z'
 platforms:
 - a3
 ---
-
 # TorchAir
 
 ## Summary
 
 **Torch Ascend Intermediate Representation**，是 Ascend Extension for PyTorch（torch_npu）的图模式能力扩展库，提供昇腾设备亲和的 `torch.compile` 后端，实现 PyTorch 网络在 NPU 上的图模式推理加速与性能优化。
 
-DeepSeek-R1 Decode 阶段走 TorchAir 图模式以规避 eager 下的 host 下发 bound，是 W8A8C8 + MTP1 benchmark 达到 TPOT 44.9 ms 的基础条件之一。
+R1固定部署使用图模式降低逐算子下发开销；完整组合数据见[R1 Decode 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark.md)，不当作TorchAir单项受控收益。
 
 ## Architecture
 

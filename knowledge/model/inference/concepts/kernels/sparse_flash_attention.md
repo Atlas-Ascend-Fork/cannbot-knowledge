@@ -1,7 +1,11 @@
 ---
 type: Concept
 title: Sparse Flash Attention Kernel
-description: '`SparseFlashAttention` 是 DeepSeek-V3.2-Exp **DSA** 的主 Attention 算子 —— 在 lightning-indexer 产出的 TopK index 基础上，`Gather` 出稀疏 KV 子集并执行 Flash Attention 计算。沿用 FlashAttention 的 `C_1 (Q@K^T) → V_1 (online softmax) → C_2 (P@V) → V_2 (rescale)` 四阶段流程，但面向**离散访存**进行了专门优化。模块语义见 sparse-flash-attention。 cann-recipes-infer 提供 AscendC + TileLang 两路实现；PyPTO 侧则作为 deepseek-indexer-attention 大融合算子内的子流程出现。'
+description: '`SparseFlashAttention` 是 DeepSeek-V3.2-Exp **DSA** 的主 Attention 算子 ——
+  在 lightning-indexer 产出的 TopK index 基础上，`Gather` 出稀疏 KV 子集并执行 Flash Attention 计算。沿用
+  FlashAttention 的 `C_1 (Q@K^T) → V_1 (online softmax) → C_2 (P@V) → V_2 (rescale)`
+  四阶段流程，但面向**离散访存**进行了专门优化。模块语义见 sparse-flash-attention。 cann-recipes-infer 提供 AscendC
+  + TileLang 两路实现；PyPTO 侧则作为 deepseek-indexer-attention 大融合算子内的子流程出现。'
 tags:
 - task.implementation
 - topic.attention
@@ -14,11 +18,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:35:31Z'
 platforms:
-- agnostic
+- a3
 ---
-
 # Sparse Flash Attention Kernel
 
 ## Summary
@@ -58,7 +61,9 @@ KV C8 量化路径改走 `torch_npu.npu_kv_quant_sparse_flash_attention`（`mode
 
 ## Performance Signals
 
-### AscendC 实现
+### AscendC 实现（固定来源的 Atlas A3）
+
+以下 L1/L0 划分、Tiling 与 Cube/Vector 流水均来自 A3 优化报告，不作为其他硬件的配置或收益保证。
 
 **算子 Tiling**（基本块 `(256, 512)`）：
 
@@ -72,7 +77,7 @@ KV C8 量化路径改走 `torch_npu.npu_kv_quant_sparse_flash_attention`（`mode
 ![SFA Pipeline](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/pipeline.png)
 *来源：[`docs/models/deepseek-v3.2-exp/figures/pipeline.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/pipeline.png)（cann-recipes-infer @ 2f82d10）*
 
-### 访存优化（离散访存专项）
+### 访存优化（A3 AscendC 离散访存实现）
 
 **问题**：连续 Attention 的访存瓶颈是数据搬运本身；Sparse Attention 单次访存量小，**单次搬运耗时甚至低于指令下发耗时** —— 指令下发阻塞反而成为新的瓶颈。
 
@@ -118,7 +123,7 @@ Cube/Vector 协同通过 `T.set_cross_flag / T.wait_cross_flag` 实现。
 
 ### 相对 MTP 的表现
 
-DSA 下 **MTP 对 SFA 难以加速** —— 每个 q token 单独选 TopK，MTP1 下 KV 搬运量翻倍。源文档在"MTP"章节给出对比表，SFA 的 KV 搬运 4.5 MB → 9 MB、Cube 计算 0.60 → 1.21 GFlops。见 [sparse-flash-attention](../modules/sparse_flash_attention.md)。
+搬运与计算量对照见[DSA 模块分析案例](../../optimizations/cases/mtp_benefit_sparse_attention_and_latency_metric.md)。它不是独立测量的整网收益，不能推出所有 SFA 场景均无收益。
 
 ### Offload 协作
 

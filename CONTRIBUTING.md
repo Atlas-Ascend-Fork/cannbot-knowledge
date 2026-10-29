@@ -157,6 +157,8 @@ Git 来源固定到提交；普通文档来源优先使用稳定版本页，Regi
 
 额外字段由路径 Profile 决定。`type` 必须写入，但其值由 Profile 的 `okf_type` 唯一决定；不要在卡片中自行创造类型，也不要重复填写可从路径推导的 domain、technology/scope 或 Concept ID。
 
+模型推理知识先区分机制、优化决策、任务流程和故障诊断，再按[路径规范](governance/specs/paths.md)选择入口。同一规则只维护一份正文，案例保留具体实现及证据，其他视图通过链接引用。Guide 与 Optimization 不再使用 `experience` 层。可选 `scope` 只填写来源支持的场景条件；未知字段留空缺失，不以 `any` 代替未知，也不因移动卡片或通过 Lint 补造 `verified`。
+
 具体字段语义、生命周期、平台表示、OKF `verified` 事件、信任层级、标签和各 Profile 允许字段见 [Frontmatter 与证据](governance/specs/frontmatter.md)。
 
 ### 3.7 编写正文
@@ -307,6 +309,8 @@ A/B test 指旧方案与候选方案在同一任务集上的对照实验，可�
 未执行、仅有实验计划或只报告 B 的结果，都不能标为实验通过。样本不足或结果波动大时如实说明结论限制，补充实验后再申请合入；未达到预设标准时说明原因、调整方案并重新验证，不能事后降低标准而不解释。
 
 可复用评测用例和驱动放在 `evals/`；本地可重建报告放在 ignored 的 `artifacts/`。RFC/PR 中保留结果摘要，并附上评审者可访问的完整报告或复现材料，不能只提供作者机器上的绝对路径。Skill 内部命令仍由对应 `SKILL.md` 或 `references/` 维护，RFC/PR 引用这些说明并记录本次实际执行配置。
+
+Scope A/B 的人工标注可用 [评审输入校验器](evals/scope_review.py) 核对：评审记录绑定冻结用例、迁移等价映射与两组检索快照，并完整覆盖实际返回项。运行方式见 `python3 -m evals.scope_review --help`；缺少人工标注时输出待评审状态，不生成精度结果。该工具只计算检索指标，不能代替工作流评审、仓库门禁或 committer 检视。
 
 ### 5.4 实现、验证并提交 PR
 

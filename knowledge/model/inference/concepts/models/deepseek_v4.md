@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: DeepSeek-V4
-description: 'DeepSeek-V4 是面向长序列的 DeepSeek 新一代模型，包含 Flash 285B 与 Pro 1.6T。它以 C1A/SWA（窗口 128）、CSA（4:1 压缩后由 LI 选 Top512）和 HCA（128:1 压缩）交错组成 Hybrid Attention，统一使用 MQA/Shared-KV、Attention Sink 和 mHC；128K 序列下 HCA 约保留 1K KV，CSA 约保留 32K。MoE 每 token 激活 6 个路由专家和 1 个共享专家，Flash/Pro 分别有 256/384 个路由专家。Prefill 使用 CP+zigzag，Decode 使用 DP+EP，并支持 MTP1/MTP3。A3 主要采用 W8A8C16 或 INT8-INT4，950PR/DT 支持 FP8/MXFP4；图模式默认 npugraph_ex。性能数据必须同时限定平台、卡数、量化、序列长度和 MTP 配置。'
+description: 'DeepSeek-V4 是面向长序列的 DeepSeek 新一代模型，包含 Flash 285B 与 Pro 1.6T。它以 C1A/SWA（窗口 128）、CSA（4:1 压缩后由 LI 按权重配置选 Top-k）和 HCA（128:1 压缩）交错组成 Hybrid Attention，统一使用 MQA/Shared-KV、Attention Sink 和 mHC；128K 序列下 HCA 约保留 1K KV，CSA 约保留 32K。MoE 每 token 激活 6 个路由专家和 1 个共享专家，Flash/Pro 分别有 256/384 个路由专家。Prefill 使用 CP+zigzag，Decode 使用 DP+EP，并支持 MTP1/MTP3。A3 主要采用 W8A8C16 或 INT8-INT4，950PR/DT 支持 FP8/MXFP4；图模式默认 npugraph_ex。性能数据必须同时限定平台、卡数、量化、序列长度和 MTP 配置。'
 tags:
 - task.design
 - topic.model_architecture
@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-22T10:35:31Z'
 platforms:
 - a3
 - '950'
@@ -79,39 +79,11 @@ KV Cache 由 **Window Cache + Compress Cache + remainder** 组成（压缩层的
 
 ### mHC（Manifold-Constrained Hyper-Connections）
 
-mHC 是对传统残差连接的扩展：把 `hidden_state` 从一路扩展到多路，在 Attention/MoE 计算前经 Pre Mapping 融合回一路（保持 Attention/MoE 计算过程不变），输出经 Post Mapping 扩展回多路，多路残差经 Res Mapping（Sinkhorn-Knopp 约束的混合矩阵）特征融合后与 Post Mapping 结果加和得到 mHC 输出。结构语义与计算公式见 [mhc](../modules/mhc.md)。本仓提供 `HcPre` / `HcPost` 融合算子（`HcPre` 含 AscendC + PyPTO，`HcPost` 含 AscendC），算子级 Tiling/流水/性能见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)。`hc_post` 等小算子组合另有 `@torch.compile` + [autofuse](../frameworks/autofuse.md) 自动融合路径（A3 实测 4x），与手写 AscendC 算子并列。
+mHC 是对传统残差连接的扩展：把 `hidden_state` 从一路扩展到多路，在 Attention/MoE 计算前经 Pre Mapping 融合回一路（保持 Attention/MoE 计算过程不变），输出经 Post Mapping 扩展回多路，多路残差经 Res Mapping（Sinkhorn-Knopp 约束的混合矩阵）特征融合后与 Post Mapping 结果加和得到 mHC 输出。结构语义与计算公式见 [mhc](../modules/mhc.md)。本仓提供 `HcPre` / `HcPost` 融合算子（`HcPre` 含 AscendC + PyPTO，`HcPost` 含 AscendC），算子级 Tiling/流水/性能见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)。`hc_post` 等小算子组合另有 `@torch.compile` + [autofuse](../frameworks/autofuse.md) 自动融合路径，与手写 AscendC 算子并列。
 
 ## Serving Strategy
 
-### Prefill 并行（长序列 CP + zigzag）
-
-长序列 Prefill 内存与 TTFT 压力大，故 Attention 选 **Context Parallel（CP）** 而非 DP，多 rank 分摊计算/访存。LI 用 `causal_mask`，越靠后的 Context Chunk 访存/计算越重，故沿用 V3.2 的 `zig_zag` 切分将首尾序列块放同一 rank 做负载均衡。见 [context-parallel](../parallelism/context_parallel.md)、[zigzag-cp](../parallelism/zigzag_cp.md)。
-
-切分需同时考虑滑窗与压缩：SWA 层每个 chunk 需前序 `win_size=128` 的 KV；HCA / CSA 层若前序 chunk 序列 **128 对齐**则无需向后传额外 token（CSA Compressor 另需前序 4 个 token 做 Overlap）。Attention 模块引入两次 CP 通信：MQA 起始用全局 `all_gather` 取各 rank 末尾 128 token（按 `receive_idx` 裁切，`chunk_0` 不取）；Compressor 后对 Compress Cache 做 CP 域 `all_gather`（zigzag 场景需顺序重排）供 LI/SAS 使用。
-
-**进一步通信优化**（源 §并行策略 › Prefill 并行策略末段，CSA 为例，源附图 `prefill_cp_allgather_cache2`）：由于两个 Compressor 存在并行空间，且 CSA 的 Compressor 仅需 4 个 Overlap token 信息，因此可将 **Window Attention 所需数据**与 **Compressor 所需数据分别进行通信**，实现计算通信掩盖，且冗余计算的数据量也较少。Compressor 后同样需要对 Compressed Cache 做 CP 域 `all_gather` 通信。
-
-### Decode 并行（DP + EP + LM_head TP）
-
-Decode 参考 DeepSeek-R1 / V3.2 方案：Attention 用 **Data Parallel（DP）**、MoE 用 **Expert Parallel（EP）**、LM_head 用 **Tensor Parallel（TP）**。Output Projection 中 `o_a_proj` 权重大、访存重，低时延场景可**选择性对其做 TP 切分**，经 `all_to_all` + `reduce_scatter` 实现 DP↔TP 转换。见 [data-parallel](../parallelism/data_parallel.md)、[expert-parallel](../parallelism/expert_parallel.md)、[tensor-parallel](../parallelism/tensor_parallel.md)。
-
-### MTP
-
-V4 沿用原生 Multi-Token Prediction（[mtp-speculative-decoding](../techniques/mtp_speculative_decoding.md)）。Main Model 针对 Window KV 与 Compressor 的 `kv_state`/`score_state` 设计 **Ring Buffer**（`block_table` + `slot_mapping` 复用少数 Cache 块），其余 KV Cache 按压缩后最大长度申请；MTP 场景沿用 LI / SAS 内置的**梯形掩码**，确保待验证 token 的压缩 Cache 不参与主模型 token 计算。**MTP Spec Model 仅使用 Window Attention（SWA）**，`next_n` 个 Draft Token 共享一份 MTP 权重和 KV Cache。MTP 在 SWA/HCA/LI 上 Cache 搬运量与非 MTP 几乎一致，自然提升计算访存比；CSA 的 FA 极端下搬运量为非 MTP 的 `next_n+1` 倍。高吞吐用 MTP1、低时延用 MTP3。
-
-#### Main Model 额外 Cache 定量（源 §MTP › Main Model 方案）
-
-若某 MTP Token 校验不被接受，需在下一 Step 重新推导，故须为 Compressor 的 `kv_state`/`score_state` 额外缓存。结合 Ring Buffer，只需**提前申请更大 Buffer** 即可自然实现该额外缓存动作。需缓存的 Cache 以 `compress_ratio` 个 token 为一组统计，组数公式为：
-
-$$
-\mathrm{num\_ratio\_group} = (1 \ \mathrm{if} \ \mathrm{next\_n} == 0 \ \mathrm{else}\ 2) + \mathrm{overlap}
-$$
-
-其中 `overlap` 在 CSA 等于 1、在 HCA 等于 0。`num_ratio_group` 里预留了**余数 token** 和**可能需要重新压缩的前序 token**。每个 Batch 需要的 Cache Block 个数为：
-
-$$
-\mathrm{ceil}(\mathrm{num\_ratio\_group} \times \mathrm{ratio} \ / \ \mathrm{block\_size})
-$$
+配置、CP 数据交换、MTP 缓存与接受率验收集中到[DeepSeek-V4 部署流程](../../guides/models/deepseek_v4_deployment.md)。本页保留模型结构，具体优化取舍与验证按流程引用的规则执行。
 
 ## Quantization Overview
 
@@ -125,20 +97,7 @@ $$
 
 ## 多流并行优化
 
-V4 借助 CANN 软件栈的算子控核与多流并行能力，对跨算子无数据依赖的计算流做细粒度并行掩盖（[multi-stream](../techniques/multi_stream.md)）。
-
-### Attention 多流并行
-
-源 §多流并行优化 › Attention 多流并行（CSA 为例，源附图 `attn_multi_stream`）逐条列出 4 个并行点：
-
-- **(a)** MLAProlog 模块中 Query 计算流与 KV 计算流有并行空间：`kv_proj`、`q_b_proj` 等 Matmul 用 **Cube 核**计算，与 `q_rms_norm` 等用 **Vector 核**计算的算子可并行；
-- **(b)** `q_b_proj` 后的 `rms_norm` 和 `rope` 可与 LI 的 `li_q_b_proj` 并行计算；
-- **(c)** CSA 时 LI 与 CSA Compressor 无数据依赖，可通过 **CV 控核**确保算子分配到合适的 Cube/Vector 核数，在多流并行时减少计算资源抢占对性能的影响，从而**完全掩盖 CSA 的 Compressor**；
-- **(d)** HCA 中没有 LI，可直接用 MLAProlog 计算掩盖**部分** Compressor。
-
-### MoE 共享路由多流并行
-
-源 §多流并行优化 › MoE 共享路由多流并行（源附图 `moe_multi_stream`）：MoE 模块中共享专家与路由专家存在**计算与计算、计算与通信**的并行机会。本实践针对 **Int8 和 MXFP8 量化场景**实现了专家多流并行，可获得较大收益——以路由专家为关键路径，在**基本不影响路由专家**的同时掩盖共享专家的计算耗时。详见 [moe-multi-stream](../techniques/moe_multi_stream.md)。
+Attention/Compressor 和共享/路由专家的具体编排与检查集中到[部署流程的多流章节](../../guides/models/deepseek_v4_deployment.md#4-多流数据依赖检查)，通用机制见[多流](../techniques/multi_stream.md)。
 
 ## Platform
 
@@ -146,28 +105,7 @@ V4 在 Atlas A3 Pod（[atlas-a3](../platforms/atlas_a3.md)，每节点 8 卡，`
 
 ## Benchmark
 
-> 数据基于 Offline 推理（不含 Serving 调度/负载均衡），MTP 投机 + 强制 EPLB 采集；MTP3 平均 3 个 Draft Token 中 Accept 1.44、MTP1 平均 1 个 Accept 0.7。引用须带全限定（平台 + MTP + DataType + SeqLen）。
-
-**950DT，16 卡，DP + EP（节选 DeepSeek-V4 Flash）**
-
-| 平台 | 规格 | Chips | MTP | DataType | SeqLen | TPOT (ms) | Throughput (Tokens/p/s) |
-| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| 950DT | Flash | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 9.84 | 1625.31 |
-| 950DT | Flash | 16 | 1 | Hybrid MXFP8-MXFP4 | 8192 | 20.33 | 4722.22 |
-| 950DT | Flash | 16 | 3 | Hybrid MXFP8-MXFP4 | 131072 | 10.69 | 1496.36 |
-| 950DT | Flash | 16 | 3 | Hybrid MXFP8-MXFP4 | 1048576 | 8.22 | 121.70 |
-| 950DT | Flash | 16 | 1 | Hybrid FP8-MXFP4 | 8192 | 24.28 | 3953.49 |
-| 950DT | Pro | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 17.64 | 56.7 |
-| 950DT | Pro | 16 | 3 | Hybrid MXFP8-MXFP4 | 131072 | 19.46 | 51.38 |
-
-> 注：源 Benchmark 含 Global Batch Size 列（本表略）——Flash 8192/131072 行系 GBS=256（MTP3）/1536（MTP1）大 batch，但 **Flash 1048576（1M）行系 GBS=16** 小 batch（极长序列带宽受限，Throughput 121.70 偏低属正常，不可与同规格大 batch 行横比）；950DT **Pro** 行亦系 **GBS=16** 小 batch 采集，故 Pro 的低 Tokens/p/s（56.7/51.38）是小 batch 口径，**不可与 Flash 大 batch 行横比**。
-
-**Atlas A3 Pod，64 卡，DP + EP，W8A8C16（DeepSeek-V4 Flash，LI Cache Int8 / KV Cache BF16）**
-
-| 平台 | 规格 | Chips | Global Batch Size | MTP | DataType | SeqLen | TPOT (ms) | Throughput (Tokens/p/s) |
-| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| A3 Pod | Flash | 64 | 7168 | 1 | W8A8C16 | 8192 | 27.82 | 4025 |
-| A3 Pod | Flash | 64 | 8192 | 1 | W8A8C16 | 8192 | 29.17 | 4388 |
+来源自报数字分平台统一维护在[950DT 观测](../../optimizations/benchmark_observations/deepseek_v4_950_source_benchmark.md)和[A3 Pod 观测](../../optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark.md)。核对每行 GBS、卡数、MTP、量化和计时缺口；这里不重复性能表。
 
 ## Future Plan
 

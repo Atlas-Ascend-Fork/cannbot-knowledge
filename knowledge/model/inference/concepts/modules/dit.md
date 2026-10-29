@@ -1,7 +1,11 @@
 ---
 type: Concept
 title: Diffusion Transformer (DiT)
-description: DiT（Diffusion Transformer）是目前主流的多模态扩散生成模型主干：把 U-Net 替换为 Transformer，把 latent（图像/视频 VAE 编码后）当作 token 序列，通过多步去噪（sampling steps） 从随机噪声还原语义信号。cann-recipes-infer 中的 HunyuanVideo、HunyuanImage-3.0、Wan2.2-I2V、Sana-Video 均属于此范式：文本 encoder（T5/CLIP/LLM）把 prompt 编码为 condition，DiT 在每一步 time step 内基于 (noisy_latent, t, cond) 预测噪声；CFG 用一组 conditional/unconditional 预测做 guidance，再经 VAE decoder 还原出像素域的图像/视频。
+description: DiT（Diffusion Transformer）是目前主流的多模态扩散生成模型主干：把 U-Net 替换为 Transformer，把
+  latent（图像/视频 VAE 编码后）当作 token 序列，通过多步去噪（sampling steps） 从随机噪声还原语义信号。cann-recipes-infer
+  中的 HunyuanVideo、HunyuanImage-3.0、Wan2.2-I2V、Sana-Video 均属于此范式：文本 encoder（T5/CLIP/LLM）把
+  prompt 编码为 condition，DiT 在每一步 time step 内基于 (noisy_latent, t, cond) 预测噪声；CFG 用一组
+  conditional/unconditional 预测做 guidance，再经 VAE decoder 还原出像素域的图像/视频。
 tags:
 - task.design
 - topic.model_architecture
@@ -14,11 +18,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T01:47:21Z'
 platforms:
 - agnostic
 ---
-
 # Diffusion Transformer (DiT)
 
 ## Summary
@@ -62,14 +65,14 @@ flowchart LR
 
 ## Performance Characteristics
 
-- **Attention 主导**：长序列 DiT 中 FA 是首要瓶颈，融合算子（FIA / FA_v2）+ 序列并行是标配
-- **多步迭代天然可缓存**：时间步之间输出变化平滑 → Step-level Cache（FBCache / TeaCache / TaylorSeer）可直接跳过若干 step
+- **Attention 主导**：长序列可能暴露 FA 计算或搬运成本，是否采用融合与序列并行应由对应负载的 profiling 和规则判断
+- **多步迭代天然可缓存**：时间步之间输出变化平滑 → Step-level Cache（FBCache / TeaCache / TaylorSeer）在实现已接入且任务质量通过验收时，可复用或预测部分 step
 - **VAE 与 DiT 并非同构**：VAE 以 3D/2D 卷积为主，需要 patch 并行而不是 sequence 并行；VAE 并行优化单独一类（见 [vae-patch-parallel](../parallelism/vae_patch_parallel.md)）
 - **CFG 每步两份样本**：天然可拆到两张卡同时算（[cfg-parallel](../parallelism/cfg_parallel.md)）
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md)（DiT 占 95%，Attention 占 81%）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md)（DiT 与 Attention 的来源 profiling）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md)（DiT + MoE 变体）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md)
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/sana-video/SANA-Video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/sana-video/SANA-Video_optimization.md)

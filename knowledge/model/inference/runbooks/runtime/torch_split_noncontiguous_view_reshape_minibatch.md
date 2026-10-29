@@ -57,8 +57,8 @@ prev, next = torch.split(x, x.size(1) // 2, dim=1)
 
 ## 相关经验
 
-- MLA-Prolog + zigzag-CP prefill 的两段式 KV cache 写（同为 CP prefill 分支的正确性坑）见 [mla-prolog-zigzag-cp-kv-write](../../optimizations/experience/rules/mla_prolog_zigzag_cp_kv_write.md)。
-- 长序列 prefill 优先 context parallel 的整体取向见 [long-seq-prefill-context-parallel](../../optimizations/experience/rules/long_seq_prefill_context_parallel.md)。
+- MLA-Prolog + zigzag-CP prefill 的两段式 KV cache 写（同为 CP prefill 分支的正确性坑）见 [mla-prolog-zigzag-cp-kv-write](../../optimizations/rules/mla_prolog_zigzag_cp_kv_write.md)。
+- 长序列 prefill 优先 context parallel 的整体取向见 [long-seq-prefill-context-parallel](../../optimizations/rules/long_seq_prefill_context_parallel.md)。
 
 ## Evidence
 

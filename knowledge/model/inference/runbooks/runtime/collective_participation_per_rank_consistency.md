@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/325
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -55,7 +55,7 @@ platforms:
   ```
 - **队列推进走全组共识**：搬请求的 `pop_preallocated / pop_transferred` 用 `poll_and_all_reduce`（Gloo MIN）over `tp_cpu_group`，在 phase 协商**之前**、在**所有 rank** 上调用，使各 TP rank 锁步搬同一批请求——**不能 gate 在 is_dp_leader 上**（all-reduce 需全组参与）。
 
-约束：这套落点在 cann-recipes-infer executor 的 base `Scheduler` 与 `DecodeDisaggScheduler`，且依赖 online 的 Gloo CPU 通信域（其启动前置见 [online-gloo-cpu-comm-domain-env-bringup](../../optimizations/experience/rules/online_gloo_cpu_comm_domain_env_bringup.md)）。单 rank 时 `tp_cpu_group=None`、all-reduce 退化 no-op，dummy 机制仍安全。
+约束：这套落点在 cann-recipes-infer executor 的 base `Scheduler` 与 `DecodeDisaggScheduler`，且依赖 online 的 Gloo CPU 通信域（其启动前置见 [online-gloo-cpu-comm-domain-env-bringup](../../optimizations/rules/online_gloo_cpu_comm_domain_env_bringup.md)）。单 rank 时 `tp_cpu_group=None`、all-reduce 退化 no-op，dummy 机制仍安全。
 
 ## 参考实现二：动态-shape 序列并行——收集各 rank 长度的 all_gather 绝不按本地 size 缓存
 
@@ -74,8 +74,8 @@ def _gather_size_by_comm(size, group):
 
 ## 相关经验
 
-- 多机 / 多进程 DP+EP MoE 的另一套集合通信一致性落法（全局 phase 协调 + dummy 参与 + 变长换定长）：[multimachine-dp-ep-moe-collective-alignment](../../guides/experience/interventions/multimachine_dp_ep_moe_collective_alignment.md)。
-- HCCL AIV 算子展开与 prefill micro-batch 双流的互斥（同涉 AIV all-reduce）：[hccl-aiv-expansion-vs-prefill-micro-batch](../../optimizations/experience/rules/hccl_aiv_expansion_vs_prefill_micro_batch.md)。
+- 多机 / 多进程 DP+EP MoE 的另一套集合通信一致性落法（全局 phase 协调 + dummy 参与 + 变长换定长）：[multimachine-dp-ep-moe-collective-alignment](../../optimizations/rules/multimachine_dp_ep_moe_collective_alignment.md)。
+- HCCL AIV 算子展开与 prefill micro-batch 双流的互斥（同涉 AIV all-reduce）：[hccl-aiv-expansion-vs-prefill-micro-batch](../../optimizations/rules/hccl_aiv_expansion_vs_prefill_micro_batch.md)。
 - 集合通信 timeout 若是**某 rank 崩了**（而非设计上跳过）导致的缺席，诊断入口见 [hccl-timeout-secondary-to-rank-failure-oom](hccl_timeout_secondary_to_rank_failure_oom.md)。
 
 ## Evidence

@@ -85,7 +85,7 @@ MoE 层在 **profile run** 下、且图模式为 aclgraph 时，profiling 估出
 
 - MoE 长序列 prefill 峰值显存 / OOM（专家负载不均 + dispatch 中间量放大；分块 / EPLB / double-routing 处置）：[MoE 长序列 prefill 峰值显存 / OOM](moe_prefill_oom_peak_memory.md)。
 - profile 语义误用的另一面（draft dummy_run 误带 profile 随机专家路由拉低 accept rate）：[MoE + 投机解码：draft dummy_run 误带 profile-run 语义](../precision/mtp_draft_dummy_run_in_profile_run_random_experts.md)。
-- perfect_eplb profiling 上界与均衡确诊：[perfect_eplb profiling 上界](../../optimizations/experience/rules/perfect_eplb_profiling_upper_bound.md)。
+- perfect_eplb profiling 上界与均衡确诊：[perfect_eplb profiling 上界](../../optimizations/rules/perfect_eplb_profiling_upper_bound.md)。
 
 ## Evidence
 

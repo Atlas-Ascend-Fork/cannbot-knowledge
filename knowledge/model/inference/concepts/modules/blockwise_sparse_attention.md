@@ -1,7 +1,10 @@
 ---
 type: Concept
 title: Blockwise Sparse Attention (TopK / SVG)
-description: Blockwise Sparse Attention 是一种 Attention 组件变体：按 [block_Q, block_K] 粒度估计块的重要程度，只计算 TopK 重要块、跳过其余块，从而把超长序列 DiT 的 Attention 计算量显著降低。与普通 sparse-flash-attention（按 Token TopK 的稀疏）并列，是 Attention 算法族下的"块级稀疏"分支。cann-recipes-infer 在 module/blockwise_sparse/ 下实现 TopK 与 SVG 两种 predictor，底层算子依赖 blitz_sparse_attention（需按参考文档自行编译）。
+description: Blockwise Sparse Attention 是一种 Attention 组件变体：按 [block_Q, block_K] 粒度估计块的重要程度，只计算
+  TopK 重要块、跳过其余块，从而把超长序列 DiT 的 Attention 计算量显著降低。与普通 sparse-flash-attention（按 Token
+  TopK 的稀疏）并列，是 Attention 算法族下的"块级稀疏"分支。cann-recipes-infer 在 module/blockwise_sparse/
+  下实现 TopK 与 SVG 两种 predictor，底层算子依赖 blitz_sparse_attention（需按参考文档自行编译）。
 tags:
 - task.design
 - topic.model_architecture
@@ -14,12 +17,11 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-22T01:42:26Z'
 platforms:
 - a2
 - a3
 ---
-
 # Blockwise Sparse Attention (TopK / SVG)
 
 ## Summary
@@ -82,49 +84,11 @@ flowchart LR
 - **模型专用 predictor 适配器**：`HunyuanVideoTopKAdapter` / `HunyuanVideoSVGAdapter`（`sparse_method.py:1011 / 1263`，继承 `TopKPredictor` / `SVGPredictor`）承载 HunyuanVideo 双流/单流 DiT block 的稀疏接入（`hyvideo/sparse/sparse_block.py` 的 `sparse_double_block_forward` / `sparse_single_block_forward`），并携带 HyVideo 专属参数（`sink_frame_len`、`img_token_len`）。
 - **与 Dit-Cache 互斥**：使能 sparse 会覆盖 block forward，与 [dit-cache](../techniques/dit_cache.md) 互斥（sparse YAML 固定 `dit_cache.method: NoCache`）。
 
-> 源文档 `Ulysses + TopK/SVG 联合优化`（@2c45117）的稀疏-vs-稠密加速比：异构稀疏相较稠密计算单卡 1.66x（3587s→2160s）、八卡 1.39x–1.45x（稠密 464s → 异构稀疏 335s，负载均衡后 321s），四卡 1.57x–1.60x。其中 head 负载均衡是次级增量——四卡 head 已较均衡（仅 ~12 s 增益），八卡并行度提升后 head 计算不均更突出（~14 s，~4.2%）。
+来源的稀疏与负载均衡测量统一见[HunyuanVideo 稀疏观测草稿](../../optimizations/benchmark_observations/hunyuan_video_sparse_source_observations.md)；平台未绑定的测量不继承本机制的范围。
 
-## Performance Characteristics
+## 集成边界
 
-- **适用载荷**：DiT 超长序列 Attention（HunyuanVideo 5s 720p ≈ 119k tokens，FA 占 DiT 81%）。
-- **依赖算子**：blitz_sparse_attention（外部 ops-transformer 仓库编译）。
-- **配置**：@2c45117 起在启动 YAML 顶层增加 `sparse:` 段使能（无该段或 `method: no_sparse` 即关闭），`sparse:` 段内联了原独立 [`sparse_config.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/sparse/sparse_config.yaml)（@2f82d10 为独立文件形式）的全部字段；`config/single_sparse.yaml` 为单卡 SVG 参考、`config/sp8_sparse.yaml` 为 8 卡 Ulysses + SVG 参考（均 `720*1280*129` 规格）。
-
-```yaml
-sparse:
- method: "SVG"                      # [no_sparse, TopK, SVG]；no_sparse 即关闭稀疏
- block_size_Q: 128                  # q/k 分块大小
- block_size_K: 512
- model: "HunyuanVideo"
- params:
- TopK:                              # only used when method == TopK
- sparse_time_step: "10-49"        # 应用稀疏的 step 区间
- sparsity_files_path: "./sparsity/720x1280x129/v3"  # 离线 profiling 产物路径
- CAC_threshold: 0.66              # CAC 阈值
- SVG:                              # only used when method == SVG
- sparse_time_step: "14-49"
- sparsity: 0.8                    # 稀疏度
- sample_mse_max_row: 5000         # 采样长度
- context_length: 256              # context 长度
-```
-
-通过 `python sample_video.py --sparse_method TopK/SVG` 使能。
-
-### Constraints
-
-- 依赖外部 blitz_sparse_attention 算子编译：
-
- ```bash
- git clone https://gitcode.com/cann/ops-transformer.git
- cd ops-transformer
- bash build.sh --make_clean --experimental -j96 --pkg --soc=ascend910_93 --ops=blitz_sparse_attention # --soc：A2=ascend910b，A3=ascend910_93
- ./build/cann-ops-transformer-custom_linux-"$(uname -i)".run
- ```
-
-- TopK 需要离线 profiling 保存 QK，profile 时长与样本数线性相关
-- SVG 仅支持 `sparse_time_step` 内使能，早期 step 变化剧烈不适合稀疏
-- 稀疏度设置过高会显著影响画质（ambiguity：源未给出端到端质量指标对比）
-- **端到端 speedup（@2c45117 块稀疏性能表，相对 baseline E2E 3577.19s / DiT 3459.52s）**：TopK 76% 稀疏 → 1.82x E2E / 1.88x DiT（E2E 1963.52s）；SVG 80% 稀疏 → 1.65x E2E / 1.70x DiT（E2E 2167.55s）
+块稀疏依赖模型专用的布局、predictor、算子以及并行切分；配置名称和允许的组合随版本变化。固定 2c45117 与后续 Ring 集成不能混用。启动、算子准备、配置及回退统一见[HunyuanVideo 版本化 Guide](../../guides/models/hunyuan_video_deployment.md)，缓存与稀疏的 forward 替换冲突仍须按对应版本核对。
 
 ## Evidence
 

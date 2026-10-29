@@ -19,7 +19,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/167
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -56,9 +56,9 @@ platforms:
 
 ## 相关经验
 
-- ZECO CP GDN 的完整机制与约束见 [qwen3-next-gdn-context-parallel-zeco](../../guides/experience/interventions/qwen3_next_gdn_context_parallel_zeco.md)。
+- ZECO CP GDN 的完整机制与约束见 [qwen3-next-gdn-context-parallel-zeco](../../optimizations/cases/qwen3_next_gdn_context_parallel_zeco.md)。
 - FIA 的 `actual_seq_lengths_kv` 类型随后端不同（另一类算子输入契约）见 [fia-actual-seq-lengths-kv-backend-type](../runtime/fia_actual_seq_lengths_kv_backend_type.md)。
-- 融合算子按硬件条件门控回退见 [fused-op-hardware-conditional-fallback](../../optimizations/experience/rules/fused_op_hardware_conditional_fallback.md)。
+- 融合算子按硬件条件门控回退见 [fused-op-hardware-conditional-fallback](../../optimizations/rules/fused_op_hardware_conditional_fallback.md)。
 - 另见 [AscendC 算子 host 侧未覆盖运行时可达配置空间：缺省可选输入被无条件读取、模板参数取值未全枚举 → 特定 config 崩溃 / npu fail / 无 tiling key](ascendc_op_host_optional_input_and_tiling_key_coverage.md)。
 
 ## Evidence

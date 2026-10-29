@@ -89,7 +89,7 @@ return [out[0], out[2]]
 - **新边界（符号形状安全）**：meta 实现**必须避免会破坏 symbolic tracing 的具体 numel 操作**——用 `sym_numel` + `at::empty_symint`（C++）/ 符号安全构造（Python），不要在 meta 里对 tensor 取具体 `numel()` 再做算术。一旦用了具体 numel，动态 shape 下 symbolic tracing 会被打断，算子又掉出图。这是相对坑 1/坑 2（讲输出原型/dtype 对齐）之外、专属 torch.compile fx 捕获路径的约束。
 - **注册入口时机**：meta 注册须在自定义算子库 import 之后生效——参考实现把 `import ..meta_registration` 放进 `enable_custom_op()`（并固定 import 顺序），让 meta 注册随自定义算子启用而挂上，否则算子已注册、meta 没挂，一样抓不进图。
 - **验证手段**：不能只看跑通，要断言算子确实留在被捕获的 fx graph 内——把算子塞进一个小模型，`torch.compile(model, backend=custom_op_checking_backend)`，在 backend 里对 `str(gm.graph)` 断言目标算子字符串（如 `"_C.rotary_embedding" in graph`）在图内，再用 `torch.npu.NPUGraph()` capture + replay 校验数值。这套断言是判断「算子到底进没进图」的直接手段，比只看端到端结果可靠。
-- **可迁移原则**：给自定义 NPU 算子接 **torch.compile → aclgraph** 路径时，「注册符号形状安全的 Meta 实现」是通用前置步骤；缺 Meta 只会静默 graph break，不报错。与坑 1/坑 2 的关系：Meta impl 首先让算子**能进图**，坑 1（converter 原型对齐）、坑 2（meta 输出 dtype 显式声明）再保证**进图后 lower 结果对**——三者按此先后串起，构成自定义算子入图的完整正确性链。哪种图后端（aclgraph / torchair-GE / eager）吃哪类自定义算子见 [custom-op-framework-graph-backend-compat](../../optimizations/experience/rules/custom_op_framework_graph_backend_compat.md)。
+- **可迁移原则**：给自定义 NPU 算子接 **torch.compile → aclgraph** 路径时，「注册符号形状安全的 Meta 实现」是通用前置步骤；缺 Meta 只会静默 graph break，不报错。与坑 1/坑 2 的关系：Meta impl 首先让算子**能进图**，坑 1（converter 原型对齐）、坑 2（meta 输出 dtype 显式声明）再保证**进图后 lower 结果对**——三者按此先后串起，构成自定义算子入图的完整正确性链。哪种图后端（aclgraph / torchair-GE / eager）吃哪类自定义算子见 [custom-op-framework-graph-backend-compat](../../optimizations/rules/custom_op_framework_graph_backend_compat.md)。
 
 ## 参考实现及其约束
 
@@ -97,7 +97,7 @@ return [out[0], out[2]]
 
 参考实现（坑 3，torch.compile → aclgraph）：vllm-ascend 的 `csrc/torch_binding_meta.cpp`（`*_meta` 函数 + `TORCH_LIBRARY_IMPL_EXPAND(_C, Meta, ops)` 注册 `rotary_embedding` / `get_masked_input_and_mask`）、`vllm_ascend/meta_registration.py`（`register_meta_if_necessary` 去重 + `lib.impl(..., "Meta")` 的 Python 路径）、`vllm_ascend/utils.py::enable_custom_op()` 里 import `meta_registration` 的注册时机。约束：这是 vllm-ascend 推理路径下、torch 2.x `torch.compile` fx 捕获 → aclgraph 这条后端的做法；C++/Python 两路等价、Python 路径带去重以免与 C++ meta 重复注册。合并态 diff 只证「注册 Meta 使算子可被捕获进 aclgraph」的机制，未给 host overhead / 时延 before→after 数字，故只述机制不述收益。「给要进 aclgraph 的自定义算子注册符号形状安全的 Meta 实现」是可迁移前置步骤。
 
-哪种图后端吃哪类自定义算子见 [custom-op-framework-graph-backend-compat](../../optimizations/experience/rules/custom_op_framework_graph_backend_compat.md)。
+哪种图后端吃哪类自定义算子见 [custom-op-framework-graph-backend-compat](../../optimizations/rules/custom_op_framework_graph_backend_compat.md)。
 
 ## Evidence
 

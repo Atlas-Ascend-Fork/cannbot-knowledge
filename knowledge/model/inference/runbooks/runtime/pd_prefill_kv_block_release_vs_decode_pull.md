@@ -97,7 +97,7 @@ P 端 KV block 的**释放时机**与跨节点 KV **传输完成**没有同步�
 - 修法 A：vLLM-Ascend 的 `vllm_ascend/distributed/llmdatadist_c_mgr_connector.py`——D 侧 `_read_blocks` 末尾 `send_finish_to_remote(host, port, request_id)`、P 侧 `request_finished` 的 `delay_free_blocks` 与 `_increment_task_count` 全-rank 屏障。约束：payload 必须带 `tp_rank/tp_size`、屏障必须按 rank **集合**去重（非计数递增），这些是该参考实现落地要件、也是技术本身的正确性要件；释放目标端口用 `remote_port`。
 - 修法 B：vLLM-Ascend 社区 layerwise connector（mooncake 传输后端）+ load-balance proxy 的 `examples/disaggregated_prefill_v1/load_balance_proxy_layerwise_server_example.py`——`_handle_completions` 先 `select_decoder` + `do_remote_prefill=True`，`/v1/metaserver` 回调再 `select_prefiller` + `send_request_to_service`；原先「先选 P、`do_remote_decode=True`、D 去 pull」的 `_handle_select_instance` 整段被删。约束：需传输后端支持逐层 push；RFC 为 open、落地 PR 已合并。
 - 相关静态概念：[online-pd-inference](../../concepts/frameworks/online_pd_inference.md)、[kv-cache-manager](../../concepts/frameworks/kv_cache_manager.md)。
-- 相关动态经验：mooncake 连接器 bringup 见 [mooncake-ascend-hixl-kv-transfer-bringup](../runtime/mooncake_ascend_hixl_kv_transfer_bringup.md)；PD 建连地址广播见 [multinic-pd-advertise-address-launch-config](../../optimizations/experience/anti_patterns/multinic_pd_advertise_address_launch_config.md)。
+- 相关动态经验：mooncake 连接器 bringup 见 [mooncake-ascend-hixl-kv-transfer-bringup](../runtime/mooncake_ascend_hixl_kv_transfer_bringup.md)；PD 建连地址广播见 [multinic-pd-advertise-address-launch-config](../../optimizations/anti_patterns/multinic_pd_advertise_address_launch_config.md)。
 
 ## Evidence
 

@@ -1,7 +1,13 @@
 ---
 type: Concept
 title: Lightning Indexer (LI)
-description: Lightning Indexer 是 DeepSeek-V3.2-Exp **DSA 架构**的前置稀疏选择模块 —— 对每个 query token，在长达数十万的上下文中**准确地**（非近似）选出 TopK（一般 2048）个相关 KV token 的 index，喂给后续 sparse-flash-attention。相比 MLA 它是一个轻量的类 MQA 结构，新增 `q_b_proj`、`wk_proj`、`weight_proj` 三个 Linear（综合所有层约 **+0.85B** 参数）。 LI 同时保留了一份**独立的 Indexer Key Cache**（与完整 MLA KVCache 并存），Decode 时免去重复计算；Indexer Key Cache 内存约 `batch × kv_length × Indexer_head_dim × bytes × num_layers`（4 batch × 64K × BF16 ≈ **4 GB**/rank）。 算子层实现见 lightning-indexer（AscendC / PyPTO / TileLang 三路）。
+description: Lightning Indexer 是 DeepSeek-V3.2-Exp **DSA 架构**的前置稀疏选择模块 —— 对每个 query
+  token，在长达数十万的上下文中**准确地**（非近似）选出 TopK（一般 2048）个相关 KV token 的 index，喂给后续 sparse-flash-attention。相比
+  MLA 它是一个轻量的类 MQA 结构，新增 `q_b_proj`、`wk_proj`、`weight_proj` 三个 Linear（综合所有层约 **+0.85B**
+  参数）。 LI 同时保留了一份**独立的 Indexer Key Cache**（与完整 MLA KVCache 并存），Decode 时免去重复计算；Indexer
+  Key Cache 内存约 `batch × kv_length × Indexer_head_dim × bytes × num_layers`（4 batch
+  × 64K × BF16 ≈ **4 GB**/rank）。 算子层实现见 lightning-indexer（AscendC / PyPTO / TileLang
+  三路）。
 tags:
 - task.design
 - topic.model_architecture
@@ -14,11 +20,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - agnostic
 ---
-
 # Lightning Indexer (LI)
 
 ## Summary
@@ -90,12 +95,12 @@ PyPTO 自研框架实现（`ops/pypto/src/lightning_indexer_pto/`）。`models/i
 topk_indices = torch.ops.custom_pypto.npu_lightning_indexer_pto(**li_input_kwargs)
 ```
 
-相比 AscendC：开发效率更高（几百行 Python），支持动态 Shape；在典型 Shape（4 batch × 64K）下经过 Tile/L1 复用调优后性能提升 ~27%（见 [lightning-indexer](../kernels/lightning_indexer.md) PyPTO 调优段）。
+相比 AscendC：开发效率更高（几百行 Python），支持动态 Shape；对应 shape 与相对调优披露见[算子调优来源观测](../../optimizations/benchmark_observations/operator_tuning_source_observations.md)，不在机制卡重复性能数字。
 
 ## Performance Characteristics
 
 - **TopK 精准计算**：基于昇腾排序指令（`VBS32` 分组 → `VMS4v2` 归并 → 耗尽模式规约）对 `Score` 全量排序，不使用近似算法。假设上下文长度 $S_k$，TopK 总计算量 $\approx 4.36 S_k + 3.32 k$。
-- **MTP 友好**：LI 的 K Cache 搬运与稠密 MLA 类似，MTP1 场景 Cube 计算量翻倍（2.15 → 4.29 GFlops）但 KV 搬运量不变（32 MB），计算访存比提升 → MTP 对 LI 有增益。对比 SFA 的 MTP 翻倍 KV 搬运量、难以加速。
+- **MTP 友好**：LI 的 K Cache 搬运与稠密 MLA 类似，MTP1 场景 Cube 计算量翻倍（2.15 → 4.29 GFlops）但 KV 搬运量不变（32 MB），计算访存比提升 → MTP 对 LI 有增益。对比来源分析中 SFA 在极端 MTP1 情况下 KV 搬运量可翻倍；是否发生取决于不同 query 的 TopK 复用，不能推广到所有 MTP 场景。
 - **长序列耗时占比高**：LI 在长序列场景成为主要热点 —— 这是 V3.2-Exp 量化设计"主 Q_b_proj/W8A8、Indexer Q/K A8C8"的出发点之一。
 
 ## Evidence

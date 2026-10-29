@@ -74,7 +74,7 @@ torch_npu/npu/graphs.py __enter__ → capture_begin → super().capture_begin(..
 ## 相关经验
 
 - [Ascend 310P 不支持 Triton kernel：走 Triton 的算子须补纯 host/eager 等价路径](ascend_310p_no_triton_kernel_eager_fallback.md)——同为 310P 固有平台能力缺口下的「回退到 eager / host 等价路径」修法。
-- [是否/何时启用图模式：按 host 下发占比与 profiling 决策](../../optimizations/experience/rules/graph_mode_enable_decision_profiling.md)——图模式开关的正向决策；本页是该开关在 310P 上被硬约束为「必须关闭」的一端。
+- [是否/何时启用图模式：按 host 下发占比与 profiling 决策](../../optimizations/rules/graph_mode_enable_decision_profiling.md)——图模式开关的正向决策；本页是该开关在 310P 上被硬约束为「必须关闭」的一端。
 - [bringup 报错根因常在环境/驱动/平台层](bringup_error_root_cause_env_driver_platform.md)——同属「报错文案指向通用 bug、真因在平台/环境层」的排查取向。
 
 ## Evidence

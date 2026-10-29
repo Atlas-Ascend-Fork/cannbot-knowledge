@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: MTP Speculative Decoding
-description: Multi-Token Prediction (MTP) 投机推理：主模型一次前向同时验证多个 draft token（MTP1 = 2 个 draft token），在相近的 HBM 搬运量下做更多算术运算，充分利用 Decode 阶段剩余的算力水位，降低等效 per-token 时延并提升吞吐。 cann-recipes-infer 中有两条落地路径： - **Qwen3-Next**：SGLang 的 `NEXTN` 投机算法 + AscendC `recurrent_gated_delta_rule` 融合算子的 `num_accepted_tokens` 接口（针对 GDN 线性注意力的 ssm_state 选择性回写）。 - **DeepSeek-R1**：自研 executor 的 MTP 实现，通过 `next_n` 参数使能；MLA 端通过 `npu_fused_infer_attention_score_v2` 的 `sparse_mode=3` 切换 MTP 因果 mask；KV 按 `speculative_num_draft_tokens` 连续布局；无 ssm_state 语义因而不需 num_accepted_tokens 回写。`DeepseekV3ModelMTP` / `DeepseekV3ModelMTPLayer` 承担 MTP layer。
+description: 解释 MTP 的 draft、主模型验证与接受前缀机制；接入接口、缓存策略和计时指标分别链接规范入口，模型与版本限制不相互外推。
 tags:
 - task.optimization
 - topic.model_architecture
@@ -16,11 +16,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/mtp_model_guide.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - a3
 ---
-
 # MTP Speculative Decoding
 
 ## Summary
@@ -59,150 +58,21 @@ stateDiagram-v2
 
 - **MLA 端 mask 切换**：`if q_len > 1: sparse_mode = 3`（`modeling_deepseek.py:L1191`、`L1303` 两处 attention 分支），让下游 FIA（[fused-infer-attention-score](../kernels/fused_infer_attention_score.md)）走 MTP 因果 mask；否则 `sparse_mode = 0`。
 - **MTP Layer**：`DeepseekV3ModelMTPLayer`（`modeling_deepseek.py:L2202`）/ `DeepseekV3ModelMTP`（`L2774`）独立于主模型，承担 draft token 的轻量前向。
-- **与 W8A8C8 共存**：R1 路径下 C8 与 MTP 同开，benchmark 配置 `decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml` 为主要性能指标来源（TPOT 44.9 ms）。
-- **accept 率**：benchmark 报告"1 个 draft token 中平均 accept token 为 0.7 个"。
+- **与 W8A8C8 共存**：R1 路径下 C8 与 MTP 同开，benchmark 配置 `decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml` 的完整组合数据见[R1 Decode 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark.md)。
+- **accept 率**：来源接受数由对应观测维护，不作为新负载的预测值。
 - **与图模式共存**：R1 的 `ge_graph` + MTP 可同开（`decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`），**与 Qwen3-Next "MTP 与图模式互斥" 的约束不同**。
 
-## 框架执行机制（CANN Executor）
+## 接入、缓存与测量入口
 
-> 来源：`docs/design/mtp_design.md`、`docs/common/mtp_model_guide.md`、`executor/core/model_worker/mtp_worker.py`
-
-cann-recipes-infer 自研 executor 把 MTP 作为一个独立的 `MTPWorker` 组件与主模型 `ModelWorker` 并列，由 `ExecutionEngine` 在 decode 循环中调度。
-
-### MTPInfo 结构体
-
-`MTPInfo` 封装 MTP 推测解码的状态信息，管理 draft / 主模型之间的工作流：
-
-| 字段 | 类型 | 说明 |
-|------|------|------| | `is_prefill` | `Optional[bool]` | 当前阶段是否为 prefill |
-| `spec_tokens` | `Optional[torch.Tensor]` | 累积的推测 token 序列，供主模型验证 |
-| `accepted_num` | `Optional[torch.Tensor]` | 当前迭代每个样本接受的 token 数量 |
-
-在 [online-pd-inference](../frameworks/online_pd_inference.md) 的 PD 分离路径下，prefill 端算得的首批推测 token 经传输 metadata 的 `mtp_spec_tokens` 携带到 decode 端，由 `DecodeTransferQueue._commit_metadata`（提交 metadata 时，`queues.py:345-349`）物化为该请求的 `MTPInfo(spec_tokens=torch.tensor(...))`；而 `DecodePreallocQueue`（`queues.py:41-304`）只负责按 `next_n` 为首步预分配 `1+next_n` 个 token 的 KV 块（不物化 MTPInfo），衔接此处的验证流程。
-
-```mermaid
-flowchart LR
- RQ[Per-Request MTP Data] -->|collect| BATCH[MTPInfo - Batch]
- BATCH -->|propagate| MODEL[Model Execution]
- MODEL --> BATCH
- BATCH -->|scatter| RQ2[Per-Request Update]
-```
-
-### MTPWorker 类
-
-**关键成员变量**：
-
-| 分类 | 变量 | 说明 |
-|------|------|------| | 配置 | `infer_config` / `next_n` / `exe_mode` / `prefill_mini_batch` / `batch_size_per_dp_rank` | 运行时配置 |
-| 模型 | `device` / `mtp_model_worker` | 计算 NPU 与封装 MTP 的 ModelWorker |
-
-**关键方法**：
-
-| 方法 | 说明 |
-|------|------| | `share_weights_from_main_model(main_model)` | 从主模型共享 `lm_head` / `embed_tokens`（MTP 模型缺这些层时复用） |
-| `_pad_seq_len_to_size(tensor, size)` | 沿 dim=1 对 tensor padding / truncate 到指定长度 |
-| `get_main_model_inputs(input_ids, batch)` | 构建主模型验证窗口：拼接 `input_ids` 与 `spec_tokens`，回退 `kv_len` 到接受的前缀位置 |
-| `get_mtp_model_inputs(batch, main_next_tokens, model_inputs_main, prev_hidden_states)` | Prefill 分支拼接 `input_ids` + 接受 token + 存 `prev_hidden_states` + `cycle_idx`；Decode 分支用主模型位置信息 |
-| `mtp_model_output_postprocess(model_inputs, logits, mtp_infos)` | 处理 MTP 输出，累积 `spec_tokens` + 更新状态；Prefill 分支直接推进 `kv_len` + 翻转 `is_prefill` |
-| `get_next_mtp_model_inputs(...)` | 构建下一次 MTP 迭代输入，按 `accepted_num` scatter 最后一个推测 token，重塑 `prev_hidden_states` |
-| `inference(batch, main_next_tokens, accepted_num, model_inputs_main, prev_hidden_states)` | MTP 主入口，循环 `prefill=1` 或 `decode=next_n` 次推理 |
-
-### 调度时序
-
-```mermaid
-sequenceDiagram
- participant EE as ExecutionEngine
- participant MW as MTPWorker
- participant MMW as MTPModelWorker
- participant M as MTPModel
-
- EE->>MW: inference(batch, main_next_tokens, accepted_num, model_inputs, prev_hidden_states)
- MW->>MW: get_mtp_model_inputs
- loop loop_mtp = (is_prefill ? 1 : next_n) 次
- alt step_idx > 0
- MW->>MW: get_next_mtp_model_inputs
- end
- MW->>MMW: inference(model_inputs, is_prefill, is_mtp=True)
- MMW->>M: forward
- M-->>MMW: logits, prev_hidden_states
- MW->>MW: mtp_model_output_postprocess
- Note over MW: 累积 spec_tokens, 更新状态
- end
-```
-
-### DeepSeek-R1 MTP 类结构示例
-
-> 来源：`docs/common/mtp_model_guide.md`，以 `models/deepseek_r1/models/modeling_deepseek.py` 为例。
-
-```mermaid
-flowchart TD
- A["DeepseekV3Model<br/>- embed_tokens<br/>- layers[0..L-1]<br/>- norm"] -->|used as self.model| B["DeepseekV3ForCausalLM<br/>- lm_head<br/>- forward_lm_head"]
- A -->|inherits & trims to MTP layers| C["DeepseekV3ModelMTPLayer<br/>- embed_tokens = None<br/>- mtp_start_layer_idx = L<br/>- layers[L..L+N-1]"]
- B -->|inherits outer CausalLM| D["DeepseekV3ModelMTP<br/>- model = DeepseekV3ModelMTPLayer<br/>- lm_head = None<br/>- shared_head_norm<br/>- enorm / hnorm<br/>- eh_proj"]
- C -->|used as self.model| D
-```
-
-- `DeepseekV3ModelMTPLayer` 仅作 MTP 额外层容器，`embed_tokens = None`、`mtp_start_layer_idx = config.num_hidden_layers`、`layers` 是 `ModuleDict`（key 为字符串 `"num_hidden_layers + i"`）。
-- `DeepseekV3ModelMTP` 复用 `ForCausalLM` 外层接口，内部 model 换成 `DeepseekV3ModelMTPLayer`；`lm_head = None` 复用主模型。
-- MTP 前向 7 步：`calc_input_embeddings` → `enorm(hidden) / hnorm(prev)` → `concat + eh_proj` 特征融合 → 位置编码 → 循环 MTP 层 → `shared_head_norm` → `forward_lm_head`。
-
-### MTP 独有权重映射
-
-checkpoint 权重名与模型参数名不一致时，在 MTP 模型的 `load_weights` 做映射：
-
-| checkpoint 名 | 模型参数名 |
-|--------------|-----------| | `shared_head.norm` | `shared_head_norm` |
-| `enorm` | `enorm` |
-| `hnorm` | `hnorm` |
-| `eh_proj` | `eh_proj` |
-
-**注意**：`embed_tokens.weight` 与 `lm_head.weight` 无需加载（复用主模型），框架通过 `share_weights_from_main_model` 自动共享。
-
-### 三步接入流程
-
-1. **定义 MTP 类**（`DeepseekV3ModelMTPLayer` + `DeepseekV3ModelMTP`）
-2. **注册惰性注册表**（`executor/core/support_models.py` 的 `_specs: dict[str, list[tuple[str, str]]]`）：值是 `(module_path, class_name)` 字符串元组的 list（运行时 `importlib` 惰性导入，注册表里存的是字符串而非 class 对象）。为 `"deepseek_r1"` 登记 `DeepseekV3ForCausalLM` / `DeepseekV3ModelMTP` / `DeepseekV3Config` 三项即自动使能 MTP（含 ModelMTP 项的模型才有 MTP 能力；如 `deepseek_v2_lite` 只登记 ForCausalLM + Config 则无 MTP）：
-
- ```python
- _specs: dict[str, list[tuple[str, str]]] = {
-     "deepseek_r1": [
-         ("models.deepseek_r1.models.modeling_deepseek", "DeepseekV3ForCausalLM"),
-         ("models.deepseek_r1.models.modeling_deepseek", "DeepseekV3ModelMTP"),
-         ("models.deepseek_r1.models.configuration_deepseek", "DeepseekV3Config"),
-     ],
- }
- ```
-
-3. **YAML 开关** `model_config.next_n > 0` → 框架自动启用 MTP + 共享权重。
-
-## MTP 性能指标
-
-> 来源：`docs/design/mtp_design.md` "3. MTP 指标介绍"；`executor/offline/offline_inference.py:149-184`、`executor/offline/infer.py:64-102`（`log_results`）。
-
-MTP 启用时框架统计三个核心指标，用于量化 decode 阶段的收益（`next_n` = MTP draft 数）：
-
-| 指标 | 公式 | 含义 |
-|------|------|------|
-| 平均接受率 `avg_accept_rate` | `total_accept_tokens / total_spec_tokens` | MTP 预测准确程度，越高表示 MTP 模型与主模型越一致 |
-| 平均接受长度 `avg_accept_length` | `total_accept_tokens / spec_num_forward_ct + 1` | 平均每次 decode 迭代实际产出的 token 数 |
-| 平均等效时延 `avg_equivalent_time` | `avg_decode_time / avg_accept_length` | 等效于每生成一个有效 token 的平均耗时 |
-
-其中：
-
-- `total_spec_tokens = sum(spec_num_forward_ct) × next_n`：MTP 模型推测的总 token 数。
-- `total_accept_tokens = sum(spec_num_accepted_tokens)`：主模型验证后接受的总 token 数。
-- `spec_num_forward_ct`（求和后）：前向传播次数；接受长度公式的 `+1` 表示主模型每次验证至少产出 1 个有效 token（含主模型本身那个 token）。
-- `avg_decode_time`：decode 阶段平均前向耗时，包括一次主模型推理 + `next_n` 次 MTP 模型推理（`infer.py` 中取 `infer_time[1:]` 的均值，跳过首步 prefill）。
-
-**指标来源（offline 推理）**：`offline_inference.py` 在请求完成后逐请求收集 `mtp_stats`（`spec_num_accepted_tokens` / `spec_num_forward_ct` / `valid_output_len`，仅 `request.mtp_info` 存在时收集）；`infer.py` 的 `log_results` 在 `next_n > 0` 时据此算出三指标并打印（accept length / accept rate / equivalent latency）。
-
-**指标来源于 executor 侧逐轮累计**：每请求的 `spec_num_accepted_tokens` 由 `update_mtp_info(accepted_num, ...)` 以 `+= accepted_num` 累计（`forward_data_info.py:164-165`），其中 `accepted_num` 是 [cann-executor](../frameworks/cann_executor.md) / MTPInfo 侧记录的「当轮被接受 token 数」（与上文 `MTPInfo.accepted_num` 同口径）。各模型路径里同名/同概念的「被接受 draft token 数」（如 Qwen3-Next GDN 融合算子的 `num_accepted_tokens`）以各自代码为准、未必是同一变量。指标的直观意义：接受长度越大 → 一次前向多产出有效 token → 等效时延越低，这是 MTP decode 加速的量化口径。
+- [MTP 接入指南](../../guides/integration/mtp_speculative_decode_model_onboarding.md)：模型接口、权重共享、Worker 状态和版本化注册步骤。
+- [缓存状态规则](../../optimizations/rules/mtp_draft_cache_state_correctness.md)：按实现区分 KV 槽与递归状态写回。
+- [MTP 计时规则](../../optimizations/rules/mtp_decode_timing_two_metric_split.md)：计时范围、接受率、接受长度与等效时延。
 
 ## Applicable Scenarios
 
 - Decode 阶段单请求或小 batch、算力空闲但带宽紧张的场景。
 - Qwen3-Next 场景：与 [recurrent-gated-delta-rule](../kernels/recurrent_gated_delta_rule.md) 配套，使 GDN state 能正确吞吐多 draft token 的递推；PD 混部（非分离）、BF16 或 W8A8 场景。
-- DeepSeek-R1 场景：与 W8A8C8 + [torchair](../frameworks/torchair.md) `ge_graph` + [superkernel](superkernel.md) + perfect eplb 组合，是 decode 高吞吐主路径。
+- DeepSeek-R1 场景：与 W8A8C8 + [torchair](../frameworks/torchair.md) `ge_graph` + [superkernel](superkernel.md) 组合；来源 benchmark 还启用 perfect eplb，这属于 profiling 条件，不能作为生产路由建议。
 
 ## Constraints
 
@@ -218,13 +88,13 @@ MTP 启用时框架统计三个核心指标，用于量化 decode 阶段的收�
 
 ### DeepSeek-R1 路径
 
-- MLA 与 FIA 的 `sparse_mode=3` 专为 MTP 因果 mask 设计，不可在非 MTP 场景误开。
-- accept 率约束性能收益（平均 0.7/1，即 ~70% 命中）。
+- 本实现 Decode 验证分支按 q_len 选择 sparse_mode（多 token 时为 3）；这不是接口的 MTP 专用限制。固定 R1 的普通 Prefill 分支也使用 sparse_mode=3，须按阶段、布局和实际算子接口核对。
+- 实际接受数、cache与每步成本共同影响收益，历史接受数不能当作本任务约束值。
 
 ## Known Results
 
 - **Qwen3-Next**：README Benchmark 表在 A8W8C8、graph_bs=16 场景下未叠加 MTP；MTP 主要在非 C8 BF16/W8A8 长序列场景收益。具体时延收益在本 source 未给出数字。
-- **DeepSeek-R1**：`decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`、128 卡、seq 4096、global batch 6144、MTP1（平均 accept 0.7 token/draft）、perfect eplb 下 TPOT **44.9 ms**、吞吐 **2138 tokens/p/s**。未单独对比开/关 MTP 的增益数据。
+- **DeepSeek-R1**：完整配置、接受数与Chips分歧见[R1 Decode 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark.md)；未给只切换MTP的独立增益。
 
 ## Evidence
 
@@ -235,8 +105,8 @@ MTP 启用时框架统计三个核心指标，用于量化 decode 阶段的收�
 
 ## Kimi-K2-Thinking 与 LongCat-Flash 路径差异
 
-- **Kimi-K2-Thinking**：与 DeepSeek-R1 共享 `modeling_deepseek.py` MTP 实现路径（`sparse_mode=3` + KV 按 `speculative_num_draft_tokens` 布局）。由于 Attention Head 从 128 精简至 64，**Attention 计算量显著降低，更利好 MTP 场景**——Decode 通常为访存瓶颈，MTP 通过少量计算代价缓解访存压力，Kimi-K2-Thinking 计算负载更轻，MTP 模式下更难触及计算瓶颈。Benchmark YAML 当前 `next_n: 0` 未开启，代码已支持多头 MTP 权重直接启用。见 [kimi-k2-thinking](../models/kimi_k2_thinking.md)。
-- **LongCat-Flash**：`next_n` 参数使能 MTP，**当前支持 MTP1 与 MTP2**（R1 只使用 MTP1）。MTP 场景下 `graph_compile` 的 cache 路径增加 `_spec` 后缀（主模型 `CASE_NAME` / MTP 模型 `CASE_NAME_spec`）。**KVP 与 MTP 不可同开**（KVP 约束），见 [kvp](../parallelism/kvp.md)。benchmark 默认 `next_n: 2`。见 [longcat-flash](../models/longcat_flash.md)。
+- **Kimi-K2-Thinking**：使用同架构思路的独立 `modeling_deepseek.py` MTP 实现副本（`sparse_mode=3` + 缓存布局按该固定实现核对）。由于 Attention Head 从 128 精简至 64，Attention head 数较少可能降低部分计算负载；是否更利于 MTP 仍取决于接受率、缓存、算子和负载，不能仅由 head 数判断——Decode 通常为访存瓶颈，MTP 通过少量计算代价缓解访存压力，Kimi-K2-Thinking 计算负载更轻，MTP 模式下可能有不同的计算余量，需实际测量。Benchmark YAML 当前 `next_n: 0` 未开启，代码已支持多头 MTP 权重直接启用。见 [kimi-k2-thinking](../models/kimi_k2_thinking.md)。
+- **LongCat-Flash**：`next_n` 参数使能 MTP，**当前支持 MTP1 与 MTP2**（R1 只使用 MTP1）。MTP 场景下 `graph_compile` 的 cache 路径增加 `_spec` 后缀（主模型 `CASE_NAME` / MTP 模型 `CASE_NAME_spec`）。历史 KVP 实现与 MTP 不可同开；该 KVP 路径后来已撤回，参见其生命周期说明，见 [kvp](../parallelism/kvp.md)。benchmark 默认 `next_n: 2`。见 [longcat-flash](../models/longcat_flash.md)。
 
 ## Links
 

@@ -86,11 +86,11 @@ def npu_flash_attention(query, key, value, seq_lens_cpu, head_num, scale_value, 
 
 ## 相关经验
 - [昇腾多模态模型 bringup 的结构失配：框架侧 config 扫描盲区与 OOT 算子秩](mm_bringup_config_scan_and_oot_op_rank_contract.md)
-- [视觉编码器 SAM 式分解相对位置偏置：经 pse_shift 融进 npu_prompt_](../../optimizations/experience/rules/vision_encoder_rel_pos_bias_via_pse_shift.md)
+- [视觉编码器 SAM 式分解相对位置偏置：经 pse_shift 融进 npu_prompt_](../../optimizations/rules/vision_encoder_rel_pos_bias_via_pse_shift.md)
 
 - FIA / `npu_fused_infer_attention_score` 的 `actual_seq_lengths_kv` 变长实参**类型随后端不同**（int list vs. tensor），与本页「同一逻辑长度、不同算子要不同表示」同源，见 [fia-actual-seq-lengths-kv-backend-type](fia_actual_seq_lengths_kv_backend_type.md)。
-- 昇腾推理统一 TND packed-sequence 布局的标准与 BSND/packed-1D shim 约束见 [tnd-packed-sequence-standard-and-bsnd-shim](../../optimizations/experience/rules/tnd_packed_sequence_standard_and_bsnd_shim.md)；把注意力算子迁到 TND 布局的调用约定见 [attention-compressor-tnd-layout-migration](../../optimizations/experience/rules/attention_compressor_tnd_layout_migration.md)。
-- 非因果 / 双向全注意力走 FIA `atten_mask=None` 全注意力路径见 [bidirectional-attention-fia-non-causal-full](../../optimizations/experience/rules/bidirectional_attention_fia_non_causal_full.md)。
+- 昇腾推理统一 TND packed-sequence 布局的标准与 BSND/packed-1D shim 约束见 [tnd-packed-sequence-standard-and-bsnd-shim](../../optimizations/rules/tnd_packed_sequence_standard_and_bsnd_shim.md)；把注意力算子迁到 TND 布局的调用约定见 [attention-compressor-tnd-layout-migration](../../optimizations/rules/attention_compressor_tnd_layout_migration.md)。
+- 非因果 / 双向全注意力走 FIA `atten_mask=None` 全注意力路径见 [bidirectional-attention-fia-non-causal-full](../../optimizations/rules/bidirectional_attention_fia_non_causal_full.md)。
 
 ## 相关静态页
 

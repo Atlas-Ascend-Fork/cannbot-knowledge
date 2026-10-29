@@ -1,7 +1,7 @@
 ---
 type: Runbook
-title: FIA/qlens 的 block_table 首维 / num_reqs / TND seq-len 须等实际 batch：被 SP-padding 或整缓冲首维打破 → 算子 shape 校验失败
-description: 昇腾 FIA / qlens 融合 attention 算子（npu_fused_infer_attention_score、torch_npu._npu_flash_attention_qlens）对分页 KV 的 block_table 首维、请求数 num_reqs、以及 TND 布局下序列长度末元素有严格 shape 契约，三者须等于本次前向的实际 batch（query_lens.shape[0]）；Ascend 950 校验尤严（num_reqs 必须等于 block_table.shape[0]）。三个信号打破该不变量：(A) FlashComm1/SP 为满足 FIA TND 约束对 num_tokens/num_reqs 做 padding，但门控只判 pcp_size==1 漏判 dcp，与 decode/prefill context-parallel（DCP/PCP）切分布局重叠致 serve 报错，修法收紧为 pcp_size*dcp_size==1；(B) SP-padding 补出的 num_reqs_padded 多补 1 但 block_table 未同步 unpad，eagle drafter eager 分支 attention 校验失败，修法按 num_reqs_padded 对 block_table_tensor 做 _adjust_tensor unpad；(C) PrefillCacheHit 路径把 hybrid kv groups 撑大首维的整块 block_tables 缓冲透传 qlens 算子，修法 block_tables[:batch_size,:] 按实际 batch 切片。通用判据：SP-padding 或整缓冲透传动过 block_table/num_reqs/TND seq-len 后须核对是否仍等实际 batch，症状为下发/校验阶段 shape 不匹配而非精度异常。落点均在 vllm-ascend（model_runner_v1.py execute_model、spec_decode/eagle_proposer.py、attention/attention_v1.py）。
+title: FIA/qlens 请求维与 token 维分别对齐：block_table/num_reqs 与 TND 累积长度契约：被 SP-padding 或整缓冲首维打破 → 算子 shape 校验失败
+description: FIA/qlens 的请求维与 token 维须分别核对：num_reqs 与 block_table 首维对齐实际请求数，TND 累积序列长度末元素对齐 token 总数；记录 SP-padding、eagle 与整缓冲透传的固定修复分支，FULL 与 SP 门控分别解释。
 tags:
 - task.debugging
 - topic.attention
@@ -16,12 +16,12 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/1297
   role: evidence
 created_at: '2026-07-15T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - '950'
 ---
 
-# FIA/qlens 的 block_table 首维 / num_reqs / TND seq-len 须等实际 batch：被 SP-padding 或整缓冲首维打破 → 算子 shape 校验失败
+# FIA/qlens 请求维与 token 维分别对齐：block_table/num_reqs 与 TND 累积长度契约：被 SP-padding 或整缓冲首维打破 → 算子 shape 校验失败
 
 ## 适用场景
 
@@ -52,7 +52,7 @@ if (
 ):
 ```
 
-DCP（或 PCP）开启时即使 SP 打开也不再进 SP+FIA 令牌填充分支，避免 FIA TND padding 与 CP 布局重叠。分支内逻辑不变（`_pad_query_start_loc_for_fia` 满足 TND 约束；`enable_sp() and num_tokens_padded==num_tokens_unpadded` 时回滚 dummy request 的 `num_reqs_padded`）。回归覆盖：4 卡 DCP e2e（`decode_context_parallel_size=2, enable_expert_parallel=True, block_size=128`）叠加 `compilation_config={"pass_config": {"enable_sp": True}}`，覆盖 SP+DCP 组合。
+该条件形如 FULL or (SP条件 and CP条件)：CP 乘积门控只约束 SP 子分支，FULL 模式仍可进入填充分支，避免 FIA TND padding 与 CP 布局重叠。分支内逻辑不变（`_pad_query_start_loc_for_fia` 满足 TND 约束；`enable_sp() and num_tokens_padded==num_tokens_unpadded` 时回滚 dummy request 的 `num_reqs_padded`）。回归覆盖：4 卡 DCP e2e（`decode_context_parallel_size=2, enable_expert_parallel=True, block_size=128`）叠加 `compilation_config={"pass_config": {"enable_sp": True}}`，覆盖 SP+DCP 组合。
 
 ### 信号 B：SP-padding 补出的 num_reqs 未同步到 block_table → 950 FIA 校验 num_reqs==block_table 首维失败
 
@@ -95,9 +95,9 @@ torch_npu._npu_flash_attention_qlens(
 
 ## 通用判据（运行时可复用）
 
-给 FIA/qlens 系列 attention 算子传 `block_table` / `num_reqs` / TND seq-len 时，凡这三个量被下述任一层动过，都要核对是否仍等于**实际 batch**：
+给 FIA/qlens 系列 attention 算子传 `block_table` / `num_reqs` / TND seq-len 时，这些量被下述任一层改动后，分别核对请求数与 token 数：`num_reqs == block_table.shape[0] == 实际请求数`；TND 累积序列长度末元素等于实际 token 总数（hidden_states 首维），不能要求三者全等：
 
-- **序列并行（SP / FlashComm1）填充**：SP 为满足 FIA TND 约束会 pad `num_tokens`/`num_reqs`；确认它 (1) 没进不该进的路径（context-parallel 开启时应被 `pcp_size*dcp_size==1` 门控挡住），(2) 补出的 `num_reqs_padded` 已同步 unpad 到 `block_table`（尤其 950 严格校验 `num_reqs==block_table.shape[0]`）。
+- **序列并行（SP / FlashComm1）填充**：SP 为满足 FIA TND 约束会 pad `num_tokens`/`num_reqs`；确认它 (1) 没进不该进的路径（SP 子分支受 `pcp_size*dcp_size==1` 门控；FULL 分支另行检查，不能认为 CP 自动挡住整个条件），(2) 补出的 `num_reqs_padded` 已同步 unpad 到 `block_table`（尤其 950 严格校验 `num_reqs==block_table.shape[0]`）。
 - **整缓冲透传**：任何直接把整块已分配缓冲（block_tables / hybrid kv groups 撑大的 shape）交给算子的路径，先按实际 batch 切片 `[:batch_size, :]`，`batch_size = query_lens.shape[0]`。
 
 症状统一表现为**下发/校验阶段的 shape 不匹配报错或不可预测 padding**，不是运行时精度异常；逐项核对后收敛到实际 batch 即可。
@@ -110,13 +110,13 @@ torch_npu._npu_flash_attention_qlens(
 - 信号 B：`vllm_ascend/spec_decode/eagle_proposer.py::_propose` 的 eager 分支；根因为 950 FIA 严格校验 num_reqs==block_table 首维。限定 atlas-950 + SP-padding + eagle + eager。
 - 信号 C：`vllm_ascend/attention/attention_v1.py::forward` 的 PrefillCacheHit 分支调 `torch_npu._npu_flash_attention_qlens`。触发条件为 prefix-cache + Ascend Scheduler + 相同请求。
 
-这些是**这三条具体路径当前的 shape 契约与门控事实**，属该参考实现的约束；「block_table 首维 / num_reqs / TND seq-len 须等实际 batch」这一算子级不变量可迁移，但「950 校验更严」「hybrid kv groups 撑大缓冲首维」等是各来源的具体成因，不外推为整个昇腾栈通用律。三者均未给出前后性能/精度数字。
+这些是**这三条具体路径当前的 shape 契约与门控事实**，属该参考实现的约束；「请求维对齐实际请求数，TND 累积长度末元素对齐 token 总数」这组分别核对的契约可迁移，但「950 校验更严」「hybrid kv groups 撑大缓冲首维」等是各来源的具体成因，不外推为整个昇腾栈通用律。三者均未给出前后性能/精度数字。
 
 ## 相关经验
 
 - FIA 变长实参形态随后端不同（host list vs Tensor）：[fia-actual-seq-lengths-kv-backend-type](fia_actual_seq_lengths_kv_backend_type.md)。
 - FIA MLA 无量化路径的 group_num 硬约束：[fia-mla-noquant-group-num-power-of-two](../compilation/fia_mla_noquant_group_num_power_of_two.md)。
-- 非 PA 路径 Q/KV 布局一致性约束（同为「attention 算子输入契约传错就在下发前失败」）：[sfaa-nonpa-qkv-layout-constraint](../../optimizations/experience/rules/sfaa_nonpa_qkv_layout_constraint.md)。
+- 非 PA 路径 Q/KV 布局一致性约束（同为「attention 算子输入契约传错就在下发前失败」）：[sfaa-nonpa-qkv-layout-constraint](sfaa_nonpa_qkv_layout_constraint.md)。
 - MTP/投机解码上线前置约束：[mtp-speculative-decode-graph-mode-prereqs](mtp_speculative_decode_graph_mode_prereqs.md)。
 
 ## 相关概念页

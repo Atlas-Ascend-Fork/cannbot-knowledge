@@ -12,7 +12,7 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/6479
   role: evidence
 created_at: '2026-07-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -27,7 +27,7 @@ platforms:
 
 - 用了 **多条 NPU stream**：一条主计算流 + 至少一条独立的通信/搬运流，通信流通过 `wait_stream(torch.npu.current_stream())` 与主流同步后在 `with torch_npu.npu.stream(...)` context 内执行。
 - 在通信流的 context 内**直接消费主流刚产出的张量**（把它喂给通信/搬运类算子，本参考实现中为 all-gather 型 `_gather_global_context_output`），没有先在消费流里做一份本地副本。
-- 症状是**内存只增不减**，不是数值错、不是 hang（同名变量并发冲突导致的多流卡死是另一签名，见 [multistream-branch-variable-name-collision-hang](../runtime/multistream_branch_variable_name_collision_hang.md)；跨流同步 API 选型是 [graph-mode-multi-stream-cross-stream-sync-api](../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)）。
+- 症状是**内存只增不减**，不是数值错、不是 hang（同名变量并发冲突导致的多流卡死是另一签名，见 [multistream-branch-variable-name-collision-hang](../runtime/multistream_branch_variable_name_collision_hang.md)；跨流同步 API 选型是 [graph-mode-multi-stream-cross-stream-sync-api](../../optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api.md)）。
 
 ## 触发条件
 

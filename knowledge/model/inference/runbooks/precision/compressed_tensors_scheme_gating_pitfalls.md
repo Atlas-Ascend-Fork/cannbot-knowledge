@@ -15,7 +15,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/366
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -57,8 +57,8 @@ platforms:
 ## 相关经验
 - [310P 上加载 compressed-tensors 格式 W8A8 模型在 load 阶](w8a8_310p_compressed_tensors_missing_ascend_override.md)
 
-- 量化权重加载的命名/布局清理（offset/scale-name/NZ）见 [quant-weight-load-layout-and-naming](../../optimizations/experience/rules/quant_weight_load_layout_and_naming.md)。
-- 量化权重制备路径选择见 [quant-weight-conversion-path-selection](../../guides/experience/interventions/quant_weight_conversion_path_selection.md)；W4A8 MoEGMM 三件套布局见 [quant-weight-load-layout-and-naming](../../optimizations/experience/rules/quant_weight_load_layout_and_naming.md)。
+- 量化权重加载的命名/布局清理（offset/scale-name/NZ）见 [quant-weight-load-layout-and-naming](../../optimizations/rules/quant_weight_load_layout_and_naming.md)。
+- 量化权重制备路径选择见 [quant-weight-conversion-path-selection](../../guides/deployment/quant_weight_conversion_path_selection.md)；W4A8 MoEGMM 三件套布局见 [quant-weight-load-layout-and-naming](../../optimizations/rules/quant_weight_load_layout_and_naming.md)。
 - 另见 [激活 8bit 量化分支按精确 == 'W8A8' 门控会漏掉 W4A8：改 'a8' 子串判断，否则该量化模式静默不生效](activation_quant_substring_gating_w4a8.md)。
 
 ## Evidence

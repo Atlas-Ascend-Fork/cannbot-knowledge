@@ -48,7 +48,7 @@ except Exception as exc:  # pylint: disable=broad-except
 
 ## 相关
 
-- 同属 DiT 视频生成模型昇腾 bringup 的后端适配经验：[cuda-native-dit-video-attention-sp-npu-adaptation](../../optimizations/experience/rules/cuda_native_dit_video_attention_sp_npu_adaptation.md)。
+- 同属 DiT 视频生成模型昇腾 bringup 的后端适配经验：[cuda-native-dit-video-attention-sp-npu-adaptation](../../optimizations/rules/cuda_native_dit_video_attention_sp_npu_adaptation.md)。
 
 ## Evidence
 

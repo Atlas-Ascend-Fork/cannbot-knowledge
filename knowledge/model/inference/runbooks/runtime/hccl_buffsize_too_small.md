@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/93
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-07-06T00:00:00Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - a3
 ---
@@ -43,7 +43,7 @@ export HCCL_BUFFSIZE=<实际需要的大小>   # 单位 MB
 
 ## 适用边界
 
-这是昇腾 HCCL 通用失败签名，在 [Kimi-K2-Thinking](../../concepts/models/kimi_k2_thinking.md) 多机（大 EP，Atlas A3 集群，`bash infer.sh` 多节点同步拉起）部署上下文记录，适用面为昇腾多机集合通信，不限该模型。多机/多进程 DP+EP MoE 集合通信一致性对齐见 [multimachine-dp-ep-moe-collective-alignment](../../guides/experience/interventions/multimachine_dp_ep_moe_collective_alignment.md)。
+这是昇腾 HCCL 通用失败签名，在 [Kimi-K2-Thinking](../../concepts/models/kimi_k2_thinking.md) 多机（大 EP，Atlas A3 集群，`bash infer.sh` 多节点同步拉起）部署上下文记录，适用面为昇腾多机集合通信，不限该模型。多机/多进程 DP+EP MoE 集合通信一致性对齐见 [multimachine-dp-ep-moe-collective-alignment](../../optimizations/rules/multimachine_dp_ep_moe_collective_alignment.md)。
 
 ## Evidence
 

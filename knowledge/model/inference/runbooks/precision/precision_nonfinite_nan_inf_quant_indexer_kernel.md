@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/28
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - '950'
 ---
@@ -45,7 +45,7 @@ ReduceMax(scale, xAbs, preg);                       // 块 max 不再被 NaN/Inf
 
 ## 可迁移原则
 
-凡 kernel 内对激活做**规约（ReduceMax/ReduceSum）或排序（TopK）**、而上游可能因反量化 / 溢出产生非有限值的路径，都要在进规约/排序前用「乘 0 自比较 NE 得非有限 mask → ZEROING 归并」显式剔除 NaN/Inf；量化 scale 求解尤其如此（一个坏 lane 污染整块）。低比特量化路径把激活的动态范围压得很窄，反量化中间量更易越界产生 inf/NaN，这类防护不是可选项。压 Lightning-Indexer 单算子时延切量化算子的做法见 [quant-lightning-indexer-latency](../../optimizations/experience/rules/quant_lightning_indexer_latency.md)；稀疏 attention 的变长零长度边界见 [precision-sparse-attention-kernel-boundary-golden](precision_sparse_attention_kernel_boundary_golden.md)。
+固定动态块量化尾块实现使用非有限值 mask 后归零，属于该实现的局部处理策略。其他 ReduceMax/ReduceSum/TopK 路径应按算子语义决定拒绝、屏蔽或其他处理，不能通用要求 NaN/Inf 归零；例如 TopK 的 NaN 排序未定义并不能推出归零保持原排名语义。量化输入范围与非有限传播需分别验证。相关：[量化 LI 选型](../../optimizations/rules/quant_lightning_indexer_latency.md)、[稀疏 attention 边界验证](precision_sparse_attention_kernel_boundary_golden.md)。
 
 ## 参考实现及其约束
 

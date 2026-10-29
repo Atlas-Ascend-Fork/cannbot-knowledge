@@ -65,7 +65,7 @@ else:
 - 修后短序列（有效 KV 全在段 0）的滑窗元数据取到「段 0 起始处的有效 token」，不再负索引回卷到最后一段。
 - 无 before→after benchmark 数字，价值在 correctness 边界修复本身。
 - 范围限定到 [deepseek-v4](../../concepts/models/deepseek_v4.md) 的 CP 滑动窗口实现；「负索引静默回卷」为对 Python 索引语义的据实推断（非显式崩溃/报错），已标为静默 correctness、不外推为特定报错文本。
-- 本页是 [causal-cp-prefill-zigzag-actual-seqlens](../../optimizations/experience/rules/causal_cp_prefill_zigzag_actual_seqlens.md) 头尾配对方案在**短序列单段**下的边界失效点；上 zigzag-CP 前先确认序列不会短到落入单段（或已补 `N==1` 分支）。
+- 本页是 [causal-cp-prefill-zigzag-actual-seqlens](../../optimizations/rules/causal_cp_prefill_zigzag_actual_seqlens.md) 头尾配对方案在**短序列单段**下的边界失效点；上 zigzag-CP 前先确认序列不会短到落入单段（或已补 `N==1` 分支）。
 
 ## Evidence
 

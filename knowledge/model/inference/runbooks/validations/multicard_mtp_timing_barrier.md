@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/23
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -26,6 +26,10 @@ platforms:
 ## 触发条件 / 根因
 
 MTP 后处理存在大量 H2D 拷贝与 npu sync 操作 → MTP 小模型卡间进度不同步 → 各 rank 在计时区起点未对齐，计时段包含了卡间不同步带来的抖动。典型计时区起点在早退分支之后进入 `torch.npu.synchronize()` + `start_time = time.time()`，此前各 rank 因异步进度不齐。
+
+## 探针与对照
+
+先固定输入、接受数统计口径、并行组和稳态区间，各 rank 记录计时区入口、barrier 前后、设备同步结束和计时结束事件。跨主机不可直接相减未经校准的本地时钟；用已同步时间基准或通信时间线确认起点偏移，区分设备工作、同步等待与主机打点。
 
 ## 修法
 
@@ -41,7 +45,11 @@ start_time = time.time()
 
 ## 边界
 
-参考实现见 [DeepSeek-V3.2-Exp](../../concepts/models/deepseek_v3_2_exp.md) 的 `model_infer.py::Infer`（main + MTP 小模型）。源未给前后计时数字，"barrier 降低打点抖动"是作者陈述意图 + 分布式 profiling 常规，机制自洽但无独立复测，故不写量化收益。MTP 收益与时延度量本身另见 [mtp-benefit-sparse-attention-and-latency-metric](../../optimizations/experience/cases/mtp_benefit_sparse_attention_and_latency_metric.md)。
+参考实现见 [DeepSeek-V3.2-Exp](../../concepts/models/deepseek_v3_2_exp.md) 的 `model_infer.py::Infer`（main + MTP 小模型）。源未给前后计时数字，"barrier 降低打点抖动"是作者陈述意图 + 分布式 profiling 常规，机制自洽但无独立复测，故不写量化收益。MTP 收益与时延度量本身另见 [mtp-benefit-sparse-attention-and-latency-metric](../../optimizations/cases/mtp_benefit_sparse_attention_and_latency_metric.md)。
+
+## 验证与停止条件
+
+同负载重复比较插入 barrier 前后的每 rank 计时分布、中位数与尾部抖动，并单独统计 barrier 等待；检查所有参与 rank 在相同控制流位置进入同一组 barrier，避免早退造成新挂死。只有观察到起点偏移减小、设备工作和输出不变且统计更稳定，才支持该归因；若仍抖动，应继续区分 H2D、设备同步和主机调度。barrier 改变了测量同步口径，不应把等待移出计时误报为模型加速。这里提供验收步骤，未声称设备复测完成。
 
 ## Evidence
 

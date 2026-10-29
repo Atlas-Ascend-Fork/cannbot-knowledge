@@ -1,7 +1,10 @@
 ---
 type: Concept
 title: MXFP8 A8W8 (DiT Linear)
-description: HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8 矩阵量化方案：权重按 group（默认 `group_size=32`）per-group 量化为 FP8 E4M3FN，激活按 token 维度 per-token 量化为同格式，scale 采用 E8M0（纯指数，1 字节）。实现 8-bit × 8-bit 矩阵乘（A8W8），权重显存减半、带宽需求 -50%。调用 `torch_npu.npu_dynamic_mx_quant` + `torch_npu.npu_quant_matmul` 完成量化与量化 GEMM。
+description: HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8 矩阵量化方案：权重按
+  group（默认 `group_size=32`）per-group 量化为 FP8 E4M3FN，激活按 token 维度 per-token 量化为同格式，scale
+  采用 E8M0（纯指数，1 字节）。实现 8-bit × 8-bit 矩阵乘（A8W8），权重显存减半、带宽需求 -50%。调用 `torch_npu.npu_dynamic_mx_quant`
+  + `torch_npu.npu_quant_matmul` 完成量化与量化 GEMM。
 tags:
 - task.design
 - topic.precision
@@ -9,12 +12,13 @@ status: stable
 sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: primary
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py
+  role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-22T01:37:00Z'
 platforms:
 - '950'
 ---
-
 # MXFP8 A8W8 (DiT Linear)
 
 ## Summary
@@ -32,21 +36,18 @@ HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8
 ### 动态转换 Linear
 
 ```python
-# 来源：hyvideo/modules/mxfp8_a8w8.py
+# 来源：hyvideo/modules/mxfp8_a8w8.py；输入、导入与调用环境由模型提供。
 def dynamic_convert_mxfp8_linear(module, original_dtype, params_to_keep=None):
- for key, layer in module.named_modules():
- # 仅转换 transformer 块中的 Linear
- if isinstance(layer, nn.Linear) and ('double_blocks' in key or 'single_blocks' in key):
- # 跳过 modulation 层和 1D 权重
- if len(layer.weight.shape) == 1 or 'mod' in key:
- continue
- mxfp8_weight, mxfp8_scale = torch_npu.npu_dynamic_mx_quant(
- layer.weight.data,
- dst_type=torch.float8_e4m3fn,
- )
- layer.weight.data = mxfp8_weight
- setattr(layer, "weight_scale", mxfp8_scale)
- setattr(layer, "forward", lambda input, m=layer: mxfp8_linear_forward(m, original_dtype, input))
+    for key, layer in module.named_modules():
+        if isinstance(layer, nn.Linear) and ('double_blocks' in key or 'single_blocks' in key):
+            if len(layer.weight.shape) == 1 or 'mod' in key:
+                continue
+            mxfp8_weight, mxfp8_scale = torch_npu.npu_dynamic_mx_quant(
+                layer.weight.data, dst_type=torch.float8_e4m3fn,
+            )
+            layer.weight.data = mxfp8_weight
+            setattr(layer, "weight_scale", mxfp8_scale)
+            setattr(layer, "forward", lambda input, m=layer: mxfp8_linear_forward(m, original_dtype, input))
 ```
 
 ### 量化 Linear 前向
@@ -96,7 +97,7 @@ def mxfp8_linear_forward(layer, original_dtype, x):
 
 ## Known Results
 
-见 [fp8-attention](fp8_attention.md) 的 benchmark 表：MXFP8 单独开启 e2e 1.05–1.06×；与 FP8 attention 叠加（ulysses8）e2e 1.38×。
+[HunyuanVideo 950 来源观测](../../optimizations/benchmark_observations/hunyuan_video_950_source_benchmark.md)维护同组量化对照；不把组合数据写成通用收益。
 
 ## Evidence
 

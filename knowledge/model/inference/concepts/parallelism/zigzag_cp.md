@@ -1,7 +1,10 @@
 ---
 type: Concept
 title: ZigZag Context Parallel (Load-Balanced Causal Attention)
-description: ZigZag 是 context-parallel 下针对**因果 Attention 负载不均**的切分变体：将输入 Sequence 切成 `2·cp_size` 个 block，每个 CP rank 负责头尾对称的两个 block（如 rank 0 负责 block 0 与 block 2·cp_size-1），从而让所有 rank 的历史 KV 计算量近似相等。通过两次 AllToAll 在"因果序"和"ZigZag 序"之间切换。 定位：ZigZag 是 CP 的**并行切分策略**（不是正交的通用技术），放在 parallelism 目录下；与 Ulysses/Ring Attention SP 并列作为长序列并行的一个方案族。
+description: ZigZag 是 context-parallel 下针对**因果 Attention 负载不均**的切分变体：将输入 Sequence
+  切成 `2·cp_size` 个 block，每个 CP rank 负责头尾对称的两个 block（如 rank 0 负责 block 0 与 block 2·cp_size-1），从而让所有
+  rank 的历史 KV 计算量近似相等。通过两次 AllToAll 在"因果序"和"ZigZag 序"之间切换。 定位：ZigZag 是 CP 的**并行切分策略**（不是正交的通用技术），放在
+  parallelism 目录下；与 Ulysses/Ring Attention SP 并列作为长序列并行的一个方案族。
 tags:
 - task.design
 - topic.parallelism
@@ -14,11 +17,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-next/qwen3_next_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T01:47:21Z'
 platforms:
 - agnostic
 ---
-
 # ZigZag Context Parallel (Load-Balanced Causal Attention)
 
 ## Summary
@@ -75,10 +77,14 @@ graph LR
 
 ## Configuration
 
+以下开关与部署约束限定本页引用的 Qwen3-Next/SGLang 实现，不能当作所有 ZigZag/CP 算法的限制。
+
 - `--cp-size` + `CP_USE_ZIGZAG=1` 共同使能。
 - PD 分离场景下 Prefill 节点 `cp_size < tp_size`。
 
 ## Constraints
+
+本节中的 CP/DP 复用和 PD 部署约束按固定实现解释；算法等分条件与工程接口分开核对。
 
 - 仅在启用 CP 时生效（`--cp-size`），开关为 `CP_USE_ZIGZAG=1`。
 - 要求 `cp_size < tp_size` 且 PD 卡数一致；CP 与 DP 互斥（CP 复用 DP 通信域）。

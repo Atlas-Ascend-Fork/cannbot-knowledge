@@ -101,7 +101,7 @@ kv.view(kv_shape[0], kv_shape[1], num_kv_head, head_dim)
 ## 相关经验
 
 - [Mooncake（protocol=ascend / HIXL）KV 传输后端在昇腾的三个非显式前置约束](mooncake_ascend_hixl_kv_transfer_bringup.md)——cann-recipes-infer 侧的另一实现，同族「注册/bringup 前置约束」，config 面不同勿混。
-- [HIXL / HCCS IPC 路径注册内存的 2 MiB 对齐约束](../../optimizations/experience/rules/hixl_hccs_ipc_2mib_alignment.md)——同属昇腾直连 KV 传输的内存注册约束族。
+- [HIXL / HCCS IPC 路径注册内存的 2 MiB 对齐约束](../../optimizations/rules/hixl_hccs_ipc_2mib_alignment.md)——同属昇腾直连 KV 传输的内存注册约束族。
 - KV 传输管理与卸载见 [KVCache 卸载](../../concepts/techniques/kvcache_offload.md)。
 
 ## Evidence

@@ -48,7 +48,7 @@ FIA 的 **MLA 无量化路径**——`NO_QUANT` + 带 rope + query/key head_dim=
 
 ## 适用边界
 
-严格限「CANN FIA 算子 `NO_QUANT` + rope + head_dim=512 的 MLA 路径」这一条约束，不外推为整栈通用律，也不代表 FIA 对量化路径 / 其它 head_dim 有同样限制。为什么本例 group_num=5（是否 num_q_heads/num_kv_heads 比、或 MTP/TP 切分所致）为推断。FIA 的另一条**跨后端**调用约束（`actual_seq_lengths_kv` 类型随后端不同）见 [fia-actual-seq-lengths-kv-backend-type](../runtime/fia_actual_seq_lengths_kv_backend_type.md)；融合算子按硬件 / shape 条件门控的更一般情形见 [fused-op-hardware-conditional-fallback](../../optimizations/experience/rules/fused_op_hardware_conditional_fallback.md)。
+严格限「CANN FIA 算子 `NO_QUANT` + rope + head_dim=512 的 MLA 路径」这一条约束，不外推为整栈通用律，也不代表 FIA 对量化路径 / 其它 head_dim 有同样限制。为什么本例 group_num=5（是否 num_q_heads/num_kv_heads 比、或 MTP/TP 切分所致）为推断。FIA 的另一条**跨后端**调用约束（`actual_seq_lengths_kv` 类型随后端不同）见 [fia-actual-seq-lengths-kv-backend-type](../runtime/fia_actual_seq_lengths_kv_backend_type.md)；融合算子按硬件 / shape 条件门控的更一般情形见 [fused-op-hardware-conditional-fallback](../../optimizations/rules/fused_op_hardware_conditional_fallback.md)。
 
 ## 相关经验
 - [FIA/qlens 的 block_table 首维 / num_reqs / TND se](../runtime/fia_qlens_block_table_num_reqs_batch_contract.md)

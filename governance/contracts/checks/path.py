@@ -22,6 +22,12 @@ ID_RE = re.compile(r"^[a-z0-9_]+$")
 FREELY_NESTED_PROFILES = {"apis", "concepts", "examples", "guides", "optimizations"}
 
 
+def validate_topic_sections(contract: Contract, domain, route, profile, sections) -> None:
+    forbidden = contract.forbidden_sections.get(f"{domain}/{route}", {}).get(profile, [])
+    if any(section in forbidden for section in sections):
+        raise ValueError(f"{domain}/{route}/{profile} contains a retired section")
+
+
 def check(contract: Contract, document, context) -> list[Issue]:
     del contract, context
     if (
@@ -73,6 +79,7 @@ def derive_card_path(contract: Contract, relative: Path) -> PathInfo:
         raise ValueError("path must be domain/type or domain/technology-or-scope/type")
 
     suffix = parts[type_index + 1 : -1]
+    validate_topic_sections(contract, domain, route, card_type, suffix)
     if card_type == "operators":
         if len(suffix) != 3 or suffix[0] not in contract.operator_call_modes:
             allowed = "|".join(sorted(contract.operator_call_modes))

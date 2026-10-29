@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/284
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -22,7 +22,7 @@ platforms:
 
 ## 信号（现象）
 
-开 `enable_cache_compile`（[torchair cache_compile](../../optimizations/experience/rules/torchair_cache_compile_persisted_graph.md)）后出现：**cachecompile 出错**，或**首轮执行需要 warmup 两次 + cache 无法生成**。症状根子不在 cache_compile 本身，而在**被编译路径里混进了只在首次/条件触发的动态构建**——它让每次进入编译区的图形态不一致，破坏 cache_compile 缓存已编译图的前提。
+开 `enable_cache_compile`（[torchair cache_compile](../../optimizations/rules/torchair_cache_compile_persisted_graph.md)）后出现：**cachecompile 出错**，或**首轮执行需要 warmup 两次 + cache 无法生成**。症状根子不在 cache_compile 本身，而在**被编译路径里混进了只在首次/条件触发的动态构建**——它让每次进入编译区的图形态不一致，破坏 cache_compile 缓存已编译图的前提。
 
 ## 根因与两种典型触发
 
@@ -54,7 +54,7 @@ platforms:
 
 ## 可迁移原则与验证
 
-**编译区内不应含只在首次/条件触发的动态构建**（cache 初始化、索引表生成、每步换新的容器）——它们要么上提到编译区外一次性做并复用稳定对象，要么用 `@torch._dynamo.disable` 隔离出图使编译图只含稳定的 cache-hit 路径。验证：acl_graph 下能开 cache_compile 且不再二次 warmup / cache 能生成（源多为定性，未给报错栈与前后数字）。相关：输入签名稳定 [graph-mode-stable-input-signature-recompile](../performance/graph_mode_stable_input_signature_recompile.md)、消除图中断 [graph-break-elimination-host-sync-unsupported-ops](../../guides/experience/interventions/graph_break_elimination_host_sync_unsupported_ops.md)。
+**编译区内不应含只在首次/条件触发的动态构建**（cache 初始化、索引表生成、每步换新的容器）——它们要么上提到编译区外一次性做并复用稳定对象，要么用 `@torch._dynamo.disable` 隔离出图使编译图只含稳定的 cache-hit 路径。验证：acl_graph 下能开 cache_compile 且不再二次 warmup / cache 能生成（源多为定性，未给报错栈与前后数字）。相关：输入签名稳定 [graph-mode-stable-input-signature-recompile](../performance/graph_mode_stable_input_signature_recompile.md)、消除图中断 [graph-break-elimination-host-sync-unsupported-ops](../../guides/integration/graph_break_elimination_host_sync_unsupported_ops.md)。
 
 ## 参考实现及其约束
 

@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/172
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -45,14 +45,14 @@ A8W8 场景下 `npu_moe_init_routing_v2` 与后续 dynamicquant 融合、输出 
 +     moe_args.update({"group_list_type": 2, "pertoken_scale": dynamic_scale})
 ```
 
-**排查纪律**：多流 + TP 的 MoE（尤其 A8W8 量化路径）出现**无报错卡死**时，先检查被切到不同流的两条分支（路由专家 / 共享专家）有没有**复用同名 Python 变量**——复用会在多流下造成冲突；给两条并发分支的中间量各起独立名字是低成本的规避。这条对任何「路由专家 + 共享专家 + 多流」的同结构 MoE 建模可迁移。
+**排查线索**：该固定实现改名后恢复仅为来源自述，不能证明 Python 同名变量天然产生跨流冲突。先核对是否在同一作用域覆盖了仍被另一分支消费的张量、实际消费关系和流依赖，再单独改名并比较相同负载下的时间线与输出；只有复测支持时才采用该实现的修法，不外推到任意同结构 MoE。
 
 ## 相关经验
-- [aclgraph replay 静默挂死无报错时：用 acl_graph_print 图内打](../../guides/experience/interventions/aclgraph_print_bisect_silent_hang.md)
+- [aclgraph replay 静默挂死无报错时：用 acl_graph_print 图内打](aclgraph_print_bisect_silent_hang.md)
 - [多流注意力主流张量被通信流消费致 NPU 内存不释放：跨流消费前 clone 副本解耦生命周](multistream_cross_stream_tensor_lifetime_clone.md)
 
 - 多流写法本身写错的其它失败签名（漏配跨流同步 / 守卫不一致 / event 重复创建 / 条件创建资源未转发）见 [graph-mode-multi-stream-sync-failures](graph_mode_multi_stream_sync_failures.md)——本页是并列的又一类（并发分支变量命名冲突）。
-- 路由 / 共享专家双流重叠的正向干预配方（副流掩盖、同步协议）见 [moe-shared-expert-decode-dual-stream](../../optimizations/experience/rules/moe_shared_expert_decode_dual_stream.md)。
+- 路由 / 共享专家双流重叠的正向干预配方（副流掩盖、同步协议）见 [moe-shared-expert-decode-dual-stream](../../optimizations/rules/moe_shared_expert_decode_dual_stream.md)。
 
 ## Evidence
 

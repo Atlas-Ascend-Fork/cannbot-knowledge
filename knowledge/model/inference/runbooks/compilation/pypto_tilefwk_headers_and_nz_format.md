@@ -55,7 +55,7 @@ platforms:
 ## 相关经验
 
 - AscendC（非 PyPTO）自定义算子的构建/打包/可用性坑见 [ascendc-custom-op-build-packaging-availability](../compilation/ascendc_custom_op_build_packaging_availability.md)；跨平台/跨 CANN 版本构建失败见 [ascendc-custom-op-cross-platform-cann-build](../compilation/ascendc_custom_op_cross_platform_cann_build.md)。
-- 用 PyPTO 落地 DSA 融合注意力的组织方法见 [pypto-dsa-fused-attention-decompose-quant](../../optimizations/experience/rules/pypto_dsa_fused_attention_decompose_quant.md)。
+- 用 PyPTO 落地 DSA 融合注意力的组织方法见 [pypto-dsa-fused-attention-decompose-quant](../../optimizations/rules/pypto_dsa_fused_attention_decompose_quant.md)。
 
 ## Evidence
 

@@ -282,6 +282,10 @@ local_sources:
           operator: knowledge/ops/ascendc/operators/aclnn/transformer/mc2/allto_all_matmul.md
 
 paths:
+  forbidden_sections:
+    model/inference:
+      guides: [experience]
+      optimizations: [experience]
   operator_call_modes: [aclnn, direct]
   operator_categories:
     cv: [image, objdetect]

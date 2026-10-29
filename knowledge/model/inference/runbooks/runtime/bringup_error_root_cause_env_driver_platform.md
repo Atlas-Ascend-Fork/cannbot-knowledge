@@ -81,8 +81,8 @@ platforms:
 - [Ascend 310P 不支持图模式：aclgraph capture 抛 ACL_MODE](ascend_310p_graph_mode_unsupported_enforce_eager.md)
 
 - 缺文件/checkpoint 不完整导致的误报见 [bringup-preparation-missing-files-and-reduced-config](bringup_preparation_missing_files_and_reduced_config.md)。
-- 部署镜像组件版本对齐见 [ascend-deployment-image-version-alignment](../../optimizations/experience/rules/ascend_deployment_image_version_alignment.md)；跨平台算子构建见 [ascendc-custom-op-cross-platform-cann-build](../compilation/ascendc_custom_op_cross_platform_cann_build.md)。
-- 非默认平台（310P/950）部署适配见 [ascend-deploy-parallel-variant-and-nondefault-platform](../../optimizations/experience/rules/ascend_deploy_parallel_variant_and_nondefault_platform.md)。
+- 部署镜像组件版本对齐见 [ascend-deployment-image-version-alignment](ascend_deployment_image_version_alignment.md)；跨平台算子构建见 [ascendc-custom-op-cross-platform-cann-build](../compilation/ascendc_custom_op_cross_platform_cann_build.md)。
+- 非默认平台（310P/950）部署适配见 [ascend-deploy-parallel-variant-and-nondefault-platform](../../optimizations/rules/ascend_deploy_parallel_variant_and_nondefault_platform.md)。
 - 「拉起后长时间无输出、看似 hang」常是 warmup 静默长耗时而非真故障，先辨阶段见 [warmup-silent-slow-and-dummy-cache](../performance/warmup_silent_slow_and_dummy_cache.md)。
 
 ## Evidence

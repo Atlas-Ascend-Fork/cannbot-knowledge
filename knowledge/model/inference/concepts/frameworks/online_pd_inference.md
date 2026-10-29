@@ -1,7 +1,10 @@
 ---
 type: Concept
-title: 在线 PD 分离推理执行机制（Online PD-Disaggregated Inference）
-description: 'Online PD Inference 是 CANN Executor 在离线执行器之上的 Prefill/Decode 分离服务模式：Prefill 通常采用 TP，Decode 通常采用 DP，Prefill 完成后通过 KVTransferManager 将 KV 直接传至 Decode。每卡一 worker，leader 启动 FastAPI 与 DPDispatcher；Bootstrap 管理 rank/room 拓扑，Router 按 room 哈希并发请求两侧，数据面使用 ZMQ 控制与 RDMA 写入 64B metadata 槽。Prefill/Decode 各有独立 Scheduler；Decode 入场时按 num_reserved_decode_tokens（默认 64）预留块，仅在扣除流水保留量后仍足够才接纳，以避免死锁，并支持 MTP 预分配和 OOM 驱逐。在线模式只有 PREFILL/DECODE，NONE 表示离线；HTTP 端口目前固定。'
+title: 在线 PD 分离推理执行机制：多机实例、DP 分发与 KV 传输（Online PD Inference）
+description: CANN Executor 的在线 PD 分离机制：Prefill 与 Decode 实例可跨机，各自配置并行拓扑，通过 Bootstrap 发现 Rank，DPDispatcher 分发请求，KVTransferManager 传送 KV。说明 Router、调度与入场控制；不由该机制推定任意 DP+EP 组合均已验证。
+aliases:
+- Online PD Inference
+- Online PD-Disaggregated Inference
 tags:
 - task.implementation
 - topic.architecture
@@ -14,11 +17,21 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/design/online_inference_design.md
   role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-23T09:41:54Z'
 platforms:
 - agnostic
+scope:
+  schema: model.inference.v1
+  any_of:
+  - all_of:
+      serving_mode:
+      - online
+      deployment_topology:
+        all_of:
+        - pd_disaggregated
+      framework:
+      - cann_executor
 ---
-
 # 在线 PD 分离推理执行机制（Online PD-Disaggregated Inference）
 
 ## Summary
@@ -69,7 +82,7 @@ flowchart TD
 | `PUT` | `/bootstrap/register_rank` | Prefill rank | 启动时注册 `rank_ip / rank_port` 与拓扑参数 |
 | `GET` | `/bootstrap/route` | Decode rank | 拉整份 rank_table + 集群视图 |
 | `POST` | `/bootstrap/register_dp_rank` | Prefill（per-request） | 写 `bootstrap_room → dp_rank` |
-| `POST` | `/bootstrap/query_dp_ranks` | Decode（per-request） | 批量查 `room → dp_rank`；跳过条件挂在字段值而非 `dp_size`：`_resolve_prefill_dp_rank`（`queues.py:93`）只要 `disagg_prefill_dp_rank is not None and >= 0` 即早返回该值、不进 `dp_size` 分支。Router 对**任意** `dp_size` 都 `setdefault 0`（`router.py:127`），故 Router 转发的请求恒跳过查询。`dp_size==1` 时 0 才是真实落点；`dp_size>1` 时 0 是占位，decode 仍据此 init 而**不**回查（详见 Router 节） |
+| `POST` | `/bootstrap/query_dp_ranks` | Decode（per-request） | 批量查 `room → dp_rank`；跳过条件挂在字段值而非 `dp_size`：`_resolve_prefill_dp_rank`（`queues.py:93`）只要 `disagg_prefill_dp_rank is not None and >= 0` 即早返回该值、不进 `dp_size` 分支。Router 仅在请求缺字段时 `setdefault 0`（`router.py:127`），此时跳过查询；显式 None/负数且 Prefill 多 DP 时仍查询。默认 0 在多 DP 下不保证是真实落点（详见 Router 节） |
 | `GET` | `/bootstrap/health` | 运维 | 只读健康 |
 
 首请求允入条件：**Prefill** 需本实例 `is_ready == True`；**Decode** 需能 `GET /bootstrap/route` 拿到 prefill 拓扑（请求级触发，非启动期）；**Router** 无 ready 概念，可先于 PD 启动，目标后端不在线时返回 503。
@@ -78,7 +91,7 @@ flowchart TD
 
 `router.py`。监听 `ROUTER_HTTP_PORT`，处理客户端请求时：① 注入 `bootstrap_room / bootstrap_host / bootstrap_port` 三元组（无 `bootstrap_room` 时自动生成：`uuid.uuid4().int & ((1<<63)-1)`，即 uuid4 取低 63 位，`router.py:114`）；② 按 `bootstrap_room % N` 选一个 Prefill 实例与一个 Decode 实例，`asyncio.gather` **并发双发** POST 给两端 leader；③ 透传 Decode 响应给 client。
 
-**`disagg_prefill_dp_rank` 注入的真实语义**（`router.py:122-127`）：Router 对该字段做 `payload.setdefault("disagg_prefill_dp_rank", 0)`——**无条件硬编码 0**，并非按 `dp_size` 预计算的真实 dp_rank。Router 既已对**任意** `dp_size` 都注入 0，decode 侧 `DecodePreallocQueue._resolve_prefill_dp_rank`（`queues.py:92-100`）首判 `if disagg_prefill_dp_rank is not None and >= 0: return it`——注入的 0 直接短路、早返回，decode 即以该 0 `receiver.init(0)`，**不**进入 `query_prefill_dp_ranks`（该查询仅在 `_resolve_prefill_dp_rank` 返回 None 时由 `need_query` 触发，`queues.py:154-164`）。因此 `query_dp_ranks` 回读真实 dp_rank 的路径**对 Router 转发的请求是死路径、不执行**——仅当请求不经 Router 或显式不带 `disagg_prefill_dp_rank` 字段（None/<0）时才回退查询。`dp_size==1` 时 0 恰好是正确值，decode 据此 `init()` 即对；`dp_size>1` 时 0 仅为占位、不代表真实落点：真实落点由 leader 节点 `DPDispatcher._get_next_dp_rank()`（`dp_dispatcher.py:144-151`）round-robin 选 DP leader，sender 侧 `AscendKVSender._register_prefill_dp_rank`（`conn.py:62-78`，仅 `is_dp_leader` rank）把**真实** dp_rank 经 `POST /bootstrap/register_dp_rank` 写入 bootstrap `room_to_dp_rank`——但 decode 当前**并不回读**该注册表（被注入的 0 短路），sender 的注册对 Router 转发链路是写而不被读。> ⚠️ doc≠code：`router.py:122-127` 注释声称 `dp_size>1` 时"leave the field unset、decode falls back to querying"，但 `setdefault` 实际仍写入 0；`dp_size>1` 下 sender 虽把真实 dp_rank 注册进 bootstrap，但 decode 因 0 短路并不回查，注释描述的 fallback 路径在 Router 当前实现下不触达。
+**`disagg_prefill_dp_rank` 的默认注入**（`router.py:122-127`）：`payload.setdefault("disagg_prefill_dp_rank", 0)` 只在客户端未提供字段时写入 0，已提供的值原样保留。Decode 的 `_resolve_prefill_dp_rank` 对非负值直接返回，因此缺字段而被补 0 的请求跳过 bootstrap 查询；显式传入 `None` 或负数时，Prefill DP 大于 1 的请求仍可进入 `query_prefill_dp_ranks`。单 DP 下 0 是正确落点；多 DP 下真实落点由 `DPDispatcher` 轮转选择并由 sender 注册到 bootstrap，默认 0 不保证代表该落点。来源注释称多 DP 时应留空触发查询，而实际默认注入 0；这一差异仅适用于缺字段的请求，不能称所有 Router 请求都不回查。
 
 **双发语义**：prefill 的 HTTP 响应在 Router 内被丢弃，仅用于触发 prefill 处理 + 探测后端是否在线；以 decode 响应作为返回 body。错误传播：prefill HTTP 错误 → prefill rank 自身记日志、不影响 decode 主响应；decode 非 200 → 以 decode 的 status/body 返回 client；任一连接异常（`httpx.TransportError`）→ Router 抛 503 `backend unavailable`。这使请求级失败（控制面）与传输级失败（数据面）可独立观察处理。
 
@@ -127,9 +140,9 @@ PD 模式下基类 `Scheduler` 被两个角色专一子类替换，二者继承�
 
 **HOL-blocking 规避**：入场遍历对单个不可装请求用 `continue` 跳过而非 `break` 中断遍历，使队首大请求（块预算或 `allocate_slots` 失败）不阻断其后小请求入场（规避 head-of-line blocking）。
 
-## 配置与启动
+## 配置与传输接口
 
-`SchedulerConfig.num_reserved_decode_tokens` 默认 **64**（`inference_config.py`），即上文入场控制的 per-pipeline 单请求 KV 预留量；高 QPS 突发场景增大可减少 retraction 频率、但牺牲并发吞吐。
+`SchedulerConfig.num_reserved_decode_tokens` 默认 **64**（`inference_config.py`），即 per-pipeline 单请求 KV 预留量；入场控制、调整依据和验证见[KV 入场控制规则](../../optimizations/rules/online_decode_kv_admission_retraction.md)。
 
 端口常量（`executor/online/constants.py`，**四个 HTTP 端口不可配**，调整需改源码）：
 

@@ -50,7 +50,7 @@ platforms:
 
 ## 相关经验
 
-- MTP 等效时延的归一基数（用稳态平均接受 token 数、别用首 batch）与 DSA 上 MTP 收益按模块分化（SFA 不吃 MTP）见 [mtp-benefit-sparse-attention-and-latency-metric](../../optimizations/experience/cases/mtp_benefit_sparse_attention_and_latency_metric.md)。
+- MTP 等效时延的归一基数（用稳态平均接受 token 数、别用首 batch）与 DSA 上 MTP 收益按模块分化（SFA 不吃 MTP）见 [mtp-benefit-sparse-attention-and-latency-metric](../../optimizations/cases/mtp_benefit_sparse_attention_and_latency_metric.md)。
 - 多卡 MTP 计时前 `dist.barrier` 对齐各 rank、剔除卡间异步抖动见 [multicard-mtp-timing-barrier](../validations/multicard_mtp_timing_barrier.md)。
 
 ## Evidence

@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: 稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss
-description: 稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss。decode 逐步推理时出现图重复编译（recompile）/ 编译缓存未命中，稳态本应零重编。典型隐蔽处：不开日志看不出来，只表现为时延偏高或 cache_compile 命不中——一旦发现 decode 每步都在重编译或缓存不命中，先怀疑喂进图的输入张量签名在步间发生了漂移。
+description: 从重编译与 guard 日志定位 shape、stride、dtype 和 warm-up 差异；仅对确认的输入试验静态化或连续化，区分动态支持与持久缓存失效。
 tags:
 - task.debugging
 - topic.graph_execution
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/418
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T02:05:13Z'
 platforms:
 - agnostic
 ---
@@ -27,10 +27,10 @@ decode 逐步推理时出现**图重复编译（recompile）/ 编译缓存未命
 
 ## 触发条件与根因
 
-图模式按输入张量的 **shape + dtype + stride 签名** 缓存/守卫（guard）已编译图；decode 每步输入的 shape/dtype/stride 只要有一维不稳，dynamo 就把它当新形态触发重编译或 guard 失效。三类常见漂移：
+图模式按输入张量的 **shape + dtype + stride 签名** 缓存/守卫（guard）已编译图；输入变化若不满足已有图的 guard 或后端约束，才可能触发重编译；动态维并非每次变化都需要新图。三类常见漂移：
 
-- **shape 漂移**：整图编译默认 `dynamic=True`，decode 每步输入 shape 其实固定，但未标静态时 dynamo 把这些维度当动态，shape 一变就 guard 失效重编译。
-- **stride 漂移**：喂给图的张量是切片 / `torch.cat` 后的**非连续视图**，其 stride 随迭代变化，图模式视 stride 变化为不同形态→每步重编译、命不中缓存（典型：MTP 的 `prev_hidden_states` 切片）。
+- **shape 漂移**：先检查实际 `dynamic` 设置和 guard 日志；固定维度与后端静态化要求不一致可能触发重编译，`dynamic=True` 本身不等于每次 shape 变化都重编译。
+- **stride 漂移**：喂给图的张量是切片后的非连续视图或步间布局发生变化，其 stride 随迭代变化，图模式视 stride 变化为不同形态→每步重编译、命不中缓存（典型：MTP 的 `prev_hidden_states` 切片）。
 - **dtype 漂移**：warm-up 用来触发编译的 dummy 输入 dtype 与正式推理输入不一致，warmup 编出的图签名对不上正式推理，正式推理时命中不同签名重新编译，warmup 白做。
 
 ## 修法（把 decode 图输入签名钉稳）
@@ -56,16 +56,16 @@ decode 逐步推理时出现**图重复编译（recompile）/ 编译缓存未命
 
 - mark_static 是**按模型可选**能力、不是所有模型都要：证据里 DeepSeek-R1 / Kimi-K2 / DeepSeek-V3.2 当前不需要 mark_static，需要的网络在集成时各自传 `loop_list` 调用。**不要默认对所有模型套用**。
 - `.contiguous()` 收紧仅覆盖已知的 `prev_hidden_states` 切片写入点，是否对其它切片输入通用无证据，不外推。
-- 验证：稳态 decode 不再触发重编译 / 缓存命中；这类修复常无 before→after 数字（属编译稳定性修复），排障时开编译日志观察 recompile 计数。相关：cache_compile 缓存机制 [torchair-cache-compile-persisted-graph](../../optimizations/experience/rules/torchair_cache_compile_persisted_graph.md)；MTP 复用同 callable 的重编译 [mtp-speculative-decode-graph-mode-prereqs](../runtime/mtp_speculative_decode_graph_mode_prereqs.md)；动态构建落编译区导致的 cache 失败 [cache-compile-fail-dynamic-build-in-compile-region](../compilation/cache_compile_fail_dynamic_build_in_compile_region.md)。
+- 验证：稳态 decode 不再触发重编译 / 缓存命中；这类修复常无 before→after 数字（属编译稳定性修复），排障时开编译日志观察 recompile 计数。相关：cache_compile 缓存机制 [torchair-cache-compile-persisted-graph](../../optimizations/rules/torchair_cache_compile_persisted_graph.md)；MTP 复用同 callable 的重编译 [mtp-speculative-decode-graph-mode-prereqs](../runtime/mtp_speculative_decode_graph_mode_prereqs.md)；动态构建落编译区导致的 cache 失败 [cache-compile-fail-dynamic-build-in-compile-region](../compilation/cache_compile_fail_dynamic_build_in_compile_region.md)。
 
 ## 参考实现及其约束
 
-参考实现在 cann-recipes-infer 的 executor `model_runner`（`mark_inputs`/`mark_detail`）、DeepSeek-R1 与 LongCat-Flash 的 MTP `prev_hidden_states` 写入点、executor warmup（`execution_engine`）。这些是本仓建模/框架的具体落点；「图按 shape+dtype+stride 签名缓存、签名漂移即重编译」是 torchair/dynamo 图模式通则，对任何走图模式的 decode 路径可迁移。
+参考实现在 cann-recipes-infer 的 executor `model_runner`（`mark_inputs`/`mark_detail`）、DeepSeek-R1 与 LongCat-Flash 的 MTP `prev_hidden_states` 写入点、executor warmup（`execution_engine`）。这些是本仓建模/框架的具体落点；这些维度是 guard 排查线索；是否重编译取决于具体 guard、动态配置和后端，不把所有签名变化都当作必然重编译，对任何走图模式的 decode 路径可迁移。
 
 ## 相关经验
 - [aclgraph 图捕获报 Alloc sq cq fail / 207005 / EL00](../runtime/aclgraph_sq_cq_alloc_fail_capture_sizes_budget.md)
 
-- 另见 [inductor(autofuse) 部分图编译：按图结构稳定 / 范围 / pointwise 密度选子模块 + 收益观测](../../optimizations/experience/rules/inductor_autofuse_partial_compile_scope.md)。
+- 另见 [inductor(autofuse) 部分图编译：按图结构稳定 / 范围 / pointwise 密度选子模块 + 收益观测](../../optimizations/rules/inductor_autofuse_partial_compile_scope.md)。
 
 
 ## Evidence
@@ -73,3 +73,7 @@ decode 逐步推理时出现**图重复编译（recompile）/ 编译缓存未命
 - diff 事实 + 维护者确认（@d23e91732136）：`dynamic=True,fullgraph=True` 编译下 decode 输入 `mark_static`、tuple 缓存两层迭代标记；「R1/K2/V3.2 不需要 mark static，需要的网络自 mark」为 review 确认。溯源下探 [cann-recipes-infer-pr-8-refactor-add-common-development](https://gitcode.com/cann/cann-recipes-infer/merge_requests/8)
 - diff 事实 + 维护者确认（@41af2991a3bd）：非连续切片 stride 变化触发重编译，追加 `.contiguous()` 固定 stride；"之前跑 CI 不开日志看不出来"为实现者确认。溯源下探 [cann-recipes-infer-pr-226-fix-cache-compile-print-time](https://gitcode.com/cann/cann-recipes-infer/merge_requests/226)
 - diff 事实 + 维护者确认（@2c45117）：warmup dummy `input_ids` 固定 `dtype=torch.long` 与正式推理一致、避免重编译；dtype 一致由作者答复确认。溯源下探 [cann-recipes-infer-pr-418-fix-fix-model-config-explanation-update-cann-version-and-fix-r1-multistr](https://gitcode.com/cann/cann-recipes-infer/merge_requests/418)
+
+## 最小排查与回退
+
+先打开 `torch._logging.set_logs(recompiles=True)`，保存触发 guard 和对应输入的 shape、stride、dtype；同时区分本次进程的重编译与跨进程持久缓存未命中。只对日志确认的输入试验静态标记或连续化，核对输出、复制开销和稳态编译次数。无改善时撤回标记，继续检查地址、Python guard 与后端限制。

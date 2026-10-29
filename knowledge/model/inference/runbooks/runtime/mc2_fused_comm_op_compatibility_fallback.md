@@ -71,7 +71,7 @@ if self.moe_ep_size > 1:
 - 适用边界：只约束 fullmesh_v2 这条通信算法；零专家 MoE 仍建独立 `moe_ep_group_mc2` 通信域（拓扑一致），只是 dispatch 走默认 `comm_alg`。"fullmesh_v2 为何不支持零专家"为仓自报（作者披露）、源未展开机理。
 
 ## 相关经验
-- [大 MoE 昇腾部署选型：并行形态/模型变体按集群规模选 + 非默认平台(310P/950)](../../optimizations/experience/rules/ascend_deploy_parallel_variant_and_nondefault_platform.md)
+- [大 MoE 昇腾部署选型：并行形态/模型变体按集群规模选 + 非默认平台(310P/950)](../../optimizations/rules/ascend_deploy_parallel_variant_and_nondefault_platform.md)
 
 ## Evidence
 

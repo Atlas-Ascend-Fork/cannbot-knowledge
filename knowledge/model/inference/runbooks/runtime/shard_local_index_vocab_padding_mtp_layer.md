@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/472
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -50,8 +50,8 @@ platforms:
 
 ## 相关经验
 
-- 给新模型接入 MTP 推测解码的完整流程见 [mtp-speculative-decode-model-onboarding](../../guides/experience/interventions/mtp_speculative_decode_model_onboarding.md)。
-- 量化权重加载布局/命名门控见 [quant-weight-load-layout-and-naming](../../optimizations/experience/rules/quant_weight_load_layout_and_naming.md)。
+- 给新模型接入 MTP 推测解码的完整流程见 [mtp-speculative-decode-model-onboarding](../../guides/integration/mtp_speculative_decode_model_onboarding.md)。
+- 量化权重加载布局/命名门控见 [quant-weight-load-layout-and-naming](../../optimizations/rules/quant_weight_load_layout_and_naming.md)。
 
 ## Evidence
 

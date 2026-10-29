@@ -48,7 +48,7 @@ GLM-5 有三个 eos token（`[154820, 154827, 154829]` = `['<|endoftext|>', '<|u
 
 ## 相关经验
 
-- 结构同构模型复用他人建模栈/runner 的其它适配点见 [structural-isomorphic-model-reuse-stack](../../optimizations/experience/rules/structural_isomorphic_model_reuse_stack.md)。
+- 结构同构模型复用他人建模栈/runner 的其它适配点见 [structural-isomorphic-model-reuse-stack](../../optimizations/rules/structural_isomorphic_model_reuse_stack.md)。
 - eos 注册属于 tokenizer 侧 bringup 适配；同类 config/tokenizer 侧车与属性约定陷阱（属性名别名 / chat_template 缺失 / yaml 布尔透传丢失）见 [config-tokenizer-sidecar-and-attr-alias](config_tokenizer_sidecar_and_attr_alias.md)。
 
 ## Evidence

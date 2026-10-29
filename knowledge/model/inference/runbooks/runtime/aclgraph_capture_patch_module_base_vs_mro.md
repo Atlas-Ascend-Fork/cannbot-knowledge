@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: aclgraph 图捕获前 monkeypatch upstream graph_capture：用 __base__ 定位模块对多级子类失效，须沿 MRO 找 GPUModelRunner
-description: vLLM-Ascend 在 aclgraph 捕获前需把 upstream gpu_model_runner 模块的 CUDA graph_capture 替换为 NPU 版本。若用 self.__class__.__base__.__module__ 定位模块，只对直接继承 GPUModelRunner 的一级子类有效；XliteModelRunner 等多级子类会 patch 到错误模块，upstream 函数未替换并在初始化或捕获时失败，super().capture_model() 也可能递归回本地 override。修复是沿完整 MRO 找到 GPUModelRunner，使用其 __module__ 定位模块，找不到时抛 TypeError，并显式调用 GPUModelRunner.capture_model(self)。该规律适用于需要 monkeypatch 上游模块函数的多级继承场景，一级子类通常不会暴露此问题。
+description: vLLM-Ascend 在 aclgraph 捕获前需把 upstream gpu_model_runner 模块的 CUDA graph_capture 替换为 NPU 版本。若用 self.__class__.__base__.__module__ 定位模块，只对直接继承 GPUModelRunner 的一级子类有效；XliteModelRunner 等多级子类会 patch 到错误模块，upstream 函数未替换并在初始化或捕获时失败；零参数 super() 按方法定义类之后的 MRO 解析，不因此递归。修复是沿完整 MRO 找到 GPUModelRunner，使用其 __module__ 定位模块，找不到时抛 TypeError，并显式调用 GPUModelRunner.capture_model(self)。该规律适用于需要 monkeypatch 上游模块函数的多级继承场景，一级子类通常不会暴露此问题。
 tags:
 - task.debugging
 - topic.graph_execution
@@ -12,7 +12,7 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/5887
   role: evidence
 created_at: '2026-07-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -48,9 +48,9 @@ setattr(sys.modules[target_module_name], "graph_capture", <npu graph_capture>)
 - 对 `NPUModelRunner`：`__base__` 恰是 `GPUModelRunner`，`__module__` 恰是 upstream `vllm.v1.worker.gpu_model_runner`——巧合成立。
 - 对 `XliteModelRunner`：`__base__` 是 `NPUModelRunner`，`__module__` = `vllm_ascend.worker.model_runner_v1`——patch 被打到 **vllm-ascend 自己的模块**上，upstream 模块里的 `graph_capture` 仍是 CUDA 版，从未被替换，NPU 图捕获走错误路径而失败。
 
-同一个 bug 还有第二面：原代码 `super().capture_model()` 从 `XliteModelRunner` 出发按 MRO 解析到的是 `NPUModelRunner.capture_model`（即本 override 自身），而非 upstream `GPUModelRunner.capture_model` 的真实现——深层子类里 `super()` 会递归回自己这层。
+这里须区分模块定位与方法调用：定义在 NPUModelRunner.capture_model 中的零参数 super() 等价于 super(NPUModelRunner, self)。在所列 Xlite → NPU → GPU 单继承链中，它会调用 GPUModelRunner.capture_model，不会因 self 的动态类为 Xlite 而递归回本 override。
 
-一句话根因：**用「直接基类」的模块名去定位 upstream，隐含了「本类是 upstream 一级子类」的假设；一旦继承加深，`__base__` 指向中间层而非 upstream，patch 与调用双双错位。**
+一句话根因：**用「直接基类」的模块名去定位 upstream，隐含了「本类是 upstream 一级子类」的假设；一旦继承加深，`__base__` 指向中间层而非 upstream，patch 的模块定位错位。**
 
 ## 修法
 
@@ -74,9 +74,9 @@ def capture_model(self) -> None:
 
 - **不再用 `__base__`（直接基类），改沿 `self.__class__.__mro__` 找到类名 `GPUModelRunner` 的类**——无论子类嵌套多深，都稳定拿到 upstream 模块 `vllm.v1.worker.gpu_model_runner`，NPU 的 `graph_capture` patch 打对位置。
 - 找不到 `GPUModelRunner` 时**抛 `TypeError` 显式失败**（类层级已变），而非静默走错模块。
-- 调用改为 `GPUModelRunner.capture_model(self)`——**跳过中间 override 直达 upstream 基类方法**，避免 `super()` 在深层子类里递归回本 override。
+- 调用改为 `GPUModelRunner.capture_model(self)`——**跳过中间 override 直达 upstream 基类方法**，这是来源采用的显式调用写法，不是修复该单继承链中 super() 递归所必需。
 
-通用规律（可迁移到任何「运行时 monkeypatch upstream 某模块的函数、且本类是 upstream 类的多级子类」场景）：**要定位 upstream 类所在模块，别用 `__base__`，用「沿 MRO 找到那个具体 upstream 类、取它的 `__module__`」；调用 upstream 方法用 `UpstreamCls.method(self)` 而非 `super()`。** `__base__` / `super()` 的行为随继承深度漂移，MRO 精确定位不漂移。
+可迁移的是模块定位原则：明确目标 upstream 类，再取其 __module__，不能只取动态类的直接基类模块。调用具体基类方法还是使用 super()，应按所需协作继承语义选择；不能宣称 super() 随继承深度漂移或在此必然递归。
 
 等价的更稳健写法：因该模块已 `import GPUModelRunner`，可用 `isinstance(self, GPUModelRunner)` + 直接 `GPUModelRunner.__module__` 定位，免去按字符串名遍历 MRO；合并态采用 MRO 字符串名扫描版，两者对本 bug 等效。
 
@@ -89,8 +89,8 @@ def capture_model(self) -> None:
 ## 相关经验
 
 - aclgraph 只捕获稳态 decode 段、full 图捕获的范围与守卫见 [SFA/DSA 下 aclgraph full 仅 decode 捕获](sfa_dsa_aclgraph_full_decode_only_capture.md)。
-- 图捕获 / 图注册的替换点守卫与融合注册风险见 [图融合注册替换守卫](../../optimizations/experience/rules/graph_fusion_register_replacement_guardrails.md)。
-- 运行时 monkeypatch 层替代 fork 做上游模型昇腾适配（patch 注入时机 / triton stub / 权重同步三前置）见 [上游 DiT 运行时 monkeypatch 适配](../../guides/experience/interventions/upstream_dit_video_monkeypatch_npu_adaptation.md)。
+- 图捕获 / 图注册的替换点守卫与融合注册风险见 [图融合注册替换守卫](../../optimizations/rules/graph_fusion_register_replacement_guardrails.md)。
+- 运行时 monkeypatch 层替代 fork 做上游模型昇腾适配（patch 注入时机 / triton stub / 权重同步三前置）见 [上游 DiT 运行时 monkeypatch 适配](../../guides/bringup/upstream_dit_video_monkeypatch_npu_adaptation.md)。
 - 昇腾图模式的入口决策与 backend 见 [npu-graph-mode](../../concepts/techniques/npu_graph_mode.md)；[TorchAir](../../concepts/frameworks/torchair.md) 图模式后端。
 
 ## Evidence

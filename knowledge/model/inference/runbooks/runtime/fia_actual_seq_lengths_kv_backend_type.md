@@ -1,7 +1,7 @@
 ---
 type: Runbook
-title: FIA 的 actual_seq_lengths_kv 类型随后端不同：torch.ops.npu/npugraph_ex 要 host list、torchair/ge_graph 要 Tensor
-description: 经 torch.ops.npu（eager 及 npugraph_ex 的 torch.compile/dynamo 路径）时，dynamo 按 SymInt[] schema 校验该入参——传 Tensor 会失败，必须传 host Python list。 经 torchair（tng.ops，ge_graph）时，反而接受 Tensor。
+title: FIA actual_seq_lengths_kv 类型校验：固定 npugraph_ex 路径用 host list，eager/GE 分别核对
+description: 经 torch.ops.npu（该来源 npugraph_ex 的 torch.compile/dynamo 路径）时，dynamo 按 SymInt[] schema 校验该入参——传 Tensor 会失败，必须传 host Python list。 经 torchair（tng.ops，ge_graph）时，反而接受 Tensor。
 tags:
 - task.debugging
 - topic.attention
@@ -14,21 +14,21 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/462
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
 
-# FIA 的 actual_seq_lengths_kv 类型随后端不同：torch.ops.npu/npugraph_ex 要 host list、torchair/ge_graph 要 Tensor
+# FIA actual_seq_lengths_kv 类型校验：固定 npugraph_ex 路径用 host list，eager/GE 分别核对
 
 ## 信号（现象）
 
 调用 [npu_fused_infer_attention_score](../../concepts/kernels/fused_infer_attention_score.md)（FIA）时，`actual_seq_lengths_kv` 传错类型会报 schema 不符：
 
-- 经 `torch.ops.npu`（eager 及 npugraph_ex 的 `torch.compile`/dynamo 路径）时，dynamo 按 `SymInt[]` schema 校验该入参——**传 Tensor 会失败**，必须传 host Python list。
+- 经 `torch.ops.npu`（该来源 npugraph_ex 的 `torch.compile`/dynamo 路径）时，dynamo 按 `SymInt[]` schema 校验该入参——**传 Tensor 会失败**，必须传 host Python list。
 - 经 [torchair](../../concepts/frameworks/torchair.md)（`tng.ops`，ge_graph）时，反而**接受 Tensor**。
 
-同一个 FIA 调用，两条后端对 `actual_seq_lengths_kv` 的类型要求相反。
+该固定 Gemma 实现仅在 exe_mode=="npugraph_ex" 时选择 host list，其余模式使用 Tensor；不能把 npugraph_ex 的 Dynamo schema 限制扩大为 eager 也必须传 list。
 
 ## 触发条件
 
@@ -66,11 +66,11 @@ else:
 op 级、可迁移：**任何用 FIA 且跑 npugraph_ex / torch.compile 的模型**都适用这条类型契约，不限 Gemma-4。注意与更早的 ge_graph 经验不冲突——某些报告曾记 ge_graph 把 list 改成 Tensor（只覆盖 ge_graph，npugraph_ex 相反要 list），两后端各自成立，非矛盾。
 
 ## 相关经验
-- [把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse](../../optimizations/experience/rules/attention_to_fia_sparse_mode_sink_window.md)
+- [把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse](../../optimizations/rules/attention_to_fia_sparse_mode_sink_window.md)
 - [FIA/qlens 的 block_table 首维 / num_reqs / TND se](fia_qlens_block_table_num_reqs_batch_contract.md)
 - [昇腾编码器 packed 全注意力：两个可互换融合算子的 seq_len 语义不同（unpa](mm_encoder_packed_attention_seqlen_semantics.md)
 
-- 另见 [变长 Prefill 的 MLA FlashAttention 布局选 NTD（免 padding 又避 TND 的转置 / 带宽损失）](../../optimizations/experience/cases/mla_prefill_flash_attention_ntd_layout.md)。
+- 另见 [变长 Prefill 的 MLA FlashAttention 布局选 NTD（免 padding 又避 TND 的转置 / 带宽损失）](../../optimizations/cases/mla_prefill_flash_attention_ntd_layout.md)。
 - 另见 [FIA 的 MLA 无量化路径硬约束 group_num ∈ {2 的幂}（否则 561002 / CheckFeatureMlaNoQuantShape 失败）](../compilation/fia_mla_noquant_group_num_power_of_two.md)。
 - 另见 [CUDA 原生 vLLM 多模态模型移植 vllm-ascend NPU：三处固定后端不兼容点与修法](vllm_cuda_multimodal_npu_bringup.md)。
 - 另见 [KVCache 静态化 + FA / FIA 融合算子替换的精度陷阱](../precision/precision_kvcache_fa_fusion_pitfalls.md)。

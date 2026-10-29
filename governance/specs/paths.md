@@ -57,6 +57,10 @@ Registry 允许某种组合，只表示工具能够识别它，不表示仓库�
 
 不单设 `patterns/`：原理进入 `concepts/`，完整算子进入 `operators/`，性能方法进入 `optimizations/`，处置步骤进入 `runbooks/`。版本差异由适用范围和生命周期表达，不建立 `migrations/` Profile。
 
+模型推理允许同一主题有多个知识视图，但同一条可复用规则只维护一份规范正文：Concept 负责定义与机制，Optimization 负责触发条件与决策，Guide 串联完整任务。Case 补充特定条件下的改动与证据，不能重新维护通用规则；反模式形成完整诊断、修复和验证闭环时由 Runbook 承载。新增和实质更新前先按 Query/Ingest 工作流查重，旧卡的归并与路径迁移先形成逐卡清单再处理。Prefill/Decode 等场景用 Scope 表达，不据此增加一套阶段目录。
+
+`model/inference` 的 Guide 按任务组织为 `bringup`、`deployment`、`integration`、`models`、`optimization`；Optimization 按职责组织为 `rules`、`cases`、`anti_patterns`、`benchmark_observations`，这些仍共享原有 Profile。Registry 的 `paths.forbidden_sections` 声明哪些 domain/route/Profile 已停用某个 section；Contract 对卡片和索引采用同一规则。目前模型推理的 Guide 与 Optimization 均不再接受 `experience` 层，其他领域不继承这一限制。
+
 ## Profile 附加层级
 
 `concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可以按真实主题增加任意深度的小写 `snake_case` section，用来保持大型官方参考集可浏览。section 只是导航，不是新的 domain、route 或 Profile，也不进入 Frontmatter；每一级都必须有完整的 `index.md`。禁止使用来源批次、日期或发布版本作为 section。

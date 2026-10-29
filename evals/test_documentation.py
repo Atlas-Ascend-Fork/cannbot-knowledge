@@ -162,13 +162,21 @@ class DocumentationContractTests(unittest.TestCase):
                     self.assertIn(document.relative_to(self.root).as_posix(), readme)
 
     def test_reviewed_model_python_examples_have_valid_syntax(self) -> None:
-        for relative in (
-            "knowledge/model/inference/concepts/models/sana_video.md",
+        required_examples = {
+            "knowledge/model/inference/optimizations/rules/dit_cnn_operator_algebraic_rewrite_npu.md",
+            "knowledge/model/inference/guides/models/sana_video_deployment.md",
             "knowledge/model/inference/concepts/parallelism/ulysses.md",
-        ):
+        }
+        reviewed = required_examples | {
+            path.relative_to(self.root).as_posix()
+            for path in (self.root / "knowledge/model/inference/concepts").rglob("*.md")
+            if path.name != "index.md" and path.parent.name != "models"
+        }
+        for relative in sorted(reviewed):
             text = (self.root / relative).read_text(encoding="utf-8")
             blocks = list(re.finditer(r"(?ms)^```python\n(.*?)^```", text))
-            self.assertTrue(blocks, relative)
+            if relative in required_examples:
+                self.assertTrue(blocks, relative)
             for block in blocks:
                 line = text[:block.start(1)].count("\n") + 1
                 with self.subTest(card=relative, line=line):

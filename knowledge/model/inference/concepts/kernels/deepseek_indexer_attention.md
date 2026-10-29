@@ -1,7 +1,10 @@
 ---
 type: Concept
 title: Deepseek Indexer Attention Kernel
-description: '`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。这是 PyPTO "MegaKernel" 能力在 DeepSeek-V3.2-Exp 上的典型实例。 PyPTO 源码：`ops/pypto/src/deepseek_indexer_attention/op_kernel/deepseek_indexer_attention.cpp`。'
+description: '`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO**
+  实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer
+  + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。这是 PyPTO "MegaKernel"
+  能力在 DeepSeek-V3.2-Exp 上的典型实例。 PyPTO 源码：`ops/pypto/src/deepseek_indexer_attention/op_kernel/deepseek_indexer_attention.cpp`。'
 tags:
 - task.implementation
 - topic.attention
@@ -13,15 +16,18 @@ sources:
   role: primary
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md
   role: supporting
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/pypto/docs/deepseek_indexer_attention.md
+  role: constraint
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:35:31Z'
 platforms:
-- agnostic
+- a3
 ---
-
 # Deepseek Indexer Attention Kernel
 
 ## Summary
+
+本卡覆盖固定版本 PyPTO DIA 的 Atlas A3 实现支持范围；支持平台不等于每组性能观测都有完整测量环境。
 
 `Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。这是 PyPTO "MegaKernel" 能力在 DeepSeek-V3.2-Exp 上的典型实例。
 
@@ -45,7 +51,7 @@ PyPTO 源码：`ops/pypto/src/deepseek_indexer_attention/op_kernel/deepseek_inde
 
 四个关键性能瓶颈（源文档）：
 
-1. **离散 Gather 部分耗时占比 >70%**：SFA 根据 LI 产出的 TopK index 从 `kv_cache/kr_cache` 离散读取对应 KV —— 原实现在 Vector 核完成"离散到连续"转换后写 GM Workspace，Cube 核再搬到 L1 使用，**既浪费内存又重复搬运**。
+1. **离散 Gather 是来源泳道图中的主要瓶颈**：SFA 根据 LI 产出的 TopK index 从 `kv_cache/kr_cache` 离散读取对应 KV —— 原实现在 Vector 核完成"离散到连续"转换后写 GM Workspace，Cube 核再搬到 L1 使用，**既浪费内存又重复搬运**。
 2. **Indexer Prolog matmul 任务过多**：M 轴为 1，未合轴 → Matmul 利用率过低。
 3. **流水线 bubble 较大**：两个子图之间存在未消除的 barrier，后续无依赖 task 也被停滞。
 4. **Reshape 空子图导致启动延迟**：未充分优化的 reshape 形成空子图，依赖其结果的 task 停滞。
@@ -100,3 +106,6 @@ DeepSeek-V3.2-Exp 的 Future Plan 明示："MegaKernel：Decode 阶段仍然存�
 - [mla-prolog](mla_prolog.md)
 - [pypto](../frameworks/pypto.md)
 - [dsa](../modules/dsa.md)（DSA 架构模式，DIA 是其 LI+Prolog+SFA 融合的算子级实现）
+## 定量观测入口
+
+该来源对旧实现的 Gather 耗时占比披露统一见[分组算子观测](../../optimizations/benchmark_observations/operator_tuning_source_observations.md)，不推导其他负载的固定占比。

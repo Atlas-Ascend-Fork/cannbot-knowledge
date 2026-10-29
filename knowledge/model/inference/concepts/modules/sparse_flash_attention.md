@@ -1,7 +1,11 @@
 ---
 type: Concept
 title: Sparse Flash Attention (SFA)
-description: Sparse Flash Attention 是 **DeepSeek Sparse Attention (DSA)** 的核心计算模块。在由 lightning-indexer 选出 TopK 个相关 KV token 之后，SFA 仅在这部分稀疏子集上执行注意力计算，将复杂度从 O(N²) 降到 O(N·TopK)，配合 Flash Attention 的块级 online softmax 思想。DeepSeek-V3.2-Exp 将其作为长序列推理的主力注意力算子，并在此基础上设计了 CP 并行、MLA Absorb 模式适配。 SFA 作为架构概念是 DSA 的一部分；具体算子实现（AscendC / PyPTO / TileLang）见 sparse-flash-attention。
+description: Sparse Flash Attention 是 **DeepSeek Sparse Attention (DSA)** 的核心计算模块。在由
+  lightning-indexer 选出 TopK 个相关 KV token 之后，SFA 仅在这部分稀疏子集上执行注意力计算，将复杂度从 O(N²) 降到 O(N·TopK)，配合
+  Flash Attention 的块级 online softmax 思想。DeepSeek-V3.2-Exp 将其作为长序列推理的主力注意力算子，并在此基础上设计了
+  CP 并行、MLA Absorb 模式适配。 SFA 作为架构概念是 DSA 的一部分；具体算子实现（AscendC / PyPTO / TileLang）见
+  sparse-flash-attention。
 tags:
 - task.design
 - topic.model_architecture
@@ -14,11 +18,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T01:39:38Z'
 platforms:
 - agnostic
 ---
-
 # Sparse Flash Attention (SFA)
 
 ## Summary
@@ -102,16 +105,7 @@ KVCache Int8 存储、BF16 计算。入口切换到 `npu_kv_quant_sparse_flash_a
 
 ### 对 MTP 的差异化表现
 
-DSA 下 MTP 在 SFA 上**难以加速**。SFA 每个 q token 单独选 TopK=2048 个 KV，MTP1 场景 KV 搬运量翻倍：
-
-| | KV 搬运量 (MB) | Cube 计算量 (GFlops) | QK^T 搬运量 (MB) |
-| ---- | ---- | ---- | ---- |
-| 非 MTP | 4.5 | 0.60 | 1 |
-| MTP1 | **9** | 1.21 | 2 |
-
-相比之下 MLA 非 MTP 和 MTP1 的 KV 搬运量都是 144 MB（DSA 下 MLA 为 Full KVCache Absorb），MTP 能提高计算访存比。
-
-> 源结论（`deepseek_v3.2_exp_inference_guide.md`）："尽管 Sparse Flash Attention 很难利用 MTP 实现可观的加速效果，但是 Lightning Indexer 算子在长序列场景中耗时占比更高……使用 MTP 对整个推理有比较可观的加速。"
+MTP 的访存与计算量分析由[DSA 模块分析案例](../../optimizations/cases/mtp_benefit_sparse_attention_and_latency_metric.md)维护。每个 query 的 TopK 选择会影响搬运复用，需按工作负载验证，不把分析量当作整网时延测量。
 
 ### CP 并行下的负载均衡
 

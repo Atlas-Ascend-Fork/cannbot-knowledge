@@ -72,8 +72,8 @@ platforms:
 
 ## 相关经验
 
-- 注意力映射到 FIA 的 sparse_mode/激活承接见 [attention-to-fia-sparse-mode-sink-window](../../optimizations/experience/rules/attention_to_fia_sparse_mode_sink_window.md)。
-- 量化权重加载布局/命名门控见 [quant-weight-load-layout-and-naming](../../optimizations/experience/rules/quant_weight_load_layout_and_naming.md)。
+- 注意力映射到 FIA 的 sparse_mode/激活承接见 [attention-to-fia-sparse-mode-sink-window](../../optimizations/rules/attention_to_fia_sparse_mode_sink_window.md)。
+- 量化权重加载布局/命名门控见 [quant-weight-load-layout-and-naming](../../optimizations/rules/quant_weight_load_layout_and_naming.md)。
 
 ## Evidence
 

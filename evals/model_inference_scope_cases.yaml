@@ -1,0 +1,4310 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+# RFC47 模型推理评测：model_scope_01～30 为唯一主集，其后是独立机器契约回归。
+# 主集保留 30 道召回正例；不改变原 70 条语料或质量阈值。
+# 整文件运行的聚合分数覆盖机器回归；RFC 主集指标须按上述 30 题单列。
+# expected_scope_states/excluded 只断言机器行为，不是人工适用性标签或 A/B 质量结论。
+cases:
+# 主集：原编号与问题保持；期望路径沿用已冻结的迁移映射，不代表人工或设备验收。
+- id: model_scope_01
+  query: attention 走 DP 时对 o_proj / dense-MLP 单独 TP：DP→TP→DP 边界通信省单卡内存与权重搬运
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/local_tp_memory_heavy_projections
+  excluded: []
+- id: model_scope_02
+  query: Attention-FFN 解耦（AFD）部署：把 MoE/FFN 剥到独立 rank，Send/Recv over SDMA 解除同卡多流控核约束降 decode TPOT
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/afd_attn_ffn_disaggregation
+  excluded: []
+- id: model_scope_03
+  query: 长序列 Prefill 注意力优先 Context Parallel（CP 仅 prefill 生效，MoE 复用 CP 域走 EP）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  expected:
+  - model/inference/optimizations/rules/long_seq_prefill_context_parallel
+  excluded: []
+- id: model_scope_04
+  query: KVP — 长序列 memory-bound decode 沿 S 维切 KV Cache（lse-softmax 在线归约 + 耦合配置约束）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/concepts/parallelism/kvp
+  excluded: []
+- id: model_scope_05
+  query: 是否/何时启用图模式：按 host 下发占比与 profiling 决策（freetime / host gap / 动态 shape）
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/graph_mode_enable_decision_profiling
+  excluded: []
+- id: model_scope_06
+  query: decode 多流并行 overlap：模块级双流控核平衡 + 前处理子链切流
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  - model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+  excluded: []
+- id: model_scope_07
+  query: decode 访存 bound 阶段的权重预取调度：按搬运 bound 大小排布相邻算子的预取顺序
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+  excluded: []
+- id: model_scope_08
+  query: decode ge_graph 低时延融合：SuperKernel 调度融合的启用前提、融合范围坑与冷启动缓存
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope
+  - model/inference/optimizations/rules/torchair_cache_compile_persisted_graph
+  excluded: []
+- id: model_scope_09
+  query: 跨 Prefill/Decode 默认 config 集群规模不一致 + 非默认卡数验证边界
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - bringup
+  expected:
+  - model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch
+  excluded: []
+  description: 配置合法性与未验证集群规模的原主集任务；目标修正为 bringup，期望入口不变。
+- id: model_scope_10
+  query: MoE + 投机解码：draft dummy_run 误带 profile-run 语义触发强制随机专家路由，静默拉低 MTP accept rate
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - bringup
+  expected:
+  - model/inference/runbooks/precision/mtp_draft_dummy_run_in_profile_run_random_experts
+  excluded: []
+- id: model_scope_11
+  query: 图模式多流跨流同步的失败签名：漏配同步/守卫不一致/重复创建 event/流未转发
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - bringup
+  expected:
+  - model/inference/runbooks/runtime/graph_mode_multi_stream_sync_failures
+  excluded: []
+- id: model_scope_12
+  query: 稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - bringup
+  expected:
+  - model/inference/runbooks/performance/graph_mode_stable_input_signature_recompile
+  excluded: []
+- id: model_scope_13
+  query: MoE Multi-Stream
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/concepts/techniques/moe_multi_stream
+  excluded: []
+- id: model_scope_14
+  query: MTP Speculative Decoding
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/concepts/techniques/mtp_speculative_decoding
+  excluded: []
+- id: model_scope_15
+  query: NPU 多流优化(Multi-Stream)
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/concepts/techniques/multi_stream
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: model_scope_16
+  query: NPU 图模式（ge_graph / npugraph_ex）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/concepts/techniques/npu_graph_mode
+  excluded: []
+- id: model_scope_17
+  query: 图模式多流并行的跨流同步：ge_graph 控制边 vs aclgraph tagged-event 及 API 选型
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+  excluded: []
+- id: model_scope_18
+  query: 给新模型接入 MTP 推测解码：draft 模型构造 / 权重共享 / prev_hidden_states / 三元组注册 / 无损 verify
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/guides/integration/mtp_speculative_decode_model_onboarding
+  excluded: []
+- id: model_scope_19
+  query: 昇腾量化权重制备路径选择：仓内离线系数 convert_model.py vs 权重自带 compressed-tensors 运行时量化 vs amct
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/guides/deployment/quant_weight_conversion_path_selection
+  excluded: []
+- id: model_scope_20
+  query: 视频 DiT 量化降显存 / 带宽：per-block FP8 注意力（主要收益，Ulysses-only）+ MXFP8 matmul（跳过 adaLN）
+  filters:
+    domain: model
+    technology: inference
+    platform: '950'
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/video_dit_fp8_mxfp8_quantization
+  excluded: []
+- id: model_scope_21
+  query: DeepSeek-V3.2-Exp 各量化档 (W8A8C16 / W8A8C8 / W4A8C8) 精度近 BF16 基准
+  filters:
+    domain: model
+    technology: inference
+    status: draft
+    match: text
+    k: 5
+    include_unlocated: true
+  expected:
+  - model/inference/optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy
+  excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark
+  description: 保留三档量化精度对 BF16 的原问题与正例；只检索平台未知的草稿证据，不确认 A3，也不附加 latency 目标。
+  # 答案须区分固定来源的两版 BF16 基线，不跨表比较量化档位；来源自报不能变成 A3 精度保证。
+- id: model_scope_22
+  query: 多流并行后还要分核：limit_core_num 给两条重路径流配不同 Cube/Vector 核数、让时长趋近
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  excluded: []
+- id: model_scope_23
+  query: 评估 MTP 推测解码收益：稀疏注意力(DSA)按模块分化、SFA 不吃 MTP + 等效时延度量口径
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/cases/mtp_benefit_sparse_attention_and_latency_metric
+  - model/inference/optimizations/rules/mtp_decode_timing_two_metric_split
+  excluded: []
+- id: model_scope_24
+  query: 为 MoE+MLA+MTP 模型做混合精度量化的配置陷阱：保留不量化层·激活分支按位宽子串门控
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/deepseekv3_mixed_precision_quant_config_pitfalls
+  excluded: []
+- id: model_scope_25
+  query: 在 NPU 上对含 1×1 卷积的 DiT 做 MXFP 低比特量化 — 卷积当线性算·加载期模块替换 + a4w4 混合精度部分回退 a8w8
+  filters:
+    domain: model
+    technology: inference
+    platform: '950'
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/dit_mxfp_lowbit_quant_conv_as_linear
+  excluded: []
+- id: model_scope_26
+  query: MLA Decode 低时延 A3
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          all_of:
+          - mla
+        objective:
+        - latency
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/rules/mla_weight_absorption_latent_kv
+  excluded:
+  - model/inference/optimizations/rules/prefill_mla_dp_vs_sp_tp_sp_parallel
+- id: model_scope_27
+  query: MoE Decode 吞吐 EP
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          all_of:
+          - moe
+        objective:
+        - throughput
+        parallelism:
+          all_of:
+          - ep
+        phase:
+        - decode
+  expected:
+  - model/inference/concepts/parallelism/expert_parallel
+  excluded:
+  - model/inference/optimizations/rules/prefill_mla_dp_vs_sp_tp_sp_parallel
+- id: model_scope_28
+  query: 长上下文 Prefill CP
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        context_length:
+        - long_context
+        parallelism:
+          all_of:
+          - cp
+        phase:
+        - prefill
+  expected:
+  - model/inference/concepts/parallelism/context_parallel
+  excluded:
+  - model/inference/optimizations/rules/dsa_decode_memory_budget_indexer_cache
+- id: model_scope_29
+  query: A3 PD DP EP 多机
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        deployment_topology:
+          all_of:
+          - pd_disaggregated
+        parallelism:
+          all_of:
+          - dp
+          - ep
+  expected:
+  - model/inference/concepts/frameworks/online_pd_inference
+  excluded:
+  - model/inference/optimizations/rules/multimachine_dp_ep_moe_collective_alignment
+- id: model_scope_30
+  query: MoE 不具备 MLA 的 Decode 方案
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          all_of:
+          - moe
+          none_of:
+          - mla
+        phase:
+        - decode
+  expected:
+  - model/inference/concepts/parallelism/expert_parallel
+  excluded:
+  - model/inference/optimizations/rules/mla_weight_absorption_latent_kv
+  - model/inference/optimizations/rules/dsa_decode_memory_budget_indexer_cache
+# 机器契约回归：过滤、安全边界及具体实现兼容性，不并入主集 Recall 分母。
+- id: scope_decode_latency_match
+  description: 已确认的 A3、Decode、GE、MoE、时延目标匹配主规则；原案例退出默认检索。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  excluded:
+  - model/inference/optimizations/cases/moe_multi_stream_limit_core_num
+  expected_scope_states:
+    model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance: match
+- id: scope_decode_tpot_match
+  description: TPOT 由卡片显式声明；不依靠 latency 的隐含层级推导。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - tpot
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  expected_scope_states:
+    model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance: match
+- id: scope_missing_query_prerequisites
+  description: 仅确认 Decode 时保留规则，并提示执行模式、目标和特征尚未确认。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  expected_scope_states:
+    model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance: unknown
+- id: scope_prefill_conflict
+  description: Prefill 查询过滤仅适用于 Decode 的规则，并保留冲突审计。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - latency
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: scope_eager_conflict
+  description: Eager 查询不能采用 GE 规则。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+        execution_mode:
+        - eager
+        model_features:
+          all_of:
+          - moe
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: scope_throughput_conflict
+  description: 按用户确认的精确目标语义，吞吐目标与本卡目标不匹配。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - throughput
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: scope_ttft_not_implied
+  description: latency 与 TPOT 不自动推出 TTFT。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - ttft
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: scope_explicitly_without_moe
+  description: 明确不具备 MoE 时过滤需要 MoE 的规则。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+        execution_mode:
+        - ge_graph
+        model_features:
+          none_of:
+          - moe
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: scope_legacy_unknown
+  description: 显式查询历史状态时，旧案例的缺 Scope 仍表现为未知。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: all
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  - model/inference/optimizations/cases/moe_multi_stream_limit_core_num
+  expected_scope_states:
+    model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance: match
+    model/inference/optimizations/cases/moe_multi_stream_limit_core_num: unknown
+- id: scope_no_scope
+  description: 不传 Scope 时继续走原过滤；deprecated 案例不进入默认结果。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  excluded:
+  - model/inference/optimizations/cases/moe_multi_stream_limit_core_num
+- id: scope_platform_filter_preserved
+  description: A2 查询不因 Scope 条件匹配而越过主卡的 A3 平台限制。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a2
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  - model/inference/optimizations/cases/moe_multi_stream_limit_core_num
+- id: scope_invalid_schema_rejected
+  description: 非法 namespace 报错，不降级为未知召回。
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: unregistered.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_error: unknown scope schema
+- id: scope_operator_compat_1
+  description: 原算子查询兼容性，仅检索，不改写算子知识。
+  query: Im2colBackward
+  filters:
+    domain: ops
+    technology: ascendc
+    type: operators
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/operators/aclnn/cv/image/im2col_backward_950
+- id: scope_operator_compat_2
+  description: 原算子查询兼容性，仅检索，不改写算子知识。
+  query: Rasterizer
+  filters:
+    domain: ops
+    technology: ascendc
+    type: operators
+    platform: a2
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/operators/aclnn/cv/image/rasterizer
+- id: scope_operator_compat_3
+  description: 原算子查询兼容性，仅检索，不改写算子知识。
+  query: Resize
+  filters:
+    domain: ops
+    technology: ascendc
+    type: operators
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/operators/aclnn/cv/image/resize_950
+- id: scope_operator_compat_4
+  description: 原算子查询兼容性，仅检索，不改写算子知识。
+  query: ThreeInterpolateBackward
+  filters:
+    domain: ops
+    technology: ascendc
+    type: operators
+    platform: a2
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/operators/aclnn/cv/image/three_interpolate_backward
+- id: scope_operator_compat_5
+  description: 原算子查询兼容性，仅检索，不改写算子知识。
+  query: UpsampleBicubic2d
+  filters:
+    domain: ops
+    technology: ascendc
+    type: operators
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/operators/aclnn/cv/image/upsample_bicubic_2d_950
+- id: scope_prefetch_a3_rule_and_case
+  description: 规则统一决策，LongCat 案例具有更具体的框架/结构前提；平台待核验草稿不进入稳定结果。
+  query: 权重预取
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - tpot
+        execution_mode:
+        - ge_graph
+        framework:
+        - cann_executor
+        model_features:
+          all_of:
+          - mla
+  expected:
+  - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+  excluded:
+  - model/inference/optimizations/cases/vllm_moe_weight_prefetch_token_gate
+  expected_scope_states:
+    model/inference/optimizations/rules/decode_weight_prefetch_ordering: unknown
+    model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch: match
+- id: scope_prefetch_vllm_unknown_decode
+  description: 平台待核验草稿单独查询；缺少卡片阶段条件仍为未知，不能从 token 阈值确认 Decode。
+  query: vLLM MoE 权重预取
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 5
+    include_unlocated: true
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+        framework:
+        - vllm
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/cases/vllm_moe_weight_prefetch_token_gate
+  expected_scope_states:
+    model/inference/optimizations/cases/vllm_moe_weight_prefetch_token_gate: unknown
+- id: scope_prefetch_vllm_unknown_prefill
+  description: 缺阶段声明也不能确认 Prefill，保留为未知并回显。
+  query: vLLM MoE 权重预取
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 5
+    include_unlocated: true
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - latency
+        framework:
+        - vllm
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/cases/vllm_moe_weight_prefetch_token_gate
+  expected_scope_states:
+    model/inference/optimizations/cases/vllm_moe_weight_prefetch_token_gate: unknown
+- id: scope_prefetch_a2_no_platform_inheritance
+  description: A2 查询不能继承 A3 范围，也不能通过规则关联召回平台未知草稿作为稳定知识。
+  query: 权重预取
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a2
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+  excluded:
+  - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+  - model/inference/optimizations/cases/vllm_moe_weight_prefetch_token_gate
+- id: scope_prefetch_bringup_conflict
+  description: bringup 目标与两张预取稳定卡的显式目标冲突，均须保留过滤审计。
+  query: 权重预取
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - bringup
+  excluded:
+  - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+  - model/inference/optimizations/cases/vllm_moe_weight_prefetch_token_gate
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: scope_local_tp_memory_match
+  description: MoE 与 MLA 同时存在时，声明 MoE 的局部 TP 规则可匹配；旧重复规则退出默认召回。
+  query: 局部 TP
+  filters: &id001
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - memory
+        model_features:
+          all_of:
+          - moe
+          - mla
+        parallelism:
+          all_of:
+          - dp
+          - ep
+          - tp
+  expected:
+  - model/inference/optimizations/rules/local_tp_memory_heavy_projections
+  excluded:
+  - model/inference/optimizations/rules/dp_attention_tp_oproj_mlp_hybrid
+  expected_scope_states:
+    model/inference/optimizations/rules/local_tp_memory_heavy_projections: match
+- id: scope_local_tp_missing_ep_unknown
+  description: 查询只确认 DP、未确认 EP 时保留主规则并标记适用性未知。
+  query: 局部 TP
+  filters: *id001
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - memory
+        model_features:
+          all_of:
+          - moe
+        parallelism:
+          all_of:
+          - dp
+  expected:
+  - model/inference/optimizations/rules/local_tp_memory_heavy_projections
+  expected_scope_states:
+    model/inference/optimizations/rules/local_tp_memory_heavy_projections: unknown
+- id: scope_local_tp_case_confirmed
+  description: 新案例采用去掉 experience 的路径；确认完整条件时匹配 LongCat 案例。
+  query: 局部 TP
+  filters: *id001
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - memory
+        model_features:
+          all_of:
+          - moe
+          - mla
+        parallelism:
+          all_of:
+          - dp
+          - ep
+          - tp
+        framework:
+        - cann_executor
+  expected:
+  - model/inference/optimizations/cases/longcat_dp_tp_projections
+  expected_scope_states:
+    model/inference/optimizations/cases/longcat_dp_tp_projections: match
+- id: scope_local_tp_prefill_conflict
+  description: 规则的 Prefill 排查参考不扩展主 Scope；Prefill 查询排除两个 Decode 主结论。
+  query: 局部 TP
+  filters: *id001
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - memory
+  excluded:
+  - model/inference/optimizations/rules/local_tp_memory_heavy_projections
+  - model/inference/optimizations/cases/longcat_dp_tp_projections
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/local_tp_memory_heavy_projections
+  - model/inference/optimizations/cases/longcat_dp_tp_projections
+- id: scope_local_tp_explicit_no_mla
+  description: 明确不存在 MLA 时，LongCat 案例冲突；通用 MoE 规则不要求 MLA。
+  query: 局部 TP
+  filters: *id001
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - memory
+        model_features:
+          all_of:
+          - moe
+          none_of:
+          - mla
+        parallelism:
+          all_of:
+          - dp
+          - ep
+  expected:
+  - model/inference/optimizations/rules/local_tp_memory_heavy_projections
+  excluded:
+  - model/inference/optimizations/cases/longcat_dp_tp_projections
+  expected_scope_states:
+    model/inference/optimizations/rules/local_tp_memory_heavy_projections: match
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/longcat_dp_tp_projections
+- id: local_tp_old_entry_explicit_history
+  description: 显式查 deprecated 时仍可找到旧局部 TP 引用入口。
+  query: 局部 TP
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+    status: deprecated
+  expected:
+  - model/inference/optimizations/rules/dp_attention_tp_oproj_mlp_hybrid
+- id: kvp_deprecated_guide_default_excluded
+  description: 默认查询不再返回已停用的 KVP 部署 Guide。
+  query: KVP
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    match: literal
+    k: 10
+  excluded:
+  - model/inference/guides/deployment/kvp_longseq_decode
+- id: kvp_deprecated_guide_explicit_history
+  description: 显式选择 deprecated 可以查询历史约束与停用说明。
+  query: KVP
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    status: deprecated
+    match: literal
+    k: 10
+  expected:
+  - model/inference/guides/deployment/kvp_longseq_decode
+- id: scope_kvp_mechanism_unknown
+  description: 机制 Concept 未声明当前部署 Scope，显式 KVP 条件只能得到未知，不能确认当前可启用。
+  query: KVP
+  filters:
+    domain: model
+    technology: inference
+    type: concepts
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - memory
+        parallelism:
+          all_of:
+          - kvp
+  expected:
+  - model/inference/concepts/parallelism/kvp
+  expected_scope_states:
+    model/inference/concepts/parallelism/kvp: unknown
+- id: scope_cp_rule_match
+  description: CP 主规则只声明共同条件，不把整域 CP 或 PD 限制扩大到所有实现。
+  query: CP 决策
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - ttft
+        context_length:
+        - long_context
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/rules/long_seq_prefill_context_parallel
+  expected_scope_states:
+    model/inference/optimizations/rules/long_seq_prefill_context_parallel: match
+- id: scope_cp_decode_conflict
+  description: Decode 不能套用长序列 Prefill CP 主规则。
+  query: CP 决策
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  excluded:
+  - model/inference/optimizations/rules/long_seq_prefill_context_parallel
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/long_seq_prefill_context_parallel
+- id: scope_cp_executor_case_match
+  description: DeepSeek/Kimi 案例按共享实现条件匹配。
+  query: DeepSeek/Kimi
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - ttft
+        context_length:
+        - long_context
+        model_features:
+          all_of:
+          - moe
+          - mla
+        framework:
+        - cann_executor
+  expected:
+  - model/inference/optimizations/cases/deepseek_kimi_a3_prefill_cp
+  expected_scope_states:
+    model/inference/optimizations/cases/deepseek_kimi_a3_prefill_cp: match
+- id: scope_cp_sglang_case_match
+  description: Qwen 案例完整确认 CP+TP、PD 分离与框架时匹配。
+  query: Qwen3-Next A3 Prefill
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - ttft
+        context_length:
+        - long_context
+        model_features:
+          all_of:
+          - moe
+        parallelism:
+          all_of:
+          - cp
+          - tp
+        deployment_topology:
+          all_of:
+          - pd_disaggregated
+        framework:
+        - sglang
+  expected:
+  - model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp
+  expected_scope_states:
+    model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp: match
+- id: scope_cp_sglang_missing_pd_unknown
+  description: 未确认 PD 拓扑时保留案例并提示缺失前提。
+  query: Qwen3-Next A3 Prefill
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - ttft
+        context_length:
+        - long_context
+        model_features:
+          all_of:
+          - moe
+        parallelism:
+          all_of:
+          - cp
+          - tp
+        framework:
+        - sglang
+  expected:
+  - model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp
+  expected_scope_states:
+    model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp: unknown
+- id: scope_cp_topology_required_set_unknown
+  description: 集合缺少必需 PD 分离特征时为未知；不擅自从已知特征推断明确否定。
+  query: Qwen3-Next A3 Prefill
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - ttft
+        context_length:
+        - long_context
+        model_features:
+          all_of:
+          - moe
+        parallelism:
+          all_of:
+          - cp
+          - tp
+        deployment_topology:
+          all_of:
+          - pd_hybrid
+        framework:
+        - sglang
+  expected:
+  - model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp
+  expected_scope_states:
+    model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp: unknown
+- id: scope_cp_framework_conflict
+  description: 不能把 SGLang 案例的条件拼到 executor 路径。
+  query: Qwen3-Next A3 Prefill
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - ttft
+        context_length:
+        - long_context
+        model_features:
+          all_of:
+          - moe
+        parallelism:
+          all_of:
+          - cp
+          - tp
+        deployment_topology:
+          all_of:
+          - pd_disaggregated
+        framework:
+        - cann_executor
+  excluded:
+  - model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp
+- id: scope_cluster_scale_prefill
+  description: 同一核对规则的 phase 数组是 OR，两个阶段可分别命中。
+  query: 集群配置核对
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - bringup
+  expected:
+  - model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch
+  expected_scope_states:
+    model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch: match
+- id: scope_cluster_scale_decode
+  description: 同一核对规则的 phase 数组是 OR，两个阶段可分别命中。
+  query: 集群配置核对
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - bringup
+  expected:
+  - model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch
+  expected_scope_states:
+    model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch: match
+- id: scope_cluster_scale_objective_conflict
+  description: 配置核对主目标为 bringup；不因正文讨论显存就声明独立 memory 优化。
+  query: 集群配置核对
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - memory
+  excluded:
+  - model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch
+- id: scope_graph_decision_match
+  description: 图模式选择规则不硬限定某个图后端或阶段。
+  query: 图模式决策
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/graph_mode_enable_decision_profiling
+  expected_scope_states:
+    model/inference/optimizations/rules/graph_mode_enable_decision_profiling: match
+- id: scope_graph_decision_eager_unknown
+  description: 选择是否入图时的 Eager 条件使未声明后端的决策卡保留为未知。
+  query: 图模式决策
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+        execution_mode:
+        - eager
+  expected:
+  - model/inference/optimizations/rules/graph_mode_enable_decision_profiling
+  expected_scope_states:
+    model/inference/optimizations/rules/graph_mode_enable_decision_profiling: unknown
+- id: graph_decision_a3_platform
+  description: 来源支持 A3 的规则可在 A3 默认查询中召回。
+  query: 图模式决策
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/rules/graph_mode_enable_decision_profiling
+- id: graph_decision_310p_not_inherited
+  description: 关联 310P 故障链接不扩展规则平台。
+  query: 图模式决策
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: 310p
+    match: literal
+    k: 10
+  excluded:
+  - model/inference/optimizations/rules/graph_mode_enable_decision_profiling
+- id: scope_ngram_graph_a2
+  description: 同一实现的两个来源支持平台分别验证；不合并平台收益或精度结论。
+  query: NgramEmbedding
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a2
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - tpot
+        model_features:
+          all_of:
+          - moe
+          - mla
+        execution_mode:
+        - ge_graph
+        quantization:
+        - bf16
+        parallelism:
+          all_of:
+          - tp
+        framework:
+        - cann_executor
+  expected:
+  - model/inference/optimizations/cases/longcat_lite_ngram_graph_host_gap
+  expected_scope_states:
+    model/inference/optimizations/cases/longcat_lite_ngram_graph_host_gap: match
+- id: scope_ngram_graph_a3
+  description: 同一实现的两个来源支持平台分别验证；不合并平台收益或精度结论。
+  query: NgramEmbedding
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - tpot
+        model_features:
+          all_of:
+          - moe
+          - mla
+        execution_mode:
+        - ge_graph
+        quantization:
+        - bf16
+        parallelism:
+          all_of:
+          - tp
+        framework:
+        - cann_executor
+  expected:
+  - model/inference/optimizations/cases/longcat_lite_ngram_graph_host_gap
+  expected_scope_states:
+    model/inference/optimizations/cases/longcat_lite_ngram_graph_host_gap: match
+- id: scope_ngram_prefill_conflict
+  description: Decode 入图案例中的 Prefill 观测不扩展阶段。
+  query: NgramEmbedding
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - tpot
+        model_features:
+          all_of:
+          - moe
+          - mla
+        execution_mode:
+        - ge_graph
+        quantization:
+        - bf16
+        parallelism:
+          all_of:
+          - tp
+        framework:
+        - cann_executor
+  excluded:
+  - model/inference/optimizations/cases/longcat_lite_ngram_graph_host_gap
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/longcat_lite_ngram_graph_host_gap
+- id: scope_wan_observation_match
+  description: Wan 观测只匹配 A2、DiT 与时延目标，不声明阶段或已启图。
+  query: Wan2.2 A2 图模式观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a2
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        objective:
+        - latency
+        model_features:
+          all_of:
+          - dit
+  expected:
+  - model/inference/optimizations/benchmark_observations/wan22_a2_graph_mode_freetime
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/wan22_a2_graph_mode_freetime: match
+- id: wan_a3_not_inherited
+  description: A2 观测不继承通用规则的 A3 范围。
+  query: Wan2.2 A2 图模式观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  excluded:
+  - model/inference/optimizations/benchmark_observations/wan22_a2_graph_mode_freetime
+- id: scope_superkernel_rule_match
+  description: 统一 SuperKernel 规则按来源支持的 GE Decode 条件匹配。
+  query: SuperKernel
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - tpot
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope
+  expected_scope_states:
+    model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope: match
+  excluded:
+  - model/inference/optimizations/rules/superkernel_scope_segmented_gated
+- id: scope_superkernel_eager_conflict
+  description: Eager 与 GE SuperKernel 主结论冲突。
+  query: SuperKernel
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - tpot
+        execution_mode:
+        - eager
+        model_features:
+          all_of:
+          - moe
+  excluded:
+  - model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope
+  - model/inference/optimizations/cases/longcat_a3_superkernel_layout_fusion
+  - model/inference/optimizations/cases/qwen3_moe_a3_superkernel_scopes
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope
+  - model/inference/optimizations/cases/longcat_a3_superkernel_layout_fusion
+  - model/inference/optimizations/cases/qwen3_moe_a3_superkernel_scopes
+- id: scope_superkernel_sglang_case
+  description: 框架已确认时只将 Qwen 案例的实现前提确认，LongCat 案例冲突。
+  query: SuperKernel
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - tpot
+        execution_mode:
+        - ge_graph
+        model_features:
+          all_of:
+          - moe
+        framework:
+        - sglang
+  expected:
+  - model/inference/optimizations/cases/qwen3_moe_a3_superkernel_scopes
+  expected_scope_states:
+    model/inference/optimizations/cases/qwen3_moe_a3_superkernel_scopes: match
+  excluded:
+  - model/inference/optimizations/cases/longcat_a3_superkernel_layout_fusion
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/longcat_a3_superkernel_layout_fusion
+- id: superkernel_segmented_history
+  description: 旧分段入口仍可显式查询，默认不推荐。
+  query: SuperKernel
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+    status: deprecated
+  expected:
+  - model/inference/optimizations/rules/superkernel_scope_segmented_gated
+- id: migration_tiling_rule_missing_scope
+  description: 原 Case 迁为规则；未标 Scope 时保留 unknown，不从标题推断阶段或目标。
+  query: 片上 Buffer
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/ascendc_attention_op_tiling_budget
+  expected_scope_states:
+    model/inference/optimizations/rules/ascendc_attention_op_tiling_budget: unknown
+- id: migration_staged_flow_guide
+  description: 三阶段完整流程按 Guide 召回，缺 Scope 仍为 unknown。
+  query: 单卡推理优化指南
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+  expected:
+  - model/inference/guides/optimization/staged_single_card_optimize_pipeline
+  expected_scope_states:
+    model/inference/guides/optimization/staged_single_card_optimize_pipeline: unknown
+- id: migration_staged_flow_leaves_optimization_profile
+  description: 完整流程迁入 guides 后，不再由 optimizations Profile 过滤器召回。
+  query: 单卡推理优化指南
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  expected_count: 0
+  excluded:
+  - model/inference/guides/optimization/staged_single_card_optimize_pipeline
+- id: migration_graph_compile_guide
+  description: 图编译步骤由 Guide 新路径召回。
+  query: LLM Decode 图编译指南
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: migration_qsas_implementation_case
+  description: QSAS 的 mode 与 optional 包装差异由案例承载，通用 dtype 接口规则保持独立。
+  query: QSAS 的 HiFloat8 KV 接入案例
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: '950'
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/cases/torchless_lowprec_dtype_acl_override
+- id: migration_unknown_benchmark_not_default
+  description: 平台未核实的精度观测保持 draft，不进入默认 stable 查询。
+  query: 三档量化精度
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  expected_count: 0
+  excluded:
+  - model/inference/optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy
+- id: migration_unknown_benchmark_explicit_draft
+  description: 显式 draft 与 include-unlocated 才召回平台未知观测，Scope 不标为已确认。
+  query: 三档量化精度
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 10
+    include_unlocated: true
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy: unknown
+- id: migration_indexcache_unknown_platform_draft
+  description: IndexCache 的自报观测缺硬件信息；显式草稿查询保留未知，不写成平台无关。
+  query: IndexCache
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 10
+    include_unlocated: true
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/benchmark_observations/dsa_indexcache_topk_reuse_throughput
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/dsa_indexcache_topk_reuse_throughput: unknown
+- id: migration_lora_wrong_310p_claim_removed
+  description: 310P 固定分派仍回退通用路径，A2 自研 BGMV 稳定卡不能作为 310P 已确认优化。
+  query: BGMV
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: 310p
+    status: stable
+    match: literal
+    k: 10
+  expected_count: 0
+  excluded:
+  - model/inference/optimizations/rules/multi_lora_bgmv_ascendc_vector_kernel
+- id: source_review_lora_a2_implementation
+  description: 固定 A2 CI 配置支持自研 BGMV 实现进入稳定检索；没有 Scope 的附加条件保持未知。
+  query: A2 多 LoRA BGMV 自研向量核：FP32 中间缓冲与 rank 边界
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 10
+    platform: a2
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - latency
+  expected:
+  - model/inference/optimizations/rules/multi_lora_bgmv_ascendc_vector_kernel
+  expected_scope_states:
+    model/inference/optimizations/rules/multi_lora_bgmv_ascendc_vector_kernel: unknown
+- id: migration_unlocated_with_platform_rejected
+  description: 未定位草稿检索与指定平台不能混用，避免未知平台被当作目标平台已确认。
+  query: BGMV
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: draft
+    include_unlocated: true
+  expected_error: --include-unlocated cannot be combined with --platform
+- id: closure_fp8_950_positive
+  description: 固定 950 源码支持 FP8+DiT，规则与数据案例分开。
+  query: 视频 DiT FP8 量化规则
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 10
+    platform: '950'
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          all_of:
+          - dit
+        quantization:
+        - fp8
+  expected:
+  - model/inference/optimizations/rules/video_dit_fp8_mxfp8_quantization
+  expected_scope_states:
+    model/inference/optimizations/rules/video_dit_fp8_mxfp8_quantization: match
+- id: closure_fp8_a3_excluded
+  description: 同名 950 实现不能由 A3 平台过滤召回。
+  query: 视频 DiT FP8 量化规则
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 10
+    platform: a3
+  expected_count: 0
+  excluded:
+  - model/inference/optimizations/rules/video_dit_fp8_mxfp8_quantization
+- id: closure_fp8_hybrid_quantization_unknown
+  description: 不能把混合方案标成独立 FP8 路径；FP8 查询保留未知。
+  query: DeepSeek-V4 950 混合量化
+  filters:
+    domain: model
+    technology: inference
+    type: concepts
+    status: stable
+    match: literal
+    k: 10
+    platform: '950'
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        quantization:
+        - fp8
+  expected:
+  - model/inference/concepts/quantization/hybrid_mxfp8_mxfp4
+  expected_scope_states:
+    model/inference/concepts/quantization/hybrid_mxfp8_mxfp4: unknown
+- id: closure_hybrid_phase_only_match
+  description: 仅查询固定来源支持的阶段时可以匹配，不据此确认量化格式。
+  query: DeepSeek-V4 950 混合量化
+  filters:
+    domain: model
+    technology: inference
+    type: concepts
+    status: stable
+    match: literal
+    k: 10
+    platform: '950'
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/concepts/quantization/hybrid_mxfp8_mxfp4
+  expected_scope_states:
+    model/inference/concepts/quantization/hybrid_mxfp8_mxfp4: match
+- id: closure_mxfp4_quantization_unknown
+  description: 混合方案不写量化枚举；MXFP4 查询保留相关机制卡并提示量化适用性未知。
+  query: DeepSeek-V4 950 混合量化
+  filters:
+    domain: model
+    technology: inference
+    type: concepts
+    status: stable
+    match: literal
+    k: 10
+    platform: '950'
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        quantization:
+        - mxfp4
+  expected:
+  - model/inference/concepts/quantization/hybrid_mxfp8_mxfp4
+  expected_scope_states:
+    model/inference/concepts/quantization/hybrid_mxfp8_mxfp4: unknown
+- id: closure_hybrid_bf16_quantization_unknown
+  description: 卡片量化条件未知时 BF16 查询保留召回，不误报格式冲突或确认适用。
+  query: DeepSeek-V4 950 混合量化
+  filters:
+    domain: model
+    technology: inference
+    type: concepts
+    status: stable
+    match: literal
+    k: 10
+    platform: '950'
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        quantization:
+        - bf16
+  expected:
+  - model/inference/concepts/quantization/hybrid_mxfp8_mxfp4
+  expected_scope_states:
+    model/inference/concepts/quantization/hybrid_mxfp8_mxfp4: unknown
+- id: closure_prefill_throughput_positive
+  description: 吞吐目标与阶段共同满足时召回对应流程。
+  query: Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 10
+    platform: a3
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - throughput
+  expected:
+  - model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+  expected_scope_states:
+    model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap: match
+- id: closure_prefill_guide_decode_conflict
+  description: 已确认 Decode 不匹配 Prefill micro-batch 流程。
+  query: Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 10
+    platform: a3
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        objective:
+        - throughput
+  excluded:
+  - model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+  expected_scope_excluded:
+  - model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+- id: closure_gdn_cp_case_positive
+  description: PR359 的 GDN CP 与早期全注意力 CP 分开；逐项核对全部声明条件。
+  query: Qwen3-Next A3 GDN Context Parallel 案例
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 10
+    platform: a3
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        objective:
+        - ttft
+        framework:
+        - sglang
+        parallelism:
+          all_of:
+          - cp
+          - tp
+  expected:
+  - model/inference/optimizations/cases/qwen3_next_gdn_context_parallel_zeco
+  expected_scope_states:
+    model/inference/optimizations/cases/qwen3_next_gdn_context_parallel_zeco: match
+- id: closure_graph_unverified_default_excluded
+  description: 未核验实测从 Concept 转出后不作为 stable 部署建议召回。
+  query: 图后端与布局组合的待核验观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 10
+    platform: a3
+  expected_count: 0
+  excluded:
+  - model/inference/optimizations/cases/graph_backend_layout_unverified_observations
+- id: closure_graph_unverified_explicit_draft
+  description: 显式未知平台草稿检索可找到迁移保留记录，适用性仍未知。
+  query: 图后端与布局组合的待核验观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 10
+    include_unlocated: true
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/cases/graph_backend_layout_unverified_observations
+  expected_scope_states:
+    model/inference/optimizations/cases/graph_backend_layout_unverified_observations: unknown
+- id: closure_graph_print_runbook
+  description: 完整图内打点诊断按 Runbook Profile 召回。
+  query: acl_graph_print
+  filters:
+    domain: model
+    technology: inference
+    type: runbooks
+    status: stable
+    match: literal
+    k: 10
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/aclgraph_print_bisect_silent_hang
+- id: online_decode_admission_match
+  description: 固定源码支持在线 Decode CANN Executor 入场控制，不推断并发或 batch。
+  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        serving_mode:
+        - online
+        framework:
+        - cann_executor
+  expected:
+  - model/inference/optimizations/rules/online_decode_kv_admission_retraction
+  expected_scope_states:
+    model/inference/optimizations/rules/online_decode_kv_admission_retraction: match
+- id: online_decode_admission_offline_conflict
+  description: 明确离线场景与在线调度规则冲突。
+  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        serving_mode:
+        - offline
+        framework:
+        - cann_executor
+  excluded:
+  - model/inference/optimizations/rules/online_decode_kv_admission_retraction
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/online_decode_kv_admission_retraction
+  expected_scope_states:
+    model/inference/optimizations/rules/ascend_paged_attention_kv_cache: unknown
+  expected:
+  - model/inference/optimizations/rules/ascend_paged_attention_kv_cache
+- id: online_decode_admission_prefill_conflict
+  description: 在线模式不能抵消已确认的 Prefill/Decode 冲突。
+  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        serving_mode:
+        - online
+        framework:
+        - cann_executor
+  excluded:
+  - model/inference/optimizations/rules/online_decode_kv_admission_retraction
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/online_decode_kv_admission_retraction
+  expected_scope_states:
+    model/inference/optimizations/rules/ascend_paged_attention_kv_cache: unknown
+  expected:
+  - model/inference/optimizations/rules/ascend_paged_attention_kv_cache
+- id: online_decode_admission_framework_unknown
+  description: 没有确认框架时保留相关规则并提示 CANN Executor 前提。
+  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        serving_mode:
+        - online
+  expected:
+  - model/inference/optimizations/rules/online_decode_kv_admission_retraction
+  expected_scope_states:
+    model/inference/optimizations/rules/online_decode_kv_admission_retraction: unknown
+- id: online_multi_instance_pd_match
+  description: 在线 PD 多实例规则覆盖两侧，不额外要求 Decode 阶段。
+  query: 多实例 online PD 部署每台 MASTER_ADDR 须指本实例组长（扁平 IP 列表下取整）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        serving_mode:
+        - online
+        deployment_topology:
+          all_of:
+          - pd_disaggregated
+  expected:
+  - model/inference/optimizations/rules/multi_instance_online_master_addr
+  expected_scope_states:
+    model/inference/optimizations/rules/multi_instance_online_master_addr: match
+- id: online_multi_instance_offline_conflict
+  description: 离线部署不得套用 online 分支的完整跨实例列表规则。
+  query: 多实例 online PD 部署每台 MASTER_ADDR 须指本实例组长（扁平 IP 列表下取整）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        serving_mode:
+        - offline
+        deployment_topology:
+          all_of:
+          - pd_disaggregated
+  expected_count: 0
+  excluded:
+  - model/inference/optimizations/rules/multi_instance_online_master_addr
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/multi_instance_online_master_addr
+- id: online_multi_instance_topology_unknown
+  description: 没有确认 PD 拓扑时保留召回，适用性待确认。
+  query: 多实例 online PD 部署每台 MASTER_ADDR 须指本实例组长（扁平 IP 列表下取整）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        serving_mode:
+        - online
+  expected:
+  - model/inference/optimizations/rules/multi_instance_online_master_addr
+  expected_scope_states:
+    model/inference/optimizations/rules/multi_instance_online_master_addr: unknown
+- id: model_longcat_deployment_guide
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: LongCat-Flash A3 部署与优化验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/models/longcat_flash_deployment
+- id: model_v4_deployment_guide_a3
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 A3与950部署及优化验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/models/deepseek_v4_deployment
+- id: model_v4_deployment_guide_950
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 A3与950部署及优化验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/models/deepseek_v4_deployment
+- id: model_longcat_observation_decode
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: LongCat A3 AFD与控核的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/benchmark_observations/longcat_a3_afd_source_benchmark
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/longcat_a3_afd_source_benchmark: match
+- id: model_longcat_observation_prefill_conflict
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: LongCat A3 AFD与控核的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  excluded:
+  - model/inference/optimizations/benchmark_observations/longcat_a3_afd_source_benchmark
+  expected_scope_excluded:
+  - model/inference/optimizations/benchmark_observations/longcat_a3_afd_source_benchmark
+- id: model_v4_950_observation_offline_decode
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 950DT混合量化的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        serving_mode:
+        - offline
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark: match
+- id: model_v4_950_observation_online_conflict
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 950DT混合量化的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        serving_mode:
+        - online
+  excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark
+  expected_scope_excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark
+- id: model_v4_950_observation_mode_unknown
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 950DT混合量化的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark: unknown
+- id: model_v4_a3_observation_offline_decode
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 A3 Pod整数量化的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        serving_mode:
+        - offline
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark: match
+- id: model_v4_950_not_a3
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 950DT混合量化的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark
+- id: model_v4_a3_not_950
+  description: 模型总览归并后按职责、平台和已确认条件检索；未知保留。
+  query: DeepSeek-V4 A3 Pod整数量化的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: '950'
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark
+- id: model_v4_performance_owner
+  description: 性能数字由观测卡维护，模型与量化 Concept 不重复保存性能表。
+  query: '1625.31'
+  filters:
+    domain: model
+    technology: inference
+    platform: '950'
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_v4_950_source_benchmark
+  excluded:
+  - model/inference/concepts/models/deepseek_v4
+  - model/inference/concepts/quantization/hybrid_mxfp8_mxfp4
+- id: catalog_deepseek_r1_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: DeepSeek-R1 A3 分阶段部署与优化验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/models/deepseek_r1_deployment
+- id: catalog_deepseek_v3_2_exp_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: DeepSeek-V3.2-Exp A3 长序列部署与验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/models/deepseek_v3_2_exp_deployment
+- id: catalog_gemma4_26b_a4b_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Gemma-4 文本 Decoder 的 A2/A3 部署与精度验收
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/gemma4_26b_a4b_deployment
+- id: catalog_glm_5_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: GLM-5 A3 部署、量化与 DSA 验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/models/glm_5_deployment
+- id: catalog_gpt_oss_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: GPT-OSS A2 权重准备与 TP 推理验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/gpt_oss_deployment
+- id: catalog_hstu_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: HSTU A2 推荐推理接入、缓存与并行验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/hstu_deployment
+- id: catalog_hy3_preview_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Hy3-preview A3 部署与路由精度验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/models/hy3_preview_deployment
+- id: catalog_kimi_k2_thinking_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Kimi-K2-Thinking A3 混合精度部署与验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/models/kimi_k2_thinking_deployment
+- id: catalog_longcat_flash_lite_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: LongCat-Lite A2/A3 的 TP、EP 部署与验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/longcat_flash_lite_deployment
+- id: catalog_qwen3_5_moe_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Qwen3.5-MoE A3 三规格部署与 GDN 验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/models/qwen3_5_moe_deployment
+- id: catalog_qwen3_moe_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Qwen3-MoE A3 双实现部署与优化验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/models/qwen3_moe_deployment
+- id: catalog_qwen_dense_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Qwen Dense A2 的变体、图模式与量化验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/qwen_dense_deployment
+- id: catalog_hunyuan_image_3_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: HunyuanImage-3.0 A2/A3 并行接入与验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/hunyuan_image_3_deployment
+- id: catalog_hunyuan_video_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: HunyuanVideo 分版本的并行、稀疏与量化验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/hunyuan_video_deployment
+- id: catalog_sana_video_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Sana-Video NPU 适配、量化与生成验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/sana_video_deployment
+- id: catalog_wan2_2_i2v_deployment
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Wan2.2-I2V A2/A3 并行与缓存生成验收流程
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/guides/models/wan2_2_i2v_deployment
+- id: catalog_deepseek_r1_a3_prefill_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: DeepSeek-R1 A3 Prefill 双流的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark: match
+- id: catalog_deepseek_r1_a3_decode_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: DeepSeek-R1 A3 Decode 的来源数据与 Chips 分歧
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark: match
+- id: catalog_deepseek_v32_a3_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: DeepSeek-V3.2-Exp A3 时延、吞吐与容量的来源观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_v32_a3_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        - prefill
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/deepseek_v32_a3_source_benchmark: match
+- id: catalog_gemma4_a2_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Gemma-4 A2 图模式的两组来源性能口径
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - model/inference/optimizations/benchmark_observations/gemma4_a2_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        - prefill
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/gemma4_a2_source_benchmark: match
+- id: catalog_gemma4_a3_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Gemma-4 A3 图后端与 EP 路由的来源观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/gemma4_a3_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        - prefill
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/gemma4_a3_source_benchmark: match
+- id: catalog_glm5_a3_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: GLM-5 A3 W8A8 Decode 的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/glm5_a3_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/glm5_a3_source_benchmark: match
+- id: catalog_hy3_a3_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Hy3-preview A3 分阶段性能与批次口径观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/hy3_a3_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        - prefill
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/hy3_a3_source_benchmark: match
+- id: catalog_longcat_lite_a3_prolog_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: LongCat-Lite A3 MLA-Prolog 与长输入的来源观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/longcat_lite_a3_prolog_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        - prefill
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/longcat_lite_a3_prolog_source_benchmark: match
+- id: catalog_longcat_lite_ep_source_observations
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: LongCat-Lite EP 报告的平台与源码待核验观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 5
+    include_unlocated: true
+  expected:
+  - model/inference/optimizations/benchmark_observations/longcat_lite_ep_source_observations
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/longcat_lite_ep_source_observations: unknown
+- id: catalog_longcat_lite_ep_source_observations_default_excluded
+  description: 平台未知的来源记录保持 draft，不进入默认稳定检索。
+  query: LongCat-Lite EP 报告的平台与源码待核验观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/longcat_lite_ep_source_observations
+- id: catalog_qwen3_moe_a3_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Qwen3-MoE A3 两条实现的来源时延观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/qwen3_moe_a3_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/qwen3_moe_a3_source_benchmark: match
+- id: catalog_hunyuan_video_a3_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: HunyuanVideo A3 累计优化的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/hunyuan_video_a3_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          all_of:
+          - dit
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/hunyuan_video_a3_source_benchmark: match
+- id: catalog_hunyuan_video_950_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: HunyuanVideo 950PR 量化的来源性能表
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: '950'
+  expected:
+  - model/inference/optimizations/benchmark_observations/hunyuan_video_950_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          all_of:
+          - dit
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/hunyuan_video_950_source_benchmark: match
+- id: catalog_hunyuan_video_sparse_source_observations
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: HunyuanVideo 稀疏与 Ring 的来源数据及平台缺口
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 5
+    include_unlocated: true
+  expected:
+  - model/inference/optimizations/benchmark_observations/hunyuan_video_sparse_source_observations
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/hunyuan_video_sparse_source_observations: unknown
+- id: catalog_hunyuan_video_sparse_source_observations_default_excluded
+  description: 平台未知的来源记录保持 draft，不进入默认稳定检索。
+  query: HunyuanVideo 稀疏与 Ring 的来源数据及平台缺口
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/hunyuan_video_sparse_source_observations
+- id: catalog_sana_video_950_source_benchmark
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Sana-Video 来源 A5（950）量化性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: '950'
+  expected:
+  - model/inference/optimizations/benchmark_observations/sana_video_950_source_benchmark
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          all_of:
+          - dit
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/sana_video_950_source_benchmark: match
+- id: catalog_sana_video_bf16_source_observations
+  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
+  query: Sana-Video 480p81f 来源时延（平台与精度待核验）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 5
+    include_unlocated: true
+  expected:
+  - model/inference/optimizations/benchmark_observations/sana_video_bf16_source_observations
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/sana_video_bf16_source_observations: unknown
+- id: catalog_sana_video_bf16_source_observations_default_excluded
+  description: 平台未知的来源记录保持 draft，不进入默认稳定检索。
+  query: Sana-Video 480p81f 来源时延（平台与精度待核验）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/sana_video_bf16_source_observations
+- id: catalog_deepseek_r1_a3_decode_source_benchmark_phase_conflict
+  description: 明确相反阶段的来源观测排除，并在过滤审计中回显。
+  query: DeepSeek-R1 A3 Decode 的来源数据与 Chips 分歧
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark
+  expected_scope_excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark
+- id: catalog_deepseek_r1_a3_prefill_source_benchmark_phase_conflict
+  description: 明确相反阶段的来源观测排除，并在过滤审计中回显。
+  query: DeepSeek-R1 A3 Prefill 双流的来源性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark
+  expected_scope_excluded:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark
+- id: catalog_gemma4_a2_source_benchmark_wrong_platform
+  description: 分平台的来源观测不能因模型相同而跨硬件召回。
+  query: Gemma-4 A2 图模式的两组来源性能口径
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/gemma4_a2_source_benchmark
+- id: catalog_hunyuan_video_950_source_benchmark_wrong_platform
+  description: 分平台的来源观测不能因模型相同而跨硬件召回。
+  query: HunyuanVideo 950PR 量化的来源性能表
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/hunyuan_video_950_source_benchmark
+- id: catalog_sana_video_950_source_benchmark_wrong_platform
+  description: 分平台的来源观测不能因模型相同而跨硬件召回。
+  query: Sana-Video 来源 A5（950）量化性能观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a2
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/sana_video_950_source_benchmark
+- id: catalog_deepseek_r1_a3_prefill_source_benchmark_numeric_owner
+  description: 独特测量值由来源观测卡维护，模型总览和任务 Guide 不重复保存结果表。
+  query: '6522'
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark
+  excluded:
+  - model/inference/concepts/models/deepseek_r1
+  - model/inference/guides/models/deepseek_r1_deployment
+- id: catalog_deepseek_r1_a3_decode_source_benchmark_numeric_owner
+  description: 独特测量值由来源观测卡维护，模型总览和任务 Guide 不重复保存结果表。
+  query: '44.9'
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark
+  excluded:
+  - model/inference/concepts/models/deepseek_r1
+  - model/inference/guides/models/deepseek_r1_deployment
+- id: catalog_glm5_a3_source_benchmark_numeric_owner
+  description: 独特测量值由来源观测卡维护，模型总览和任务 Guide 不重复保存结果表。
+  query: '22.54'
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/benchmark_observations/glm5_a3_source_benchmark
+  excluded:
+  - model/inference/concepts/models/glm_5
+  - model/inference/guides/models/glm_5_deployment
+- id: catalog_hy3_a3_source_benchmark_numeric_owner
+  description: 独特测量值由来源观测卡维护，模型总览和任务 Guide 不重复保存结果表。
+  query: '28.44'
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/benchmark_observations/hy3_a3_source_benchmark
+  excluded:
+  - model/inference/concepts/models/hy3_preview
+  - model/inference/guides/models/hy3_preview_deployment
+- id: catalog_sana_video_950_source_benchmark_numeric_owner
+  description: 独特测量值由来源观测卡维护，模型总览和任务 Guide 不重复保存结果表。
+  query: '77.92'
+  filters:
+    domain: model
+    technology: inference
+    platform: '950'
+    status: stable
+    match: literal
+    k: 10
+  expected:
+  - model/inference/optimizations/benchmark_observations/sana_video_950_source_benchmark
+  excluded:
+  - model/inference/concepts/models/sana_video
+  - model/inference/guides/models/sana_video_deployment
+- id: delivery_autofuse_a3_source_benchmark
+  description: 按规范入口召回本轮归并的实现/来源记录；没有卡片 Scope 的条件保持未知。
+  query: AutoFuse A3 部分编译与 hc_post 的来源观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/benchmark_observations/autofuse_a3_source_benchmark
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/autofuse_a3_source_benchmark: unknown
+- id: delivery_operator_tuning_source_observations
+  description: 按规范入口召回本轮归并的实现/来源记录；没有卡片 Scope 的条件保持未知。
+  query: LI/DIA PyPTO 调优的来源观测（测量条件待补）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 5
+    include_unlocated: true
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/benchmark_observations/operator_tuning_source_observations
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/operator_tuning_source_observations: unknown
+- id: delivery_operator_tuning_source_observations_default_excluded
+  description: 具体测量或执行平台未核实的记录不进入默认稳定检索。
+  query: LI/DIA PyPTO 调优的来源观测（测量条件待补）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/operator_tuning_source_observations
+- id: delivery_pypto_v4_operator_source_observations
+  description: 按规范入口召回本轮归并的实现/来源记录；没有卡片 Scope 的条件保持未知。
+  query: PyPTO V4 单 die 算子数据与 VF 观测（平台待核验）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: draft
+    match: literal
+    k: 5
+    include_unlocated: true
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/benchmark_observations/pypto_v4_operator_source_observations
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/pypto_v4_operator_source_observations: unknown
+- id: delivery_pypto_v4_operator_source_observations_default_excluded
+  description: 具体测量或执行平台未核实的记录不进入默认稳定检索。
+  query: PyPTO V4 单 die 算子数据与 VF 观测（平台待核验）
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/pypto_v4_operator_source_observations
+- id: delivery_deepseek_v32_offload_stream_events
+  description: 固定来源仅确认 Prefill D2H 片段；已知阶段补标后，Decode 查询须产生明确冲突排除。
+  query: V3.2-Exp KV Offload 搬运流与事件配对案例
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
+- id: delivery_indexer_prolog_streams_fixed_implementation
+  description: 固定 A3 模型文档、调用链和开关支持 Indexer Decode 分流，查询阶段匹配。
+  query: A3 DeepSeek/GLM Indexer Prolog 前处理分流实现
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+  expected_scope_states:
+    model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation: match
+- id: source_review_indexer_wrong_platform_excluded
+  description: A3 Indexer 案例不能作为 A2 已确认实现。
+  query: A3 DeepSeek/GLM Indexer Prolog 前处理分流实现
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a2
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+- id: delivery_longcat_a3_afd_stream_pairing
+  description: 按规范入口召回本轮归并的实现/来源记录；没有卡片 Scope 的条件保持未知。
+  query: LongCat A3 AFD 的收发配对与流汇合案例
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    status: stable
+    match: literal
+    k: 5
+    platform: a3
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/cases/longcat_a3_afd_stream_pairing
+  expected_scope_states:
+    model/inference/optimizations/cases/longcat_a3_afd_stream_pairing: unknown
+- id: delivery_autofuse_a3_source_benchmark_numeric_owner
+  description: 测量值只在独立来源观测维护，机制和规则卡不重复维护结果表。
+  query: '49.8'
+  filters:
+    domain: model
+    technology: inference
+    match: literal
+    k: 10
+    platform: a3
+    status: stable
+  expected:
+  - model/inference/optimizations/benchmark_observations/autofuse_a3_source_benchmark
+  excluded:
+  - model/inference/concepts/frameworks/autofuse
+  - model/inference/optimizations/rules/inductor_autofuse_partial_compile_scope
+- id: source_review_a3_hcpost_numeric_owner
+  description: HcPost 数字已迁入 A3 稳定来源观测；原聚合草稿与机制卡不重复维护。
+  query: '5044.53'
+  filters:
+    domain: model
+    technology: inference
+    match: literal
+    k: 10
+    status: stable
+    platform: a3
+  expected:
+  - model/inference/optimizations/benchmark_observations/ascendc_a3_li_hcpost_source_observations
+  excluded:
+  - model/inference/concepts/kernels/mhc_hcpre_hcpost
+  - model/inference/optimizations/benchmark_observations/operator_tuning_source_observations
+- id: source_review_sfa_a3_stable
+  description: SFA/CP 的 A3 配置链进入稳定检索，不把 PR 分数拼成硬件复测。
+  query: SFA/DSA 稀疏注意力叠加 Context Parallel：跨 CP 组重建完整 KV 的 all_gather 路径
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/sfa_dsa_cp_cross_group_kv_allgather
+- id: source_review_sfa_a2_excluded
+  description: 没有 A2 证据，不从通用 CP 机制扩大指南平台。
+  query: SFA/DSA 稀疏注意力叠加 Context Parallel：跨 CP 组重建完整 KV 的 all_gather 路径
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a2
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/guides/integration/sfa_dsa_cp_cross_group_kv_allgather
+- id: source_review_bgmv_a3_excluded
+  description: 非 310P 静态分派不足以把 A2 配置扩大到 A3。
+  query: A2 多 LoRA BGMV 自研向量核：FP32 中间缓冲与 rank 边界
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/rules/multi_lora_bgmv_ascendc_vector_kernel
+- id: source_review_indexer_prefill_excluded
+  description: Indexer 开关排除 Prefill，并保留明确冲突审计。
+  query: A3 DeepSeek/GLM Indexer Prolog 前处理分流实现
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+- id: source_review_a3_li_hcpost_scope_unknown
+  description: A3 观测没有声明阶段，Decode 查询保留未知。
+  query: A3 LI TopK 融合与 HcPost 的来源观测
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/benchmark_observations/ascendc_a3_li_hcpost_source_observations
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/optimizations/benchmark_observations/ascendc_a3_li_hcpost_source_observations: unknown
+- id: source_review_indexcache_default_excluded
+  description: IndexCache 机制已修正为跨层，但测量平台及依赖缺口仍未闭合，不进入默认稳定检索。
+  query: IndexCache
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 10
+  excluded:
+  - model/inference/optimizations/benchmark_observations/dsa_indexcache_topk_reuse_throughput
+
+# A/B 诊断回归：名称召回、已核验条件与用户确认后的独立用例。
+- id: ab_scope_match_dsa_decode_memory_budget_indexer_cache
+  query: DSA decode 显存预算：Full MLA KVCache + 新增 Indexer Key Cache（勿漏）+ Indexer 权重
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        model_features:
+          all_of:
+          - mla
+  expected:
+  - model/inference/optimizations/rules/dsa_decode_memory_budget_indexer_cache
+  expected_scope_states:
+    model/inference/optimizations/rules/dsa_decode_memory_budget_indexer_cache: match
+- id: ab_scope_conflict_dsa_decode_memory_budget_indexer_cache
+  query: DSA decode 显存预算：Full MLA KVCache + 新增 Indexer Key Cache（勿漏）+ Indexer 权重
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        model_features:
+          none_of:
+          - mla
+  excluded:
+  - model/inference/optimizations/rules/dsa_decode_memory_budget_indexer_cache
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/dsa_decode_memory_budget_indexer_cache
+- id: ab_scope_match_dsa_sparse_prefill_mla_scheme_by_seqlen
+  query: DSA 稀疏 Prefill 的 MLA 计算流按序列长度选型：短序列走 MHA+Mask、长序列走 Absorb+Sparse
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        model_features:
+          all_of:
+          - mla
+  expected:
+  - model/inference/optimizations/rules/dsa_sparse_prefill_mla_scheme_by_seqlen
+  expected_scope_states:
+    model/inference/optimizations/rules/dsa_sparse_prefill_mla_scheme_by_seqlen: match
+- id: ab_scope_conflict_dsa_sparse_prefill_mla_scheme_by_seqlen
+  query: DSA 稀疏 Prefill 的 MLA 计算流按序列长度选型：短序列走 MHA+Mask、长序列走 Absorb+Sparse
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        model_features:
+          all_of:
+          - mla
+  excluded:
+  - model/inference/optimizations/rules/dsa_sparse_prefill_mla_scheme_by_seqlen
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/dsa_sparse_prefill_mla_scheme_by_seqlen
+- id: ab_combination_mla_absorb_required_feature
+  query: MLA 访存 / 显存优化
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          none_of:
+          - mla
+  excluded:
+  - model/inference/optimizations/rules/mla_weight_absorption_latent_kv
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/mla_weight_absorption_latent_kv
+- id: draft_precision_a3_stable_excluded
+  description: 独立过滤回归：A3 stable 查询不得混入平台未定位的精度草稿；不替代主集第21题的精度证据召回。
+  query: DeepSeek-V3.2-Exp 各量化档 (W8A8C16 / W8A8C8 / W4A8C8) 精度近 BF16 基准
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: text
+    k: 5
+  excluded:
+  - model/inference/optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy
+- id: c8_state_prefill_failure_not_decode
+  description: 固定来源的 scale 初始化故障仅在 Prefill；显式 Decode 查询应留下冲突排除记录。
+  query: SFA C8 Prefill 在 cp_size=1 时缺少 per-token scale
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase: [decode]
+  expected_count: 0
+  excluded:
+  - model/inference/runbooks/precision/quant_state_misattached_to_cp_branch
+  expected_scope_excluded:
+  - model/inference/runbooks/precision/quant_state_misattached_to_cp_branch
+- id: c8_state_cp_enabled_excluded
+  description: 已知故障要求未启用 CP；Prefill+CP 查询与卡片否定条件明确冲突，必须排除并保留审计原因。
+  query: SFA C8 Prefill 在 cp_size=1 时缺少 per-token scale
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase: [prefill]
+        parallelism:
+          all_of: [cp]
+  expected_count: 0
+  excluded:
+  - model/inference/runbooks/precision/quant_state_misattached_to_cp_branch
+  expected_scope_excluded:
+  - model/inference/runbooks/precision/quant_state_misattached_to_cp_branch
+- id: c8_state_cp_disabled_matches_declared_conditions
+  description: 明确未启用 CP 时满足卡片声明；不表示模型、量化开关、修复版本或真实部署已经核实。
+  query: SFA C8 Prefill 在 cp_size=1 时缺少 per-token scale
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase: [prefill]
+        parallelism:
+          all_of: [tp]
+          none_of: [cp]
+  expected:
+  - model/inference/runbooks/precision/quant_state_misattached_to_cp_branch
+  expected_scope_states:
+    model/inference/runbooks/precision/quant_state_misattached_to_cp_branch: match
+- id: c8_state_missing_cp_remains_unknown
+  description: 查询只指定 Prefill 时，没有 CP 状态证据，保留为 unknown，不能当作已知关闭。
+  query: SFA C8 Prefill 在 cp_size=1 时缺少 per-token scale
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase: [prefill]
+  expected:
+  - model/inference/runbooks/precision/quant_state_misattached_to_cp_branch
+  expected_scope_states:
+    model/inference/runbooks/precision/quant_state_misattached_to_cp_branch: unknown
+- id: c8_state_tp_does_not_imply_no_cp
+  description: 只声明启用 TP 不能推导未启用 CP；该卡继续以 unknown 召回。
+  query: SFA C8 Prefill 在 cp_size=1 时缺少 per-token scale
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase: [prefill]
+        parallelism:
+          all_of: [tp]
+  expected:
+  - model/inference/runbooks/precision/quant_state_misattached_to_cp_branch
+  expected_scope_states:
+    model/inference/runbooks/precision/quant_state_misattached_to_cp_branch: unknown
+
+# 可选部分 Scope：来源条件与冲突/未知边界；不增加主集题目。
+- id: scope_partial_cp_prefill_match
+  query: 因果稀疏注意力 CP prefill 的 zigzag 负载均衡：每 rank 两段两次调用 + 头尾因果前缀 actual_seq_lengths（qlen≠kvlen）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        parallelism:
+          all_of:
+          - cp
+  expected:
+  - model/inference/optimizations/rules/causal_cp_prefill_zigzag_actual_seqlens
+  expected_scope_states:
+    model/inference/optimizations/rules/causal_cp_prefill_zigzag_actual_seqlens: match
+- id: scope_partial_cp_decode_conflict
+  query: 因果稀疏注意力 CP prefill 的 zigzag 负载均衡：每 rank 两段两次调用 + 头尾因果前缀 actual_seq_lengths（qlen≠kvlen）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        parallelism:
+          all_of:
+          - cp
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/causal_cp_prefill_zigzag_actual_seqlens
+- id: scope_partial_cp_explicit_disabled
+  query: 因果稀疏注意力 CP prefill 的 zigzag 负载均衡：每 rank 两段两次调用 + 头尾因果前缀 actual_seq_lengths（qlen≠kvlen）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        parallelism:
+          none_of:
+          - cp
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/causal_cp_prefill_zigzag_actual_seqlens
+- id: scope_partial_mla_decode_not_excluded
+  query: MLA 前处理超级融合算子可用于长序列 Prefill — 勿被算子文档 Seq-Length 0~16 标注误导
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        model_features:
+          all_of:
+          - mla
+  expected:
+  - model/inference/optimizations/rules/mla_prolog_v3_prefill_seqlen_doc
+  expected_scope_states:
+    model/inference/optimizations/rules/mla_prolog_v3_prefill_seqlen_doc: unknown
+- id: scope_partial_mla_explicit_absence
+  query: MLA 前处理超级融合算子可用于长序列 Prefill — 勿被算子文档 Seq-Length 0~16 标注误导
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          none_of:
+          - mla
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/mla_prolog_v3_prefill_seqlen_doc
+- id: scope_partial_bias_prefill_moe
+  query: 量化 MoE 专家 GMM 的 phase-gated bias 跳过：Prefill 去 bias 提速、Decode 保留
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+        model_features:
+          all_of:
+          - moe
+  expected:
+  - model/inference/optimizations/rules/w4a8_moe_gmm_prefill_skip_bias
+  expected_scope_states:
+    model/inference/optimizations/rules/w4a8_moe_gmm_prefill_skip_bias: match
+- id: scope_partial_bias_decode_excluded
+  query: 量化 MoE 专家 GMM 的 phase-gated bias 跳过：Prefill 去 bias 提速、Decode 保留
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/runbooks/performance/moe_optimization_silently_disabled_decode
+  expected_scope_states:
+    model/inference/runbooks/performance/moe_optimization_silently_disabled_decode: unknown
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/w4a8_moe_gmm_prefill_skip_bias
+- id: scope_partial_online_offline_conflict
+  query: 在线 PD 分离推理执行机制：多机实例、DP 分发与 KV 传输（Online PD Inference）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        serving_mode:
+        - offline
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/concepts/frameworks/online_pd_inference
+- id: scope_partial_online_pd_match
+  query: 在线 PD 分离推理执行机制：多机实例、DP 分发与 KV 传输（Online PD Inference）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        serving_mode:
+        - online
+        deployment_topology:
+          all_of:
+          - pd_disaggregated
+        framework:
+        - cann_executor
+  expected:
+  - model/inference/concepts/frameworks/online_pd_inference
+  expected_scope_states:
+    model/inference/concepts/frameworks/online_pd_inference: match
+- id: scope_partial_sfa_framework_conflict
+  query: SFA/DSA 稀疏注意力叠加 Context Parallel：跨 CP 组重建完整 KV 的 all_gather 路径
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - sglang
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/guides/integration/sfa_dsa_cp_cross_group_kv_allgather
+- id: scope_partial_sfa_vllm_cp_match
+  query: SFA/DSA 稀疏注意力叠加 Context Parallel：跨 CP 组重建完整 KV 的 all_gather 路径
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - vllm
+        parallelism:
+          all_of:
+          - cp
+  expected:
+  - model/inference/guides/integration/sfa_dsa_cp_cross_group_kv_allgather
+  expected_scope_states:
+    model/inference/guides/integration/sfa_dsa_cp_cross_group_kv_allgather: match
+- id: scope_partial_taylor_dit_absent
+  query: TaylorSeer 规则：预测式跳步的精度取舍、内存预算与版本边界
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        model_features:
+          none_of:
+          - dit
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/taylorseer_predictive_dit_cache
+- id: scope_partial_taylor_does_not_invent_llm_phase
+  query: TaylorSeer 规则：预测式跳步的精度取舍、内存预算与版本边界
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected:
+  - model/inference/optimizations/rules/taylorseer_predictive_dit_cache
+  expected_scope_states:
+    model/inference/optimizations/rules/taylorseer_predictive_dit_cache: unknown
+- id: scope_partial_afd_declared_conditions
+  query: Attention-FFN 解耦（AFD）部署：把 MoE/FFN 剥到独立 rank，Send/Recv over SDMA 解除同卡多流控核约束降
+    decode TPOT
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        model_features:
+          all_of:
+          - moe
+        deployment_topology:
+          all_of:
+          - afd
+  expected:
+  - model/inference/optimizations/rules/afd_attn_ffn_disaggregation
+  expected_scope_states:
+    model/inference/optimizations/rules/afd_attn_ffn_disaggregation: match
+- id: scope_partial_afd_prefill_conflict
+  query: Attention-FFN 解耦（AFD）部署：把 MoE/FFN 剥到独立 rank，Send/Recv over SDMA 解除同卡多流控核约束降
+    decode TPOT
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/afd_attn_ffn_disaggregation
+- id: scope_partial_offload_decode_conflict
+  query: V3.2-Exp KV Offload 搬运流与事件配对案例
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
+- id: scope_partial_offload_prefill_match
+  query: V3.2-Exp KV Offload 搬运流与事件配对案例
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    status: stable
+    match: literal
+    k: 5
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  expected:
+  - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
+  expected_scope_states:
+    model/inference/optimizations/cases/deepseek_v32_offload_stream_events: match

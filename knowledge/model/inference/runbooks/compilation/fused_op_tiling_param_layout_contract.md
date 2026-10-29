@@ -62,7 +62,7 @@ platforms:
 - 必须传**非空 key**（空 key → keyT/keyD=0 → expected shape 首维=0 → `expected shape is <...>, the first dim should not be 0.`）。
 - 必须传**非空 actualSeqLengths**（未传 → `when the layout of key and value is TND, the actualSeqLengths ... shoule not be empty.`）。
 
-仓级约定：这类非法入参返回码用 `ge::GRAPH_PARAM_INVALID` 而非 `GRAPH_FAILED`（维护者 review 落定）——这也是本仓 AscendC 算子入参校验错误码的参照，见 [ascendc-op-input-validation-pitfalls](../../optimizations/experience/anti_patterns/ascendc_op_input_validation_pitfalls.md)。
+仓级约定：这类非法入参返回码用 `ge::GRAPH_PARAM_INVALID` 而非 `GRAPH_FAILED`（维护者 review 落定）——这也是本仓 AscendC 算子入参校验错误码的参照，见 [ascendc-op-input-validation-pitfalls](../../optimizations/anti_patterns/ascendc_op_input_validation_pitfalls.md)。
 
 ## 修法（改调用侧，不改算子）
 
@@ -70,9 +70,9 @@ platforms:
 
 ## 相关
 
-- 契约背后「host-tiling 校验为何要逐参数独立 guard、可选输入为何要 nullptr 守卫」的写法侧经验：[ascendc-op-input-validation-pitfalls](../../optimizations/experience/anti_patterns/ascendc_op_input_validation_pitfalls.md)。
+- 契约背后「host-tiling 校验为何要逐参数独立 guard、可选输入为何要 nullptr 守卫」的写法侧经验：[ascendc-op-input-validation-pitfalls](../../optimizations/anti_patterns/ascendc_op_input_validation_pitfalls.md)。
 - 同类「融合算子调用契约随后端/版本不同、传错即 schema/报错」的另一例：[fia-actual-seq-lengths-kv-backend-type](../runtime/fia_actual_seq_lengths_kv_backend_type.md)。
-- MLA-Prolog + paged KV cache 的 Prefill 写法约束：[mla-prolog-zigzag-cp-kv-write](../../optimizations/experience/rules/mla_prolog_zigzag_cp_kv_write.md)。
+- MLA-Prolog + paged KV cache 的 Prefill 写法约束：[mla-prolog-zigzag-cp-kv-write](../../optimizations/rules/mla_prolog_zigzag_cp_kv_write.md)。
 
 ## Evidence
 

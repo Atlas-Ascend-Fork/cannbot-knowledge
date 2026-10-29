@@ -1,7 +1,7 @@
 ---
 type: Runbook
-title: 多卡 HcclAllGather 超时 / Get_Socket_Timeout 常是次生症状：先查全部 rank 日志找真实故障（多为另一 rank OOM）
-description: Get_Socket_Timeout / connect timeout 给出的三条「可能原因」（远端未发起 connect、算子启动过晚、链路断开）会把人引向网络排查——但 hccn_tool -i $devid -tls -g 检查各卡 TLS / 网络往往全部正常。
+title: 多卡 HcclAllGather / Get_Socket_Timeout 排查：核对全部 rank 的故障与通信状态
+description: Get_Socket_Timeout / connect timeout 给出的三条「可能原因」（远端未发起 connect、算子启动过晚、链路断开）会把人引向网络排查——但 hccn_tool -i $devid -tls -g 本来源现场检查各卡 TLS / 网络为正常，不能据此判断其他故障现场也正常。
 tags:
 - task.debugging
 - topic.parallelism
@@ -12,12 +12,12 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/54
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:33:02Z'
+updated_at: '2026-10-22T10:54:12Z'
 platforms:
 - a3
 ---
 
-# 多卡 HcclAllGather 超时 / Get_Socket_Timeout 常是次生症状：先查全部 rank 日志找真实故障（多为另一 rank OOM）
+# 多卡 HcclAllGather / Get_Socket_Timeout 排查：核对全部 rank 的故障与通信状态
 
 ## 信号
 
@@ -30,15 +30,15 @@ Get_Socket_Timeout(EI0006): Getting socket times out. Reason:
   1. The remote does not initiate a connect request. some NPUs in the cluster are abnormal. ...
 ```
 
-`Get_Socket_Timeout` / connect timeout 给出的三条「可能原因」（远端未发起 connect、算子启动过晚、链路断开）会把人引向**网络排查**——但 `hccn_tool -i $devid -tls -g` 检查各卡 TLS / 网络往往全部正常。
+`Get_Socket_Timeout` / connect timeout 给出的三条「可能原因」（远端未发起 connect、算子启动过晚、链路断开）会把人引向**网络排查**——但 `hccn_tool -i $devid -tls -g` 本来源现场检查各卡 TLS / 网络为正常，不能据此判断其他故障现场也正常。
 
 ## 触发条件
 
-多卡（含单卡双芯 → world_size 翻倍）分布式推理，挂点落在某个集合通信算子（`HcclAllGather` / all-reduce 等）。集合通信算子**异步下发**，报错栈本身就声明「stacktrace may be inaccurate」——rank0 看到的超时点不是真实故障点。
+多卡（含单卡双芯 → world_size 翻倍）分布式推理，挂点落在某个集合通信算子（`HcclAllGather` / all-reduce 等）。集合通信算子**异步下发**，报错栈本身就声明「stacktrace may be inaccurate」——rank0 看到的超时点可能不是真实故障点，须沿全部 rank 日志确认。
 
 ## 根因
 
-真正的故障几乎总在**另一个 rank**：某 rank 因**显存耗尽**（或其它非通信类硬错误）在到达该集合通信点之前挂死 / 退出 → 集合通信在其余 rank 上永远凑不齐 → rank0 表现为 socket / connect 超时。这是[「集合通信缺席方 → 全组挂死」](../runtime/collective_participation_per_rank_consistency.md)的一个实例，区别在于缺席不是设计上跳过、而是那个 rank **崩了**。典型现场（其它 rank 日志里才有的真实错误）：
+本现场在其他 rank 找到了显存耗尽错误：某 rank 在到达集合通信前失败，可能使其他 rank 因参与方缺席而超时。这是[集合通信参与一致性](collective_participation_per_rank_consistency.md)的一种故障路径，不是超时根因的发生比例统计；若无对应硬错误，仍需排查通信、网络、算子启动和同步。现场错误如下：
 
 ```
 [rank15] Memory_Allocation_Failure(EL0004): Failed to allocate memory.
@@ -52,7 +52,7 @@ Get_Socket_Timeout(EI0006): Getting socket times out. Reason:
 1. **不要停留在 rank0 的异步 timeout 栈**。遇到 `HcclAllGather` 超时 / `EI0006 Get_Socket_Timeout`，先 **grep 全部 rank 的日志**，找**最早的、非通信类**的真实错误（此处是 `EL0004 Memory_Allocation_Failure`）。
 2. 网络自检（`hccn_tool ... -tls`）全正常反而是**「超时是次生、根因在别处」**的佐证，不是要继续查网络的信号。
 3. 需要精确定位真实下发点时，用 `ASCEND_LAUNCH_BLOCKING=1` 强制集合通信同步下发（会拖慢性能，**定位后需取消**）。
-4. 根因确认为显存不足后，走内存缓解手段——如单机 W8A8C8 下增大 `oproj_tp_size` / `dense_tp_size` 把重投影权重进一步分片，见 [local-tp-memory-heavy-projections](../../optimizations/experience/rules/local_tp_memory_heavy_projections.md)。
+4. 根因确认为显存不足后，走内存缓解手段——如单机 W8A8C8 下增大 `oproj_tp_size` / `dense_tp_size` 把重投影权重进一步分片，见 [local-tp-memory-heavy-projections](../../optimizations/rules/local_tp_memory_heavy_projections.md)。
 
 ## 参考实现 / 观测场景
 

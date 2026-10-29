@@ -1,7 +1,9 @@
 ---
 type: Concept
 title: MoE Double-Routing
-description: DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **2 次 init-routing + 2 次 finalize-routing**：第一次做本卡内按专家排序 + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较 AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。
+description: DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **两轮路由与两轮顺序恢复（末轮调用一次 npu_moe_finalize_routing）**：第一次做本卡内按专家排序
+  + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较
+  AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。
 tags:
 - task.optimization
 - topic.mixture_of_experts
@@ -14,16 +16,15 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - agnostic
 ---
-
 # MoE Double-Routing
 
 ## Summary
 
-DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **2 次 init-routing + 2 次 finalize-routing**：第一次做本卡内按专家排序 + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较 AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。
+DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **两轮路由与两轮顺序恢复（末轮调用一次 npu_moe_finalize_routing）**：第一次做本卡内按专家排序 + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较 AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。
 
 ## Mechanism
 
@@ -66,16 +67,16 @@ flowchart TD
  ```python
  hidden_states_ordered_by_experts = experts(**args)
  ```
-6. 用 `torch.index_select` + `argsort` 恢复本卡 token 顺序（**第一次 finalize-routing**，与第二次 routing 对应）：
+6. 用 `torch.index_select` + `argsort` 恢复本卡 token 顺序（**第一轮顺序恢复，不调用 finalize_routing 接口**，与第二次 routing 对应）：
  ```python
  new_x = torch.index_select(hidden_states_ordered_by_experts, 0,
- gathered_ids_unsort.float.argsort.int)
+ gathered_ids_unsort.float().argsort().int())
  ```
 7. AllToAll 反向，把本卡 token 送回原始卡：
  ```python
  dist.all_to_all_single(gathered_tokens, new_x, input_splits, output_splits, group=moe_ep_group)
  ```
-8. 调用 `npu_moe_finalize_routing`（**第二次 finalize-routing**，与第一次 routing 对应），恢复原始 token 排布，同时直接完成 routed + shared 的加权求和：
+8. 调用 `npu_moe_finalize_routing`（**第二轮顺序恢复，调用一次 finalize_routing 接口**，与第一次 routing 对应），恢复原始 token 排布，同时直接完成 routed + shared 的加权求和：
  ```python
  hidden_states = torch_npu.npu_moe_finalize_routing(
  gathered_tokens, skip1=hidden_states_share, skip2=None, bias=None,
@@ -112,7 +113,7 @@ expanded_x, expanded_row_idx, tokens_per_expert, pertoken_scale \
 - 每卡均持有 shared expert + 本卡分得的 routed experts。
 - [longcat-flash-lite](../models/longcat_flash_lite.md) Prefill 走 `_dispatch_double_routing`（两轮 AllToAll）：因 MC2 `dispatch_v2` 单层 token 数受 BS 上限（约 512）约束无法用于 Prefill 大序列；其 A2 部署亦因 `experts_per_rank ≤ 24`（EP=8 下 32/rank 不满足）回退 double-routing。
 - 与 Decode 阶段更常用的 `npu_moe_distribute_dispatch_v2` / `combine_v2` 一体化算子（[moe-dispatch-combine-v2](moe_dispatch_combine_v2.md)）形成对比：后者在 decode 单 token 场景下更高效，double-routing 在 Prefill 大序列场景收益显著。
-- [qwen3-5-moe](../models/qwen3_5_moe.md) 的普通 EP 路径与本方案**同源**（`init_routing_v2` → AllToAll splits → 分发 → `re_routing` → GroupedMatmul → `torch.index_select` 恢复 → 反向 AllToAll → `finalize_routing`），但 Qwen3.5 链路用 `torch.index_select` 恢复本卡顺序、**仅 1 次 `finalize_routing`**，与本页 DeepSeek-R1 版的"2 次 init-routing + 2 次 finalize-routing"略有差异——读 Qwen3.5 时不必逐字套用上述 R1 的 8 步细分。其纯 EP Decode（`moe_ep_size>1` 且 `moe_tp_size==1`）可替换为 dispatch_v2/combine_v2 融合路径。
+- [qwen3-5-moe](../models/qwen3_5_moe.md) 的普通 EP 路径与本方案**同源**（`init_routing_v2` → AllToAll splits → 分发 → `re_routing` → GroupedMatmul → `torch.index_select` 恢复 → 反向 AllToAll → `finalize_routing`），Qwen3.5 与本页 R1 均以 `torch.index_select` 完成第一轮恢复，末轮调用一次 `finalize_routing`；逻辑路由/恢复次数不等于同名接口调用次数。其纯 EP Decode（`moe_ep_size>1` 且 `moe_tp_size==1`）可替换为 dispatch_v2/combine_v2 融合路径。
 
 ## Constraints
 
@@ -122,12 +123,7 @@ expanded_x, expanded_row_idx, tokens_per_expert, pertoken_scale \
 
 ## Known Results
 
-源文档未单独给出 double-routing 相对 AllGather 的量化对比，但强调：
-
-1. 负载均衡下峰值显存更低，无数据冗余；
-2. 通信量更低，通信耗时更优。
-
-Prefill 整体 **MLA-DP32 + MoE-EP32** 在 A3 2 机环境下 64×4K 输入达到 5237 tokens/卡/s；叠加 micro-batch 提升到 6522 tokens/卡/s（详见 [prefill-micro-batch](prefill_micro_batch.md)）。
+源文档定性比较负载均衡下的峰值内存与通信，不提供Double-Routing单项受控收益。R1完整Prefill数据见[R1 Prefill 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark.md)，不能归因给路由算法。
 
 ## Evidence
 

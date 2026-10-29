@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/328
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-22T10:43:19Z'
 platforms:
 - agnostic
 ---
@@ -46,14 +46,14 @@ platforms:
 
 ## correctness 验证
 
-替换任何 RoPE 融合算子后，都用小样本比对 cos_sim / token 匹配：交错 RoPE 用对了算子应 cos_sim≈0.9998；若 cos_sim≈0，回查是否把交错 RoPE 误替成了通用 RoPE 算子。
+替换任何 RoPE 融合算子后，都用小样本比对 cos_sim / token 匹配：固定 LongCat-Flash-Lite 缩减模型报告的 cos_sim≈0.9998 仅是来源个例，不作通用阈值。应在明确输入、dtype、形状和模型条件下对照参考实现，预先定义数值误差与任务质量验收标准；明显偏离时回查交错布局及算子参数。
 
 ## 适用边界
 
 限交错 RoPE 模型的 NPU 算子选型（[deepseek-r1](../../concepts/models/deepseek_r1.md)、[longcat-flash-lite](../../concepts/models/longcat_flash_lite.md) 等 MLA/interleaved-RoPE 族）。正向断言（交错 RoPE 用 `npu_interleave_rope`）为 diff 事实 + 算子文档；负向失败观测（通用算子 cos_sim≈0）来自 PR 附带的 LongCat 评估报告（作者 agent 自述观测、缩减模型、无独立复测）。
 
 ## 相关经验
-- [昇腾多模态 M-RoPE 优先走 triton-ascend triton_mrope，de](../../optimizations/experience/rules/mrope_triton_ascend_vs_npu_mrope_decode.md)
+- [昇腾多模态 M-RoPE 优先走 triton-ascend triton_mrope，de](../../optimizations/rules/mrope_triton_ascend_vs_npu_mrope_decode.md)
 
 ## Evidence
 

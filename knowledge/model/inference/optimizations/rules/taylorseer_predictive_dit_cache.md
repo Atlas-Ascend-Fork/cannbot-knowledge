@@ -1,0 +1,66 @@
+---
+type: Optimization
+title: TaylorSeer 规则：预测式跳步的精度取舍、内存预算与版本边界
+description: 按预测跳步的误差、导数缓存内存与目标集成版本选择 TaylorSeer；多卡支持和具体 offload 数据统一参考对应案例。
+tags:
+- task.optimization
+- topic.kv_cache
+- topic.diffusion
+- topic.memory
+status: stable
+sources:
+- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/266
+  role: evidence
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/366a74296cb54c7f62ecf6565d7f3c91a02bdc5c/models/hunyuan-video/sample_video.py
+  role: implementation
+created_at: '2026-07-06T00:00:00Z'
+updated_at: '2026-10-23T09:41:54Z'
+platforms:
+- agnostic
+scope:
+  schema: model.inference.v1
+  any_of:
+  - all_of:
+      model_features:
+        all_of:
+        - dit
+---
+
+# TaylorSeer 规则：预测式跳步的精度取舍、内存预算与版本边界
+
+## 适用场景
+
+单机单卡 [dit](../../concepts/modules/dit.md) 视频生成去噪循环，**已在用残差复用型跳步缓存（FBCache / TeaCache），但跳步一多精度就明显下滑，想用更小的精度损失换更激进的跳步**。此时考虑 **TaylorSeer**——它与 FBCache/TeaCache 是同一 [dit-cache](../../concepts/techniques/dit_cache.md) 公共缓存框架下的另一种键控/复用方法。残差复用型的键控与阈值权衡见 [dit-step-cache-fbcache-teacache](dit_step_cache_fbcache_teacache.md)；CFG 串行双分支下的缓存分槽见 [dit-step-cache-cfg-branch-slotting](dit_step_cache_cfg_branch_slotting.md)。
+
+## 规则：预测优于复用
+
+- **FBCache / TeaCache = 复用**：直接把历史时间步的特征差值当作下一步差值复用，跳步越多误差累积越大。
+- **TaylorSeer = 预测**：在实算步用 `derivative_approximation` 记录特征的各阶导数，跳步时用泰勒展开 `Σ (1/i!)·factorᵢ·xⁱ`（`taylor_formula`）从记录的导数**预测**该 step 的特征，`_get_step_type` 判当前是实算步还是预测步。预测比复用精度损失更小，因而能支持"算 1 步跳 2 / 算 1 步跳 4"的更激进跳步（"算 1 跳 2/4""精度损失更小"为优化文档定性披露，非定量事实）。
+
+**旋钮按原则调、不抄配置**：跳步强度由"两实算步之间用预测跳过的步数"控制（越大越激进、精度风险越高）；预测精度由泰勒阶数控制（阶数越高越准、显存/内存开销越大）；另有 warmup（前几步只实算不预测）与 cutoff（后几步只实算不预测）保护首尾关键步。
+
+## 选它前必须确认的两条硬约束
+
+### 1. 多卡兼容性按集成版本核对
+
+PR266 固定提交 `366a74296cb54c7f62ecf6565d7f3c91a02bdc5c` 的 HunyuanVideo 入口会拒绝多卡与非 NoCache 同开。PR356 固定提交 `d7174ec0ba19ead0e0be93c44f0e17200e4c0081` 移除该检查并增加 SP8 TaylorSeer 配置。因此不能把“仅单卡”当作算法约束或所有版本能力；具体配置、offload 流水和来源观测见 [HunyuanVideo A3 案例](../cases/video_dit_taylorseer_cache_offload.md)。
+
+### 2. 按视频规格和可用内存决定 offload
+
+TaylorSeer 缓存全 block 全阶导数，额外内存是 step-level 残差缓存的数万倍量级（来源 HunyuanVideo 720p、129 帧规格下：FBCache 仅缓存 14.5MB 特征，TaylorSeer 需 (n+1)×81.4GB 导数，n 为泰勒阶数）——当该缓存超过可用设备内存时须采用 offload 或缩小规格；小规格且显存充足时可关闭 offload。开启 offload 又可能把瓶颈转到主机内存（offload 机制见 [kvcache-offload](../../concepts/techniques/kvcache_offload.md)）。选 TaylorSeer 前先确认主机内存能承受该 offload 门槛。
+
+## 何时不适用
+
+- 目标版本显式拒绝多卡与 DiT-Cache 组合时，关闭该组合或采用已支持的集成版本。
+- 显存紧且无法承受 offload 的主机内存门槛时——退回 step-level FBCache / TeaCache 或 NoCache。
+
+## 风险 / 参考实现边界
+
+- 收益是"更小精度损失下更激进跳步"，但源的 PR 性能表未给 TaylorSeer 的定量 speedup / 精度行，"算 1 跳 2/4"为 doc 定性披露，不并入定量事实面。
+- 上述阶数/warmup/cutoff/offload 门槛为参考实现（cann-recipes-infer 复用 dit_cache 框架的 [hunyuan-video](../../concepts/models/hunyuan_video.md) 等模型）当前形态；可迁移的是"预测式缓存优于残差复用、代价是全阶导数显存"这一判断，具体旋钮按模型标定。
+
+## Evidence
+
+- **diff 事实**（clone `@366a74296cb5`）：`module/dit_cache/cache_method.py` 的 `TaylorSeer`（`derivative_approximation` 记导数 / `taylor_formula` 泰勒展开 / `_get_step_type` 判实算 vs 预测步）、`BaseCache.taylor_formula`、`sample_video.py:main` 的 `WORLD_SIZE > 1` + 非 NoCache 互斥 raise，逐项对上。
+- **doc 披露**（clone `@366a74296cb5`）："算 1 跳 2/4""精度损失更小"为优化文档定性描述，PR diff 性能表未给 TaylorSeer speedup/精度行——未并入定量事实面。归因主语为 cann-recipes-infer 该集成，非上游模型厂商。
+- 溯源下探：[cann-recipes-infer-pr-266-feat-hunyuanvideo-support-taylorseer-offload-prefetch-vae-parallel-rolli](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)

@@ -24,6 +24,7 @@ python3 .agents/skills/knowledge-query/scripts/knowledge_index.py \
   --knowledge-root . verify --level full
 # Gate recall/ranking by aggregate targets; query and filter contract errors still fail.
 python3 evals/run_retrieval.py --quality-gate
+python3 evals/run_retrieval.py --cases evals/model_inference_scope_cases.yaml
 python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/ops-knowledge-trace-ingest/scripts -p 'test_*.py'
 python3 .agents/skills/ops-knowledge-trace-ingest/scripts/field_notes_lint.py

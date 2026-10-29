@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/288
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -27,7 +27,7 @@ platforms:
 
 ## 适用场景
 
-给一个已在图模式跑通的模型加 [MTP/投机解码](../../concepts/techniques/mtp_speculative_decoding.md)（draft 模型与 target 模型交替走 decode 图）时，会撞上几个 target 单模型不会出现的图模式坑。接入前逐条对照。MTP 本身的接入/草稿缓存正确性见 [mtp-speculative-decode-model-onboarding](../../guides/experience/interventions/mtp_speculative_decode_model_onboarding.md) / [mtp-draft-cache-state-correctness](../../optimizations/experience/rules/mtp_draft_cache_state_correctness.md)；本页只讲"接图模式"这一层。
+给一个已在图模式跑通的模型加 [MTP/投机解码](../../concepts/techniques/mtp_speculative_decoding.md)（draft 模型与 target 模型交替走 decode 图）时，会撞上几个 target 单模型不会出现的图模式坑。接入前逐条对照。MTP 本身的接入/草稿缓存正确性见 [mtp-speculative-decode-model-onboarding](../../guides/integration/mtp_speculative_decode_model_onboarding.md) / [mtp-draft-cache-state-correctness](../../optimizations/rules/mtp_draft_cache_state_correctness.md)；本页只讲"接图模式"这一层。
 
 ## 坑 1：draft 与 target 复用同一 decode callable → 图重编译
 
@@ -53,7 +53,7 @@ platforms:
 ## 坑 3：aclgraph 对某些 MTP 配置不划算——保 ge_graph
 
 - 维护者确认：在 MTP `next_n=3`（"mtp3"）+ A3 部署这一组合上，把 decode 图从 ge_graph 换成 aclgraph 期望拿收益会踩坑——"aclgraph + mtp3 存在性能问题"，据此拒绝了加 aclgraph 交叉验证 case 的建议，CI 保持 `exe_mode: ge_graph`。
-- **不要做**：在该类 MTP-3 场景无脑把 decode 从 ge_graph 切 aclgraph 求收益。**边界**：只给了定性"性能问题"结论、**未披露根因/劣化幅度**；不外推到"所有模型的 aclgraph"或"无 MTP 时"——aclgraph 代码路径本身仍在，只是当前不作 MTP-3 的推荐/验证路径。选后端对照 [graph-mode-decode-only-compile-backends](../../optimizations/experience/rules/graph_mode_decode_only_compile_backends.md)。
+- **不要做**：在该类 MTP-3 场景无脑把 decode 从 ge_graph 切 aclgraph 求收益。**边界**：只给了定性"性能问题"结论、**未披露根因/劣化幅度**；不外推到"所有模型的 aclgraph"或"无 MTP 时"——aclgraph 代码路径本身仍在，只是当前不作 MTP-3 的推荐/验证路径。选后端对照 [graph-mode-decode-only-compile-backends](../../guides/optimization/graph_mode_decode_only_compile_backends.md)。
 
 ## 参考实现及其约束
 

@@ -1,7 +1,11 @@
 ---
 type: Concept
 title: AICPU Scheduler（值依赖分核下沉 ARM 核）
-description: AICPU Scheduler 将稀疏注意力 SAS、LightningIndexer 等值依赖算子的分核策略从 Host 或主 AICore 下沉到芯片内 AICPU，生成可复用 metadata，避免 Host 往返或在主核内计算分核打断流水。流程拆成两段：Host 根据 shape 计算最大 workspace、tiling key、block dim 和静态 tiling data；AICPU 再结合 actualSeqLengths 等运行时值完成具体分核。DeepSeek-V4 通过三个 custom metadata 算子覆盖 SAS 非量化、SAS KV 伪量化和量化 LI，并可用独立 metadata stream 掩盖开销。它适合需要入图且分核依赖运行时值的场景；与 V3.2-Exp 将 LI 分核融入 AICore 主算子的机制不同，两者不存在已证实的取代关系。
+description: AICPU Scheduler 将稀疏注意力 SAS、LightningIndexer 等值依赖算子的分核策略从 Host 或主 AICore
+  下沉到芯片内 AICPU，生成可复用 metadata，避免 Host 往返或在主核内计算分核打断流水。流程拆成两段：Host 根据 shape 计算最大 workspace、tiling
+  key、block dim 和静态 tiling data；AICPU 再结合 actualSeqLengths 等运行时值完成具体分核。DeepSeek-V4
+  通过三个 custom metadata 算子覆盖 SAS 非量化、SAS KV 伪量化和量化 LI，并可用独立 metadata stream 掩盖开销。它适合需要入图且分核依赖运行时值的场景；与
+  V3.2-Exp 将 LI 分核融入 AICore 主算子的机制不同，两者不存在已证实的取代关系。
 tags:
 - task.optimization
 - topic.attention
@@ -12,11 +16,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - a3
 ---
-
 # AICPU Scheduler（值依赖分核下沉 ARM 核）
 
 ## Summary
@@ -52,10 +55,11 @@ AICPU Scheduler 把整个 Scheduler 过程拆成两部分：
 第二部分被单独定义为一个 **AICPU 算子**，其输出（metadata）供实际的 NPU 算子使用。代码侧三个 `torch.ops.custom` AICPU 算子：`npu_sparse_attn_sharedkv_metadata`（SAS 非量化）、`npu_kv_quant_sparse_attn_sharedkv_metadata`（SAS 伪量化）、`npu_quant_lightning_indexer_metadata`（LI）。
 
 ```python
-# run in aicpu
-metadata = torch_npu.npu_sparse_attn_sharedkv_metadata(......)
-# run in aicore
-npu_result, softmax_lse = torch.ops.custom.npu_sparse_attn_sharedkv(..., metadata=metadata, ...)
+# 调用形态示意：两个字典需由固定版本的模型构造，不是完整启动代码。
+metadata = torch.ops.custom.npu_sparse_attn_sharedkv_metadata(**metadata_kwargs)
+npu_result, softmax_lse = torch.ops.custom.npu_sparse_attn_sharedkv(
+    **sas_kwargs, metadata=metadata
+)
 ```
 
 ## 三大优势
@@ -71,7 +75,7 @@ V4 在前向开始时统一生成各计算模式的 kernel metadata（`modeling_
 - 按层的 compress ratio 分别构造 `c1a_metadata` / `c4a_metadata` / `c128a_metadata`（SAS）以及 `lightning_indexer_quant`（LI，仅 C4A 层、`li_cache_quant_mode` 为 int8/float8 时）；
 - 调用 `calc_sas_metadata` / `calc_li_metadata`（L1955-1965）执行对应 AICPU 算子，结果写入 `attn_metadata['kernel_metadata'][...]`，后续 SAS（`prepare_fa_kwargs` 取 `metadata=...`）与 LI（`indexer` 取 `kernel_metadata['lightning_indexer_quant']`）消费；
 - **host-shape 拆分对应代码**：`generate_sas_metadata_kwargs` / `generate_li_metadata_kwargs`（L1984-2018）只携带纯 shape / 配置入参（`cmp_ratio`、`ori_mask_mode`、`num_heads_q`、`head_dim`、`sparse_count`、`layout_*` 等），运行时上下文长度（`cu_seqlens_q` / `seqused_kv` / `actual_seq_lengths_query/key`）在 `calc_*_metadata` 内补入再交 AICPU；
-- metadata 生成可走独立 `metadata_stream`（`enable_multi_streams` 时），用 `record_event` / `wait_event` 与主流同步，进一步掩盖开销。
+- metadata 生成可走独立 `metadata_stream`（`enable_multi_streams and not is_prefill` 时，仅 Decode），用 `record_event` / `wait_event` 与主流同步，进一步掩盖开销。
 
 ## 与 LI AICore 内分核下沉的区分（机制差异 / 演进）
 

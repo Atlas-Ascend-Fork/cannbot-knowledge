@@ -181,6 +181,10 @@ def create(args: argparse.Namespace) -> int:
         metadata["target_technology"] = args.target_technology
     if args.replaced_by:
         metadata["replaced_by"] = args.replaced_by
+    if getattr(args, "scope_file", None):
+        metadata["scope"] = contract.parse_scope(
+            Path(args.scope_file).read_text(encoding="utf-8")
+        )
 
     issues = contract.validate_card(relative, metadata, body)
     if issues:
@@ -333,6 +337,7 @@ def parser() -> argparse.ArgumentParser:
     command.add_argument("--source-technology")
     command.add_argument("--target-technology")
     command.add_argument("--replaced-by")
+    command.add_argument("--scope-file", help="Optional canonical card Scope in a JSON/YAML file")
     command.add_argument("--body-file", required=True)
     command.add_argument("--dry-run", action="store_true")
     command.set_defaults(handler=create)

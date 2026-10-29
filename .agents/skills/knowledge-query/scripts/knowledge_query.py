@@ -21,6 +21,7 @@ from retrieval.index import (  # noqa: E402
     index_tokenizer,
     literal_scores,
     load_cards,
+    load_contract,
     open_index,
     phrase_matches,
     posting_scores,
@@ -280,6 +281,8 @@ def request_payload(args: argparse.Namespace, mapped_task: str | None) -> dict[s
         "target_technology": args.target_technology,
         "status": args.status,
     }
+    if getattr(args, "scope", None) is not None:
+        filters["scope"] = args.scope
     return {
         "query": args.query,
         "decision": args.decision,
@@ -307,6 +310,10 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
     for field in FILTER_FIELDS:
         if request.get(field) != filters.get(field):
             raise ValueError(f"receipt request.{field} must equal request.filters.{field}")
+    if ("scope" in request or "scope" in filters) and (
+        "scope" not in request or "scope" not in filters or request["scope"] != filters["scope"]
+    ):
+        raise ValueError("receipt request.scope must equal request.filters.scope")
 
     query = request.get("query")
     if not isinstance(query, str) or not query.strip():
@@ -365,22 +372,34 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
         json=True,
         text=False,
         receipt=None,
+        scope=request.get("scope"),
+        scope_json=None,
+        scope_file=None,
     )
 
 
-def search_payload(
-    root: Path,
-    cards: list[IndexedCard],
-    index_metadata: dict[str, Any],
-    connection,
-    args: argparse.Namespace,
-    *,
-    include_current_repository: bool,
-) -> dict[str, Any]:
+def search_candidates(
+    root: Path, cards: list[IndexedCard], args: argparse.Namespace,
+) -> tuple[dict[int, IndexedCard], str | None, Any]:
+    """Share declared eligibility and Scope parsing without doing text ranking."""
     registries, profiles = load_governance(root)
     if args.card_type and args.card_type not in profiles:
         raise ValueError(f"unknown knowledge type: {args.card_type}")
     validate_filters(registries, args)
+    scope_registry = None
+    raw_scope = getattr(args, "scope", None)
+    scope_text = getattr(args, "scope_json", None)
+    scope_file = getattr(args, "scope_file", None)
+    if raw_scope is not None or scope_text is not None or scope_file is not None:
+        contract, _ = load_contract(root)
+        scope_registry = contract.scope_registry
+        if scope_file is not None:
+            scope_text = Path(scope_file).read_text(encoding="utf-8")
+        args.scope = (
+            contract.parse_scope(scope_text, query=True)
+            if scope_text is not None
+            else scope_registry.normalize(raw_scope, query=True)
+        )
     mapped_task = task_tag(registries, args.task)
     selected_route = None
     if args.technology:
@@ -396,6 +415,19 @@ def search_payload(
         for card in cards
         if matches(card, args, mapped_task, selected_route_domains)
     }
+    return eligible, mapped_task, scope_registry
+
+
+def search_payload(
+    root: Path,
+    cards: list[IndexedCard],
+    index_metadata: dict[str, Any],
+    connection,
+    args: argparse.Namespace,
+    *,
+    include_current_repository: bool,
+) -> dict[str, Any]:
+    eligible, mapped_task, scope_registry = search_candidates(root, cards, args)
     normalized_query = args.query.lower().strip()
     if not normalized_query:
         raise ValueError("--query must not be empty")
@@ -413,17 +445,29 @@ def search_payload(
             raw_scores[doc_id] = raw_scores.get(doc_id, 0.0) + 4.0
 
     ranked: list[tuple[float, IndexedCard]] = []
+    scope_matches: dict[int, dict[str, Any]] = {}
+    scope_conflicts = []
     for doc_id, score in raw_scores.items():
         card = eligible.get(doc_id)
         if card is None or score <= 0:
             continue
+        if scope_registry is not None:
+            applicability = scope_registry.compare(args.scope, card.metadata.get("scope"))
+            scope_matches[doc_id] = applicability
+            if applicability["state"] == "conflict":
+                scope_conflicts.append({"path": card.path, "scope_match": applicability})
+                continue
         tier = trust_tier(card.metadata)
         if tier == "unverified":
             score *= 0.8
         elif tier == "machine-confirmed":
             score *= 0.9
         ranked.append((score, card))
-    ranked.sort(key=lambda item: (-item[0], item[1].path))
+    ranked.sort(key=lambda item: (
+        -item[0],
+        0 if scope_registry is None or scope_matches[item[1].doc_id]["state"] == "match" else 1,
+        item[1].path,
+    ))
     ranked = ranked[: args.limit]
 
     results = []
@@ -458,9 +502,12 @@ def search_payload(
             "source_technology",
             "target_technology",
             "replaced_by",
+            "scope",
         ):
             if field in metadata:
                 result[field] = metadata[field]
+        if scope_registry is not None:
+            result["scope_match"] = scope_matches[card.doc_id]
         results.append(result)
 
     request = request_payload(args, mapped_task)
@@ -483,6 +530,13 @@ def search_payload(
         "results": results,
         "hits": results,
     }
+    if scope_registry is not None:
+        payload["scope_filter"] = {
+            "enabled": True,
+            "query_scope": args.scope,
+            "excluded_count": len(scope_conflicts),
+            "excluded": sorted(scope_conflicts, key=lambda item: item["path"]),
+        }
     return payload
 
 
@@ -523,6 +577,10 @@ def search(
             print(f"  path: {hit['path']}")
             print(f"  local_path: {hit['local_path']} ({hit['card_lines']} lines)")
             print(f"  description: {hit['description']}")
+            if "scope_match" in hit:
+                print(f"  scope_match: {hit['scope_match']['state']}")
+                if hit["scope_match"]["state"] == "unknown":
+                    print("  适用性待确认: " + json.dumps(hit["scope_match"], ensure_ascii=False))
         if not results:
             print("no matches")
     else:
@@ -556,6 +614,9 @@ def build_parser() -> argparse.ArgumentParser:
     search_cmd.add_argument("--include-shared", action="store_true")
     search_cmd.add_argument("--source-technology")
     search_cmd.add_argument("--target-technology")
+    scope_input = search_cmd.add_mutually_exclusive_group()
+    scope_input.add_argument("--scope-json", help="Explicit confirmed Scope as JSON/YAML; unknown applicability is retained")
+    scope_input.add_argument("--scope-file", help="Read explicit confirmed query Scope from a JSON/YAML file")
     search_cmd.add_argument(
         "--status",
         choices=["stable", "draft", "deprecated", "all"],

@@ -140,6 +140,29 @@ class Contract:
         self.operator_families = set(self.operator_categories)
         self.runbook_areas = self._string_set("runbook_areas")
         self._validate_registry_contract()
+        self.forbidden_sections = self.path_values.get("forbidden_sections", {})
+        if not isinstance(self.forbidden_sections, dict):
+            raise ValueError("paths.forbidden_sections must be a mapping")
+        for binding, profiles in self.forbidden_sections.items():
+            parts = binding.split("/") if isinstance(binding, str) else []
+            if (
+                len(parts) != 2
+                or parts[0] not in self.domains
+                or parts[1] not in self.routes
+                or parts[0] not in self.route_domains(parts[1])
+                or not isinstance(profiles, dict)
+                or not profiles
+            ):
+                raise ValueError("paths.forbidden_sections requires registered domain/route bindings")
+            for profile, sections in profiles.items():
+                if (
+                    profile not in self.types
+                    or not isinstance(sections, list)
+                    or not sections
+                    or any(not isinstance(value, str) or not ID_RE.fullmatch(value) for value in sections)
+                    or len(set(sections)) != len(sections)
+                ):
+                    raise ValueError("paths.forbidden_sections requires registered profiles and unique section IDs")
         self.scope_registry = ScopeRegistry(self.registries.get("scope_schemas", {}))
         for namespace, definition in self.scope_registry.definitions.items():
             for domain in definition.get("domains", []):

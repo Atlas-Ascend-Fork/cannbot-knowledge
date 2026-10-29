@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/402
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-22T10:54:12Z'
 platforms:
 - a3
 ---
@@ -27,9 +27,9 @@ platforms:
 
 在昇腾上部署含线性注意力分支的混合注意力模型（[Gated-DeltaNet](../../concepts/modules/gated_deltanet.md) / Mamba 类 chunk 递推）时，出现精度不达标——gsm8k 等评测明显低于预期、图模式比单算子模式差、输出错乱但**无显式报错**。线性注意力的 chunk 递推 / 状态 cache / gating 与融合算子交织，有几处易被忽视的精度点，按下面逐条对号入座、作为首查项。
 
-## 陷阱 1：融合算子版本过旧（先钉 CANN 版本再排查逻辑）
+## 核对 1：来源推荐的具体融合算子包与版本
 
-Prefill 整段 chunk 计算走 `torch_npu.npu_chunk_gated_delta_rule` 融合算子（一次完成 chunk 内 L2 归一化、decay、下三角求解、递推状态更新）时，该算子为**近期合入**，早于 CANN 9.1.0 的包上有精度正确性隐患。**动作**：发现 GDN Prefill 精度异常（或部署前做基线）时，先确认/钉定 CANN 9.1.0+ 再排查建模逻辑，把「CANN 版本过旧」列为该算子精度回归的首查根因。Decode 阶段的 [npu_recurrent_gated_delta_rule](../../concepts/kernels/recurrent_gated_delta_rule.md) 未同样标注版本要求。
+固定 MR402 优化文档说明 `torch_npu.npu_chunk_gated_delta_rule` 近期合入，并推荐其链接的 **CANN 9.1.0 包**。部署基线应核对该具体包、PTA/算子可用性与模型精度；来源未证明早于 9.1.0 一律有精度缺陷，也未保证任意 9.1.0+ 版本适用。Decode 的 [recurrent 算子](../../concepts/kernels/recurrent_gated_delta_rule.md)按自己的版本和接口核对。
 
 ## 陷阱 2：图模式对 padding 请求的元数据填充值
 
@@ -64,7 +64,7 @@ beta = beta.sigmoid().unsqueeze(0)
 
 - 参考实现：cann-recipes-infer 的 [Qwen3-Next](../../concepts/models/qwen3_next.md)（[SGLang](../../concepts/frameworks/sglang.md) + Atlas A3，含 Mamba/GDN 分支）与 [Qwen3.5-MoE](../../concepts/models/qwen3_5_moe.md) 的 linear attention 层。
 - 陷阱 2/4 的补丁打在 SGLang 上游文件（`hybrid_linear_attn_backend.py` / `ascend_backend.py`）；陷阱 3 是 SGLang 服务侧配置项。陷阱 1 系于 `npu_chunk_gated_delta_rule` 这一算子的版本演进。
-- 边界：结论限定到证据覆盖的 Qwen3-Next / Qwen3.5（Mamba/GDN 混合线性注意力），不外推到其它后端或模型；512 / CANN 9.1.0 是经验推荐值。线性注意力吃序列并行（打破 chunk 递推跨 rank 顺序依赖）另见 [qwen3-next-gdn-context-parallel-zeco](../../guides/experience/interventions/qwen3_next_gdn_context_parallel_zeco.md)。
+- 边界：结论限定到证据覆盖的 Qwen3-Next / Qwen3.5（Mamba/GDN 混合线性注意力），不外推到其它后端或模型；512 / CANN 9.1.0 是经验推荐值。线性注意力吃序列并行（打破 chunk 递推跨 rank 顺序依赖）另见 [qwen3-next-gdn-context-parallel-zeco](../../optimizations/cases/qwen3_next_gdn_context_parallel_zeco.md)。
 
 ## Evidence
 

@@ -45,7 +45,7 @@ if _is_npu:
 
 ## 边界 / 关联
 
-范围限带 `routed_scaling_factor` 的 MoE 在 NPU fused_topk 路径（参考实现 LLaDA2.x-sglang，带 `correction_bias` 的 sigmoid 路由 gate）。收益 = 保持路由专家缩放语义正确，无 benchmark。同 NPU 适配里共享专家输出并入 [fused MoE finalize/combine](../../concepts/techniques/moe_dispatch_combine_v2.md) 的取舍见 [moe-shared-expert-decode-dual-stream](../../optimizations/experience/rules/moe_shared_expert_decode_dual_stream.md)；MoE 路由/分发的阶段选型见 [moe-ep-dispatch-path-by-stage](../../optimizations/experience/rules/moe_ep_dispatch_path_by_stage.md)。
+范围限带 `routed_scaling_factor` 的 MoE 在 NPU fused_topk 路径（参考实现 LLaDA2.x-sglang，带 `correction_bias` 的 sigmoid 路由 gate）。收益 = 保持路由专家缩放语义正确，无 benchmark。同 NPU 适配里共享专家输出并入 [fused MoE finalize/combine](../../concepts/techniques/moe_dispatch_combine_v2.md) 的取舍见 [moe-shared-expert-decode-dual-stream](../../optimizations/rules/moe_shared_expert_decode_dual_stream.md)；MoE 路由/分发的阶段选型见 [moe-ep-dispatch-path-by-stage](../../optimizations/rules/moe_ep_dispatch_path_by_stage.md)。
 
 ## 更一般的规律：路由权重 / 归一化在昇腾融合 MoE 里只加一次
 

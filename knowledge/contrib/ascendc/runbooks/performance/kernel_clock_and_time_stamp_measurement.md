@@ -103,5 +103,5 @@ A2/A3 栏写 SIMD，表示当前公开 tuning 文档没有为它们承诺 SIMT �
 - [PRINTF 扰动时序：去 PRINTF 复验再定论](../../../../ops/ascendc/runbooks/runtime/printf_perturbs_timing_verify_without_printf.md)：那卡讲打印如何掩盖真实竞态、制造幽灵异常；本卡讲打印落在测量区内如何污染周期数，两者的证伪手段一致——去掉打印再复验。
 - [Kernel printf 无输出诊断](../runtime/kernel_printf_no_output_diagnosis.md)：printf 无输出的五步定位；本卡第 5 节只处理 `asc_time_stamp` 无输出，printf 的输出链路问题走该卡。
 - [PrintTimeStamp（API 卡）](../../../../ops/ascendc/apis/simd_api/basic_api/debug_interface/onboard_print/print_time_stamp.md)：另一个时间戳打点接口的事实卡，需要时按该卡使用，本卡不替它推导行为。
-- [MTP / 投机解码 decode 计时：拆「每 step 时延」与「每等效 token 时延」两口径分报](../../../../model/inference/optimizations/experience/rules/mtp_decode_timing_two_metric_split.md)：推理侧的**计时口径拆分**（框架层，解决"一个数糊了两件事"）；本卡是 Kernel 内**单段测量的口径与可信度**，一个在框架层、一个在核内，互不替代，可组合使用。
-- [昇腾性能测量失真陷阱：不代表真实访存的测量输入·折算前被截断的度量口径](../../../../model/inference/optimizations/experience/anti_patterns/perf_measurement_distortion_input_and_metric.md)：讲测量输入与折算口径造成的系统性失真；本卡补充"测量区内部被调试输出污染"这一类。
+- [MTP / 投机解码 decode 计时：拆「每 step 时延」与「每等效 token 时延」两口径分报](../../../../model/inference/optimizations/rules/mtp_decode_timing_two_metric_split.md)：推理侧的**计时口径拆分**（框架层，解决"一个数糊了两件事"）；本卡是 Kernel 内**单段测量的口径与可信度**，一个在框架层、一个在核内，互不替代，可组合使用。
+- [昇腾性能测量失真陷阱：不代表真实访存的测量输入·折算前被截断的度量口径](../../../../model/inference/optimizations/anti_patterns/perf_measurement_distortion_input_and_metric.md)：讲测量输入与折算口径造成的系统性失真；本卡补充"测量区内部被调试输出污染"这一类。

@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/497
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-21T01:48:04Z'
 platforms:
 - agnostic
 ---
@@ -27,13 +27,13 @@ platforms:
 
 ## 适用场景
 
-在图模式多流路径上改动后，出现"多流开关一开结果就不稳 / 图模式 + MTP 执行失败 / 重复创建 event"这类症状时对号入座。正确的跨流同步 API 与写法在 [graph-mode-multi-stream-cross-stream-sync-api](../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)；本页是那套写法**写错时的四种失败签名**。
+在图模式多流路径上改动后，出现"多流开关一开结果就不稳 / 图模式 + MTP 执行失败 / 重复创建 event"这类症状时对号入座。正确的跨流同步 API 与写法在 [graph-mode-multi-stream-cross-stream-sync-api](../../optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api.md)；本页是那套写法**写错时的四种失败签名**。
 
 ## 签名 1：aclgraph 下漏配跨流 tagged-event → 静默数据竞争
 
 - **信号**：aclgraph + multistream decode 下结果错误/不确定（无必然报错）。别人遇到"同一路径多流开关一开结果就不稳"可对号入座。触发全条件：多机 + aclgraph + multistream + statickernel。
 - **根因**：侧流产出的张量在回主流被下游消费前**缺跨流等待**。典型漏法——原实现只建了覆盖部分边的 tagged event，**跨流边一旦增加、事件对数没同步跟上就静默漏配**（如 indexer 只覆盖"主流→流22""流22→流33"两条边，漏了两条侧流→主流回收边）。
-- **修法**：aclgraph 下**每条**跨流生产者→消费者边都补一对 `npu_tagged_event_record`/`npu_tagged_event_wait`（record 紧跟生产、wait 紧接消费前），**事件对数 = 跨流边数**，以 `enable_multi_streams and enable_aclgraph` 守卫。GE 图路径靠张量依赖自动处理、**不会复现该竞争**——不能以"GE 图跑通/未复现"当作 aclgraph 同步已完备的证据，两后端各自验证。
+- **修法**：aclgraph 下**每条**跨流生产者→消费者边都补一对 `npu_tagged_event_record`/`npu_tagged_event_wait`（record 紧跟生产、wait 紧接消费前），检查每条跨流依赖是否被有效同步覆盖，以 `enable_multi_streams and enable_aclgraph` 守卫。该 PR 的 GE 路径没有复现同一问题；这不是 GE 不会发生跨流错误的保证——不能以"GE 图跑通/未复现"当作 aclgraph 同步已完备的证据，两后端各自验证。
 
 ## 签名 2：`npu_wait_tensor` 守卫比 `npu_stream_switch` 闸门宽 → 单流路径插无效控制边
 
@@ -58,7 +58,7 @@ platforms:
 参考实现：DeepSeek-V3.2-Exp 的 `Indexer` / `DeepseekV3MoE` 多流段、DeepSeek-R1/V3 的 `DeepseekV3ModelMTPLayer.forward`。流标签、`enable_aclgraph`/`enable_npugraph_ex` 开关名是本仓落点；四条失败签名（漏配同步、守卫不一致、event 重复创建、条件创建资源未转发）对任何在图模式手写多流同步的路径可迁移。相关 MTP 图模式坑见 [mtp-speculative-decode-graph-mode-prereqs](mtp_speculative_decode_graph_mode_prereqs.md)。
 
 ## 相关经验
-- [aclgraph replay 静默挂死无报错时：用 acl_graph_print 图内打](../../guides/experience/interventions/aclgraph_print_bisect_silent_hang.md)
+- [aclgraph replay 静默挂死无报错时：用 acl_graph_print 图内打](aclgraph_print_bisect_silent_hang.md)
 - [aclgraph 图捕获报 Alloc sq cq fail / 207005 / EL00](aclgraph_sq_cq_alloc_fail_capture_sizes_budget.md)
 
 - 另见 [多流 + TP 下 MoE 无报错卡死：排查并发分支复用同名 Python 变量（路由 vs 共享专家）](multistream_branch_variable_name_collision_hang.md)。
@@ -70,3 +70,7 @@ platforms:
 - diff 事实（@ef0f82d05d89）：两处 `if not is_prefill:` → `if enable_multi_streams:`，守卫与 stream-switch 闸门取同一开关。溯源下探 [cann-recipes-infer-pr-59-fix-fix-minibatch-1-bug-and-remove-redundent-code](https://gitcode.com/cann/cann-recipes-infer/merge_requests/59)
 - diff 事实：实例级 `self.npu_events` 删除 + 模块级 `*_npu_events` 全局创建；"MTP→第二张图→重复"为作者描述+推断、已标注。溯源下探 [cann-recipes-infer-pr-236-fix-duplicate-creation-of-multi-stream-events-when-mtp-enable-skip-guard](https://gitcode.com/cann/cann-recipes-infer/merge_requests/236)
 - diff + 代码事实（@2c45117）：MTP 层委派新增 `shared_expert_stream=getattr(self,'shared_expert_stream',None)`，该流条件创建故须 getattr；精确 NPU 崩溃点为据代码路径推断、已标注。溯源下探 [cann-recipes-infer-pr-497-fix-update-modeling-deepseek-py](https://gitcode.com/cann/cann-recipes-infer/merge_requests/497)
+
+## 定位探针与修复验收
+
+先确认执行后端、实际多流开关及是否经过 MTP 包装，画出生产者、消费流和同步边。检查每个 wait 的守卫、事件创建次数及流对象是否传递；挂死时可沿关联图内打点 Runbook 定位。一次只修一个签名，覆盖单流、多流、MTP 和重复 replay，对比输出并检查资源增长；失败时回到单流，保留最小复现。

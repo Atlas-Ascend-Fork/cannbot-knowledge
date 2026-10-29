@@ -46,7 +46,7 @@ platforms:
 
 - 参考实现：cann-recipes-infer 的 310P DeepSeek-V3 部署（`contrib/deepseek_v3_ascend310p`），全程 FP16 计算路径（反量化输出、MQA query/kv/output 均 `ACL_FLOAT16`），权重原为 BF16（FP8 dequant 得）、部署时转 FP16。
 - 边界：精度数字为仓自报、无独立复测；因果归因（BF16→FP16 分布漂移引入结构性噪声）为仓自报分析、非维护者独立确认。结论限定到该 310P FP16 部署这一证据面，「FP16-only 平台部署 BF16 模型需按生成完整性验收」的判断可迁移到同类硬件/模型组合。
-- 310P 这类非默认平台的整体部署选型（并行形态 / 模型变体 / 算子与 HCCL 适配）见 [ascend-deploy-parallel-variant-and-nondefault-platform](../../optimizations/experience/rules/ascend_deploy_parallel_variant_and_nondefault_platform.md)。
+- 310P 这类非默认平台的整体部署选型（并行形态 / 模型变体 / 算子与 HCCL 适配）见 [ascend-deploy-parallel-variant-and-nondefault-platform](../../optimizations/rules/ascend_deploy_parallel_variant_and_nondefault_platform.md)。
 
 ## 相关经验
 - [Ascend 310P 不支持 Triton kernel：走 Triton 的算子须补纯](../runtime/ascend_310p_no_triton_kernel_eager_fallback.md)

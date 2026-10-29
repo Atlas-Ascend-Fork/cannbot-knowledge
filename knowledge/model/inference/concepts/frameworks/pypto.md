@@ -1,7 +1,8 @@
 ---
 type: Concept
 title: PyPTO
-description: 'PyPTO 是以声明式 Python Tensor 图编写融合 kernel 的自研框架，面向 MegaKernel 级融合，在 A2/A3/950PR/950DT 间通过 PTO-ISA 与编译 Pass 适配代际差异。它用 MPMD 自动并行无依赖的 Cube/Vector 任务，以 loop_unroll 的候选档位把动态 shape 转为静态子图，并提供 split-K、buffer 合图、combine_axis 免广播及 scatter_update_3d 等优化。DeepSeek-V4 的 hc_pre、mla_prolog、compressor 等算子均有 PyPTO 实现；hc_post 的 Vector Fusion 报告提升 22.7%，但完整 shape 和端到端收益仍待验证。PTO ISA、编译器和 DFX 的完整实现位于外部 Cann-PyPTO 仓。'
+description: PyPTO 以声明式 Tensor 图表达融合算子，经 PTO-ISA、MPMD 调度和后端编译实现不同硬件的适配；本卡维护框架机制，Duration
+  与 VF 收益由独立观测记录。
 tags:
 - task.implementation
 - topic.architecture
@@ -11,11 +12,12 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md
   role: primary
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-22T10:35:31Z'
 platforms:
+- a2
+- a3
 - '950'
 ---
-
 # PyPTO
 
 ## Summary
@@ -48,7 +50,7 @@ platforms:
 
 ## DeepSeek-V4 框架级增强
 
-DeepSeek-V4 0day 适配在 PyPTO 上一次性发布了 `hc_pre`、`Compressor`、三个 FA 类算子（`SWA` / `CFA` / `SCFA`），并对 `MlaProlog` / `IndexerProlog` 做了新架构适配。实现代码位于 `ops/pypto_python/impl/`（compressor_pypto.py / hc_pre_pypto.py / mla_prolog_pypto.py / sliding_window_attention_pypto.py / compressed_flash_attention_pypto.py / sparse_compress_flash_attention_pypto.py / lightning_indexer_prolog_quant_pypto.py 等）。guide 报告各融合算子代码规模为 0.2–0.9 KLOC、开发周期 3–7 天；单 die / 64 batch / MTP1 / 8k 序列下，典型算子耗时为：SWA 65us / CFA 90us / SCFA 160us / mla_prolog 130us / hc_pre 70us / lightning_indexer_prolog 101us。
+DeepSeek-V4 0day 适配在 PyPTO 上一次性发布了 `hc_pre`、`Compressor`、三个 FA 类算子（`SWA` / `CFA` / `SCFA`），并对 `MlaProlog` / `IndexerProlog` 做了新架构适配。实现代码位于 `ops/pypto_python/impl/`（compressor_pypto.py / hc_pre_pypto.py / mla_prolog_pypto.py / sliding_window_attention_pypto.py / compressed_flash_attention_pypto.py / sparse_compress_flash_attention_pypto.py / lightning_indexer_prolog_quant_pypto.py 等）。源码规模、开发周期与各算子 Duration 属该来源的一次披露，统一见[平台待核验观测](../../optimizations/benchmark_observations/pypto_v4_operator_source_observations.md)。
 
 ### PTO-ISA：跨代际芯片兼容（兼容不降速）
 
@@ -67,11 +69,11 @@ PyPTO 后端基于 **PTO 虚拟指令集（PTO ISA）** 打造。算子前端无
 - **切 K MatMul**：Decode 场景 MatMul 的 K 轴很长（如 hc_pre 16K）而 M/N 轴较小，采用 `pypto.set_cube_tile_shapes(..., enable_split_k=True, enable_multi_data_load=True)` 切 K（实现位置：hc_pre_pypto.py:176）把数据切到不同核充分利用算力；shape 大时开大包搬运提带宽利用率。
 - **免广播 / scatter_update / 转置技巧**：Sinkhorn-Knopp 的归约串联逐元素乘除经 `pypto.experimental.set_operation_config(combine_axis=True)`（实现位置：hc_pre_pypto.py:136）避免显式广播；Compressor 的 `kv_state`/`score_state` 刷新用 `scatter_update_3d`（实现位置：compressor_pypto.py:453,611）规避反复搬入 UB + concat；hc_pre Prefill 用 `hc_fn^T @ x^T` 转置技巧把归约轴置于 -2/-3 提效。各算子级细节见对应 kernel 页。
 
-### 毕昇 PTO 编译器 VF 自动融合（hc_post +22.7%，带平台前提）
+### 毕昇 PTO 编译器 VF 自动融合
 
-`hc_post`（仅用 Vector 核，计算式 `y = post.unsqueeze(-1)*x.unsqueeze(-2) + sum(comb.unsqueeze(-1)*residual.unsqueeze(-2), dim=2)`）在已做其他优化基础上，PTO-ISA 结合毕昇 PTO 编译器的 **VF（Vector Fusion）自动融合**能力，做 micro kernel 级融合，相比未使能自动融合性能**提升 22.7%**。
+`hc_post`（仅用 Vector 核，计算式 `y = post.unsqueeze(-1)*x.unsqueeze(-2) + sum(comb.unsqueeze(-1)*residual.unsqueeze(-2), dim=2)`）在已做其他优化基础上，PTO-ISA 结合毕昇 PTO 编译器的 **VF（Vector Fusion）自动融合**能力，做 micro kernel 级融合，该来源报告过相对收益，数字统一由独立观测维护。
 
-> ⚠️ **平台前提（待验证完整 shape）**：+22.7% 为 guide 给出的单算子相对收益（相比未使能自动融合），未给完整 shape 取值与端到端收益。VF 融合属外部毕昇 PTO 编译器能力，cann-recipes-infer 不含该编译器源码。cann-recipes-infer 的 `hc_post` 另有 **AscendC 手写实现**（`ops/ascendc/src/hc_post/`），PyPTO 侧 hc_post 未单独建实现文件 —— 二者并列，见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)。
+> 该单算子结果未绑定具体测量型号、完整 shape 与端到端收益，见[来源观测](../../optimizations/benchmark_observations/pypto_v4_operator_source_observations.md)。VF 融合属外部毕昇 PTO 编译器能力，cann-recipes-infer 不含该编译器源码。cann-recipes-infer 的 `hc_post` 另有 **AscendC 手写实现**（`ops/ascendc/src/hc_post/`），PyPTO 侧 hc_post 未单独建实现文件 —— 二者并列，见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)。
 
 ## 机制落地（V3.2-Exp PyPTO 算子开发指南）
 

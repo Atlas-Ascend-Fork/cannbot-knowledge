@@ -66,7 +66,7 @@ opt-in；默认 `memfabric` 路径逐字节不变（`server.py` 仅在 `engine_b
 - [PD 分离下 P 端 KV block 提前释放踩内存：等全 decode-rank ACK](pd_prefill_kv_block_release_vs_decode_pull.md)
 - [vllm-ascend Mooncake connector 在昇腾直连 KV 传输的两个后](vllm_ascend_mooncake_connector_backend_incompat.md)
 
-- 另见 [多网卡主机上对外通告的传输地址用启动配置固定、不靠运行时网卡探测](../../optimizations/experience/anti_patterns/multinic_pd_advertise_address_launch_config.md)。
+- 另见 [多网卡主机上对外通告的传输地址用启动配置固定、不靠运行时网卡探测](../../optimizations/anti_patterns/multinic_pd_advertise_address_launch_config.md)。
 
 
 ## Evidence

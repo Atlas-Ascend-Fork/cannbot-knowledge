@@ -69,9 +69,9 @@ platforms:
 
 ## 相关经验
 - [Ascend 310P 不支持图模式：aclgraph capture 抛 ACL_MODE](ascend_310p_graph_mode_unsupported_enforce_eager.md)
-- [昇腾多模态 M-RoPE 优先走 triton-ascend triton_mrope，de](../../optimizations/experience/rules/mrope_triton_ascend_vs_npu_mrope_decode.md)
+- [昇腾多模态 M-RoPE 优先走 triton-ascend triton_mrope，de](../../optimizations/rules/mrope_triton_ascend_vs_npu_mrope_decode.md)
 
-- [昇腾融合算子按硬件条件门控回退到非融合等价路径](../../optimizations/experience/rules/fused_op_hardware_conditional_fallback.md)——同样是「算子路径按硬件能力门控 + 回退等价实现」的形态，但那里的抓手是 SoC 白名单 / matmul 轴上限，本页的抓手是 310P 无 Triton。
+- [昇腾融合算子按硬件条件门控回退到非融合等价路径](../../optimizations/rules/fused_op_hardware_conditional_fallback.md)——同样是「算子路径按硬件能力门控 + 回退等价实现」的形态，但那里的抓手是 SoC 白名单 / matmul 轴上限，本页的抓手是 310P 无 Triton。
 - [仅 fp16 平台需把 bf16 权重 cast](../precision/precision_fp16_only_platform_bf16_weight_cast.md)——同属「某昇腾平台缺某能力、须为其补专属路径」的 bringup 约束。
 
 ## Evidence

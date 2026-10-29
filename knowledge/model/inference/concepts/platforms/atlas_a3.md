@@ -10,11 +10,10 @@ sources:
 - resource: https://gitcode.com/cann/hccl/blob/cda1ba007461dc54732744b5228e63a0847a79b6/examples/04_custom_ops_p2p/README.md
   role: primary
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-21T10:09:34Z'
 platforms:
 - a3
 ---
-
 # Atlas A3
 
 ## Summary
@@ -38,12 +37,9 @@ Atlas A3 是昇腾训练与推理产品系列之一。固定版本 HCCL 样例�
  - BF16 PD 混部：TP16 + DP8 + EP + DeepEP，`context-length 262144`、`chunked-prefill-size 71680`。
  - A8W8C8 大 EP：dp_size=8、tp_size=2、ep_size=16，256K 输入下纯模型 decode 时延 **20.6 ms**（graph_bs=16，16die）。
  - PD 分离 + CP：Prefill `--cp-size 8`、ZigZag 负载均衡（[zigzag-cp](../parallelism/zigzag_cp.md)）。
-- **DeepSeek-R1**（[deepseek-r1](../models/deepseek_r1.md)）
- - Prefill 2 机 16 卡（32 die，MLA-DP32 + MoE-EP32 为 die 级并行度，A3 双 die 卡 16×2=32）+ [prefill-micro-batch](../techniques/prefill_micro_batch.md)：64×4K 输入总吞吐 104356 tokens/s ÷ 16 卡 = **6522 tokens/卡/s**（perfect eplb）。
- - Decode Benchmark 表 **Chips 64** W8A8C8 + MTP1 + [torchair](../frameworks/torchair.md) `ge_graph` + [superkernel](../techniques/superkernel.md)：TPOT **44.9 ms**、吞吐 **2138 tokens/p/s**（global batch 6144、seq 4096；perfect eplb）。注：`decode_r1_rank_128_128ep` 配置 `world_size:128` 为 die 数（64 卡 × 2 die），非 128 卡。
- - 单节点 16 卡调试：`decode_r1_rank_16_16ep_a8w8.yaml`，`npugraph_ex` 模式。
-- **Gemma-4-26B-A4B**（[gemma4-26b-a4b](../models/gemma4_26b_a4b.md)）：8 卡 EP=8 + embed/lmhead_tp=8 + attn_tp=1，BF16。A3 同 ge_graph 路径对比 A2 prefill 2.47×（189/76.43）/ decode 1.47×（15/10.20）（源 README/报告同列 Atlas A2，A2 无独立平台页）。
-- **Hy3-preview**（[hy3-preview](../models/hy3_preview.md)）：8 卡 × 2 die = 16 die，attn/dense/embed/lmhead_tp=4 + moe_ep=16，BF16 + ge_graph + SuperKernel + compile cache，Decode 28.44 ms/t。
+- **DeepSeek-R1**：平台部署见[模型Guide](../../guides/models/deepseek_r1_deployment.md)，性能与单位分歧见[R1 Prefill 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark.md)、[R1 Decode 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark.md)；本平台入口不从world_size裁决物理卡数。
+- **Gemma-4-26B-A4B**：模型结构见[Concept](../models/gemma4_26b_a4b.md)，配置见[Guide](../../guides/models/gemma4_26b_a4b_deployment.md)，A3数据见[Gemma A3来源观测](../../optimizations/benchmark_observations/gemma4_a3_source_benchmark.md)。
+- **Hy3-preview**：结构见[Concept](../models/hy3_preview.md)，配置见[Guide](../../guides/models/hy3_preview_deployment.md)，分阶段数据见[Hy3来源观测](../../optimizations/benchmark_observations/hy3_a3_source_benchmark.md)。
 
 ## Links
 
@@ -52,8 +48,8 @@ Atlas A3 是昇腾训练与推理产品系列之一。固定版本 HCCL 样例�
 - [qwen-dense](../models/qwen_dense.md)
 - [deepseek-r1](../models/deepseek_r1.md)
 - [deepseek-v4](../models/deepseek_v4.md)（A3 Pod 64 卡 W8A8C16 部署；V4 另支持 Ascend 950PR/DT 代际）
-- [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（8 卡 EP=8 BF16；A3 vs A2 ge_graph 2.47×/1.47×）
-- [hy3-preview](../models/hy3_preview.md)（16 die 4tp+16ep BF16 ge_graph，Decode 28.44 ms/t）
+- [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（结构、配置和观测分别维护）
+- [hy3-preview](../models/hy3_preview.md)（结构、配置和观测分别维护）
 - [ascend-950](ascend_950.md)（代际对照：A3 = CV1:2 / sort32-mrgsort LI Top-k / 无原生 FP8 / weightNZ 启用 vs 950 = Histograms / 原生 FP8-MXFP4 / weightNZ 关闭）
 - [int8-int4-hybrid](../quantization/int8_int4_hybrid.md)（A3 Pod 上 V4 的 Int8 W8A8C16 + Hybrid INT8-INT4 量化方案）
 - [sglang](../frameworks/sglang.md)

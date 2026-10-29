@@ -17,7 +17,7 @@ from typing import Any
 
 from ..knowledge import Contract, Issue
 from .links import links_in_text
-from .path import FREELY_NESTED_PROFILES, ID_RE
+from .path import FREELY_NESTED_PROFILES, ID_RE, validate_topic_sections
 
 
 OKF_VERSION = "0.2"
@@ -102,6 +102,11 @@ def validate_index_path(contract: Contract, relative: Path) -> list[Issue]:
         if card_type not in contract.types:
             return [Issue("index.type", f"unregistered knowledge type: {card_type}")]
         tail = parts[4:]
+
+    try:
+        validate_topic_sections(contract, domain, route, card_type, tail)
+    except ValueError as error:
+        return [Issue("index.retired_section", str(error))]
 
     if card_type == "operators":
         if len(tail) > 3:

@@ -55,12 +55,12 @@ platforms:
 
 ## 适用边界
 
-范围限证据覆盖的量化路径——A3/950PR-DT 的 Hybrid MXFP × INT 平台对应、图模式下走 `GroupedMatmul` 的 W8A8 量化 MoE；不外推为「所有量化格式在所有平台/版本都这样」的通用律。升级/转换后的收益均仓自报、无独立复测。GroupedMatmul 报错里 `dtype 27 = DT_BF16` / `dtype 2 = DT_INT8` 为外部 GE 枚举知识、源未明写，属推断。融合算子按 SoC / shape 条件门控回退的更一般情形见 [fused-op-hardware-conditional-fallback](../../optimizations/experience/rules/fused_op_hardware_conditional_fallback.md)。
+范围限证据覆盖的量化路径——A3/950PR-DT 的 Hybrid MXFP × INT 平台对应、图模式下走 `GroupedMatmul` 的 W8A8 量化 MoE；不外推为「所有量化格式在所有平台/版本都这样」的通用律。升级/转换后的收益均仓自报、无独立复测。GroupedMatmul 报错里 `dtype 27 = DT_BF16` / `dtype 2 = DT_INT8` 为外部 GE 枚举知识、源未明写，属推断。融合算子按 SoC / shape 条件门控回退的更一般情形见 [fused-op-hardware-conditional-fallback](../../optimizations/rules/fused_op_hardware_conditional_fallback.md)。
 
 ## 相关经验
 - [310P 上加载 compressed-tensors 格式 W8A8 模型在 load 阶](w8a8_310p_compressed_tensors_missing_ascend_override.md)
 
-- 另见 [torch 无对应 dtype 的硬件低精度格式（如 HiFloat8 KV 量化）：在 aclnn 算子调用边界覆写 acl dtype](../../optimizations/experience/rules/torchless_lowprec_dtype_acl_override.md)。
+- 另见 [torch 无对应 dtype 的硬件低精度格式（如 HiFloat8 KV 量化）：在 aclnn 算子调用边界覆写 acl dtype](../../optimizations/cases/torchless_lowprec_dtype_acl_override.md)。
 
 
 ## Evidence

@@ -1,7 +1,7 @@
 ---
 type: Concept
-title: Hybrid FP8-MXFP4 / Hybrid MXFP8-MXFP4 (DeepSeek-V4 Ascend 950PR/DT)
-description: DeepSeek-V4 在 Ascend 950PR/DT 上采用 FP8 与 MXFP4 混合量化。原生 FP8-MXFP4 可直接加载 HuggingFace 权重；面向 Flash/Pro 的 MXFP8-MXFP4 将部分 Linear 改为 MXFP8，并以 MXFP4 W4A8 执行 MoE 路由专家，共享专家仍为 W8A8。MLA/Indexer 的 KV Cache 可用 Per-Group-64 FP8、E8M0 Scale 的 C8 伪量化，实现存 8 位、算 16 位并约减半 KV 占用；Compressor 与 LMHead 不量化。950DT 16 卡 DP+EP、8192 token、MTP3 条件下，MXFP8-MXFP4 为 9.84 ms/1625 TPS，原生方案为 11.06 ms/1447 TPS。该方案限定 950 平台，不等同于 HunyuanVideo DiT 的 mxfp8-a8w8。
+title: DeepSeek-V4 950 混合量化：FP8/MXFP8 与 MXFP4
+description: 说明 DeepSeek-V4 在 950 上的混合浮点量化及模块精度，Scope 仅声明来源支持的 Prefill/Decode 阶段；混合量化格式留在正文，具体配置与性能须另行核对。
 tags:
 - task.design
 - topic.precision
@@ -11,12 +11,19 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-21T09:02:45Z'
 platforms:
 - '950'
+scope:
+  schema: model.inference.v1
+  any_of:
+  - all_of:
+      phase:
+      - prefill
+      - decode
 ---
 
-# Hybrid FP8-MXFP4 / Hybrid MXFP8-MXFP4
+# DeepSeek-V4 950 混合量化：FP8/MXFP8 与 MXFP4
 
 ## Summary
 
@@ -70,19 +77,7 @@ MXFP4 路径实现于 `module/quantization/mxfp4.py`：
 
 ## Known Results
 
-950DT，16 卡，DP+EP（MTP 投机 + 强制 EPLB，源 Benchmark；同序列长度两种 DataType 并列为选型证据，平台前提 950DT）：
-
-| 规格 | Global Batch Size | Chips | MTP | DataType | SeqLen | TPOT (ms) | Throughput (Tokens/p/s) |
-| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| Flash | 256 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 9.84 | 1625.31 |
-| Flash | 1536 | 16 | 1 | Hybrid MXFP8-MXFP4 | 8192 | 20.33 | 4722.22 |
-| Flash | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 1048576 | 8.22 | 121.70 |
-| Flash | 256 | 16 | 3 | **Hybrid FP8-MXFP4** | 8192 | 11.06 | 1447.00 |
-| Flash | 1536 | 16 | 1 | **Hybrid FP8-MXFP4** | 8192 | 24.28 | 3953.49 |
-| Pro | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 17.64 | 56.7 |
-| Pro | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 131072 | 19.46 | 51.38 |
-
-同 8192 序列、MTP3、Global Batch Size 256：MXFP8-MXFP4（9.84ms / 1625 TPS）相比原生 FP8-MXFP4（11.06ms / 1447 TPS）TPOT 更低、吞吐更高 —— MXFP8 替换 FP8 在高吞吐场景的算力利用率收益。注意各行操作点不同：1625TPS@9.84ms 为 GBS256/MTP3、4722TPS@20.33ms 为 GBS1536/MTP1，吞吐随 batch 与 MTP 档不同不可直接横比。两组 DataType 对比数据带平台前提保留为选型证据。
+来源自报的性能与完整负载条件统一维护在[分平台性能观测](../../optimizations/benchmark_observations/deepseek_v4_950_source_benchmark.md)。本机制卡只维护模块精度与格式边界，不重复性能表，也不将来源数字表述为性能保证。
 
 ## Evidence
 
@@ -100,3 +95,6 @@ MXFP4 路径实现于 `module/quantization/mxfp4.py`：
 - [compressor](../kernels/compressor.md)
 - [ascend-950](../platforms/ascend_950.md)（原生 FP8 / MXFP4 浮点算力的硬件平台来路）
 - [sana-video](../models/sana_video.md)（MXFP4 `float4_e2m1fn_x2` 的另一用途：SANA DiT 的 `quant_type=a4w4`，`QuantLinear.forward_a4w4`，部分层回退 a8w8；与本页 DeepSeek-V4 MoE W4A8 MXFP4 为不同模型场景）
+## Scope 与证据边界
+
+Scope 仅声明固定指南支持的 Prefill/Decode 阶段。现有 `quantization` 数组表达备选值的 OR，无法表达本卡中 FP8/MXFP8 与 MXFP4 按模块共同组成的混合方案，因此暂不标注这一维度。即使查询显式指定 FP8、MXFP4 或 BF16，本卡的量化适用性仍为未知；保留召回不表示确认支持该格式。具体权重、模块配置和后端必须阅读全文核对。本次仅核对来源文档，未执行硬件复测，来源表不能作为本仓新增验证事件。

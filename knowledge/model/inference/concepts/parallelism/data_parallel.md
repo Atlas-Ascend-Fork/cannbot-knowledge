@@ -14,11 +14,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - a3
 ---
-
 # Data Parallel
 
 ## Summary
@@ -27,7 +26,7 @@ platforms:
 
 ## Mechanism
 
-- 每个 DP Rank 持有完整的模型副本（或 TP 切片后的副本）
+- 整模型 DP 的每个副本持有完整模型（或其 TP 切片）；模块级 Attention DP 仅要求 Attention 权重全载，MoE 专家仍可按 EP 分布
 - 不同请求路由到不同 DP Rank 独立推理
 - 在 SGLang 等框架中，DP 通信域还可被 CP 复用
 
@@ -38,12 +37,12 @@ platforms:
 
 ## Configuration
 
-- DP size = 总卡数 / (TP size * EP size)
+- DP按目标模块的通信组定义；Attention DP与MoE EP可能覆盖同一rank集合，不能通用套用“总卡数/(TP×EP)”计算独立维度。
 - 在 PD 分离部署中，Prefill 和 Decode 可使用不同的 DP 配置
 
 ## Constraints
 
-- 每个 DP 副本需占用完整的模型内存
+- 内存预算按复制范围计算：整模型 DP 复制模型，Attention DP+MoE EP 仅复制 Attention 等指定模块，不能按每 rank 完整模型估算
 - 不减少单请求延迟
 
 ## Evidence
@@ -53,7 +52,7 @@ platforms:
 ## Known Deployments
 
 - **Qwen3-Next PD 混部**：`--enable-dp-attention --dp-size 8 --tp 16`，DP 通信域在 Attention 层独立。CP 场景下 DP 通信域被 [context-parallel](context_parallel.md) 复用，因此 CP 与 DP 互斥（README 约束 5）。
-- **DeepSeek-R1 Prefill / Decode**（[deepseek-r1](../models/deepseek_r1.md)）：主流部署走 **纯 DP MLA**（`attn_tp_size=1`），每卡部署完整 MLA 权重，KVCache 按本卡请求独占、无冗余。该策略在请求量大或 KVCache 占用高的场景下最大化吞吐，但短序列混合批次下存在计算负载不均、请求数不足时 TTFT 拉长的问题——此时改用 [sp-tp-sp](sp_tp_sp.md)。128 卡 Decode 大 EP 部署即为 DP128 + EP128。MLA-DP 切分下 prefill 通信几乎全部来自 MoE 阶段的 AlltoAll（dispatch/combine），故 MLA-DP + MoE-[expert-parallel](expert_parallel.md) 场景用 micro-batch 双流把计算与 AlltoAll 并行起来、以计算掩盖 dispatch/combine 通信耗时（Atlas A3 16 卡实测 MLA-DP32 + MoE-EP32 由 5237 提升至 6522 tokens/卡/s，+25%）。
+- **DeepSeek-R1 Prefill / Decode**（[deepseek-r1](../models/deepseek_r1.md)）：主流部署走 **纯 DP MLA**（`attn_tp_size=1`），每卡部署完整 MLA 权重，KVCache 按本卡请求独占、无冗余。该策略在请求量大或 KVCache 占用高的场景下最大化吞吐，但短序列混合批次下存在计算负载不均、请求数不足时 TTFT 拉长的问题——此时改用 [sp-tp-sp](sp_tp_sp.md)。固定示例中的DP128/EP128是并行组规模，不能据此推导128物理卡。MLA-DP 切分下 prefill 通信几乎全部来自 MoE 阶段的 AlltoAll（dispatch/combine），故 MLA-DP + MoE-[expert-parallel](expert_parallel.md) 场景用 micro-batch 双流把计算与 AlltoAll 并行起来、以计算掩盖 dispatch/combine 通信耗时；来源测量见[R1 Prefill 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark.md)。
 
  DeepSeek-R1 Prefill MLA 纯 DP 切分原貌（请求按卡独立、KV-Cache 无冗余）：
 

@@ -1,7 +1,8 @@
 ---
 type: Concept
 title: VAE（多模态生成）
-description: VAE 在生成模型中完成像素与 latent 之间的编解码；图像条件推理也会调用 Encoder。涵盖按模型区分的 VAE 并行、mask 缓存和 offload 调整，并区分 VAE 与去噪网络优化。
+description: VAE 在生成模型中完成像素与 latent 之间的编解码；图像条件推理也会调用 Encoder。涵盖按模型区分的 VAE 并行、mask
+  缓存和 offload 调整，并区分 VAE 与去噪网络优化。
 tags:
 - task.design
 - topic.model_architecture
@@ -22,11 +23,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/inference_video_scripts/inference_sana_video.py
   role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-09-12T03:21:42Z'
+updated_at: '2026-10-22T01:37:00Z'
 platforms:
 - agnostic
 ---
-
 # VAE（多模态生成）
 
 ## Summary
@@ -64,8 +64,7 @@ VAE 内部需要重复构造的 mask（具体类型源未明示）在每帧都�
 
 ## Performance Characteristics
 
-- 单独 VAE 在 HunyuanVideo baseline 1 卡场景耗时 133 s（端到端 3768 s，占 3.5%），但 VAE 并行+优化后可降至 12–40 s（speedup 3×–10×，见 [hunyuan-video](../models/hunyuan_video.md) Benchmark）
-- 虚拟内存使能后可取消 VAE CPU-Offload，避免反复 Host↔Device 搬运
+卷积、Attention、块边界交换与数据搬运可能分别成为成本。模型级 VAE 时间与累计优化记录见[HunyuanVideo A3 观测](../../optimizations/benchmark_observations/hunyuan_video_a3_source_benchmark.md)；不能从单一配置推出固定占比或通用加速比。
 
 ## Evidence
 

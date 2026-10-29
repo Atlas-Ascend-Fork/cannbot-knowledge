@@ -1,7 +1,9 @@
 ---
 type: Concept
 title: weightNZ Format
-description: '将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速 DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。由 YAML `enable_weight_nz: True` 使能，模型加载阶段由 `convert_model.py` 对权重做一次性离线/在线转换。'
+description: '将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速
+  DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。由 YAML `enable_weight_nz: True` 使能，模型加载阶段由
+  各模块 `quant_method.process_weights_after_loading` 执行 NZ 转换；`convert_model.py` 负责权重量化转换。'
 tags:
 - task.optimization
 - topic.attention
@@ -14,16 +16,15 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - a3
 ---
-
 # weightNZ Format
 
 ## Summary
 
-将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速 DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。由 YAML `enable_weight_nz: True` 使能，模型加载阶段由 `convert_model.py` 对权重做一次性离线/在线转换。
+将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速 DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。由 YAML `enable_weight_nz: True` 使能，模型加载阶段由 各模块 `quant_method.process_weights_after_loading` 执行 NZ 转换；`convert_model.py` 负责权重量化转换。
 
 ## Mechanism
 
@@ -60,11 +61,11 @@ NZ 转换没有独立的 `process_weight_nz` 函数，而是由 module 的 `quan
 
 ## Known Results
 
-源文档未给出 weightNZ 单项提升幅度；其作为 DeepSeek-R1 Prefill/Decode 各 YAML 默认开启的基线优化之一，与其他项叠加的总体吞吐见 [deepseek-r1](../models/deepseek_r1.md) Benchmark 章节。**单独 A/B 数据缺失，待验证**。
+源文档未给出 weightNZ 单项提升幅度；其作为 DeepSeek-R1 Prefill/Decode 各 YAML 默认开启的基线优化之一，与其他项叠加的总体吞吐见[R1 Prefill 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark.md)及[R1 Decode 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_decode_source_benchmark.md)。**单独 A/B 数据缺失，待验证**。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md) "Matmul 类算子使能 weightNZ 格式"章节；`models/deepseek_r1/config/*.yaml` 中 `enable_weight_nz: True`；`models/deepseek_r1/models/modeling_deepseek.py` 中 `process_weight_nz`。
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md) "Matmul 类算子使能 weightNZ 格式"章节；`models/deepseek_r1/config/*.yaml` 中 `enable_weight_nz: True`；`models/deepseek_r1/models/modeling_deepseek.py` 中 `process_weights_after_loading` 及模块 `quant_method.process_weights_after_loading`。
 
 ## Links
 

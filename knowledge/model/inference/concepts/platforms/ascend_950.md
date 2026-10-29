@@ -1,7 +1,11 @@
 ---
 type: Concept
 title: Ascend 950 (950PR / 950DT)
-description: 'Ascend 950（950PR/950DT）是 cann-recipes-infer 面向新代际昇腾的部署平台，DeepSeek-V4、HunyuanVideo 和 Pangu-7B 等已有适配。相较 A3，其 V4 路径支持 FP8/MXFP4，并可用 Histograms 加速 LI 精确 Top-k；在 S_k=16384、k=512、uint32 条件下理论约 7296 cycle，对比 A3 排序路径约 28375 cycle。SAS 在 950 使用含反量化的五阶段伪量化流水，Tiling 可取 256³ 基本块，weightNZ 则关闭。950PR 偏 Prefill、950DT 偏 Decode，但配置统一使用 platform_version="950"，代码未区分两者；950 的 CV 核比和 L0 容量字节数仍缺直接证据。'
+description: Ascend 950（950PR/950DT）是 cann-recipes-infer 面向新代际昇腾的部署平台，DeepSeek-V4、HunyuanVideo
+  和 Pangu-7B 等已有适配。相较 A3，其 V4 路径支持 FP8/MXFP4，并可用 Histograms 加速 LI 精确 Top-k；在 S_k=16384、k=512、uint32
+  条件下理论约 7296 cycle，对比 A3 排序路径约 28375 cycle。SAS 在 950 使用含反量化的五阶段伪量化流水，Tiling 可取 256³
+  基本块，weightNZ 则关闭。950PR 偏 Prefill、950DT 偏 Decode，但配置统一使用 platform_version="950"，代码未区分两者；950
+  的 CV 核比和 L0 容量字节数仍缺直接证据。
 tags:
 - task.lookup
 - topic.architecture
@@ -11,11 +15,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-05-31T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - '950'
 ---
-
 # Ascend 950 (950PR / 950DT)
 
 ## Summary
@@ -47,7 +50,9 @@ PyPTO 后端基于 **PTO 虚拟指令集（PTO ISA）**：一套算子代码可�
 | ---- | ---- | ---- |
 | CV（Cube:Vector）核比 | 分离架构 **1:2**（源 mHC guide 明示） | 源未明示（待验证） |
 | LI 精确 Top-k 指令 | `sort32` + `mrgsort`（理论 ≈ **28375** cycle @ Sₖ=16384,k=512） | **Histograms**（`hist`，理论 ≈ **7296** cycle，同 Sₖ/k 前提） |
-| LI / SAS / Compressor 量化版 | 非量化（半精度输入；SAS 四阶段 C1/V1/C2/V2） | 适配 **FP8 伪量化版**（SAS 首阶段加 V0 反量化，五阶段） |
+| LI 量化路径 | 按该 A3 实现的 INT8/半精度路径核对 | **FP8 全量化版本**，FP8 Q/K 参与矩阵乘 |
+| SAS 量化路径 | 半精度四阶段 C1/V1/C2/V2 | **伪量化版本**，V0 对 KV 反量化后进入五阶段流水 |
+| Compressor 量化路径 | 按各自接口核对 | 单独核对实现，不由 LI/SAS 的模式推导 |
 | 原生浮点格式 | BF16/FP16/INT8；走 sort32/mrgsort + 伪量化路径（未见原生 FP8/MXFP4 算力，按代码/文档推断） | **原生 FP8 + MXFP4**（MXFP8 可替代原生 FP8） |
 | weightNZ 分形（[weight-nz](../techniques/weight_nz.md)） | 启用 | **关闭**（代码 `enable_weight_nz = not (platform_version == "950")`） |
 | V4 部署最小单元（源 README） | Flash 4 chips / Pro 32 chips | Flash 4 chips / Pro 16 chips |
@@ -59,12 +64,9 @@ PyPTO 后端基于 **PTO 虚拟指令集（PTO ISA）**：一套算子代码可�
 
 LI Top-k 必须精确（非近似）。950PR/DT 用 Histograms 方案在 Sₖ=16384、k=512、uint32 输入下，理论开销 ≈ `Sₖ/256 × 111 + 192 = 7296` cycle；A3 `sort32`/`mrgsort` 方案在相同 Sₖ/k 下理论开销 ≈ `(1.36Sₖ + 3.32k + ⌈max(log₂k−5,0)/2 × Sₖ⌉)/2 ≈ 28375` cycle。两者均为**理论估算值**，限定该 Sₖ / k / 数据类型；不同序列长度与 K 下数值不同。算子级实现细节见 [lightning-indexer](../kernels/lightning_indexer.md) 与 [ascendc](../frameworks/ascendc.md)（直方图 API）。
 
-## 部署与并行（DeepSeek-V4 0day）
+## 模型部署入口
 
-- **Decode**：950DT 采用 **8 卡或 16 卡** 部署（Attention DP + MoE EP），获取极低单用户时延；A3 Pod 则用 64 卡大 EP 求高吞吐。
-- **Prefill**：950PR 采用 **8 卡或 16 卡** 部署，针对短 / 长序列分别选 DP / CP 并行（Context Parallel + zigzag，弱相关链见 Links）提升 TTFT。
-- 值依赖算子（SAS / LI）的分核策略经 [aicpu-scheduler](../techniques/aicpu_scheduler.md) 下沉芯片内置 AICPU（ARM 核）独立计算 metadata，对 aclgraph 图模式友好。
-- 量化路径同 950 平台：Hybrid FP8-MXFP4（原生）/ Hybrid MXFP8-MXFP4（硬件亲和），KV Cache C8 动态存 8 算 16，超长序列内存优化 2×（见 [hybrid-mxfp8-mxfp4](../quantization/hybrid_mxfp8_mxfp4.md)）。
+DeepSeek-V4 的并行与配置按[分平台部署 Guide](../../guides/models/deepseek_v4_deployment.md)核对，来源测量按[950 来源观测](../../optimizations/benchmark_observations/deepseek_v4_950_source_benchmark.md)读取；不从单一模型推导芯片的固定部署卡数或通用优势。
 
 ## Known Constraints
 

@@ -54,7 +54,7 @@ platforms:
 
 ## 边界与验证
 
-- 两坑分别落在带 gate 的 MoE 建模（DeepSeek-R1 / Qwen3-MoE）与 LongCat-Flash 的 `classifier`；对其它在 GE 图下转置/NZ 门控权重的 MoE 建模可迁移同一判断——**GE 图下路由门控权重加载后先按需转连续/排除 NZ 与转置**。均为纠正性能/正确性的修复，源未给 before→after 数字，用路由输出正确性 + GE 图时延校验。相关权重 NZ 概念见 [weight-nz](../../concepts/techniques/weight_nz.md)；同一图模式下 MoE 专家分发（dispatch/combine）须可图化的另一类坑见 [moe-ep-decode-graphmode-dispatch](../../optimizations/experience/rules/moe_ep_decode_graphmode_dispatch.md)。
+- 两坑分别落在带 gate 的 MoE 建模（DeepSeek-R1 / Qwen3-MoE）与 LongCat-Flash 的 `classifier`；对其它在 GE 图下转置/NZ 门控权重的 MoE 建模可迁移同一判断——**GE 图下路由门控权重加载后先按需转连续/排除 NZ 与转置**。均为纠正性能/正确性的修复，源未给 before→after 数字，用路由输出正确性 + GE 图时延校验。相关权重 NZ 概念见 [weight-nz](../../concepts/techniques/weight_nz.md)；同一图模式下 MoE 专家分发（dispatch/combine）须可图化的另一类坑见 [moe-ep-decode-graphmode-dispatch](../../optimizations/rules/moe_ep_decode_graphmode_dispatch.md)。
 
 ## 参考实现及其约束
 

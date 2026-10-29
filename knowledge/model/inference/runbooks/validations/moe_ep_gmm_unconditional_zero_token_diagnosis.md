@@ -45,7 +45,7 @@ hidden_states_ordered_by_experts = self.experts(**gmm_args)   # FusedMoEGMM → 
 
 ## 边界 / 关联
 
-参考现象取自 LongCat-Flash 系 4 卡 EP decode；原始现象的根因（0 卡为何缺 gmm）在上游 Issue 中尚未查明。上述算子行为事实与诊断判据可跨 MoE 模型复用。dispatch 出 `expert_token_num` 后走的 [MC2 dispatch/combine](../../concepts/techniques/moe_dispatch_combine_v2.md) 路径见其概念页；「各卡专家负载」的理想均衡口径测量见 [perfect-eplb-profiling-upper-bound](../../optimizations/experience/rules/perfect_eplb_profiling_upper_bound.md)。
+参考现象取自 LongCat-Flash 系 4 卡 EP decode；原始现象的根因（0 卡为何缺 gmm）在上游 Issue 中尚未查明。上述算子行为事实与诊断判据可跨 MoE 模型复用。dispatch 出 `expert_token_num` 后走的 [MC2 dispatch/combine](../../concepts/techniques/moe_dispatch_combine_v2.md) 路径见其概念页；「各卡专家负载」的理想均衡口径测量见 [perfect-eplb-profiling-upper-bound](../../optimizations/rules/perfect_eplb_profiling_upper_bound.md)。
 
 ## Evidence
 

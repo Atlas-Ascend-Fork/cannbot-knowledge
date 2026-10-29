@@ -37,7 +37,9 @@ python3 <skill-dir>/scripts/knowledge_ingest.py --knowledge-root <repo> create \
 
 审阅 dry-run 后移除 `--dry-run`。`create` 子命令以排他原子写入创建候选卡，不覆盖已有文件，也不更新 index 或日志。默认 `draft`；只有来源、平台、正文与 Profile 门禁均满足后才显式使用 `--status stable`。
 
-候选卡可在 Profile 允许时声明 `scope`，由同版本 Contract 校验。只提取来源支持且有过滤价值的条件，不要求每张卡填写或补齐维度；按领域选取注册 Schema。字段及准入边界见[路径与 Frontmatter Profile](references/frontmatter-profiles.md)，不把声明存在当成 Query 已启用过滤。
+Scope 保持可选，不要求每张卡填写或达到填写率。只提取来源支持且有过滤价值的条件；已确认部分即可声明，不等待全部维度齐备，也不为补齐字段写 `any`。先按领域选择已注册 Schema，不把模型推理维度套到其他领域；特殊匹配由受审查的共享 Contract 处理器扩展，卡片不保存可执行规则。卡片声明 Scope 不代表查询已启用过滤，是否过滤以 Query 的显式参数为准。
+
+需要声明场景适用条件时，可用 `--scope-file <JSON/YAML>` 读取 Scope 对象；字段、维度和适用范围由同一 Contract 校验，卡片只用规范值和来源支持的前提。模型推理卡片可声明有来源依据的 `parallelism.none_of`，仍拒绝查询专用的 `model_features.none_of`，不从来源未提及推断否定。参数与 Profile 说明见[路径与 Frontmatter Profile](references/frontmatter-profiles.md)。
 
 ## 收尾门禁
 

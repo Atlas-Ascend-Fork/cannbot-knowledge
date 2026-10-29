@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: FP8 Per-Block Dynamic Quant Attention
-description: HunyuanVideo 在 DiT Attention 上引入的 FP8 量化方案：对 Q/K/V 做 **per-block 动态量化**（Q 用 `group_size=128`、K/V 用 `group_size=256`，FP8 E4M3 格式），再调用 `torch_npu.npu_fused_infer_attention_score_v2` 在算子内部完成反量化 + 注意力计算，输出 BF16。显著降低注意力的显存带宽，适合带宽受限场景。Benchmark（950PR，ulysses8）：在 `matmul + fa` 双量化下相比 baseline speedup 1.38×（dit 1.45×）。 另含 MXFP8 量化注意力变体（npu_mxfp8_attn，缩放因子 E8M0 1 字节，Q/K quant_mode=6 按 hidden-dim 分组、V quant_mode=8 按 seq_len 分组，TND 布局，fa_mxfp8 开关，仅 Ulysses 不支持 Ring），区别于 per-block FP8（quant_mode=7，BNSD）。
+description: 解释 per-block FP8 与 MXFP8 注意力量化的分组、scale、layout和并行边界；性能统一引用平台观测，不承诺无损。
 tags:
 - task.design
 - topic.precision
@@ -14,16 +14,15 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-22T10:36:46Z'
 platforms:
 - '950'
 ---
-
 # FP8 Per-Block Dynamic Quant Attention
 
 ## Summary
 
-HunyuanVideo 在 DiT Attention 上引入的 FP8 量化方案：对 Q/K/V 做 **per-block 动态量化**（Q 用 `group_size=128`、K/V 用 `group_size=256`，FP8 E4M3 格式），再调用 `torch_npu.npu_fused_infer_attention_score_v2` 在算子内部完成反量化 + 注意力计算，输出 BF16。显著降低注意力的显存带宽，适合带宽受限场景。Benchmark（950PR，ulysses8）：在 `matmul + fa` 双量化下相比 baseline speedup 1.38×（dit 1.45×）。
+HunyuanVideo 在 DiT Attention 上引入的 FP8 量化方案：对 Q/K/V 做 **per-block 动态量化**（Q 用 `group_size=128`、K/V 用 `group_size=256`，FP8 E4M3 格式），再调用 `torch_npu.npu_fused_infer_attention_score_v2` 在算子内部完成反量化 + 注意力计算，输出 BF16。显著降低注意力的显存带宽，适合带宽受限场景。结果见[HunyuanVideo 950来源观测](../../optimizations/benchmark_observations/hunyuan_video_950_source_benchmark.md)，不作为量化后的质量保证。
 
 ## Mechanism
 
@@ -40,15 +39,15 @@ HunyuanVideo 在 DiT Attention 上引入的 FP8 量化方案：对 Q/K/V 做 **p
 # 来源：docs/models/hunyuan-video/hunyuan_video_optimization.md「FP8 量化注意力」节（精简版；.py 原文形参为 x）
 def npu_group_quant(input, group_size, dst_type=torch.float8_e4m3fn, output_bnsd=True):
  b, s, n, d = input.shape
- input = input.contiguous.view(b * s, n * d)
+ input = input.contiguous().view(b * s, n * d)
  input_quant, input_scale = torch_npu.npu_dynamic_block_quant(
  input,
  row_block_size=group_size,
  col_block_size=d,
  dst_type=dst_type,
  )
- input_quant = input_quant.contiguous.view(b, s, n, d)
- input_scale = input_scale.contiguous.view(b, -1, n, 1)
+ input_quant = input_quant.contiguous().view(b, s, n, d)
+ input_scale = input_scale.contiguous().view(b, -1, n, 1)
  return input_quant.transpose(1, 2), input_scale.transpose(1, 2)
 ```
 
@@ -210,18 +209,7 @@ attn = UnifiedSPAttention(
 
 ## Known Results
 
-HunyuanVideo（950PR，量化 benchmark）：
-
-| 并行 | matmul 量化 | fa 量化 | dit(s) | e2e(s) | e2e speedup |
-| ---- | ---------- | ------ | ------ | ------ | ----------- |
-| 1（baseline） | - | - | 2548.49 | 2580.87 | 1.00 |
-| 1 | ✓ (MXFP8 A8W8) | - | 2392.24 | 2424.52 | 1.06 |
-| 1 | - | ✓ (FP8 attn) | 1606.29 | 1638.55 | **1.58** |
-| 1 | ✓ | ✓ | 1539.24 | 1571.24 | 1.64 |
-| ulysses8（baseline） | - | - | 246.29 | 256.92 | 1.00 |
-| ulysses8 | ✓ | - | 231.55 | 244.47 | 1.05 |
-| ulysses8 | - | ✓ | 181.85 | 193.96 | 1.32 |
-| ulysses8 | ✓ | ✓ | 170.04 | 185.54 | **1.38** |
+单卡与Ulysses8各组来源数据统一见[HunyuanVideo 950来源观测](../../optimizations/benchmark_observations/hunyuan_video_950_source_benchmark.md)；量化实现的选择与质量验收见[950案例](../../optimizations/cases/hunyuan_video_950_fp8_quantization.md)。
 
 ## Evidence
 
