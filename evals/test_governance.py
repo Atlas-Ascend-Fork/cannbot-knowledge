@@ -234,6 +234,12 @@ class RouteContractTests(unittest.TestCase):
                 "# Guide\n\n本性能优化手段仅针对Atlas A2训练系列产品生效。\n"
             ),
         )
+        self.assertEqual(
+            ["310b"],
+            fixed_archive_platforms(
+                "# API\n\n目前仅支持Atlas 200I/500A2推理产品。\n"
+            ),
+        )
         self.assertIsNone(
             fixed_archive_platforms(
                 "# API\n\n以下示例在Atlas A3训练系列产品上运行。\n"
@@ -749,12 +755,15 @@ auto fn = [](int value) { return value; };
             self.assertIn("index.missing", {issue.code for _, issue in issues})
 
 
-    def test_kirin_platforms_are_registered_without_allowing_unknown_values(self) -> None:
+    def test_platforms_are_registered_without_allowing_unknown_values(self) -> None:
         relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
-        for platform in ("kirin_x90", "kirin_9030", "kirin_unknown"):
+        for platform in ("kirin_x90", "kirin_9030", "310b", "kirin_unknown", "310_unknown", "310B"):
             metadata = dict(SYNTHETIC_API_METADATA, platforms=[platform])
             issues = self.contract.validate_card(relative, metadata, "# API\n")
-            self.assertEqual(platform == "kirin_unknown", "platform.unknown" in {issue.code for issue in issues})
+            self.assertEqual(
+                platform in {"kirin_unknown", "310_unknown", "310B"},
+                "platform.unknown" in {issue.code for issue in issues},
+            )
 
 
     def test_mirror_body_exception_requires_primary_archive_api_or_guide(self) -> None:
@@ -810,6 +819,61 @@ class FixedArchiveHeaderTests(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+
+    def test_mirror_platforms_distinguish_310b_from_a2(self) -> None:
+        module = self.load_module()
+        cases = (
+            ("310b_only", "- Atlas 200I/500 A2推理产品：支持\n", ["310b"]),
+            (
+                "a2_only",
+                "- Atlas A2训练系列产品：支持\n- Atlas 200I/500 A2推理产品：不支持\n",
+                ["a2"],
+            ),
+            (
+                "both",
+                "- Atlas A2训练系列产品：支持\n- Atlas 200I/500 A2推理产品：支持\n",
+                ["a2", "310b"],
+            ),
+            ("310b_unsupported", "- Atlas 200I/500 A2推理产品：不支持\n", []),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            contract = Contract(root)
+            definition = dict(contract.local_sources["cann_docs_raw"])
+            definition["_archive_root"] = root / definition["root"]
+            source_root = definition["_archive_root"] / definition["mirror"]["source_root"]
+            source = source_root / "api/Probe.md"
+            source.parent.mkdir(parents=True)
+            relative = Path("knowledge/ops/ascendc/apis/probe.md")
+            card_body = "# Probe\n\n测试正文。\n"
+            for name, rows, expected in cases:
+                with self.subTest(case=name):
+                    source_body = card_body + "\n## 产品支持情况\n\n" + rows
+                    source.write_text(source_body, encoding="utf-8")
+                    self.assertEqual(expected, fixed_archive_platforms(source_body))
+                    options = dict(
+                        source=source, source_root=source_root, output=root / relative,
+                        body=source_body, definition=definition, old=None,
+                        stamp="2026-10-28T00:00:00Z",
+                    )
+                    if not expected:
+                        with self.assertRaisesRegex(ValueError, "no registered supported platform"):
+                            module.metadata_for(**options)
+                        metadata = {
+                            **SYNTHETIC_API_METADATA,
+                            "sources": [{"resource": source.relative_to(root).as_posix()}],
+                        }
+                    else:
+                        metadata = module.metadata_for(**options)
+                        self.assertEqual(expected, metadata["platforms"])
+                        self.assertEqual([], contract.validate_card(relative, metadata, card_body))
+                    for wrong in (["a2"], ["310b"]):
+                        if wrong != expected:
+                            issues = contract.validate_card(
+                                relative, {**metadata, "platforms": wrong}, card_body,
+                            )
+                            self.assertIn("platform.source_mismatch", {issue.code for issue in issues})
 
     def test_archive_selection_and_whitespace_exceptions_share_source_roles(self) -> None:
         module = self.load_module()

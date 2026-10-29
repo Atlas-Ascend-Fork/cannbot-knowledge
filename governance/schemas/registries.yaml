@@ -303,6 +303,8 @@ platforms:
     description: Ascend 950 系列（包含旧称 Atlas A5）
   "310p":
     description: Ascend 310P 系列
+  "310b":
+    description: Atlas 200I/500 A2 推理产品
   "910":
     description: 早期 Ascend 910 系列
   kirin_x90:

@@ -27,10 +27,11 @@
 | Atlas A3 训练/推理系列 | `a3` | 不因兼容枚举或共享架构改查 A2 |
 | Ascend 950 系列；旧称 Atlas A5，任务配置明确以 `A5` / `atlas-a5` 表示该产品 | `950` | 不向 CLI 传 `a5`，不新增第二个平台 ID |
 | Ascend 310P 系列 | `310p` | 不把 310B 归为 310P |
+| Atlas 200I/500 A2 推理产品；任务配置明确以 `310B` / `310b` 表示该产品 | `310b` | 不因产品名含“A2”归为 `a2`，也不与 `310p` 混用 |
 | 已确认的早期 Ascend 910 系列 | `910` | 工具概览中的泛称 `Ascend910` 不足以排除后续产品 |
 | Kirin X90 / `KirinX90` | `kirin_x90` | 不从终端商品名或服务器平台推断 |
 | Kirin 9030 / `Kirin9030` | `kirin_9030` | 不与 X90 混用 |
-| Atlas 200I/500 A2、Ascend 310B，或其他当前未注册产品 | 无可用 ID | 不借用 `a2`、`310p` 或 `agnostic` |
+| 当前 Registry 未注册的其他产品 | 无可用 ID | 不借用其他平台 ID 或 `agnostic` |
 
 构建目标必须结合**所属工具及版本**解释。例如固定版本的 [ops-nn 编译说明](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/docs/zh/install/compile.md) 将 `ascend910b`、`ascend910_93`、`ascend950` 分别用于 A2、A3、950；这不表示任意工具输出的 `ASCEND910B` 都能唯一判成 A2。完整的 `Ascend910_93…` 型号也应保留后缀并核对产品来源，不能截成泛称 `Ascend910`。
 

@@ -595,6 +595,7 @@ class RetrievalIndexTests(unittest.TestCase):
                 "located_draft": ("draft", "[a2]"),
                 "950": ("stable", '["950"]'),
                 "310p": ("stable", "[310p]"),
+                "310b": ("stable", "[310b]"),
                 "910": ("stable", '["910"]'),
                 "kirin_x90": ("stable", "[kirin_x90]"),
                 "kirin_9030": ("stable", "[kirin_9030]"),
@@ -626,7 +627,7 @@ class RetrievalIndexTests(unittest.TestCase):
             ]
             cases.extend(
                 (["--platform", platform], {f"fixture_{platform}", "fixture_neutral"})
-                for platform in ("950", "310p", "910", "kirin_x90", "kirin_9030")
+                for platform in ("950", "310p", "310b", "910", "kirin_x90", "kirin_9030")
             )
             command = [
                 sys.executable, str(QUERY), "--knowledge-root", str(root), "search",
@@ -678,7 +679,7 @@ class RetrievalIndexTests(unittest.TestCase):
             invalid = [
                 [],
                 ["--platform", "a5"],
-                ["--platform", "310b"],
+                ["--platform", "310_unknown"],
                 ["--platform", "DAV_2201"],
                 ["--platform", "ASCEND910B"],
                 ["--platform", "a2", "--include-unlocated", "--status", "draft"],

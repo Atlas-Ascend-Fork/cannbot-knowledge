@@ -35,9 +35,10 @@ SUBJECT_CARD_SCOPE_RE = re.compile(
 
 MIRROR_PLATFORM_PATTERNS = {
     "950": re.compile(r"Ascend\s*950"),
-    "a2": re.compile(r"Atlas\s*A2|AtlasA2|200I/500\s*A2|200I/500A2"),
+    "a2": re.compile(r"Atlas\s*A2|AtlasA2"),
     "a3": re.compile(r"Atlas\s*A3|AtlasA3"),
     "310p": re.compile(r"Atlas\s*\u63a8\u7406\u7cfb\u5217\u4ea7\u54c1"),
+    "310b": re.compile(r"200I/500\s*A2"),
     "910": re.compile(r"Atlas\s*\u8bad\u7ec3\u7cfb\u5217\u4ea7\u54c1"),
     "kirin_x90": re.compile(r"Kirin\s*X90", re.IGNORECASE),
     "kirin_9030": re.compile(r"Kirin\s*9030", re.IGNORECASE),
@@ -47,6 +48,7 @@ MIRROR_PLATFORM_ORDER = (
     "a2",
     "a3",
     "310p",
+    "310b",
     "910",
     "kirin_x90",
     "kirin_9030",
