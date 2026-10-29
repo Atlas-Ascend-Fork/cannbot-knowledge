@@ -227,4 +227,4 @@
 - [ReduceMin/ReduceMax calc_index=true 实现向量化 argmin/argmax](p_p252_reduce_calc_index_argmin_argmax.md)：用 ReduceMin/ReduceMax(calc_index=true) 并重解释编码索引位，得到向量化的 argmin/argmax，避免标量收尾循环。原 legacy 锚 P-P252（冲突 ID P-P62）。
 - [V220 上合并冗余的核内 V 管线 PipeBarrier](p_p253_coalesce_intra_pipe_v_barriers_v220.md)：在已验证的 V220（arch22）路径上合并冗余的核内 PipeBarrier<PIPE_V> 调用，同时保留每一个跨管线同步点。原 legacy 锚 P-P253（冲突 ID P-P92）。
 
-- [指令模型](instruction_model/index.md)：在 Ascend 950PR/950DT 上按接口、类型和工作量选取单指令理论并行度，核对单双发模式及端口约束；每 VL 换算和循环合成成本是附加假设下的参考，不构成实际耗时界限，瓶颈须实测。
+- [指令模型](instruction_model/index.md)：在 Ascend 950PR/950DT 上按接口、类型和工作量选取单指令理论并行度，核对单双发模式及端口约束；每 VL 换算和循环合成成本是附加假设下的参考，不构成实际耗时界限，瓶颈须实测。另覆盖 SIMT 单指令理论吞吐口径与固定单次 Mmad shape 的 Cube 分形对齐、头开销模型；低档接口只是待测瓶颈候选，Cube 折算不代表整个实现的上界或跨方案收益。
