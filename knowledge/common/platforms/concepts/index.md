@@ -21,3 +21,5 @@ Ascend 910B/910_95/950PR/910C 硬件规格与强制约束速查。生成任何 T
 
 - [AscendC 芯片别名与 NpuArch 映射表](ascendc_chip_alias_and_npu_arch_map.md)：AscendC 统一芯片调用名、产品系列别名（A2/A3/A5）、SocVersion 与 __NPU_ARCH__ 数值的对应关系，以及为什么产品名不能直接推断接口支持面、映射漂移时从哪里发现。
 - [API 文档产品标签到 platforms 枚举的映射](ascendc_product_label_to_platform_values.md)：把 API 内容页产品支持章节的 npu 标签（950/A3/910b/310b/310p/910/x90/9030）翻译成知识卡 platforms 枚举（950/a3/a2/310p/910/kirin_x90/kirin_9030），点出两个易错点——910b 对应的是 a2 而不是 910、310b 在本仓没有对应取值，并说明标签的 HTML 注释形态与"文档口径优先"的边界。
+
+- [AscendC 数据类型视图与平台支持范围](ascendc_dtype_views_and_platform_support.md)：区分 AscendC 的 dtype 简写、逻辑 C++ 类型、打包存储单元与产品清单；核对 950PR/950DT 与 Atlas A2/A3 的 bool、S4、FP4/FP8 及复数清单差异，并按接口要求换算 32B 长度倍数，不以清单替代具体 API 的支持判断。
