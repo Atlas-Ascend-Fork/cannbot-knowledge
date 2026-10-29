@@ -249,6 +249,115 @@ class SourceResourceTests(unittest.TestCase):
         record["source"]["commit"] = "a" * 40
         self.assertFalse(inventory.source_binds_entry(resource, record, "kernel.h", self.contract))
 
+    def test_reference_inventory_uses_head_tree_when_index_has_staged_changes(self):
+        script = ROOT / ".agents/skills/knowledge-ingest/scripts/reference_inventory.py"
+        output = self.root / "inventory.json"
+        command = [
+            sys.executable,
+            str(script),
+            "inventory",
+            "--source-root",
+            str(self.checkout),
+            "--repo",
+            self.definition["repository"],
+            "--ref",
+            "fixture",
+            "--scope",
+            "src",
+            "--output",
+            str(output),
+        ]
+        original_head = self.git("rev-parse", "HEAD")
+        original_blob = self.git("rev-parse", "HEAD:src/Makefile")
+        baseline = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(0, baseline.returncode, baseline.stderr)
+        baseline_data = json.loads(output.read_text(encoding="utf-8"))
+        baseline_entry = next(
+            item for item in baseline_data["entries"] if item["path"] == "src/Makefile"
+        )
+        self.assertEqual(original_blob, baseline_entry["blob_oid"])
+
+        makefile = self.checkout / "src/Makefile"
+        makefile.write_text("all:\n\t@echo staged\n", encoding="utf-8")
+        self.git("add", "src/Makefile")
+        staged_blob = self.git("rev-parse", ":src/Makefile")
+        self.assertNotEqual(original_blob, staged_blob)
+        self.assertEqual(original_head, self.git("rev-parse", "HEAD"))
+
+        staged = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(0, staged.returncode, staged.stderr)
+        staged_data = json.loads(output.read_text(encoding="utf-8"))
+        staged_entry = next(
+            item for item in staged_data["entries"] if item["path"] == "src/Makefile"
+        )
+        self.assertEqual(original_head, staged_data["source"]["commit"])
+        self.assertEqual(original_blob, staged_entry["blob_oid"])
+        self.assertNotEqual(staged_blob, staged_entry["blob_oid"])
+
+        target_card = "knowledge/ops/ascendc/apis/reference_inventory_fixture.md"
+        source_url = f"{self.definition['repository']}/blob/{original_head}/src/Makefile"
+        card = self.card(target_card, "# Reference inventory fixture\n", sources=[source_url])
+        contract_module = api_links.ingest.contract_module()
+        metadata, body = contract_module.split_frontmatter(card.path.read_text(encoding="utf-8"))
+        metadata["sources"][0]["role"] = "primary"
+        card.path.write_text(
+            "---\n"
+            + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False).rstrip()
+            + "\n---\n\n"
+            + body,
+            encoding="utf-8",
+        )
+
+        ledger = self.root / "ledger.json"
+        scaffolded = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "scaffold-ledger",
+                "--inventory",
+                str(output),
+                "--output",
+                str(ledger),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, scaffolded.returncode, scaffolded.stderr)
+        ledger_data = json.loads(ledger.read_text(encoding="utf-8"))
+        for decision in ledger_data["decisions"]:
+            if decision["path"] == "src/Makefile":
+                decision.update(action="ingest", target_card=target_card, role="primary")
+            elif decision["action"] == "pending":
+                decision.update(action="skip", reason="fixture is not being ingested")
+        ledger.write_text(json.dumps(ledger_data), encoding="utf-8")
+        receipt = self.root / "verification.json"
+        verified = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "verify",
+                "--inventory",
+                str(output),
+                "--ledger",
+                str(ledger),
+                "--source-root",
+                str(self.checkout),
+                "--knowledge-root",
+                str(self.root),
+                "--receipt",
+                str(receipt),
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, verified.returncode, verified.stderr)
+        verified_data = json.loads(verified.stdout)
+        self.assertEqual([], verified_data["errors"])
+        self.assertEqual(original_head, verified_data["source"]["commit"])
+        self.assertEqual(original_blob, verified_data["produced"][0]["sources"][0]["blob_oid"])
+        self.assertEqual(verified_data, json.loads(receipt.read_text(encoding="utf-8")))
+
     def test_offline_links_validate_registered_revision_without_fetching(self):
         card = self.operator()
         target = os.path.relpath(self.checkout / "kernel.h", card.path.parent)

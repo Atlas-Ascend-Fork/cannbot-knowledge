@@ -89,17 +89,15 @@ def classify(path: str) -> str:
     return "other"
 
 
-def tracked_entries(root: Path, scopes: list[str]) -> list[dict[str, Any]]:
-    raw = git(root, "ls-files", "-s", "-z", text=False)
+def tracked_entries(root: Path, scopes: list[str], revision: str) -> list[dict[str, Any]]:
+    raw = git(root, "ls-tree", "-r", "-z", "--full-tree", revision, text=False)
     assert isinstance(raw, bytes)
     entries: list[dict[str, Any]] = []
     for record in raw.split(b"\0"):
         if not record:
             continue
         header, raw_path = record.split(b"\t", 1)
-        mode, blob_oid, stage = header.decode("ascii").split()
-        if stage != "0":
-            continue
+        mode, _kind, blob_oid = header.decode("ascii").split()
         path = raw_path.decode("utf-8", "surrogateescape")
         selected = any(path == scope or path.startswith(f"{scope}/") for scope in scopes)
         entries.append(
@@ -199,7 +197,7 @@ def inventory(args: argparse.Namespace) -> int:
             "commit": commit,
         },
         "scopes": scopes,
-        "entries": tracked_entries(root, scopes),
+        "entries": tracked_entries(root, scopes, commit),
     }
     payload["inventory_sha256"] = digest(payload)
     atomic_json(Path(args.output), payload)
@@ -454,7 +452,7 @@ def verify(args: argparse.Namespace) -> int:
                 f"source checkout is at {actual_commit}, inventory expects {expected_commit}"
             )
         scopes = [normalize_scope(value) for value in inventory_data.get("scopes", [])]
-        if tracked_entries(root, scopes) != inventory_data["entries"]:
+        if tracked_entries(root, scopes, str(expected_commit)) != inventory_data["entries"]:
             errors.append("tracked source tree no longer matches inventory")
     counts = Counter(item.get("action", "missing") for item in decisions)
     result = {

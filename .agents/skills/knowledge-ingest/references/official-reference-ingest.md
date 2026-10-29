@@ -21,7 +21,7 @@ python3 <skill-dir>/scripts/reference_inventory.py scaffold-ledger \
   --inventory <inventory.json> --output <ledger.json>
 ```
 
-Inventory 覆盖完整 tracked tree；`selected` 只表达本批范围，不等于已摄入。不得用文件数或目录数冒充知识覆盖。
+Inventory 覆盖所记录 commit 的完整 tracked tree，条目及 blob OID 均来自该 commit；暂存区、工作区和未跟踪内容不进入清单。`selected` 只表达本批范围，不等于已摄入。不得用文件数或目录数冒充知识覆盖。
 
 ## 2. Curate
 
