@@ -214,3 +214,6 @@
 - [分核 partial 的初始化、参与者集合与最终归并](inter_core_reduction_contract.md)：用普通 UnsortedSegmentSum 的 int64 两阶段实现说明分片布局、空核和初始化顺序；按源码观察给出采用检查，不冒充修复轨迹或设备归因结果。
 - [直接 DFT 的向量化轴、FP32 入口与缓冲预算](rfft_dft_vectorization_axes_and_buffer_budget.md)：从两份完整实现比较按输入位置归约与按频率 Lane 累加的依赖，并核对真实 FP32 入口、对齐长度和 InitBuffer 请求边界。
 - [重复索引更新的目标行所有权](target_row_ownership_for_duplicate_indices.md)：在 dense 唯一 AIV 编号前提下，用目标行取模归属保证同一目标的更新由同一 owner 按输入顺序处理。
+
+- [Mmad 与 MmadMx 边界值输入验收与失败归类](mmad_boundary_value_input_acceptance.md)：Mmad/MmadMx 在 inf、nan、dtype 极值、零维与量化类型入参下的期望输出口径不同：两族加法阶段的正负 inf 相加结果相反，量化类型会在入参侧折叠 inf/nan。本卡给出按接口族与饱和模式分列的判定步骤、双 oracle 校验法与四类失败归因顺序；来源限定 Mmad 为 950/A3/A2、MmadMx 为 950。
+- [Memory/Reg 矢量接口边界值输入验收（含原子操作与掩码）](vector_interface_boundary_value_acceptance.md)：Memory 与 Reg 矢量接口、原子操作、Mask 四份边界值来源的平台范围与表列口径各不相同：Memory/Reg 与原子按「INF/NAN 模式 / 饱和模式」双列，Mask 则只给 isSetMask 支持矩阵。本卡给出逐族取期望的判定步骤、按产品、模式和具体接口表取期望的校验法、Normal 连续/逐比特与 Counter 模式的区分，以及「先小数组后真实 shape」的验收顺序。
