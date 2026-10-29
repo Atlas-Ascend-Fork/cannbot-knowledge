@@ -730,14 +730,15 @@ def literal_scores(connection: sqlite3.Connection, phrase: str) -> dict[int, flo
     if not phrase:
         return {}
     normalized = phrase.lower()
+    connection.create_function("unicode_lower", 1, str.lower)
     rows = connection.execute(
         """
         SELECT doc_id,
                CASE
-                   WHEN lower(title) = ? THEN 12.0
-                   WHEN instr(lower(title), ?) > 0 THEN 8.0
-                   WHEN instr(lower(description), ?) > 0 THEN 4.0
-                   WHEN instr(lower(body), ?) > 0 THEN 1.0
+                   WHEN unicode_lower(title) = ? THEN 12.0
+                   WHEN instr(unicode_lower(title), ?) > 0 THEN 8.0
+                   WHEN instr(unicode_lower(description), ?) > 0 THEN 4.0
+                   WHEN instr(unicode_lower(body), ?) > 0 THEN 1.0
                    ELSE 0.5
                END AS score
         FROM documents

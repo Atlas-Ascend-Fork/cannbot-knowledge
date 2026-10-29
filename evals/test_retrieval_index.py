@@ -582,6 +582,69 @@ class RetrievalIndexTests(unittest.TestCase):
                     self.assertEqual(combined.returncode, 0, combined.stderr)
                     self.assertEqual(expected_count, json.loads(combined.stdout)["count"])
 
+    def test_literal_unicode_case_normalization_keeps_field_priority(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            fixtures = {
+                "greek_exact_title.md": (
+                    "Θ Exact title",
+                    "Generic API description.",
+                ),
+                "greek_description.md": (
+                    "Other API result",
+                    "θ Exact title is described here.",
+                ),
+                "ascii_exact_title.md": (
+                    "GetCurNpuArch",
+                    "Generic API description.",
+                ),
+                "ascii_description.md": (
+                    "Other ASCII result",
+                    "GetCurNpuArch is described here.",
+                ),
+            }
+            for filename, (title, description) in fixtures.items():
+                card = SYNTHETIC_CARD.replace("Synthetic API contract", title).replace(
+                    "Deterministic API fixture for retrieval tests.", description
+                )
+                (api_root / filename).write_text(card, encoding="utf-8")
+
+            build = run_index(root, "build")
+            self.assertEqual(build.returncode, 0, build.stderr)
+
+            for search_text, expected in (
+                ("Θ Exact title", "greek_exact_title"),
+                ("GetCurNpuArch", "ascii_exact_title"),
+            ):
+                with self.subTest(query=search_text):
+                    query = subprocess.run(
+                        [
+                            sys.executable,
+                            str(QUERY),
+                            "--knowledge-root",
+                            str(root),
+                            "search",
+                            "--query",
+                            search_text,
+                            "--technology",
+                            "ascendc",
+                            "--platform",
+                            "a2",
+                            "--match",
+                            "literal",
+                            "-k",
+                            "5",
+                        ],
+                        check=False,
+                        text=True,
+                        capture_output=True,
+                    )
+                    self.assertEqual(query.returncode, 0, query.stderr)
+                    results = json.loads(query.stdout)["results"]
+                    self.assertEqual(expected, Path(results[0]["path"]).name)
+
     def test_platform_workflow_filters_and_unlocated_fallback_are_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
