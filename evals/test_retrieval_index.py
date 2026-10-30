@@ -222,6 +222,54 @@ class RetrievalCaseTests(unittest.TestCase):
 
 
 class RetrievalIndexTests(unittest.TestCase):
+    def test_execution_topic_filters_are_exact_and_conjunctive(self) -> None:
+        topics = (
+            "topic.implementation.resource_lifecycle",
+            "topic.implementation.resource_query",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            runtime = root / "knowledge/runtime/apis"
+            runtime.mkdir(parents=True)
+            (runtime / "unrelated.md").write_text(SYNTHETIC_CARD, encoding="utf-8")
+            for tag in topics:
+                (runtime / f"{tag.rsplit('.', 1)[1]}.md").write_text(
+                    SYNTHETIC_CARD.replace("topic.compilation", tag), encoding="utf-8",
+                )
+            built = run_index(root, "build")
+            self.assertEqual(0, built.returncode, built.stderr)
+            command = [sys.executable, str(QUERY), "--knowledge-root", str(root), "search",
+                       "--query", "Synthetic API", "--domain", "runtime", "--type", "apis",
+                       "--platform", "a2", "--match", "literal", "-k", "20"]
+
+            def search(*filters):
+                return subprocess.run([*command, *filters], capture_output=True, text=True)
+
+            unfiltered = search()
+            self.assertEqual(0, unfiltered.returncode, unfiltered.stderr)
+            self.assertEqual(len(topics) + 1, json.loads(unfiltered.stdout)["count"])
+            for tag in topics:
+                with self.subTest(tag=tag):
+                    result = search("--tag", tag, "--task", "lookup")
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertEqual(
+                        [f"runtime/apis/{tag.rsplit('.', 1)[1]}"],
+                        [hit["path"] for hit in json.loads(result.stdout)["results"]],
+                    )
+                    invalid = search("--tag", tag + ".unknown")
+                    self.assertEqual(2, invalid.returncode)
+                    self.assertIn("unknown tag", invalid.stderr)
+            for filters in (
+                ("--tag", "topic.implementation"),
+                ("--tag", topics[0], "--tag", topics[1]),
+                ("--tag", topics[0], "--task", "implementation"),
+            ):
+                with self.subTest(filters=filters):
+                    result = search(*filters)
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertEqual([], json.loads(result.stdout)["results"])
+
     def test_kirin_api_filter_keeps_platform_boundaries(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

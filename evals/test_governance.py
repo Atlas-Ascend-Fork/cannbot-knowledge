@@ -61,6 +61,16 @@ SYNTHETIC_API_METADATA = {
     "platforms": ["a2"],
 }
 
+EXECUTION_TOPIC_TAGS = (
+    "topic.implementation.resource_lifecycle",
+    "topic.implementation.resource_query",
+    "topic.implementation.error_handling",
+    "topic.implementation.cross_process",
+    "topic.implementation.callback",
+    "topic.implementation.kernel_launch",
+    "topic.implementation.api_layer.cpp_api",
+)
+
 
 def load_lint_module():
     spec = importlib.util.spec_from_file_location("knowledge_lint_test", LINT)
@@ -623,6 +633,19 @@ class RouteContractTests(unittest.TestCase):
             "include/c_api/reg_compute/compute/reg_arith.h",
         ]
         self.assertEqual([], self.contract.validate_card(relative, metadata, "# Synthetic API\n"))
+
+    def test_execution_topic_tags_accept_only_registered_values(self) -> None:
+        for tag in EXECUTION_TOPIC_TAGS:
+            for prefix in ("runtime", "ops/ascendc"):
+                with self.subTest(tag=tag, domain=prefix):
+                    relative = Path(f"knowledge/{prefix}/apis/synthetic_api.md")
+                    metadata = {**SYNTHETIC_API_METADATA, "tags": ["task.lookup", tag]}
+                    self.assertEqual([], self.contract.validate_card(
+                        relative, metadata, "# Synthetic API\n",
+                    ))
+                    metadata["tags"] = ["task.lookup", tag + ".unknown"]
+                    issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+                    self.assertIn("tag.unknown", {issue.code for issue in issues})
 
     def test_api_source_headers_reject_invalid_shape(self) -> None:
         relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")

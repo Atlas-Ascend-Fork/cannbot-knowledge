@@ -389,7 +389,7 @@ tags:
     description: 强化学习、rollout、奖励与策略更新
   topic.checkpointing:
     dimension: topic
-    description: Checkpoint 保存、恢复、切分与重计算
+    description: 状态检查点与快照的保存、恢复，以及模型检查点切分与重计算
   topic.multimodal:
     dimension: topic
     description: 多模态模型、输入与跨模态处理
@@ -486,6 +486,9 @@ tags:
   topic.implementation.api_layer.c_api:
     dimension: topic
     description: C API
+  topic.implementation.api_layer.cpp_api:
+    dimension: topic
+    description: C++ 接口、命名空间、模板与重载封装
   topic.implementation.api_layer.high_level_api:
     dimension: topic
     description: 高阶 API
@@ -498,9 +501,21 @@ tags:
   topic.implementation.atomic:
     dimension: topic
     description: 原子操作与原子写入
+  topic.implementation.callback:
+    dimension: topic
+    description: 回调函数的注册、注销与触发，以及 Host 函数调度
+  topic.implementation.cross_process:
+    dimension: topic
+    description: 进程间资源共享、句柄导入导出与访问授权
   topic.implementation.debugging:
     dimension: topic
     description: 实现阶段的调试方法
+  topic.implementation.error_handling:
+    dimension: topic
+    description: 错误码、异常信息、错误状态处理与故障恢复
+  topic.implementation.kernel_launch:
+    dimension: topic
+    description: 核函数二进制、启动参数与主机侧核任务下发
   topic.implementation.masking:
     dimension: topic
     description: 掩码控制与条件执行
@@ -513,6 +528,12 @@ tags:
   topic.implementation.pipeline:
     dimension: topic
     description: 流水并行与阶段组织
+  topic.implementation.resource_lifecycle:
+    dimension: topic
+    description: 资源对象的初始化、创建、绑定、引用配对与销毁
+  topic.implementation.resource_query:
+    dimension: topic
+    description: 资源数量、标识、属性、能力与执行状态查询
   topic.implementation.synchronization:
     dimension: topic
     description: 同步原语与执行顺序
