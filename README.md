@@ -99,6 +99,8 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 | `artifacts/` | 本地生成且可重建的产物，默认不提交 |
 | `logs/` | 已实施的知识和治理变更记录 |
 
+登记的模型 Recipes 与依赖源码恢复到 `cann-recipes-raw/<仓库名>/<40位commit>/`，与算子来源一样默认不提交。卡片的本地 `sources[].resource` 从知识仓根读取；Registry 保留远程仓库和提交身份，安装器通过统一资源入口恢复固定快照。每个模型来源仓只登记一个在升级时核验的最新提交，相关知识和源码导航统一使用该版本；来源升级同时复核正文并补充新知识。历史版本保留在 Git 历史和日志中，PR、Issue 继续使用远程工作项链接。
+
 ## 安装与使用
 
 安装和使用方法见[安装与使用指南](docs/installation_and_usage.md)。

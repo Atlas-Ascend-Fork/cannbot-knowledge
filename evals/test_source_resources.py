@@ -249,6 +249,52 @@ class SourceResourceTests(unittest.TestCase):
         record["source"]["commit"] = "a" * 40
         self.assertFalse(inventory.source_binds_entry(resource, record, "kernel.h", self.contract))
 
+    def test_registered_repository_work_items_remain_remote_evidence(self):
+        self.assertIsNone(resources.git_source(self.contract, f"{self.definition['repository']}/tree/{self.revision}"))
+        self.assertIsNone(resources.git_source(self.contract, f"{self.definition['repository']}/commit/{'a' * 40}"))
+        directory = resources.git_source(self.contract, f"{self.definition['repository']}/tree/{self.revision}/src/")
+        self.assertEqual("src", directory.path)
+        for kind in ("merge_requests", "pull", "issues"):
+            url = f"{self.definition['repository']}/{kind}/12"
+            self.assertIsNone(resources.git_source(self.contract, url))
+        for suffix in ("merge_requests/0", "issues/12/files", "blob/main/kernel.h"):
+            with self.assertRaises(ValueError):
+                resources.git_source(self.contract, f"{self.definition['repository']}/{suffix}")
+
+    def test_scoped_model_localization_preserves_other_cards_and_work_items(self):
+        remote = f"{self.definition['repository']}/blob/{self.revision}/notes.md"
+        work_item = f"{self.definition['repository']}/merge_requests/12"
+        unselected = "https://gitcode.com/cann/ops-math/blob/" + "a" * 40 + "/notes.md"
+        operator = self.operator(sources=[remote])
+        original_operator = operator.path.read_bytes()
+        model = self.card("knowledge/model/inference/concepts/fixture.md",
+                          f"# Fixture\n\n[notes]({remote})\n\n```markdown\n[keep]({remote})\n```\n",
+                          sources=[remote, work_item, unselected])
+        model.path.write_text(model.path.read_text().replace("---\n\n# Fixture", "---\n# Fixture"))
+        unavailable = {**self.definition, "root": "unavailable-raw/repo", "repository": "https://gitcode.com/cann/ops-math"}
+        self.registry["local_sources"]["unavailable"] = unavailable
+        self.save_registry()
+        self.assertEqual(1, resource_tool.localize(self.root, "2026-08-19T00:00:00Z",
+                         paths=["knowledge/model", "knowledge/model/inference"], source_ids=["ops_nn"]))
+        raw = model.path.read_text()
+        self.assertIn(f"resource: {self.definition['root']}/{self.revision}/notes.md", raw)
+        self.assertIn(f"[keep]({remote})", raw)
+        self.assertIn(work_item, raw)
+        self.assertIn(unselected, raw)
+        self.assertIn("---\n# Fixture", raw)
+        self.assertEqual(original_operator, operator.path.read_bytes())
+        self.assertEqual(0, resource_tool.localize(self.root, "2026-08-19T00:00:00Z",
+                         paths=["knowledge/model"], source_ids=["ops_nn"]))
+        self.assertEqual(raw, model.path.read_text())
+
+    def test_scoped_localization_rejects_unknown_sources_and_unsafe_paths(self):
+        with self.assertRaisesRegex(ValueError, "unknown Git source IDs"):
+            resource_tool.selected_sources(self.contract, ["missing"])
+        (self.root / "knowledge/alias").symlink_to(self.checkout, target_is_directory=True)
+        for path in ("../outside", "governance", "knowledge/../governance", "knowledge/alias"):
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, "localize path"):
+                resource_tool.localize(self.root, "2026-08-19T00:00:00Z", paths=[path])
+
     def test_reference_inventory_uses_head_tree_when_index_has_staged_changes(self):
         script = ROOT / ".agents/skills/knowledge-ingest/scripts/reference_inventory.py"
         output = self.root / "inventory.json"
@@ -576,6 +622,46 @@ class SourceResourceTests(unittest.TestCase):
         self.assertNotIn("Traceback", result.stderr)
         self.assertFalse((self.checkout.parent / ".objects.git").exists())
 
+
+
+class RecipeSourceRegistryTests(unittest.TestCase):
+    """Recipes registration must work before model cards are localized."""
+
+    def test_recipe_roots_each_select_one_readable_local_revision(self):
+        contract = Contract(ROOT)
+        definitions = [value for value in contract.local_sources.values()
+                       if value.get("root", "").startswith("cann-recipes-raw/")]
+        self.assertEqual(10, len(definitions))
+        source_checks = importlib.import_module(
+            f"{api_links.ingest.contract_package().__name__}.checks.sources"
+        )
+        for definition in definitions:
+            with self.subTest(repository=definition["repository"]):
+                self.assertEqual(1, len(definition["revisions"]))
+                resource = f"{definition['root']}/{definition['revisions'][0]}/README.md"
+                self.assertTrue(source_checks.is_safe_local_resource(contract, resource))
+                location = resources.git_source(contract, resource)
+                self.assertEqual(definition["repository"], location.repository)
+                self.assertEqual(resource, location.resource)
+
+    def test_lqc_source_paths_accept_registered_commit_and_reject_invalid_locations(self):
+        contract = Contract(ROOT)
+        definition = contract.local_sources["recipes_embodied_ai"]
+        prefix = f"{definition['root']}/{definition['revisions'][0]}"
+        source_checks = importlib.import_module(
+            f"{api_links.ingest.contract_package().__name__}.checks.sources"
+        )
+        for path in ("README.md", "locomotion/LQC/README.md",
+                     "locomotion/LQC/lltk/utils/velocity_tracking/player.py",
+                     "locomotion/LQC/lltk/utils/velocity_tracking/arguments.py"):
+            with self.subTest(path=path):
+                self.assertTrue(source_checks.is_safe_local_resource(contract, f"{prefix}/{path}"))
+        for resource in (f"{definition['root']}/{'0' * 40}/README.md",
+                         f"{prefix}/../README.md", f"{prefix}/.git/config",
+                         f"{prefix}/README.md?download=1", f"{prefix}/README.md#L1",
+                         f"cann-recipes-raw/unregistered/{definition['revisions'][0]}/README.md"):
+            with self.subTest(resource=resource):
+                self.assertFalse(source_checks.is_safe_local_resource(contract, resource))
 
 
 class OperatorSourceCorpusTests(unittest.TestCase):

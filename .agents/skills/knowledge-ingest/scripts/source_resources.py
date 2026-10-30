@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Restore pinned source worktrees and localize existing Operator provenance."""
+"""Restore pinned source worktrees and localize registered Git provenance."""
 
 from __future__ import annotations
 
@@ -88,32 +88,58 @@ def source_frontmatter(original: str, metadata: dict) -> str:
     return original
 
 
-def localize(root: Path, stamp: str) -> int:
+def selected_sources(contract, source_ids: list[str] | None = None) -> list[dict]:
+    definitions = {key: value for key, value in contract.local_sources.items() if value.get("kind") == "git"}
+    if source_ids is None:
+        return list(definitions.values())
+    unknown = set(source_ids) - definitions.keys()
+    if unknown:
+        raise ValueError(f"unknown Git source IDs: {', '.join(sorted(unknown))}")
+    return [definitions[key] for key in dict.fromkeys(source_ids)]
+
+
+def localize(root: Path, stamp: str, *, paths: list[str] | None = None, source_ids: list[str] | None = None) -> int:
     report = ingest.graph_artifact_path(root, "artifacts/graphs/source_resources.json")
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", stamp):
         raise ValueError("updated-at must be a UTC timestamp YYYY-MM-DDTHH:MM:SSZ")
     if datetime.fromisoformat(stamp.replace("Z", "+00:00")) > datetime.now(timezone.utc):
         raise ValueError("updated-at must not be in the future")
     contract = ingest.load_contract(root)
-    # Source rewrites are allowed only after all declared snapshots are available.
-    for definition in contract.local_sources.values():
-        if definition.get("kind") == "git":
-            for revision in definition["revisions"]:
-                resources.validate_checkout(root, definition, revision)
+    directories = []
+    for value in paths or ["knowledge/ops/ascendc/operators"]:
+        directory = root / value
+        if (not resources.safe_path(value) or not directory.is_relative_to(root / "knowledge")
+                or directory.resolve() != directory or not directory.is_dir()):
+            raise ValueError(f"localize path must be an existing directory under knowledge/: {value}")
+        directories.append(directory)
+    definitions = selected_sources(contract, source_ids)
+    selected_roots = {definition["root"] for definition in definitions}
+
+    def resolve(value: str):
+        if not any(value.startswith((definition["root"] + "/", definition["repository"] + "/")) for definition in definitions):
+            return None
+        return resources.git_source(contract, value)
+
+    # Rewrites require every selected snapshot to pass read-only validation first.
+    for definition in definitions:
+        for revision in definition["revisions"]:
+            resources.validate_checkout(root, definition, revision)
     pending: dict[Path, str] = {}
     missing: list[dict[str, str]] = []
-    for path in sorted((root / "knowledge/ops/ascendc/operators").rglob("*.md")):
+    for path in sorted({path for directory in directories for path in directory.rglob("*.md")}):
         if path.name == "index.md":
             continue
+        if path.resolve() != path:
+            raise ValueError(f"refusing symlink knowledge card: {path}")
         raw = path.read_bytes().decode("utf-8")
-        framing = re.match(r"\A---\n(.*?)\n---\n\n", raw, re.S)
+        framing = re.match(r"\A---\n(.*?)\n---\n(?P<gap>\n*)", raw, re.S)
         if framing is None:
-            raise ValueError(f"missing Operator frontmatter: {path}")
+            raise ValueError(f"missing card frontmatter: {path}")
         metadata = yaml.safe_load(framing.group(1))
         updated = False
         for source in metadata["sources"]:
-            resolved = resources.git_source(contract, source["resource"])
-            if resolved is not None and source["resource"] != resolved.resource:
+            resolved = resolve(source["resource"])
+            if resolved is not None and resolved.root in selected_roots and source["resource"] != resolved.resource:
                 if not resolved.local_path(root).exists():
                     missing.append({"card": path.relative_to(root).as_posix(), "resource": source["resource"], "reason": "absent from pinned commit"})
                     continue
@@ -127,8 +153,8 @@ def localize(root: Path, stamp: str) -> int:
         for start, end, original in sorted(destinations, reverse=True):
             target = original.split()[0].strip("<>")
             base, fragment = urldefrag(target)
-            resolved = resources.git_source(contract, base)
-            if resolved is None or not base.startswith("https://"):
+            resolved = resolve(base)
+            if resolved is None or resolved.root not in selected_roots or not base.startswith("https://"):
                 continue
             destination = resolved.local_path(root)
             if not destination.exists():
@@ -147,7 +173,7 @@ def localize(root: Path, stamp: str) -> int:
             continue
         metadata["updated_at"] = stamp
         body = authored
-        rendered = "---\n" + source_frontmatter(framing.group(1), metadata) + "\n---\n\n" + body
+        rendered = "---\n" + source_frontmatter(framing.group(1), metadata) + "\n---\n" + framing.group("gap") + body
         pending[path] = rendered
     for path, rendered in pending.items():
         ingest.atomic_write(path, rendered)
@@ -160,14 +186,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge-root")
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("fetch")
-    commands.add_parser("verify")
+    fetch = commands.add_parser("fetch")
+    verify = commands.add_parser("verify")
     local = commands.add_parser("localize")
     local.add_argument("--updated-at", required=True)
+    local.add_argument("--path", action="append", help="knowledge directory; defaults to Ascend C Operators")
+    for command in (fetch, verify, local):
+        command.add_argument("--source", action="append", help="registered Git source ID; repeat to select several")
     args = parser.parse_args()
     try:
         root = ingest.resolve_root(args.knowledge_root)
-        definitions = [item for item in ingest.load_contract(root).local_sources.values() if item.get("kind") == "git"]
+        definitions = selected_sources(ingest.load_contract(root), args.source)
         if args.command == "fetch":
             with ThreadPoolExecutor(max_workers=4) as executor:
                 list(executor.map(lambda definition: fetch_repository(root, definition), definitions))
@@ -177,7 +206,8 @@ def main() -> int:
                     resources.validate_checkout(root, definition, revision)
             print(f"verified Git snapshots={sum(len(item['revisions']) for item in definitions)}")
         else:
-            print(f"localized Operator cards={localize(root, args.updated_at)}")
+            count = localize(root, args.updated_at, paths=args.path, source_ids=args.source)
+            print(f"localized {'knowledge' if args.path else 'Operator'} cards={count}")
     except (OSError, ValueError, subprocess.CalledProcessError, yaml.YAMLError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

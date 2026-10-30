@@ -21,6 +21,8 @@ description: 将 cannbot-knowledge 摄入请求统一路由，把官方文档归
 
 登记的固定提交本地源码可以按[新来源接入](references/source-onboarding.md)恢复和只读验证；此操作不创建知识卡、不改来源版本，也不触发图谱关系重建。
 
+既有模型 Recipes 卡片可通过同一资源工具按来源和知识目录等价本地化；默认 Operator 行为保留。模型来源每仓仅保留一个经核验的最新提交；来源升级按增量同步逐页复核正文、配置、故障状态和性能证据，补充新知识，并同步所有本地来源和图片引用。旧版证据保留在历史与审计中。
+
 ## 通用建卡
 
 `scripts/knowledge_ingest.py` 负责 `create`、`sync-indexes` 和兼容 CI 的 `build-graph`；它与 `knowledge_graph.py build` 共用同一链接构图实现，不修改 `.gitcode/` 调用约定。构图只读取知识卡链接，不下载或扫描源码，也不属于入库门禁。

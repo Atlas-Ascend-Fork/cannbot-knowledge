@@ -157,7 +157,7 @@ sources:
 - 除 `Runbook` 外，`stable` 和 `deprecated` 至少有一项来源，`draft` 可以使用 `sources: []`；
 - `resource` 接受 HTTP(S) URL 或已登记的本地来源；本地路径必须位于 Registry 登记的来源根目录中，不得是绝对路径、包含 `..`、反斜杠、查询参数或 fragment；Git 来源根可使用安全的多级相对路径，不能位于知识或治理设施目录中，也不能与其他来源根重叠；
 - GitCode、GitHub、Gitee、GitLab、Bitbucket 和 Codeberg 上的文件、目录和 raw 来源必须固定到 40 位 commit，分支名和裸仓库首页不通过；GitCode/GitHub PR 与 Issue 可以直接使用对应仓库的规范工作项 URL，不要求 commit；
-- Git 本地来源使用 `cann-ops-raw/ascendc/ops-nn/<40位commit>/<文件路径>` 等 Registry 登记路径，相对于知识仓根；四个算子仓统一放在 `cann-ops-raw/ascendc/<仓库名>/` 下，Runtime 仓放在 `cann-runtime-raw/runtime/` 下。Registry 的 `repository` 与 `revisions` 保留远程来源和版本身份，统一获取入口按固定提交恢复，不跟随分支；
+- Git 本地来源使用 `cann-ops-raw/ascendc/ops-nn/<40位commit>/<文件路径>` 等 Registry 登记路径，相对于知识仓根；四个算子仓统一放在 `cann-ops-raw/ascendc/<仓库名>/` 下，Runtime 仓放在 `cann-runtime-raw/runtime/` 下，模型 Recipes 仓放在 `cann-recipes-raw/<仓库名>/` 下。Registry 的 `repository` 与 `revisions` 保留远程来源和版本身份，统一获取入口按固定提交恢复，不跟随分支；模型 Recipes 及其依赖仓每仓只登记一个升级时核验的最新提交，相关模型知识及正文导航全部绑定该提交，并重新核对当前技术结论。其他来源的版本策略按各自登记与任务范围执行。PR、Issue 保持规范远程工作项 URL，不因仓库已恢复而当作 Git 文件解析；
 - 正文源码链接相对于卡片目录，可带 `#L71` 或 `#L71-L80` 行号，仅作来源导航，不生成 Concept，也不允许索引跳出 Bundle。已恢复 checkout 必须来源、提交和工作区一致；不能覆盖有本地修改的源码，也不能为原提交中不存在的路径伪造或替换版本，此时应保留固定远程来源并报告缺口；
 - 本地来源必须由仓库记录的获取流程提供；全库 Lint 要求获取脚本存在且可执行。当前 `cann-docs-raw/` 由 `get_resources.sh` 按 Registry 的 `archive_url` 恢复，并保持 Git 忽略；官方文档持续更新，不校验归档或内容树 SHA-256。本地根存在时，Lint 检查 `.complete` 的来源 URL 和被引用文件；
 - Lint 不联网，也不判断来源是否支持结论；本地根尚未恢复时只检查注册路径形状。

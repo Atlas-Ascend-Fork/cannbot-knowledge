@@ -183,6 +183,86 @@ local_sources:
     repository: https://gitcode.com/cann/runtime
     revisions:
       - b523035a08ef573b6bc476c8ab2a34733ba069a4
+  recipes_infer:
+    description: 固定版本的 cann-recipes-infer 模型实践来源
+    kind: git
+    root: cann-recipes-raw/cann-recipes-infer
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/cann/cann-recipes-infer
+    revisions:
+    - 944d2d3ece86f7df33dbb0cb155c72ca619a9c66
+  recipes_train:
+    description: 固定版本的 cann-recipes-train 模型实践来源
+    kind: git
+    root: cann-recipes-raw/cann-recipes-train
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/cann/cann-recipes-train
+    revisions:
+    - 532c60c5a3fd8ac84c207ab29be241a88b6eb6ba
+  recipes_embodied_ai:
+    description: 固定版本的 cann-recipes-embodied-ai 模型实践来源
+    kind: git
+    root: cann-recipes-raw/cann-recipes-embodied-ai
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/cann/cann-recipes-embodied-ai
+    revisions:
+    - 21a5ed789ceb2a4b72277573f5ec5ec531b92ee1
+  recipes_spatial_intelligence:
+    description: 固定版本的 cann-recipes-spatial-intelligence 模型实践来源
+    kind: git
+    root: cann-recipes-raw/cann-recipes-spatial-intelligence
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/cann/cann-recipes-spatial-intelligence
+    revisions:
+    - 0d955a020eed3ac1f274e5ab26f792b02b011728
+  recipes_torchtitan_npu:
+    description: 模型 Recipes 引用的固定版本 torchtitan-npu 依赖来源
+    kind: git
+    root: cann-recipes-raw/torchtitan-npu
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/cann/torchtitan-npu
+    revisions:
+    - 8a71d8940e877cc9f2e5f4b977b4f18d48539592
+  recipes_mindspeed:
+    description: 模型 Recipes 引用的固定版本 MindSpeed 依赖来源
+    kind: git
+    root: cann-recipes-raw/mindspeed
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/MindSpeed
+    revisions:
+    - c5a72765f99fd8470362c7afdc2cdffe0ab5aea6
+  recipes_mindspeed_llm:
+    description: 模型 Recipes 引用的固定版本 MindSpeed-LLM 依赖来源
+    kind: git
+    root: cann-recipes-raw/mindspeed-llm
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/MindSpeed-LLM
+    revisions:
+    - 72b0cca64535371e0bbf178087b88448c392970b
+  recipes_mindspeed_mm:
+    description: 模型 Recipes 引用的固定版本 MindSpeed-MM 依赖来源
+    kind: git
+    root: cann-recipes-raw/mindspeed-mm
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/MindSpeed-MM
+    revisions:
+    - 0d2270c8ee178d7bfece88f356a5072bf8e2b3ed
+  recipes_mindspeed_rl:
+    description: 模型 Recipes 引用的固定版本 MindSpeed-RL 依赖来源
+    kind: git
+    root: cann-recipes-raw/mindspeed-rl
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/MindSpeed-RL
+    revisions:
+    - adb494ad777ef4314bca717b56983feb67a41ea4
+  recipes_mindspeed_bridge:
+    description: 模型 Recipes 引用的固定版本 MindSpeed-Bridge 依赖来源
+    kind: git
+    root: cann-recipes-raw/mindspeed-bridge
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/MindSpeed-Bridge
+    revisions:
+    - f74d52a8a318c4594202ccdcf96a615b1f2d32da
   cann_docs_raw:
     description: 从官方持续更新归档恢复的 Ascend C 文档
     root: cann-docs-raw

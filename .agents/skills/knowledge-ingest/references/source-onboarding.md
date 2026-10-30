@@ -6,12 +6,15 @@
 
 - Git 来源固定 canonical repo、ref、40 位 commit 和纳入范围；没有固定 commit 时不开始批量摄入。
 - 本地文档归档在 Registry 登记顶层 root、fetch script 和 HTTPS `archive_url`；先运行获取脚本恢复来源。不要为归档增加逐文件清单。
+- 新增 Registry 来源先作为独立 PR 合入目标分支，再提交使用该本地来源的知识。CI 的治理与工具来自目标分支，同一知识 PR 中尚未合入的登记不会参与校验；验证时使用目标分支治理叠加候选知识，确认来源路径和正文链接均可识别。
 
-## 既有 Operator 来源本地化
+## 既有 Git 来源本地化
 
 已有卡仅恢复声明的固定源码并等价改写来源路径时，不属于新 Git Reference 摄入批次，不重新蒸馏技术正文或建立 inventory/ledger。先在 Registry 登记 `kind: git`、root、fetch script、规范 repository 与卡片已使用的 40 位 revisions；不得自动换成最新分支。源码与对象缓存放入 ignored 来源根，不执行上游代码。
 
 四个算子仓的 Git 根统一为 `cann-ops-raw/ascendc/<仓库名>/`，提交快照放在其 `<40位commit>/` 下。完整根路径用于来源匹配，不能只取路径第一段；恢复时拒绝根本身或任一祖先为软链接。目录迁移必须保持 repository/revision/文件不变，并同步 Frontmatter、正文及 API 自动导航中的源码链接；本地旧索引和图谱审计不得冒充已更新结果。
+
+模型 Recipes 及其依赖来源统一放在 `cann-recipes-raw/<仓库名>/<40位commit>/`。当前登记推理、训练、具身智能和空间智能四个仓库，以及卡片引用的 TorchTitan-NPU、MindSpeed 系列依赖；具体来源 ID、规范仓库名和允许版本读取 Registry，不从目录名猜测。模型来源每仓仅登记一个升级时核验的默认分支最新提交，所有相关卡片和图片使用同一版本；升级前阅读旧卡和最新来源，按当前实现重写失效配置、故障与性能断言，补充新增能力。无法由当前来源支持的历史断言不能冒充当前结论，原文保留在 Git 历史与审计中。PR、Issue 保持规范远程 URL，不转换成源码文件。
 
 ```bash
 python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> fetch
@@ -21,6 +24,20 @@ python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> \
 ```
 
 `fetch` 只恢复 Registry 声明的固定提交，不执行源码或 Git hooks；`verify` 不联网、不改文件。已有目录若非工具管理、来源/提交不符、有本地修改、隐藏索引项或符号链接逃逸，都失败且保留现场，不 reset、删除或覆盖。仅恢复或验证资源不迁移知识卡，也不升级来源。
+
+三个子命令均可重复指定 `--source <Registry-source-ID>`，只处理选中的 Git 来源；未知 ID 或非 Git 来源失败。`localize` 默认仍只遍历 Ascend C Operator；模型卡迁移时显式指定目录：
+
+```bash
+python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> fetch \
+  --source recipes_infer --source recipes_train --source recipes_embodied_ai \
+  --source recipes_spatial_intelligence
+python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> localize \
+  --path knowledge/model --source recipes_infer --source recipes_train \
+  --source recipes_embodied_ai --source recipes_spatial_intelligence \
+  --updated-at <UTC-second>
+```
+
+`--path` 可重复，但必须是 `knowledge/` 内现有真实目录；拒绝越界路径与符号链接。只有选中来源的全部快照校验通过后才写卡；重叠目录去重，不触碰其他来源或目录。未指定 `--source` 时仍校验全部登记的 Git 快照。升级 revision 须先按增量同步审阅；仅在 Git blob 完全相同（包括可核验的重命名）时，等价证据可直接迁到新 revision，发生内容变化的来源须核对受影响结论。
 
 知识卡的 `sources[].resource` 相对于知识仓根，正文源码链接相对于卡片目录；两者必须指向同一登记根和固定提交。离线 Lint 不会自动获取源码，也无法证明未恢复文件存在。
 

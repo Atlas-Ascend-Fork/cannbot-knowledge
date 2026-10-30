@@ -74,6 +74,11 @@ def git_source(contract, resource: str) -> GitSource | None:
     Unknown repositories return None. A registered location with an unsafe path
     or unregistered revision fails closed, including while sources are offline.
     """
+    # Work items remain remote evidence even when their repository is restored.
+    from .checks.sources import git_work_item_url_is_stable
+
+    if git_work_item_url_is_stable(resource):
+        return None
     for definition in contract.local_sources.values():
         if definition.get("kind") != "git":
             continue
@@ -82,11 +87,17 @@ def git_source(contract, resource: str) -> GitSource | None:
         if resource.startswith(repository + "/"):
             parsed = urlsplit(resource)
             suffix = parsed.path[len(urlsplit(repository).path) + 1:].removeprefix("-/")
+            if re.fullmatch(r"commits?/[0-9a-f]{40}", suffix) and not parsed.query and not parsed.fragment:
+                return None
             parts = suffix.split("/", 2)
+            if (len(parts) == 2 and parts[0] == "tree" and parts[1] in definition["revisions"]
+                    and not parsed.query and not parsed.fragment):
+                # Repository-root navigation has no source-file path to localize.
+                return None
             if len(parts) != 3 or parts[0] not in {"blob", "tree", "raw"} or parsed.query or parsed.fragment:
                 raise ValueError(f"invalid pinned Git source: {resource}")
             _, revision, path = parts
-            path = unquote(path)
+            path = unquote(path).removesuffix("/")
         elif resource.startswith(root + "/"):
             parts = resource[len(root) + 1:].split("/", 1)
             if len(parts) != 2:

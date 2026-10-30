@@ -10,4 +10,5 @@ __pycache__/
 cann-docs-raw/
 /cann-ops-raw/
 /cann-runtime-raw/
+/cann-recipes-raw/
 local-tools/
