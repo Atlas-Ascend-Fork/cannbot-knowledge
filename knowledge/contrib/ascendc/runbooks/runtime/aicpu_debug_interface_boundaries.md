@@ -120,6 +120,6 @@ platforms:
 
 ## 与相邻卡的分工
 
-- 接口事实（原型、参数、格式表、支持矩阵、逐接口约束）归镜像卡 [assert（AI CPU API）](../../../ops/ascendc/apis/ai_cpu_api/assert.md)、[printf（AI CPU API）](../../../ops/ascendc/apis/ai_cpu_api/printf.md)、[DataStoreBarrier](../../../ops/ascendc/apis/ai_cpu_api/data_store_barrier.md)；本卡不重复它们的参数表，只给三条接口作为**一个集合**的使用边界。
-- 固定 reference 的调用合同与版本边界归 [assert（AI CPU API）：固定 reference 调用约束](../../../ops/ascendc/guides/diagnostics/aicpu_assert_reference_contract.md) 与 [printf（AI CPU API）：固定 reference 调用约束](../../../ops/ascendc/guides/diagnostics/aicpu_printf_reference_contract.md)；本卡在其上补调用域、Dump 预算、与 AI Core 侧的对照以及 DataStoreBarrier 的配对要求。
-- AI Core 侧的调测接口路由归 [Kernel 调试接口路由矩阵：症状 × 目标平台与编程模式](../../../contrib/ascendc/runbooks/runtime/kernel_debug_api_platform_mode_matrix.md)——它明确把 AI CPU 侧排除在外，本卡正是它的 AI CPU 补集；Kernel 侧同名接口的事实见 [printf（tuning interface）](../../../ops/ascendc/apis/utils_api/tuning_interface/printf.md) 与 [assert（tuning interface）](../../../ops/ascendc/apis/utils_api/tuning_interface/assert.md)。
+- 接口事实（原型、参数、格式表、支持矩阵、逐接口约束）归镜像卡 [assert（AI CPU API）](../../../../ops/ascendc/apis/ai_cpu_api/assert.md)、[printf（AI CPU API）](../../../../ops/ascendc/apis/ai_cpu_api/printf.md)、[DataStoreBarrier](../../../../ops/ascendc/apis/ai_cpu_api/data_store_barrier.md)；本卡不重复它们的参数表，只给三条接口作为**一个集合**的使用边界。
+- 固定 reference 的调用合同与版本边界归 [assert（AI CPU API）：固定 reference 调用约束](../../../../ops/ascendc/guides/diagnostics/aicpu_assert_reference_contract.md) 与 [printf（AI CPU API）：固定 reference 调用约束](../../../../ops/ascendc/guides/diagnostics/aicpu_printf_reference_contract.md)；本卡在其上补调用域、Dump 预算、与 AI Core 侧的对照以及 DataStoreBarrier 的配对要求。
+- AI Core 侧的调测接口路由归 [Kernel 调试接口路由矩阵：症状 × 目标平台与编程模式](kernel_debug_api_platform_mode_matrix.md)——它明确把 AI CPU 侧排除在外，本卡正是它的 AI CPU 补集；Kernel 侧同名接口的事实见 [printf（tuning interface）](../../../../ops/ascendc/apis/utils_api/tuning_interface/printf.md) 与 [assert（tuning interface）](../../../../ops/ascendc/apis/utils_api/tuning_interface/assert.md)。
