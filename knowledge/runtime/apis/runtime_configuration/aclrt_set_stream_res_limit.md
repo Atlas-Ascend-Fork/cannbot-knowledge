@@ -1,0 +1,56 @@
+---
+type: API
+title: aclrtSetStreamResLimit
+description: 设置指定 Stream 的 Device 资源限制。需配合 aclrtUseStreamResInCurrentThread 在当前线程中生效。
+tags:
+- task.lookup
+- topic.implementation
+- topic.implementation.api_layer.c_api
+status: draft
+sources:
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/03_runtime_configuration.md
+  role: primary
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/include/external/acl/acl_rt.h
+  role: header
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/src/acl/aclrt_impl/device.cpp
+  role: implementation
+source_headers:
+- include/external/acl/acl_rt.h
+created_at: '2026-09-15T00:00:00Z'
+updated_at: '2026-10-29T08:46:01Z'
+platforms:
+- '950'
+- 'a3'
+- 'a2'
+- '310b'
+- '310p'
+- '910'
+---
+# aclrtSetStreamResLimit
+
+## 功能说明
+
+设置指定 Stream 的 Device 资源限制。应在 `aclrtSetDevice` 之后且在执行算子之前调用。对同一 Stream 多次设置以最后一次为准。
+
+设置后需配合调用 `aclrtUseStreamResInCurrentThread` 在当前线程中使用该限制。
+
+内部行为（固定 commit `b523035a` 源码结论，不构成跨版本承诺）：
+- `aclrtSetStreamResLimitImpl`（device.cpp:449）通过 `rtsSetStreamResLimit(static_cast<rtStream_t>(stream), static_cast<rtDevResLimitType_t>(type), value)` 写入。
+
+## 函数原型
+
+```c
+aclError aclrtSetStreamResLimit(aclrtStream stream, aclrtDevResLimitType type, uint32_t value);
+```
+
+## 参数说明
+
+| 参数名 | 输入/输出 | 说明 |
+| --- | --- | --- |
+| stream | 输入 | 指定 Stream。传入 NULL 表示默认 Stream。 |
+| type | 输入 | 资源类型，参见 aclrtDevResLimitType。 |
+| value | 输入 | 资源限制的大小。 |
+
+## 返回值说明
+
+返回 0 表示成功，其他值表示失败。

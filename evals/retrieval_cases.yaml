@@ -8,7 +8,7 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------------------------------------
 
-# 32 条轨迹查询 + 40 个人工场景，固定 top5；source 保留轨迹定位信息。
+# 32 条轨迹查询 + 40 个人工场景 + 3 条 Runtime 检索回归，固定 top5；source 保留定位信息。
 # expected 中每张卡都必须命中；expected_any 中每组至少命中一张，组间仍为 AND。
 # 期望为人工标注，未做独立复核；返回其他未标注候选不自动判负。
 # 这里只测试检索，不把参数错误、候选命中或缺口场景当作问答成功。
@@ -1201,3 +1201,55 @@ cases:
   expected:
   - ops/ascendc/runbooks/compilation/platformascendc_host_ut_link_static_tiling_api
   note: 人工从实际 linker 输出构造 query，不是轨迹中的检索命令；仅评价诊断参考卡的召回。
+
+# Runtime 代表性检索场景；标签准入、正反边界与通用过滤由现有单测覆盖。
+- id: runtime_tag_lifecycle_accept
+  description: 按资源生命周期标签召回设置当前 Device 的接口。
+  source:
+    kind: manual
+    part_id: runtime_tags_20261029
+  query: aclrtSetDevice
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: literal
+    k: 5
+    platform: a2
+    tag: topic.implementation.resource_lifecycle
+  expected:
+  - runtime/apis/device_management/aclrt_set_device
+- id: runtime_tag_cpp_overload
+  description: 按 C++ 接口层标签区分同名 aclrtMalloc 封装。
+  source:
+    kind: manual
+    part_id: runtime_tags_20261029
+  query: aclrtMalloc
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: literal
+    k: 5
+    platform: a2
+    tag: topic.implementation.api_layer.cpp_api
+  expected:
+  - runtime/apis/cpp_extension_apis/aclrt_malloc
+  excluded:
+  - runtime/apis/memory_management/aclrt_malloc
+- id: runtime_tag_unfiltered_malloc
+  description: 未指定标签时同时召回 aclrtMalloc 的 C API 和 C++ 封装。
+  source:
+    kind: manual
+    part_id: runtime_tags_20261029
+  query: aclrtMalloc
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/memory_management/aclrt_malloc
+  - runtime/apis/cpp_extension_apis/aclrt_malloc

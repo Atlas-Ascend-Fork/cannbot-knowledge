@@ -1,0 +1,40 @@
+# Model Running Instance Management
+
+- [aclmdlRIAbort](aclmdl_ri_abort.md)：停止正在执行的模型运行实例，后续需调用 Execute 或 ExecuteAsync 重新执行；不支持 ACL Graph，属于试验特性。
+- [aclmdlRIAddCondTask](aclmdl_ri_add_cond_task.md)：向处于捕获状态的 Stream 添加条件任务，flags 固定为 0；试验特性，不用于生产环境。
+- [aclmdlRIBindStream](aclmdl_ri_bind_stream.md)：将 PERSISTENT 类型 Stream 绑定到模型运行实例，可指定头流标志；同一 Stream 不能绑定多个 RI。
+- [aclmdlRIBuildBegin](aclmdl_ri_build_begin.md)：开始显式构建用于暂存任务的模型运行实例，须配合 BindStream、EndTask 和 BuildEnd 完成构建。
+- [aclmdlRIBuildEnd](aclmdl_ri_build_end.md)：结束显式构建模型运行实例；调用后不能再向已绑定的 Stream 下发任务，reserve 固定为 NULL。
+- [aclmdlRICaptureBegin](aclmdl_ri_capture_begin.md)：开始捕获 Stream 上下发的任务。在 CaptureBegin 与 CaptureEnd 之间下发的任务暂存于内部 RI，不立即执行。
+- [aclmdlRICaptureEnd](aclmdl_ri_capture_end.md)：结束 Stream 捕获并返回保存任务的 RI，须与 CaptureBegin 使用同一 Stream；非 RELAXED 模式还须同线程。
+- [aclmdlRICaptureGetInfo](aclmdl_ri_capture_get_info.md)：获取 Stream 的捕获信息，包括捕获状态和模型运行实例。
+- [aclmdlRICaptureTaskGrpBegin](aclmdl_ri_capture_task_grp_begin.md)：在已处于捕获状态的 Stream 中开始记录任务组，与 TaskGrpEnd 配对；区间内仅支持单算子调用任务。
+- [aclmdlRICaptureTaskGrpEnd](aclmdl_ri_capture_task_grp_end.md)：在与 TaskGrpBegin 相同的 Stream 上结束任务组捕获，并返回 aclrtTaskGrp 句柄供后续任务更新。
+- [aclmdlRICaptureTaskUpdateBegin](aclmdl_ri_capture_task_update_begin.md)：对已有任务组开始更新，Stream 此时必须不在捕获状态；更新任务的数量、类型须与原组一致，并与 UpdateEnd 配对。
+- [aclmdlRICaptureTaskUpdateEnd](aclmdl_ri_capture_task_update_end.md)：结束同一 Stream 上的任务组更新区间，与 CaptureTaskUpdateBegin 配对；返回成功不代表更新已执行完成。
+- [aclmdlRICaptureThreadExchangeMode](aclmdl_ri_capture_thread_exchange_mode.md)：切换当前线程的捕获模式。传入新模式，返回旧模式。
+- [aclmdlRICaptureToModelRIBegin](aclmdl_ri_capture_to_model_ri_begin.md)：将 Stream 任务捕获到调用方指定的 RI，须与 CaptureEnd 配对；试验特性，不用于生产环境。
+- [aclmdlRICondHandleCreate](aclmdl_ri_cond_handle_create.md)：为 RI 创建条件任务句柄，指定条件变量初始值及默认赋值标志；试验特性。
+- [aclmdlRICondHandleGetCondPtr](aclmdl_ri_cond_handle_get_cond_ptr.md)：从条件句柄获取 8 字节条件变量的 Device 指针，内存由 Runtime 自动释放；试验特性。
+- [aclmdlRIDebugJsonPrint](aclmdl_ri_debug_json_print.md)：维测场景下将模型运行实例信息以 JSON 格式导出到文件。
+- [aclmdlRIDebugPrint](aclmdl_ri_debug_print.md)：在 CaptureEnd 之后打印模型运行实例的内部信息，仅供维测使用；需要 JSON 文件时使用 DebugJsonPrint。
+- [aclmdlRIDestroy](aclmdl_ri_destroy.md)：在模型任务执行完成后销毁运行实例并释放资源，不用于中止仍在运行的任务。
+- [aclmdlRIDestroyRegisterCallback](aclmdl_ri_destroy_register_callback.md)：注册回调函数，销毁 RI 时调用。试验特性。
+- [aclmdlRIDestroyUnregisterCallback](aclmdl_ri_destroy_unregister_callback.md)：按 RI 和函数指针取消销毁回调，取消后该 RI 销毁时不再调用该函数；试验特性。
+- [aclmdlRIEndTask](aclmdl_ri_end_task.md)：在 BuildBegin 与 BuildEnd 之间，标记 RI 绑定 Stream 的任务下发结束，供显式模型构建使用。
+- [aclmdlRIExecute](aclmdl_ri_execute.md)：同步执行由 BuildBegin/BuildEnd 构建的模型运行实例；timeout 为 -1 时永久等待，正值指定毫秒超时。
+- [aclmdlRIExecuteAsync](aclmdl_ri_execute_async.md)：在指定 Stream 上异步执行 RI，可运行 CaptureEnd 捕获或 BuildBegin/BuildEnd 显式构建的模型实例。
+- [aclmdlRIGetId](aclmdl_ri_get_id.md)：获取模型运行实例的 ID。试验特性。
+- [aclmdlRIGetName](aclmdl_ri_get_name.md)：获取模型运行实例的名称。
+- [aclmdlRIGetStreams](aclmdl_ri_get_streams.md)：枚举模型运行实例关联的 Stream；先传 NULL 查询数量，再提供数组获取列表，属于试验特性。
+- [aclmdlRIGetTasksByStream](aclmdl_ri_get_tasks_by_stream.md)：枚举指定 Stream 中的 RI 任务；先传 NULL 查询数量，再提供任务数组读取列表，属于试验特性。
+- [aclmdlRIKernelTaskGetAttribute](aclmdl_ri_kernel_task_get_attribute.md)：查询 Cube Core 或 Vector Core 上计算任务的属性配置。试验特性。
+- [aclmdlRISetName](aclmdl_ri_set_name.md)：设置模型运行实例的名称。
+- [aclmdlRITaskDisable](aclmdl_ri_task_disable.md)：将 RI 中指定任务禁用、不再调度，之后须调用 RIUpdate；同一 RI 不支持并发调用，属于试验特性。
+- [aclmdlRITaskGetParams](aclmdl_ri_task_get_params.md)：读取 RI 任务参数，返回指针由 Runtime 管理，禁止修改或释放；同一 RI 不支持并发调用，属于试验特性。
+- [aclmdlRITaskGetSeqId](aclmdl_ri_task_get_seq_id.md)：获取任务序列 ID。试验特性。
+- [aclmdlRITaskGetType](aclmdl_ri_task_get_type.md)：获取任务类型。试验特性。
+- [aclmdlRITaskSetParams](aclmdl_ri_task_set_params.md)：设置 RI 任务参数，未使用字节须清零，并确保修改后依赖正确；同一 RI 不支持并发调用，属于试验特性。
+- [aclmdlRIUnbindStream](aclmdl_ri_unbind_stream.md)：在任务执行完成后解除 Stream 与模型运行实例的绑定，与 RIBindStream 配对。
+- [aclmdlRIUpdate](aclmdl_ri_update.md)：更新指定 RI，供禁用任务等修改后的模型更新使用；Profiling 不支持动态更新，须在首次执行前完成，属于试验特性。
+- [aclrtCheckArchCompatibility](aclrt_check_arch_compatibility.md)：根据 AI 处理器版本判断算子指令是否兼容。

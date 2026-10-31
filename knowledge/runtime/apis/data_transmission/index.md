@@ -1,0 +1,33 @@
+# Data Transmission
+
+- [acltdtAllocBuf](acltdt_alloc_buf.md)：申请共享 Buffer，数据区最大 4GB，使用后需 FreeBuf 释放；仅 Atlas 200I/500 A2 的 RC 形态支持。
+- [acltdtAppendBufChain](acltdt_append_buf_chain.md)：将共享 Buffer 接入指定头 Buffer 的链表，用于组织多个数据区；单链表最多 128 个 Buffer。
+- [acltdtAttachQueue](acltdt_attach_queue.md)：由被授权进程按队列 ID 确认访问权限，支持等待超时；固定来源版本尚无支持产品。
+- [acltdtBindQueueRoutes](acltdt_bind_queue_routes.md)：批量绑定队列路由并返回各关系结果，全部成功才返回成功；禁止形成环路，不支持并发调用。
+- [acltdtCleanChannel](acltdt_clean_channel.md)：清空带容量通道中的全部数据，仅用于 CreateChannelWithCapacity 创建的通道。
+- [acltdtCopyBufRef](acltdt_copy_buf_ref.md)：为共享 Buffer 创建指向同一数据区的新引用，避免复制数据；源 Buffer 须由 AllocBuf 或 CopyBufRef 创建。
+- [acltdtCreateChannel](acltdt_create_channel.md)：按 Device ID 和名称创建数据通道，仅用于训练系列昇腾虚拟化实例；用完须先 StopChannel 再销毁。
+- [acltdtCreateChannelWithCapacity](acltdt_create_channel_with_capacity.md)：按 Device ID、名称和容量创建数据通道，容量范围 2～8192；创建失败返回空指针。
+- [acltdtCreateQueue](acltdt_create_queue.md)：按队列属性创建队列并返回 qid；attr 为空时采用默认配置，默认深度为 8。
+- [acltdtDequeue](acltdt_dequeue.md)：从队列取出共享 Buffer，支持阻塞、非阻塞及毫秒超时；固定来源版本尚无支持产品。
+- [acltdtDequeueData](acltdt_dequeue_data.md)：从队列读取数据及用户数据，返回实际数据字节数；支持阻塞或毫秒超时，timeout=0 的非阻塞仅限 Device。
+- [acltdtDestroyChannel](acltdt_destroy_channel.md)：销毁 CreateChannel 或 CreateChannelWithCapacity 创建的数据通道，输入通道句柄而非队列 ID。
+- [acltdtDestroyQueue](acltdt_destroy_queue.md)：按 qid 销毁 CreateQueue 创建的队列，与通道句柄的 DestroyChannel 区分。
+- [acltdtEnqueue](acltdt_enqueue.md)：将 AllocBuf 创建的共享 Buffer 放入队列，支持阻塞、非阻塞及毫秒超时；固定来源版本尚无支持产品。
+- [acltdtEnqueueData](acltdt_enqueue_data.md)：将 Host 或 Device 数据及最多 96 字节用户数据放入队列；支持阻塞或毫秒超时，非阻塞仅限 Device。
+- [acltdtFreeBuf](acltdt_free_buf.md)：释放共享 Buffer。
+- [acltdtGetBufChainNum](acltdt_get_buf_chain_num.md)：获取链表中的 Buffer 数量。
+- [acltdtGetBufData](acltdt_get_buf_data.md)：从 AllocBuf 或 CopyBufRef 创建的共享 Buffer 获取 Device 数据区指针及容量字节数。
+- [acltdtGetBufDataLen](acltdt_get_buf_data_len.md)：读取共享 Buffer 已设置的有效数据字节数；未调用 SetBufDataLen 时为 0，与数据区容量区分。
+- [acltdtGetBufFromChain](acltdt_get_buf_from_chain.md)：获取链表中第 index 个 Buffer。
+- [acltdtGetBufUserData](acltdt_get_buf_user_data.md)：按偏移读取共享 Buffer 的私有数据区，offset+size 不能超过 96 字节，与主数据区读取区分。
+- [acltdtGetSliceInfoFromItem](acltdt_get_slice_info_from_item.md)：获取 Tensor 分片信息。
+- [acltdtGrantQueue](acltdt_grant_queue.md)：向其他进程授予队列管理、入队或出队权限，可组合权限位；固定来源版本尚无支持产品。
+- [acltdtQueryChannelSize](acltdt_query_channel_size.md)：查询带容量通道中当前消息数量，仅用于 CreateChannelWithCapacity 创建的通道，结果不是数据字节数。
+- [acltdtQueryQueueRoutes](acltdt_query_queue_routes.md)：按 QueueRouteQueryInfo 条件查询路由关系，写入调用方创建的 QueueRouteList，供查看或解绑使用。
+- [acltdtReceiveTensor](acltdt_receive_tensor.md)：通过已创建通道将 Device 数据接收到 Host 的 Dataset；timeout=-1 阻塞、0 非阻塞，正值指定毫秒超时。
+- [acltdtSendTensor](acltdt_send_tensor.md)：通过已创建通道将 Host 的 Dataset 发送到 Device；timeout=-1 阻塞、0 非阻塞，正值指定毫秒超时。
+- [acltdtSetBufDataLen](acltdt_set_buf_data_len.md)：设置共享 Buffer 的有效数据字节数，长度须小于 GetBufData 返回的数据区容量，与申请容量区分。
+- [acltdtSetBufUserData](acltdt_set_buf_user_data.md)：按偏移写入共享 Buffer 的私有数据区，offset+size 不能超过 96 字节，与主数据区写入区分。
+- [acltdtStopChannel](acltdt_stop_channel.md)：唤醒数据通道上阻塞的发送或接收线程，须在这些线程之外调用；通道销毁仍由 DestroyChannel 完成。
+- [acltdtUnbindQueueRoutes](acltdt_unbind_queue_routes.md)：批量解除队列路由关系并返回各项解绑结果，全部成功才返回成功；待解绑关系可先用 QueryQueueRoutes 查询。
