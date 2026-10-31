@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/456
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - a3
 ---
@@ -57,8 +57,5 @@ platforms:
 
 ## Evidence
 
-- `doc 披露` + `维护者确认`（@2c45117d78）：算子指南 LI/SFA Tiling 设计两节（重复搬运公式、L0 尺寸 2×32/2×32/2×64KB、块形 `(256,512)` / `(128,96)` / `(128,128)`、Q/P 288KB + K/V 216KB）+ 维护者补出 m 轴三重约束、L1 反推「504≈512 故取 256」、L0 字节账「bf16 进 fp32 出、三块拉通复用」。
-- `diff 事实` + `维护者确认`（@85729e9c4246）：`ComputeUbFactor` 的 `NO_BROADCAST` 分支修为 `(dSizeX + dSizeCosSin) * UB_FACTOR`（mixed）/ `dSizeX * UB_FACTOR * DOUBLE_BUFFER`（same-dtype），5 个 tiling 变体加 per-dtype 预算；reviewer 反向复现 `507035`（回退 `/2` 复现、修正公式消失）。
-- 溯源下探：
-  - [cann-recipes-infer-issue-5-requirement-ascend-c-tiling](https://gitcode.com/cann/cann-recipes-infer/issues/5)
-  - [cann-recipes-infer-pr-456-950-inplace-partial-rotary-mul](https://gitcode.com/cann/cann-recipes-infer/merge_requests/456)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/5)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/456)（evidence）

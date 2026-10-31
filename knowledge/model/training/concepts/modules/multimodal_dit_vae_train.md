@@ -9,12 +9,20 @@ tags:
 - topic.diffusion
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/README.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/dit_usp.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/dit_usp.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/common/conv.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/sora_model.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/dynamic_dpcp.md
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/unaligned_ulysses_cp.md
+  role: implementation
 created_at: '2026-06-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:13Z'
 platforms:
 - agnostic
 ---
@@ -52,7 +60,7 @@ flowchart LR
 - **去噪预测**：DiT predictor 吃 `(noised_latents, timestep, prompt, video_mask, prompt_mask)` 输出 `model_output`（依调度器语义是 ε / velocity / v-pred）。
 - **损失**：`compute_loss` 透传 `diffusion.training_losses(model_output, x_start=latents, x_t=noised_latents, noise=noise, t=timesteps, mask=video_mask)`。`x_start`/`x_t`/`noise`/`t` 全部由 `q_sample` 阶段定下，损失函数只做「目标 − 预测」。
 - **PP 切分**：`pre_process`（首 stage）做编码 + `q_sample`，`post_process`（末 stage）做 `compute_loss`，中间 stage 靠 `predictor.pipeline_set_prev/next_stage_tensor` 把 `latents/noised_latents/timesteps/noise/video_mask` 透传过 PP 边界。
-- **编码省算**：`enable_encoder_dp` / `encoder_offload_interval>1` 时，VAE+文本编码结果进 `cache`，若干步内复用，让重的 DiT 训练与轻的编码错峰（encoder DP 把编码摊到 DP 组）。
+- **编码省算**：`enable_encoder_dp` / `encoder_offload_interval>1` 时，VAE+文本编码结果进 `cache`，按递增 step_idx/rank_idx 逐步消费不同缓存条目，让 DiT 训练与提前编码错峰；init_cache 使用 get_tensor_and_context_parallel_group() 在主干 TP×CP 组内分摊编码工作，并非反复训练同一份编码结果。
 
 ## 噪声调度器家族（DiffusionModel 工厂）
 
@@ -77,7 +85,7 @@ VAE（`ae`）在训练里只跑 encoder 把像素压成 latent（推理才跑 de
 
 `ContextParallelCasualVAE` 是把 causal VAE 搬到多卡的上下文并行版本，专为长视频训练：
 
-- **时间轴切分**：CP 组内先 `broadcast` 同一份输入到 `global_src_rank`，再用 `_conv_split(x, dim=2, kernel_size=1)` 沿**帧维（dim=2）**把视频切给各 CP rank，每 rank 持有一段连续帧；编码后 `_conv_gather` 沿帧维拼回完整 latent。`_conv_split` 按 `dim_size=(T−kernel_size)//cp_world_size` 切，且 `cp_rank>0` 的起点偏移 `kernel_size`——即为因果卷积保留跨 rank 的左边界帧，使跨段的卷积感受野不断裂（接缝处不丢帧）。
+- **时间轴切分**：CP 组内先 `broadcast` 同一份输入到 `global_src_rank`，再用 `_conv_split(x, dim=2, kernel_size=1)` 沿**帧维（dim=2）**把视频切给各 CP rank，每 rank 持有一段连续帧；编码后 `_conv_gather` 沿帧维拼回完整 latent。`_conv_split` 按 `dim_size=(T−kernel_size)//cp_world_size` 切，且 `cp_rank>0` 的起点偏移 `kernel_size`。这些输入切片互不重叠，rank0多保留开头帧，后续rank没有通过切片取得前一段历史帧；跨段历史由 common/conv.py 的 ContextParallelCausalConv3d.forward 调用 fake_cp_pass_from_previous_rank 补入，不能把输入分段等同于卷积边界通信。
 - **CP 与 DP 组关系自适应**：`encode` 按 `cp_size` 与 megatron `dp_group_nums` 的整除关系走三条路径——`cp_size>dp` 时 all-gather 后循环编码（loop cp）、`cp_size<dp` 时按 batch 切分补齐再 all-gather 重组（split）、`cp_size==dp` 时各 rank 直接编码自己那段；保证 VAE 的 CP 与主干 DP 拓扑对齐。
 - **Tiling 互斥**：超大分辨率可走 `tiled_encode/tiled_decode` 的空间瓦片切分，但**瓦片切分与 VAE-CP 不可同时开**（`raise NotImplementedError`）；decode 侧另有时间维 `tile_latent_min_size_t` 分块解码处理超长帧。
 
@@ -90,19 +98,16 @@ VAE 的隐空间维度/压缩比与下游 DiT 的 latent 形状强绑定（如�
 - **DiT-USP（Unified Sequence Parallelism，`hybrid_cp_algo`）**：Ulysses + Ring 混合。Ulysses 把序列切给各卡后，在注意力前用 all-to-all 把 Q/K/V 重排成「每卡持全序列、但只负责注意力头的不相交子集」，并行算不同头、算完再 all-to-all 收回按序列重分区；`--ulysses-degree-in-cp` 设 Ulysses 维度（须整除 `--context-parallel-size`、且能整除注意力头数），剩余 CP 维走 Ring。
 - **DiT-Ring-Attention（`megatron_cp_algo`）**：纯 Ring。各卡持序列块，KV 沿环逐跳传递做 blockwise attention；`--cp-window-size>1` 时启用 Double Ring（LoongTrain head-context 并行），内层窗口提升通信/计算并发，但窗口过大可能因片上带宽抢占反降效率。
 
-公共配置：`--use-cp-send-recv-overlap`（send/recv 与计算重叠）、`--megatron-cp-in-bnsd`（默认 `sbh` 切到 `[B,N,S,D]` 提速）、`--attention-mask-type {general|causal}`。**开 CP 必须同时开 Flash Attention**，否则不支持；序列较短（每卡 <8k）时 CP 的通信反超计算导致掉速，建议 `seq_length / cp_size > 8k`。`wan_dit` 已实现 `ulysses_cp_algo` / `hybrid_cp_algo` / `megatron_cp_algo` 三种 `context_parallel_algo`，未列入的会报未实现。CP 之上还可叠 DP-CP 动态分组与非对齐 Ulysses（变长序列），见 [hetero-parallel](../parallelism/hetero_parallel.md)。
+公共配置：`--use-cp-send-recv-overlap`（send/recv 与计算重叠）、`--megatron-cp-in-bnsd`（默认 `sbh` 切到 `[B,N,S,D]` 提速）、`--attention-mask-type {general|causal}`。**开 CP 必须同时开 Flash Attention**，否则不支持；序列较短（每卡 <8k）时 CP 的通信反超计算导致掉速，建议 `seq_length / cp_size > 8k`。`wan_dit` 已实现 `ulysses_cp_algo` / `hybrid_cp_algo` / `megatron_cp_algo` 三种 `context_parallel_algo`，未列入的会报未实现。相关技术见[异构并行](../parallelism/hetero_parallel.md)，但不能据此认定本节 DiT 支持全部组合：固定动态 DP-CP 仅列 OpenSoraPlan1.3、仅Ulysses，且不支持 encoder DP/interleaved offload；非对齐 Ulysses 当前仅支持 qwen2vl/qwen2.5vl，不直接推广到 DiT。
 
 ## Evidence
 
-源页：[mindspeed-mm](https://gitcode.com/Ascend/MindSpeed-MM)（钉定 ref `8e740b46cb82…`）。blob base `https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/`：
-
-- 训练装配链：`mindspeed_mm/models/sora_model.py`（`SoRAModel.forward` 的冻结编码 → `diffusion.q_sample` → `predictor` → `compute_loss`；`ae`/`text_encoder` 的 `eval()`+`requires_grad_(False)`；t2v/i2v 分支；PP `pipeline_set_prev/next_stage_tensor`；encoder DP cache）。
-- 调度器工厂：`mindspeed_mm/models/diffusion/diffusion_model.py`（`DIFFUSION_MODEL_MAPPINGS` / `DiffusionModel`）。
-- DDPM/IDDPM：`mindspeed_mm/models/diffusion/ddpm.py`（`q_sample` `√ᾱ·x0+√(1−ᾱ)·noise`、`training_losses` 的 `EPSILON/START_X` 目标、`LEARNED_RANGE` 的 vb 项与 `frozen_out` detach）、`mindspeed_mm/models/diffusion/iddpm.py`（`IDDPM` 继承 + `ddim_sample`；`timestep_respacing` / `space_timesteps` 在 `ddpm.py` 基类）。
-- Flow-match：`mindspeed_mm/models/diffusion/flow_match_discrete_scheduler.py`（`q_sample` `(1−σ)x0+σ·noise`、`compute_density_for_timestep_sampling` logit-normal、`sd3_time_shift`、`precondition_outputs`、`training_losses` `target=noise−x0`）、`mindspeed_mm/models/diffusion/wan_flow_match_scheduler.py`、`mindspeed_mm/models/diffusion/rflow.py`（`target=x0−noise`、`timestep_transform`）。
-- 特化调度器：`mindspeed_mm/models/diffusion/cogvideo_diffusion.py`（`ZeroSNRDDPMDiscretization` / `DiscreteDenoiser` c_skip/c_out/c_in/c_noise / `DiscreteSampling.uniform_sampling` 按 DP 组分段 / v-pred 加权损失）、`mindspeed_mm/models/diffusion/hunyuanvideo_i2v_diffusion.py`（lognorm/uniform SNR、`cond_latents` 帧维拼接、仅非条件帧算损失）。
-- VAE 因果 CP：`mindspeed_mm/models/ae/contextparallel_causalvae.py`（`ContextParallelCasualVAE.encode/decode` 的 `broadcast`+`_conv_split(dim=2)`/`_conv_gather`、cp_size vs dp_group_nums 三路径、tiling 与 CP 互斥）、`mindspeed_mm/models/common/communications.py`（`_conv_split`/`_conv_gather` 因果左边界偏移 `kernel_size`）、`mindspeed_mm/models/ae/vae_temporal.py`（`CausalConv3d.time_causal_padding`）、`mindspeed_mm/models/ae/wan_video_vae.py`、`mindspeed_mm/models/ae/hunyuanvideo_15_vae.py`（时序 VAE 家族）。
-- DiT 序列并行：[`docs/zh/features/dit_usp.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/dit_usp.md)（Ulysses all-to-all 重排头、`hybrid_cp_algo`、`--ulysses-degree-in-cp`）、[`docs/zh/features/dit_ring_attention.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/dit_ring_attention.md)（`megatron_cp_algo`、Double Ring `--cp-window-size`、O(S²)、必须配 FA、seq/cp>8k）、`mindspeed_mm/models/predictor/dits/wan_dit.py`（`context_parallel_algo` 三选、`split_forward_gather_backward` 序列切/拼）。
+- [README.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md)（primary）
+- [dit_usp.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/dit_usp.md)（supporting）
+- [conv.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/common/conv.py)（implementation）
+- [sora_model.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/sora_model.py)（implementation）
+- [dynamic_dpcp.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/dynamic_dpcp.md)（implementation）
+- [unaligned_ulysses_cp.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/unaligned_ulysses_cp.md)（implementation）
 
 ## Links
 

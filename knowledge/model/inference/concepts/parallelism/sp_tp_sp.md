@@ -1,9 +1,7 @@
 ---
 type: Concept
 title: SP-TP-SP Hybrid Split (Prefill MLA)
-description: DeepSeek-R1 Prefill 阶段 MLA 部分针对 DP 切分在短序列混合/请求数少场景下 **计算负载不均 + TTFT 被拉长**
-  问题提出的混合切分策略：把 batch 与 seq_len 合轴变为 token 数，按卡数 **SP** 切 token 均匀分发；FlashAttention
-  计算走 **TP** 切 head；FA 结束后 AllToAll 再转回 **SP** 给 o_proj。"SP → TP（FA）→ SP" 三段式得名。
+description: DeepSeek-R1 Prefill 阶段 MLA 部分针对 DP 切分在短序列混合/请求数少场景下 **计算负载不均 + TTFT 被拉长** 问题提出的混合切分策略：把 batch 与 seq_len 合轴变为 token 数，按卡数 **SP** 切 token 均匀分发；FlashAttention 计算走 **TP** 切 head；FA 结束后 AllToAll 再转回 **SP** 给 o_proj。"SP → TP（FA）→ SP" 三段式得名。
 tags:
 - task.design
 - topic.parallelism
@@ -11,12 +9,12 @@ tags:
 - topic.long_context
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T01:37:00Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - agnostic
 ---
@@ -43,8 +41,8 @@ flowchart LR
 
 源图原貌（Attention SP-TP-SP 阶段流），结构示意见上方 mermaid：
 
-![DeepSeek-R1 Attention SP-TP-SP 阶段流](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/figures/image_attention_sp.png)
-*来源：[`docs/models/deepseek-r1/figures/image_attention_sp.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/figures/image_attention_sp.png)（cann-recipes-infer @ 2f82d10）*
+![DeepSeek-R1 Attention SP-TP-SP 阶段流](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_attention_sp.png)
+*来源：[`docs/models/deepseek-r1/figures/image_attention_sp.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_attention_sp.png)（cann-recipes-infer @ 944d2d3）*
 
 ### 关键步骤（源文档原文）
 
@@ -58,8 +56,8 @@ flowchart LR
 
 源图原貌：
 
-![SP-TP-SP 数据切分示意（3 输入 4 Rank）](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/figures/image_data_split_sp.png)
-*来源：[`docs/models/deepseek-r1/figures/image_data_split_sp.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/figures/image_data_split_sp.png)（cann-recipes-infer @ 2f82d10）*
+![SP-TP-SP 数据切分示意（3 输入 4 Rank）](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_data_split_sp.png)
+*来源：[`docs/models/deepseek-r1/figures/image_data_split_sp.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_data_split_sp.png)（cann-recipes-infer @ 944d2d3）*
 
 ## Applicable Scenarios
 
@@ -91,7 +89,8 @@ flowchart LR
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md) "SP-TP-SP 混合切分策略"章节；`models/deepseek_r1/models/modeling_deepseek.py`（`MicroBatchMode.PREFILL_MICRO_BATCH_SP_TP_EP` 枚举与 `forward_microbatch_v2` 入口）。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_r1_prefill_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md)（supporting）
 
 ## Links
 

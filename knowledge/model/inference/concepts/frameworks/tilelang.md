@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: TileLang
-description: 'TileLang 是基于 TVM、面向 GPU/NPU/CPU 的 Tile 级算子语言，以类 Python 语法分离数据流与线程绑定、布局、张量化和流水调度。CANN 对接路径经多级 Lowering 生成 Ascend 代码、毕昇编译为 .so，再由 torch_npu 加载；已用于 DSA 的 Lightning Indexer、Sparse Flash Attention。DeepSeek-V4 Developer 模式提供 AscendC 与 PTO-AS 两个后端，通过自动 CV/核内同步、32B 对齐的生命周期内存复用及 CV 指令拆分，将样例代码量降至传统后端约 20%。当前 V4 样例覆盖 Sparse Flash Attention、mHC Sinkhorn、Int8 GEMM 和激活量化；T.Pipelined 是文档能力，但在该批样例中未发现调用。'
+description: TileLang当前Ascend适配与分目录、V4 Developer机制和受具体kernel约束的JIT；更新V3.2 LI workspace/布局与安装入口。
 tags:
 - task.implementation
 - topic.architecture
@@ -9,10 +9,20 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_tilelang_operator_guide.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/README.md
+  role: constraint
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v32/lightning_indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v4/sparse_flash_attention.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v4/act_quant.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T14:34:04Z'
 platforms:
 - agnostic
 ---
@@ -23,14 +33,14 @@ platforms:
 
 TileLang 是 **TileAI 开源社区**推出的面向 GPU/NPU/CPU 的 **Tile 级算子编程语言**，采用类 Python 语法、基于 TVM 底层基础设施，**将调度空间（线程绑定、布局、张量化、流水线）与数据流解耦**，以一组可自定义注解和原语封装出来。用户专注于内核的数据流本身，其余优化交给编译器完成。
 
-cann-recipes-infer 同步对接 CANN 软件栈，在 TileLang 上完成了 DSA 的 **Lightning Indexer** 与 **Sparse Flash Attention** 两个关键算子实现（`ops/tilelang/lightning_indexer.py`、`ops/tilelang/sparse_flash_attention.py`），作为与 [ascendc](ascendc.md)、[pypto](pypto.md) 并列的第三路算子开发通道。
+cann-recipes-infer 同步对接 CANN 软件栈，在 TileLang 上完成了 DSA 的 **Lightning Indexer** 与 **Sparse Flash Attention** 两个关键算子实现（`ops/tilelang/ds_v32/lightning_indexer.py`、`ops/tilelang/ds_v32/sparse_flash_attention.py`），作为与 [ascendc](ascendc.md)、[pypto](pypto.md) 并列的第三路算子开发通道。
 
 ## Architecture
 
 ### NPU 工作流
 
-![TileLang NPU 工作流](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/tl-workflow.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-workflow.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/tl-workflow.png)（cann-recipes-infer @ 2f82d10）*
+![TileLang NPU 工作流](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-workflow.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-workflow.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-workflow.png)（cann-recipes-infer @ 944d2d3）*
 
 - **编译阶段**：
  1. 多级 Lowering：TileLang 算子根据 NPU 硬件特性多级降级，生成针对昇腾硬件优化的 TensorIR；
@@ -43,15 +53,15 @@ cann-recipes-infer 同步对接 CANN 软件栈，在 TileLang 上完成了 DSA �
 
 ### 编译运行流程与 Ascend 适配层
 
-![TileLang 编译运行流程图](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/tl-ascendc-workflow.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-ascendc-workflow.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/tl-ascendc-workflow.png)（cann-recipes-infer @ 2f82d10）*
+![TileLang 编译运行流程图](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-ascendc-workflow.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-ascendc-workflow.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-ascendc-workflow.png)（cann-recipes-infer @ 944d2d3）*
 
 图中深绿色标出 Ascend NPU 适配层：TileLang API 原语、CodeGen（AscendC 映射）、JIT 适配器、PyTorch 集成。
 
 ### NPU 内存层次
 
-![NPU 存储结构](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/tl-npu-memory.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-npu-memory.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/tl-npu-memory.png)（cann-recipes-infer @ 2f82d10）*
+![NPU 存储结构](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-npu-memory.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-npu-memory.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-npu-memory.png)（cann-recipes-infer @ 944d2d3）*
 
 ## Key Features
 
@@ -89,7 +99,7 @@ def div(dst: Buffer, src0: Buffer, src1: Union[Buffer, BufferLoad]):
 
 ### JIT 即时编译
 
-JIT 会在运行中实时解析输入参数（维度、数据类型），同步向 CodeGen 传递，确保 NPU 算子支持动态输入；并结合 NPU 当前硬件状态优化指令分配（AI Core 利用率、内存占用）。JIT 适配步骤：CodeGen 生成源码 → 编到 `.so` → 基于 TileLang 的 Cython 适配器对接 NPU 接口 → 集成到 Python 环境。
+JIT按调用参数生成编译专门化；动态shape、缓存与调度支持依赖具体kernel和编译器，不能由JIT名称推定任意动态输入或自动读取硬件利用率优化。JIT 适配步骤：CodeGen 生成源码 → 编到 `.so` → 基于 TileLang 的 Cython 适配器对接 NPU 接口 → 集成到 Python 环境。
 
 ### 扩展机制
 
@@ -121,11 +131,9 @@ def exp(dst: Buffer, src0: Buffer):
 
 ## Constraints
 
-源文档"下一步计划"明示当前局限：
+旧技术指南中的2025 Q4目标是当时计划，不能作为当前尚未支持的清单或已经交付的证明。当前ops/tilelang/README更新到TileLang-Ascend安装入口、CANN8.5/PyTorch2.8镜像与ds_v32/ds_v4分目录；测试入口为对应examples/test_sfa.py。能力、动态shape及整网接入仍需按实际编译器和算子验收。
 
-- **API 完备性**：尚未支持全部 NPU 通用算子（目标 2025 Q4 支持所有 NPU 通用算子）。
-- **泛化性**：动态 Shape 支持 + 接入整网仍在迭代（2025 Q4）；原语中添加更多可配置参数。
-- **性能**：SFA/LI 典型 Shape 性能目标是优于 Triton（2025 Q4 达成）。
+V3.2 LI现在显式传入VECTOR/BLOCK尺寸并声明QK workspace，QK张量为[B,N2,S1,G,S2]；不能复制旧展平shape和硬编码UB地址。通用原语介绍不代表新版本后端ABI恒定。
 
 ## DeepSeek-V4 框架级增强（Developer 模式）
 
@@ -161,7 +169,7 @@ Expert 模式保留底层精细控制；**Developer 模式**把核间/核内同�
 - **Sparse Flash Attention（SFA）** `sparse_flash_attention.py` — 8 步块级流程（查询块加载 → 稀疏 KV 索引构掩码块 → 注意力分数 → Online Softmax → 上下文向量 → 累加重缩放 → **attn sink 锚点** → 写回），接入 C4A/C128A 压缩稀疏架构 + 可学习 Attention Sink；C:V 核 1:2、`[head//2, block=64]` 细粒度核内切分。算子级细节见 [sparse-attn-sharedkv](../kernels/sparse_attn_sharedkv.md)（V4-Flash Shared-KV SFA 由 TileLang 实现）。
 - **mHC（Manifold-Constrained Hyper-Connections）** `hc_split_sinkhorn.py` — 6 步（多流缩放 → pre 预变换 → post 后变换 → 指数归一化 → Sinkhorn-Knopp 行列归一化 → 写回），覆盖 [TileKernels](https://github.com/deepseek-ai/TileKernels) 中的 mhc 算子。结构语义见 [mhc](../modules/mhc.md)。
 - **Int8 GEMM** `int8_gemm.py` — int8 输入矩阵乘（int32 中间）→ cast fp32 → 反量化缩放（`T.Parallel` 数据并行）→ cast 目标 dtype → 写回。
-- **Activation Quantization** `act_quant.py` — 列向最大值规约 → 算缩放因子（可选取整 2 的幂）→ int8 对称量化 `y=round(clamp(x/scale,-127,127)).to(fp16).to(int8)` → 写回 scale + 量化值。
+- **Activation Quantization** `act_quant.py` — 列向最大值规约 → 算缩放因子（该固定实现始终使用 max_abs/127，签名 round_scale 尚未被函数体使用，不能据指南将其当作已实现的 2 的幂取整选项）→ int8 对称量化 `y=round(clamp(x/scale,-127,127)).to(fp16).to(int8)` → 写回 scale + 量化值。
 
 #### Int8 GEMM 双缩放反量化细节（int8_gemm.py）
 
@@ -212,25 +220,26 @@ for i in T.serial(block):
 
 即块内位置在 topk 范围内取对应 `topk_idxs` 值，否则置 `-1`（标记非参与位）；再据 `idxs_ub` 筛选参与计算的 key（`kv_ub`）并构建注意力分数掩码矩阵 `acc_s_ub`。
 
-**attn sink 锚点重缩放**（guide §1 步骤 7「注意力锚点计算」，`T.Parallel` 二维场景）：对累加结果 `acc_o_ub` 按锚点重缩放，除以 `exp(attn_sink − scores_max)`：
+**attn sink 归一化**：以固定实现为准，TopK 循环先完成 online softmax 的累计与重缩放，然后把每个 head 的 sink 指数项加入已有分母：
 
 ```python
-for (i, j) in T.Parallel(v_block, d):
-    acc_o_ub[i, j] /= T.exp(attn_sink_ub[i] - scores_max[i])
+T.tile.sub(attn_sink_ub, attn_sink_ub, scores_max[:, 0])
+T.tile.exp(attn_sink_ub, attn_sink_ub)
+T.tile.add(sum_exp[:, 0], sum_exp[:, 0], attn_sink_ub)
+T.tile.broadcast(sum_exp_brd, sum_exp)
+T.tile.div(acc_o_ub, acc_o_ub, sum_exp_brd)
 ```
 
-> **attn sink（可学习注意力锚点）是 V4 SFA 相对 V3.2-Exp 的新增机制**（源 guide §1 概述：「新版的 SFA 算子还引入了可学习注意力锚点（Attention sink）机制，通过调整每个查询头的注意力分数，保护模型输出序列的稳定性」），保留前 s 个 token 的注意力权重与 KV 缓存，使输出保留全局上下文、避免仅依赖近期 token。算子级细节见 [sparse-flash-attention](../kernels/sparse_flash_attention.md)。
+分母为 `sum_j exp(score_j - scores_max) + exp(attn_sink - scores_max)`，不能只除以 sink 指数项。这里的 attn_sink 是可学习的 per-head 归一化项，代码没有保留前 s 个 token 的注意力权重或 KV 缓存的操作。指南步骤 7 的简化公式与固定实现不一致，本卡采用代码中的完整分母；不能将这一机制混同于前缀 token 缓存保留。算子级上下文见 [sparse-attn-sharedkv](../kernels/sparse_attn_sharedkv.md)。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（整文 —— 简介、工作流、NPU 适配、API、CodeGen、JIT、扩展、SFA/LI 实现、下一步计划）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_tilelang_operator_guide.md)（V4 TileLang-Ascend Developer 模式 + 四算子用例，MR afa4019/272df2f；通篇仅讲 Developer 模式、无 "Expert"）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_tilelang_operator_guide.md` §1 Sparse Flash Attention](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v4/deepseek_v4_tilelang_operator_guide.md)（SFA 维度表、idxs_ub 构建、attn sink 锚点重缩放 / C4A·C128A 压缩稀疏 + 可学习 Attention Sink）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_tilelang_operator_guide.md` §3 Int8 GEMM](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v4/deepseek_v4_tilelang_operator_guide.md)（Int8 GEMM I/O 维度表、双缩放反量化 `c_scale *= scale_a_ub[i]; *= scale_b_ub[j]`、int8→int32→fp32→fp16 cast 链）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md:22`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)（"Expert / Developer 双模式 + AscendC 基础指令 / PTO AS 双对接层" 提法溯源）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/tilelang/ds_v4/{sparse_flash_attention.py, hc_split_sinkhorn.py, int8_gemm.py, act_quant.py}`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/ops/tilelang/ds_v4)（V4 四算子 + PassConfigKey 符号 grep 核对）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/tilelang/{lightning_indexer.py, sparse_flash_attention.py}`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/tilelang/{lightning_indexer.py, sparse_flash_attention.py}) + `ops/tilelang/docs/` + `ops/tilelang/examples/`
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/tilelang/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/tilelang/README.md)
+- [deepseek_v3.2_exp_tilelang_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（primary）
+- [deepseek_v4_tilelang_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_tilelang_operator_guide.md)（supporting）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/README.md)（constraint）
+- [lightning_indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v32/lightning_indexer.py)（implementation）
+- [sparse_flash_attention.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v4/sparse_flash_attention.py)（implementation）
+- [act_quant.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v4/act_quant.py)（implementation）
 
 ## Links
 

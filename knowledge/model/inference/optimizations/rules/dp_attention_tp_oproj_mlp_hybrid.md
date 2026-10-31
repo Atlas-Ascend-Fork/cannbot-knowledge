@@ -8,12 +8,12 @@ tags:
 - topic.parallelism
 status: deprecated
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/models/modeling_longcat_flash.py
-  role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/docs/models/longcat-flash/longcat_flash_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a3
 replaced_by: model/inference/optimizations/rules/local_tp_memory_heavy_projections

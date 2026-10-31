@@ -9,19 +9,23 @@ tags:
 - topic.three_dimensional_reconstruction
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/gaussian_splatting_culling_optimization.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/gaussian_splatting_culling_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/gaussian_filter.cpp
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_kernel/gaussian_filter.h
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-13T00:00:00Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a2
 ---
 
 # GaussianFilter —— 3DGS 视锥剔除融合算子
 
-Culling（剔除）是渲染前的关键优化步骤：提前过滤对当前帧渲染无贡献的高斯球，减少后续投影/排序/Alpha-blending 计算量。`GaussianFilter` 把视锥剔除融合为单算子，host 定义见 [`gaussian_filter.cpp`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/gaussian_filter.cpp)，在 `projection_three_dims_gaussian_fused(...)` 内与投影一同调用。被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联。
+Culling（剔除）是渲染前的关键优化步骤：提前过滤对当前帧渲染无贡献的高斯球，减少后续投影/排序/Alpha-blending 计算量。`GaussianFilter` 把视锥剔除融合为单算子，host 定义见 [`gaussian_filter.cpp`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/gaussian_filter.cpp)，在 `projection_three_dims_gaussian_fused(...)` 内与投影一同调用。被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联。
 
 - 输入：`means / colors / det / opacities / means2d / depths / radius / conics / covars2d / compensations`；属性 `width / height / near_plane / far_plane`。
 - 输出：各属性的 `*_culling`（过滤后紧凑数组）+ `filter`（比特掩码，位=1 表示有效）+ `cnt`（有效计数）。
@@ -30,8 +34,8 @@ Culling（剔除）是渲染前的关键优化步骤：提前过滤对当前帧�
 
 只保留「当前相机能看到」的高斯球，丢弃看不到的：
 - **无效高斯剔除**：确保高斯是合法正定矩阵（非退化、非扁平）。
-- **深度方向**：剔除深度 < 近裁切面或 > 远裁切面（`near_plane`/`far_plane`）的高斯。
-- **水平/垂直方向**：剔除投影 2D 椭圆 x/y 半径为 0 的高斯。
+- **深度方向**：剔除深度 <= 近裁切面或 >= 远裁切面（`near_plane`/`far_plane`）的高斯。
+- **实际掩码组合**：`CalcFilter` 组合屏幕边界、`det > 0` 和严格深度条件，没有独立的半径非零判断；中心在屏幕内时零半径仍可能通过，不能把“零半径必剔除”当作此算子的保证。
 - **屏幕外剔除**：仅保留投影椭圆与屏幕有重叠的高斯。
 
 ## 实现难点
@@ -46,11 +50,13 @@ Culling（剔除）是渲染前的关键优化步骤：提前过滤对当前帧�
 
 $$ perCoreN = \lceil \lceil N/coreNum \rceil / 8 \rceil \cdot 8 $$
 $$ usedCoreNum = \lceil N/perCoreN \rceil $$
-$$ lastCoreN = N - usedCoreNum \cdot perCoreN $$
+$$ lastCoreN = N - (usedCoreNum - 1) \cdot perCoreN $$
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/gaussian_filter_tiling.png" width="70%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/gaussian_filter_tiling.png" width="70%">
 
-<sub>tiling 分核（8 元素对齐 + 尾核反推）。来源：[culling 优化文档](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/gaussian_splatting_culling_optimization.md)。</sub>
+<sub>tiling 分核（8 元素对齐 + 尾核反推）。来源：[culling 优化文档](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/gaussian_splatting_culling_optimization.md)。</sub>
+
+上式尾核大小按 host `Tiling4GaussianFilter` 的 `gaussNum - blockLength*(maxCoreNum-1)` 修正；来源优化文档少减一个头核份额，与实现不一致。
 
 ## 前向 kernel：两阶段 + 偏移计算
 
@@ -58,7 +64,7 @@ $$ lastCoreN = N - usedCoreNum \cdot perCoreN $$
 
 $$ offset = \sum_{k=0}^{i-1}{cntPerCore_k} + \sum_{k=0}^{j-1}{cntPerCore_{i,k}} $$
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/gaussian_filter_kernel.png" width="70%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/gaussian_filter_kernel.png" width="70%">
 
 <sub>kernel 搬运偏移示例。来源同上 culling 文档。</sub>
 
@@ -67,7 +73,7 @@ $$ offset = \sum_{k=0}^{i-1}{cntPerCore_k} + \sum_{k=0}^{j-1}{cntPerCore_{i,k}} 
 - **Phase1**：执行 $loopN$ 次迭代完成 `filter` 搬入/计算/搬出，统计核内累积 `cntPerLoop`、更新 `cntPerCore`，存入 `workspace` 后 `SyncAll` 全局同步；随后更新并迁出 GM 上的 `coreOffset`，仅最后一个核执行全局计数汇总并迁出。
 - **Phase2**：重新搬入 `filter`，再执行 $loopN$ 次迭代，以 `filter` 为 mask 用 `GatherMask` 执行剔除，结合 `coreOffset` 与 `cntPerLoop` 确定全局内存偏移；用 3 个 `TQue` 让 MTE2/Vector/MTE3 流水并行。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/gaussian_filter_kernel_p1.png" width="70%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/gaussian_filter_kernel_p1.png" width="70%">
 
 <sub>Phase1 示意。来源同上 culling 文档。</sub>
 
@@ -75,19 +81,19 @@ $$ offset = \sum_{k=0}^{i-1}{cntPerCore_k} + \sum_{k=0}^{j-1}{cntPerCore_{i,k}} 
 
 反向需把过滤后数据恢复到原位（数据分散）。为避免循环+标量计算的长耗时，用 `GatherMask` + `Sort` + `Gather` 多 API 结合：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/scatter_purpose.jpeg" width="65%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/scatter_purpose.jpeg" width="65%">
 
 <sub>Scatter 目标：过滤后数据回原位。来源同上 culling 文档。</sub>
 
 - **Phase1（构建新索引）**：构造等长元素索引 `Index`(0,1,…,`cntPerLoop`)；用 `GatherMask` 对 `filter` 位为 1 的元素收集 `Index` 存入 `headIndexTensor`，位为 0 的存 `tailIndexTensor`，拼接得 `newIndex`。Tensor 操作需 32 字节对齐，拼接时先把两部分拷到 GM 连续地址再拷回 UB。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/index_concat.jpeg" width="65%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/index_concat.jpeg" width="65%">
 
 <sub>newIndex 拼接。来源同上 culling 文档。</sub>
 
 - **Phase2（排序 + Gather 重排）**：`Sort` 对 `newIndex` 排序得排序值 `score` 及原位置索引；用 `Extract` 分离索引（即 `Gather` 取元素的地址偏移）。因 `Sort` 仅支持降序，需构造等差数列对 `Extract` 索引重排得升序。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/gather_newindex.jpeg" width="65%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/gather_newindex.jpeg" width="65%">
 
 <sub>Extract 得到 Gather 索引。来源同上 culling 文档。</sub>
 
@@ -95,7 +101,7 @@ $$ offset = \sum_{k=0}^{i-1}{cntPerCore_k} + \sum_{k=0}^{j-1}{cntPerCore_{i,k}} 
 
 数据在 `LocalTensor` 按 N 维切分，计算时为方便 vector 运算把高斯球维放到 Tensor 最后；输出需还原 shape（交换最后一维与倒数第二维）。以 `(B,3,N)`→`(B,N,3)` 为例，原本要构造形如 `[0, perLoopN, perLoopN*2, 1, ...]` 的 index 再 `GatherMask`，构建 index 需大量 Scalar 运算性能差。改用 `Transpose` 接口搬运替代构造 index。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/transpose.jpeg" width="65%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/transpose.jpeg" width="65%">
 
 <sub>Transpose 搬运优化。来源同上 culling 文档。</sub>
 

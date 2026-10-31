@@ -1,30 +1,22 @@
 ---
 type: Optimization
-title: DeepSeek/Kimi A3 Prefill CP：整域约束与阶段门控
-description: 记录两个固定 cann_executor 实现的 cp_size 等于 world_size 校验、ZigZag 与 KV 汇聚；DSA 细节和 Kimi 部署规模分别说明，不推广到 SGLang。
+title: DeepSeek/Kimi A3 Prefill CP：统一元数据与请求所有者
+description: 按当前统一Executor解释每请求ZigZag、CP整域约束、计算/持久缓存双视图和请求所有者。
 tags:
 - task.optimization
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/fa6892b54681724ac433118b2088ac9b614779f6/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/da13d661535741e1b2f3d6c1443a422af54150ba/docs/models/kimi-k2-thinking/kimi_k2_thinking_inference_guide.md
-  role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/fa6892b54681724ac433118b2088ac9b614779f6/models/deepseek-v3.2-exp/infer.py
-  role: constraint
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/da13d661535741e1b2f3d6c1443a422af54150ba/models/kimi-k2-thinking/infer.py
-  role: constraint
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/fa6892b54681724ac433118b2088ac9b614779f6/models/deepseek-v3.2-exp/models/modeling_deepseek.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/da13d661535741e1b2f3d6c1443a422af54150ba/models/kimi-k2-thinking/models/modeling_deepseek.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/models/modeling_deepseek.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/fa6892b54681724ac433118b2088ac9b614779f6/models/deepseek-v3.2-exp/config/deepseek_v3.2_exp_rank_64_64ep_prefill.yaml
-  role: example
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/da13d661535741e1b2f3d6c1443a422af54150ba/models/kimi-k2-thinking/config/kimi_k2_thinking_rank_64_64ep_prefill.yaml
-  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/config/inference_config.py
+  role: implementation
 created_at: '2026-10-20T12:16:14Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T14:49:38Z'
 platforms:
 - a3
 scope:
@@ -48,26 +40,24 @@ scope:
       - cann_executor
 ---
 
-# DeepSeek/Kimi A3 Prefill CP：整域约束与阶段门控
+# DeepSeek/Kimi A3 Prefill CP：统一元数据与请求所有者
 
-## 条件与规则入口
+当前两模型均使用统一Executor。启用CP时InferenceConfig和Engine要求cp_size=world_size、attn_tp_size=1；这一限制属于当前实现，不是CP原理限制。Decode不切头尾query，在线D侧还强制CP=1。
 
-本案例补充[长序列 CP 决策](../rules/long_seq_prefill_context_parallel.md)，限定 Atlas A3、Prefill，以及 DeepSeek-V3.2-Exp `fa6892b54681724ac433118b2088ac9b614779f6`、Kimi-K2-Thinking `da13d661535741e1b2f3d6c1443a422af54150ba` 两个 cann_executor 固定实现；不能直接用作 SGLang 配置。
+Engine._apply_prefill_cp按每条请求分别补齐至2×CP段，rank取得第r段与第2CP-r-1段。local_indices选择本地token，restore_indices把AllGather后的rank顺序还原为各请求原序；position_ids按每请求重新起算。模型可用cp_segment_min_len声明最小段长，不能仅靠全batch统一平均长度构造。
 
-## 两个实现共同的边界
+PrefillCPMetaData同时携带两类PA空间：global_block_table/global_slot_mapping是当前层完整KV的计算视图；persistent_valid_indices/persistent_slot_mapping是后续Decode或传输需要的持久视图。Offline只保留本rank请求所有者的真实token，PREFILL角色保留全局有效token，且只由CP rank0消费全局输出请求。不能把“计算时拿到完整KV”推成“每rank永久缓存所有请求”。
 
-两者的 `infer.py:check_parallel_settings` 都在 `cp_size > 1` 时要求 `cp_size == world_size`。对应 Prefill 样例均为 `world_size=64, cp_size=64`；这是固定入口的硬校验，不是 CP 技术的通用限制。
+V3.2-Exp的Indexer Key、INT8 scale及MLA latent都遵循这两类视图；Kimi稠密MLA不需Indexer，但仍需正确的token顺序、持久槽和输出恢复。CP与EP覆盖相同rank集合也不证明CommManager不建两个组。
 
-建模按 `is_prefill` 选择 CP 路径；例如有效 CP 大小在 Decode 按 1 处理。序列按 `cp_size * 2` 分块，每个 rank 负责头尾对称块，并在需要处恢复因果 token 顺序。局部 Q 配合 CP 域汇聚的 KV 计算；LM Head 前也有汇聚与重排，不能只切 input 而省略配套路径。
+迁移先对齐非CP确定性输出，再检查不等长、多请求、小于CP段数、无本地所有者请求及分片Prefill。记录显存、通信、TTFT与波动；来源没有隔离CP开关的统一实测收益。本次没有执行模型。
 
-MoE 的 EP 与整域 CP 在这组配置中覆盖相同 rank 集合，但 `init_parallel_comm_group` 分别初始化 `moe_ep_group` 和 `cp_group`。文档的“复用通信域”不能改写成“源码不再建组”或两个对象必然相同。
+选择入口见[长序列CP](../rules/long_seq_prefill_context_parallel.md)，写缓存见[MLA CP双视图](../rules/mla_prolog_zigzag_cp_kv_write.md)。
 
-## 模型各自的差异
 
-DeepSeek 使用 DSA：其官方文档说明 Indexer 的 head 归约与额外通信，不能把该论据用于所有稠密注意力。Kimi 文档说明单机与多机长序列部署示例；4K、256K 和节点数是该版本实践的描述，不是两模型共同的长度或规模阈值，也不是本次独立测得的上限。
+## Evidence
 
-输出投影、Embedding 与 LM Head 的 TP 仍有自己的布局和通信约束；它们不改变 CP 的阶段边界。跨 Prefill/Decode 迁移规模时，另读[集群配置核对](../rules/prefill_decode_cluster_scale_mismatch.md)。
-
-## 验证与回退边界
-
-来源没有只改变 CP 的独立收益数据。本次静态核对入口、分组与阶段门控，没有执行模型。复现需检查 token/position 与 KV 的顺序、因果掩码、通信组、输出与 TTFT；恢复配置也需重核缓存和组布局，不将历史样例视为可直接运行的当前配方。
+- [execution_engine.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/models/modeling_deepseek.py)（implementation）
+- [inference_config.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/config/inference_config.py)（implementation）

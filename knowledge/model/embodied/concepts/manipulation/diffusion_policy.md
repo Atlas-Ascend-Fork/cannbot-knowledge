@@ -9,12 +9,14 @@ tags:
 - topic.diffusion
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/diffusion-policy/infer_with_om/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/diffusion-policy/infer_with_om/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/diffusion-policy/infer_with_om/eval_dp_ascend.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:37Z'
 platforms:
 - 310p
 ---
@@ -70,10 +72,10 @@ mock 输入相似度对比：`verify_om_onnx.py --onnx-model-path outputs/onnx/d
 
 ### 归一化处理器（OM 部署必需）
 
-与 ACT 一致：OM 输出 action 反归一化、输入 observation 预归一化需 `policy_preprocessor.json` + `policy_postprocessor.json`（各配 `*.safetensors`）。若模型只带 `model.safetensors + config.json`，运行 `../lerobot/src/lerobot/processor/migrate_policy_normalization.py --pretrained-path dp_model` 生成 `dp_model_migrated/`。`eval_dp_ascend.py` 优先在 `--policy.path` 查找，否则回退同级 `<dir>_migrated/`。
+与 ACT 一致：策略输入 observation 预归一化、策略生成 action 反归一化（处理器位于 policy.select_action 前后；OM 只接收 UNet 的 sample/t/global_cond 并返回单步去噪输出）需 `policy_preprocessor.json` + `policy_postprocessor.json`（各配 `*.safetensors`）。若模型只带 `model.safetensors + config.json`，运行 `../lerobot/src/lerobot/processor/migrate_policy_normalization.py --pretrained-path dp_model` 生成 `dp_model_migrated/`。`eval_dp_ascend.py` 优先在 `--policy.path` 查找，否则回退同级 `<dir>_migrated/`。
 
 ## 相关页面
 
 - 动作生成范式对照：[act](act.md)（动作分块 Transformer）、[action-chunking](../modules/action_chunking.md)、[flow-matching-action-expert](../modules/flow_matching_action_expert.md)。
 - 离线部署：[om-atc-offline](../techniques/om_atc_offline.md)、[ascend-310p](../platforms/ascend_310p.md)。
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

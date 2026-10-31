@@ -9,12 +9,16 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-next/ops/gated_delta_net/rmsnormgated/torch_interface.cpp
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/ops/gated_delta_net/rmsnormgated/torch_interface.cpp
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/ops/gated_delta_net/rmsnormgated/op_kernel/CustVec.h
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage5/0001-feat-support-GDN-and-rmsnormgated-fusion-ops.patch
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 ---
@@ -27,10 +31,16 @@ AscendC 实现的 Mamba v2 风格 RMSNorm + SiLU(z) + Mul 融合算子，Qwen3-N
 
 ## Role In Pipeline
 
-- 输入：`x`（B,S,D，GDN attn 输出）、`z`（B,S,D，gate 分支）、`w`（RMSNorm 权重，尺寸为 `group_size = D/G`，即 norm.weight 的 per-head 维，`headdim = w.size(0)`，跨 G 组广播复用）、`G`（group 数）、`eps`。
+- 输入符号（不是通用形状承诺，限制见下文）：`x`（B,S,D，GDN attn 输出）、`z`（B,S,D，gate 分支）、`w`（RMSNorm 权重，尺寸为 `group_size = D/G`，即 norm.weight 的 per-head 维，`headdim = w.size(0)`，跨 G 组广播复用）、`G`（group 数）、`eps`。
 - 输出：`out = (RMSNorm(x, w, G, eps)) * SiLU(z)`，shape 与 x 相同。
 - 由 `torch.ops.npu_ops_transformer_ext.mambav2_rmsnormgated` 调用；Meta 函数 `mambav2_rmsnormgated_meta` 对输入做 `TORCH_CHECK(x.defined())` 校验后直接返回输入张量 `x`（用于形状/dtype 推断），并非分配新张量——真正分配输出的是 device 实现里的 `torch::empty(x.sizes(), x.options())`。
 - 核心数可由环境变量 `RMSNORMGATED_BLOCK_DIMS` 指定（默认 1，建议默认）。
+
+## 固定实现的输入限制
+
+x/z/w 必须是连续、storage_offset=0 的 BF16 张量：torch_interface.cpp 使用 storage().data() 作为基址，kernel 只做连续线性寻址，不处理 stride 或非零视图偏移。
+
+CustVec.h 每轮固定读写 2048 元素且没有尾块保护，D=1024 等不足一块的形状不能使用；权重只加载 2048/G 元素，不能据接口形式推定支持一般 D/G。D=2048 才与此权重加载长度直接一致；还需 G 整除 2048，group_size 及搬运/向量归约满足实现的块对齐要求。源码未给出完整可用 (D,G) 矩阵或通用尾块支持，本卡没有独立验证其他组合；新 shape 必须先补齐边界处理并对齐数值，不能只满足 D%G==0 就调用。
 
 ## Performance Signals
 
@@ -45,12 +55,15 @@ AscendC 实现的 Mamba v2 风格 RMSNorm + SiLU(z) + Mul 融合算子，Qwen3-N
 - 融合收益：原 SGLang 路径为 `RMSNorm` → `SiLU` → `Mul` 三个独立算子，产生两次 BF16 中间结果往返 GM。融合后仅一次 GM→UB + 一次 UB→GM；BF16/FP32 Cast 仅在 edge 发生。
 - Grouped RMSNorm：按 `group_size` 分组做 ReduceSum(x²) → /n → +eps → sqrt → 倒数 → Brcb 广播；两次 `Brcb` 将 rstd 扩展成与 x 对齐的 per-element scale 向量，再逐组 Mul。
 - Cube handler 保留占位（空 `Init/Compute` + dummy `mad`），当前只激活 AIV；为未来 Cube 版本预留结构（例如将 grouped MatMul 融入）。
-- 使能方式：环境变量 `USE_CUSTOM_NORM_KERNEL="true"`；可选 `RMSNORMGATED_BLOCK_DIMS` 指定核数。
-- 与 [recurrent-gated-delta-rule](recurrent_gated_delta_rule.md) 组合，实现 Decode GDN 路径的端到端融合；在 stage5 patch 中被 `ascend_backend.py` 和 `qwen3_next.py` 直接调用。
+- 使能方式：环境变量 USE_CUSTOM_NORM_KERNEL="true" 只在非 Extend 路径分派到该算子；forward_mode.is_extend() 仍调用 self.norm，因此不将此融合收益外推到 Prefill/Extend。可选 `RMSNORMGATED_BLOCK_DIMS` 指定核数。
+- 与 [recurrent-gated-delta-rule](recurrent_gated_delta_rule.md) 组合，实现 Decode GDN 路径的端到端融合；stage5 patch 中本算子仅由 qwen3_next.py 直接调用；ascend_backend.py 调用的是 recurrent_gated_delta_rule，应分别追踪。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/qwen3-next/ops/gated_delta_net/rmsnormgated/torch_interface.cpp`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-next/ops/gated_delta_net/rmsnormgated/torch_interface.cpp)、`op_kernel/CustVec.h`；`models/qwen3-next/patches/stage5/0001-feat-support-GDN-and-rmsnormgated-fusion-ops.patch`；README "新增特性使能" 表。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [torch_interface.cpp](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/ops/gated_delta_net/rmsnormgated/torch_interface.cpp)（supporting）
+- [CustVec.h](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/ops/gated_delta_net/rmsnormgated/op_kernel/CustVec.h)（implementation）
+- [0001-feat-support-GDN-and-rmsnormgated-fusion-ops.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage5/0001-feat-support-GDN-and-rmsnormgated-fusion-ops.patch)（implementation）
 
 ## Links
 

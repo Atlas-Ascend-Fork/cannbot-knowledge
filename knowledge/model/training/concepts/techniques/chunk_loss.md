@@ -1,19 +1,29 @@
 ---
 type: Concept
 title: Chunk Loss（分块 LM-Head + 损失，规避全量 logits 显存）
-description: Chunk Loss 把训练末端 LM-Head 投影 + 交叉熵沿序列维切成 chunk_size 子段，逐段在前向内即时求导后累加损失与梯度，任意时刻只驻留一段 [B,chunk_size,V] 的 logits 而非全量 [B,S,V]，规避大词表(vocab_size≫hidden_size)下 logits 一次性 materialize 的显存峰值。实现为 torch.autograd.Function：用 torch.func.grad_and_value(argnums=(0,1),has_aux=True) 当场算 grad_input/grad_weight，该段计算图即建即销不为 backward 保留，backward 仅按上游标量缩放回放;常驻仅 grad_inputs[B,S,H] 与 grad_weight[V,H]，与 S·V 无关。logits 峰值从 B·S·V·bytes 降到 B·chunk_size·V·bytes(缩减因子 S/chunk_size)。alpha 按全局有效 token 数归一并同值传每段，分段 sum 与不分块 mean 逐位等价、损失曲线不变。LM-Head bias 不支持。接入：MindSpeed-LLM 经 --loss-compute-mode chunk / --loss-chunk-size，gpt_model 与 deepseek4_model 在 TP=1 且 CP=1 时启用([S,B,H]→[B,S,H] transpose);MindSpeed-MM 经 model.json loss_cfg 的 compute_mode(default/chunk/dynamic_chunk)，dynamic_chunk 用 calculate_chunk_size 取不超过 token 预算的最大 2 的幂，FSDP2 路径以 chunkloss_lm_head 替换 DTensor Linear forward。关键术语：fixed_cross_entropy、calculate_lm_loss、grad_and_value、chunk_size、alpha 归一、动态分块。
+description: Chunk Loss 把训练末端 LM-Head 投影 + 交叉熵沿序列维切成 chunk_size 子段，逐段在前向内即时求导后累加损失与梯度，任意时刻只驻留一段 [B,chunk_size,V] 的 logits 而非全量 [B,S,V]，规避大词表(vocab_size≫hidden_size)下 logits 一次性 materialize 的显存峰值。实现为 torch.autograd.Function：用 torch.func.grad_and_value(argnums=(0,1),has_aux=True) 当场算 grad_input/grad_weight，该段计算图即建即销不为 backward 保留，backward 仅按上游标量缩放回放;常驻仅 grad_inputs[B,S,H] 与 grad_weight[V,H]，与 S·V 无关。logits 峰值从 B·S·V·bytes 降到 B·chunk_size·V·bytes(缩减因子 S/chunk_size)。alpha 按全局有效 token 数归一并同值传每段，同一 alpha 下分段 sum 与不分块 mean 数学等价，浮点舍入可能不同。LM-Head bias 不支持。接入：MindSpeed-LLM 经 --loss-compute-mode chunk / --loss-chunk-size，gpt_model 与 deepseek4_model 在 TP=1 且 CP=1 时启用([S,B,H]→[B,S,H] transpose);MindSpeed-MM 经 model.json loss_cfg 的 compute_mode(default/chunk/dynamic_chunk)，dynamic_chunk 用 calculate_chunk_size 在正整数且 batch_size≤预算时取满足预算的最大2的幂；其他输入回退1，不保证预算，FSDP2 路径以 chunkloss_lm_head 替换 DTensor Linear forward。关键术语：fixed_cross_entropy、calculate_lm_loss、grad_and_value、chunk_size、alpha 归一、动态分块。
 tags:
 - task.optimization
 - topic.multimodal
 - topic.memory
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/README.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/chunkloss.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/optimization/chunkloss.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/ascend950/graphtrainer.md
+  role: supporting
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/common/chunkloss.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/transformers_model.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/fsdp/features/memory/chunkloss/chunkloss.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/fsdp/features/memory/chunkloss/chunkloss_cce_fused.py
+  role: implementation
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - agnostic
 ---
@@ -22,7 +32,7 @@ platforms:
 
 ## Summary
 
-Chunk Loss 把训练末端「LM-Head 投影 + 交叉熵」沿**序列维度切成若干长度为 `chunk_size` 的子段**，每段在前向内立即算出该段的损失与梯度、随手累加，再丢弃该段的中间张量。任意时刻只驻留一段 `[B, chunk_size, V]` 的 logits，而非完整的 `[B, S, V]`——大词表（`vocab_size ≫ hidden_size`）下后者一次性 materialize 是训练显存峰值的主要来源之一。实现是一个自定义 `torch.autograd.Function`：用 `torch.func.grad_and_value` 在每段上当场求导，反向只是把前向已算好的 `grad_input` / `grad_weight` 按上游标量缩放回放，因此**全量 logits 的自动微分图从不被保留**。损失对全局有效 token 数 `alpha` 归一，分段求和与不分块的 mean 在数值上完全等价，损失曲线不变。通用技术，[mindspeed](../frameworks/mindspeed.md) 的 MindSpeed-LLM（GPT / `deepseek4`，即 DeepSeek-V4 / DeepSeekV4-Flash 的实现路径；DeepSeek-V3.2 走另一条 `deepseek32` 路径）与 MindSpeed-MM（理解模型 + FSDP2 路径）共用同一套 `ChunkLoss` 内核，MM 侧另含「按 token 预算自适应分块」的动态变体。
+Chunk Loss 把训练末端「LM-Head 投影 + 交叉熵」沿**序列维度切成若干长度为 `chunk_size` 的子段**，每段在前向内立即算出该段的损失与梯度、随手累加，再丢弃该段的中间张量。任意时刻只驻留一段 `[B, chunk_size, V]` 的 logits，而非完整的 `[B, S, V]`——大词表（`vocab_size ≫ hidden_size`）下后者一次性 materialize 是训练显存峰值的主要来源之一。实现是一个自定义 `torch.autograd.Function`：用 `torch.func.grad_and_value` 在每段上当场求导，反向只是把前向已算好的 `grad_input` / `grad_weight` 按上游标量缩放回放，因此**全量 logits 的自动微分图从不被保留**。损失对全局有效 token 数 `alpha` 归一，分段求和与不分块的 mean 在数学归一口径上等价，但浮点归约顺序不同，不能保证逐位一致；来源报告在合理配置下保持相同损失曲线。通用技术，[mindspeed](../frameworks/mindspeed.md) 的 MindSpeed-LLM（GPT / `deepseek4`，即 DeepSeek-V4 / DeepSeekV4-Flash 的实现路径；DeepSeek-V3.2 走另一条 `deepseek32` 路径）与 MindSpeed-MM（理解模型 + FSDP2 路径）共用同一套 `ChunkLoss` 内核，MM 侧另含「按 token 预算自适应分块」的动态变体。
 
 ## 动机：全量 logits 的显存峰值
 
@@ -82,7 +92,7 @@ flowchart LR
 
 ### 损失归一与数值等价
 
-每段的 `loss_forward` 是 `calculate_lm_loss`：把段内隐藏态 flatten、`F.linear(hidden, head_weight).float()` 出该段 logits，再走 `fixed_cross_entropy`。归一系数 `alpha` 在**分块之前**就按整批的有效 token 数算定（默认模式 `alpha = loss_mask.sum()`，`reduction="sum"`），并**同值传给每一段**。于是「各段 CE 求和 ÷ 全局 alpha」严格等于「全序列 CE 之和 ÷ 全局有效 token 数」，即对所有有效 token 取 mean——与不分块路径逐位等价，这正是官方记录「显存峰值显著下降而损失曲线保持一致」的来源。`fixed_cross_entropy` 还支持 `reduction="none"` 的逐样本 / 逐 token 加权（`alpha` 为 0 维标量或 1 维 `[N]`：标量先对逐元素 loss 求和再除，`[N]` 则把 loss reshape 成 `[N, -1]` 逐样本归一后求和），覆盖 per-sample、per-token 等损失口径。LM-Head **bias 不支持**：`head_bias` 非空直接 `NotImplementedError`。
+每段的 `loss_forward` 是 `calculate_lm_loss`：把段内隐藏态 flatten、`F.linear(hidden, head_weight).float()` 出该段 logits，再走 `fixed_cross_entropy`。归一系数 `alpha` 在**分块之前**就按整批的有效 token 数算定（默认模式 `alpha = loss_mask.sum()`，`reduction="sum"`），并**同值传给每一段**。于是「各段 CE 求和 ÷ 全局 alpha」严格等于「全序列 CE 之和 ÷ 全局有效 token 数」，即对所有有效 token 取 mean——这是实数运算下的数学等价，浮点归约与权重梯度累加顺序改变后可能产生舍入差异，不能据此保证逐位一致；官方记录的是相应配置下的损失曲线效果。`fixed_cross_entropy` 还支持 `reduction="none"` 的逐样本 / 逐 token 加权（`alpha` 为 0 维标量或 1 维 `[N]`：标量先对逐元素 loss 求和再除，`[N]` 则把 loss reshape 成 `[N, -1]` 逐样本归一后求和），覆盖 per-sample、per-token 等损失口径。LM-Head **bias 不支持**：`head_bias` 非空直接 `NotImplementedError`。
 
 ## 显存收益
 
@@ -99,7 +109,7 @@ logits 这块主激活的峰值从 `B · S · V · dtype_bytes` 降到 `B · chu
 MM 侧由理解模型 `model.json` 的 `loss_cfg` 驱动，`compute_mode ∈ {default, chunk, dynamic_chunk}`、`chunk_size`（`chunk` 模式默认 1024，`dynamic_chunk` 默认 4096）：
 
 - `chunk`：固定子段长度，等价于上面的静态分块，覆盖 default / per-sample / per-token 三类损失口径，并兼容 CP（`split_forward_gather_backward_with_cp` 按 CP 切分 `shift_labels`；唯逐 token 加权的 `alpha` 口径——如 `square_loss`——才连同 `alpha` 一并按 CP / 分块切分，而 per-sample 的 `alpha` 是逐样本 `[batch_size]`、对各段广播复用而非切分）。
-- `dynamic_chunk`：把 `chunk_size` 当作「`batch_size × 子段长` 的 token 预算」上限，`calculate_chunk_size` 取**不超过 `total_size // batch_size` 的最大 2 的幂**作为实际子段长，使任意 batch 下单段计算量受同一预算约束、避免动态形状下偶发 OOM。
+- `dynamic_chunk`：把 `chunk_size` 当作「`batch_size × 子段长` 的 token 预算」上限，`calculate_chunk_size` 取**不超过 `total_size // batch_size` 的最大 2 的幂**作为实际子段长，在 batch_size、total_size 均为正整数且 batch_size <= total_size 时满足单段 token 预算。该函数在 batch_size >= total_size 或参数非正时直接返回 1；batch_size > total_size 时仍会超过预算，因此不能保证任意 batch 的预算或避免所有 OOM。
 - FSDP2 路径用 `chunkloss_lm_head` 把 LM-Head `nn.Linear` 的 `forward` 替换成处理 **DTensor**（`weight.to_local()`）的分块版本，再经 `build_loss_func` 闭包接同一 `chunk_loss` 内核——与 [mm-activation-memory](mm_activation_memory.md) 同属 MM 训练的激活显存压制手段。
 
 ## 约束
@@ -108,18 +118,32 @@ MM 侧由理解模型 `model.json` 的 `loss_cfg` 驱动，`compute_mode ∈ {de
 - LLM 侧仅在 **TP=1 且 CP=1** 时启用（分块沿序列维，与词表并行 logits / CP 序列切分不叠加）。
 - 分段沿序列维进行，`chunk_size` 指每段 token 数；过小会增加分段次数与调度开销，需按词表与序列规模权衡。
 
+## 当前原生 FSDP2 配置与稀疏 SFT 路径
+
+原生 FSDP2 在 YAML `features` 段设置 `enable_chunk_loss: true`，通过 `chunkloss_plan.apply_module: lm_head`（须为 nn.Linear）和 `chunk_size`（默认1024）控制静态分块；动态分块用 `enable_dynamic_chunk_loss` 与 `total_chunk_size`（默认4096）。二者都默认 false，且**不要同开**：框架没有冲突校验，同时开启会造成模型按静态使能、loss 按动态推导块大小的不一致。
+
+`loss_cfg.compute_mode` 的 model.json 配置属于旧 Megatron 桥接 FSDP2；mcore Qwen3.5 另用模型 config 的 `use_chunk_loss`/`chunk_size`。三条入口不能混写配置。
+
+FSDP2 专用的 `fsdp/features/memory/chunkloss/chunkloss.py` 在 `reduction="sum"`、alpha 为标量（或 None）、且仅部分 label 为 ignore_index 时，先展平 batch 并筛掉被忽略的行，再重新分块，避免它们进入 LM-Head。索引反向把梯度散回有效行、其余归零；数学上保持标量归约，浮点求和顺序仍可能不同。per-sample/非标量 alpha、全忽略或无忽略时走原路径；不能由这一优化推断所有 common ChunkLoss 实现都做了过滤。
+
+CCE 的 `chunk_loss_cce_fused` 同样在 vocab-tile kernel 前过滤部分 ignore_index 行，并可再按有效 token 序列分段；per-sample 归约不适用这种跨样本展平。该优化无额外开关，收益依赖实际 mask 比例，仍须核对 loss 与梯度而非只测显存。
+
 ## Evidence
 
-- [mindspeed-mm](https://gitcode.com/Ascend/MindSpeed-MM) — [`docs/zh/features/chunkloss.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/chunkloss.md)（背景与挑战 / 序列分块解决方案 / `loss_cfg` 的 `compute_mode` default·chunk·dynamic_chunk 与 `chunk_size` 语义 / 使用效果）
-- [`mindspeed_mm/models/common/chunkloss.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/models/common/chunkloss.py) — `ChunkLoss`（前向内 `grad_and_value` 即时求导 + `save_for_backward` 缩放回放）、`fixed_cross_entropy`（alpha 归一 / sum·none 口径）、`calculate_lm_loss`、`chunk_loss`
-- [`mindspeed_mm/models/transformers_model.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/models/transformers_model.py) — `_set_loss_cfg` / `build_loss_ctx`（`compute_mode` 派发、`dynamic_chunk` 走 `total_size` 预算、CP 切分）、`calculate_chunk_size`（最大 2 的幂）
-- [`mindspeed_mm/fsdp/loss/loss_func.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/fsdp/loss/loss_func.py)、[`mindspeed_mm/fsdp/features/memory/chunkloss/chunkloss_lm_head.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/fsdp/features/memory/chunkloss/chunkloss_lm_head.py) — FSDP2 侧 `build_loss_func` 闭包与 DTensor LM-Head `forward` 替换
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/core/models/common/chunk_loss.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/models/common/chunk_loss.py) — LLM 侧同源 `ChunkLoss` / `calculate_lm_loss`（含 `is_instruction_dataset` 的 label 错位处理）
-- [`mindspeed_llm/features_manager/memory/chunk_loss.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/memory/chunk_loss.py) — `--loss-compute-mode` / `--loss-chunk-size` 参数注册
-- [`mindspeed_llm/core/models/gpt/gpt_model.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/models/gpt/gpt_model.py)、[`mindspeed_llm/core/models/deepseek4/deepseek4_model.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/models/deepseek4/deepseek4_model.py) — `post_process` 末端 chunk 分支（TP=1 且 CP=1 门控、`[S,B,H]→[B,S,H]` transpose、`alpha=loss_mask.sum()`）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md)（primary）
+- [chunkloss.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/optimization/chunkloss.md)（supporting）
+- [graphtrainer.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/ascend950/graphtrainer.md)（supporting）
+- [chunkloss.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/common/chunkloss.py)（implementation）
+- [transformers_model.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/models/transformers_model.py)（implementation）
+- [chunkloss.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/fsdp/features/memory/chunkloss/chunkloss.py)（implementation）
+- [chunkloss_cce_fused.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/fsdp/features/memory/chunkloss/chunkloss_cce_fused.py)（implementation）
 
 ## Links
 
 - [mindspeed](../frameworks/mindspeed.md)（Chunk Loss 内核所在框架；MindSpeed-LLM 与 MindSpeed-MM 共用 `ChunkLoss`）
 - [optimizer-memory](optimizer_memory.md)（训练显存治理全景：Chunk Loss 压制末端 logits 激活峰值，与优化器侧显存优化互补）
 - [mm-activation-memory](mm_activation_memory.md)（MM 训练激活显存压制；FSDP2 路径的分块 LM-Head 是其一环）
+
+## 新增 GraphTrainer 路径的通信边界
+
+当前 950 文档在一维 SimpleFSDP Linear head、FP32 主参数及梯度归约的适用路径中，将同一 microbatch 内各 loss chunk 的 head 梯度先本地累加，再统一一次 ReduceScatter；跨 microbatch 累加语义保留。这是减少重复归约的配套改进，不改变本卡分块 logits 的基本动机，也不能外推到所有 MindSpeed/DTensor 路径。具体联合图与版本条件见 [GraphTrainer](../frameworks/graphtrainer.md)。本批未执行训练。

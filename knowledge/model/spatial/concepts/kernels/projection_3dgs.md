@@ -9,19 +9,19 @@ tags:
 - topic.three_dimensional_reconstruction
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/projection_three_dims_gaussian_forward.cpp
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/projection_three_dims_gaussian_forward.cpp
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-13T00:00:00Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a2
 ---
 
 # Projection-3DGS —— 3D→2D 高斯球投影融合算子
 
-投影预处理把 3D 高斯球的均值与协方差由 3D 球面投影到 2D 平面，得到光栅化所需的 2D 均值 `means2d`、协方差/锥参 `conics`/`covars2d`、深度 `depths`、半径 `radius` 等属性。前向 host 定义为 [`ProjectionThreeDimsGaussianForward`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/projection_three_dims_gaussian_forward.cpp)，反向为 [`FullyFusedProjectionBwd`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/fully_fused_projection_bwd.cpp)；Python 侧 `projection_three_dims_gaussian_fused(...)` 在融合投影的同时执行视锥剔除（见 [gaussian-filter](gaussian_filter.md)）。被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联在球谐着色之后、排序之前。
+投影预处理把 3D 高斯球的均值与协方差由 3D 球面投影到 2D 平面，得到光栅化所需的 2D 均值 `means2d`、协方差/锥参 `conics`/`covars2d`、深度 `depths`、半径 `radius` 等属性。前向 host 定义为 [`ProjectionThreeDimsGaussianForward`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/projection_three_dims_gaussian_forward.cpp)，反向为 [`FullyFusedProjectionBwd`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/fully_fused_projection_bwd.cpp)；Python 侧 `projection_three_dims_gaussian_fused(...)` 在融合投影的同时执行视锥剔除（见 [gaussian-filter](gaussian_filter.md)）。被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联在球谐着色之后、排序之前。
 
 ## 前向算子接口
 
@@ -31,7 +31,7 @@ platforms:
 - 输出：`means2d`、`depths`、`conics`、`compensations`、`det`、`radius`、`covars2d`。
 - 属性：`image_width`、`image_height`、`eps2d`、`calc_compensations`(bool)、`camera_model`(int)。
 
-`camera_model` 与 `config.py` 的 `camera_model: "pinhole" | "ortho" | "fisheye"`（默认 `pinhole`）对应；`eps2d` 是 2D 协方差膨胀项。3D 协方差由 `QuatScalesToCovars`（[`quat_scales_to_covars.cpp`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/quat_scales_to_covars.cpp)，输入 `quat`/`scales`，输出 `covars`）由四元数与缩放生成。
+`camera_model` 与 `config.py` 的 `camera_model: "pinhole" | "ortho" | "fisheye"`（默认 `pinhole`）对应；`eps2d` 是 2D 协方差膨胀项。3D 协方差由 `QuatScalesToCovars`（[`quat_scales_to_covars.cpp`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/quat_scales_to_covars.cpp)，输入 `quat`/`scales`，输出 `covars`）由四元数与缩放生成。
 
 ## 反向算子接口
 

@@ -1,8 +1,7 @@
 ---
 type: Concept
 title: VAE（多模态生成）
-description: VAE 在生成模型中完成像素与 latent 之间的编解码；图像条件推理也会调用 Encoder。涵盖按模型区分的 VAE 并行、mask
-  缓存和 offload 调整，并区分 VAE 与去噪网络优化。
+description: VAE 在生成模型中完成像素与 latent 之间的编解码；图像条件推理也会调用 Encoder。涵盖按模型区分的 VAE 并行、mask 缓存和 offload 调整，并区分 VAE 与去噪网络优化。
 tags:
 - task.design
 - topic.model_architecture
@@ -10,23 +9,24 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/wan2.2-i2v/wan/image2video.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/wan/image2video.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/vae/vae_parallel.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/hyvideo/vae/vae_parallel.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/inference_video_scripts/inference_sana_video.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py
   role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T01:37:00Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - agnostic
 ---
+
 # VAE（多模态生成）
 
 ## Summary
@@ -43,13 +43,15 @@ cann-recipes-infer 对 VAE 的主要优化方向有两条：
 
 ```mermaid
 flowchart LR
- Latent[DiT 输出 latent<br/>B × C × T × H/8 × W/8] --> VAE[VAE Decoder<br/>3D/2D Conv + Attention + Upsample]
- VAE --> Pix[像素域<br/>B × 3 × T × H × W]
+ Latent[DiT 输出 latent<br/>B × C_latent × T_latent × H_latent × W_latent] --> VAE[VAE Decoder<br/>3D/2D Conv + Attention + Upsample]
+ VAE --> Pix[像素域<br/>B × 3 × T_out × H_out × W_out]
 ```
+
+时空压缩倍率由具体 VAE 配置决定。Wan2.2-I2V 以 T_latent=(F−1)//vae_stride[0]+1 构造 latent 时间维，decoder 包含时间上采样；不能把 latent 帧数与输出帧数视为相等。
 
 - **卷积感受野**：naive chunk 切分 → 边缘帧/行丢失邻居信息，生成结果出现**拼接缝**
 - **注意力全局性**：VAE 内部若含 self-attention，K/V 必须全局 gather 才能正确计算
-- **Upsample 边界**：上采样需要扩展边界后再裁剪，避免块间不连续
+- **Upsample 边界**：共享 patch 实现按插值模式与缩放因子决定直接计算或扩展/裁剪，详见 VAE Patch Parallel 的约束
 
 ### Mask 缓存（HunyuanVideo）
 
@@ -68,14 +70,12 @@ VAE 内部需要重复构造的 mask（具体类型源未明示）在每帧都�
 
 ## Evidence
 
-- [Sana-Video 卷积优化实现](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py)：patch 目标为 `diffusion.model.nets` 中的类，具体调用边界见 Sana-Video 卡。
-- [Wan2.2-I2V 推理入口](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/wan2.2-i2v/wan/image2video.py)：`generate` 在 DiT 前调用 `vae.encode`、在输出阶段调用 `vae.decode`，并为 Encoder/Decoder 配置并行。
-- [HunyuanVideo VAE decode](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/vae/vae_parallel.py)：按 `z.shape[-1]` 切宽度、补 overlap 后解码。
-
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md) VAE并行 / VAE优化 / 取消VAE offload
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md) VAE并行优化
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md) 8卡VAE并行
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/sana-video/SANA-Video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/sana-video/SANA-Video_optimization.md) 1×1 conv / 时序 conv
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（supporting）
+- [npu_patches.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py)（implementation）
+- [image2video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/wan/image2video.py)（implementation）
+- [vae_parallel.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/hyvideo/vae/vae_parallel.py)（implementation）
+- [inference_sana_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py)（implementation）
 
 ## Links
 

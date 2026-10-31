@@ -1,60 +1,63 @@
 ---
 type: Guide
-title: Gemma-4 文本 Decoder 的 A2/A3 部署与精度验收
-description: Gemma-4 文本 Decoder 的 A2/A3 部署与精度验收，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+title: Gemma-4 文本 Decoder 当前部署
+description: 当前gemma_4入口、单一Decode配置、Page cache混合布局与等长限制、MC2/图后端和RoPE验收。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/agentic/optimization_report.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/models/modeling_gemma4.py
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/config/gemma4_rank_8_8ep_gegraph_decode.yaml
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/models/modeling_gemma4.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/agentic/optimization_report.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/config/gemma4_rank_8_8ep_decode.yaml
+  role: example
 created_at: '2026-10-21T09:56:17Z'
-updated_at: '2026-10-21T09:56:17Z'
+updated_at: '2026-10-29T14:25:50Z'
 platforms:
 - a2
 - a3
 ---
 
-# Gemma-4 文本 Decoder 的 A2/A3 部署与精度验收
+# Gemma-4 文本 Decoder 当前部署
 
-## 目标、输入与产物
+## 准备与配置
 
-面向固定来源中的 Gemma-4-26B-A4B 实现，输入包括平台、权重、实际配置和任务指标；产物为可追溯配置、正确性/性能记录及回退入口。模型结构由[模型 Concept](../../concepts/models/gemma4_26b_a4b.md)维护。以下描述固定版本实践，不能当作当前所有软件版本的部署保证。
+当前目录为models/gemma_4，覆盖A2/A3文本Decoder，视觉塔未覆盖。README环境CANN9.0.0、PyTorch2.8.0、torch_npu2.8.0.post4（发布26.0.0）、Python3.11；按requirements锁定transformers等实际依赖，源码头部上游版本注释不是安装版本。
 
-## 1. 限定文本路径并保存环境
+准备完整BF16权重，复制models/gemma_4/chat_template.jinja到权重目录；config/gemma4_rank_8_8ep_decode.yaml设置model_path。当前示例world8、Attention/Dense TP1、MoE EP8、Embedding/LMHead TP8、batch8、输入256/输出32，默认GE。
 
-本流程仅 Language MoE Decoder，Vision Tower、W8A8/W4A16 与 sliding 环形缓存不在已覆盖路径中。README/requirements 的 transformers 5.0.0 与建模头部 5.5.0 标注不同，保存实际版本，不自动选择一方。
+```bash
+bash executor/scripts/infer.sh --model gemma_4 --yaml gemma4_rank_8_8ep_decode.yaml
+```
 
-## 2. 核对 EP8 与异构 cache
+旧gemma4_rank_8_8ep_gegraph_decode.yaml已撤下，不能在新目录照抄旧配置名。
 
-固定样例为 `attn_tp=1`、`dense_tp=1`、EP8、Embedding/LMHead TP8。Sliding/full 层缓存分别按本层 KV 维度分配连续缓冲，不直接套用统一 Paged block；full 层 K=V 与 `scale=1.0` 必须对齐模型配置。全局机制见 [KV 管理](../../concepts/frameworks/kv_cache_manager.md)、[EP](../../concepts/parallelism/expert_parallel.md)。
+## 当前缓存、路由和图执行
 
-## 3. 分别验收 Decode 路由和图后端
+当前为统一Page cache，两套attention类型分别分配block pool。Sliding TND，Full Prefill BNSD/Decode PA的BSH视图；同batch Prefill必须等长，入口会显式拒绝变长。不要再配置runner连续缓存或BSND shim。
 
-`custom_params.moe_ep_decode_mode` 的 mc2 与 local_experts 为替代路径：前者 dispatch_v2/combine_v2，后者本地专家掩码计算后 AllReduce，保持静态 shape。代码默认按 experts_per_rank≤24 选择 mc2，EP8 为16/rank；实际 YAML 显式 local_experts，最终以生效配置为准。A2 算子上限不能推广为 A3 的限制。
+纯EP Decode固定MC2 dispatch/combine，参数在权重处理后预置避免首步构图变化；旧local_experts和moe_ep_decode_mode开关已删除。A2专家/rank能力需按实际算子确认，不能靠已移除的自动回退。当前EP8为128/8=16专家/rank。
 
-GE Decode 用 torchair 接口与 Tensor 实际长度，npugraph_ex 路径按其接口所需 host list 处理；Prefill 保持 eager。RoPE cos/sin 预计算避免图内 `.item()`，相关决策见 [图模式规则](../../optimizations/rules/graph_mode_enable_decision_profiling.md)。不同后端的长度类型不得互换。
+Decode可GE或npugraph_ex，Prefill eager；GE使用torchair算子与Tensor长度，npugraph Decode用host list。enable_static_kernel仅npugraph_ex生效，enable_cache_compile默认false，缓存按共享执行器处理。
 
-## 4. 检查数值替代与能力缺口
+## 数值核对
 
-Full partial RoPE 使用 slice→rotary_mul→cat。Decode 手工 GEGLU 的 `npu_fast_gelu(gate)*up` 与报告中的 F.gelu 表述不同；当前代码注释说明后者有 capture 回退问题。Prefill/eager 的 npu_geglu 与 Decode 路径可能不 bit-exact，不能依据“语义连贯”验收精度。npu_ffn 的 FP16、npu_gelu_mul 的维度限制只按对应固定来源解释，不当作未来版本全局约束。
+Full K/V共享投影但不共享cache，scale=1.0。当前partial RoPE抽取两半成对维度，频率按full head_dim和factor计算；避免照搬旧前缀切片。Dense激活按配置，专家图Decode实际为F.gelu(tanh)*up，报告npu_fast_gelu文字已落后于实现。原报告字节一致的基线声明不代替目标build复测。
 
-性能分开查阅 [A2 观测](../../optimizations/benchmark_observations/gemma4_a2_source_benchmark.md)、[A3 观测](../../optimizations/benchmark_observations/gemma4_a3_source_benchmark.md)；A2 累计表与跨硬件表口径不同，不拼接成一次试验。
+## 验证与回退
 
-## 验证、停止与回退
+固定prompt/seed/权重和长度，对照eager/目标图后端，核对所有sliding/full输出、缓存slot、路由和生成token；再测冷编译、稳态、内存与重复统计。失败时恢复合法等长输入和eager基线，不能切到已删除local_experts。
 
-保存实际权重、软件版本、平台、并行组、输入与输出；以未启用待验优化的路径作对应基线，逐项比较 logits/任务质量、时延和峰值内存，并分别记录冷启动、warmup 与稳态重复测量。遇到源中未覆盖的形状、后端或平台时停止套用。失败后恢复对应版本的配置、权重与编译缓存，再按关联 Runbook 排查；没有实际跑通的回退不写为已验证。
-
-本卡未记录独立的模型执行或硬件复测。来源自报和输出“看起来正常”不能替代本部署的精度验收；执行后应另存实际环境、配置和测量记录。
+最新来源[A2观测](../../optimizations/benchmark_observations/gemma4_a2_source_benchmark.md)和[A3观测](../../optimizations/benchmark_observations/gemma4_a3_source_benchmark.md)分组读取；旧路由模式消融不再作为当前可执行配置。本次未运行NPU。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/agentic/optimization_report.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/README.md)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/models/modeling_gemma4.py)
-- [固定来源 4](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/config/gemma4_rank_8_8ep_gegraph_decode.yaml)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/README.md)（primary）
+- [modeling_gemma4.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/models/modeling_gemma4.py)（implementation）
+- [optimization_report.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/agentic/optimization_report.md)（supporting）
+- [gemma4_rank_8_8ep_decode.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/config/gemma4_rank_8_8ep_decode.yaml)（example）

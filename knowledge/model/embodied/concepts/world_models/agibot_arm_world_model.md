@@ -8,14 +8,16 @@ tags:
 - topic.diffusion
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/world_model/agibot-arm-world-model/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/agibot-arm-world-model/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/world_model/agibot-arm-world-model/doc/optimization.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/agibot-arm-world-model/doc/optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/agibot-arm-world-model/train/dataset/dataset_agibot_text_49frames.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a2
 - '910'
@@ -37,7 +39,8 @@ AgiBot Arm World Model 是本仓打包的一个**机械臂世界模型**工作�
 
 ## 训练设计（一手）
 
-- **49 帧训练组织**：训练样本固定 49 帧；加载器合并同一 episode 的**两个连续 clip**（two consecutive clips），再从合并段采样一个随机连续 49 帧窗口（两 clip 的 text prompt 始终拼接）——为机械臂运动预测提供更长时序连续性、改善运动一致性。**fallback**：当 episode 内下一 clip 不存在时，退回单 clip 采样，并对不足的帧做末帧 padding（last-frame padding）。
+- **49 帧训练组织**：仅当当前 clip 帧数少于 target_frames=49 且存在有效下一 clip 时，加载器才合并同一 episode 的两个连续 clip，再从合并段随机采样连续窗口；只有该合并分支拼接两段 text prompt。当前 clip 已够 49 帧时直接单 clip 采样；不足且无下一 clip 时仍用单 clip，并以末帧 padding 补齐。源码类注释的“总是合并”不能替代 __getitem__ 的实际分支。
+
 - **多条件输入**：`control_video`（渲染的轨迹监督）+ `reference_image`（保留场景外观）+ `input_image`（维持时序续接）+ text prompt（保留语言条件兼容性），显式分离「场景外观」与「运动控制」，提升机械臂运动生成可控性。
 - **启动**：`accelerate launch` + `configs/accelerate_config_zero2.yaml`（ZeRO-2），8 NPU，`NUM_PROCESSES` 必须与 accelerate config 一致。关键超参（`run_train.sh`）：`--height 480 --width 640 --num_frames 49 --learning_rate 1e-5 --num_epochs 100 --save_steps 2000 --trainable_models dit --extra_inputs control_video,reference_image,input_image --text_dropout_prob 0.1 --gradient_accumulation_steps 2`；脚本设 `TORCHINDUCTOR_DISABLE=1` / `NPU_DISABLE_TORCHINDUCTOR=1`（关闭 inductor）。
 
@@ -71,4 +74,9 @@ AgiBot Arm World Model 是本仓打包的一个**机械臂世界模型**工作�
 - 动作分块思想：[action-chunking](../modules/action_chunking.md)
 - DiT 模块：[dit](../../../inference/concepts/modules/dit.md)｜VAE：[vae](../../../inference/concepts/modules/vae.md)
 - A2 平台（空间智能域同款硬件页）：[atlas-a2](../../../spatial/concepts/platforms/atlas_a2.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)
+
+
+## 视频片段拼接的空值判断
+
+`dataset_agibot_text_49frames.py` 只有在 `raw_frames_a is not None and raw_frames_b is not None` 时拼接两段帧数组，避免对多元素 NumPy 数组做隐式 bool 判定引发 ambiguous truth value。None 表示缺失，与数组是否为空是不同条件，数据诊断时应分别核对。

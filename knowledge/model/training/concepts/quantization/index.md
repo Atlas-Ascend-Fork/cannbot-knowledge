@@ -1,3 +1,3 @@
 # 量化
 
-- [HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案](hif8.md)：HiF8/MXFP8 8-bit 低精度训练有两条实现路径。(1)MindSpeed+TE：--fp8-format/--fp8-recipe，FP8GlobalStateManager/TERowParallelLinear，950 950DT。(2)torchtitan-npu converter 路径：nn.Linear→MXLinear(quant_linear.py)、npu_grouped_mm→低精度 GMM(quant_gmm.py)，converter quantize.linear.mx/quantize.grouped_mm.mx，recipe_name∈{mxfp8,hif8}，MXFP8 用 torch_npu.npu_dynamic_mx_quant(block=32)+npu_quant_matmul、HiF8 用 npu_dynamic_quant+npu_grouped_matmul，filter_fqns 跳敏感层，npu_gmm 须先于 quantize.grouped_mm.mx，仅 Ascend950+。该 converter 路径不同于 torchtitan 上游的 TorchAO MXLinearConverter 路径。
+- [HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案](hif8.md)：HiF8 编码、缩放和来源报告的低精度训练收益；当前 TorchAO-NPU all_hif8、V4 LI HiFloat8 与 FSDP 预量化边界。

@@ -1,9 +1,7 @@
 ---
 type: Concept
 title: MoE Double-Routing
-description: DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **两轮路由与两轮顺序恢复（末轮调用一次 npu_moe_finalize_routing）**：第一次做本卡内按专家排序
-  + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较
-  AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。
+description: DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **两轮路由与两轮顺序恢复（末轮调用一次 npu_moe_finalize_routing）**：第一次做本卡内按专家排序 + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较 AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。
 tags:
 - task.optimization
 - topic.mixture_of_experts
@@ -11,12 +9,14 @@ tags:
 - topic.data_movement.communication.collective_communication
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - agnostic
 ---
@@ -42,8 +42,8 @@ flowchart TD
 
 源图原貌如下，结构示意见上方 mermaid：
 
-![DeepSeek-R1 MoE Double-Routing 流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/figures/image_double_routing.png)
-*来源：[`docs/models/deepseek-r1/figures/image_double_routing.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/figures/image_double_routing.png)（cann-recipes-infer @ 2f82d10）*
+![DeepSeek-R1 MoE Double-Routing 流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_double_routing.png)
+*来源：[`docs/models/deepseek-r1/figures/image_double_routing.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_double_routing.png)（cann-recipes-infer @ 944d2d3）*
 
 ### 8 步详述
 
@@ -88,7 +88,7 @@ flowchart TD
 
 ### A8W8 路径
 
-A8W8 场景下 `npu_moe_init_routing_v2` 直接与后续 dynamic-quant 融合，输出 INT8 + `pertoken_scale`。本页 double-routing 路径（`moe_infer_double_routing`，L644-668）的第一次 init-routing 直接内联传参，A8W8 时仅打开 `scale=smooth_scale_1` 与 `quant_mode=1`（dynamic quant），`expert_tokens_num_type` 恒为 `1`（count mode），**不设** `row_idx_type` / `drop_pad_mode` / `expert_tokens_num_type=2`：
+A8W8 场景下 `npu_moe_init_routing_v2` 直接与后续 dynamic-quant 融合，输出 INT8 + `pertoken_scale`。当前double-routing路径（moe_infer_double_routing）的第一次 init-routing 直接内联传参，A8W8 时仅打开 `scale=smooth_scale_1` 与 `quant_mode=1`（dynamic quant），`expert_tokens_num_type` 恒为 `1`（count mode），**不设** `row_idx_type` / `drop_pad_mode` / `expert_tokens_num_type=2`：
 
 ```python
 expanded_x, expanded_row_idx, tokens_per_expert, pertoken_scale \
@@ -103,22 +103,24 @@ expanded_x, expanded_row_idx, tokens_per_expert, pertoken_scale \
  )
 ```
 
-来自 `models/deepseek_r1/models/modeling_deepseek.py` 中 `moe_infer_double_routing`（L656-666）。
+来自 `models/deepseek_r1/models/modeling_deepseek.py` 中 `moe_infer_double_routing`。
 
-> 注：另一处 `routing_args.update({scale, quant_mode:1, expert_tokens_num_type:2, row_idx_type:0, drop_pad_mode:0})` 的 A8W8 量化片段出自 `moe_infer_tp`（TP 混切路径，`moe_tp_size>1`，L563-567），**不属于本页 double-routing 流程**——两条分支的 init-routing 量化参数不可互套。
+> 注：另一处 `routing_args.update({scale, quant_mode:1, expert_tokens_num_type:2, row_idx_type:0, drop_pad_mode:0})` 的 A8W8 量化片段出自 `moe_infer_tp`（TP路径，moe_tp_size>1），**不属于本页 double-routing 流程**——两条分支的 init-routing 量化参数不可互套。
 
 ## Applicable Scenarios
 
 - 大 EP（16+、128+）MoE 部署的 Prefill 阶段。
 - 每卡均持有 shared expert + 本卡分得的 routed experts。
-- [longcat-flash-lite](../models/longcat_flash_lite.md) Prefill 走 `_dispatch_double_routing`（两轮 AllToAll）：因 MC2 `dispatch_v2` 单层 token 数受 BS 上限（约 512）约束无法用于 Prefill 大序列；其 A2 部署亦因 `experts_per_rank ≤ 24`（EP=8 下 32/rank 不满足）回退 double-routing。
+- [longcat-flash-lite](../models/longcat_flash_lite.md) Prefill 走 `_dispatch_double_routing`（两轮 AllToAll）：因 MC2 `dispatch_v2` 单层 token 数受 BS 上限（约 512）约束无法用于 Prefill 大序列；其 当前A2部署在每rank专家数>24时自动回退DR，开关显式关闭也可回退。
 - 与 Decode 阶段更常用的 `npu_moe_distribute_dispatch_v2` / `combine_v2` 一体化算子（[moe-dispatch-combine-v2](moe_dispatch_combine_v2.md)）形成对比：后者在 decode 单 token 场景下更高效，double-routing 在 Prefill 大序列场景收益显著。
 - [qwen3-5-moe](../models/qwen3_5_moe.md) 的普通 EP 路径与本方案**同源**（`init_routing_v2` → AllToAll splits → 分发 → `re_routing` → GroupedMatmul → `torch.index_select` 恢复 → 反向 AllToAll → `finalize_routing`），Qwen3.5 与本页 R1 均以 `torch.index_select` 完成第一轮恢复，末轮调用一次 `finalize_routing`；逻辑路由/恢复次数不等于同名接口调用次数。其纯 EP Decode（`moe_ep_size>1` 且 `moe_tp_size==1`）可替换为 dispatch_v2/combine_v2 融合路径。
+
+当前R1该函数仍注明只支持eager，Prefill并不会因YAML指定Decode图模式而入图。新实现进入层循环前先按moe_chunk_max_len求EP MAX chunk数，tensor_split在各rank返回相同份数（含空片），保持token/scale/topk/shared顺序及集合通信轮次一致；mode2微批分别计算，避免每层同步。不能只按本地token数独立循环。
 
 ## Constraints
 
 - 相比一体化 dispatch/combine，**多了一次 re-routing 计算** + 额外一轮 AllToAll，host 下发压力更大，在 host bound 场景下反而变慢。
-- 负载极度不均时效益下降（individual 卡显存仍可能飙升，需要配合 Chunk MoE 与 perfect eplb）。
+- 负载极度不均时效益下降（individual 卡显存仍可能飙升，可用 Chunk MoE 分块缓解显存峰值；perfect eplb 是性能观测的理想负载条件，force_eplb 会用轮转生成的 expert ID 覆盖真实门控选择、改变路由，不能作为保持模型语义的通用补救）。
 - `npu_moe_finalize_routing` 的 `drop_pad_mode=2` 约束需要上游 `expanded_src_to_dst_row` 正确传递。
 
 ## Known Results
@@ -127,13 +129,15 @@ expanded_x, expanded_row_idx, tokens_per_expert, pertoken_scale \
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md) "MoE 部署策略优化"章节；`models/deepseek_r1/models/modeling_deepseek.py:L468-L535`（`forward_gate_init_routing` / `forward_expert` / `forward_combine_double_routing` / `forward_finalize_routing`）、`L548-L680`（`moe_infer_tp` / `moe_infer_double_routing`）。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_r1_prefill_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md)（supporting）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py)（implementation）
 
 ## Links
 
 - [deepseek-r1](../models/deepseek_r1.md)
 - [qwen3-5-moe](../models/qwen3_5_moe.md)
-- [longcat-flash-lite](../models/longcat_flash_lite.md)（Prefill 走 double-routing；A2 因 experts_per_rank≤24 亦回退至此）
+- [longcat-flash-lite](../models/longcat_flash_lite.md)（Prefill 走 double-routing；当前A2超出每rank专家上限时自动回退至此）
 - [expert-parallel](../parallelism/expert_parallel.md)
 - [prefill-micro-batch](prefill_micro_batch.md)
 - [w8a8c8](../quantization/w8a8c8.md)

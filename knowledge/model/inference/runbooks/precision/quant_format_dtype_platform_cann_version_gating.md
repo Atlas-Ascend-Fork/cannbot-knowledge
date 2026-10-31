@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/68
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-07-06T00:00:00Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - a3
 ---
@@ -65,7 +65,5 @@ platforms:
 
 ## Evidence
 
-- **SoC 门控 · 维护者确认 + diff 事实 + doc 披露**（clone `@2c45117`）：`module/quantization/mxfp4.py:process_weights_after_loading` 确有 `npu_format_cast(..., customize_dtype=torch.float8_e4m3fn, input_dtype=float4_e2m1fn_x2)` 路径、与报错栈对上；维护者明确「A3 机型不支持 Hybrid FP8-MXFP4 权重，建议转换成 W8A8-INT8」；`models/deepseek-v4/README.md` 部署表印证 A3→INT8、950PR/DT→MXFP8-MXFP4。转 W8A8-INT8 后用户反馈「跳过了前面的报错」。
-  - 溯源下探：[cann-recipes-infer-issue-190-bug-report-models-deepseek-v4-deepseek-v4-flash-runtimeerror-customize-d](https://gitcode.com/cann/cann-recipes-infer/issues/190)
-- **CANN 算子包版本门控 · 维护者确认 + diff 事实**（修复 commit `@ad58ba176e1a` "update r1 version"）：diff 仅动 `README.md` 与 `requirements.txt`（CANN/torch_npu/依赖版本 bump）、**无 recipe / 量化 / 算子代码改动** → 与「根因是 CANN 算子包版本、非 recipe bug」一致；维护者两次确认根因为 CANN 版本、需更新算子包。报错 token（`x dtype 27 and weight dtype 2`、`groupedmatmul_infershape.cpp`）逐字取自源（终端 OCR、有噪声）。
-  - 溯源下探：[cann-recipes-infer-issue-68-bug-report-r1-alpha003-16tp](https://gitcode.com/cann/cann-recipes-infer/issues/68)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/190)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/68)（evidence）

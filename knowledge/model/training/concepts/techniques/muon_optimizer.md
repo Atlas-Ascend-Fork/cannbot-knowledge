@@ -1,120 +1,66 @@
 ---
 type: Concept
 title: Muon 优化器（torchtitan-npu 混合优化器）
-description: Muon 优化器（torchtitan-npu）：2D 矩阵参数用动量正交化（Newton-Schulz 迭代 muon_ns_steps=5）替代 Adam 逐元素更新，非 2D 参数走 AdamW，由 MuonHybridOptimizersContainer 混合。两种 LR 调整 muon_adjust_lr_fn：original（γ←γ·sqrt(max(1,A/B))，需 muon_lr≈10×AdamW + MuonLRSchedulersContainer）/ match_rms_adamw（Moonshot arxiv2502.16982，γ←0.2γ·sqrt(max(A,B))，复用 AdamW lr/wd）。配置 name=Muon/muon_lr/muon_momentum0.9/muon_ns_steps/muon_adjust_lr_fn。限制：仅单设备（world_size>1 NotImplementedError）；与 Swap Optimizer 互斥。Muon 是计算侧正交化（区别 Swap/Virtual 显存卸载）。V4 续训列未来工作。 MindSpeed（Megatron 栈）侧同算法实现：2D 矩阵参数 Newton-Schulz 正交化、非 2D 走 AdamW 的混合优化器，分布式按并行组聚合梯度统计。
+description: 当前 DSV4 DistMuon/FlexShard 的参数规则、共享学习率、NovaSwap、HSDP replica dedup 和拓扑限制，并区分 MindSpeed 的矩阵正交化、TP 模式及 layer-wise 分布式实现。
 tags:
 - task.optimization
 - topic.optimizer
 status: stable
 sources:
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/README.md
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/feature_guides/muon_optimizer.md
   role: primary
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/patches/optimizer/muon_optimizer.py
-  role: supporting
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/optimizer.py
+  role: implementation
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/models/deepseek_v4/config_registry.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/ascend950/flexmuon.md
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/muon/emerging_optimizers.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/muon/muon_utils.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/muon/layer_wise_optimizer.py
+  role: implementation
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
-- agnostic
+- a3
+- '950'
 ---
 
-# Muon 优化器（torchtitan-npu 混合优化器）
+# Muon 优化器（DistMuon/FlexShard 与 MindSpeed 实现）
 
-Muon 是 torchtitan-npu 为大规模 LLM 训练提供的**计算侧**优化器特性：对 2D 矩阵参数（Linear 权重）做**动量正交化**（Momentum Orthogonalization，经 Newton-Schulz 迭代），获得比 Adam/AdamW 更快/更稳的收敛，而非内存侧的卸载技术。它与 [swap-optimizer](swap_optimizer.md) / [virtual-optimizer](virtual_optimizer.md) 不同 —— 后两者是把优化器状态/梯度搬到 Host 或缩减常驻显存（省内存），Muon 改的是**梯度更新方向本身**（改收敛，不省显存）。
+## Summary
 
-> 机制区分：Muon = compute（正交化动量改变更新方向）；Swap / Virtual = memory（优化器状态/梯度 offload 或裁剪显存）。三者解决不同问题，但 Muon 当前**与 Swap Optimizer 互斥**（见限制）。
+Muon 对矩阵动量做 Newton–Schulz 迭代，改变更新方向；Swap/Virtual 管理状态存放，两者可以在明确支持的路径组合。当前 TorchTitan NPU 使用 DistMuon 与 AdamW 混合容器，不再使用旧单设备 MuonHybridOptimizersContainer。
 
-## 核心思想
+## DistMuon / FlexShard
 
-传统 Adam/AdamW 把每个参数视为独立一维标量更新，忽略了 Linear 层权重的矩阵结构。Muon 在每步更新时对动量做**正交化**（通过 Newton-Schulz 迭代逼近，迭代步数由 `muon_ns_steps` 控制，默认 5），让矩阵参数的更新方向更接近正交基，从而在不同形状矩阵上获得一致的 RMS 量级更新。
 
-## 混合参数分配（Muon + AdamW）
+当前以 DeepSeek-V4 的 DistMuon/FlexShard 实现为准。该路径按参数匹配规则把矩阵参数交给 DistMuon，其余参数交给 AdamW；FlexShard 提供 storage-to-compute 布局和 bucket 调度。embedding、输出头、归一化与其他 1D 参数走 AdamW。
 
-torchtitan-npu 采用 **Muon + AdamW 混合**策略，由 `MuonHybridOptimizersContainer` 统一管理两个子优化器（`optimizers = [muon, adamw]`）：
+显式设置 `--optimizer.name Muon` 后，DSV4 recipe 默认 momentum=0.95、weight_decay=0.1、ns_steps=10、adjust_lr_fn=match_rms_adamw、foreach=False。两组共用 `--optimizer.lr`，没有独立 muon_lr 字段。支持范围是已验证的单机 8 卡、TP=1、PP=1 及 EP/DP-shard 路径；文档覆盖 EP=8/EP=1 storage mesh，不能由此推导 TP>1 或 PP>1。
 
-- **2D 参数**（Linear 权重矩阵）→ `torch.optim.Muon`
-- **非 2D 参数**（bias / LayerNorm / Embedding 等）→ `torch.optim.AdamW`
+state swap 需要在 `--override.imports` 中显式加入 `torchtitan_npu.override.common.optimizer.swap_optimizer`，不存在 swap_optimizer=true 字段。该 override 可以配合 Muon，但与 `torchtitan_npu.override.common.optimizer.virtual` 互斥。Muon momentum 首次更新时懒创建，随后按 FlexShard bucket 预取 H2D、在消费点 WAIT_DEVICE，并在对应 inbound A2A 提交后按事件依赖安排 D2H；AdamW 状态也按 bucket 管理，不能省略流间依赖。
 
-判定逻辑见 `_should_use_muon`：参数须 `p.ndim == 2`，且名字**不**包含排除关键词 `_MUON_EXCLUDED_KEYWORDS = ("embed", "lm_head", "output")` —— 即 embedding、lm_head、输出层即便是 2D 也归 AdamW。`_split_parameters_for_muon` 跨所有 `model_parts` 遍历 `named_parameters()` 分流，并日志打印两组参数名与数量。
+HSDP replica dedup 默认关闭；仅启用 DistMuon 并使用 HSDP 时，可显式增加 `--optimizer.muon-enable-hsdp-replica-dedup`，由 replica 轴上的 owner 更新 momentum 并广播参数。开启 swap 后，checkpoint 支持同步和 CPU snapshot 的 async，暂不支持 async_with_pinned_mem；跨 world size 恢复及复杂拓扑下的 swap checkpoint 尚未证明。完整启动参数见本卡登记的固定 Muon 文档，950 训练视图见 [FlexMuon 矩阵布局](../../optimizations/flexmuon_matrix_layout.md)。
 
-> 与上游 `OptimizersContainer` 的差异：上游是 `model_parts[i] ↔ optimizers[i]` 一一配对；本容器是**每个子优化器管理来自全部 model_parts 的参数子集**，`state_dict` / `load_state_dict` 用双层循环遍历，DCP API 自动过滤到各优化器实际管理的参数。
 
-## 两种学习率调整模式（`muon_adjust_lr_fn`）
+## 当前参数覆盖与配置
 
-正交化后的更新需按矩阵形状（两维 $A$、$B$）调学习率，使不同形状矩阵的更新 RMS 一致。两模式核心区别在调整幅度与是否需独立调参：
+矩阵规则覆盖 attention、compressor/indexer、shared/routed experts、router、mHC 的 hc_fn/hc_head 及相应二维 ape。embedding、输出头、norm 与其他一维参数走 AdamW；不能仅凭 p.ndim==2 判断全部分流。模型的 `_dsv4_optimizer_config()` 提供 schema，`_dsv4_muon_profile()` 提供匹配、compute layout 和 bucket 元数据。
 
-| 模式 | 调整公式 | LR / 调度器 |
-|------|----------|-------------|
-| `original` | $\gamma \leftarrow \gamma \cdot \sqrt{\max(1,\ A/B)}$ | 需独立 `muon_lr`（约为 AdamW lr 的 10×）+ `MuonLRSchedulersContainer` |
-| `match_rms_adamw` | $\gamma \leftarrow 0.2 \cdot \gamma \cdot \sqrt{\max(A,\ B)}$ | 复用 AdamW 的 lr / weight_decay + 标准 `LRSchedulersContainer` |
+显式 `optimizer.name=Muon` 才构建 DistMuon；默认 DSV4 配置 momentum0.95、ns_steps10、weight_decay0.1、adjust_lr_fn=match_rms_adamw、foreach=False。两组共用 optimizer.lr，没有独立 muon_lr 或旧 MuonLRSchedulersContainer 配置。matrix scaling 的形状修正不能保证目标模型自动获得收敛收益，仍需核对 loss、梯度和训练评测。
 
-- **`original`**（Keller Jordan 原始实现）：宽矩阵（$A \le B$）系数取 1 不额外调整，高矩阵（$A > B$）按 $\sqrt{A/B}$ 缩放。调整幅度大，通常需单独为 Muon 调 lr（实践可取 AdamW lr 的 ~10 倍），故 Muon 与 AdamW 用**不同 base_lr**，必须配 `MuonLRSchedulersContainer`。
-- **`match_rms_adamw`**（Moonshot 团队，论文 [Muon is Scalable for LLM Training](https://arxiv.org/pdf/2502.16982) / arXiv:2502.16982）：调整后 lr 与 AdamW 同量级，可**直接复用为 AdamW 调好的 lr / weight_decay**，无需额外搜参，Muon 与 AdamW 共享 base_lr，用标准 `LRSchedulersContainer` 即可。
-
-代码侧 `_get_muon_lr_config`：当 `muon_adjust_lr_fn == "match_rms_adamw"` 且仍设了 `muon_lr` 时会 warning 并忽略 `muon_lr`、回退到 base lr。
-
-## 配置选项
-
-推荐在模型 `config_registry.py` 中使用 `MuonHybridOptimizersContainer.Config`（来源 `torchtitan_npu.patches.optimizer.muon_optimizer`）：
-
-| 配置项 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `name` | str | "AdamW" | 设为 `"Muon"` 启用本特性（`Config.build` 校验 name 必须为 `"Muon"`） |
-| `muon_lr` | float | None | Muon 专用 lr；不设则用 base lr（`match_rms_adamw` 下被忽略） |
-| `muon_momentum` | float | 0.9 | Muon 动量因子 |
-| `muon_enable_nesterov` | bool | false | 是否启用 Nesterov 动量 |
-| `muon_ns_steps` | int | 5 | Newton-Schulz 正交化迭代步数 |
-| `muon_adjust_lr_fn` | str | "match_rms_adamw" | lr 调整模式：`"original"` 或 `"match_rms_adamw"` |
-
-```python
-from torchtitan_npu.patches.optimizer.muon_optimizer import (
-    MuonHybridOptimizersContainer,
-    MuonLRSchedulersContainer,
-)
-
-optimizer = MuonHybridOptimizersContainer.Config(
-    name="Muon",
-    lr=3e-4,
-    muon_lr=1e-3,
-    weight_decay=0.01,
-    muon_momentum=0.9,
-    muon_enable_nesterov=False,
-    muon_ns_steps=5,
-    muon_adjust_lr_fn="original",
-)
-lr_scheduler = MuonLRSchedulersContainer.Config(
-    warmup_steps=2000,
-    decay_ratio=0.8,
-    decay_type="cosine",
-)
-```
-
-命令行可覆盖同名字段：
-
-```bash
-bash scripts/run_train.sh \
-  --optimizer.name Muon \
-  --optimizer.muon_adjust_lr_fn original
-```
-
-## 限制
-
-1. **仅单设备**：`MuonHybridOptimizersContainer.__init__` 校验 `world_size`，`world_size > 1` 直接抛 `NotImplementedError("Muon optimizer currently only support single device")`，不支持多卡分布式。
-2. **与 Swap Optimizer 互斥**：不能与 [swap-optimizer](swap_optimizer.md) 同时启用。
-
-```python
-is_distributed = torch.distributed.is_initialized()
-world_size = torch.distributed.get_world_size() if is_distributed else 1
-if world_size > 1:
-    raise NotImplementedError("Muon optimizer currently only support single device")
-```
+HSDP replica dedup 默认关闭，仅对 DistMuon 生效；每个 FQN 在 replica 轴选择确定 owner 存 momentum 和更新，再异步广播更新后的本地参数。普通 DCP 路径沿用原配置，不需 dedup 专用保存参数。
 
 ## MindSpeed（Megatron 栈）实现
 
-torchtitan-npu 的 Muon 只跑单设备，[mindspeed](../frameworks/mindspeed.md) 把同一套算法（2D 矩阵参数走 Newton-Schulz 正交化、非矩阵参数走标量优化器）作为 feature patch 反向移植到 Megatron 0.12.x，`--optimizer muon` 触发，跑在完整的 TP / EP / PP + 分布式优化器栈上。它与 [swap-optimizer](swap_optimizer.md) / [virtual-optimizer](virtual_optimizer.md) 这类内存侧优化器解决的问题不同 —— Muon 改的是矩阵参数的更新方向，分布式工程量集中在「TP 分片矩阵怎么正交化、dense/expert 用哪个通信组、QKV 融合权重怎么拆、bf16 master param 属性怎么继承、ZeRO 分片下谁更新哪块参数」这五件事。特性以 `MuonOptimizerFeature("muon-optimizer", optimization_level=0)` 注册，对 `get_megatron_optimizer`、`_get_megatron_optimizer_based_on_param_groups`、`OptimizerConfig.__init__`、TP duplicate filter、grad-norm/zero-count、checkpoint 与 `param_and_grad_buffer` 等十余个 Megatron 入口打 patch。
+MindSpeed 使用 Megatron 的 TensorParallelMuon 和 layer-wise optimizer 路线，分布式张量、参数分流及 checkpoint 机制与 DistMuon 不同。特性以 `MuonOptimizerFeature("muon-optimizer", optimization_level=0)` 注册，对 `get_megatron_optimizer`、`_get_megatron_optimizer_based_on_param_groups`、`OptimizerConfig.__init__`、TP duplicate filter、grad-norm/zero-count、checkpoint 与 `param_and_grad_buffer` 等十余个 Megatron 入口打 patch。
 
 ### 参数分流与优化器装配
 
-`get_megatron_optimizer_muon_wrapper` 拦截 Megatron 的优化器工厂。装配前先扫描所有 `requires_grad` 参数打标：名字含 `experts` 且非 `shared` 的参数置 `expert_tp=True`，`linear_qkv.weight` 的 2D 参数置 `is_qkv=True`。随后按 `_is_nonlinear_or_embedding` 分流 —— `is_embedding_or_output_parameter` 或 `len(shape) != 2` 的参数（embedding、输出层、bias、norm）通过 `default_param_overrides` 改走标量优化器（默认 `adam`，可 `--muon-scalar-optimizer lion`），其余 2D 矩阵参数进入 `TensorParallelMuon`。`_get_param_groups` 把参数按 override 指纹聚成组，并跨 rank `all_gather_object` 对齐组结构以保证分布式 checkpoint 一致；最终按 `(opt_name, is_expert)` 拆成多个子优化器，**每个子优化器携带自己的 `grad_stats_parallel_group` 与 `tp_group`**（`grad_stats_parallel_group` 在 dense 取 `pg_collection.mp`、expert 取 `pg_collection.tp_ep_pp`；`tp_group` 不分 dense/expert 统一取 `pg_collection.tp`），再用 `ChainedOptimizer`（或下文的 layer-wise 容器）串起来。
+`get_megatron_optimizer_muon_wrapper` 拦截 Megatron 的优化器工厂。装配前先扫描所有 `requires_grad` 参数打标：名字含 `experts` 且非 `shared` 的参数置 `expert_tp=True`，`linear_qkv.weight` 的 2D 参数置 `is_qkv=True`。随后按 `_is_nonlinear_or_embedding` 分流 —— `is_embedding_or_output_parameter` 或 `len(shape) != 2` 的参数（embedding、输出层、bias、norm）通过 `default_param_overrides` 改走标量优化器（固定为 `adam`；该版本装配路径未读取 `muon_scalar_optimizer`，不能靠该开关切为 Lion），其余 2D 矩阵参数进入 `TensorParallelMuon`。`_get_param_groups` 把参数按 override 指纹聚成组，并跨 rank `all_gather_object` 对齐组结构以保证分布式 checkpoint 一致；最终按 `(opt_name, is_expert)` 拆成多个子优化器，**每个子优化器携带自己的 `grad_stats_parallel_group` 与 `tp_group`**（`grad_stats_parallel_group` 在 dense 取 `pg_collection.mp`、expert 取 `pg_collection.tp_ep_pp`；`tp_group` 不分 dense/expert 统一取 `pg_collection.tp`），再用 `ChainedOptimizer`（或下文的 layer-wise 容器）串起来。
 
 非矩阵参数默认跳过 weight decay：1-D 参数与 `.bias` 走 `wd_mult=0.0` 的组；`--apply-wd-to-qk-layernorm` 则例外地对 `q_layernorm.` / `k_layernorm.` 保留 weight decay。
 
@@ -126,9 +72,9 @@ torchtitan-npu 的 Muon 只跑单设备，[mindspeed](../frameworks/mindspeed.md
 
 $$A = XX^\top,\qquad X \leftarrow aX + (bA + cA^2)X$$
 
-其中系数三元组 $(a,b,c)$ 来自 `--muon-coefficient-type`（`simple` / `quintic`（默认）/ `polar_express` / `aol` / `custom`），`quintic` 为 5 组系数循环、`polar_express` 跑完后重复末组；`--muon-num-ns-steps` 默认 5 步。当行数 > 列数时先转置，让 Gram 矩阵 $A$ 落在较小维度上。`--muon-fp32-matmul-prec medium`（默认）时迭代内部把矩阵转 bf16 做 matmul（NPU 上 `use_syrk` 仅作 API 兼容、实际回落 PyTorch matmul）。
+其中系数三元组 $(a,b,c)$ 来自 `--muon-coefficient-type`（`simple` / `quintic`（默认）/ `polar_express` / `aol`；底层还接受 `custom`，但当前优化器调用链未转发必需的 `custom_coefficient_sets`，直接在 CLI 选择它会抛 ValueError），`quintic` 为 5 组系数循环、`polar_express` 跑完后重复末组；`--muon-num-ns-steps` 默认 5 步。当行数 > 列数时先转置，让 Gram 矩阵 $A$ 落在较小维度上。`--muon-fp32-matmul-prec medium`（默认）时迭代内部把矩阵转 bf16 做 matmul（NPU 上 `use_syrk` 仅作 API 兼容、实际回落 PyTorch matmul）。
 
-正交化后乘形状缩放因子 `get_muon_scale_factor`，使不同形状矩阵的更新 RMS 量级一致，由 `--muon-scale-mode` 选：
+正交化后乘形状缩放因子 `get_muon_scale_factor`，调整更新尺度，由 `--muon-scale-mode` 选；只有 spectral 采用绝对维度缩放，shape_scaling 不保证跨尺寸 RMS 一致：
 
 | scale mode | 缩放因子 |
 |------------|----------|
@@ -146,7 +92,7 @@ $$A = XX^\top,\qquad X \leftarrow aX + (bA + cA^2)X$$
 - **`duplicated`**：`all_gather` 各 rank 分片沿 `partition_dim` 拼成完整矩阵，整体跑 Newton-Schulz，再 `chunk` 回本 rank 分片。
 - **`distributed`**：不收集整权重，只在每步迭代内对 Gram 矩阵 `A` 和归一化范数做 `all_reduce`（`partition_dim` 决定是否转置），把跨 TP 通信压到小矩阵上。
 
-`tp_group` 的选取按参数属性区分：`expert_tp` 参数用 `pg_collection.expt_tp`，dense 参数用 `pg_collection.tp`，避免 MoE 场景下 dense/expert 用错通信组。
+这里是 TensorParallelMuon 正交化内部使用的通信组，区别于上文 wrapper 用来过滤梯度统计的 tp_group。正交化 `tp_group` 的选取按参数属性区分：`expert_tp` 参数用 `pg_collection.expt_tp`，dense 参数用 `pg_collection.tp`，避免 MoE 场景下 dense/expert 用错通信组。
 
 ### QKV 融合权重拆分
 
@@ -176,41 +122,26 @@ flowchart LR
   A --> N["grad-norm / zero-count<br/>全局规约"]
 ```
 
-`--overlap-param-gather`（需同开 `--overlap-grad-reduce`）把 step 后的 all-gather 延迟到 DDP forward pre-hook：`set_bucket_layerwise_params_list` 把各 rank 拥有的参数映射到 DDP bucket，由 bucket 触发异步 gather，减少参数同步对训练 step 的阻塞。torch 格式 checkpoint 下，layer-wise 优化器按 DP rank 额外存 `layer_wise_optimizer_{dp_rank}.pt`，恢复时各 rank 加载自己那份，避免只用主 checkpoint 中单个 DP rank 的优化器状态；torch_dist 格式则在 `sharded_state_dict` 中把 `replica_id` 的 DP 维归 0、用非空 rank 补齐空组的元数据。
+`--overlap-param-gather`（需同开 `--overlap-grad-reduce`）把 step 后的 all-gather 延迟到 DDP forward pre-hook：`set_bucket_layerwise_params_list` 把各 rank 拥有的参数映射到 DDP bucket，由 bucket 触发异步 gather，减少参数同步对训练 step 的阻塞。torch 格式 checkpoint 下，layer-wise 优化器按 DP rank 额外存 `layer_wise_optimizer_{dp_rank}.pt`，恢复时各 rank 加载自己那份，避免只用主 checkpoint 中单个 DP rank 的优化器状态；torch_dist 格式则在 `sharded_state_dict` 中把 `replica_id` 的 DP 维归 0、用非空 rank 补齐空组的元数据。该 torch_dist 路径只适用于固定 DP 规模，不能据此推导支持改变 DP 规模恢复。
 
-### 与 torchtitan-npu 实现的对照及限制
+### MindSpeed 的适用限制
 
-| 维度 | torchtitan-npu | MindSpeed（Megatron） |
-|------|----------------|------------------------|
-| 部署规模 | 仅单设备（`world_size>1` 抛错） | TP / EP / PP + layer-wise ZeRO 分布式 |
-| 权重表示 | FSDP2 / TP 下的 DTensor，经 `unwrap_dtensor` | Megatron TP 分片张量，`partition_dim` 还原全局形状 |
-| 非矩阵参数 | AdamW | Adam（默认）/ Lion |
-| 默认 scale 模式 | `match_rms_adamw`（复用 AdamW lr） | `spectral`（`sqrt(max(out,in))`） |
-| 精度 | — | 仅 bf16 / fp32，不支持 fp16 |
+MindSpeed 侧限制：不支持 fp16（`validate_args` 直接抛 `AssertionError`，请用 bf16/fp32）；不支持与 MindSpeed 自定义 FSDP 或 torch FSDP2 同用；`--overlap-param-gather` 必须同时开 `--use-distributed-optimizer`（layer-wise 路径）与 `--overlap-grad-reduce`；当前路径不支持 `--overlap-param-gather-with-optimizer-step`（开启会被 warning 并关闭）；标量参数装配固定走 Adam，安装 Lion 依赖不会改变此分流。
 
-MindSpeed 侧限制：不支持 fp16（`validate_args` 直接抛 `AssertionError`，请用 bf16/fp32）；不支持与 MindSpeed 自定义 FSDP 或 torch FSDP2 同用；`--overlap-param-gather` 必须同时开 `--use-distributed-optimizer`（layer-wise 路径）与 `--overlap-grad-reduce`；当前路径不支持 `--overlap-param-gather-with-optimizer-step`（开启会被 warning 并关闭）；`--muon-scalar-optimizer lion` 需额外提供 `emerging_optimizers` 包的 Lion 实现。
-
-## 在 recipe 中的应用
-
-[DeepSeek-V4 续训练](../../guides/recipes/deepseek_v4_continue_pretrain.md)所依据的上游优化文档将集成 Muon 列为未来工作；其已展示的 V4 续训配置未启用 Muon，受上述 torchtitan-npu 实现的单设备限制制约。
 
 ## Evidence
 
-- [torchtitan-npu](https://gitcode.com/cann/torchtitan-npu) — 实现源（@8f128cd）：[`torchtitan_npu/patches/optimizer/muon_optimizer.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/patches/optimizer/muon_optimizer.py)（`MuonHybridOptimizersContainer` / `MuonLRSchedulersContainer` / `_should_use_muon` / `_split_parameters_for_muon` / `_get_muon_lr_config`）
-- 上游算子：[PyTorch Muon 官方文档](https://docs.pytorch.org/docs/stable/generated/torch.optim.Muon.html)（`torch.optim.Muon`）
-- 论文：[Muon is Scalable for LLM Training (arXiv:2502.16982)](https://arxiv.org/pdf/2502.16982)（`match_rms_adamw` lr 调整模式来源）
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed 实现源（@1432cb0）：
-  - 特性文档 [`docs/zh/features/muon-optimizer.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/muon-optimizer.md)（TP/MoE/ZeRO 挑战与方案、参数表）
-  - 特性门 [`mindspeed/features_manager/optimizer/muon_optimizer_feature.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/optimizer/muon_optimizer_feature.py)（`MuonOptimizerFeature`：CLI 注册、`validate_args` 限制、十余处 `register_patch`）
-  - 装配入口 [`mindspeed/core/optimizer/muon/adaptor.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/muon/adaptor.py)（`get_megatron_optimizer_muon_wrapper`、`_get_megatron_emerging_optimizer`、`expert_tp`/`is_qkv` 打标、`param_is_not_tensor_parallel_duplicate`、`count_zeros_fp32`、`copy_muon_tensor_model_parallel_attributes_wrapper`）
-  - Muon 优化器 [`mindspeed/core/optimizer/muon/emerging_optimizers.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/muon/emerging_optimizers.py)（`TensorParallelMuon`：三种 tp_mode、QKV split、`_is_nonlinear_or_embedding` 标量分流）与基类 [`orthogonalized_optimizer.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/muon/orthogonalized_optimizer.py)（`OrthogonalizedOptimizer.step`、动量/weight-decay）
-  - Newton-Schulz [`mindspeed/core/optimizer/muon/muon_utils.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/muon/muon_utils.py)（`newton_schulz` / `newton_schulz_tp` / `get_muon_scale_factor` / 系数表 `_COEFFICIENT_SETS`）
-  - ZeRO 路径 [`mindspeed/core/optimizer/muon/layer_wise_optimizer.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/muon/layer_wise_optimizer.py)（`LayerWiseDistributedOptimizer`：`shard_params` ping-pong、`allgather_params`、`sharded_state_dict`）、bucket 重叠 [`param_and_grad_buffer.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/muon/param_and_grad_buffer.py)、torch checkpoint [`checkpointing.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/muon/checkpointing.py)
+- [muon_optimizer.md](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/feature_guides/muon_optimizer.md)（primary）
+- [optimizer.py](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/optimizer.py)（implementation）
+- [config_registry.py](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/models/deepseek_v4/config_registry.py)（implementation）
+- [flexmuon.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/ascend950/flexmuon.md)（implementation）
+- [emerging_optimizers.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/muon/emerging_optimizers.py)（implementation）
+- [muon_utils.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/muon/muon_utils.py)（implementation）
+- [layer_wise_optimizer.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/muon/layer_wise_optimizer.py)（implementation）
 
 ## Links
 
-- [torchtitan](../frameworks/torchtitan.md)（torchtitan-npu 优化器容器体系）
-- [mindspeed](../frameworks/mindspeed.md)（Megatron 栈侧 Muon 实现所在框架，TP/EP/ZeRO 分布式适配）
-- [swap-optimizer](swap_optimizer.md)（内存侧优化器对照，机制不同；Muon 与其互斥）
-- [virtual-optimizer](virtual_optimizer.md)（内存侧优化器对照，机制不同）
-- [deepseek-v4-continue-pretrain](../../guides/recipes/deepseek_v4_continue_pretrain.md)（应用 recipe）
+- [Swap Optimizer](swap_optimizer.md)
+- [Virtual Optimizer](virtual_optimizer.md)
+- [FlexMuon 矩阵布局](../../optimizations/flexmuon_matrix_layout.md)
+- [DeepSeek V4 训练](../../guides/recipes/deepseek_v4_continue_pretrain.md)

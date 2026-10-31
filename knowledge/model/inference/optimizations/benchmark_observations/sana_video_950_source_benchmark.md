@@ -1,16 +1,16 @@
 ---
 type: Optimization
-title: Sana-Video 来源 A5（950）量化性能观测
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+title: Sana-Video 950 量化来源观测
+description: 当前README的480p81f来源结果与测量缺口；不将合并平台表、默认配置或混合位宽误作完整对照。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md
   role: primary
 created_at: '2026-10-21T09:56:25Z'
-updated_at: '2026-10-21T09:56:25Z'
+updated_at: '2026-10-29T14:16:27Z'
 platforms:
 - '950'
 scope:
@@ -22,7 +22,7 @@ scope:
         - dit
 ---
 
-# Sana-Video 来源 A5（950）量化性能观测
+# Sana-Video 950来源量化性能观测
 
 ## Workload
 
@@ -30,7 +30,7 @@ scope:
 
 ## Hardware
 
-源README表名Atlas A5，本仓沿950注册值；不把相邻A2/A3的BF16行移入本表。
+当前README直接标Atlas 950；不把相邻A2/A3的BF16行移入本表。
 
 ## Software
 
@@ -65,4 +65,4 @@ a4w4模式部分层仍a8w8，不填量化OR Scope。不从端到端数字推断�
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md)（primary）

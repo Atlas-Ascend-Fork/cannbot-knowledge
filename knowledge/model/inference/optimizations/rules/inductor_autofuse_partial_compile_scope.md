@@ -10,10 +10,10 @@ status: stable
 sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/365
   role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_autofuse_guide.md
   role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T01:37:00Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a3
 ---
@@ -43,8 +43,9 @@ platforms:
 
 ## Evidence
 
-- diff 事实 + doc 披露（@eb1092ac074f）：五处 `@torch.compile` 装饰器与 README 选范围三规则一致；规则依据（Graph Break / Guard 叠加 / 融合收益）为 README doc 披露。溯源下探 [cann-recipes-infer-pr-365-add-add-deepseek-v4-flash-model-and-tilelang-sfa-mhc-kernel-inductoraf-a](https://gitcode.com/cann/cann-recipes-infer/merge_requests/365)
-- doc 披露（仓自报、无独立复测，@eb1092ac074f）：非 Hcom Kernel 总耗时 −20.6%/−20.4%、hc_post 片段 4x/3x；baseline 与统计口径按 README 原文保留。溯源下探 [cann-recipes-infer-pr-365-add-add-deepseek-v4-flash-model-and-tilelang-sfa-mhc-kernel-inductoraf-a](https://gitcode.com/cann/cann-recipes-infer/merge_requests/365)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/365)（evidence）
+- [deepseek_v4_autofuse_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_autofuse_guide.md)（supporting）
+
 ## 后端接入与回退
 
 固定文档要求先导入 `inductor_npu_ext` 注册后端，再给选定函数添加 `@torch.compile`；模型文件本身没有该导入，不应视为完整启动程序。接入失败、输出不对齐或重复测量无净收益时，恢复原始函数与后端配置；本仓未验证回退效果。

@@ -7,16 +7,16 @@ tags:
 - topic.architecture
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/models/vggt/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/models/vggt/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/models/Hunyuan3D/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/models/Hunyuan3D/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/algorithms/gaussian_splatting/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a2
 ---
@@ -43,5 +43,5 @@ platforms:
 - [vggt](../models/vggt.md)（在本平台推理）
 - [hunyuan3d](../models/hunyuan3d.md)（在本平台推理）
 - [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md)（单卡 Atlas A2 训推）
-- [cann-recipes-spatial-intelligence](https://gitcode.com/cann/cann-recipes-spatial-intelligence/tree/92747ee512faebff6068704f893d19d622f7282a)
+- [cann-recipes-spatial-intelligence](https://gitcode.com/cann/cann-recipes-spatial-intelligence/tree/0d955a020eed3ac1f274e5ab26f792b02b011728)
 - 跨域·具身：[agibot-arm-world-model](../../../embodied/concepts/world_models/agibot_arm_world_model.md)、[ascend-310p](../../../embodied/concepts/platforms/ascend_310p.md)、[ddp-static-graph](../../../embodied/concepts/techniques/ddp_static_graph.md)、[gradient-checkpoint-refine](../../../embodied/concepts/techniques/gradient_checkpoint_refine.md)（具身样例在 Atlas A2 的训练 / 推理（平台 family））

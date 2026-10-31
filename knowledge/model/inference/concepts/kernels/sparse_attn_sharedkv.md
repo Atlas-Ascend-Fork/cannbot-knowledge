@@ -1,11 +1,7 @@
 ---
 type: Concept
 title: SparseAttnSharedKV (SAS) Kernel
-description: '`SparseAttnSharedKV`（SAS）是 DeepSeek-V4 的统一 Shared-KV Attention 融合算子，一套接口覆盖滑窗、压缩及压缩后稀疏
-  Attention，并原生支持 Attention Sink。A3 非量化路径采用 QK MatMul→online softmax→PV MatMul→rescale
-  四阶段；950PR/DT 伪量化路径增加前置反量化，共五阶段。场景由原始/压缩 KV、窗口、压缩比、稀疏索引、sink 和 metadata 等参数组合控制，AICPU
-  metadata 算子负责值依赖分核。PyPTO 分为 SWA、CFA、SCFA 三种场景，TileLang 另有 block=64 的 V4-Flash 实现。SAS
-  不等同于 V3.2-Exp DSA 使用的 SparseFlashAttention。'
+description: V4 Shared-KV Attention 的 SWA/CSA/HCA 算法与当前 SparseFlashMLA 三种入口、PA_BBND、压缩长度余数和 metadata 配对。
 tags:
 - task.implementation
 - topic.attention
@@ -13,10 +9,14 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/common_modules.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-10-22T01:37:00Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 - '950'
@@ -31,7 +31,7 @@ $$O = \text{softmax}(Q@\tilde{K}^T \cdot \text{softmax\_scale})@\tilde{V}, \quad
 
 其中 $\tilde{K}=\tilde{V}$（Shared-KV，详见 [mla](../modules/mla.md) 对比）为由入参控制的实际参与计算 KV。在 V4 中 SAS 是 [deepseek-v4](../models/deepseek_v4.md) attention 主体（MQA / Shared-KV）的落地算子，承接 [mla-prolog](mla_prolog.md) 产出的 Q、[lightning-indexer](lightning_indexer.md) 产出的稀疏 index（仅 CSA 路径），以及 [compressor](compressor.md) 产出的压缩 KV（`cmp_kv`）。
 
-cann-recipes-infer 同步提供 **AscendC**（Atlas-A3 非量化 + 950PR/DT 伪量化）、**PyPTO**（拆为 SWA / CFA / SCFA 三个场景化算子）、**TileLang**（V4-Flash SFA 实现）三路实现。代码侧入口为 `torch.ops.custom.npu_sparse_attn_sharedkv`（伪量化版 `npu_kv_quant_sparse_attn_sharedkv`），并配套独立的 AICPU Scheduler 算子 `npu_sparse_attn_sharedkv_metadata`。
+cann-recipes-infer 同步提供 **AscendC**（Atlas-A3 非量化 + 950PR/DT 伪量化）、**PyPTO**（拆为 SWA / CFA / SCFA 三个场景化算子）、**TileLang**（V4-Flash SFA 实现）三路实现。当前模型按格式选择 cann_ops_transformer.sparse_flash_mla（非量化）、mixed_quant_sparse_flash_mla（混合打包 FP8）或 quant_sparse_flash_mla（HiF8），配套同名 *_metadata 入口。
 
 ## SAS vs SFA：命名区分
 
@@ -59,7 +59,7 @@ flowchart LR
  SAS --> O[attn output]
 ```
 
-代码调用（`models/deepseek-v4/models/modeling_deepseek.py:L1196-L1203`）：`attn_kernel` 经 `prepare_fa_kwargs` 组装入参后调用 `self.sparse_attn_ops(**fa_input_kwargs)`，输出取 `[0]` 并 `unflatten` 回 `(bsz, q_len)`。CP 长序列场景下 `attn_kernel` 对 `q`/`topk_idxs` 切前后两段（`prev`/`next`）分别调用 SAS。
+当前 attn_kernel 直接返回 sparse_attn_ops(**prepare_fa_kwargs(...))[0]，Query 为 packed TND；CP 的 prev/next 各调用一次，不再按旧 batch/q_len unflatten。
 
 ## AscendC 实现（Atlas-A3 / 950PR/DT）
 
@@ -96,23 +96,11 @@ SAS 通过入参组合覆盖 V4 不同 Attention 场景。源文档列出的关�
 | `cmp_kv` | C4A / C128A 层压缩后 $KV$ cache |
 | `cmp_ratio` | `cmp_kv` 的压缩比例（4 或 128） |
 
-> **文档与实现差异**：`prepare_fa_kwargs`（`modeling_deepseek.py:L1068-L1118`）实际组装的 kwargs 与文档语义入参表略有出入 —— 代码键为 `ori_win_left=127` / `ori_win_right=0`（非通用 `win_left/win_right` 默认值；与 `sliding_window=128` 对应）、`ori_mask_mode=4`（注释 sliding window）/ `cmp_mask_mode=3`（注释 causal）、`cmp_ratio=self.compress_ratio`、`cmp_sparse_indices`（注释 only for C4A）、`sinks=self.attn_sink`、`metadata`（来自 AICPU Scheduler）、`layout_q="TND"` / `layout_kv="PA_ND"`。伪量化路径额外加 `tile_size=64` / `rope_head_dim` / `kv_quant_mode=1`。文档的 `ori_win_left/ori_win_right` 为通用语义说明，不等同于代码常量值。
+当前调用使用 layout_q=TND、layout_kv=PA_BBND、ori_mask_mode=4、ori_win_left=127、ori_win_right=0；压缩分支传 seqused_cmp_kv（原长度整除压缩比）与 cmp_residual_kv（余数），C4A 另传 LI 索引。950 的 C1A cmp_mask_mode=0，A3 为 3，C4A/C128A 均为 3。不能沿用旧 PA_ND、tile_size、kv_quant_mode 的调用字典。
 
-`attn_sink` 为 per-head `nn.Parameter`（`torch.empty(num_heads_per_rank, dtype=torch.float32)`，`modeling_deepseek.py:L698`），以 `sinks` 入参喂入 SAS，参与 softmax 归一（见下方 TileLang 实现的 sink 计入分母）。
+float8 分支传 quant_mode=1 与 rope_head_dim，并将字节缓存转计算 view；HiF8 分支显式传 q_descale、ori_kv_descale、cmp_kv_descale。低时延 TP 按本 rank 的 Query heads 切分 sinks。具体缓存格式见[混合量化](../quantization/hybrid_mxfp8_mxfp4.md)。
 
-### AICPU Scheduler
-
-SAS 与 LI 属"值依赖算子"：仅靠输入 shape 无法得到好的分核策略，还需运行时**实际上下文长度**。本次将值依赖的分核计算独立为 **AICPU Scheduler 算子** `npu_sparse_attn_sharedkv_metadata`（伪量化版 `npu_kv_quant_sparse_attn_sharedkv_metadata`），其输出含分核 metadata 供 NPU 算子使用。AICPU Scheduler 作为跨 SAS / LI 复用的技术机制（两段拆分、metadata 复用、与 LI AICore 内分核下沉的区分）详见 [aicpu-scheduler](../techniques/aicpu_scheduler.md)：
-
-```python
-# 调用形态示意：两个字典需由固定版本的模型构造，不是完整启动代码。
-metadata = torch.ops.custom.npu_sparse_attn_sharedkv_metadata(**metadata_kwargs)
-npu_result, softmax_lse = torch.ops.custom.npu_sparse_attn_sharedkv(
-    **sas_kwargs, metadata=metadata
-)
-```
-
-只需 shape 的部分（max workspace / tiling key / block dim / tiling data）由 Host 执行；值依赖的分核策略由 AICPU 执行，既保证算子入图（对 aclgraph 等图模式友好），又使该耗时被掩盖。单次推理中每种计算模式的 Scheduler 算子只需执行一次、可复用。
+Metadata 由对应 sparse_flash_mla_metadata / mixed_quant_sparse_flash_mla_metadata / quant_sparse_flash_mla_metadata 生成，按 C1A/C4A/C128A 和 CP 两段分别匹配；Decode 可独立流生成，须保留事件依赖，见[AICPU Scheduler](../techniques/aicpu_scheduler.md)。技术文档的旧 custom 符号是算法说明，不可直接复制为当前接口。
 
 ## PyPTO 实现：SWA / CFA / SCFA 三场景化算子
 
@@ -146,20 +134,13 @@ TileLang 框架语义见 [tilelang](../frameworks/tilelang.md)；同仓 DSA 的 
 
 ## Quantization
 
-- **Atlas-A3**：SAS 为非量化版本（$Q, KV$ 半精度）。
-- **950PR/DT**：伪量化版本（`npu_kv_quant_sparse_attn_sharedkv`），$KV$ 量化到 8bit，新增 $V_0$ 反量化阶段；代码侧 `kv_cache_quant_mode == "float8"` 时启用，配 `tile_size=64` / `kv_quant_mode=1`。仓内 commit `f49e5f2` 引入 `qsas support hif8 kv quant`（HiFloat8 KV 量化）。
-
-> gap：SAS 伪量化版（qsas / HiFloat8）的逐阶段量化细节、FP8(E4M3/HiFloat8) 反量化系数布局、与 V4 整体量化矩阵（A3 W8A8C16 / 950 Hybrid FP8-MXFP4 / MXFP8-MXFP4）的对应关系尚未收录；量化总览见 [deepseek-v4](../models/deepseek_v4.md) Quantization Overview。
+A3 默认 BF16 KV，950 的 FP8 混合记录与 HiF8 全字节 KV 分别走对应算子。技术报告的四/五阶段拆解用于理解数据流；接口、scale 与容量按当前量化方法和记录格式核对，不能只看“C8”标记。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md)（SAS 计算公式 / 四(五)阶段 / Atlas-A3 Tiling / 多场景入参表 / AICPU Scheduler；frontmatter 主源）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md)（SWA / CFA / SCFA 三场景化算子、实测 us、PTO-ISA 代际兼容）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)（融合 Kernel 节：SAS 统一接口、Attention 整体结构图、SAS 在 CSA/SWA/HCA 中的角色）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（`sparse_attn_ops = torch.ops.custom.npu_sparse_attn_sharedkv`（L771）/ 伪量化 `npu_kv_quant_sparse_attn_sharedkv`（L773）；`sas_metadata_ops = npu_sparse_attn_sharedkv_metadata`（L1753）；`attn_sink` per-head Parameter（L698）→ `sinks` 入参；`prepare_fa_kwargs` 实际 kwargs（L1068-1118：`ori_win_left=127`/`ori_win_right=0`/`ori_mask_mode=4`/`cmp_mask_mode=3`/`cmp_ratio`/`cmp_sparse_indices` only-C4A/`metadata`/`layout_kv="PA_ND"`）；`attn_kernel` 调用 `self.sparse_attn_ops(**fa_input_kwargs)[0]`（L1203））
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/attention_data.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/attention_data.py)（`CacheData` / `AttnMetaData` 管理 SAS 输入的 cache 与 metadata —— `win_kv` / `sfa_cmp_kv` / `li_cmp_kv` cache、`init_cache_c1a` / `init_cache_c4a` / `init_cache_c128a` 三场景 cache 布局、`get_cmp_attn_metadata` 产 `c{ratio}a_cmp_kv` block_table）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4-flash-tilelang-and-inductorAF/tilelang_kernels/sparse_attn_kernel.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/tilelang_kernels/sparse_attn_kernel.py)（TileLang `sparse_attn_kernel` —— Shared-KV `kv [b,n,d]`、`block=64`、`v_block=h//2`、topk Gather、online softmax、`attn_sink` 计入 `sum_exp` 分母）
-- 溯源（diff `2f82d10..2c45117` + MR）：`5df82b1` support deepseek v4（!366）；`985b882` 更新 deepseek_v4_ascendc_operator_guide（!367）；`5e9e41d` Edit V4 AscendC Operator Guide（!375）；`6fa7a02` update dsv4 model inference guide（!368）；`afa4019`/`5bb4eaa` update TileLang operator guide（!373/!376）；`377f20f` Add DeepSeek-V4-Flash Model and Tilelang SFA&MHC Kernel/InductorAF（!365）；`f3a7c04` 修改文件夹名称（!378）；`52fbfad` npu_sparse_attn_sharedkv support kv stride（!387）；`f49e5f2` qsas support hif8 kv quant（!417）。
+- [deepseek_v4_ascendc_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
+- [common_modules.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/common_modules.py)（implementation）
 
 ## Links
 

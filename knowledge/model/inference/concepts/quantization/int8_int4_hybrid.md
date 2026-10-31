@@ -1,17 +1,21 @@
 ---
 type: Concept
 title: Int8 / Hybrid INT8-INT4 (DeepSeek-V4 Atlas A3 Pod)
-description: DeepSeek-V4 在 Atlas A3 Pod 平台的两档整数量化方案，均以原生 Hybrid FP8-MXFP4 权重为转换起点。Int8（W8A8C16，推荐 Flash）：仅对参数量多的部分 Linear（MLA q_b_proj/o_b_proj、Indexer q_b_proj）做静态 Per-Channel W8 + 动态 Per-Token A8，**KV Cache 维持 C16（BF16 存算）而非 C8**，LI 经 A8C8（Indexer Q/Cache 动态 Per-Token-Head Int8）降时延，LightningIndexer batch_matmul Int8 计算，Compressor Linear/IndexerProlog indexer_weight 不量化，LMHead 不量化。Hybrid INT8-INT4（推荐 Pro 1.6T）：在上策略基础上仅 MoE 路由专家 Linear 改 W4A8（静态 Per-Channel Int4 + 动态 Per-Token Int8）、共享专家保持 W8A8，缓解 MoE 访存墙。权重转换 convert_model.py --quant_type w8a8-int / w4a8-int(--quant_param_path)；argparse choices=['w8a8-int','w4a8-int','bfloat16','w4a8-mx']，docstring/assert 另列 w8a8-mx 但 choices 未含（doc≠runnable flag）。KV C16 ≠ V3.2-Exp 的 C8 属代际选型差异不互相覆盖。Known Results：A3 Pod 64卡 DP+EP W8A8C16 Flash 8192 序列 TPOT 27.82/29.17ms、吞吐 4025/4388 TPS（MTP1）。
+description: V4 A3 的 W8A8C16 与路由专家 W4A8、共享专家 W8A8 的混合矩阵；更新转换选项并保留当前 GMM bias。
 tags:
 - task.design
 - topic.precision
 - topic.attention
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/utils/convert_model.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-10-21T09:02:45Z'
+updated_at: '2026-10-29T15:17:34Z'
 platforms:
 - a3
 ---
@@ -67,7 +71,9 @@ DeepSeek-V4 在 [atlas-a3](../platforms/atlas_a3.md) Pod 平台上的两档整�
 - Int8：`--quant_type w8a8-int`
 - Hybrid INT8-INT4：`--quant_type w4a8-int --quant_param_path <量化参数文件夹>`（`quant_param_path` 仅 Pro 的 Hybrid INT8-INT4 需要，源 README）
 
-> 代码核对：`convert_model.py` argparse `choices=["w8a8-int", "w4a8-int", "bfloat16", "w4a8-mx"]`（L442）；其 assert 列表（L290）与 docstring（L274）另列了 `w8a8-mx`，但 argparse choices 未含——`w8a8-mx` 仅出现在文档/断言而非可用命令行参数（doc≠runnable flag，待验证）。
+当前转换脚本的命令行 choices 为 `w8a8-int`、`w4a8-int`、`bfloat16`、`w4a8-mx`、`w4a4-mx`、`w4a8-mx-hif`。其中后三项分别对应 950 的 MXFP4 路由专家、A4W4 和 HiF8 混合路径，不能当作 A3 整数量化选项。内部断言出现的 `w8a8-mx` 仍不在命令行 choices 中。
+
+最新 `experts_w4a8int4` 的两次 GMM 均显式保留 bias；旧的 Prefill 省 bias 规则已[停用](../../optimizations/rules/w4a8_moe_gmm_prefill_skip_bias.md)。
 
 ## Applicable Scenarios
 
@@ -87,9 +93,9 @@ DeepSeek-V4 在 [atlas-a3](../platforms/atlas_a3.md) Pod 平台上的两档整�
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)「量化策略 / Atlas-A3 Pod」（Int8 逐模块矩阵 L225-237、Hybrid INT8-INT4 L239-245）+「Benchmark / Atlas-A3 Pod」（W8A8C16 表 L378-385）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/utils/convert_model.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/utils/convert_model.py)（已代码核对：`quant_type` 分支 `w8a8-int`/`w4a8-int`/`w4a8-mx`/`bfloat16`，L289-306、L441-443）、[`models/deepseek-v4/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/README.md)（`--quant_type` 命令与 `quant_param_path` 说明 L117-140）
-- 溯源（diff `2f82d10..2c45117`）：`989758d` add w4a8-int for deepseekv4-pro（MR!464）；`9b367c9` / `d4acdde` w4a8int4；`5df82b1` support deepseek v4（MR!366）
+- [deepseek_v4_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md)（primary）
+- [convert_model.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/utils/convert_model.py)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
 
 ## Links
 

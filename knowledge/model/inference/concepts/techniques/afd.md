@@ -9,15 +9,18 @@ tags:
 - topic.kv_cache
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T01:55:16Z'
+updated_at: '2026-10-29T13:46:35Z'
 platforms:
 - a3
 ---
+
 # Attention-FFN Disaggregation (AFD)
 
 ## Summary
@@ -34,13 +37,13 @@ AFD 将 Attention 与 FFN 放在独立节点，通过收发交换中间结果，
 
 使能 AFD 技术前后的网络结构示意图：
 
-![LongCat-Flash 使能 AFD 前后对比](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/longcat-flash/figures/w_afd.png)
-*来源：[`docs/models/longcat-flash/figures/w_afd.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/figures/w_afd.png)（cann-recipes-infer @ 2f82d10）*
+![LongCat-Flash 使能 AFD 前后对比](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/figures/w_afd.png)
+*来源：[`docs/models/longcat-flash/figures/w_afd.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/figures/w_afd.png)（cann-recipes-infer @ 944d2d3）*
 
 Attention 和 MoE 独立部署后：
 
-![AFD Attention / MoE 独立部署](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/longcat-flash/figures/afd_deploy.png)
-*来源：[`docs/models/longcat-flash/figures/afd_deploy.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/figures/afd_deploy.png)（cann-recipes-infer @ 2f82d10）*
+![AFD Attention / MoE 独立部署](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/figures/afd_deploy.png)
+*来源：[`docs/models/longcat-flash/figures/afd_deploy.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/figures/afd_deploy.png)（cann-recipes-infer @ 944d2d3）*
 
 ### 计算流图
 
@@ -48,14 +51,18 @@ Attention 和 MoE 独立部署后：
 
 计算流上，在 Attention 节点上：第一个 LayerNorm(LN) 算子的结果，一方面通过 Send 算子发送到 FFN 节点上；另外一方面，同时送给下一个算子完成后续的计算操作。在 Send 算子完成发送动作后，会同时通过 Recv 算子等待并接收从 FFN 节点发送回来的数据。Attention 节点上的 Send/Recv 算子在 Stream1 上和主流 Stream0 上的计算算子进行 overlap，达到通信计算隐藏的目的。
 
-![Attention / FFN 节点计算流 overlap](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/longcat-flash/figures/attn_ffn_stream.png)
-*来源：[`docs/models/longcat-flash/figures/attn_ffn_stream.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/figures/attn_ffn_stream.png)（cann-recipes-infer @ 2f82d10）*
+![Attention / FFN 节点计算流 overlap](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/figures/attn_ffn_stream.png)
+*来源：[`docs/models/longcat-flash/figures/attn_ffn_stream.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/figures/attn_ffn_stream.png)（cann-recipes-infer @ 944d2d3）*
 
 同理，FFN 节点作为服务端，任务执行时图上第一个是 Recv 算子，它一直等待直到 Attention 节点通过 Send 算子发数据过来。当前 FFN 节点接收到数据后，会进行 Router/Dispatch/MoE-GMM/Combine 等操作，最后再通过 Send 算子将数据发回 Attention 节点。
 
 ### FFN 侧瓶颈
 
 分离后仍可能受 FFN 侧限制；实现分析见[AFD 案例](../../optimizations/cases/longcat_a3_afd_stream_pairing.md)，诊断由[FFN 等待 Runbook](../../runbooks/performance/afd_ffn_side_bottleneck_prefetch.md)维护。
+
+## 当前源码边界
+
+当前使用 model_config.custom_params.enable_afd，偶数 world_size 分成 FFN/Attention 两半，CommManager 负责两半的业务组。npugraph_ex Decode 在本地计算后、相加前接收结果；GE 等路径依所用图调度执行。指南图示表达目标重叠，不代替实际时间线。多流、预取和图模式约束见当前部署与案例。
 
 ## Applicable Scenarios
 
@@ -68,7 +75,7 @@ Attention 和 MoE 独立部署后：
 - 固定 LongCat 版本采用 **1:1 配对（M == N）**，不由此限制其他 AFD 实现。
 - 该版本的 `enable_multi_stream` 配置注明在 AFD 场景不生效；这限制的是原本地计算多流开关，不能据此判断设备侧通信是否重叠。
 - FFN 侧成为瓶颈时可能出现 EVENT_WAIT 拖尾，预取是来源提供的排查方向，须验证净收益，不能保证消除所有等待。
-- 本卡只确认固定来源中的 LongCat-Flash 实现（配置：`longcat_flash_densetp8_ep64_gegraph_mtp2_eplb_afd_w8a8.yaml`、`longcat_flash_densetp8_ep16_gegraph_mtp2_afd_w8a8.yaml`）。
+- 本卡只确认固定来源中的 LongCat-Flash 实现（配置：`longcat_flash_densetp8_ep64_gegraph_mtp2_eplb_afd_w8a8.yaml`、当前两半 rank 配置）。
 
 ## Known Results
 
@@ -80,9 +87,9 @@ Attention 和 MoE 独立部署后：
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/longcat-flash/longcat_flash_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md) "Attention-FFN Disaggregation(AFD)优化" 章节（优化出发点 / 计算流图 / FFN 权重预取 三小节 + 核数耗时对比表格）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/longcat-flash/config/longcat_flash_densetp8_ep64_gegraph_mtp2_eplb_afd_w8a8.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/longcat-flash/config/longcat_flash_densetp8_ep64_gegraph_mtp2_eplb_afd_w8a8.yaml)（`enable_afd: True` + `next_n: 2` + `perfect_eplb: True`）；`models/longcat-flash/README.md` benchmark 表 + Send/Recv 1:1 约束说明
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) —「多流优化」节 @2c45117：[`models/longcat-flash/models/modeling_longcat_flash.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat-flash/models/modeling_longcat_flash.py) `LongcatFlashDecoderLayer`（:1094 `enable_afd`；:1190-1197 `forward` AFD send/recv vs 本地 `self.mlp`；:1206 `multi_stream_forward`，:1245/:1251 AFD 分支、:1256 `limit_core_num(not self.enable_afd, ...)` 主流不控核）+ [`models/longcat-flash/models/ffn.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat-flash/models/ffn.py) `LongcatFlashFFN.forward`（:70-89 recv → router → npu_prefetch(w2) → moe_infer_dispatch_combine → send 回 Attn；:58-59 send/recv tag 错开）
+- [longcat_flash_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/README.md)（supporting）
+- [modeling_longcat_flash.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py)（implementation）
 
 ## Links
 

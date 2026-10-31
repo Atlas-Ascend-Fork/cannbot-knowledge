@@ -1,20 +1,25 @@
 ---
 type: Concept
 title: 高维张量并行 TP-2D（MindSpeed 2D Tensor Parallel）
-description: MindSpeed 高维张量并行 TP-2D 把一维 TP 单通信域分解为正交子域 tp = tp_x × tp_y，激活值与权重同时在 first-dim（序列/输出维）与 last-dim（隐藏/收缩维）切分。TPXCollectiveComm(nd1_dim1，连续 tp_x rank) 负责序列维 AllGather/ReduceScatter，TPYCollectiveComm(nd1_dim2，跨步 tp_y rank) 负责隐藏维归约。ParallelLinear2D/Linear2DSplitAlongFirstDim 的前向为 AllGather(tp_x)→本地 matmul→ReduceScatter(tp_y) 三段小域通信，MLP fc1/fc2 把 AG/RS 子域对调使二维切分层间翻转。分布式 normalization（LayerNorm2D 九步 e_x/var_x 两次 AllReduce、RMSNorm2D pow_mean 一次 AllReduce）只在 tp_y 子域归约，避免对 input 沿隐藏维 AllGather。RotaryEmbedding 按 tp_y×cp 切位置编码，经 TensorParallelYUnionCP 与 context-parallel 共存。支持 enable-overlap-ag-with-matmul / overlap-matmul-with-rs / coc-fused-kernel 通算掩盖。--tp-2d --tp-x --tp-y 启用，须 tp=tp_x*tp_y；与 sequence-parallel、use-fused-rmsnorm、MoE 互斥。llama3-405B tp=16(tp_x=8,tp_y=2) 较 1D-TP 提升 5%+，叠加融合再 5%+。
+description: MindSpeed 高维张量并行 TP-2D 把一维 TP 单通信域分解为正交子域 tp = tp_x × tp_y，激活值与权重同时在 first-dim（序列/输出维）与 last-dim（隐藏/收缩维）切分。TPXCollectiveComm(nd1_dim1，连续 tp_x rank) 负责序列维 AllGather/ReduceScatter，TPYCollectiveComm(nd1_dim2，跨步 tp_y rank) 对局部matmul输出在first-dim做ReduceScatter；不能解释为沿last-dim切分通信。ParallelLinear2D/Linear2DSplitAlongFirstDim 的前向为 AllGather(tp_x)→本地 matmul→ReduceScatter(tp_y) 三段小域通信，MLP fc1/fc2 把 AG/RS 子域对调使二维切分层间翻转。分布式 normalization（LayerNorm2D 九步 e_x/var_x 两次 AllReduce、RMSNorm2D pow_mean 一次 AllReduce）只在 tp_y 子域归约，避免对 input 沿隐藏维 AllGather。非packed RotaryEmbedding 按 tp_y×cp 切位置编码，经 TensorParallelYUnionCP 与 context-parallel 共存。支持 enable-overlap-ag-with-matmul / overlap-matmul-with-rs / coc-fused-kernel 通算掩盖。--tp-2d --tp-x --tp-y 启用，须 tp=tp_x*tp_y；与 sequence-parallel、use-fused-rmsnorm、MoE 互斥。llama3-405B tp=16(tp_x=8,tp_y=2) 较 1D-TP 提升 5%+，叠加融合再 5%+。
 tags:
 - task.design
 - topic.parallelism
-status: stable
+status: draft
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/tensor-parallel-2d.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/tensor-parallel-2d.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/tensor_parallel/tp_2d/linear_2d_split_along_first_dim.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/tensor_parallel/tp_2d/parallel_linear_2d.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/tensor_parallel/tp_2d/embeddings_2d.py
+  role: implementation
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
-platforms:
-- agnostic
+updated_at: '2026-10-29T15:24:41Z'
+platforms: []
 ---
 
 # 高维张量并行 TP-2D（MindSpeed 2D Tensor Parallel）
@@ -23,6 +28,8 @@ platforms:
 
 TP-2D 把一维张量并行的单个 TP 通信域 `tp` 分解成两个正交子域 `tp_x × tp_y`（`tp = tp_x × tp_y`，二者均 > 1），让激活值与权重**同时在 first-dim（序列/输出维）与 last-dim（隐藏/收缩维）切分**。每个 Linear 的前向因此退化为「在一个子域 AllGather 序列 → 本地 matmul → 在另一个子域 ReduceScatter」的两段小域通信（如 fc1 取 AG=`tp_x`/RS=`tp_y`，fc2 两子域对调），而不是在整个大小为 `tp` 的域上做 AllGather/AllReduce。大 TP 域（如 `tp=16`）下，单次集合通信的参与卡数从 `tp` 降到 `tp_x` 或 `tp_y`，通信量与延迟随之下降。配套的**分布式 normalization** 只在 `tp_y` 子域做小 AllReduce（LayerNorm 两次：求和、平方和；RMSNorm 一次：平方均值）即可在不 AllGather 隐藏维的前提下完成逐 token 归一化。核心实现 `ParallelLinear2D` / `Linear2DSplitAlongFirstDim` / `LayerNorm2D` / `RMSNorm2D` 位于 [mindspeed](../frameworks/mindspeed.md) 的 `mindspeed/core/tensor_parallel/tp_2d/`，由 `--tp-2d --tp-x --tp-y` 启用。
 
+本页后端依赖torch_npu与ATB，不能视为硬件无关；固定来源未给这条TP-2D路径明确的SoC矩阵，暂以draft/空平台保留。通用二维并行原理不作为实现支持证据。
+
 ## 通信域分解：tp = tp_x × tp_y
 
 一维 Megatron TP 把 ColumnParallelLinear/RowParallelLinear 的权重沿单一维度切到 `tp` 张卡，每个 Linear 前向/反向都要在这个大小为 `tp` 的域上做一次 AllReduce（或 SP 下的 AllGather+ReduceScatter）。`tp` 越大，集合通信跨越的卡越多、带宽竞争越重，是大 TP 域训练效率下降的主因。
@@ -30,7 +37,7 @@ TP-2D 把一维张量并行的单个 TP 通信域 `tp` 分解成两个正交子�
 TP-2D 在原 Megatron 切分之上再加一维，把单一 `tp` 域拆为两个子通信域：
 
 - **TP-X 子域**（`nd1_dim1`，`TPXCollectiveComm`）：大小 `tp_x`，由 `tp` 个连续 rank 中每 `tp_x` 个相邻 rank 成组（`[i·tp + j·tp_x : i·tp + (j+1)·tp_x]`），负责沿 first-dim（序列维）的 AllGather / ReduceScatter。
-- **TP-Y 子域**（`nd1_dim2`，`TPYCollectiveComm`）：大小 `tp_y`，由步长为 `tp_x` 的 rank 跨步成组（`range(i·tp + j, (i+1)·tp, tp_x)`），负责沿 last-dim（隐藏/收缩维）的 AllGather / ReduceScatter / AllReduce。
+- **TP-Y 子域**（`nd1_dim2`，`TPYCollectiveComm`）：大小 `tp_y`，由步长为 `tp_x` 的 rank 跨步成组（`range(i·tp + j, (i+1)·tp, tp_x)`），是TP-Y分组；Linear的AG/RS仍沿first-dim（序列维）通信，不由组名决定张量轴；归一化AllReduce则聚合隐藏维统计量。
 
 ```mermaid
 flowchart LR
@@ -45,7 +52,7 @@ flowchart LR
   A -.分解.-> Y
 ```
 
-激活张量在 TP-2D 下恒为二维切分：序列维按 `tp_x`（叠加 CP 后为 `x·cp`）切、隐藏维按 `tp_y` 切，形状记作 `[s/(x·cp), b, h/y]`。权重 `[E/x, h/y]` 同样二维切——输出维按 `tp_x` 切、收缩维按 `tp_y` 切。
+fc1输入/Transformer子层边界的激活为二维切分：序列维按 `tp_x`（叠加 CP 后为 `x·cp`）切、隐藏维按 `tp_y` 切，形状记作 `[s/(x·cp), b, h/y]`。权重 `[E/x, h/y]` 同样二维切——输出维按 `tp_x` 切、收缩维按 `tp_y` 切。
 
 ## ParallelLinear2D 的二维化
 
@@ -53,7 +60,7 @@ flowchart LR
 
 - `output_size_per_partition = output_size / ag_comm_world_sz`（输出维按 AG 子域切）
 - `input_size_per_partition = input_size / rs_comm_world_sz`（收缩维按 RS 子域切）
-- 切分前校验整除：`output_size % tp_x == 0`、`input_size % tp_y == 0`，否则报 "output size should be divisible by tp-x" / "input size should be divisible by tp-y"。
+- 切分前校验整除：`output_size % ag_comm_world_sz == 0`、`input_size % rs_comm_world_sz == 0`；fc1对应output/tp_x、input/tp_y，fc2交换为output/tp_y、input/tp_x，否则报 "output size should be divisible by tp-x" / "input size should be divisible by tp-y"。
 
 MLP 的两个 Linear 刻意把 AG/RS 子域**对调**，从而让二维切分在层间自洽地翻转、无需额外 reshape 通信（`MLP2D` / `mlp_init_2d`）：
 
@@ -115,7 +122,7 @@ flowchart LR
 
 ## RoPE 与序列维 / CP 的协同
 
-`embeddings_2d.RotaryEmbedding` 按 `tp_y_cp_sz = tp_y × context_parallel_size` 对位置编码沿序列维切片，选取当前 CP rank 的分区（`_get_pos_emb_on_this_tp_y_cp_rank_in_ulysses_cp` / `..._in_megatron_cp`）。建组阶段 `TensorParallelYUnionCP` 把 `tp_y` 与 CP 联合成一个域，使 TP-2D 可与 [torchtitan-5d-parallel](torchtitan_5d_parallel.md) 中讨论的 context-parallel 长序列切分共存（仅支持 `megatron_cp_algo` / `ulysses_cp_algo`；非 flash-attn 的 `megatron_cp_algo` 会被回退为 `ulysses_cp_algo`）。
+`embeddings_2d.RotaryEmbedding` 仅在not packed_seq时切位置编码；megatron_cp_algo且general mask走仅CP的_get_pos_emb_on_this_cp_rank_in_ulysses_cp。其他联合域分支按tp_y×cp切片，使用TP-Y∪CP域内rank，而非独立CP rank（`_get_pos_emb_on_this_tp_y_cp_rank_in_ulysses_cp` / `..._in_megatron_cp`）。建组阶段 `TensorParallelYUnionCP` 把 `tp_y` 与 CP 联合成一个域，使 TP-2D 可与 [torchtitan-5d-parallel](torchtitan_5d_parallel.md) 中讨论的 context-parallel 长序列切分共存（仅支持 `megatron_cp_algo` / `ulysses_cp_algo`；非 flash-attn 的 `megatron_cp_algo` 会被回退为 `ulysses_cp_algo`）。
 
 ## 通算掩盖与融合算子
 
@@ -125,7 +132,7 @@ TP-2D 的小域通信仍可与 matmul 重叠，三个前向掩盖开关**互斥�
 - `--enable-overlap-matmul-with-rs`：`_do_mm_overlap_reducescatter`，把 matmul 沿序列分块，每块算完即异步 ReduceScatter，计算与 RS 流水。
 - `--coc-fused-kernel`：调 `coc_ops.all_gather_matmul_reduce_scatter`（`TP2DConfig`）把 AG+matmul+RS 做算子级融合，依赖 ATB 加速库，与前两个开关不兼容。
 
-反向另有 `--enable-backward-overlap-ag-with-matmul`：依赖 ATB，反向走 `coc_ops.all_gather_matmul_v2`，并按 `get_comm_domain_rank` 划分融合算子的通信子域。建组时只有前向或反向的 AG-掩盖开关（`--enable-overlap-ag-with-matmul` 或 `--enable-backward-overlap-ag-with-matmul`）打开，才会额外创建 `tp_x` / `tp_y` 的 send-recv 环形重叠组（`ag_x_sd_rcv_overlap` / `ag_y_sd_rcv_overlap`）；只开 `--enable-overlap-matmul-with-rs` 或 `--coc-fused-kernel` 不建这些重叠组。
+反向另有 `--enable-backward-overlap-ag-with-matmul`：还须同时启用--coc-fused-kernel（依赖ATB）才走coc_ops.all_gather_matmul_v2；单独反向开关仍是普通AllGather+matmul，并按 `get_comm_domain_rank` 划分融合算子的通信子域。建组时只有前向或反向的 AG-掩盖开关（`--enable-overlap-ag-with-matmul` 或 `--enable-backward-overlap-ag-with-matmul`）打开，才会额外创建 `tp_x` / `tp_y` 的 send-recv 环形重叠组（`ag_x_sd_rcv_overlap` / `ag_y_sd_rcv_overlap`）；只开 `--enable-overlap-matmul-with-rs` 或 `--coc-fused-kernel` 不建这些重叠组。
 
 ## 启用、约束与建组
 
@@ -144,17 +151,11 @@ TP-2D 的小域通信仍可与 matmul 重叠，三个前向掩盖开关**互斥�
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/tensor-parallel-2d.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/tensor-parallel-2d.md)（2D 策略 `tp=tp_x·tp_y`、分布式 normalization 九步、参数表、llama3-405B 5%+/再 5%+ 效果）；背景 [`docs/zh/features/tensor-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/tensor-parallel.md)、[`docs/zh/features/sequence-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/sequence-parallel.md)
-- [`mindspeed/core/tensor_parallel/tp_2d/parallel_linear_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/parallel_linear_2d.py) — `ParallelLinear2D`：`output/input_size_per_partition`、整除校验、`sequence_parallel` 互斥 raise、forward 调 `Linear2DSplitAlongFirstDim`
-- [`mindspeed/core/tensor_parallel/tp_2d/linear_2d_split_along_first_dim.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/linear_2d_split_along_first_dim.py) — `Linear2DSplitAlongFirstDim` 前向 AG(x)→matmul→RS(y)、反向镜像、`_do_allgather_left_tensor_and_matmul_overlap` / `_do_mm_overlap_reducescatter` / coc 融合路径
-- [`mindspeed/core/tensor_parallel/tp_2d/mlp_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/mlp_2d.py) — `MLP2D` / `mlp_init_2d`：fc1/fc2 的 AG/RS 子域对调与 `partition_dim` 0↔1
-- [`mindspeed/core/tensor_parallel/tp_2d/layernorm_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/layernorm_2d.py) — `LayerNorm2D` / `_ParallelLayerNorm2D`：`e_x`/`var_x` 两次 TP-Y AllReduce + 异步重叠、`partitioned_dim = H/tp_y`
-- [`mindspeed/core/tensor_parallel/tp_2d/rms_norm_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/rms_norm_2d.py) — `RMSNorm2D`：`pow_mean` TP-Y AllReduce、`apply_layernorm_1p` NotImplementedError
-- [`mindspeed/core/tensor_parallel/tp_2d/norm_factory_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/norm_factory_2d.py) — `get_norm_tp_2d` 派发 LayerNorm2D/RMSNorm2D（`last_dim_split_comm_intf=TPYCollectiveComm`）
-- [`mindspeed/core/tensor_parallel/tp_2d/group_api_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/group_api_2d.py) — `TPXCollectiveComm`(`nd1_dim1`) / `TPYCollectiveComm`(`nd1_dim2`) 及 overlap 变体
-- [`mindspeed/core/tensor_parallel/tp_2d/parallel_state_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/parallel_state_2d.py) — `initialize_ndmm_parallel_group` 连续 `tp_x` / 跨步 `tp_y` 建组、`TensorParallelYUnionCP` tp-y∪cp 域、overlap 组按开关创建
-- [`mindspeed/core/tensor_parallel/tp_2d/embeddings_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/tp_2d/embeddings_2d.py) — `RotaryEmbedding` 按 `tp_y × cp` 切位置编码
-- [`mindspeed/features_manager/tensor_parallel/tp_2d.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/tensor_parallel/tp_2d.py) — `TP2dFeature`：`--tp-2d/--tp-x/--tp-y` 等参数、`tp=tp_x·tp_y` 校验、MoE/SP/fused-rmsnorm 互斥、register_patches 列表
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [tensor-parallel-2d.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/tensor-parallel-2d.md)（supporting）
+- [linear_2d_split_along_first_dim.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/tensor_parallel/tp_2d/linear_2d_split_along_first_dim.py)（implementation）
+- [parallel_linear_2d.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/tensor_parallel/tp_2d/parallel_linear_2d.py)（implementation）
+- [embeddings_2d.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/tensor_parallel/tp_2d/embeddings_2d.py)（implementation）
 
 ## Links
 

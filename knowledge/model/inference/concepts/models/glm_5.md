@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: GLM-5
-description: GLM-5 的 DSA、MLA/Indexer 与 MoE 规格；平台配置、投机解码与性能记录分别维护。
+description: 更新GLM-5统一Executor、DSA参数及A3整数/950 MXFP8路径，说明当前CP、Cache与offload边界。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,20 +9,22 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/README.md
-  role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/config/glm_5_rank_64_64ep_w8a8_prefill_benchmark.yaml
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/configuration_glm.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/modeling_glm.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/config/ci_950/glm_5_w8a8mxfp8.yaml
+  role: implementation
 created_at: '2026-06-03T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T15:05:36Z'
 platforms:
 - a3
+- '950'
 ---
-
-
-
 
 # GLM-5
 
@@ -57,8 +59,6 @@ flowchart TD
     fnorm --> head["LMHead : 6144 → V"]
     head --> logits([logits])
 ```
-*来源：`zai-org/GLM-5/config.json`（verified 2026-05-15，`architectures=["GlmMoeDsaForCausalLM"]`、`model_type=glm_moe_dsa`）+ HuggingFace transformers main `src/transformers/models/glm_moe_dsa/{configuration_glm_moe_dsa.py, modeling_glm_moe_dsa.py}`（verified 2026-05-15）。*
-
 精简参数表（与部署用 `configuration_glm.py` 默认值一致）：
 
 | 参数 | 值 |
@@ -72,40 +72,42 @@ flowchart TD
 | max_position_embeddings / rms_norm_eps | 202752 / 1e-5 |
 | norm_topk_prob / tie_word_embeddings | True / False |
 
-> 层类型由 `GlmMoeDsaConfig` 硬编码 `mlp_layer_types = ["dense"]×3 + ["sparse"]×75`，不通过 `first_k_dense_replace` 配置。
+> 配置构造器接受显式 mlp_layer_types；只有未提供时才生成前三层 dense、后续 sparse 的默认列表。stock HF 基线可按该列表描述；此固定部署的 GlmMoeDsaDecoderLayer 实际以 n_routed_experts 非空、layer_idx >= first_k_dense_replace 且 layer_idx % moe_layer_freq == 0 判断 MoE，不能把默认列表当作部署执行的硬编码。
 
 ## DSA 注意力（MLA + Indexer）
 
-GLM-5 的注意力是 `GlmMoeDsaAttention`（`modeling_glm.py:661`），即 V3.2-Exp 同款 DSA（MLA + Lightning Indexer），算子机理见 [dsa](../modules/dsa.md)、[mla](../modules/mla.md)、[lightning-indexer](../modules/lightning_indexer.md)。
+GLM-5 的注意力是 `GlmMoeDsaAttention`，即 V3.2-Exp 同款 DSA（MLA + Lightning Indexer），算子机理见 [dsa](../modules/dsa.md)、[mla](../modules/mla.md)、[lightning-indexer](../modules/lightning_indexer.md)。
 
 - **MLA 维度**：MHA（`num_attention_heads = num_key_value_heads = 64`）。`q_lora_rank 2048`、`kv_lora_rank 512`；`qk_nope_head_dim 192 + qk_rope_head_dim 64 = qk_head_dim 256`、`v_head_dim 256`、`head_dim 64`（= rope 维）。
-- **Indexer（DSA）**：`GlmMoeDsaIndexer`（`indexer.py:51`），`index_n_heads 32`、`index_head_dim 128`、`index_topk 2048`、`indexer_rope_interleave True`。每 q token 由 Indexer 选出 TopK=2048 个相关 kv 后再算注意力。
+- **Indexer（DSA）**：`GlmMoeDsaIndexer`，`index_n_heads 32`、`index_head_dim 128`、`index_topk 2048`、`indexer_rope_interleave True`。每 q token 由 Indexer 选出 TopK=2048 个相关 kv 后再算注意力。
 - **算子路径**：先按 `cp_size > 1 and is_prefill` 选择 `forward_absorb_cp`，否则选择 `forward_absorb`；两者是替代分支，各自在内部准备 Q/KV，并执行 MLAProlog、稀疏注意力和 Epilog，不串行调用。算子层面见 [mla-prolog](../kernels/mla_prolog.md)、[sparse-flash-attention](../kernels/sparse_flash_attention.md)、[lightning-indexer](../kernels/lightning_indexer.md)。
 
 ## MoE（256 路由 + 1 共享，TopK=8）
 
-`GlmMoeDsaMoE`（`modeling_glm.py:186`）：256 routed + 1 shared expert，每 token 选 8 个路由专家（`top_k + shared = 9` 激活），`routed_scaling_factor 2.5`。
+`GlmMoeDsaMoE`：256 routed + 1 shared expert，每 token 选 8 个路由专家（`top_k + shared = 9` 激活），`routed_scaling_factor 2.5`。
 
 - **路由**：`scoring_func=sigmoid`（`logits.sigmoid()`，`:291`）+ `topk_method=noaux_tc`（无辅助损失均衡，`:258`）。`n_routed_experts ∈ [256, 384]` 时走融合算子 `npu_moe_gating_top_k`（`norm_type=1` 即 sigmoid，`:276`）。
 
-## Notes
+## 当前 Executor 与量化
 
-- **与 V3.2-Exp 的关系**：GLM-5 是 cann-recipes 基于 GLM-5 开源代码迁移到 CANN 的样例，结构与方案均沿用 [deepseek-v3.2-exp](deepseek_v3_2_exp.md)；DSA / MoE / 量化 / 并行的完整机理与图示见 [deepseek-v3.2-exp](deepseek_v3_2_exp.md)，此处记 GLM-5 的规格差异与部署配置。
-- **355B 变体**：官方称 GLM-5 从 355B-A32B 扩展到 744B-A40B，但 HF 仅发布 744B/40B 检查点（`zai-org/GLM-5` + `zai-org/GLM-5-FP8`）；355B-A32B 未作为独立 HF 仓发布。`zai-org/GLM-5.1` 是另一发布检查点，不别名到本文件。
+模型身份是models/glm_5，不能因代码相似迁到glm_5_2或glm_5_3。当前已使用统一InferenceConfig、CommManager、packed TND和CacheEntry；CP依metadata.enabled选择，临时全局计算KV与持久请求缓存分开。attn_tp_size固定为1，MoE Prefill按EP一致chunk数分块。
+
+950已有ci_950/glm_5_w8a8mxfp8.yaml与转换w8a8-mx路径，区别于A3整数量化。update_kv_quant_settings在950浮点量化时把MLA KV和LI Cache设为float8；其他量化路径将LI Cache设int8。Indexer先Hadamard再按模式dynamic_quant或dynamic_block_quant，weights_proj保持不量化，GLM的interleave RoPE不能替换成V3.2-Exp的rotary_mul。
+
+950权重后处理只对选定q_a/q_b/kv_a投影使用NZ，其余权重不因YAML enable_weight_nz统一转NZ；MXFP8这些投影的scale再转置、重排并view成E8M0。模型拒绝950 offload，也拒绝在线offload；仅unquant/int8缓存可进A3 offline offload。图模式、实际软件环境与其他边界见Guide。
 
 ## 部署与证据入口
 
 - [模型部署与验收流程](../../guides/models/glm_5_deployment.md)：配置、开关、失效条件与回退入口。
 - [GLM-5 A3 W8A8 Decode 的来源性能观测](../../optimizations/benchmark_observations/glm5_a3_source_benchmark.md)：固定来源自报，未经本仓独立复测。
 
-## Source basis
+## Evidence
 
-cann-recipes-infer @ **2c45117**（Atlas A3 部署事实）：
-
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/glm-5/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/README.md)（概述、硬件要求、权重转换、Benchmark）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/glm-5/config/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/config/README.md) + [`config/glm_5_rank_64_64ep_w8a8_prefill_benchmark.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/config/glm_5_rank_64_64ep_w8a8_prefill_benchmark.yaml) + [`config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml)（部署规格）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/glm-5/models/{modeling_glm,configuration_glm,indexer,offload_cache}.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/models/modeling_glm.py)（DSA 注意力、MoE EP、MC2、量化、MTP、Offload 调用入口）
-- stock HF 架构基线：`zai-org/GLM-5/config.json` + HuggingFace transformers `glm_moe_dsa`（verified 2026-05-15）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/README.md)（primary）
+- [configuration_glm.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/configuration_glm.py)（implementation）
+- [modeling_glm.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/modeling_glm.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/indexer.py)（implementation）
+- [glm_5_w8a8mxfp8.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/config/ci_950/glm_5_w8a8mxfp8.yaml)（implementation）
 
 ## Links
 

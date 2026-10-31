@@ -9,12 +9,12 @@ tags:
 - topic.data_movement.communication.collective_communication
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
 - agnostic
 ---
@@ -63,7 +63,7 @@ permute（按专家分组）与 unpermute（还原顺序）是 dispatcher 里搬
 - **前向**：dispatch/combine 的 All2All（或 AllGather/ReduceScatter）改异步下发（独立 `COMM_STREAM`），让没有依赖的计算去填通信空窗。alltoall 支路还兼容并细化了 Megatron 的 `--moe-shared-expert-overlap`——带共享专家时自动置 `moe_shared_expert_overlap=True`，用共享专家的计算掩盖路由专家的 dispatch 通信，较原生方案再提速 4%+。
 - **反向**：对计算流程做子图切分，使反向也能通算并行。
 
-相较基准 dispatcher，开启后训练性能可提升 10%+。代价是显存占用上升（保留更多中间图用于重叠），属正常现象，可叠 [ZeroMemory](moe_training_optim.md) 回收显存。约束：与 `use_ascend_mc2`（见 [mc2](mc2.md)）互斥，需 `--moe-grouped-gemm`、`expert-model-parallel-size>1`；alltoall 支路不支持 `--moe-tp-extend-ep`（要扩 TP 进 EP 须切 `alltoall_seq` 并配 `--moe-permutation-async-comm`）。
+相较基准 dispatcher，开启后训练性能可提升 10%+。代价是显存占用上升（保留更多中间图用于重叠），属正常现象，可叠 [ZeroMemory](moe_training_optim.md) 回收显存。约束：与 `use_ascend_mc2`（见 [mc2](mc2.md)）互斥，需 `--moe-grouped-gemm`、`expert-model-parallel-size>1`，allgather 支路还必须开启 `--moe-permutation-async-comm`；alltoall 支路不支持 `--moe-tp-extend-ep`（要扩 TP 进 EP 须切 `alltoall_seq` 并配 `--moe-permutation-async-comm`）。
 
 ## 跨 microbatch 前反向掩盖：fb-overlap
 
@@ -89,36 +89,38 @@ flowchart LR
 
 要在 1F1B 稳定阶段把 4 次 A2A 全盖住，关键是**分离调度专家与 Attention 反向的 dw / dx**：反向只先算决定下游能否推进的 dx，把权重梯度 dw 计算缓存进 `WeightGradStore`（`start_decouple` 置位后入队、`pop`/`pop_single` 择机执行），再用空出来的 Attention dw 计算去掩盖 PP 的 P2P 通信，从而 1F1B 阶段 A2A **100% 掩盖**。dw/dx 分离机制与 [dualpipev](../parallelism/dualpipev.md) 同源（共用 `WeightGradStore`）。
 
-warmup / cooldown 阶段只有同 microbatch 的前向或反向，没有跨 microbatch 配对，改用**层内自掩盖**：前向用共享专家计算盖 dispatch、用路由专家 dw 盖 dispatch，反向用共享专家反向盖 combine——把这两段的 A2A 掩盖约 **50%**。
+warmup / cooldown 阶段只有同 microbatch 的前向或反向，没有跨 microbatch 配对，改用**层内自掩盖**：前向用共享专家计算盖 dispatch；反向用共享专家反向盖 combine、用路由专家 dw 盖 dispatch——把这两段的 A2A 掩盖约 **50%**。
 
 落地有两条流水载体：配 `--schedules-method dualpipev` 走 DualPipeV 双向流水；或在传统 Megatron VPP 上比原始 VPP 多做一个 warmup microbatch，实现更简单也能掩盖 A2A。非 PP（`pipeline-model-parallel-size 1`）多 microbatch 场景同样支持。在 DeepSeek-V3 上结合 DualPipeV，相比已有的 `--moe-alltoall-overlap-comm` 端到端再 **+10%**。
 
-fb-overlap 的约束较硬（`MoEFwdBwdOverlapFeature.validate_args`）：仅 `alltoall` dispatcher（不支持 allgather / alltoall_seq）；需 `--moe-grouped-gemm`、`expert-tensor-parallel-size=1` 且 `expert-model-parallel-size>1`（不支持专家 TP）；流水只能是无 PP / VPP / DualPipeV 之一；`moe-zero-memory` 仅 `level0`；仅 Mcore（不能 `--use-legacy-models`）。与下列互斥：`moe-alltoall-overlap-comm`、`moe-hierarchical-alltoallv`、`recompute-in-advance`、`recompute-in-bubble`、`overlap-grad-reduce`（异步 DP）、`swap-attention`、`moe-tp-extend-ep`、`use-nanopipe`、`automated-pipeline`。当前在 DeepSeek-V3 验证，其它 MoE 需另行适配。
+fb-overlap 的约束较硬（`MoEFwdBwdOverlapFeature.validate_args`）：仅 `alltoall` dispatcher（不支持 allgather / alltoall_seq）；需 `--moe-grouped-gemm`、`expert-tensor-parallel-size=1` 且 `expert-model-parallel-size>1`（不支持专家 TP）；流水只能是无 PP / VPP / DualPipeV 之一；仅支持 Dropless / Drop，暂不支持 Drop&Pad；`moe-zero-memory` 仅 `level0`，且不得设置 `--moe-zero-memory-num-layers`；仅 Mcore（不能 `--use-legacy-models`）。与下列互斥：`moe-alltoall-overlap-comm`、`moe-hierarchical-alltoallv`、`recompute-in-advance`、`recompute-in-bubble`、`overlap-grad-reduce`（异步 DP）、`swap-attention`、`moe-tp-extend-ep`、`use-nanopipe`、`automated-pipeline`。VPP 还需满足 `GBS // (MBS × PP × DP) > 1`；noop layers 只能放在最后一个 VPP stage。使用显式 pipeline layout 时不能设置 noop-layers，且每个 chunk 都必须包含 decoder 层。当前在 DeepSeek-V3 验证，其它 MoE 需另行适配。
 
 ## 三档掩盖的取舍
 
 | 档位 | 开关 | 掩盖范围 | 关键约束 |
 |---|---|---|---|
 | dispatcher 异步 | `--moe-permutation-async-comm` | permute 阶段内部通信异步化 | alltoall / allgather 各有优化；开 GMM 后 alltoall 的逐专家通算并行失效 |
-| 层内 overlap | `--moe-alltoall-overlap-comm` / `--moe-allgather-overlap-comm` | 同 microbatch 内 dispatch/combine 与计算重叠 | 需 GMM + EP>1；增显存；与 `use_ascend_mc2` 互斥 |
+| 层内 overlap | `--moe-alltoall-overlap-comm` / `--moe-allgather-overlap-comm` | 同 microbatch 内 dispatch/combine 与计算重叠 | 需 GMM + EP>1；allgather 还需 permutation-async-comm；增显存；与 `use_ascend_mc2` 互斥 |
 | 跨 microbatch fb-overlap | `--moe-fb-overlap` | 1F1B 100% / warmup-cooldown 50% A2A 掩盖 | 仅 alltoall + EP>1 + ETP=1；流水限 VPP/DualPipeV/无 PP；与 alltoall-overlap-comm 互斥 |
 
 共性是都靠多流异步把 dispatch/combine 通信挂到与之无依赖的计算上，本质是「用计算填通信空窗」换 MFU。掩盖力度越强，对 dispatcher 类型、流水排布、显存的要求越紧。
 
 > 跨域对照：推理侧把整条 dispatch/combine All2All 路由链收敛为**一体化融合算子** `npu_moe_distribute_dispatch_v2` / `combine_v2`（见 [moe-dispatch-combine-v2](../../../inference/concepts/techniques/moe_dispatch_combine_v2.md)），把发送/重排/同步封进单算子降低 host 下发；训练侧则靠异步通信 + 跨 microbatch 排布把 All2All 与计算重叠。两条不同思路，同治 EP 通信瓶颈。
 
+## 跨 microbatch 掩盖的显存开关
+
+当前 `--moe-fb-overlap` 文档补充三项调节：
+
+- `--disable-fb-overlap-linear-dw-detach` 关闭普通 TP Linear 反向的权重梯度分离，以性能损失换取显存节省；它与 DualPipeV cooldown 的 `--dualpipev-dw-detach` 分属不同控制面。
+- `--recompute-dense-mlp` 对 Dense MLP 的 FC1 输出做激活重计算，减少保存但增加一次 FC1 前向。
+- `--swap-dense-mlp` 异步把该输出换到 CPU，并在反向前恢复到 NPU；与 `--recompute-dense-mlp` 互斥。
+
+这些开关调节 fb-overlap 的峰值，不能由其存在推断所有模型或并行配置已受支持，仍需满足原有 dispatcher、专家并行和流水限制。
+
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md)（四阶段拆分 Attention/Dispatch/MLP/Combine 与四对掩盖、dw/dx 分离实现 1F1B A2A 100% 掩盖、warmup/cooldown 50% 层内自掩盖、DualPipeV 与 VPP 两条载体、DeepSeek-V3 + DualPipeV +10%、全部使用约束）
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/megatron_moe/megatron-moe-alltoall-overlap-comm.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-alltoall-overlap-comm.md) / [`megatron-moe-allgather-overlap-comm.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-allgather-overlap-comm.md)（前向异步通信掩盖 + 反向子图切分通算并行、性能 +10% 及 shared-expert-overlap 再 +4%、显存增配 ZeroMemory）
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/megatron_moe/megatron-moe-alltoall-dispatcher.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-alltoall-dispatcher.md)（repeat_interleave 新流并行、逐专家 AllGather+计算通算并行、开 GMM 后失效）/ [`megatron-moe-allgather-dispatcher.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-allgather-dispatcher.md)（gather/scatter→index/index_put 等价替换、三路 AllGather async）
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/moe-token-permute-and-unpermute.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/moe-token-permute-and-unpermute.md)（`--moe-permute-fusion` 各融一个算子、仅 alltoall/alltoall_seq、capacity-factor 兼容性、CANN 8.3.RC1/PTA 7.2.RC1+、最佳配置）
-- [`mindspeed/features_manager/moe/fb_overlap.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/moe/fb_overlap.py) — `MoEFwdBwdOverlapFeature`：`--moe-fb-overlap` 注册、`validate_args` 全部互斥/依赖（alltoall-only、ETP=1 且 EMP>1、流水限 VPP/DualPipeV/无 PP）、`register_patches`（替 `get_moe_module_spec` / `TransformerBlock.__init__` / `LinearWithGradAccumulationAndAsyncCommunication.backward` / MTP 前向）
-- [`mindspeed/features_manager/moe/moe_alltoall_overlap.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/moe/moe_alltoall_overlap.py) / [`moe_allgather_overlap.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/moe/moe_allgather_overlap.py) — `validate_args`（`use_ascend_mc2` 互斥、dispatcher 校验、GMM/EP>1、alltoall 自动开 shared-expert-overlap、alltoall_seq 需 tp-extend-ep）、`register_patches`（`MoELayer` 替换为 `MindSpeedAlltoAllOverlapMoeLayerAdaptor` / `MindSpeedAllGatherOverlapMoeLayerAdaptor`）
-- [`mindspeed/core/transformer/moe/moe_feature/fb_overlap/overlap_funcs/fwdbwd.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/moe/moe_feature/fb_overlap/overlap_funcs/fwdbwd.py) — `transformer_layer_forward_moe_backward_moe_overlaping` 等四个前反向交错函数：`token_permute1`/`async_dispatch_comm`/`token_permute2`、`token_unpermute1`/`async_combine_comm`/`token_unpermute2`、`WeightGradStore.start_decouple`/`pop(experts_only=True)` dw 分离、shared expert 重叠
-- [`mindspeed/core/transformer/moe/moe_feature/fb_overlap/modules/weight_grad_store.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/moe/moe_feature/fb_overlap/modules/weight_grad_store.py) — `WeightGradStore`（`is_decoupleBlock` / `start_decouple` / `flush_chunk_grad` / `pop` / `pop_single`）dw 延后队列
-- [`mindspeed/core/transformer/moe/moe_feature/overlap/moe_layer_overlap_all2all.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/moe/moe_feature/overlap/moe_layer_overlap_all2all.py) / [`moe_layer_overlap_allgather.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/moe/moe_feature/overlap/moe_layer_overlap_allgather.py) — `MoELayerOverlapAllToAll` / `MoELayerOverlapAllGather`（allgather 用 `async_all_gather`×3 + `async_reduce_scatter` combine）
-- [`mindspeed/core/transformer/moe/moe_feature/overlap/comm_utils.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/moe/moe_feature/overlap/comm_utils.py) — `async_all_to_all` / `_AsyncAllToAllWithBackward` / `async_all_gather` / `async_reduce_scatter`（独立 `COMM_STREAM` 异步下发、不等长 all2all-v）
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [megatron-moe-fb-overlap.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md)（supporting）
 
 ## Links
 

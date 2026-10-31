@@ -1,59 +1,78 @@
 ---
 type: Guide
-title: Hy3-preview A3 部署与路由精度验收流程
-description: Hy3-preview A3 部署与路由精度验收流程，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+title: Hy3 A3/950 当前部署与 MTP 验收
+description: 当前Hy3三类MTP配置、A3/950环境、FP8/AMCT权重、SP/PA/NZ和源码与旧基础报告差异。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/optimization_report.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/models/modeling_hy_v3.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modeling_hy_v3.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modules/common.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hy3/hy3_optimization.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/agentic/optimization_report.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_a3/hy3_rank16_bf16_mtp.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_950/hy3_rank4_mxfp4_mtp.yaml
+  role: example
 created_at: '2026-10-21T09:56:18Z'
-updated_at: '2026-10-21T10:02:02Z'
+updated_at: '2026-10-29T14:28:49Z'
 platforms:
 - a3
+- '950'
 ---
 
+# Hy3 A3/950 当前部署与 MTP 验收
 
+## 环境与权重
 
-# Hy3-preview A3 部署与路由精度验收流程
+当前目录models/hy3。A3 README要求CANN9.1.0.beta.1、PyTorch2.8.0、torch_npu发布26.0.0；950提供x86 CANN9.1/PyTorch2.9专用镜像。两套环境分开准备，记录实际build与驱动。
 
-## 目标、输入与产物
+A3使用Hy3 BF16；950可直接用Hy3-FP8，MXFP8+MXFP4从BF16用AMCT转换。当前README示例以hy_v3适配器、tensor粒度和moe/attn-linear/mlp目标转换，同时生成config；实际权重quantization_config必须匹配，不能靠输出目录名认定4bit。
 
-面向固定来源中的 Hy3-preview 实现，输入包括平台、权重、实际配置和任务指标；产物为可追溯配置、正确性/性能记录及回退入口。模型结构由[模型 Concept](../../concepts/models/hy3_preview.md)维护。以下描述固定版本实践，不能当作当前所有软件版本的部署保证。
+## 当前三份 YAML
 
-## 1. 确认模型与环境
+| 路径 | 配置 |
+| --- | --- |
+| ci_a3/hy3_rank16_bf16_mtp.yaml | A3 8卡16rank，attn/dense/embed/head TP4，MoE EP16，batch4，SP/多流关闭 |
+| ci_950/hy3_rank4_mxfp4_mtp.yaml | 950四卡，Attention TP4、EP4、DenseTP1、batch4，SP/多流开启 |
+| ci_950/hy3_rank4_fp8_mtp.yaml | 950原生FP8权重，按其实际YAML核对同类SP/MTP |
 
-使用固定报告的 A3、BF16、16 die（来源明示8卡×2die）路径。报告的 CANN 8.5.0 与 README 的9.0.0不同，记录实际 build。Qwen3-MoE 是机制参考，不能照搬其无 shared expert 的结构；本模型额外有 sigmoid router 和 shared expert。
+均next_n=1，默认npugraph_ex；A3输入400/输出128，MX配置InfiniteBench输入与Prefill预算65536。旧rank16_4tp_16ep_gegraph_bf16.yaml已撤下。按README在models/hy3设置可见设备后运行：
 
-## 2. 配置 TP/EP、cache 与图模式
+```bash
+bash ../../executor/scripts/infer.sh --model hy3 --yaml ci_a3/hy3_rank16_bf16_mtp.yaml
+```
 
-固定配置的 Attention/Dense/Embedding/LMHead TP4、MoE EP16，在线切分开启；连续 BSH cache 使用 scatter_update_。Prefill eager，Decode GE；EP 的手工 AllToAll 和 MC2 为不同执行路径。Prefill 可由 moe_chunk_max_len 切分 dispatch/combine 的中间峰值，router top-k 并未同步分块。按 [局部 TP 规则](../../optimizations/rules/local_tp_memory_heavy_projections.md)、[图模式规则](../../optimizations/rules/graph_mode_enable_decision_profiling.md)核对边界。
+各节点权重路径一致，IPs按rank排序；日志在models/hy3/res。数据集不存在时框架可能在线读取，离线部署先备齐数据。
 
-## 3. 优先检查加载与数学语义
+## 关键实现约束
 
-QKV 分离权重必须正确映射到 merged_qkv_proj，避免静默漏载。GMM 使用 transpose view，报告中额外 contiguous 权重副本约35.8GB，会放大编译峰值；这是一项固定实现差异，不外推任何 transpose 都能零拷贝。
+当前代码SP默认False，README表默认True不作为运行事实；以显式YAML为准。A3 dense_tp>1样例保持SP=False；量化SP要求Attention DP1及每DP batch为Attention TP的正倍数。FP8缓存还要求head_dim/block_size均128与已注册QKV融合算子。cache的布局/scale和paged metadata由共享管理器绑定，旧init_cache连续BSH方法仍留在类内，但不是当前get_cache_info部署路径。
 
-Sigmoid 后加 e_score_correction_bias 与融合算子 bias 的位置存在来源已承认的语义差异，须对齐路由选择、权重和任务质量；“输出正常”不能证明等价。MTP layer80 在该实现中跳过加载，不据模型含 MTP 层声称部署启用了投机解码。
+MTP由独立类加载layer80和投影/归一化，主干忽略layer80不等于MTP不加载。验收时检查草稿权重、cache合并索引、接受率、回滚以及主/草稿宽度。MXFP4专家加载后必须按对应quant_method选择NZ，FP8专家保持ND；不能统一打开或关闭全部NZ。
 
-## 4. 已回退功能与结果入口
+多流仅在当前条件下启用共享专家重叠，缺省与README表有差异，不能由文字默认推定开启。来源基础报告中的旧BSH/FA v1、SuperKernel阶段和跳过MTP不应拿来解释当前代码；最新950指南展示PA/全FP8融合。
 
-报告在 CANN8.5.0 下因 `super kernel do not support more than 2 real stream` 回退 combine_v2 的 shared_expert_x 参数；不在当前流程重新开启。Multi-stream 保持报告中的关闭状态，若更换形状另按 [多流验收](../../guides/optimization/multi_stream_optimization_workflow.md)判断。图缓存按 [缓存规则](../../optimizations/rules/torchair_cache_compile_persisted_graph.md)处理。
+## 验证与来源测量
 
-性能和批次口径集中 [Hy3 A3 来源观测](../../optimizations/benchmark_observations/hy3_a3_source_benchmark.md)；阶段值、最终重编译值与不同 batch 的 Prefill 不混算。
+先固定权重、输入和软件验收No-MTP/eager，再分别开MTP、SP、图与多流；检查router top-k/权重、缓存布局、输出质量、Host/NPU峰值、接受率和真实Token口径。基础报告关于sigmoid/bias的质量判断不等于数学等价证明。
 
-## 验证、停止与回退
-
-保存实际权重、软件版本、平台、并行组、输入与输出；以未启用待验优化的路径作对应基线，逐项比较 logits/任务质量、时延和峰值内存，并分别记录冷启动、warmup 与稳态重复测量。遇到源中未覆盖的形状、后端或平台时停止套用。失败后恢复对应版本的配置、权重与编译缓存，再按关联 Runbook 排查；没有实际跑通的回退不写为已验证。
-
-本卡未记录独立的模型执行或硬件复测。来源自报和输出“看起来正常”不能替代本部署的精度验收；执行后应另存实际环境、配置和测量记录。
+最新950指南的Offline TTFT表是batch1/四芯片、32K2330.23ms与64K7023.11ms；当前MX YAML却batch4，不能直接视为该YAML复现结果。A3基础报告另见[观测](../../optimizations/benchmark_observations/hy3_a3_source_benchmark.md)。本次未运行NPU；异常恢复匹配原权重、合法batch和基线配置。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/optimization_report.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/README.md)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/models/modeling_hy_v3.py)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/README.md)（primary）
+- [modeling_hy_v3.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modeling_hy_v3.py)（implementation）
+- [common.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modules/common.py)（implementation）
+- [hy3_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hy3/hy3_optimization.md)（supporting）
+- [optimization_report.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/agentic/optimization_report.md)（supporting）
+- [hy3_rank16_bf16_mtp.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_a3/hy3_rank16_bf16_mtp.yaml)（example）
+- [hy3_rank4_mxfp4_mtp.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_950/hy3_rank4_mxfp4_mtp.yaml)（example）

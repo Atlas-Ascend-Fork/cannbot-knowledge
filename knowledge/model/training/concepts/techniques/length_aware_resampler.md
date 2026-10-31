@@ -8,12 +8,12 @@ tags:
 - topic.data_pipeline
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - agnostic
 ---
@@ -30,13 +30,13 @@ On-policy RL 训练的 rollout（generate）阶段普遍存在 **response 长尾
 
 RL 同步训练里，一个 generation batch 内的所有样本必须**全部生成完毕**才能进入 ref / update 阶段。当 response 长度呈长尾分布时，短样本早早退出、长尾样本独占推理资源，形成「木桶效应」——短任务所在的 DP 组完成后只能闲置等待，直到长尾任务也结束才能同步进入下一轮。下图（qwen3-235B 2K 推 32K 实践）展示了 response 长度的实际长尾分布：DeepScalar 数据集一次推理中绝大多数样本在 5K~10K 早期退出，仅少数长尾样本逼近最大长度。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image7.png" width="55%">
-<sub>图：单个 DP 域内 256 条回复的 response 长度分布——多数样本在早期退出、少数长尾样本逼近最大长度，正是长度感知重排要利用的统计规律（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>·§1 简介 / response 长尾）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image7.png" width="55%">
+<sub>图：单个 DP 域内 256 条回复的 response 长度分布——多数样本在早期退出、少数长尾样本逼近最大长度，正是长度感知重排要利用的统计规律（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>·§1 简介 / response 长尾）</sub>
 
 长尾样本与短样本混排时，整批 generation 被最长那条样本拖住；下图把这种「木桶效应」可视化：同一组 NPU 上各样本生成长度参差，最短的那些核早早完成却必须等齐最长样本，才能一起进入 ref prefill / reward&adv / policy update。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image15.png" width="55%">
-<sub>图：长尾 response 的木桶效应——同批内短样本（短条）完成后空等长尾样本（长条），全批对齐后才进入 ref/reward/update（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>·rollout 长尾负载不均）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image15.png" width="55%">
+<sub>图：长尾 response 的木桶效应——同批内短样本（短条）完成后空等长尾样本（长条），全批对齐后才进入 ref/reward/update（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>·rollout 长尾负载不均）</sub>
 
 长度感知重采样的核心思路：**目标不是精确预测每条样本的输出长度，而是在 batch 级别减少长短样本混排**——把预估长度相近的 prompt 聚到邻近 batch，使每个 generation batch 内长度更齐整，缩短「木桶」的桶板差。
 
@@ -49,7 +49,7 @@ RL 同步训练里，一个 generation batch 内的所有样本必须**全部生
 > 3. 将统计结果按样本 id 聚合，并使用 EMA 更新样本的长度估计。
 > 4. 在下一轮 epoch 开始时，依据估计长度排序，并按 batch block 做可选打散。
 
-排序是两级的——`np.lexsort((tie_break, est, bucket))`：先按 `floor(est/bucket_size)` 粗分桶、桶内再按精确估计长度 `est`、同长度用随机 `tie_break` 打散。`bucket_size` 正是控制分桶粗细的承重旋钮：调大则分桶越粗、桶内允许的长度跨度越大、越倾向保留批间随机性；调小则分桶越细、批内长度越齐整（极端到 1 即退化为纯按精确长度排序）。`shuffle_batch_blocks` 再在排好序的 batch block 之间整体打散，避免长样本永远集中在 epoch 尾部。
+排序是两级的——`np.lexsort((tie_break, est, bucket))`：先按 `floor(est/bucket_size)` 粗分桶、桶内再按精确估计长度 `est`、同长度用随机 `tie_break` 打散。由于桶编号随 `est` 单调，桶内又按精确 `est` 排序，当前实现无论桶宽如何都保持全局精确长度顺序，随机项仅打散相同估计长度。因此 `bucket_size` 不改变这项排序结果，不能用它控制桶内随机性或批内齐整程度。`shuffle_batch_blocks` 再在排好序的 batch block 之间整体打散，避免长样本永远集中在 epoch 尾部。
 
 三个工程细节保证重排稳定可用：
 
@@ -82,7 +82,7 @@ export VLLM_ROLLOUT_EARLY_STOP_MIN_TOKENS=10000
 
 ## 配置与启用
 
-特性以 Git Patch 交付，文件位于 `llm_rl/qwen3/patches/verl/0019-verl-feature-length_aware_resampler.patch`；在 `llm_rl/qwen3/` 目录下执行 `bash apply_all_patches.sh` 应用全部 patch。应用后通过 Hydra 配置启用 sampler：
+特性以 Git Patch 交付，文件位于 `llm_rl/qwen3/verl-mindspeed/patches/verl/0019-verl-feature-length_aware_resampler.patch`；在 `llm_rl/qwen3/verl-mindspeed/` 目录下执行 `bash apply_all_patches.sh` 应用全部 patch。应用后通过 Hydra 配置启用 sampler：
 
 ```bash
 data.sampler.class_path=pkg://verl.experimental.dataset.length_bucket_sampler
@@ -94,7 +94,7 @@ data.dataloader_num_workers=0
 data.shuffle=False
 ```
 
-建议保持训练 dataloader 的 `drop_last=True`，当前 qwen3 样例的训练 dataloader 默认即按该方式构建。配套最小可复现脚本 [`llm_rl/qwen3/internal/train_grpo_qwen3_resampler_example.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen3/internal/train_grpo_qwen3_resampler_example.sh) 用环境变量驱动同一组开关（与 [qwen3-rl](../../guides/recipes/qwen3_rl.md) 的 16 卡 GRPO 样例兼容）：
+建议保持训练 dataloader 的 `drop_last=True`，当前 qwen3 样例的训练 dataloader 默认即按该方式构建。配套最小可复现脚本 [`llm_rl/qwen3/verl-mindspeed/internal/train_grpo_qwen3_resampler_example.sh`](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/internal/train_grpo_qwen3_resampler_example.sh) 用环境变量驱动同一组开关（与 [qwen3-rl](../../guides/recipes/qwen3_rl.md) 的 16 卡 GRPO 样例兼容）：
 
 ```bash
 # Per-epoch auto regrouping by previous rollout response lengths.
@@ -106,7 +106,7 @@ export VLLM_EPOCH_LENGTH_REGROUP_SHUFFLE_BLOCKS=1
 export VLLM_ROLLOUT_EARLY_STOP_ENABLE=1
 export VLLM_ROLLOUT_EARLY_STOP_FACTOR=2.0
 export VLLM_ROLLOUT_EARLY_STOP_MIN_TOKENS=10000
-# llm_rl/qwen3/internal/train_grpo_qwen3_resampler_example.sh
+# llm_rl/qwen3/verl-mindspeed/internal/train_grpo_qwen3_resampler_example.sh
 ```
 
 切回 eager baseline 且关闭 resampler 用 `export VLLM_EAGER_BASELINE_NO_RESAMPLE=1`（此时 sampler 置 null）。脚本默认开启 `LengthAwareEpochSampler` + rollout 长尾保护、保持 `data.dataloader_num_workers=0`、默认不保存 checkpoint（`SAVE_CKPT_ENABLE=1` 开启）。
@@ -123,11 +123,8 @@ export VLLM_ROLLOUT_EARLY_STOP_MIN_TOKENS=10000
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/features/length_aware_resampler.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/features/length_aware_resampler.md)（§1 response 长尾两大问题；§2.1 patch 位置 / `apply_all_patches.sh`；§2.2 Hydra 配置 `LengthAwareEpochSampler` + bucket_size/ema_decay/shuffle_batch_blocks；§2.3 长尾保护 cap 公式 + 三个 `VLLM_ROLLOUT_EARLY_STOP_*` 环境变量；§3.1 EMA 长度估计 4 步；§3.2 `dataset_item_idx` 稳定回写；§3.3 按 `gen_batch_size` 整数倍截断；§3.4 rollout 动态下发 `response_max_tokens_cap`；§4 n=16/gen_batch_size=32/response_length=16384 下 rollout +20%；§5 注意事项）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen3/internal/train_grpo_qwen3_resampler_example.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen3/internal/train_grpo_qwen3_resampler_example.sh)（16 卡 GRPO 最小可复现脚本：`VLLM_EPOCH_LENGTH_REGROUP_*` / `VLLM_ROLLOUT_EARLY_STOP_*` / `VLLM_EAGER_BASELINE_NO_RESAMPLE` 环境变量驱动 sampler 开关；`SAMPLER_CLASS_PATH=pkg://verl.experimental.dataset.length_bucket_sampler`）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen3/patches/verl/0019-verl-feature-length_aware_resampler.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen3/patches/verl/0019-verl-feature-length_aware_resampler.patch)（特性以 Git Patch 形式交付到 veRL）
-- 图源：[`docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md) 的 response 长度分布图与长尾木桶效应图（qwen3-235B 2K 推 32K 实践）
-- [verl](https://github.com/volcengine/verl) — veRL 上游代码仓（`LengthAwareEpochSampler` 落于 `verl.experimental.dataset.length_bucket_sampler`）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [qwen3_235B_32k_longseq_rl_train_optimization.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（supporting）
 
 ## Links
 
@@ -135,4 +132,4 @@ export VLLM_ROLLOUT_EARLY_STOP_MIN_TOKENS=10000
 - [rollout-rebalance](rollout_rebalance.md)（互补技术：vLLM 推理引擎内动态感知并迁移任务，事中缓解同一 rollout 长尾木桶效应；本技术在采样侧事前重排）
 - [qwen3-rl](../../guides/recipes/qwen3_rl.md)（承载实践：Qwen3 GRPO/DAPO RL，patch 体系与最小可复现脚本来源、20% rollout 吞吐收益数据点）
 - [grpo-dapo](grpo_dapo.md)（本技术服务的 on-policy RL 算法，rollout 长尾问题在 GRPO/DAPO 同步采样下尤为突出）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — 长度感知重采样特性文档 + qwen3 RL recipe
+- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba) — 长度感知重采样特性文档 + qwen3 RL recipe

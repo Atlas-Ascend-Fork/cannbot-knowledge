@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: DeepSeek-V4
-description: 'DeepSeek-V4 是面向长序列的 DeepSeek 新一代模型，包含 Flash 285B 与 Pro 1.6T。它以 C1A/SWA（窗口 128）、CSA（4:1 压缩后由 LI 按权重配置选 Top-k）和 HCA（128:1 压缩）交错组成 Hybrid Attention，统一使用 MQA/Shared-KV、Attention Sink 和 mHC；128K 序列下 HCA 约保留 1K KV，CSA 约保留 32K。MoE 每 token 激活 6 个路由专家和 1 个共享专家，Flash/Pro 分别有 256/384 个路由专家。Prefill 使用 CP+zigzag，Decode 使用 DP+EP，并支持 MTP1/MTP3。A3 主要采用 W8A8C16 或 INT8-INT4，950PR/DT 支持 FP8/MXFP4；图模式默认 npugraph_ex。性能数据必须同时限定平台、卡数、量化、序列长度和 MTP 配置。'
+description: DeepSeek-V4 Flash/Pro 的 Shared-KV、SWA/CSA/HCA、mHC、当前 CacheEntry 生命周期，以及 HiF8、A4W4、DSpark 和 950 低时延 TP 入口。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,10 +9,16 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/README.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/configuration_deepseek.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-10-22T10:35:31Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 - '950'
@@ -33,7 +39,6 @@ V4 与 [deepseek-v3.2-exp](deepseek_v3_2_exp.md) 的关键结构差异：
 - 新增 **mHC（Manifold-Constrained Hyper-Connections）** 多路残差结构（见 [mhc](../modules/mhc.md)）。
 - A3 Pod KV Cache 采用 **C16**（DSV3.2 为 C8）。
 
-> ⚠️ 矛盾标记（与 DSV3.2-Exp 的结构差异，非覆盖）：以下数字为 V4 专属，不可泛化到 V3.2-Exp，也不修改 V3.2-Exp 页结论。
 
 ## Architecture
 
@@ -53,7 +58,6 @@ Attention 沿用 LI 稀疏机制并新增滑窗与压缩，按 `compress_ratio`�
 - Attention 计算采用 **MQA（Multi-Query Attention）而非 MLA**：代码 `modeling_deepseek.py` 中 attention 类为 `Attention`（docstring 标注 `"""Multi-Query Attention (MQA) Layer."""`），统一 **Shared-KV**，不再区分 Prefill / Decode 的 `naive` / `absorb` 流；引入 `attn_sink`（per-head `nn.Parameter`，作为 `sinks` 入参喂入 SAS 算子）。SWA / CSA / HCA 三类场景由统一融合算子 **SparseAttnSharedKV（SAS）** 落地（一套接口覆盖滑窗 / 压缩 / 稀疏及其组合 + Attention Sink），详见 [sparse-attn-sharedkv](../kernels/sparse_attn_sharedkv.md)。
 - V4 仍调用 **MLAProlog** 前置（代码 `mla_prolog()` → `mla_prolog_pypto` / `mla_prolog_prefill` / `mla_prolog_decode`），即 Q/KV 投影前置仍复用该融合算子，但 attention 主体已非 [mla](../modules/mla.md) 的低秩 KV 升降维计算流——见下方对比。见 [mla-prolog](../kernels/mla_prolog.md)。
 
-> ⚠️ 矛盾标记（V4 MQA/Shared-KV vs MLA 页）：V4 attention 主体是 MQA + Shared-KV，与 [mla](../modules/mla.md) 描述的 MLA 低秩压缩机制不同。"V4 仍调 MLAProlog" 指前置投影算子复用，不等于 attention 计算流为 MLA。不修改 mla.md 结论。
 
 ### KV Cache 组成与内存
 
@@ -75,7 +79,6 @@ KV Cache 由 **Window Cache + Compress Cache + remainder** 组成（压缩层的
 
 每次激活 **6 个路由专家 + 1 个共享专家**（代码 config 默认 `num_experts_per_tok=6`、`n_shared_experts=1`）。专家选取：前几层 `hash routing`（代码 `DeepseekV3MoE.hash = layer_idx < config.num_hash_layers`），后续层可学习 `soft routing`；源 guide 给出"前 3 层 hash / 后 40 层 soft"的层划分。
 
-> ⚠️ 矛盾标记（路由专家数 vs DSV3.2）：V4 激活 6 路由专家，[deepseek-v3.2-exp](deepseek_v3_2_exp.md) 为 8，属模型代际差异，不互相覆盖。
 
 ### mHC（Manifold-Constrained Hyper-Connections）
 
@@ -91,9 +94,8 @@ mHC 是对传统残差连接的扩展：把 `hidden_state` 从一路扩展到多
 
 - **Atlas A3 Pod / W8A8C16（Int8，推荐 Flash）**：基于原生 Hybrid FP8-MXFP4 权重做 Int8 W8A8；仅对参数量大的部分 Linear（MLA `q_b_proj`/`o_b_proj`、Indexer `q_b_proj`）量化，KV Cache 维持 **C16（BF16 存算）**；LI 经 A8C8 降时延。见 [int8-int4-hybrid](../quantization/int8_int4_hybrid.md)。
 - **Atlas A3 Pod / Hybrid INT8-INT4（推荐 Pro）**：在上策略基础上对 MoE 路由专家用 W4A8（[w4a8c8](../quantization/w4a8c8.md)）、共享专家用 W8A8，显著降低 MoE 存储/访存。见 [int8-int4-hybrid](../quantization/int8_int4_hybrid.md)。
-- **Ascend 950PR/DT / Hybrid FP8-MXFP4（原生）与 Hybrid MXFP8-MXFP4（硬件亲和）**：950 平台原生 Hybrid FP8-MXFP4 可权重无损平滑迁移；可用 MXFP8 替代原生 FP8 在 Prefill/Decode 高吞吐场景提升算力利用率；KV Cache C8 动态存 8 算 16，超长序列内存优化 2×。见 [hybrid-mxfp8-mxfp4](../quantization/hybrid_mxfp8_mxfp4.md)。
+- **Ascend 950PR/DT / Hybrid FP8-MXFP4（原生）与 Hybrid MXFP8-MXFP4（硬件亲和）**：950 平台原生 Hybrid FP8-MXFP4 可权重无损平滑迁移；可用 MXFP8 替代原生 FP8 在 Prefill/Decode 高吞吐场景提升算力利用率；KV Cache C8 动态存 8 算 16，实际容量按混合打包记录核算。见 [hybrid-mxfp8-mxfp4](../quantization/hybrid_mxfp8_mxfp4.md)。
 
-> ⚠️ 矛盾标记（KV C16 vs DSV3.2 C8）：V4 A3 Pod 默认 KV Cache C16，[deepseek-v3.2-exp](deepseek_v3_2_exp.md) 与 [w8a8c8](../quantization/w8a8c8.md) 的 C8 结论针对 V3.2-Exp，不互相覆盖。（注：此 C8-vs-C16 对比针对**推荐/生产量化策略**——V3.2-Exp 现已支持 W8A8C8；V3.2-Exp 页亦记录其早期也有 "1day W8A8C16 部署"，故 C16 本身非 V4 独有。）
 
 ## 多流并行优化
 
@@ -101,89 +103,24 @@ Attention/Compressor 和共享/路由专家的具体编排与检查集中到[部
 
 ## Platform
 
-V4 在 Atlas A3 Pod（[atlas-a3](../platforms/atlas_a3.md)，每节点 8 卡，`world_size = 2 × chip_num`）外，新增 **Ascend 950PR / 950DT** 代际支持（`platform_version: "950"`，PR 偏 Prefill、DT 偏 Decode）。950 平台的代际特性（原生 Hybrid FP8-MXFP4、MXFP8 替代、Histograms 指令加速 LI Top-k、L0A/L0B 容下 256³ 基本块（字节容量源未给对比、据 Tiling 约束推断）、weightNZ 关闭等）详见 [ascend-950](../platforms/ascend_950.md)。最小部署单元（源 README）：950PR/DT Flash 4 chips / Pro 16 chips；A3 Flash 4 chips / Pro 32 chips。
+V4 在 Atlas A3 Pod（[atlas-a3](../platforms/atlas_a3.md)，每节点 8 卡，`world_size = 2 × chip_num`）外，新增 **Ascend 950PR / 950DT** 代际支持（`platform_version: "950"`，PR 偏 Prefill、DT 偏 Decode）。950 平台的代际特性（原生 Hybrid FP8-MXFP4、MXFP8 替代、Histograms 指令加速 LI Top-k、L0A/L0B 容下 256³ 基本块（字节容量源未给对比、据 Tiling 约束推断）、V4 weightNZ 关闭等）详见 [ascend-950](../platforms/ascend_950.md)。最小部署单元（源 README）：950PR/DT Flash 4 chips / Pro 16 chips；A3 Flash 4 chips / Pro 32 chips。
 
 ## Benchmark
 
 来源自报数字分平台统一维护在[950DT 观测](../../optimizations/benchmark_observations/deepseek_v4_950_source_benchmark.md)和[A3 Pod 观测](../../optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark.md)。核对每行 GBS、卡数、MTP、量化和计时缺口；这里不重复性能表。
 
-## Future Plan
+## 当前新增能力与边界
 
-源 guide 明示：950PR/DT 进一步支持 HiFloat8 量化；使能 SuperKernel（[superkernel](../techniques/superkernel.md)）降低算子启动/调度间隙；通过 Flash Decode 等优化长序列 LI/SAS 性能。
+HiF8 混合量化、A4W4、950 low_latency_tp 和 Flash DSpark 已有当前实现，不再作为未来计划。DSpark 从主模型选定层收集辅助 hidden，分块 proposal 后批量 Verify；A3 与 950 均有路径，但 V4 DSpark 强制 cp_size=1。原生 MTP 的 Draft 共享权重不等于所有 Proposal Stage 共用 KV 内容；DSpark 每个 stage 的 CacheEntry 独立。
 
-## 架构图（stock HF 基线）
-
-下图为 DeepSeek-V4 的 **stock HF 架构**（部署前基线，源自 HF `config.json` + bundled `inference/model.py` 核实，覆盖 V4-Pro / V4-Flash 两规格），刻画 block 级前向拓扑（mHC 多路残差 + Attention + MoE + MTP 并行头）。它与本页其余基于 [deepseek-v3.2-exp](deepseek_v3_2_exp.md) 路线的 NPU 部署优化（融合算子 / 并行 / 量化 / Cache 策略）互补：本节描述"模型长什么样"，正文其余部分描述"在昇腾上怎么跑"。HF 配置溯源见本节末 footnote，verified 日期 **2026-05-15**（取自架构图 `source_basis`）。
-
-```mermaid
-flowchart TD
-    in([input tokens])
-    in --> embed["Embed : V → hidden"]
-
-    subgraph block ["Block × n_layers  (Pro: 61, Flash: 43)"]
-        direction TB
-        hcin["HC-mix in<br/><i>hc_mult=4 copies → 1</i>"]
-        n1[RMSNorm]
-        attn["MLA Attn<br/><i>sliding-window + compressed KV (CSA/HCA)</i>"]
-        hcout["HC-mix out<br/><i>1 → hc_mult=4 copies</i>"]
-
-        hcin2["HC-mix in<br/><i>hc_mult=4 copies → 1</i>"]
-        n2[RMSNorm]
-        moe["MoE FFN<br/><i>shared + routed</i>"]
-        hcout2["HC-mix out<br/><i>1 → hc_mult=4 copies</i>"]
-
-        hcin --> n1 --> attn --> hcout
-        hcout -->|+ residual mix| hcin2
-        hcin2 --> n2 --> moe --> hcout2
-    end
-
-    embed --> hcexp["HC-expand<br/><i>1 → hc_mult=4 copies</i>"]
-    hcexp --> hcin
-    hcout2 -->|+ residual mix| fhc["HC-head mix<br/><i>hc_mult=4 → 1</i>"]
-    fhc --> fnorm[RMSNorm]
-    fnorm --> head["LMHead : hidden → V"]
-    fnorm --> mtp["MTP head<br/><i>1 extra block, same HC mech</i>"]
-    head --> logits([logits])
-    mtp --> logits2([aux next-tok logits])
-```
-
-> **关于上图 `MLA Attn` 标注的口径说明**：架构图沿用 **HF 模型卡的 `attention_type=mla` 粗标签**（粗粒度家族归类），而本页正文经 cann-recipes 部署代码核实，attention 主体落地为 **MQA / Shared-KV**（`Attention` 类 docstring `"""Multi-Query Attention (MQA) Layer."""`，统一 Shared-KV、`num_key_value_heads=1`）。这是**两套不同粒度的口径**——HF 卡的家族标签 vs 部署代码的实现粒度——并非错误，二者并存。详见上文 [Architecture › 分层交错 Hybrid Attention](#分层交错-hybrid-attention) 与 [mla](../modules/mla.md) 的矛盾标记。
-
-精简关键参数表（取自 HF Pro/Flash `config.json`，见本节末溯源，仅保留对部署有意义的行）：
-
-| Module | Param | V4-Pro | V4-Flash |
-| ---- | ---- | ---- | ---- |
-| — | n_layers (`num_hidden_layers`) | 61 | 43 |
-| — | hidden (`hidden_size`) | 7168 | 4096 |
-| — | vocab (`vocab_size`) | 129280 | 129280 |
-| — | max_position_embeddings | 1048576 | 1048576 |
-| — | sliding_window | 128 | 128 |
-| Attn | n_heads (`num_attention_heads`) | 128 | 64 |
-| Attn | num_key_value_heads | 1 | 1 |
-| Attn | head_dim | 512 | 512 |
-| Attn | o_groups | 16 | 8 |
-| Indexer (CSA) | index_n_heads | 64 | 64 |
-| Indexer (CSA) | index_topk | 1024 | 512 |
-| MoE | n_routed_experts | 384 | 256 |
-| MoE | n_shared_experts | 1 | 1 |
-| MoE | top_k (`num_experts_per_tok`) | 6 | 6 |
-| MoE | moe_intermediate_size | 3072 | 2048 |
-| MoE | num_hash_layers | 3 | 3 |
-| Hyper-Conn | hc_mult | 4 | 4 |
-| MTP | num_nextn_predict_layers | 1 | 1 |
-
-> **CSA `index_topk` 的来源差异**：架构图（HF config 默认）给出 **Pro `index_topk=1024` / Flash `index_topk=512`**；cann-recipes-infer 另有 **guide 示例值 Top512** 与**仓内 `configuration_deepseek.py` 默认 2048**（运行时实取权重 config）。三者分属 **HF stock config 默认 / cann-recipes guide 示例 / 仓内配置默认**三种配置来源，部署时以加载的权重 config 为准。
-
-HF 架构参数来源：`deepseek-ai/DeepSeek-V4-Pro/config.json` + `deepseek-ai/DeepSeek-V4-Flash/config.json`（均 verified **2026-05-15**；`architectures=["DeepseekV4ForCausalLM"]`、`model_type=deepseek_v4`、`transformers_version=4.57.1`），bundled `inference/model.py`（类名 `Transformer` / `Block` / `Attention` / `Compressor` / `Indexer` / `MoE` / `Gate` / `Expert` / `MTPBlock`），架构特性名（CSA / HCA / mHC）与 Pro/Flash 参数量交叉核对自模型卡 README（verified 2026-05-15）。HF 原生架构中的 mHC 多路残差机制见 [mhc](../modules/mhc.md)。
+当前配置通过共享 Executor，六类配置统一预处理；持久 CacheEntry 由管理器绑定，离线 CP 使用逐层隔离的临时 state 并将有效请求状态写回，详见[部署流程](../../guides/models/deepseek_v4_deployment.md)与[DSpark 流程](../../guides/models/deepseek_v4_dspark.md)。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)（模型结构、融合 Kernel、并行、MTP、量化、多流、Benchmark、Future Plan；391 行主源）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/README.md)（部署流程、规格、最小部署单元）、[`config/ci_a3/deepseek_v4.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/config/ci_a3/deepseek_v4.yaml) / [`config/ci_950/deepseek_v4.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/config/ci_950/deepseek_v4.yaml)（`exe_mode: npugraph_ex`、`pa_block_size: 128`、A3 `lmhead_tp_size:4`/`next_n:1`、950 `platform_version:"950"`/`next_n:3`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（实现：attention 类为 `Attention`（docstring `"""Multi-Query Attention (MQA) Layer."""`，全仓无 `MQAttention` 符号）、`attn_sink` per-head Parameter→`sinks` 入参、`compress_ratio = 1 if is_mtp else config.compress_ratios[layer_idx]` 三分支 1/4/128（逐层由 config 列表决定，无奇偶规则）、CSA 仅在 `compress_ratio==4` 挂 Indexer、CSA `cmp_topk = self.config.index_topk`、`mla_prolog()` 调用、`DeepseekV3MoE.hash = layer_idx < num_hash_layers`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/configuration_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/configuration_deepseek.py)（实现：`num_experts_per_tok=6`、`n_routed_experts=256`、`n_shared_experts=1`、`num_hidden_layers=43`；`index_topk` 配置默认 2048——运行时 CSA topk = `config.index_topk`（仓内默认 2048，实际取权重 config），guide 的 CSA Top512 为示例值口径，二者不同）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md` (§多流并行优化 Attention/MoE 多流、§MTP Main Model 方案 num_ratio_group/Cache Block 公式、§并行策略 Prefill 进一步通信优化)](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)（V4 专属多流并行、MTP 额外 Cache 定量、Prefill CP 双 Compressor 分通信掩盖）
-- 溯源（diff `2f82d10..2c45117`）：`5df82b1` support deepseek v4（!366 publish→master）；`6fa7a02` update dsv4 model inference guide（!368 0425_guide→master）；`272df2f` [docs]deepseek v4 update（!449）；`13b8e6a` dsv4 add platform guide（!396 fix_readme→master）；`dbcc825` adapt dsv4-pro on A3（!395 0428_pro→master）；`c62b731` deepseek-v4 ge_graph（!412）；`377f202` V4-Flash 相关。
+- [deepseek_v4_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/README.md)（implementation）
+- [configuration_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/configuration_deepseek.py)（implementation）
 
 ## Links
 

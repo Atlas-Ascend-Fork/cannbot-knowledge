@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/233
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - agnostic
 ---
@@ -84,5 +84,5 @@ freqs_cos = freqs_cos.to(self.device).unsqueeze(-2).unsqueeze(0)   # 采样路�
 
 ## Evidence
 
-- diff 事实（@fdb79bf65a8b）：gate 处 `torch.npu.amp.autocast(enabled=False)`、cos/sin `.to(torch.bfloat16)` 预转，与优化文档「消除冗余算子」两小节一致。收益（消冗余 cast / 保 fp32）为定性、无 before→after 数字。溯源下探 [cann-recipes-infer-pr-218-feat-support-hunyuanimage-3-0-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)
-- diff 事实（@cec5c22b8960）：`npu_rotary_mul(..., rotary_mode="interleave")` 新增、cos/sin 4D `[1,S,1,D]` 整形上移、移除逐块 reshape/搬运。「默认旋转模式与交错约定不匹配致精度偏离」为对 diff 的机制推断（未取到算子规格独立核实），修复前后精度数值源未披露。溯源下探 [cann-recipes-infer-pr-233-fix-hunyuanvideo-rope-debug](https://gitcode.com/cann/cann-recipes-infer/merge_requests/233)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/233)（evidence）

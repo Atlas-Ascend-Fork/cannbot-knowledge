@@ -8,12 +8,12 @@ tags:
 - topic.graph_execution
 status: deprecated
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/50e41b5b8220284f6721223e9f0d3471cd0b0944/models/qwen3-moe-sglang/patches/0009-feat-support-superkernel.diff
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/patches/0009-feat-support-superkernel.diff
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/50e41b5b8220284f6721223e9f0d3471cd0b0944/models/qwen3-moe-sglang/README.md
-  role: constraint
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T13:54:05Z'
 platforms:
 - a3
 replaced_by: model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope

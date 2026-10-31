@@ -1,70 +1,49 @@
 ---
 type: Optimization
-title: LongCat-Lite EP 报告的平台与源码待核验观测
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+title: LongCat-Lite A3 EP 量化与多流来源观测
+description: 最新来源明确A3 EP8下的W8A8与多流/控核结果；更新已解决SP代码缺口，保留测量和质量限制。
 tags:
 - task.testing
 - topic.performance.analysis
-status: draft
+status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat_flash_lite/agentic/optimization_report_ep.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/optimization_report_ep.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/README.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py
+  role: implementation
 created_at: '2026-10-21T09:56:24Z'
-updated_at: '2026-10-22T03:20:00Z'
-platforms: []
+updated_at: '2026-10-29T13:59:24Z'
+platforms:
+- a3
 ---
 
-# LongCat-Lite EP 报告的平台与源码待核验观测
+# LongCat-Lite A3 EP、量化与多流来源观测
 
-## Workload
+## 当前证据范围
 
-EP8、attn_tp4/attn_dp2；只保留原总览引用的Prolog和SP观测，不与纯TP数据合并。
+最新EP报告明确将以下量化和多流结果绑定Atlas A3、EP8；旧稿无法绑定平台的Prolog/SP历史点已撤下。当前源码也已包含is_sp与RS+AG，旧“源码未实现SP”的缺口已解决。
 
-## Hardware
+## Workload 与 Result
 
-报告总览标A2/A3，未把下列每组数字绑定到确定硬件；保持draft和未知平台。
-
-## Software
-
-来源固定到下列提交；没有与每行数据绑定的完整软件build和原始运行记录，安装章节示例不自动等于测量环境。
-
-## Baseline 与 Variant
-
-仅在同一来源明确对照的行内比较。不同平台、阶段、batch、框架、量化、并行与版本不拼接为一次受控试验，也不把累计优化归因给单个开关。
-
-## Metric Definition
-
-字段和单位沿用源表。时延起止、首token/warmup处理、吞吐分母和精度指标未完整披露时保持未知，不由字段名称自行补计算公式。
-
-## Repetition and Variance
-
-没有足够的逐轮原始样本、重复次数、方差或置信区间。本仓未独立复测，不新增 verified。
-
-## Result
-
-| 报告小节 | 比较 | 数值 |
+| 对照 | 条件 | 来源报告 |
 | --- | --- | --- |
-| Prolog | 无→有 | Decode 8.36→8.10ms，Prefill239→239ms |
-| Prefill SP，ep8 b8 | 无→有 | 199.91→145.22ms，源称约−27% |
+| BF16→W8A8 | batch2，1K输入/128输出 | Decode 8.38→7.18ms |
+| BF16→W8A8 | batch8，4K输入/1K输出 | Decode 9.80→8.21ms |
+| W8A8串行→多流+控核 | EP8，batch8，约4K/1K | 端到端8.21→7.12ms；设备侧7.67→6.62ms |
 
-Prolog报告约4–5个decode token起出现选词分歧。SP/RS+AG的报告描述在固定2c45117建模中未见is_sp/reduce_scatter落地，不能把这行视为当前实现的复现结果。
+量化只覆盖MoE/Dense，MLA仍BF16。多流整段MoE与另一子层重叠，包含控核，不能归因于只切流。README最终吞吐1124tok/s对应其GBS8、TPOT7.12ms的报告值；不与其他batch/TP路径混比。
 
+## Metric、Software 与限制
 
-## Limitations 与验证
+源报告区分设备侧与端到端，并说明主机负载会改变后者；未公开完整测量脚本、逐轮样本、方差或每行软件build。短16步logits cosine/top1对齐不是完整任务精度证明。本次未运行模型，来源结果不设为verified。
 
-补齐逐组硬件、代码路径、原始输入/输出与计时记录前不进入默认检索；不新增Scope，也不把总体支持平台当作某行测量平台。
-
-复现与回退入口：[模型部署与验收流程](../../guides/models/longcat_flash_lite_deployment.md)。性能与输出质量分别验收；来源自报不构成本仓复现。
+复现须分别核对平台、GE多流路径、真实量化、输入、重复统计与任务精度；步骤见[当前部署](../../guides/models/longcat_flash_lite_deployment.md)。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat_flash_lite/agentic/optimization_report_ep.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py)
-
-## 本轮来源核对与剩余缺口
-
-已重新核对固定报告和同提交建模代码。报告表头只写“Atlas A2/A3、8卡”，不能区分 Prolog/SP 测点。报告本身还说明 A2 在 EP8 的 32 experts/rank 下需改用双路由，不能据此倒推出所有结果都运行于 A3。
-
-同提交 `modeling_longcat_flash_lite.py` 中仍未找到报告描述的 `is_sp` / ReduceScatter 实现；SP 数据尚未闭合代码版本。Prolog 的选词分歧也不能仅凭“语义一致”视为质量验收。平台、匹配代码和原始输出/计时仍缺失，保留 draft。
+- [optimization_report_ep.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/optimization_report_ep.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/README.md)（supporting）
+- [modeling_longcat_flash_lite.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py)（implementation）

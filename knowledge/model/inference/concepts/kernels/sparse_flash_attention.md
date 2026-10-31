@@ -1,11 +1,7 @@
 ---
 type: Concept
 title: Sparse Flash Attention Kernel
-description: '`SparseFlashAttention` 是 DeepSeek-V3.2-Exp **DSA** 的主 Attention 算子 ——
-  在 lightning-indexer 产出的 TopK index 基础上，`Gather` 出稀疏 KV 子集并执行 Flash Attention 计算。沿用
-  FlashAttention 的 `C_1 (Q@K^T) → V_1 (online softmax) → C_2 (P@V) → V_2 (rescale)`
-  四阶段流程，但面向**离散访存**进行了专门优化。模块语义见 sparse-flash-attention。 cann-recipes-infer 提供 AscendC
-  + TileLang 两路实现；PyPTO 侧则作为 deepseek-indexer-attention 大融合算子内的子流程出现。'
+description: 保留 SFA 的 A3 离散访存与 TileLang 算法，更新当前 packed、C8 返回值及 Offload 有效 token 缓存契约。
 tags:
 - task.implementation
 - topic.attention
@@ -13,12 +9,14 @@ tags:
 - topic.speculative_decoding
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_ascendc_operator_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v32/sparse_flash_attention.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:35:31Z'
+updated_at: '2026-10-29T15:22:24Z'
 platforms:
 - a3
 ---
@@ -74,30 +72,30 @@ KV C8 量化路径改走 `torch_npu.npu_kv_quant_sparse_flash_attention`（`mode
 
 **Pipeline 优化**：SFA 比 LI 多一个阶段（$C_1, V_1, C_2, V_2$），沿用 [AMLA](https://gitcode.com/ascend-tribe/ascend-inference-cluster/blob/d0c740d591da69d520145a57845914e7145e2137/OptimizedOps/AMLA-%E4%BB%A5%E5%8A%A0%E4%BB%A3%E4%B9%98%E7%9A%84%E9%AB%98%E6%80%A7%E8%83%BD%E6%98%87%E8%85%BEMLA%E7%AE%97%E5%AD%90.pdf) 算法除归一化外只有三个计算阶段，朴素排布会在 Cube/Vector 流上留大量空泡。**Preload 流水排布**消除依赖，除头尾外平台期 Cube 流完美掩盖 Vector 流。
 
-![SFA Pipeline](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/pipeline.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/pipeline.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/pipeline.png)（cann-recipes-infer @ 2f82d10）*
+![SFA Pipeline](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/pipeline.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/pipeline.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/pipeline.png)（cann-recipes-infer @ 944d2d3）*
 
 ### 访存优化（A3 AscendC 离散访存实现）
 
 **问题**：连续 Attention 的访存瓶颈是数据搬运本身；Sparse Attention 单次访存量小，**单次搬运耗时甚至低于指令下发耗时** —— 指令下发阻塞反而成为新的瓶颈。
 
-![指令下发阻塞](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/instruction_launch.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/instruction_launch.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/instruction_launch.png)（cann-recipes-infer @ 2f82d10）*
+![指令下发阻塞](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/instruction_launch.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/instruction_launch.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/instruction_launch.png)（cann-recipes-infer @ 944d2d3）*
 
 **两项对策**：
 
 1. **Vector 核发射访存指令**：Attention 传统由 Cube 核发射访存，A3 Cube:Vector = 1:2 ——改由 Vector 发射**下发效率翻倍**。
 2. **成对访存（srcGap）**：离散数据点两两聚合，用 [`srcGap`](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/83RC1alpha002/API/ascendcopapi/atlasascendc_api_07_0103.html#ZH-CN_TOPIC_0000002449889097__table9182515919) 参数一次搬入成对数据，提高单次访存的数据量从而提升带宽。
 
-![成对访存示意](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/stride.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/stride.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/stride.png)（cann-recipes-infer @ 2f82d10）*
+![成对访存示意](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/stride.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/stride.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/stride.png)（cann-recipes-infer @ 944d2d3）*
 
 ### TileLang 实现
 
-源码 `ops/tilelang/sparse_flash_attention.py`。
+源码 `ops/tilelang/ds_v32/sparse_flash_attention.py`。
 
-![TileLang SFA 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/tl-sparse-flash-attention.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-sparse-flash-attention.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/tl-sparse-flash-attention.png)（cann-recipes-infer @ 2f82d10）*
+![TileLang SFA 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-sparse-flash-attention.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-sparse-flash-attention.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-sparse-flash-attention.png)（cann-recipes-infer @ 944d2d3）*
 
 示例 Shape：Q `[1, 128, 128, 576]`、K/V `[1, 32768, 1, 576]`、index `[1, 128, 1, 2048]`。**Block-Level 算法**（7 步）：
 
@@ -106,16 +104,18 @@ KV C8 量化路径改走 `torch_npu.npu_kv_quant_sparse_flash_attention`（`mode
 3. **Attention 分数计算**：`S_block = q_tile @ kv_tile.T [64, 64]`（清空 L0C）→ `S_block += q_tail_tile @ kv_tail_tile.T`（L0C 累加）。
 4. **Online Softmax**：沿 `topk_tile` 维度（dim=-1）做分块稳定在线 softmax，维护最大值 `m` 和指数和 `l`。
 5. **上下文向量**：`O_tile = P_block @ kv_tile [64, 512]`。
-6. **循环累加与重缩放**：以 64 粒度遍历 TopK 完成主循环，循环结束后用 `(m, l)` 全局重缩放校正。
+6. **循环内在线重缩放**：每个 TopK 块先计算 exp(m_old−m_new)，同步缩放旧 sumexp 与 acc_o，再累加当前块的指数和与 P@V。循环结束只做 acc_o / sumexp 归一化，不能先直接累加各块输出再在末尾统一校正。这里按固定源码细化了 TileLang 指南的概述。
 7. **写回 GM**。
 
 Cube/Vector 协同通过 `T.set_cross_flag / T.wait_cross_flag` 实现。
 
 ## Optimization Notes
 
-### SFA Next Feature
+### 当前 C8 与 packed 路径
 
-源文档显式列出："后续将探索 SparseFlashAttention 算子的**量化支持**以应对长上下文场景下显存占用过大的挑战"。当前 C8 量化通过 `npu_kv_quant_sparse_flash_attention` 分离算子，融合进一步优化是 roadmap。
+当前 C8 已由 npu_kv_quant_sparse_flash_attention 接入；不能把量化支持继续写作尚待实现。C8 Query 拼接 q_nope/q_pe，key/value_quant_mode=2、tile_size=128、rope_head_dim=64、quant_scale_repo_mode=1；它直接返回输出 Tensor，BF16 npu_sparse_flash_attention 返回三项。Query 为 TND，LI索引为 [T,1,K]。
+
+Offload Decode 的 selected cache/status/table 按实际 token_num 截取，稀疏索引超过有效选择长度填-1。KV管理由 CacheEntry/OffloadWorkspaceSpec 负责，不能直接运行旧函数中的固定 batch 申请。当前数学、A3 技术报告的 Tiling/离散访存和 TileLang block循环仍成立，均不作为整网复测结果。
 
 ### TilingKey 模板化与分核下沉
 
@@ -131,10 +131,9 @@ Cube/Vector 协同通过 `T.set_cross_flag / T.wait_cross_flag` 实现。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md)（SFA Tiling、Pipeline、访存优化、srcGap）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（TileLang SFA block-level 算法、内存层次）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v3.2-exp/models/modeling_deepseek.py:L1340-L1412`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/models/modeling_deepseek.py#L1340-L1412)（SFA / KV C8 SFA / Offload 路径入口）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md)（MTP 章节 SFA KV 搬运 4.5→9 MB / Cube 0.60→1.21 GFlops 对比表；KVCache C8 = 动态 Per-Token-Head-Tile-128 Int8 量化背景）
+- [deepseek_v3.2_exp_ascendc_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_ascendc_operator_guide.md)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
+- [sparse_flash_attention.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/tilelang/ds_v32/sparse_flash_attention.py)（implementation）
 
 ## Links
 

@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: 昇腾推理统一 TND packed-sequence 布局：为何是标准、BSND/packed-1D shim 的等长约束与变长崩溃
-description: 昇腾推理统一 TND packed-sequence 布局：为何是标准、BSND/packed-1D shim 的等长约束与变长崩溃。在 cann-executor 上给模型接注意力/KV cache 时，默认优先 TND（packed-sequence）布局，别再保留 BSH/BSND 分支。这是仓级标准；不遵从它的路径（等长假设的 reshape）在变长 continuous-batching 下会崩。
+description: 在 CANN Executor 适配变长请求时，保持 packed 输入的请求边界和显式长度；TND 算子路径与 BSND 适配的约束须按具体实现核对，避免等长 reshape 和末 token 选择错误。
 tags:
 - task.optimization
 - topic.attention
@@ -21,8 +21,10 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/403
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/design/packed_sequence_design.md
+  role: primary
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - agnostic
 ---
@@ -31,11 +33,11 @@ platforms:
 
 ## 条件 → 优先选什么
 
-在 [cann-executor](../../concepts/frameworks/cann_executor.md) 上给模型接注意力/KV cache 时，**默认优先 TND（packed-sequence）布局**，别再保留 BSH/BSND 分支。这是仓级标准；不遵从它的路径（等长假设的 reshape）在变长 continuous-batching 下会崩。
+在 [cann-executor](../../concepts/frameworks/cann_executor.md) 上给模型接注意力/KV cache 时，优先采用能消费 packed 边界的 TND 算子路径。当前框架以 packed token 和长度元数据作为输入契约；模型内部可以转换其他布局，但必须保留请求边界，不能用等长 reshape 假设承载任意变长请求。
 
-## TND 是标准且唯一布局
+## 框架 packed 输入与模型内部布局的边界
 
-- executor-core 把 TND（packed sequence）定为 attention 的**默认且唯一**布局——prefill 与 decode 两阶段、dense 与 MoE 模型统一走 TND，原 `packed_sequence` 开关被删除、非打包/BSH 路径不再保留。
+- 历史 PR386 删除框架的非 packed 开关。当前 `packed_sequence_design.md` 区分框架的一维输入与模型内部算子布局；“框架只接受 packed”不等于所有中间张量都只能用 TND。
 - dense 模型 attention 适配也统一采用 TND、与 MoE 用例对齐；维护者明确 TND 是后续标准做法。
 
 ## BSND / packed-1D 模型的 shim 及其约束
@@ -45,9 +47,9 @@ platforms:
 - **等长 packed prefill**；
 - **`batch_size_per_dp_rank==1` 的 decode**。
 
-**变长 packed 或多序列 decode 必须把注意力迁到 TND 布局**（不能靠 shim 硬撑）。packed-1D 下还有几条 lm_head/判阶段约定（维护者 review 确认）：
+这些是上述旧 shim 的限制。变长 packed 或多序列 Decode 应使用完整保留请求边界的实现，优先选 TND；其他布局必须显式适配与验证，不能靠该 shim 承载。packed-1D 下还有几条 lm_head/判阶段约定（维护者 review 确认）：
 
-- lm_head 取每请求最后一个 token 的 hidden 须用 `torch.gather(hidden, 1, actual_seq_lengths_q - 1)`，**而非 `max(position_ids)`**（后者遇 pad 静默出错）；
+- 当前 packed Prefill 在 token 维以 `actual_seq_lengths_cu_q - 1` 取每请求末 token，**不能用普通长度 `actual_seq_lengths_q - 1` 当累计偏移，也不能用 `max(position_ids)`**；历史 BSND shim 的轴和字段语义须单独核对；
 - `view(batch_size, -1)` 的 1D→BS reshape **仅在等长 prompt 下成立**；
 - 判是否 prefill 用 `forward_metadata.is_prefill`，**而非 shape/位置启发式**。
 
@@ -60,8 +62,8 @@ platforms:
 
 ## 风险 / 边界
 
-- shim 是过渡手段，只覆盖等长 prefill + 单序列 decode；生产级变长 continuous-batching 必须端到端 TND。
-- 判 prefill/等长/取末 token 一律用显式 metadata（`is_prefill` / `actual_seq_lengths_q`），不用 shape 启发式。
+- shim 是过渡手段，只覆盖等长 prefill + 单序列 decode；该旧 shim 不能覆盖生产级变长 continuous-batching；其他布局适配需单独验证边界语义。
+- 用 `is_prefill` 判阶段，用普通长度检查请求规模，用累计边界定位 packed 末 token；字段的完整对应关系见 [Packed Sequence 元数据](../../concepts/techniques/packed_sequence_metadata.md)。
 
 ## 相关经验
 - [昇腾编码器 packed 全注意力：两个可互换融合算子的 seq_len 语义不同（unpa](../../runbooks/runtime/mm_encoder_packed_attention_seqlen_semantics.md)
@@ -71,9 +73,10 @@ platforms:
 
 ## Evidence
 
-- `diff 事实 / 维护者确认`（@2c45117）：executor-core TND 为默认且唯一布局、删 packed_sequence 开关（PR 描述 + diff）。
-- `维护者确认`（@9a50738）：dense attention 统一 TND、TND 为后续标准。
-- `diff 事实 / 维护者确认`（@8fd8db7）：packed-1D lm_head 用 gather、view 仅等长成立、判 prefill 用 is_prefill。
-- `diff 事实`（@8721be4）：BSND shim 只支持等长 prefill + bs==1 decode，变长/多序列须迁 TND。
-- `diff 事实`（@3c3ca0b / @f7e80e5）：micro-batch 需 reshape 还原 [B,seq_len] 且沿 dim=0 拼；BSH 平均 reshape 假设等长。
-- 溯源下探：[cann-recipes-infer-pr-317-feat-infer-supports-qwen3-8b](https://gitcode.com/cann/cann-recipes-infer/merge_requests/317)、[cann-recipes-infer-pr-386-refactor-use-packed-sequence-by-default-kv-cache-add-page-attention](https://gitcode.com/cann/cann-recipes-infer/merge_requests/386)、[cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)、[cann-recipes-infer-pr-408-feat-add-gemma-4-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/408)、[cann-recipes-infer-pr-127-fix-cos-sin-shape-problem](https://gitcode.com/cann/cann-recipes-infer/merge_requests/127)、[cann-recipes-infer-pr-403-feat-adapt-and-optimize-hy3-preview-inference-via-deepseek-v4-pro-recipe](https://gitcode.com/cann/cann-recipes-infer/merge_requests/403)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/317)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/386)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/408)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/127)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/403)（evidence）
+- [packed_sequence_design.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/design/packed_sequence_design.md)（primary）

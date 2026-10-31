@@ -15,7 +15,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/64
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -59,6 +59,6 @@ platforms:
 
 ## Evidence
 
-- `diff 事实 / 维护者确认`（@2c45117）：`ops/pypto` 依赖 `tilefwk/*.h` 与 `register/op_ct_impl_registry.h`，社区版 CANN 未随包提供，须从 `cann/pypto` 构建；维护者在 issue 中确认修法。
-- `diff 事实`（@87f244c）：PyPTO 算子 op info 库对 NZ 权重仍声明 `FORMAT_ND`，NZ 由 pass 指定。
-- 溯源下探：[cann-recipes-infer-issue-100-question](https://gitcode.com/cann/cann-recipes-infer/issues/100)、[cann-recipes-infer-issue-53-bug-report-no-module-named-custom-ops](https://gitcode.com/cann/cann-recipes-infer/issues/53)、[cann-recipes-infer-pr-64-feat-lip-li-dia-pypto](https://gitcode.com/cann/cann-recipes-infer/merge_requests/64)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/100)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/53)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/64)（evidence）

@@ -1,7 +1,7 @@
 ---
 type: Concept
-title: torchtitan-npu ModelCustom 声明式转换框架
-description: torchtitan-npu 声明式 ModelCustom 转换框架（取代旧 monkey-patch register_npu_converter/BaseConverter）：ModelCustomConfig（name/model_converter/parallelize_plan_updater/state_dict_updater 三 hook ABC）+ register_model_converter 装饰器 + get_model_converter_config 激活（ModelConvertersContainer.Config）。GMM 样例：NpuGroupedExperts 融 w1+w3→w13，ModelCustomConverter.convert 用 replace_module_with_name，ParallelizePlanUpdater 改写 ExpertParallel→GMMExpertParallel，StateDictUpdater.to_hf/from_hf 转布局。运行期 _ConverterRegistry 单例 + type() 合成 + ParallelizePlanUpdateWrapper/StateDictUpdateWrapper。
+title: torchtitan-npu 配置转换与显式 Override
+description: 说明 TrainerConfigConverter 的配置转换、override.imports 的精确工厂选择与构建时序、冲突检查及组件语义边界。
 tags:
 - task.implementation
 - topic.architecture
@@ -9,230 +9,94 @@ tags:
 - topic.checkpointing
 status: stable
 sources:
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/README.md
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/developer_guides/config_extensions.md
   role: primary
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/model_custom.md
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/config/converters.py
+  role: implementation
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/config/manager.py
+  role: implementation
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/README.md
+  role: supporting
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/architecture.md
   role: supporting
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T12:06:32Z'
 platforms:
 - agnostic
 ---
 
-# torchtitan-npu ModelCustom 声明式转换框架
+# torchtitan-npu 配置转换与显式 Override
 
-ModelCustom 是 [torchtitan](torchtitan.md)-NPU 基于上游 torchtitan
-`ModelConverter` 协议实现的**声明式、可组合**模型自定义框架。开发者声明一份配置 +
-最多三个 hook，框架在 `convert` 时按需替换 Module、改写并行计划、转换权重格式。它**取代了
-旧的 monkey-patch 方式**（`register_npu_converter` / `BaseConverter` 风格，见
-[torchtitan](torchtitan.md)）：新代码统一走 `get_model_converter_config`。
+## 当前扩展模型
 
-## 入口配置 ModelCustomConfig
+当前源码把 NPU 配置适配、组件选择与设备 kernel 分开：`TrainerConfigConverter` 把上游 Trainer 配置转换为 NPU 扩展 schema，`override.imports` 再显式选择配置节点的 replacement，后续 `build()` 创建实际组件。旧 `ModelCustomConfig`、`get_model_converter_config("npu_gmm")` 和 `converters/framework` 注册方案已不对应当前目录与激活链，不能继续复制旧的 module/parallel-plan/state-dict 三 hook 示例。
 
-定制化以一个 dataclass 声明（`converters/model_custom_interface.py`）：
+这张卡说明配置和替换机制；具体算子的输入、布局、并行和 checkpoint 条件仍由相应实现负责。
 
-```python
-@dataclass
-class ModelCustomConfig:
-    name: str = "default"
-    model_converter: type["ModelCustomConverter"] | None = None
-    parallelize_plan_updater: type["ParallelizePlanUpdater"] | None = None
-    state_dict_updater: type["StateDictUpdater"] | None = None
+## Trainer 配置转换
+
+`config/manager.py` 在导入时包装 `ConfigManager._load_config`，先调用原 loader，再按返回配置的实际类型查询已注册的 `TrainerConfigConverter`。注册时也为配置基类安装默认映射，以兼容上游模块在替换前捕获的 `Trainer.Config`；更专用的既有映射保留。
+
+`TrainerConfigConverter.convert()` 的职责：
+
+1. 已经是目标 Trainer 配置类型的实例直接返回。
+2. 遍历 `component_types`，把配置分组转换为对应 NPU dataclass；仅复制源与目标共有且参与初始化的字段。
+3. 使用 `derive(config, target_type, **deltas)` 构造目标 Trainer 配置。目标配置中新字段使用目标类型默认值。
+
+组件目标必须是 dataclass 类型，源必须是 dataclass 实例；不满足时抛 `TypeError`。这是配置结构转换，不会替换模型 module、自动重排 EP 计划或转换 checkpoint 权重。
+
+| 新字段职责 | 当前落点 | CLI 示例 |
+| --- | --- | --- |
+| 已有 NPU 训练分组 | 对应 extension dataclass | `--training.extension.allow-hf32` |
+| optimizer 等上游组件 | 继承其配置，并在 TrainerEx/component_types 接线 | `--optimizer.name` |
+| 独立根级扩展 | `ExtensionConfig` 子分组 | `--extension.quantization.recipe` |
+
+字段定义只提供类型和 CLI，拥有该功能的 Trainer 或组件仍必须读取并应用该字段。
+
+## 配置级 Override
+
+每个 `override.imports` 项是完整 `module.function` 路径；只启用该工厂，不会连带启用模块内其他 override。例如：
+
+```bash
+--override.imports torchtitan_npu.override.common.rope.workaround
 ```
 
-三个槽位对应三个 ABC（同文件），均**可选**——只声明你需要的那一个：
+多个无参数项可使用空格或逗号分隔。带工厂关键字参数时，将整个 `target=<JSON object>` 作为一个 shell 参数：
 
-| Hook ABC | 触发点 | 方法 |
-|----------|--------|------|
-| `ModelCustomConverter` | 模型构建后 | `convert(self, model) -> None`（实例方法，`__init__(self, model_spec)`） |
-| `ParallelizePlanUpdater` | `parallelize_module` 前 | `update(cls, parallelize_plan)`（**classmethod**） |
-| `StateDictUpdater` | checkpoint 加载/保存 | `to_hf(cls, sd)` / `from_hf(cls, sd)`（**classmethod**） |
-
-## GMM 工作示例
-
-GroupedMatmul（GMM）是核心范例：将 MoE 专家的 `w1`/`w3` 融合为 `w13` 以适配 NPU
-`grouped_matmul` 算子（融合算子细节见 [npu-fused-op-converters](npu_fused_op_converters.md)）。
-
-### Module 替换 Converter
-
-子类继承上游 `GroupedExperts`，构造函数接收原实例并**浅拷贝** `__dict__`（共享权重模块/buffer，
-避免依赖父类 `__init__` 的 `dim/hidden_dim/num_experts`），随后建 `w13` Parameter 并置空 `w1/w3`
-（`converters/kernels/gmm.py`）：
-
-```python
-class NpuGroupedExperts(GroupedExperts):
-    def __init__(self, parent: GroupedExperts):
-        self.__dict__.update(parent.__dict__)   # 浅拷贝，权重共享
-        self.use_grouped_mm = True
-        if self.w1 is not None and self.w3 is not None:
-            w13_data = torch.empty(
-                self.num_experts, self.w2.shape[2] * 2, self.w2.shape[1],
-                dtype=self.w1.dtype, device=self.w1.device,
-            )
-            self.w13 = nn.Parameter(w13_data)
-            self.w1 = None
-            self.w3 = None
+```bash
+--override.imports \
+  'torchtitan_npu.override.deepseek_v4.sparse_attn.asc={"num_heads":128}'
 ```
 
-替换动作由 `ModelCustomConverter` 子类执行，遍历命名 module 并调用
-`replace_module_with_name`（`converters/convert_utils.py`）：
+应用时序是在配置 `update_from_config()` 后、任何组件 `build()` 前：
 
-```python
-class NpuGroupedExpertConverter(ModelCustomConverter):
-    def convert(self, model: nn.Module):
-        for name, module in model.named_modules():
-            if not isinstance(module, GroupedExperts):
-                continue
-            replace_module_with_name(model, name, NpuGroupedExperts(module))
-```
+1. 导入指定模块，触发 `@override` 注册。
+2. 解析本次请求的工厂函数。
+3. 基于原始配置树，按 `target`、`exact`、`fqns` 收集所有匹配节点。
+4. 在修改前检查同节点及祖先/后代节点冲突。
+5. 生成 replacement config，由后续构建过程创建组件。
 
-### ParallelizePlanUpdater（可选）
+匹配基于修改前的配置树，replacement 不会被再次遍历，因此调整条目顺序不能解决两个 override 争用同一节点的问题。Float8、LoRA 等 converter 在 override 前执行，需要按转换后的配置类型与 FQN 检查匹配。
 
-`GMMModelConfig`（`npu_gmm`）**本身不声明** `parallelize_plan_updater`——它只装 `model_converter`
-+ `state_dict_updater`。真正在 `parallelize_module` 前改写 EP 计划的，是另一个注册 converter
-`npu_permute`（`converters/kernels/permute.py`）：它把上游 `ExpertParallel` 改写为
-NPU 实现 `NpuExpertParallel`，与 [torchtitan-5d-parallel](../parallelism/torchtitan_5d_parallel.md) 的
-EP 计划协同：
+## 最小 replacement 的职责
 
-```python
-# converters/kernels/permute.py（npu_permute 实际注册的 updater）
-class NpuParallelizePlanUpdater(ParallelizePlanUpdater):
-    @classmethod
-    def update(cls, parallelize_plan):
-        if isinstance(parallelize_plan, ExpertParallel):
-            return NpuExpertParallel()
-        return parallelize_plan
-```
+replacement 通常继承目标配置，借助 `derive()` 保留共有字段。例如 `rms_norm.asc` 精确表达使用 `torch_npu.npu_rms_norm` 的组件替换；不是“导入任意 kernel 文件就替换整网”。
 
-> ⚠️ 特性文档用一段 `GMMParallelizePlanUpdater` →
-> `GMMExpertParallel()` 作**讲解示例**演示这个 hook，但这两个符号**仅存在于该文档**，代码中并无
-> 对应实现，且并未挂到 `npu_gmm` 的注册配置上——勿当作真实的 GMM 配置：
->
-> ```python
-> # 特性文档中的示意代码（非注册配置）
-> class GMMParallelizePlanUpdater(ParallelizePlanUpdater):
->     @classmethod
->     def update(cls, parallelize_plan):
->         if type(parallelize_plan) is ExpertParallel:
->             return GMMExpertParallel()
->         return parallelize_plan
-> ```
+- `target` 必须是 `Configurable.Config` 子类；默认可匹配子类，只支持具体类型时声明 `exact=True`。
+- `fqns` 可用 glob 收窄配置节点范围；当前来源说明仓内入口尚未采用该限定。
+- 自定义 kernel 通过 `torch.library` 提供 schema、fake/meta 和 Autograd，replacement module 再调用它。
+- 输入输出、DTensor、sharding、checkpoint 以及 `torch.compile` 语义均由 replacement 保持，不能由成功注册推导正确性。
 
-### StateDictUpdater（可选）
+## Package patch 与排查
 
-适配 checkpoint 的 `w1+w3` ↔ `w13` 布局差异——保存走 `to_hf` 拆分，加载走 `from_hf` 融合：
+导入 `torchtitan_npu.override.*` 仍会先执行包入口，因此自动 patch/extension 也会生效。配置级 override 由本次请求选择，包 patch 则随 `torchtitan_npu` 导入激活，两者不能当成同一层机制。
 
-```python
-class GMMStateDictUpdater(StateDictUpdater):
-    @classmethod
-    def to_hf(cls, state_dict):
-        if any(".moe.experts.w13" in k for k in state_dict.keys()):
-            state_dict = _split_w13_for_mapping(state_dict)
-        return state_dict
+未生效时检查完整工厂名、最终配置类型、匹配 FQN 及 `[Override]` / `Applied N override(s)` 日志。发生同节点或嵌套节点冲突时，应选择一个覆盖正确范围的 replacement，或通过合法 FQN 限定缩小范围，不能靠重排字符串掩盖冲突。组件构建后再验证前后向、并行布局与保存/恢复；本仓未执行 NPU 验证。
 
-    @classmethod
-    def from_hf(cls, state_dict):
-        filtered = {k: v for k, v in state_dict.items()
-                    if not k.endswith(".weight_scale_inv")}
-        return fuse_experts(filtered)
-```
+## 相关入口
 
-### 声明 + 注册 + 激活
-
-`@register_model_converter("npu_gmm")` 一行完成声明配置 + 注册；激活时在模型模块
-`config_registry.py` 的 `model_converters` 列表追加 `get_model_converter_config("npu_gmm")`：
-
-```python
-@register_model_converter("npu_gmm")
-class GMMModelConfig(ModelCustomConfig):
-    model_converter = NpuGroupedExpertConverter
-    state_dict_updater = GMMStateDictUpdater   # 可选；npu_gmm 不声明 parallelize_plan_updater
-
-# 激活（config_registry.py）
-model_converters = ModelConvertersContainer.Config(
-    converters=[get_model_converter_config("npu_gmm")],
-)
-```
-
-> EP 计划改写不在 `npu_gmm`，而由 `npu_permute` 的 `parallelize_plan_updater =
-> NpuParallelizePlanUpdater` 负责（见「ParallelizePlanUpdater（可选）」）；需要 EP 改写时把 `get_model_converter_config("npu_permute")`
-> 一并加入 `converters` 列表。
-
-## 核心组件
-
-| 组件 | 文件 | 职责 |
-|------|------|------|
-| `register_model_converter()` / `get_model_converter_config()` | `converters/registry.py` | 注册装饰器 + 取回 `converter_cls.Config()` 实例供激活 |
-| `ModelCustomConfig` 及 3 个 ABC | `converters/model_custom_interface.py` | 声明配置 + 三类 hook 抽象基类 |
-| `ModelCustomConfigConverter` | `converters/framework/model_custom_config_converter.py` | 继承 `Configurable + ModelConverter`，读配置并应用到模型 |
-| `ParallelizePlanUpdateWrapper` | `converters/framework/parallelize_plan_update_wrapper.py` | 替换 `parallel.parallelize_module`，运行时改并行计划 |
-| `StateDictUpdateWrapper` | `converters/framework/state_dict_update_wrapper.py` | 动态包装 `state_dict_adapter`，注入 updater 链 |
-| `_ConverterRegistry` | `converters/framework/model_custom_config_registry.py` | 全局注册单例，管理 config + 动态生成的 converter 类 |
-| `init_distributed_wrapper` | `patches/torchtitan/trainer_init_distributed.py` | 拦截 `Trainer.init_distributed` 捕获 `Trainer.Config`/`ModelSpec` |
-
-## 运行时机制
-
-**注册阶段（导入时）**：`@register_model_converter` → 单例 `_ConverterRegistry.register`
-设 `config.name`、存入 `_model_configs`，再用 `type()` **合成** converter 类
-`f"{name}ModelCustomConfigConverter"`（基类 `ModelCustomConfigConverter`，类属性
-`_model_config=config`）及一份唯一 `Config` 子类（`_owner` 回指 converter 类）。torchtitan 通过
-`Configurable.Config` 发现该 converter。
-
-```mermaid
-sequenceDiagram
-    participant dec as @register_model_converter
-    participant reg as _ConverterRegistry (单例)
-    participant dyn as type() 动态合成
-    dec->>reg: register(name)(config)
-    reg->>reg: config.name = name; _model_configs[name] = config
-    reg->>dyn: type(f"{name}ModelCustomConfigConverter", (ModelCustomConfigConverter,), {_model_config: config})
-    dyn-->>reg: converter_cls (+ 唯一 Config, _owner 回指)
-    reg->>reg: _converter_classes[name] = converter_cls
-```
-
-**模型入口阶段**：`patches/torchtitan/trainer_init_distributed.py` 由 `_apply_patches()`
-最早安装，`init_distributed_wrapper` 捕获 `Trainer.Config`（含 `model_spec`）存入全局，供
-`get_using_model_spec()` 读取。
-
-**转换执行阶段**：torchtitan 调 `ModelCustomConfigConverter.convert(model)` 时，按配置依次：
-`model_converter(model_spec).convert(model)` 替换 Module → `ParallelizePlanUpdateWrapper`
-注册 updater 并替换 `parallelize_module` → `StateDictUpdateWrapper` 包裹 `state_dict_adapter`。
-
-```mermaid
-sequenceDiagram
-    participant tt as torchtitan
-    participant mcc as ModelCustomConfigConverter
-    participant lpw as ParallelizePlanUpdateWrapper
-    participant sdw as StateDictUpdateWrapper
-    tt->>mcc: convert(model)
-    mcc->>mcc: model_converter(model_spec).convert(model)
-    mcc->>lpw: 注册 updater，替换 parallelize_module
-    mcc->>sdw: 包裹 state_dict_adapter (to_hf/from_hf)
-    mcc-->>tt: model (已转换)
-```
-
-随后并行化时 `parallelize_module_wrapper` 对每个 `updater_cls.update(plan)` 改写计划，再调原生
-`parallelize_module`；权重加载/保存时 wrapper 在父 `from_hf`/`to_hf` 两侧串接 updater 链，**两条路径顺序相反**：
-`to_hf` 先过 updater 链（拆 `w13`）再调上游 adapter（updater-先/`super`-后），`from_hf` 先调上游 adapter
-再过 updater 链（融 `w13`）（`super`-先/updater-后）——决定 split/fuse 与上游 adapter 映射谁先生效。
-
-## Evidence
-
-- 来源仓：[torchtitan-npu](https://gitcode.com/cann/torchtitan-npu)
-- 特性文档（@8f128cd）：[`docs/feature_guides/model_custom.md`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/model_custom.md)
-- 实现源（@8f128cd）：
-  - `model_custom_interface.py`：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/model_custom_interface.py
-  - `registry.py`（`register_model_converter`/`get_model_converter_config`）：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/registry.py
-  - `model_custom_config_registry.py`（`_ConverterRegistry`/`type()`）：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/framework/model_custom_config_registry.py
-  - `kernels/gmm.py`（`NpuGroupedExperts`，`npu_gmm` 仅 model_converter + state_dict_updater）：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/gmm.py
-  - `kernels/permute.py`（`NpuParallelizePlanUpdater`/`NpuExpertParallel`，`npu_permute` 的 EP 计划改写）：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/permute.py
-  - `patches/torchtitan/trainer_init_distributed.py`：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/patches/torchtitan/trainer_init_distributed.py
-
-## Links
-
-- [torchtitan](torchtitan.md)（旧 `register_npu_converter`/`BaseConverter` 已被声明式 API 取代）
-- [npu-fused-op-converters](npu_fused_op_converters.md)（GMM/grouped_matmul）
-- [torchtitan-5d-parallel](../parallelism/torchtitan_5d_parallel.md)（EP → NpuExpertParallel，由 npu_permute 的 NpuParallelizePlanUpdater 改写）
-- [vlm-multimodal-training](../modules/vlm_multimodal_training.md)（npu_vlm 经声明式 converter 注册）
-- [megatron-bridge](megatron_bridge.md)（MindSpeed-Bridge HF↔Megatron 权重桥接的邻近概念）
-- [mindspeed-mm](mindspeed_mm.md)（MindSpeed-MM Canonical Model 权重转换的邻近概念）
+- [TorchTitan 框架与导入结构](torchtitan.md)
+- [融合算子与当前 override 入口](npu_fused_op_converters.md)
+- [并行与 DTensor](../parallelism/torchtitan_5d_parallel.md)
+- [Checkpoint](../techniques/checkpoint_dcp_hf.md)
+- [VLM 训练](../modules/vlm_multimodal_training.md)

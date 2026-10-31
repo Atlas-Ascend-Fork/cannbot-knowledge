@@ -1,7 +1,7 @@
 ---
 type: Optimization
-title: MLA-prolog + zigzag-CP Prefill 必须用两段式 KV cache 写（勿按 slot_mapping 直写 paged cache）
-description: 结构为 mla-prolog（算子 torch.ops.custom.npu_mla_prolog_v3）+ paged KV cache（kv-cache-manager）的 Prefill，且叠加了 zigzag-cp（CP 仅在 prefill 生效，与长上下文 input_max_len 16384/32768 搭配）时：不能让 prolog 算子按 slot_mapping 直写最终 paged cache，必须改成两段式 KV 写。覆盖 kv_cache_quant_mode ∈ {int8(C8), 非量化}，证据来自 deepseek-v3.2-exp。这是把 long-seq-prefill-context-parallel 落到 MLA-prolog 上时的一处必配正确性细节。
+title: MLA CP Prefill：先恢复全序，再分别写计算与持久缓存
+description: 更新当前MLA CP临时BSND、全序恢复、两类PA视图与真实物理槽散点写入，撤回旧连续布局限制。
 tags:
 - task.optimization
 - topic.attention
@@ -9,12 +9,14 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/197
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v3.2-exp/models/modeling_deepseek.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py
   role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-23T09:41:54Z'
+updated_at: '2026-10-29T14:49:38Z'
 platforms:
 - agnostic
 scope:
@@ -31,44 +33,30 @@ scope:
         - mla
 ---
 
-# MLA-prolog + zigzag-CP Prefill 必须用两段式 KV cache 写（勿按 slot_mapping 直写 paged cache）
+# MLA CP Prefill：先恢复全序，再分别写计算与持久缓存
 
-## 条件 → 优先怎么写
+## 当前两阶段写入
 
-结构为 [mla-prolog](../../concepts/kernels/mla_prolog.md)（算子 `torch.ops.custom.npu_mla_prolog_v3`）+ paged KV cache（[kv-cache-manager](../../concepts/frameworks/kv_cache_manager.md)）的 **Prefill**，且叠加了 [zigzag-cp](../../concepts/parallelism/zigzag_cp.md)（CP 仅在 prefill 生效，与长上下文 `input_max_len` 16384/32768 搭配）时：**不能**让 prolog 算子按 `slot_mapping` 直写最终 paged cache，必须改成两段式 KV 写。覆盖 `kv_cache_quant_mode ∈ {int8(C8), 非量化}`，证据来自 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md)。这是把 [long-seq-prefill-context-parallel](long_seq_prefill_context_parallel.md) 落到 MLA-prolog 上时的一处必配正确性细节。
+V3.2-Exp的npu_mla_prolog_v3在CP Prefill只计算本地token，先写临时BSND缓存 `[1,local_token_num,1,D]`，不传最终paged cache_index；INT8将nope、rope和scale打包，rope参数只占位。非CP用PA_BSND并传slot_mapping，直接写最终页。
 
-## 根因
+CP分支AllGather各rank latent，按cp_metadata.restore_indices恢复每请求补齐后的全局顺序，再分别写两套PA空间：
 
-zigzag-CP 把整条序列按 zigzag 规则切到各卡，单卡本地只算出**自己那片 shard 的 KV**。而 paged cache 的 `slot_mapping` 编址的是**全序列位置**——本地 shard KV 与全局 slot 对不上。若直写，KV 会落到错误的全局槽位。因此必须：本地先算 KV → CP all-gather 还原成全序 → 再按全局位置写回真 paged cache。
+| 视图 | 索引 | 生命周期 |
+| --- | --- | --- |
+| 当前层计算缓存 | global_slot_mapping/global_block_table | 包括补齐token，供两段因果FA使用，消费后释放引用 |
+| 后续Decode/传输缓存 | persistent_valid_indices选真实token，再按persistent_slot_mapping写 | Offline为请求所有者，PREFILL角色为全局有效token |
 
-## 做什么：按是否开 CP 分两个调用分支
+当前写回使用npu_scatter_nd_update_，不再要求每batch从0连续分配，也不使用全零kv_scatter_update_indices或旧reverse_split_list。Indexer Key与INT8 scale也必须采用对应计算/持久视图，不能只修正主MLA KV。
 
-**CP prefill 分支（两段式）**：
-- prolog 用 `cache_mode="BSND"`、`hidden_states.view(bsnd_bsz, bsnd_seq_len, -1)`、rope_sin/cos 同为 3D view，**不传 `cache_index`**；把本卡 KV 写进形状 `(batch, seq//cp_size, 1, D)` 的**临时 BSND cache**（恰为 `B*S` 大小、无 block padding）。
-- 随后 `dist.all_gather_into_tensor` 收齐各卡分片，用 `reverse_split_list` / `cp_reverse_index` 还原 zigzag 序，再 `scatter_update_(…, axis=1)` 写回真的 nope / rope paged cache。
+## 正确性与验收
 
-**非 CP prefill 分支（直写）**：
-- prolog 用 `cache_mode="PA_BSND"`、`hidden_states.view(bsz*q_len, -1)`、传 `cache_index=slot_mapping.view(-1)`、rope_sin/cos `squeeze(1).squeeze(1)`；prolog 直写 paged cache，无需临时 cache / all-gather。
+本地token直接配全局slot会错位；AllGather后未恢复顺序也会错。写入合法物理页的关键是token与对应slot一致，而不是某个scatter API天然正确。Q的头尾长度必须与计算视图因果坐标一致，padding不能泄漏进持久缓存或输出。
 
-## Correctness / 风险 / rollback
-
-- 正确性锚点：CP 下写回真 cache 必须发生在 all-gather + zigzag 逆序**之后**，用连续的 `scatter_update_`（axis=1）而非按全局 `slot_mapping` 的 scatter-nd 直写。
-- 迁移边界：证据仅覆盖本仓 DeepSeek-V3.2-Exp 建模文件的 `npu_mla_prolog_v3`，适用面 = 同结构（MLA-prolog + paged KV + zigzag-CP prefill）的部署，不外推整栈。
-- decode 无 CP，走非 CP/直写路径即可。
-- rollback：关 CP（`cp_size=1`）即回落非 CP 直写分支，无临时 cache。
-
-## 相关经验
-- [因果稀疏注意力 CP prefill 的 zigzag 负载均衡：每 rank 两段两次调用](causal_cp_prefill_zigzag_actual_seqlens.md)
-
-- 另见 [paged KV cache 按阶段选散点写算子：Prefill 连续段用 scatter_update_、Decode 单 token 用 scatter_nd](paged_kv_cache_write_scatter_update_vs_scatter_nd.md)。
-- 另见 [MLA 前处理超级融合算子可用于长序列 Prefill — 勿被算子文档 Seq-Length 0~16 标注误导](mla_prolog_v3_prefill_seqlen_doc.md)。
-- 另见 [量化特性所需状态被误挂在无关并行分支（CP 度）里 → 跳过该分支的配置静默丢状态（SFA C8 prefill 单卡漏填 per-token scale）](../../runbooks/precision/quant_state_misattached_to_cp_branch.md)。
-- 另见 [MLA / MLA-Prolog + Paged KV cache 部署的精度对齐要点](../../runbooks/precision/precision_mla_prolog_paged_kv_cache.md)。
-- 另见 [torch.split / 切片产出的非连续张量做展平：用 .reshape 而非 .view（bsz>1 才暴露，单批自测会掩盖）](../../runbooks/runtime/torch_split_noncontiguous_view_reshape_minibatch.md)。
+覆盖CP1/CP>1、INT8/非量化、多请求不等长、无本地所有者和offload；逐token对齐非CP基线，并检查缓存实际消费地址。关闭CP回到非CP直写路径时仍需重核组、缓存和配置。见[ZigZag因果长度](causal_cp_prefill_zigzag_actual_seqlens.md)。本次为静态源码核对。
 
 
 ## Evidence
 
-- **代码事实**（clone `@ea8d712a02e2`）：`models/deepseek-v3.2-exp/models/modeling_deepseek.py` 的 `DeepseekIndexerAttention.mlaprolog_prefill` / `DeepseekV3ForCausalLM.prepare_prefill_extra_input`：`cache_mode` 按 `cp_size` 在 `BSND`（不传 cache_index）/ `PA_BSND`（传 slot_mapping）分岔；BSND 临时 cache 形状 `(batch, seq//cp, 1, D)`；CP 分支 all-gather 后 `scatter_update_(axis=1)` 写回。
-- **仓自报**：改动自报为 `fix` 类，但未记具体症状/根因，本页只述「CP 下为何要两段式 KV 写 + 两分支调用约定」，不断言修了何 bug；无 benchmark。
-- 溯源下探：[cann-recipes-infer-pr-197-fix-tmp-kv-cache-set-to-bsnd-scatter-nd-update-replace-to-scatter-update](https://gitcode.com/cann/cann-recipes-infer/merge_requests/197)
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（primary）
+- [execution_engine.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py)（implementation）

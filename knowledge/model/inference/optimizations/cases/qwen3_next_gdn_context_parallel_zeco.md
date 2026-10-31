@@ -9,16 +9,16 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/359
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/issues/159
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/d13c484eef9dfce2f52ba49061ba8d692efcb650/models/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/d13c484eef9dfce2f52ba49061ba8d692efcb650/models/qwen3-next/README.md
-  role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage6/0001-support-gdn-cp.patch
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T13:54:05Z'
 platforms:
 - a3
 scope:
@@ -70,30 +70,22 @@ cann-recipes-infer 在 [qwen3-next](../../concepts/models/qwen3_next.md) 上有�
 
 **该参考实现的约束**——照搬这套代码要受它们约束，迁移算法思想则不受：
 
-固定 `d13c484` README 的部署限制：CP 仅支持 PD 分离，P/D 卡数相同，`cp_size < tp_size`，不能同时启用独立 DP。环境开关或状态传输实现不代表其他部署组合已支持。
+当前 README 的部署限制：CP 仅支持 PD 分离，P/D 卡数相同，`cp_size < tp_size`，因 GDN 切分头数限制还要求启动参数 `tp_size <= 32`，不能同时启用独立 DP。这里的 `tp_size` 是启动参数，不能与每个 CP rank 内的局部 TP 因子混用。环境开关或状态传输实现不代表其他部署组合已支持。
 
 - **GDN `head_dim` 硬编码 128**（`assert K==128`、无回退，维护者确认刻意如此）：其它 head_dim 的线性注意力模型上 CP 前须先确认或改核。
 - **只针对单 batch 均衡切分**：多 batch 有代码路径但切分不按 batch 均衡，非目标场景。
 - **SGLang + sgl_kernel_npu 的 fla 栈**、Atlas A3（910C）。
 - **PD 分离**：`attn_tp_size` 不等时按 head 维切 Mamba/GDN state 做 M:N TP 传输（`send_mamba_state_slice`，要求 `state_type=="mamba"`；源码分别实现源 TP 大于目标 TP 与不大于目标 TP 的切片分支，不能据此额外规定前者不合法）；PD 分离下强制 `swap_kv`，会破坏 chunked prefill 并带额外通信开销。
 
-## Correctness / benchmark
+## 当前证据与验证
 
-- 数学正确性：CANN 审查确认 ZECO 数学正确、结论「建议合入」。
-- benchmark（仓自报、无独立复测）：算子 `fla.chunk_gated_delta_rule_npu`（Atlas A3 / 910C，32 heads），从 **TP16**（GDN full-TP 回退）切到 **TP2+CP8**（ZECO CP GDN）：
+当前 stage6 和 kernel patch 保留 ZECO 状态转移、P2P 卷积 overlap 与 head_dim=128 限制，README 保留 GDN-CP 的环境开关和 PD/CP 部署边界。当前这些来源未给出可绑定本版本的原始算子/端到端测量记录，因此撤下旧 PR 多轮性能数字，不把不同次测量拼成当前结果。
 
-  | Seqlen | Num Heads | TP16 | TP2+CP8 | 加速 |
-  |--|--|--|--|--|
-  | 65536 | 32 | 0.01625 | 0.00792 | 2.05x |
-  | 131072 | 32 | 0.02996 | 0.01204 | 2.48x |
-
-  （仅 2 个受控点，均在长序列单 batch 目标场景内，不外推「序列越长越快」单调律。）
-
-- 端到端 TTFT（bfloat16，Atlas A3 / 910C，seqlen 65536，仓自报）：**TP16 2162.53 ms → TP2+CP8 1876.89 ms（≈ -13%）**。算子约 2x 的提速只传导到端到端约 -13%，因 GDN 只是整网的一部分；决定是否上 ZECO 时按「端到端占比」而非「算子加速比」估收益。同批另一次算子测量给 65536 档 0.01684 / 0.00853（≈2x），与上表量级一致（不同版本/次测量，精确值略异）。
+应在所选模型与软件栈中验证卷积边界、initial/final state、位置/序列重排和完整输出，再测 TTFT、显存与通信时间。本次未应用补丁或运行 NPU。
 
 ## rollback
 
-不设 `ENABLE_CONTEXT_PARALLEL_GDN`（GDN 回退 full-TP，功能不变）。
+关闭 ENABLE_CONTEXT_PARALLEL_GDN 会选择 full-TP 路径；需同时恢复合法部署参数并重新验证输出，不假定运行态缓存可直接复用。
 
 ## 相关经验
 
@@ -102,12 +94,10 @@ cann-recipes-infer 在 [qwen3-next](../../concepts/models/qwen3_next.md) 上有�
 
 ## Evidence
 
-- **代码事实**（clone `@d13c484`）：`models/qwen3-next/patches/stage6/0001-support-gdn-cp.patch` + `sgl_kernel_npu_support_gdn_cp.patch` + `README.md` 中，zeco 选路与 first/other-rank 通信编排、两处 `use_full_tp` gating、两个新 zeco 核、`init_cp_metadata` / `single_batch_overlapped_causal_conv1d_update`、conn.py 的 `send_mamba_state_slice` 均对上。
-- **维护者确认**：非 ring 拓扑；GDN `head_dim` K=128 不设回退（刻意如此）。
-- **仓自报**（无独立复测）：算子 benchmark 数字来自仓库描述表 + README；端到端 TTFT 与另一组算子表来自 RFC 的性能表（doc 披露）。
-- 溯源下探：
-  - [cann-recipes-infer-pr-359-support-context-parallel-execution-of-gateddeltanet-attention-in-qwen3-n](https://gitcode.com/cann/cann-recipes-infer/merge_requests/359)
-  - [cann-recipes-infer-issue-159-rfc-support-context-parallelism-for-gateddeltanet-in-qwen3-next](https://gitcode.com/cann/cann-recipes-infer/issues/159)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md)（primary）
+- [qwen3_next_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md)（supporting）
+- [0001-support-gdn-cp.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage6/0001-support-gdn-cp.patch)（implementation）
+- [sgl_kernel_npu_support_gdn_cp.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch)（implementation）
 
 ## 与统一规则和早期 CP 实现的关系
 

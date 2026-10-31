@@ -8,14 +8,17 @@ tags:
 - topic.implementation.synchronization
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/cann/zh/multi_stream_principles.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/a12e98a866f5f9ef51053e47f5e8151ac703caf3/docs/design/multi_stream_principles.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/stream_utils.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: supporting
 created_at: '2026-06-04T00:00:00Z'
-updated_at: '2026-10-21T01:56:16Z'
+updated_at: '2026-10-29T14:19:33Z'
 platforms:
 - a2
+- a3
 ---
 
 # NPU 多流机制：资源互补、Stream 与 Event
@@ -219,16 +222,16 @@ Stream 标签只说明逻辑归属，实际重叠和端到端收益应分别验�
 | 模式 | 代表模型 | 详见 |
 | --- | --- | --- |
 | MoE 共享专家双流 / Patch 形态 / 多模态变体 | DeepSeek-V3.2-Exp / Qwen3-Next / HunyuanImage-3.0 | [moe-multi-stream](moe_multi_stream.md) |
-| MoE 共享专家 Cube↔Vector 互补（decode） | DeepSeek-R1 | 本页「网络样例」 |
-| Micro-batch / DBO 计算-通信流水（prefill） | DeepSeek-R1 | [prefill-micro-batch](prefill_micro_batch.md) |
+| MoE 共享专家 Cube↔Vector 互补（decode） | Atlas A3 DeepSeek-R1 Decode | [共享专家双流规则](../../optimizations/rules/moe_shared_expert_decode_dual_stream.md) |
+| Micro-batch / DBO 计算-通信流水（prefill） | Atlas A3 DeepSeek-R1 Prefill | [prefill-micro-batch](prefill_micro_batch.md) |
 | Indexer-Prolog 多流（Attention 前处理拆流） | DeepSeek-V3.2-Exp / GLM-5 | [indexer-prolog](../kernels/indexer_prolog.md) |
 | KVCache Offload 异步搬运流 | DeepSeek-V3.2-Exp / GLM-5 | [kvcache-offload](kvcache_offload.md) |
-| 同类计算池分核 + 跨节点通信 overlap（AFD） | LongCat-Flash | 本页「网络样例」/「控核」+ [afd](afd.md) |
+| 同类计算池分核 + 跨节点通信 overlap（AFD） | Atlas A3 LongCat-Flash Decode | [Decode 控核规则](../../optimizations/rules/decode_multi_stream_overlap_core_balance.md) + [afd](afd.md) |
 
 ## Source basis
 
-- **多流原理与三种形态、三种执行模式实现、R1/LongCat 样例**：官方设计文档 [blob @ a12e98a8](https://gitcode.com/cann/cann-recipes-infer/blob/a12e98a866f5f9ef51053e47f5e8151ac703caf3/docs/design/multi_stream_principles.md)（2026-06-01 加入 cann-recipes-infer）。
-- **仓内多流写法代码**均在 **cann-recipes-infer @ 2c45117**：LongCat 控核/预取 [`models/longcat-flash/models/modeling_longcat_flash.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat-flash/models/modeling_longcat_flash.py)（L45 / L1107-1115 / L1206 / L1246-1258）；API 封装 [`executor/utils/common_utils.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/utils/common_utils.py)（L120 / L126 / L133 / L151）与 [`executor/utils/stream_utils.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/utils/stream_utils.py)；显式 stream 路径 [`models/deepseek-v3.2-exp/models/offload_cache.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v3.2-exp/models/offload_cache.py)（L46 `torch.npu.Stream`）。整体 source 索引 [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399)。
+- **多流原理与三种形态、当前执行模式实现、R1/LongCat 样例**：官方设计文档 [当前设计文档](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/cann/zh/multi_stream_principles.md)（2026-06-01 加入 cann-recipes-infer）。
+- **仓内多流写法代码**均在 **同一当前本地来源**：LongCat 控核/预取 [`models/longcat-flash/models/modeling_longcat_flash.py`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py)（L45 / L1107-1115 / L1206 / L1246-1258）；API 封装 [`executor/utils/common_utils.py`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/common_utils.py)（L120 / L126 / L133 / L151）与 [`executor/utils/stream_utils.py`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/stream_utils.py)；显式 stream 路径 [`models/deepseek-v3.2-exp/models/offload_cache.py`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/offload_cache.py)（L46 `torch.npu.Stream`）。整体 source 索引 [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/944d2d3ece86f7df33dbb0cb155c72ca619a9c66)。
 - 两类图模式 API、控核约束、`overlap_pct` 复盘与 Event 语义的方法论基线另见 torchair 官方 `multi_stream` / `limit_cores` 文档（外部 hiascend.com torchair use guide）。
 
 ## Links

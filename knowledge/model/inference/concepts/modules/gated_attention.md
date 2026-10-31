@@ -1,17 +1,23 @@
 ---
 type: Concept
 title: Gated Attention
-description: 承担精确长程检索的标准 Softmax Attention 变体（也称混合注意力模型中的 full attention 层），在 Attention 输出后引入一个元素级 Gate（Sigmoid/SiLU 门控）对输出进行调制，再送入残差路径。在 Qwen3-Next 与 Qwen3.5-MoE 中与线性注意力变体 Gated DeltaNet 混合交替堆叠，构成分层异构注意力。Qwen3.5-MoE 的 full attention 由 merged_qkv_proj 同时产出 gate，并对 Q/K 做 QK-RMSNorm、对部分维度应用 partial MRoPE。
+description: 门控Attention机制与当前3.5 Page cache/分片归约/950量化边界，区分Next投机与C8实现。
 tags:
 - task.design
 - topic.model_architecture
 - topic.attention
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-next/qwen3_next_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_5/models/modeling_qwen3_5_moe.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_5/README.md
+  role: constraint
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T14:31:37Z'
 platforms:
 - agnostic
 ---
@@ -33,21 +39,27 @@ platforms:
 ## Variants
 
 - **BF16 标准路径**：Attention 后门控，激活 Cube + Vector 联合。
-- **C8 KVCache 路径**：KV 写入前以传入的 `k_scale` / `v_scale` 经 `npu_quantize`（quant axis=-1）量化为 Int8，读出时带 `key_antiquant_scale` / `value_antiquant_scale` 反量化，显存减半。见 [w8a8c8](../quantization/w8a8c8.md)。
+- **C8 KVCache 路径（固定 Qwen3-Next/SGLang）**：该版本暂不支持与 MTP 同时开启，不能把下列 C8 变体与上面的 MTP1 直接组合。KV 写入前以传入的 `k_scale` / `v_scale` 经 `npu_quantize`（quant axis=-1）量化为 Int8，读出时带 `key_antiquant_scale` / `value_antiquant_scale` 反量化，显存减半。见 [w8a8c8](../quantization/w8a8c8.md)。
 - **Prefill CP+TP 路径（Qwen3-Next）**：Q 沿 Sequence 切分到 CP rank，KV 通过 AllGather 汇总为完整序列，再执行 Attention；配合 ZigZag 负载均衡。见 [context-parallel](../parallelism/context_parallel.md)、[zigzag-cp](../parallelism/zigzag_cp.md)。
-- **Qwen3.5-MoE full attention 路径**：`merged_qkv_proj` 一次 Matmul 同时输出 Q/K/V 与 **attention gate**——Q 投影宽度为 `head_dim*2`，输出按 `torch.chunk(..., 2, dim=-1)` 拆为 query 与 gate；对 Q/K 各做 **QK-RMSNorm**（`q_norm`/`k_norm`，作用在 `head_dim` 维）；**partial RoPE**（`partial_rotary_factor=0.25`，仅前 `rotary_dim`=64 维调 `npu_rotary_mul`，透传部分 `cat` 回来），位置编码为 MRoPE；attention 经 `npu_fused_infer_attention_score_v2`（TND layout + block 化 KV cache，Prefill `sparse_mode=3`，Decode 用 `actual_seq_kvlen` 控可见范围）计算后与 gate 相乘，再过 `o_proj`（TP 下经 all_reduce 或 `npu_mm_all_reduce_base` 汇聚）。见 [fused-infer-attention-score](../kernels/fused_infer_attention_score.md)、[qwen3-5-moe](../models/qwen3_5_moe.md)。
+- **Qwen3.5-MoE full attention 路径**：`merged_qkv_proj` 一次 Matmul 同时输出 Q/K/V 与 **attention gate**——Q 投影宽度为 `head_dim*2`，输出按 `torch.chunk(..., 2, dim=-1)` 拆为 query 与 gate；对 Q/K 各做 **QK-RMSNorm**（`q_norm`/`k_norm`，作用在 `head_dim` 维）；**partial RoPE**（`partial_rotary_factor=0.25`，仅前 `rotary_dim`=64 维调 `npu_rotary_mul`，透传部分 `cat` 回来），位置编码为 MRoPE；attention 经 `npu_fused_infer_attention_score_v2`（TND layout + block 化 KV cache，Prefill `sparse_mode=3`，Decode 用 `actual_seq_kvlen` 控可见范围）计算后与 gate 相乘，再过 `o_proj`（TP按当前路径AllReduce，纯EP匹配的Prefill token分片可ReduceScatter；mm_all_reduce_base仅950且受其他条件限制）。见 [fused-infer-attention-score](../kernels/fused_infer_attention_score.md)、[qwen3-5-moe](../models/qwen3_5_moe.md)。
+
+## 当前模型接入边界
+
+Qwen3.5 FullAttention已接统一Page cache：Prefill直接算有效K/V后写入，Decode先按slot写入后读PA，长度、掩码与block_table保持一致。该模型只允许next_n=0；上文MTP机制示例来自Next，不证明3.5支持投机解码。950 FP8/MXFP8是其Linear/专家量化方案，不等同Next的Int8 C8 cache。
 
 ## Performance Characteristics
 
-- Attention Head = 16 限制纯 TP 上限为 TP16，超过需引入 CP 或 SP。
+- 来源所述 Qwen3-Next 按头切分路径的 Attention Head=16，故该路径纯 TP 上限为 16；其他模型须读取各自 config.num_attention_heads 及 KV 头/实现限制，不是 Gated Attention 的固定属性。
 - Prefill 长序列（64K+）下主要受激活内存和 Q·Kᵀ 计算量约束，是 CP 的首要收益模块。
 - Decode 单步受 KVCache 带宽主导，C8 量化可直接缓解 HBM 带宽压力。
 - 与 GDN 层形成计算/访存特征差异，是 Qwen3-Next 采用"分层异构并行"的直接依据。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/qwen3-next/qwen3_next_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-next/qwen3_next_optimization.md) 并行策略章节；`models/qwen3-next/patches/stage2/0002-feat-support-c8.patch`（C8 KVCache）；`models/qwen3-next/patches/stage4/0001-feat-support-context-parallel.patch`（CP 切片与 ZigZag）。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/qwen3_5/qwen3_5_moe_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/qwen3_5/qwen3_5_moe_optimization.md)（RoPE / FlashAttention / Attention TP 计算分解章节）、[`models/qwen3_5/models/modeling_qwen3_5_moe.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen3_5/models/modeling_qwen3_5_moe.py)（`Qwen3_5MoeAttention` 的 `merged_qkv_proj`+gate chunk、`q_norm`/`k_norm`、partial RoPE `npu_rotary_mul`）。MR!402（分支 chy_new "support qwen3_5"）。
+- [qwen3_next_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md)（supporting）
+- [modeling_qwen3_5_moe.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_5/models/modeling_qwen3_5_moe.py)（implementation）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_5/README.md)（constraint）
 
 ## Links
 

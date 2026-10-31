@@ -1,16 +1,16 @@
 ---
 type: Optimization
 title: HunyuanVideo A3 累计优化的来源性能观测
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+description: 最新来源明确默认视频规格与UAA变尺寸，保留A3累计表及非单项归因、测量缺口。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: primary
 created_at: '2026-10-21T09:56:25Z'
-updated_at: '2026-10-21T09:56:25Z'
+updated_at: '2026-10-29T14:13:04Z'
 platforms:
 - a3
 scope:
@@ -26,7 +26,7 @@ scope:
 
 ## Workload
 
-原A3累计表，baseline仅做NPU开箱FIA替换。源总述5s720p129帧与表没有完整逐行绑定，不能默认为每行同一任务。
+当前A3累计表，baseline仅做NPU开箱FIA替换。文档现明确默认720×1280×129；UAA另测原尺寸和730×1300×129，两类标记须区分。
 
 ## Hardware
 
@@ -63,7 +63,7 @@ scope:
 | | √ | x | √ | √ | √ | √ | 477.12 | 13.10 | 482.65 | 7.62 | 10.16 | **7.81** |
 | | √ | x | √ | √ | √ | 730, 1300 | 511.12 | 13.06 | 525.75 | 7.11 | 10.20 | 7.17 |
 
-表内空白并行单元格沿原表保留，不自动填为新测得值；UAA“730,1300”标记的完整配置未给。原配置称FBCache阈值0.05、TeaCache0.15、TaylorSeer算1跳3/三阶，这些是对应记录的配置，不是质量保证。
+表内空白并行单元格沿原表保留，不自动填为新测得值；UAA“730,1300”标记的分辨率现明确为730×1300×129，仍缺逐行完整命令与原始记录。原配置称FBCache阈值0.05、TeaCache0.15、TaylorSeer算1跳3/三阶，这些是对应记录的配置，不是质量保证。
 
 
 ## Limitations 与验证
@@ -75,4 +75,4 @@ scope:
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md)
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（primary）

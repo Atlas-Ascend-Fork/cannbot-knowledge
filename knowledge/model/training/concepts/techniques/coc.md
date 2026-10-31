@@ -8,14 +8,15 @@ tags:
 - topic.data_movement.communication.collective_communication
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/communication-over-computation.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/communication-over-computation.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
 - a2
+- a3
 - '950'
 ---
 
@@ -120,15 +121,8 @@ flowchart LR
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/communication-over-computation.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/communication-over-computation.md)（背景与顺序依赖串行问题 / Python 脚本与融合算子两路 / `--use-ascend-coc` `--coc-parallel-num` `--coc-fused-kernel` 用法 / m 轴倍数与 host bound 约束 / 三种通信场景 / 已支持的四个融合算子与 w8A16 伪量化 / `coc_cfgs` 自定义项 / 不兼容 MC2、未适配 MoE、Ascend 950 限制 / BLOOM·LLAMA2 收益）、[`docs/zh/ops/lcal_coc.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/ops/lcal_coc.md)（`coc_ops` 五个接口的 shape/dtype 约束与 m 须为 world_size 倍数）
-- [`mindspeed/features_manager/tensor_parallel/locl_coc.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/tensor_parallel/locl_coc.py) — `CoCFeature`：四个开关注册、`validate_args`（与 `unaligned_linear`/`use_ascend_mc2` 互斥、Ascend 950 禁融合算子）、`register_patches` 把 `Column/RowParallelLinear` patch 成 MindSpeed CoC 实现
-- [`mindspeed/core/tensor_parallel/lcal_coc/coc_utils.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/lcal_coc/coc_utils.py) — `COCParallel`（`split_num` 切片、`run_compute_first` / `run_communicate_first` 两种流水、`comm_fcn` 的 ALL_GATHER/REDUCE_SCATTER/ALL_REDUCE 分支）、`get_parallel_num`（m<parallel_num 回退 1、customized_coc 覆盖）、`shuffle_as_coc_all_gather/reduce_scatter`
-- [`mindspeed/core/tensor_parallel/lcal_coc/coc_parallel_linears_all_reduce.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/lcal_coc/coc_parallel_linears_all_reduce.py) — `COCColumnAllReduceFunction.backward`（grad_input 异步 all_reduce 掩盖 grad_weight）、`COCRowAllReduceFunction.forward`（ALL_REDUCE + compute_first）
-- [`mindspeed/core/tensor_parallel/lcal_coc/coc_parallel_linears_sequence_parallel.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/lcal_coc/coc_parallel_linears_sequence_parallel.py) — `COCColumnSeqParallelFunction`（ALL_GATHER + communicate_first、`recompute_all_gather` 控反向重算）、`COCRowSeqParallelFunction`（前向 REDUCE_SCATTER、反向 ALL_GATHER）、`gradient_accumulation_fusion` 下 `npu_matmul_add`
-- [`mindspeed/core/tensor_parallel/lcal_coc/coc_parallel_linears_all_reduce_fused.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/lcal_coc/coc_parallel_linears_all_reduce_fused.py) 与 [`coc_parallel_linears_sequence_parallel_fused.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/lcal_coc/coc_parallel_linears_sequence_parallel_fused.py) — `FusedCOC*Function` 按 `parallel_num`（1→rewrite / 2,4,8→脚本 / -1→`coc_ops` 融合）三路分流、`enable_coc_in_column_backward`
-- [`mindspeed/core/tensor_parallel/lcal_coc/min_comm_cfg.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/lcal_coc/min_comm_cfg.py) — `ModuleType` 六类型、`acquire_module_type`（coc_mode/sequence_parallel/tp_size 选型、tp=1 强制关）、`replace_forward_functions_by_autograd_class`
-- [`mindspeed/core/tensor_parallel/lcal_coc/user_config.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/tensor_parallel/lcal_coc/user_config.py) — `coc_cfgs` 默认项、`initialize_coc_from_cfg`（脚本/融合算子分发、map_type2autograd_class 绑定）
-- [`mindspeed/ops/lcal_functional.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/lcal_functional.py) — `CoCOperations.coc_ops`（`matmul_all_reduce` / `matmul_reduce_scatter` / `all_gather_matmul(_v2)` / `pure_matmul` / `all_gather_matmul_reduce_scatter` 及 comm_domain·rank 划分）
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [communication-over-computation.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/communication-over-computation.md)（supporting）
 
 ## Links
 

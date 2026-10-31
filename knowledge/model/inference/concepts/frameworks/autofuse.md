@@ -1,12 +1,7 @@
 ---
 type: Concept
 title: AutoFuse（Inductor NPU 自动融合编译组件）
-description: AutoFuse 是面向昇腾 NPU 的 PyTorch Inductor JIT 自动融合组件，将 InductorLoopIR 降为
-  AscendLoopIR，经 Schedule 模板选择、UB 复用和 ATT 自动 Tiling 后生成 AscendC Kernel。调度以 ComputeType、AxisGroup
-  和 Merge 规则产生 TilingCase，求解器结合 LocalBuffer、核数、切分与流水耗时选择方案。它主要覆盖 Pointwise/Reduce
-  等可连续编译区域，避免断图和反复编译；当前 152 个 LoopIR 中覆盖 46 个。DeepSeek-V4 的 hc_post 片段在 Atlas A3 典型
-  shape 下由 30 us 降至 7.5 us（dynamic=False）或 10 us（dynamic=True），但端到端收益尚未验证。AutoFuse
-  与 GE/npugraph_ex 图后端是并列路径。
+description: AutoFuse 是面向昇腾 NPU 的 PyTorch Inductor JIT 自动融合组件，将 InductorLoopIR 降为 AscendLoopIR，经 Schedule 模板选择、UB 复用和 ATT 自动 Tiling 后生成 AscendC Kernel。调度以 ComputeType、AxisGroup 和 Merge 规则产生 TilingCase，求解器结合 LocalBuffer、核数、切分与流水耗时选择方案。它主要覆盖 Pointwise/Reduce 等可连续编译区域，避免断图和反复编译；来源文档给出的覆盖口径为 152 个 LoopIR 中 46 个。DeepSeek-V4 的 hc_post 片段在 Atlas A3 典型 shape 下由 30 us 降至 7.5 us（dynamic=False）或 10 us（dynamic=True），但端到端收益尚未验证。AutoFuse 与 GE/npugraph_ex 图后端是并列路径。
 tags:
 - task.implementation
 - topic.architecture
@@ -14,12 +9,12 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_autofuse_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4_flash_tilelang_and_inductor_af/model.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-10-22T10:35:31Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 ---
@@ -114,10 +109,8 @@ AscendLoopIR 是一套基于 Loop 定义的 IR，其 type 映射到明确的 vec
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md)（406 行主源：Inductor 对接、Schedule 模板规约/AutoSchedule、ATT 自动 Tiling 性能建模+轴排序求解器、Codegen、AscendLoopIR）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4-flash-tilelang-and-inductorAF/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/README.md) / [`model.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/model.py)（实现：`@torch.compile` 装饰 `RMSNorm.forward`/`Expert.forward`/`hc_pre`/`hc_post`/`hc_head`（model.py:345/802/925/936/1010）；`hc_post` 计算式与 guide 一致；`hc_split_sinkhorn` 经 `torch.library.Library("tl","FRAGMENT")` 封装、暴露为 `torch.ops.tl.hc_split_sinkhorn` 自定义算子（model.py:34-53）。`import inductor_npu_ext` 仅见于 guide/README 文档片段，参考模型的 .py 文件未包含该 import）
-- AutoFuse 模块源码（cann/ge）：[`cann/ge compiler/graph/optimize/autofuse`](https://gitcode.com/cann/ge/tree/e69d5b4a4945238a595bb56a5fba7941ef8c8316/compiler/graph/optimize/autofuse)；对接参考实现 [`inductor_npu_ext`](https://gitcode.com/Ascend/torchair/blob/41af5b5871232805a670bd62527e4d0a7b7ab446/experimental/_inductor_npu_ext/)（`Ascend/torchair` 仓）
-- 溯源（diff `2f82d10..2c45117`）：`377f20f` Add DeepSeek-V4-Flash Model and Tilelang SFA&MHC Kernel/InductorAF and Document（autofuse guide + InductorAF 参考模型引入）；`5df82b1` support deepseek v4（!366）；`13b8e6a` dsv4 add platform guide（!396）；`272df2f` [docs]deepseek v4 update（!449）；`d9f2926` README.md 自定义融合算子编译入参字段修改。
+- [deepseek_v4_autofuse_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_autofuse_guide.md)（primary）
+- [model.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4_flash_tilelang_and_inductor_af/model.py)（implementation）
 
 ## Links
 
@@ -126,6 +119,6 @@ AscendLoopIR 是一套基于 Loop 定义的 IR，其 type 映射到明确的 vec
 - [ascendc](ascendc.md)（AutoFuse Codegen 的目标算子代码形态）
 - [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)（AutoFuse 自动融合 `hc_post`；与手写 AscendC HcPost 并列）
 - [deepseek-v4](../models/deepseek_v4.md)（AutoFuse 在 V4 上的应用模型）
-- [torchtitan](../../../training/concepts/frameworks/torchtitan.md)（跨域·训练：TorchTitan 训练入图 Future 对接 AutoFuse）
-- [deepseek-v32-pretrain](../../../training/guides/recipes/deepseek_v32_pretrain.md)（跨域·训练：DeepSeek-V3.2 预训练（Bypass Triton → 未来 AutoFuse））
+- [torchtitan](../../../training/concepts/frameworks/torchtitan.md)（跨域·训练：当前插件与编译入口）
+- [deepseek-v32-pretrain](../../../training/guides/recipes/deepseek_v32_pretrain.md)（跨域·训练：当前来源文档保留的 V3.2 预训练测量）
 - [autofuse-train](../../../training/concepts/techniques/autofuse_train.md)（跨域·训练：同一 CANN AutoFuse 组件在训练侧（DeepSeek-V4）的入图应用与收益）

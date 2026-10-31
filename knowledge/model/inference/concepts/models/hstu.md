@@ -9,17 +9,17 @@ tags:
 - topic.kv_cache
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hstu/hstu_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hstu/hstu_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hstu/modules/paged_hstu_infer_layer.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-21T10:02:02Z'
+updated_at: '2026-10-29T14:19:33Z'
 platforms:
 - a2
 ---
-
-
 
 # HSTU
 
@@ -47,9 +47,11 @@ flowchart TD
  In[ID 序列 + positional + timestamp] --> Emb[Embedding TP Lookup]
  Emb --> Jag[Jagged Tensor 组装]
  Jag --> HSTUBlock[HSTU Block × L]
- HSTUBlock --> Q[Q/K/V jagged]
+ HSTUBlock --> InProj[input LayerNorm + in_linear_silu]
+ InProj --> Q[U/V/Q/K jagged]
+ Q -->|先 append_kvcache| Reshape
  Q --> FA[hstu_paged 融合算子<br/>含 silu_scale + paged KV + target_group]
- FA --> MLP[in_linear_silu + 后处理]
+ FA --> MLP[输出归一化 + U 门控<br/>输出投影 + 残差]
  MLP --> Post[Ranking 输出]
 
  subgraph KV 管理
@@ -57,7 +59,8 @@ flowchart TD
  Reshape[_npu_reshape_and_cache<br/>append_kv_cache]
  Offload[KV Offload Stream<br/>异步到 Host]
  end
- FA -.->|append| Reshape --> Kcache
+ Reshape --> Kcache
+ Kcache -->|append 完成后读取| FA
  Kcache -.->|每层 Attention 完成即触发| Offload
 ```
 
@@ -67,10 +70,9 @@ flowchart TD
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hstu/hstu_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hstu/hstu_optimization.md)（NPU 模型适配 / 算子适配 / 分布式推理 / KV Offload 并行 / 其他优化方向五大章节 + 3 张源图）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hstu/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hstu/README.md)（环境准备、RecSDK 算子依赖、`concat_nd_jagged_npu` cpp 适配代码、推理执行命令、分布式启动命令、优化点清单）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hstu/modules/`](https://gitcode.com/cann/cann-recipes-infer/tree/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hstu/modules)（NPU 适配核心模块：`kv_cache_manager_impl.py`、`paged_hstu_infer_layer.py`、`inference_embedding.py`、`hstu_processor.py`、`position_encoder.py`、`gpu_kv_cache_manager.py`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hstu/hstu_cann.patch`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hstu/hstu_cann.patch)、[`models/hstu/build_install_ops.sh`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hstu/build_install_ops.sh)（recsys-examples 适配补丁与算子编译脚本）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [hstu_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hstu/hstu_optimization.md)（supporting）
+- [paged_hstu_infer_layer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hstu/modules/paged_hstu_infer_layer.py)（implementation）
 
 ## Links
 

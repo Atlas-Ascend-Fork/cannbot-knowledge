@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Gated DeltaNet 训练（Chunk 并行 / Flash 递归 / GDN 上下文并行）
-description: MindSpeed-LLM 训练侧 Gated DeltaNet（GDN）线性注意力模块，覆盖 Qwen3-Next 与稠密/混合 GatedDeltaNet 预训练。两条入口：mcore spec CustomQwen3NextGatedDeltaNetAttention（DP-only，TP/CP>1 断言报错，340M/1.3B examples/mcore/gated_deltanet 脚本承载）与 FSDP2 Qwen3NextGatedDeltaNet（支持 Flash 后端与 CP）。训练侧三项新增：带完整反向的 chunk gated delta rule（块内 WY/UT 矩阵并行 + solve_tril 下三角求逆、块间状态递推，前向六段算子链 + 反向 dq/dk/dv/db/dg/dh0），三套互斥后端（torch 参考 / --use-triton-gdn Triton / --use-flash-gdn 的 fla_npu AscendC，bf16-only）；decode-cache 的逐步递归形式 torch_recurrent/fused_recurrent；GDN 上下文并行 gdn_forward_with_cp——因递推有序列依赖，用 cp2hp/hp2cp 全互换把序列分片换成 head 分片，含负载均衡重排与参数按 head 切片。门控 g=-exp(A_log)·softplus(a+dt_bias)、beta=sigmoid(b)，输出 RMSNormGated。前反向与 GPU FLAME 逐张量对齐、下游精度差<1%。chunk 算子细节链 gdn-chunk-kernels。
+description: MindSpeed-LLM 训练侧 Gated DeltaNet（GDN）线性注意力模块，覆盖 Qwen3-Next 与稠密/混合 GatedDeltaNet 预训练。当前 mcore 与 FSDP2 实现的 chunk 反向、三套后端和 GDN 上下文并行边界；旧启动样例已移除。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,12 +9,14 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/README.md
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/transformer/qwen3_next_gated_deltanet_attention.py
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/models/transformer/qwen3_next_gated_deltanet_attention.py
   role: supporting
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/fsdp2/models/qwen3_next/modeling_qwen3_next.py
+  role: implementation
 created_at: '2026-06-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:41Z'
 platforms:
 - agnostic
 ---
@@ -27,7 +29,7 @@ MindSpeed-LLM 把 Gated DeltaNet（GDN）线性注意力搬到训练侧：Qwen3-
 
 GDN 在 MindSpeed-LLM 有两条训练入口，结构同源、并行能力不同：
 
-- **mcore spec 路径** `CustomQwen3NextGatedDeltaNetAttention`（`MegatronModule`），由 `qwen3_next_spec` 装配，`examples/mcore/gated_deltanet` 的 340M/1.3B 预训练脚本走此路；其 `__init__` 显式 `raise AssertionError`：`tensor_model_parallel_size > 1 or context_parallel_size > 1` 不支持，GDN 层只能复制、靠 DP 扩展。
+- **mcore spec 路径** `CustomQwen3NextGatedDeltaNetAttention`（`MegatronModule`），由 `qwen3_next_spec` 装配；其 `__init__` 显式 `raise AssertionError`：`tensor_model_parallel_size > 1 or context_parallel_size > 1` 不支持，GDN 层只能复制、靠 DP 扩展。
 - **FSDP2 路径** `Qwen3NextGatedDeltaNet`（`mindspeed_llm/fsdp2/models/qwen3_next/`），支持 `--use-flash-gdn` 的 AscendC 融合后端，并通过 `gdn_forward_with_cp` 获得上下文并行能力。
 
 ## 训练侧模块结构
@@ -37,7 +39,7 @@ GDN 在 MindSpeed-LLM 有两条训练入口，结构同源、并行能力不同�
 - `in_proj_qkvz`：输出维 `projection_size_qkvz = key_dim*2 + value_dim*2`，一次产出 Q/K/V 与门控 Z；
 - `in_proj_ba`：输出维 `num_v_heads*2`，产出 Delta Rule 的写入强度 `b` 与时间步参数 `a`。
 
-`fix_query_key_value_ordering` 按 `num_k_heads` 把 `mixed_qkvz` 拆成 `query/key/value/z`、把 `mixed_ba` 拆成 `b/a`，其中 V/Z 按 `num_v_heads // num_k_heads` 展开成 GQA 分组。`conv1d` 是分组深度卷积，`conv_dim = key_dim*2 + value_dim`、`groups=conv_dim`、`kernel_size = mamba_d_conv`（脚本取 4）、`padding = kernel_size-1`，在序列维做因果短卷积后接 SiLU。
+`fix_query_key_value_ordering` 按 `num_k_heads` 把 `mixed_qkvz` 拆成 `query/key/value/z`、把 `mixed_ba` 拆成 `b/a`，其中 V/Z 按 `num_v_heads // num_k_heads` 展开成 GQA 分组。`conv1d` 是分组深度卷积，`conv_dim = key_dim*2 + value_dim`、`groups=conv_dim`、`kernel_size = mamba_d_conv`、`padding = kernel_size-1`，在序列维做因果短卷积后接 SiLU。
 
 门控量由可训练参数推出：
 
@@ -50,13 +52,13 @@ g = -self.A_log.float().exp() * F.softplus(a.float() + self.dt_bias)
 
 ## Chunk Gated Delta Rule：前向 + 反向
 
-训练侧相对推理侧的核心新增是**完整反向**。长序列沿序列维切成 `chunk_size`（mcore 走 `mamba_chunk_size`、FSDP2 走 `gdn_chunk_size`；`gdn_chunk_size` 默认 64，`mamba_chunk_size` argparse 默认 256 但 GDN 脚本显式取 64）的块：块内用矩阵形式并行求解（WY/UT 变换 + 下三角求逆），块间沿 `last_recurrent_state` 递推。`ChunkGatedDeltaRuleFunction` 是 `torch.autograd.Function`，前向 `save_for_backward(q, q_rstd, k, k_rstd, v, g, beta, A, initial_state, cu_seqlens)`，反向一次返回 `dq/dk/dv/db/dg/dh0`。
+训练侧相对推理侧的核心新增是**完整反向**。长序列沿序列维切成 `chunk_size`（mcore 走 `mamba_chunk_size`、FSDP2 走 `gdn_chunk_size`；`gdn_chunk_size` 默认 64，`mamba_chunk_size` argparse 默认 256 ，需由当前配置显式选择）的块：块内用矩阵形式并行求解（WY/UT 变换 + 下三角求逆），块间沿 `last_recurrent_state` 递推。`ChunkGatedDeltaRuleFunction` 是 `torch.autograd.Function`，前向 `save_for_backward(q, q_rstd, k, k_rstd, v, g, beta, A, initial_state, cu_seqlens)`，反向一次返回 `dq/dk/dv/db/dg/dh0`。
 
 前向 `chunk_gated_delta_rule_fwd` 的算子链（块内并行 + 块间状态递推）：
 
 - `chunk_local_cumsum(g)` — 块内 forget gate 累加；
 - `chunk_scaled_dot_kkt_fwd` — 算块内 `K·Kᵀ`（按 `beta`、`g` 加权）得下三角矩阵 `A`；
-- `solve_tril(A)` — 解 `(I − tril)` 的下三角逆，得 WY 表示的变换矩阵；
+- `solve_tril(A)` — 按前一步尚未取负的 A 解 `(I+A)⁻¹`；torch 参考里的 attn 已取负号，不能混用符号，得 WY 表示的变换矩阵；
 - `recompute_w_u_fwd` — 由 `A` 重建 `w, u`（`u` 即新的 value）；
 - `chunk_gated_delta_rule_fwd_h` — 沿 chunk 递推状态 `h`，产 `v_new` 与 `final_state`（块间的递推发生在此）；
 - `chunk_fwd_o` — 由 `q, k, v_new, h, g` 算输出 `o`。
@@ -71,7 +73,7 @@ g = -self.A_log.float().exp() * F.softplus(a.float() + self.dt_bias)
 | `chunk_gated_delta_rule` | `--use-triton-gdn` | MindSpeed core Triton 算子（`mindspeed.ops.triton.*`：`chunk_delta_h` / `chunk_o` / `solve_tril` / `wy_fast` / `cumsum`） |
 | `flash_gated_delta_rule` | `--use-flash-gdn` | `fla_npu` AscendC 融合算子（`torch.ops.npu.npu_recompute_w_u_fwd` / `npu_chunk_gated_delta_rule_fwd_h` / `npu_chunk_fwd_o` / `npu_chunk_bwd_*` / `npu_prepare_wy_repr_bwd_*`），未编译安装则 `raise` |
 
-Flash 后端的 forward/backward 在算子前后做 `transpose(1,2)` 把 `[B,T,H,*]` 调成 head-first 给 NPU 算子，并按 `prepare_chunk_indices(cu_seqlens, chunk_size)` 产块索引支持变长 TND。三套后端的逐算子语义细节见 [gdn-chunk-kernels](../kernels/gdn_chunk_kernels.md)。
+Flash 后端的 forward/backward 在算子前后做 `transpose(1,2)` 把 `[B,T,H,*]` 调成 head-first 给 NPU 算子，并按 `prepare_chunk_indices(cu_seqlens, chunk_size)` 产块索引支持变长 TND。变长 actual_seq_len/cu_seqlens 需要选择支持它们的 Triton 或 Flash 后端；默认 torch_chunk_gated_delta_rule 在 cu_seqlens 非空时直接抛 NotImplementedError。三套后端的逐算子语义细节见 [gdn-chunk-kernels](../kernels/gdn_chunk_kernels.md)。
 
 ## 逐步递归形式（decode / 推理 cache）
 
@@ -82,7 +84,7 @@ state ← state · exp(g_t)
 kv_mem = Σ(state · k_t)
 delta = (v_t − kv_mem) · β_t
 state ← state + k_t ⊗ delta
-out_t = Σ(state · q_t)
+out_t = (1/√K) · Σ(state · q_t)  # q_t 为未缩放查询
 ```
 
 这是 chunk 形式 `chunk_size = 1` 的退化，状态逐步原地更新、无块内并行。decode 阶段的融合算子细节（推理侧）见 [recurrent-gated-delta-rule](../../../inference/concepts/kernels/recurrent_gated_delta_rule.md)；训练前向用 chunk、decode/推理用递归，两者共享同一份 `A_log / dt_bias / conv1d / out_proj` 权重与门控公式。
@@ -99,23 +101,21 @@ GDN 的递推沿序列有严格的状态依赖，无法像标准 attention 那�
 
 变长场景由 `actual_seq_len` 取 `cu_seqlens`、`F.pad(..., (1,0))` 后转 TND（`rearrange(x, 'b s h d -> 1 (b s) h d')`）。`cp_size <= 1` 或 decode-cache 时回退原始 `_gdn_forward_original`。该替换在 CP 模板 `qwen3_next_gdn` 中注册（`context_parallel_mappings.py`）：把 `Qwen3NextGatedDeltaNet.forward` 换成 `gdn_forward_with_cp`，同时把同模型的 `flash_attention_forward` 换成标准 `context_parallel_attention_forward`——即混合模型里 **GDN 层走 head-parallel 全互换 CP、full-attention 层走常规序列 CP**。此能力仅 FSDP2 路径具备；mcore 路径 GDN 在 CP/TP>1 时直接断言报错。
 
-## 训练入口与配置
+## 当前实现与样例边界
 
-- **mcore 混合 GatedDeltaNet 预训练**（`examples/mcore/gated_deltanet`）：复用 `qwen3_next_spec` 的 GatedDeltaNet/full-attention 层，按 `--full-attention-interval N` 控制混合比（每 N 层 1 层 full-attention，其余 GDN，即 `(N-1):1`，脚本取 3）；`--num-experts` 决定 dense 还是 MoE。GDN 相关 flag：`--mamba-chunk-size 64`、`--mamba-d-conv 4`、`--linear-key-head-dim/--linear-num-key-heads/--linear-num-value-heads/--linear-value-head-dim`（head dim 均 256、key/value head 数随规格——340M 取 4、1.3B 取 8，即 340M `256/4/4/256`、1.3B `256/8/8/256`）、`--use-triton-gdn`；并行为 `TP=PP=CP=1` 的纯 DP。其中 `--full-attention-interval` / `--linear-*` / `--use-triton-gdn` 由 `Qwen3NextFeature`（`features_manager`）注册，`--mamba-chunk-size` / `--mamba-d-conv` 由 Mamba feature（`features_manager/models/mamba.py`）注册。
-- **FSDP2 路径**：`--use-flash-gdn`（AscendC `fla_npu`）/ `--use-triton-gdn`（Triton）/ 缺省 torch 参考，三选一；`--gdn-chunk-size`（默认 64）；CP 由 `gdn_forward_with_cp` 提供。
+mcore 的 Qwen3NextFeature 仍注册 full-attention-interval、linear-* 和 use-triton-gdn，Mamba feature 注册 mamba-chunk-size/mamba-d-conv；FSDP2 保留 gdn-chunk-size 与三套后端选择。参数存在不代表任意组合均有可执行 recipe。
 
-## 精度对齐
+当前树已无旧 examples/mcore/gated_deltanet 的 340M/1.3B 和旧 Qwen3-Next A3 启动脚本。该页据现存模块说明结构与并行边界，不再给出这些已删除脚本的启动配方或无法在当前来源核验的历史训练精度数字。新的完整训练配置需独立验证依赖、模型装配、正反向与精度。
 
-GatedDeltaNet 的前向/反向在 T=4096、bf16 下与 GPU FLAME（`fla-org/flame`）参考实现逐张量对齐——前向 `o` 与五个梯度 `dq/dk/dv/dg/dbeta` 的 `max_abs` 最坏单点误差在 `1.22e-4 ~ 1.95e-3`、`mean_abs` 低 1~3 个数量级，余弦相似度 ≈1.0（bf16 正常累积量级）。340M 混合比 2:1 训 20B tokens，loss 轨迹与 GPU 基线全程误差 ~2%；340M/1.3B 下游评测（ARC/HellaSwag/LAMBADA/OpenBookQA/PIQA）与开源基线平均精度相差 <1%。
+## 当前实现的初始化细节
+
+mcore GDN 在判断缓存分支前先将 `conv_state`、`recurrent_state` 初始化为 None，避免无既有状态时引用未赋值变量。FSDP2 混合模型的默认 RoPE 使用显式 `compute_default_rope_parameters`：从 `rope_parameters` 读取 theta/partial rotary factor，theta 缺省 10000；非 default 的 RoPE 类型从注册表按名称取。该调整属于同模型 full-attention 配套路径，不改变 GDN 的 Delta Rule 或其 TP/CP 限制。
 
 ## Evidence
 
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/tasks/models/transformer/qwen3_next_gated_deltanet_attention.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/transformer/qwen3_next_gated_deltanet_attention.py)（mcore `CustomQwen3NextGatedDeltaNetAttention`：`in_proj_qkvz/in_proj_ba` 维度、`fix_query_key_value_ordering`、`g = -A_log.exp()·softplus(a+dt_bias)`、`beta=b.sigmoid()`、`Qwen3NextRMSNormGated`、`torch_chunk_gated_delta_rule` / `torch_recurrent_gated_delta_rule` 参考实现、TP/CP>1 断言）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/tasks/models/transformer/chunk_gated_delta_rule.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/transformer/chunk_gated_delta_rule.py)（Triton 后端：`ChunkGatedDeltaRuleFunction` fwd/bwd、`chunk_gated_delta_rule_fwd` 六段算子链、`chunk_gated_delta_rule_bwd` 反向链、bf16-only 校验）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/tasks/models/transformer/flash_gated_delta_rule.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/transformer/flash_gated_delta_rule.py)（Flash AscendC 后端：`torch.ops.npu.npu_*` 融合算子、`prepare_chunk_indices`、head-first transpose、`fla_npu` 缺失报错）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/fsdp2/distributed/context_parallel/gdn_context_parallel.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/fsdp2/distributed/context_parallel/gdn_context_parallel.py)（`gdn_forward_with_cp`、`tensor_a2a_cp2hp/hp2cp`、`_undo/_redo_attention_load_balancing`、`get_parameter_local_cp`、TND `actual_seq_len`）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/fsdp2/models/qwen3_next/modeling_qwen3_next.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/fsdp2/models/qwen3_next/modeling_qwen3_next.py)（FSDP2 `Qwen3NextGatedDeltaNet`：`use_flash_gdn → flash` / `use_triton_gdn → triton` / 缺省 torch 的后端选择、`gdn_chunk_size`、`fused_recurrent_gated_delta_rule` 优先）、[`fsdp2/distributed/context_parallel/context_parallel_mappings.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/fsdp2/distributed/context_parallel/context_parallel_mappings.py)（`qwen3_next_gdn` 模板注册 GDN→`gdn_forward_with_cp` + full-attn→CP attention）、[`fsdp2/utils/arguments.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/fsdp2/utils/arguments.py)（`use_flash_gdn`/`use_triton_gdn` 互斥、`gdn_chunk_size` 默认 64）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`examples/mcore/gated_deltanet/README.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/examples/mcore/gated_deltanet/README.md) + [`pretrain_gated_deltanet_1.3B_4K_A3_ptd.sh`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/examples/mcore/gated_deltanet/pretrain_gated_deltanet_1.3B_4K_A3_ptd.sh)（混合比 `full-attention-interval`、340M/1.3B 规格、`mamba-chunk-size`/`mamba-d-conv`/linear head dims、`use-triton-gdn`、FLAME 逐张量对齐 + 下游精度表）、[`mindspeed_llm/features_manager/transformer/qwen3_next_attention/qwen3_next_feature.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/transformer/qwen3_next_attention/qwen3_next_feature.py)（`Qwen3NextFeature` 注册 `--full-attention-interval` / `--linear-*` / `--use-triton-gdn`）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md)（primary）
+- [qwen3_next_gated_deltanet_attention.py](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/models/transformer/qwen3_next_gated_deltanet_attention.py)（supporting）
+- [modeling_qwen3_next.py](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/fsdp2/models/qwen3_next/modeling_qwen3_next.py)（implementation）
 
 ## Links
 

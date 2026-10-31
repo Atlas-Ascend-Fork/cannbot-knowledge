@@ -8,12 +8,12 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/act/infer_with_om/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/act/infer_with_om/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a2
 - 310p
@@ -70,4 +70,4 @@ OM 输出 action 需配 `policy_preprocessor` / `policy_postprocessor` 做归一
 - ACT 模型：[act](../manipulation/act.md)
 - 同类动作块结构：[flow-matching-action-expert](flow_matching_action_expert.md)
 - 离线部署：[om-atc-offline](../techniques/om_atc_offline.md)、[ascend-310p](../platforms/ascend_310p.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

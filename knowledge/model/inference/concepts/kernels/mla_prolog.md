@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: npu_mla_prolog (v2 / v3)
-description: '`npu_mla_prolog` 是 DeepSeek-V3/R1/Kimi-K2 的 MLA 前置融合算子，在单个 kernel 中完成 Q、KV 两级投影、RMSNorm、RoPE，并按 cache_index 写入 Paged NZ KV Cache，以减少 Decode 下发和 kernel gap。R1 Decode 使用 v3 接口，支持权重、KV Cache 和 Query 量化模式，并与 FIA v2 配合。DeepSeek-V4 虽改为 MQA/Shared-KV，仍以 PyPTO 版本完成 Q/KV 前置投影，加入 interleaved Partial RoPE、动态 shape 静态展开、buffer 合图、split-K 和 MPMD 流水。独立的 AscendC RoPE+Quant 算子尚未证实接入生产路径，v2/v3 的完整语义差异也仍待确认。'
+description: R1 packed MLAProlog v3 与量化模式、当前 V4 Partial RoPE/HiF8 helper、A3 PyPTO 和 CP/Decode 分派边界。
 tags:
 - task.implementation
 - topic.attention
@@ -9,12 +9,18 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/common_modules.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_pypto_operator_guide.md
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 - '950'
@@ -64,7 +70,7 @@ q_nope, q_pe, dequant_scale_q_nope, _, _ = torch.ops.npu.npu_mla_prolog_v3(
  rmsnorm_gamma_cq=self.q_a_layernorm.weight,
  rmsnorm_gamma_ckv=self.kv_a_layernorm.weight,
  rope_sin=sin.squeeze(1), rope_cos=cos.squeeze(1),
- cache_index=cache_index,
+ cache_index=slot_mapping,
  kv_cache=nope_cache, kr_cache=rope_cache,
  dequant_scale_x=pertoken_scale if enable_mm_quant_a8w8 else None,
  dequant_scale_w_dq=self.q_a_proj.weight_scale.view(1, -1) if enable_mm_quant_a8w8 else None,
@@ -106,7 +112,7 @@ q_nope, q_pe, dequant_scale_q_nope, _, _ = torch.ops.npu.npu_mla_prolog_v3(
 
 - **Decode TPOT**：是 W8A8C8 + MTP1 decode 42~45 ms TPOT 的核心组成。
 - **Host 下发**：eager 下多算子分别下发、MLA 前置阶段 host 占用高；`mla_prolog` 单 kernel 替代后 host 压力显著下降。
-- **量化耦合**：Q-side dynamic quant 与 weight dequant 被内嵌，不再需要独立的 `npu_dynamic_quant` 调用。
+- **量化耦合**：内部 Query 动态量化与权重解量化可融合；输入 hidden_states 的激活量化仍在算子外。R1 A8W8 分支先调用 npu_dynamic_quant(packed hidden_states) 生成 hidden_states_int8 与 pertoken_scale，再将后者作为 dequant_scale_x 传入 npu_mla_prolog_v3，不能省略这次调用。
 
 ## Optimization Notes
 
@@ -126,9 +132,9 @@ PyPTO 版 MLAProlog 的计算过程：
 - **Query**：两次采样 + RmsNorm（第二次 RmsNorm 对应代码 `q_b_norm`，其 weight 恒为 1；代码符号对应、weight 恒 1 未逐权重核验），最后对 `-1` 轴的后 `rope_dim` 维度做 inplace interleaved RoPE：$c^Q = RmsNorm(x@wq\_a)$；$q = RmsNorm(c^Q@wq\_b)$；$q[\cdots,-rope\_dim:] = ROPE(q[\cdots,-rope\_dim:])$。
 - **KV**：一次采样 + RmsNorm，再对后 `rope_dim` 维度做 inplace interleaved RoPE：$k = RmsNorm(x@wkv)$；$k[\cdots,-rope\_dim:] = ROPE(k[\cdots,-rope\_dim:])$。
 
-代码侧 RoPE 由 `torch.ops.custom.inplace_partial_rotary_mul(..., rotary_mode="interleave", partial_slice=self.partial_slice)` 完成（`models/deepseek-v4/models/modeling_deepseek.py` 的 `mla_prolog_prefill`/`mla_prolog_decode` 路径，`partial_slice = [head_dim - rope_head_dim, head_dim]`）；PyPTO 整图路径走 `mla_prolog_pypto`（非量化）/ `mla_prolog_quant_pypto`（量化，多带 `wq_b_scale`）入口（`ops.pypto_python.impl.*`，由 `mla_prolog` 在 `enable_pypto` 时分派）。
+当前非量化 V4 路径使用 cann_ops_transformer.inplace_partial_rotary_mul，仅作用于尾部 rope_head_dim；HiF8 的 partial_rotary_mul_quant 是 Python helper，先调用该 RoPE 再 npu_quantize，并非直接调用旧 custom.partial_rotary_mul_quant 融合注册符号。不能继续以早期未接入 `_quant` 算子的结论解释当前 HiF8 路径。
 
-> 仓内另发布了独立 AscendC 算子，注册符号为 `partial_rotary_mul_quant`（`torch.ops.custom.partial_rotary_mul_quant`，Python wrapper `npu_partial_rotary_mul_quant`；融合 RoPE + 量化）。该算子新增于 commit `8ced1a7`——注意其 commit 消息标题虽写作 "inplace_partial_rotary_mul_quant"，但**实际注册符号为 `partial_rotary_mul_quant`（无 `inplace_` 前缀）**，源码目录亦为 `src/partial_rotary_mul_quant/`。**V4 模型代码中 MLAProlog 各路径调用的是 `inplace_partial_rotary_mul`（无 `_quant`），未见调用 `partial_rotary_mul_quant`**，故此处不声称该融合 RoPE+Quant 算子已接入 MLAProlog 生产路径（**源/代码未明示其在 MLAProlog 的使用，待验证**）。
+当前 MLAProlog 按 enable_pypto、Prefill/Decode 分派。V4 enable_pypto 只允许A3；950使用其当前投影/量化路径。Prefill CP1 的 FP8/MXFP8 激活可提前量化，在 wq_a 和 wkv 间复用；CP 下包含前序窗口交换。Decode 的 Q/KV/Compressor/LI 用 native 事件建立依赖，量化与控核必须按所选模式核对。
 
 ### Unrollist 动态转静态 + 合图
 
@@ -139,9 +145,11 @@ PyPTO 版 MLAProlog 的计算过程：
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_decode_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md) "MLA 低秩压缩优化 → 使能融合算子"章节；[官方文档 torch_npu.npu_mla_prolog_v2](https://www.hiascend.com/document/detail/zh/Pytorch/710/apiref/torchnpuCustomsapi/context/torch_npu-npu_mla_prolog_v2.md)；`models/deepseek_r1/models/modeling_deepseek.py:L1186-L1304`。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md) `## MlaProlog`（inplace interleaved RoPE 公式、Unrollist 分档、合图/MatMul/MPMD 优化）。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py#L801`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py#L801)（代码核对：`mla_prolog_pypto`/`mla_prolog_quant_pypto` 入口、`inplace_partial_rotary_mul` `rotary_mode="interleave"` + `partial_slice`、`mla_prolog` 按 `enable_pypto` 分派 prefill/decode/pypto 三路）。AscendC 融合 RoPE+Quant 算子（注册符号 `partial_rotary_mul_quant` / `torch.ops.custom` / Python `npu_partial_rotary_mul_quant`，源码 `ops/ascendc/.../src/partial_rotary_mul_quant/`）见 commit `8ced1a7`（commit 标题作 "inplace_partial_rotary_mul_quant" 但注册符号无 `inplace_` 前缀；diff 2f82d10..2c45117，未见接入 MLAProlog 生产路径）。
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py)（primary）
+- [deepseek_r1_decode_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
+- [common_modules.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/common_modules.py)（implementation）
+- [deepseek_v4_pypto_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_pypto_operator_guide.md)（implementation）
 
 ## Links
 
@@ -153,5 +161,5 @@ PyPTO 版 MLAProlog 的计算过程：
 - [ascendc](../frameworks/ascendc.md)
 - [pypto](../frameworks/pypto.md)（V4 MLAProlog 走 PyPTO 算子实现）
 - [sparse-attn-sharedkv](sparse_attn_sharedkv.md)（V4 SAS 的 Q 输入由 MLAProlog 前置投影产出）
-- [longcat-flash-lite](../models/longcat_flash_lite.md)（LongCat-Flash 减配验证模型，Decode 用 `npu_mla_prolog_v3` 融合 Q-/KV-LoRA + RMSNorm + RoPE + cache 写入，`enable_mla_prolog` 可关）
+- [longcat-flash-lite](../models/longcat_flash_lite.md)（LongCat-Flash 减配验证模型，Decode 用 `npu_mla_prolog_v3` 融合 Q-/KV-LoRA + RMSNorm + RoPE + cache 写入，`当前 Decode 固定使用该 Prolog 路径）
 - [tilelang-rope](../../../training/concepts/kernels/tilelang_rope.md)（跨域·训练：RoPE 的 TileLang 训练实现（含反向））

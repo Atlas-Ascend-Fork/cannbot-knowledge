@@ -9,12 +9,18 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/configuration_deepseek.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-21T10:02:02Z'
+updated_at: '2026-10-29T15:02:18Z'
 platforms:
 - a3
 ---
@@ -43,15 +49,15 @@ DeepSeek-V3.2-Exp 在V3.1谱系的MLA/MoE主干上增加Lightning Indexer，以T
 
 ### DSA 计算流
 
-DSA 可分为 5 个阶段：
+DSA 可分为 5 个阶段。图中的 Hadamard 与动态量化只在 kv_cache_quant_mode == "int8" 分支执行；非量化路径不经过这两步，不能把量化部署步骤当作所有 DSA 配置的必经结构：
 
-![DSA 融合范围](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/kernel_scope.jpg)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/kernel_scope.jpg`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/kernel_scope.jpg)（cann-recipes-infer @ 2f82d10）*
+![DSA 融合范围](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/kernel_scope.jpg)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/kernel_scope.jpg`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/kernel_scope.jpg)（cann-recipes-infer @ 944d2d3）*
 
 ```mermaid
 flowchart LR
  In[Hidden] --> MLAP[MLAProlog<br/>Q/KV LoRA + RoPE + Norm<br/>MLA KVCache 写入]
- In --> IP[IndexerProlog<br/>Indexer Q/K proj<br/>Hadamard + 动态量化<br/>Indexer KCache 写入]
+ In --> IP[IndexerProlog<br/>Indexer Q/K proj<br/>仅 Int8/C8: Hadamard + 动态量化<br/>Indexer KCache 写入]
  IP --> LI[Lightning Indexer<br/>BatchMatmul Q@K^T + ReLU<br/>× W (GQA-sum) + Top-K 2048]
  LI --> SFA[Sparse Flash Attention<br/>Gather TopK KV + FA]
  MLAP --> SFA
@@ -66,9 +72,7 @@ flowchart LR
 
 ## 架构图（stock HF 基线）
 
-这是 DeepSeek-V3.2-Exp 的 **stock HF 架构**（部署前基线，源自 HF `config.json` + 自带 `inference/model.py` 核实），刻画 ×61 层 block 级前向拓扑与原始模型规格，与本页其余面向 NPU 部署的优化（DSA 融合算子、CP/EP 并行、量化、Offload 等）互补——前者是模型先验，后者是 cann-recipes-infer 在 [atlas-a3](../platforms/atlas_a3.md) 上的部署改造。模型主体即 [mla](../modules/mla.md) + [lightning-indexer](../modules/lightning_indexer.md) 构成的 DSA 注意力（详见上文「DSA 计算流」）。
-
-> 溯源：`deepseek-ai/DeepSeek-V3.2-Exp/config.json`（verified 2026-05-15，`architectures=["DeepseekV32ForCausalLM"]`、`model_type=deepseek_v32`）+ `deepseek-ai/DeepSeek-V3.2-Exp/inference/model.py`（verified 2026-05-15，自带定制推理代码，无标准 HF `modeling_*.py`）。
+当前配置类默认61层、hidden7168、128注意力头，前3层Dense、其余满足MoE条件的层用专家FFN；Indexer默认64头、head_dim128、TopK2048。实际权重config可覆盖默认值，部署须读取checkpoint。下面只画block结构，不把原始上游推理代码与当前NPU实现混为同一制品。
 
 ```mermaid
 flowchart TD
@@ -92,9 +96,9 @@ flowchart TD
     head --> logits([logits])
 ```
 
-注意力模块标注为 **DSA Attn**：在自带 `inference/model.py` 中 indexer 作为 `self.indexer` 实例化于 `MLA` 类内、由 `MLA.forward` 调用，indexer 输出的 TopK index 转为 pre-softmax 加性 mask（`scatter(−inf, topk_indices, 0)` 加到 raw attention score 上）。位置 5 的 FFN 按层号交替：第 1–3 层为 dense FFN、第 4–61 层为 MoE FFN（`first_k_dense_replace=3`）。
+当前NPU路径在MLA前处理之外计算Indexer Q/K/weight，LI选择TopK，SFA读取被选KV；非量化与C8的Hadamard/scale及实际算子分派分别核对。
 
-### 关键参数（stock HF config）
+### 关键参数（实际部署以权重config为准）
 
 | 模块 | 参数 | 值 |
 | ---- | ---- | ---- |
@@ -118,21 +122,27 @@ flowchart TD
 | RoPE | yarn factor | 40（`original_max_pos=4096`） |
 | — | max_position_embeddings | 163840 |
 
-> stock HF 的 `inference/model.py` 仅有单个输出 head，`config.json` 的 `num_nextn_predict_layers=1` 在该自带推理代码中**未落地**（无 MTP/NextNPredictor 类）；而本页上文记录的 `next_n: 3`（MTP3）是 cann-recipes-infer 的 NPU 部署在自研 executor 框架下另行实现的推测解码，二者描述不同制品（stock HF 推理 vs. NPU 部署），互补而非冲突。MoE 规格（256+1、top-8、`moe_intermediate=2048`、`noaux_tc`）与 DeepSeek-V3 完全一致，区别仅在注意力身份由 `mla` 变为 `dsa`（MLA + lightning indexer），见 [deepseek-r1](deepseek_r1.md) 的 V3 谱系与 [deepseek-v4](deepseek_v4.md) 的后继 DSA/MQA 演进。
+## 当前 Executor 与状态
+
+模型已迁到models/deepseek_v3_2_exp，使用统一InferenceConfig、CommManager和packed TND输入，不再走私有runner。CP按每请求ZigZag元数据切分，全局临时计算KV与按请求所有者持久KV分开；MLA latent、Indexer Key和INT8 scale均遵守此映射。缓存按CacheEntry绑定，offload设备workspace独立申报。
+
+模型支持eager/ge_graph/npugraph_ex；eager拒绝多流、SuperKernel或持久图缓存组合，npugraph_ex拒绝SuperKernel。KV仅unquant/int8，offload仅offline。PyPTO LI只在非INT8 Decode分派，PyPTO IndexerProlog则有独立INT8 Decode门控，两者不能混称。
+
+W8A8C8样例next_n=3，BF16样例为1，当前npugraph_ex量化样例为0；这不是模型结构定义的固定MTP宽度。接入采用统一draft_worker并核对实际预测层调用，性能来源中MTP3/perfect EPLB条件另行保留。
 
 ## 部署与证据入口
 
 - [模型部署与验收流程](../../guides/models/deepseek_v3_2_exp_deployment.md)：配置、开关、失效条件与回退入口。
 - [DeepSeek-V3.2-Exp A3 时延、吞吐与容量的来源观测](../../optimizations/benchmark_observations/deepseek_v32_a3_source_benchmark.md)：固定来源自报，未经本仓独立复测。
-- [量化精度观测草稿](../../optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy.md)：保留两组基线，未完成人工精度验收。
+- [量化精度观测草稿](../../optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy.md)：只保留当前表及其BF16标签，评测环境仍缺失。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md)（推理总览、并行、MTP、量化、多流、Offload、Benchmark、Future Plan）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md)（AscendC LI + SFA 融合算子）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md)（PyPTO Indexer Prolog / Deepseek Indexer Attention / Lightning Indexer）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（TileLang NPU 适配 + LI/SFA 实现）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v3.2-exp/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/README.md)、`config/*.yaml`（部署规格与环境）、`models/{modeling_deepseek,indexer,offload_cache,model_infer}.py`（调用入口）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（supporting）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
+- [configuration_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/configuration_deepseek.py)（implementation）
 
 ## Links
 
@@ -166,7 +176,7 @@ flowchart TD
 - [w4a8c8](../quantization/w4a8c8.md)
 - [deepseek-r1](deepseek_r1.md)
 - [deepseek-v4](deepseek_v4.md)（后继 DeepSeek-V4 —— DSA/LI 谱系延续，attention 主体由 MLA 改为 MQA/Shared-KV + 滑窗/压缩交错）
-- [glm-5](glm_5.md)（GLM-5 结构与本模型一致，cann-recipes 部署方案直接沿用 V3.2-Exp）
+- [glm-5](glm_5.md)（DSA同族，实际模型与配置分别核对）
 - [hixl](../techniques/hixl.md)（长序列 KVCache 卸载 DRAM 后 NPU↔DRAM 高性能传输经 HIXL 单边零拷贝）
 - [multi-stream](../techniques/multi_stream.md)（共享专家双流 / Indexer 前处理多流 / KVCache 异步流的方法论总纲）
 - [deepseek-v32-pretrain](../../../training/guides/recipes/deepseek_v32_pretrain.md)（跨域：训练侧 DeepSeek-V3.2 TorchTitan 32K 长序列预训练 —— DSA 反向 SLIG/SFAG、自定义 CP for DSA、FSDP2 极致显存部署）

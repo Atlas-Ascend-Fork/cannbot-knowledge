@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/284
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:43:19Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -63,7 +63,6 @@ TP+DP 离线推理、`attn_dp_size > 1`、输入非打包（`packed_sequence=Fal
 
 ## Evidence
 
-- `diff 事实`（@2c45117）：`check_parallel_settings` 强制 `batch_size % attn_dp_size==0`、该入口内 `attn_tp>1` 与 `oproj_tp>1` 的互斥校验，不适用于采用其他模型校验器的所有路径。
-- `diff 事实`（@628e400）：`executor/infer.py` 双整除约束、TND 免除。
-- `diff 事实`（@8cd85a8）：DLLM scheduler 守护 `page_size` 回落到 `block_size`。
-- 溯源下探：[cann-recipes-infer-issue-54-bug-report-deepseek-v3-2-exp-w8a8c8-8p-16](https://gitcode.com/cann/cann-recipes-infer/issues/54)、[cann-recipes-infer-pr-300-refactor-support-tp-dp-inference-for-qwen3-moe-with-offline-mode](https://gitcode.com/cann/cann-recipes-infer/merge_requests/300)、[cann-recipes-infer-pr-284-feat-llada2-x-sglang-ascend](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/54)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/300)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)（evidence）

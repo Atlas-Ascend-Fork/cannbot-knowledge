@@ -9,12 +9,16 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/locomotion/LQC/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/locomotion/LQC/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/locomotion/LQC/lltk/utils/velocity_tracking/player.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/locomotion/LQC/lltk/utils/velocity_tracking/arguments.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:37Z'
 platforms:
 - a2
 ---
@@ -27,7 +31,7 @@ platforms:
 
 ### 对称化机制（State Distribution Symmetrization）
 
-IROS 工作的核心算法贡献是**状态分布对称化**——利用四足 / 人形机器人左右腿的镜像对称性，让策略学到对称步态。工程实现见 `lltk/utils/velocity_tracking/symmetry.py` 的 `SymmetryDef`：按对称索引对观测与动作向量做镜像重排。它以 `ex_pair`（偶对称，镜像后不变号）/ `nx_pair`（奇对称，镜像后取负，如左右横向速度）/ `cm_idx`（公共自对称分量）/ `ng_idx`（自对称取负分量）构造 `dst`（目标重排索引）与 `neg`（需取负索引）两个索引张量；对 `torch.Tensor` 即 `x[..., dst]` 取镜像再对 `neg` 维乘 `-1`。`symmetry_wrapper` 据此把策略包成 `SymmetricActor`（对称网络架构）或 `MirroredActor`（镜像世界），`ppo.yml` 的 `distribution` 配置项控制其启用。这是 LQC 能学到对称步态的承重机制。
+IROS 工作的核心算法贡献是**状态分布对称化**——利用四足 / 人形机器人左右腿的镜像对称性，让策略学到对称步态。工程实现见 `lltk/utils/velocity_tracking/symmetry.py` 的 `SymmetryDef`：按对称索引对观测与动作向量做镜像重排。它以 `ex_pair`（偶对称，镜像后不变号）/ `nx_pair`（奇对称，镜像后取负，如左右横向速度）/ `cm_idx`（公共自对称分量）/ `ng_idx`（自对称取负分量）构造 `dst`（目标重排索引）与 `neg`（需取负索引）两个索引张量；对 `torch.Tensor` 即 `x[..., dst]` 取镜像再对 `neg` 维乘 `-1`。`symmetry_wrapper` 据此把策略包成 `SymmetricActor`（对称网络架构）或 `MirroredActor`（镜像世界），启用入口是 `--symmetry`：player 根据 args.symmetry 调用 symmetry_wrapper。`ppo.yml` 的 distribution 仅配置动作分布（如 init_std），不控制对称包装的启用。这是 LQC 能学到对称步态的承重机制。
 
 ## 整体形态
 
@@ -80,13 +84,18 @@ flowchart LR
 仓内提供训练好的 G1 15DOF Rough 权重供快速验证（解压到 `/logs/g1_15dof.rough`）。
 
 <p align="left">
-  <img src="https://raw.gitcode.com/cann/cann-recipes-embodied-ai/raw/aed7a4788dfe94f6b90084f16ce493f9969471b1/locomotion/LQC/doc/images/MuJoCo_G1_demo.png" width="55%" />
+  <img src="https://raw.gitcode.com/cann/cann-recipes-embodied-ai/raw/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/locomotion/LQC/doc/images/MuJoCo_G1_demo.png" width="55%" />
 </p>
-<sub>宇树 G1 在 MuJoCo 中的运动仿真演示（含机器人运动、感知、地形环境）。来源：<a href="https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/locomotion/LQC/doc/images/MuJoCo_G1_demo.png">locomotion/LQC/doc/images/MuJoCo_G1_demo.png</a></sub>
+<sub>宇树 G1 在 MuJoCo 中的运动仿真演示（含机器人运动、感知、地形环境）。来源：<a href="https://gitcode.com/cann/cann-recipes-embodied-ai/blob/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/locomotion/LQC/doc/images/MuJoCo_G1_demo.png">locomotion/LQC/doc/images/MuJoCo_G1_demo.png</a></sub>
 
 ## Links
 
 - 同域运动控制模型：[nmr](nmr.md)（人形 G1 动作重定向）
 - 同域 DDP 优化：[ddp-static-graph](../techniques/ddp_static_graph.md)
 - 同域智驾 VLA：[alpamayo-r1](../navigation/alpamayo_r1.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)
+
+
+## 当前样例资产位置
+
+README 的预构建 ARM 镜像路径为 `cann-recipes-embodied-ai/lqc-image/lqc-image.tar`，物理模型资源路径为 `cann-recipes-embodied-ai/resources/resources.tar`（同一 OBS 下载根）。下载后分别按导入镜像与解压到 resources 的流程准备，不能继续沿用旧目录拼接地址。

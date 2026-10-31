@@ -8,12 +8,12 @@ tags:
 - topic.model_adaptation
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/README.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/layerwise_disaggregated_training.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/training_mode/layerwise_disaggregated_training.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - agnostic
 ---
@@ -61,7 +61,7 @@ flowchart LR
 
 U 形下边侧第一级流水比常规 PP（只做 FS、BE）多担两类任务（FE、BS），直接编排会冲突。编排分两步：先把第一级流水拆成「处理首层」「处理尾层」两级逻辑流水，各自照常规 1F1B 排；再把两级合并，任务队列冲突处按 **FS-FE-BS-BE** 顺序重排执行。重排的收益是**增大可容忍的边云通信时延**：让某个样本的前向跨域通信，被两三个样本之后的前向计算时间掩盖，从而在「拉远收敛」（边云物理距离大、链路时延高）场景下减小算效损失。
 
-边侧的逐阶段编排（云侧照常规 PP 中间层编排）：
+下面保留 MindSpeed-MM 文档的边侧编排示意（PP+1 warmup）；不能直接作为 MindSpeed-LLM 固定实现的次数表：
 
 | 阶段 | 操作 | 次数 | PP=3, mbn=4 例 |
 | --- | --- | --- | --- |
@@ -69,6 +69,8 @@ U 形下边侧第一级流水比常规 PP（只做 FS、BE）多担两类任务�
 | steady state 1 | FEBS | `num_forward_end_backward_start` | 2 |
 | steady state 2 | FS-FE-BS-BE | `mbn − num_forward_end_backward_start` | 2 |
 | cooldown | BE | `num_forward_end_backward_start` | 2 |
+
+MindSpeed-LLM 的 schedules.py 实际设置 `num_warmup_microbatches=min(PP-pp_rank, num_microbatches)`，边侧 rank0、PP=3、mbn=4 时 warmup 是 **3 次**，不是示意表中的4次；其后 FS 还受剩余 microbatch 数约束。MM 文档示意与 LLM 实现应分别使用。
 
 其中 FEBS 与 cooldown 的次数由 `num_forward_end_backward_start = int((4·PP + 1) / 6)` 给定（PP=3 时为 2），稳态主体 FS-FE-BS-BE 跑 `mbn − num_forward_end_backward_start` 次（边侧 `num_2f2b = num_microbatches − num_forward_end_backward_start`）。这套编排保证**稳态阶段不引入额外空泡**——当边云通信时延小于 `tf`（边侧单 microbatch 首层前向计算时间）时，稳态零额外气泡，仅 warmup/cooldown 有少量。
 
@@ -84,7 +86,9 @@ U 形下边侧第一级流水比常规 PP（只做 FS、BE）多担两类任务�
 
 ## 权重转换与使能
 
-U 形要求把首尾两层合到同一张卡，权重转换分两步。先按 **PP+1** 转换（多出来的一级流水临时存放尾层），如 PP=3 实际按 `--target-pipeline-parallel-size 4` + `--num-layer-list 1,31,31,1` 转；再用 `convert_ckpt_pp_vpp.py merge` 把首尾层 PP stage 合并成 VPP 格式并恢复 PP=3，`--merge-stages 0,PP` 指首尾两 stage、`--middle-stages 1..PP-1` 指中间层，输出边/云两份权重（`--save-dir-edge` / `--save-dir-cloud`）。非对称 TP 场景下边/云各按自己的 TP size 单独转换后再 merge（`--load-dir-edge` / `--load-dir-cloud`）。
+**MindSpeed-LLM 转换链路**：U 形要求把首尾两层合到同一张卡，该套件的权重转换分两步。先按 **PP+1** 转换（多出来的一级流水临时存放尾层），如 PP=3 实际按 `--target-pipeline-parallel-size 4` + `--num-layer-list 1,31,31,1` 转；再用 `convert_ckpt_pp_vpp.py merge` 把首尾层 PP stage 合并成 VPP 格式并恢复 PP=3，`--merge-stages 0,PP` 指首尾两 stage、`--middle-stages 1..PP-1` 指中间层，输出边/云两份权重（`--save-dir-edge` / `--save-dir-cloud`）。非对称 TP 场景下边/云各按自己的 TP size 单独转换后再 merge（`--load-dir-edge` / `--load-dir-cloud`）。
+
+**MindSpeed-MM 转换链路**：使用 `mm-convert Qwen2_5_VLConverter hf_to_mm_ldt`，通过 `cfg.parallel_config.llm_pp_layers` 与 `vit_pp_layers` 按实际 PP 分别配置层分布，边侧/云侧各指定自己的 tp_size、HF 输入目录和 mm_dir 输出目录，直接生成两份权重；不套用 LLM 的 PP+1→merge 工具链。
 
 使能开关在两套件不同：
 
@@ -107,14 +111,8 @@ U 形要求把首尾两层合到同一张卡，权重转换分两步。先按 **
 
 ## Evidence
 
-- [mindspeed-mm](https://gitcode.com/Ascend/MindSpeed-MM) — [`docs/zh/features/layerwise_disaggregated_training.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/layerwise_disaggregated_training.md)（边云协同动机 / U 形原理与单样本前后向折返 / FS·FE·BS·BE 四步 / 流水编排表 warmup·steady1·steady2·cooldown / 非对称 TP rank0 转发+broadcast / 非对称 DP 时分复用与 rank 组生成 / Qwen2.5-VL-32B 使能与 `pipeline_num_layers` / 约束）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/training/finetune/mcore/layerwise_disaggregated_training.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/training/finetune/mcore/layerwise_disaggregated_training.md)（Qwen3-32B 四种模式：对称 / 非对称 TP / 非对称 DP / 双非对称；`--num-layer-list 1,31,31,1`、PP+1 转换、`convert_ckpt_pp_vpp.py merge --merge-stages/--middle-stages`、`--num-virtual-stages-per-pipeline-rank 2`、WORLD_SIZE 注意）
-- [`mindspeed_llm/core/layerwise_disaggregated_training/schedules.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/layerwise_disaggregated_training/schedules.py) — `get_forward_backward_func`（LDT 走 without-interleaving）、`forward_step`（`should_compute_loss = is_pipeline_first_stage() and is_end_stage`）、`get_all_batches` / `_split_item`（VDP round-robin 切分）、`num_forward_end_backward_start = int((4·PP+1)/6)`、warmup/FEBS/2F2B/cooldown 循环、`stream_ping`/`stream_pang`/`stream_last_to_first`/`stream_first_to_last` 多通信流
-- [`mindspeed_llm/core/layerwise_disaggregated_training/num_layer_list.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/layerwise_disaggregated_training/num_layer_list.py) — `get_num_layers_to_build`：LDT 下按 `num_layer_list[pp_stage][vpp_rank]` 双重索引取层数
-- [`mindspeed_llm/core/layerwise_disaggregated_training/p2p_communication.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/layerwise_disaggregated_training/p2p_communication.py) — `_vtp_send_forward`/`_vtp_recv_forward`/`_vtp_send_backward`/`_vtp_recv_backward`（`is_vtp_stage_rank0` 跨 stage irecv + `_VTPRecvWork` 延迟 broadcast）
-- [`mindspeed_llm/features_manager/layerwise_disaggregated_training/`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/layerwise_disaggregated_training/u_shaped_split_feature.py) — `u_shaped_split_feature.py`（`--layerwise-disaggregated-training` 注册 + 十余处 patch：调度/`initialize_model_parallel`/p2p `_communicate`·收发/`get_model`/`train_step`/`initialize_megatron`/`_get_block_submodules`/重计算等）、`vtp_feature.py`（world_size 膨胀/复原、`all_gather_into_tensor` patch）、`vdp_feature.py`（`finish_grad_sync`/`register_grad_ready`/`create_group`/`get_grad_norm_fp32` patch）
-- [`mindspeed_mm/patchs/patch_manager.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/patchs/patch_manager.py) — `layerwise_disaggregated_training` 配置项（`create_group` / `get_forward_backward_func` / `forward_backward_pipelining_without_interleaving` / `setup_model_and_optimizer` / 梯度同步 / VTP·VDP utils 批量 patch）、`apply_patches_from_config` 按 `model.json` 的 `patch` 段生效
-- [`mindspeed_mm/patchs/layerwise_disaggregated_training/`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/patchs/layerwise_disaggregated_training/u_shaped_split_learning_patch.py) — `u_shaped_split_learning_patch.py`（边侧数据加载 `build_train_valid_test_datasets_provider`，`is_pipeline_first_stage` 才读样本）、`schedules_patch.py`（VLM 版 U 形调度，`num_forward_end_backward_start` + vit 前后向掩盖编排）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md)（primary）
+- [layerwise_disaggregated_training.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/training_mode/layerwise_disaggregated_training.md)（supporting）
 
 ## Links
 

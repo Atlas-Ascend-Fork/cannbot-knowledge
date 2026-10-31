@@ -1,19 +1,21 @@
 ---
 type: Concept
 title: 优化器显存优化（Reuse-FP32-Param / 低精度优化器 / LayerZeRO）
-description: MindSpeed 三条正交的优化器显存压缩路线。Reuse-FP32-Param：BF16 混合精度下 FP32 master 与 BF16 工作权重数值一一对应（FP32=BF16高16位+Residual低16位），用 reuse_data_ptr 把 FP32 那 4 字节 storage 同时重解释为 BF16/INT32 视图，前向前 view().transpose() 重排分离出 BF16 工作权重、更新前重新交错精确恢复 FP32，魔法常量 TRANSPOSE_BF16_BIT=0x8000 在 INT32 视图加减实现 IEEE-754 向偶数舍入；省 sizeof(bf16)×参数量/DP，性能损耗<1%，依赖 bf16、与 enable_zero3 互斥。低精度优化器：动量量化到 FP8(E4M3,max448)/HiF8/MXFP8(块量化 block_size=32)、梯度量化到 FP16，QuantAdamW/ScaleMeta 更新时先反量化回 FP32 再算再 requantize，量化仅用于存储；与 swap-optimizer、梯度累加融合互斥，兼容 reuse-fp32-param。LayerZeRO：ZeRO1 域(全DP)存优化器状态、ZeRO3 域(DP子集/机内,zero3_size)运行时 all-gather 重建参数视图用后销毁，hook 驱动梯度/参数双向同步，LayerZeRO3 替换 MegatronModule 封装；多模态 OpenSoraPlan1.3 下 CP=8+LayerZeRO 对比 TP=8+ZeRO1 显存持平、端到端+9.7%。关键术语：master weight、Residual、round-to-nearest-even、quant_states、dequantization、ZeRO1/ZeRO3 通信域、ModuleWrapPolicy。
+description: MindSpeed 三条正交的优化器显存压缩路线。Reuse-FP32-Param：BF16 混合精度下 FP32 master 与 BF16 工作权重数值一一对应（FP32=BF16高16位+Residual低16位），用 reuse_data_ptr 把 FP32 那 4 字节 storage 同时重解释为 BF16/INT32 视图，前向前 view().transpose() 重排分离出 BF16 工作权重、更新前重新交错精确恢复 FP32，魔法常量 TRANSPOSE_BF16_BIT=0x8000 在 INT32 视图加减配合重排，普通分支不处理向偶数舍入的中点，deterministic 分支另行修正；省 sizeof(bf16)×参数量/DP，性能损耗<1%，依赖 bf16、与 enable_zero3 互斥。低精度优化器：动量量化到 FP8(一阶E4M3/二阶E5M2)/HiF8/MXFP8(块量化 block_size=32)、梯度量化到 FP16，QuantAdamW/ScaleMeta 更新时先反量化回 FP32 再算再 requantize，量化仅用于存储；与 swap-optimizer、梯度累加融合互斥，兼容 reuse-fp32-param。LayerZeRO：ZeRO1 域(全DP)存优化器状态、ZeRO3 域(DP子集/机内,zero3_size)运行时 all-gather 重建参数视图用后销毁，hook 驱动梯度/参数双向同步，LayerZeRO3 替换 MegatronModule 封装；多模态 OpenSoraPlan1.3 下 CP=8+LayerZeRO 对比 TP=8+ZeRO1 显存持平、端到端+9.7%。关键术语：master weight、Residual、round-to-nearest-even、quant_states、dequantization、ZeRO1/ZeRO3 通信域、ModuleWrapPolicy。
 tags:
 - task.optimization
 - topic.precision
 - topic.optimizer
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/reuse-fp32-param.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/reuse-fp32-param.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/optimizer/swap_optimizer_feature.py
+  role: implementation
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
 - agnostic
 ---
@@ -37,15 +39,15 @@ FP32 = BF16(高16位) + Residual(低16位)
 - **前向前** `fp32_tensors_to_bf16_tensors`：把交错排布的 `0p0p0p0p` 重排成 `bf16(pppp) + res(0000)`——通过 `view(-1, 2).transpose(1, 0).reshape` 把高半字（BF16）与低半字（残差）分离，让 BF16 工作权重连续可用。
 - **优化器更新前** `bf16_tensors_to_fp32_tensors`：逆向重排 `view(2, -1).transpose` 把 BF16 与残差重新交错，**精确恢复**原 FP32 master 后再更新。
 
-关键的舍入正确性靠一个魔法常量 `TRANSPOSE_BF16_BIT = 32768`（即 `0x8000`）：在 INT32 视图上 `add_(0x8000)` / `sub_(0x8000)` 等价于在截断成 BF16 时做 IEEE-754 向偶数舍入（round-to-nearest-even），保证转换不引入额外误差。`*_deterministic` 变体进一步用 `odd_even_tensor = ((int32_tensor & 131071) == TRANSPOSE_BF16_BIT)` 把被舍入丢弃的进位位编码进优化器 `exp_avg_sq` 的符号位（`optimizer_exp_avg_save_sign` 存、更新前 `optimizer_exp_avg_load_sign` 取回；二阶动量恒非负，符号位空闲可借用），实现 BF16↔FP32 往返的**比特级可复现**。
+关键的舍入正确性靠一个魔法常量 `TRANSPOSE_BF16_BIT = 32768`（即 `0x8000`）：普通分支在 INT32 视图上 `add_(0x8000)` 后截取高半字，逆转换再减回该常量；它不单独处理舍入中点，因此不能称为 IEEE-754 向偶数舍入。例如位模式 `0x3f808000` 会得到 BF16 `0x3f81`，向偶数结果应为 `0x3f80`。`*_deterministic` 变体进一步用 `odd_even_tensor = ((int32_tensor & 131071) == TRANSPOSE_BF16_BIT)` 把被舍入丢弃的进位位编码进优化器 `exp_avg_sq` 的符号位（`optimizer_exp_avg_save_sign` 存、更新前 `optimizer_exp_avg_load_sign` 取回；二阶动量恒非负，符号位空闲可借用），实现 BF16↔FP32 往返的**比特级可复现**。
 
 **收益**：对 `Float16OptimizerWithFloat16Params` 整体省 `sizeof(bf16) × 模型参数量` 的静态显存；开启分布式优化器时 master 已按 DP 切分，省 `sizeof(bf16) × 参数量 / DP`。两种情形实测性能损耗均 < 1%。
 
-**约束**（`ReuseFP32Param.validate_args`）：依赖 `--bf16`，与 `enable_zero3` 互斥；legacy 模型下不能与 `--overlap-param-gather` 同开；不支持 `fused_ema_adamw` 优化器；断点续训不可改变切分方式与卡数。启用开关 `--reuse-fp32-param`。
+**约束**（`ReuseFP32Param.validate_args`）：依赖 `--bf16`，与 `enable_zero3`、MindSpeed `--swap-optimizer` 互斥；legacy 模型下不能与 `--overlap-param-gather` 同开；不支持 `fused_ema_adamw` 优化器；断点续训不可改变切分方式与卡数。启用开关 `--reuse-fp32-param`。
 
 ## 低精度优化器：动量 FP8 / 梯度 FP16
 
-Adam 类优化器全程用 FP32 保存参数副本、梯度和一二阶动量，静态内存占比很高。低精度优化器分别压缩这几类数据：动量量化到 **FP8（E4M3）/ HiF8 / MXFP8**，梯度量化到 **FP16**，并复用上面的 Reuse-FP32-Param 压参数副本。开关为 `--quant-states {fp8|hif8|mxfp8}`（动量）与 `--quant-grads`（梯度，dtype 固定 FP16）。
+Adam 类优化器全程用 FP32 保存参数副本、梯度和一二阶动量，静态内存占比很高。低精度优化器分别压缩这几类数据：动量量化到 **FP8 / HiF8 / MXFP8**（FP8 一阶动量用 E4M3、二阶用 E5M2；MXFP8 同样分别用块 E4M3 / E5M2），梯度量化到 **FP16**，并复用上面的 Reuse-FP32-Param 压参数副本。开关为 `--quant-states {fp8|hif8|mxfp8}`（动量）与 `--quant-grads`（梯度，dtype 固定 FP16）。
 
 量化-更新-反量化的核心在 `quant_adamw.AdamW` 与 `ScaleMeta`。`ScaleMeta` 按量化类型决定动态范围与缩放粒度：E4M3 的 `fp8_max = 448`、E5M2 为 `57344`、HiF8 另有取值；MXFP8 走**块量化**（默认 `block_size = 32`，per-block 一个 scale），用 `torch_npu.npu_dynamic_mx_quant` 生成块缩放因子并按 `scale = 2^(sf - 127)` 解码。更新时不直接用低精度算：每个 param 先把 `exp_avg` / `exp_avg_sq`（含 amsgrad 的 `max_exp_avg_sq`）**反量化回 FP32**（`_dequantize_tensor` → `dequantization`：先按 scale_inv 还原），喂给标准 Adam 更新，更新后再 `_requantize_tensor` 量化写回低精度槽位。即低精度只用于**存储**，计算仍在 FP32 完成以保精度。
 
@@ -90,24 +92,19 @@ flowchart TB
 
 | 路线 | 压缩对象 | 机制 | 关键互斥 |
 | --- | --- | --- | --- |
-| Reuse-FP32-Param | FP32 参数副本 | master 与 BF16 共享 storage（int32 舍入位重排） | 与 `enable_zero3` 互斥；不支持 fused_ema_adamw |
+| Reuse-FP32-Param | FP32 参数副本 | master 与 BF16 共享 storage（int32 舍入位重排） | 与 `enable_zero3`、MindSpeed swap 互斥；不支持 fused_ema_adamw |
 | 低精度优化器 | 动量 + 梯度 | 动量 FP8/HiF8/MXFP8、梯度 FP16，算时反量化 | 与 `--swap-optimizer` 互斥；quant_grads 与梯度累加融合互斥 |
 | LayerZeRO | 优化器状态 + 参数 | ZeRO1 存状态 + ZeRO3 重建参数的分层分片 | 替换 MegatronModule 封装 |
-| [swap-optimizer](swap_optimizer.md) | 动量 | 切片流水换出 Host pinned 内存 | 与低精度优化器、virtual-optimizer 互斥 |
+| [swap-optimizer](swap_optimizer.md) | 动量 | 切片流水换出 Host pinned 内存 | MindSpeed 与低精度优化器、reuse-fp32-param 互斥；torchtitan 与 virtual-optimizer 互斥 |
 | [virtual-optimizer](virtual_optimizer.md) | 动量 | 驱动级虚拟内存地址映射（Host 常驻 Device 可寻址） | 与 swap-optimizer 互斥；需驱动 25.5.2+ |
 
-Reuse-FP32-Param 是其它路线的底座之一：低精度优化器显式复用它来压参数副本；它本身与低精度量化、swap 等可叠加（前提是各自互斥约束满足）。选型上，副本冗余优先开 Reuse-FP32-Param（近乎零成本）；动量是显存大头且能容忍量化误差时叠加低精度优化器；多模态长序列、需要靠增大 CP 省激活值显存时用 LayerZeRO 替代 TP+ZeRO1。
+Reuse-FP32-Param 是其它路线的底座之一：低精度优化器显式复用它来压参数副本；它兼容低精度优化器，但当前 MindSpeed 的 `SwapOptimizerFeature.validate_args` 显式禁止与 `reuse_fp32_param` 同开，因此不能与该 swap 实现叠加。选型上，副本冗余优先开 Reuse-FP32-Param（近乎零成本）；动量是显存大头且能容忍量化误差时叠加低精度优化器；多模态长序列、需要靠增大 CP 省激活值显存时用 LayerZeRO 替代 TP+ZeRO1。
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — 特性文档 [`docs/zh/features/reuse-fp32-param.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/reuse-fp32-param.md)（FP32=BF16+Residual、int32 等价模拟、省 `sizeof(bf16)×参数量/DP`、约束）
-- 特性文档 [`docs/zh/features/low-precision-optimizer.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/low-precision-optimizer.md)（动量 FP8/HiF8/MXFP8、梯度 FP16、与 swap 互斥）
-- 特性文档 [`docs/zh/features/LayerZeRO.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/LayerZeRO.md)（分层 ZeRO 思路、配置项、OpenSoraPlan1.3 +9.7%）
-- 开关与校验 [`mindspeed/features_manager/memory/reuse_fp32_param.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/memory/reuse_fp32_param.py)（`--reuse-fp32-param`、`incompatible_check(enable_zero3)`、`dependency_check(bf16)`）
-- 开关与校验 [`mindspeed/features_manager/optimizer/low_precision_optimizer_feature.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/optimizer/low_precision_optimizer_feature.py)（`--quant-states`/`--quant-grads`、swap 与梯度累加融合互斥校验、patch 列表）
-- 共享存储实现 [`mindspeed/core/memory/reuse_param/reuse_optimizer.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/reuse_param/reuse_optimizer.py)（`init_and_reuse_storage_of_tensors`、`reuse_data_ptr`、`fp32_tensors_to_bf16_tensors` / `bf16_tensors_to_fp32_tensors`、`TRANSPOSE_BF16_BIT=32768`、deterministic 变体）
-- 量化更新实现 [`mindspeed/core/optimizer/low_precision/quant_adamw.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/low_precision/quant_adamw.py)（`quant_adamw.AdamW`、`ScaleMeta`（fp8_max=448、mxfp8 block_size=32）、`quantization`/`dequantization`、反量化→FP32 更新→requantize）
-- LayerZeRO 实现 [`mindspeed/core/distributed/layerzero/config.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/distributed/layerzero/config.py)（`LayerzeroConfig`、`wrap_model_with_layerzero`、`initialize_zero_process_group_with_pp` / `initialize_tp_zero_process_group`、`_ZERO1/_ZERO3_PROCESS_GROUP`）
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [reuse-fp32-param.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/reuse-fp32-param.md)（supporting）
+- [swap_optimizer_feature.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/optimizer/swap_optimizer_feature.py)（implementation）
 
 ## Links
 

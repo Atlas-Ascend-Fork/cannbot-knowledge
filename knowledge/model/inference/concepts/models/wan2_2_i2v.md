@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Wan2.2-I2V
-description: Wan2.2-I2V 的图文输入、DiT 去噪和 VAE 解码职责，部署并行与缓存另行维护。
+description: Wan2.2-I2V图文条件、双噪声DiT与VAE，当前CFG默认配置和单卡缓存接入边界。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,17 +9,17 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/generate.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-21T10:02:02Z'
+updated_at: '2026-10-29T14:15:06Z'
 platforms:
 - agnostic
 ---
-
-
 
 # Wan2.2-I2V
 
@@ -39,10 +39,9 @@ Wan2.2-I2V 为图生视频模型，输入参考图像与文本prompt，经DiT去
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/wan2.2-i2v/{generate.py, run.sh, set_env.sh, wan/}`](https://gitcode.com/cann/cann-recipes-infer/tree/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/wan2.2-i2v)
-- 旧文档的 `module/dit_cache_step/cache_step.py` 在上述固定提交下获取失败；不把该链接当作已恢复的实现，版本入口见模型Guide。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 统一推理拉起（`infer.sh` + `config/`，引入于 refactor commit 06656b0）：[`models/wan2.2-i2v/infer.sh`](https://gitcode.com/cann/cann-recipes-infer/blob/06656b0519fde3256eed1b2a77e5327898e0b00f/models/wan2.2-i2v/infer.sh)、[`config/14b_cfg2_ulysses4.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/06656b0519fde3256eed1b2a77e5327898e0b00f/models/wan2.2-i2v/config/14b_cfg2_ulysses4.yaml)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/README.md)（primary）
+- [generate.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/generate.py)（implementation）
+- [wan2.2-i2v_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md)（supporting）
 
 ## Links
 
@@ -57,6 +56,6 @@ Wan2.2-I2V 为图生视频模型，输入参考图像与文本prompt，经DiT去
 - [hunyuan-video](hunyuan_video.md)
 - [hunyuan-image-3](hunyuan_image_3.md)
 
-## Notes
+## 当前接入边界
 
-旧优化文档未给端到端benchmark；其FusedLayerNormModulate片段存在scale未定义，不能直接作为配置/修复配方。文档拼写iamge2video.py不等于实际源码入口。
+当前默认多卡CFG2×Ulysses4并启用VAE并行；README的性能表另采用CFG1×Ulysses8，不能混作同一结果。FB/Tea只用于单卡接入，多卡入口强制NoCache；当前文档已修正LayerNorm调制scale入参，不保留旧缺陷断言。

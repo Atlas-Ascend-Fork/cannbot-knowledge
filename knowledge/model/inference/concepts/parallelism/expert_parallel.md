@@ -12,16 +12,18 @@ tags:
 - topic.data_movement.communication.collective_communication
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/gemma4_26b_a4b/agentic/optimization_report.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/agentic/optimization_report.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/optimization_report_ep.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T11:07:34Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - agnostic
 ---
@@ -37,8 +39,8 @@ EP 的前提是 MoE 专家结构，不是 MLA Attention。Qwen3-Next、Gemma-4 �
 ## Mechanism
 
 - 专家权重按组分布到不同 Rank
-- Router 计算后通过 AllToAll 通信将 token 分发到目标专家所在 Rank
-- 专家计算完成后通过 AllToAll 通信将结果收集回来
+- dispatch/combine 路径在 Router 计算后通过 AllToAll 类通信将 token 分发到目标专家 Rank
+- 该路径专家计算后再经 AllToAll 类通信收回结果；有些实现也可汇总本地专家贡献，但当前Gemma4已删除旧local_experts分支，不能把该策略作为它的配置项
 - 通常配合 TP 使用（EP 切 MoE 层，TP 切 Attention 层）
 
 ## Applicable Scenarios
@@ -59,16 +61,20 @@ EP 的前提是 MoE 专家结构，不是 MLA Attention。Qwen3-Next、Gemma-4 �
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — MoE 模型普遍使用 EP 策略
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_r1_prefill_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md)（supporting）
+- [deepseek_r1_decode_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md)（supporting）
+- [optimization_report.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gemma_4/agentic/optimization_report.md)（supporting）
+- [optimization_report_ep.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/optimization_report_ep.md)（supporting）
 
 ## Known Deployments
 
 - **Qwen3-Next Decode**（[qwen3-next](../models/qwen3_next.md)）：`--moe-a2a-backend deepep --deepep-mode auto`，典型 ep_size=16（16die）。配合 [moe-multi-stream](../techniques/moe_multi_stream.md) 将 shared expert 与 dispatch/combine AllToAll 重叠。A8 量化下 dispatch 切换为 `DEEP_NORMAL_MODE_USE_INT8_QUANT=1`。
-- **DeepSeek-R1 Prefill**（[deepseek-r1](../models/deepseek_r1.md)）：MoE-EP32。采用 [double-routing](../techniques/double_routing.md)：每卡 两轮路由与顺序恢复，末轮调用一次 npu_moe_finalize_routing，相比 AllGather 方案峰值显存更低、通信量更小。核心融合算子 `npu_moe_init_routing_v2` / `npu_moe_re_routing` / `npu_moe_finalize_routing` + `dist.all_to_all_single`。
+- **DeepSeek-R1 Prefill**（[deepseek-r1](../models/deepseek_r1.md)）：MoE-EP32。采用 [double-routing](../techniques/double_routing.md)：每卡 两轮路由与顺序恢复，末轮调用一次 npu_moe_finalize_routing，负载相对均匀时，相比 AllGather 方案峰值显存更低、通信量更小。核心融合算子 `npu_moe_init_routing_v2` / `npu_moe_re_routing` / `npu_moe_finalize_routing` + `dist.all_to_all_single`。
 - **DeepSeek-R1 Decode**（大 EP 128）：`decode_r1_rank_128_128ep_a8w8c8_mtp*.yaml`，每卡 256/128=2 个 routed expert + 1 个 shared expert。使用一体化算子 `npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（见 [moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)），专家计算走 `npu_grouped_matmul`（支持 A8 pertoken_scale）；注意 `HCCL_BUFFSIZE` 配置。可开 `HCCL_OP_EXPANSION_MODE=AIV`（利用 Device Vector Core 加速集合通信）进一步压缩通信时延。
-- **Gemma-4-26B-A4B Decode**（[gemma4-26b-a4b](../models/gemma4_26b_a4b.md)）：EP=8，128 experts / 8 = 16 experts/rank。Decode 在 `mc2`（[moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)）与 `local_experts`（每 rank 算全部本地 expert + 末次 AllReduce、对 ge_graph fullgraph 友好）两路径间按 `experts_per_rank ≤ 24` 自动切换。
-- **Hy3-preview Decode**（[hy3-preview](../models/hy3_preview.md)）：`moe_ep_size=16`（全卡 EP），192 experts / 16 = 12 experts/rank；`moe_tp_size=1`（expert intermediate=1536 太小，TP 会切碎矩阵）。ge_graph 下走 MC2 dispatch/combine（[moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)）替代手动 all_to_all，eager 下走手动 all_to_all。
-- **LongCat-Flash-Lite EP**（[longcat-flash-lite](../models/longcat_flash_lite.md)）：`moe_ep=8`、`moe_tp=1`，256 routed / 8 = 32 routed expert/rank + 128 zero/identity expert（每卡持有，不参与 EP 切分）；attn_tp=4 + attn_dp=2、dense MLP DP-replicated、ngram 子表独立 TP=8。Decode 走 MC2 dispatch/combine（[moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)），Prefill 走 [double-routing](../techniques/double_routing.md)；A2 因 `experts_per_rank ≤ 24`（32/rank 不满足）回退 double-routing 或 eager。
+- **Gemma4 EP Decode**：当前用独立MC2通信组和fullmesh_v2，旧mc2/local_experts开关已删除；Prefill保留DR。见[模型](../models/gemma4_26b_a4b.md)。
+- **Hy3**：当前已迁models/hy3，MTP1与950FP8/MXFP4路径具有不同通信量化和SP配置；不能沿用旧“GE走MC2/eager固定手工AllToAll”的概括。见[当前Guide](../../guides/models/hy3_preview_deployment.md)。
+- **LongCat-Lite**：EP8可每rank持32个路由专家，identity专家不按路由权重EP切分；当前A2每rank专家>24时自动回退DR，不再要求手动关开关。当前MC2代码同时设置fullmesh_v2和copy_expert_num，算子兼容仍需按实际包核验。
 
 ## Links
 
@@ -83,9 +89,9 @@ EP 的前提是 MoE 专家结构，不是 MLA Attention。Qwen3-Next、Gemma-4 �
 - [prefill-micro-batch](../techniques/prefill_micro_batch.md)
 - [inference-config](../techniques/inference_config.md)
 - [deepseek-v4](../models/deepseek_v4.md)（Decode MoE 用 EP，配合 Attention DP）
-- [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（EP=8，16 experts/rank；mc2 / local_experts 双路径）
+- [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（当前EP Decode使用MC2）
 - [hy3-preview](../models/hy3_preview.md)（EP=16，12 experts/rank；moe_tp_size=1）
-- [longcat-flash-lite](../models/longcat_flash_lite.md)（EP=8，32 routed + 128 zero expert/rank；A2 experts_per_rank≤24 回退 double-routing）
+- [longcat-flash-lite](../models/longcat_flash_lite.md)（EP/identity专家、A2自动回退边界）
 - [cann-shmem](../techniques/cann_shmem.md)（MoE dispatch&combine 基于对称内存的 win 区 + put/signal/wait 语义）
 - [shmem-dispatch-combine](../techniques/shmem_dispatch_combine.md)（DeepEP dispatch&combine 的 SHMEM 重写：发/等状态 + win 拷贝四步范式，三路实现样例）
 - [fsdp](../../../training/concepts/parallelism/fsdp.md)（跨域·训练：FSDP2 在 EP 之外对专家二次分片（efsdp mesh））

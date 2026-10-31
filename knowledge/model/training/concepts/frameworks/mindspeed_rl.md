@@ -1,13 +1,7 @@
 ---
 type: Concept
 title: MindSpeed-RL
-description: >-
-  MindSpeed-RL 是昇腾 RL 后训练框架，包含原生 mindspeed_rl 和以运行时 patch 适配上游 verl 的 verl_npu。
-  原生路径用 Ray 编排 Megatron 训练态与 vLLM 推理态；IntegratedWorker 让 actor、reference 和 reward
-  分时复用同批 NPU，LoRA share_backbone 时 reference 通过关闭 adapter 得到基座输出，共卡模式不支持
-  独立 reward 资源。Actor 在 generate、infer-logprob 和 train 之间用显式状态机切换，由 sharding manager
-  重切分训练与推理所需的不同 TP/PP/EP 布局，空闲模块可卸载到 Host。各 Ray worker 通过
-  TransferDock 与 ZMQ 交换数据，框架支持 GRPO、DAPO、PPO 和 DPO。
+description: MindSpeed-RL 是昇腾 RL 后训练框架，包含原生 mindspeed_rl 和向依赖包文件应用持久补丁的 verl_npu。 原生路径用 Ray 编排 Megatron 训练态与 vLLM 推理态；IntegratedWorker 让 actor、reference 和 reward 分时复用同批 NPU，LoRA share_backbone 时 reference 通过关闭 adapter 得到基座输出，共卡模式不支持 独立 reward 资源。Actor 在 generate、infer-logprob 和 train 之间用显式状态机切换，由 sharding manager 重切分训练与推理所需的不同 TP/PP/EP 布局，空闲模块可卸载到 Host。各 Ray worker 通过 TransferDock 与 ZMQ 交换数据，框架支持 GRPO、DAPO、PPO 和 DPO。
 tags:
 - task.implementation
 - topic.architecture
@@ -15,12 +9,16 @@ tags:
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/README.md
+- resource: cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/features/integrated_worker.md
+- resource: cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/docs/zh/features/integrated_worker.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/verl_npu/verl_npu/plugin.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/mindspeed_rl/config_cls/validate_config.py
+  role: implementation
 created_at: '2026-06-24T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - agnostic
 ---
@@ -40,9 +38,9 @@ MindSpeed-RL 是昇腾 NPU 的 **RL 后训练加速框架**，支持 GRPO / DAPO
 
 ### 全共卡部署（Integrated Worker）
 
-主推部署形态是**全共卡**：Actor / Reference / Reward 三角色**分时复用同一批 NPU**，交替计算，空闲数据卸载到 Host 内存。落地为 `IntegratedWorker`（`workers/integrated_worker.py`），它**多继承** `ActorHybridWorkerBase + ReferenceWorkerBase + RewardWorkerBase`，以 Actor 为主 worker。**`share_backbone` 是 LoRA 场景专用开关**：开启时 reference 与 actor 共用同一份 base 权重（`ref_model = self.model`、`ref_manager = self.actor_offloader`），reference forward 通过 `disable_adapter()` 关闭 LoRA 适配器即得基座输出，故不需单独加载/卸载 ref 权重；关闭时（全量微调）单独加载 ref 权重并默认 offload。Reference forward 仅当配了 `ref_forward_micro_batch_size` 时用 `temporary_micro_batch_size` 上下文临时改 mbs；`share_backbone=False` 时算完 `offload_param()` 释放显存。
+主推部署形态是**全共卡**：Actor / Reference / Reward 三角色**分时复用同一批 NPU**，交替计算，空闲数据卸载到 Host 内存。落地为 `IntegratedWorker`（`workers/integrated_worker.py`），它**多继承** `ActorHybridWorkerBase + ReferenceWorkerBase + RewardWorkerBase`，以 Actor 为主 worker。**`share_backbone` 是 LoRA 场景专用开关，且禁止 `actor_config.stage="ray_dapo"`**：开启时 reference 与 actor 共用同一份 base 权重（`ref_model = self.model`、`ref_manager = self.actor_offloader`），reference forward 通过 `disable_adapter()` 关闭 LoRA 适配器即得基座输出，故不需单独加载/卸载 ref 权重；关闭时（全量微调）单独加载 ref 权重并默认 offload。Reference forward 仅当配了 `ref_forward_micro_batch_size` 时用 `temporary_micro_batch_size` 上下文临时改 mbs；`share_backbone=False` 时算完 `offload_param()` 释放显存。
 
-`use_integrated_worker=true`（默认开）下 `validate_config.validate_rl_args` 强制：未配 `reference_resource` 时**强制复用** `actor_resource`；而配置 `reward_resource` 直接**报错**（共卡态不支持独立 reward 模型——规则奖励由 `RewardWorkerBase` 提供，不另占资源）。`actor_resource.num_npus` 即全共卡总卡数。`integrated_mode_config.ref_model_load_path` 支持续训时单独加载 ref 权重。
+`use_integrated_worker=true`（默认开）下 `validate_config.validate_rl_args` 强制：禁止显式设置 `reference_resource`（即使与 actor_resource 相同也抛 ValueError），仅未配置时才**自动复用** `actor_resource`；而配置 `reward_resource` 直接**报错**（共卡态不支持独立 reward 模型——规则奖励由 `RewardWorkerBase` 提供，不另占资源）。`actor_resource.num_npus` 即全共卡总卡数。`integrated_mode_config.ref_model_load_path` 支持续训时单独加载 ref 权重。
 
 ### 训推共卡 Actor（ActorHybridWorker）
 
@@ -63,7 +61,7 @@ Actor 在一轮内**串行**经历 generate→infer-logprob→train 三态，核
 | `exit_train_mode` | offload 优化器 + 梯度（权重保留） |
 | `enter/exit_forward_mode` | logprob 阶段只 onload/offload 训练权重，不动优化器 |
 
-`generate_sequences` 进出包裹 `enter/exit_infer_mode`（仅 `not filter_groups_enable` 时；动态过滤模式下重切分由外层托管）；`update` 包裹 `enter_train_mode`。该设计可对**训练态（大 TP/PP、小 EP）与推理态（小 TP/PP、大 EP）配不同并行**，配合在线 EP→TP 重切分缓解 MoE 大权重 OOM（细节见 [train-rollout-switch](../techniques/train_rollout_switch.md)）。
+`generate_sequences` 进出包裹 `enter/exit_infer_mode`（仅 `not filter_groups_enable` 时；动态过滤模式下重切分由外层托管）；`update` 包裹 `enter_train_mode`。该设计可对训练态与推理态配不同 TP/EP 布局；固定版本推理 PP 只能为1，`infer_pipeline_parallel_size > 1` 被校验拒绝，配合在线 EP→TP 重切分缓解 MoE 大权重 OOM（细节见 [train-rollout-switch](../techniques/train_rollout_switch.md)）。
 
 ## Ray 角色编排
 
@@ -71,7 +69,7 @@ Worker 都是 Ray actor：`@ray.remote(resources={"NPU": 0.7})` 标注的 `Integ
 
 ## vLLM 推理引擎适配
 
-`models/rollout/vllm_engine.py::VLLMInferEngine`（继承 `BaseInferEngine`）封装 vLLM `LLM`，按 `infer_{tensor,pipeline,expert}_parallel_size` 独立配置推理并行，喂 `SamplingParams`。关键适配在 `models/rollout/vllm_adapter/`：
+`models/rollout/vllm_engine.py::VLLMInferEngine`（继承 `BaseInferEngine`）封装 vLLM `LLM`，按 `infer_{tensor,pipeline,expert}_parallel_size` 配置推理并行，其中 PP 固定为1，不能独立增大，喂 `SamplingParams`。关键适配在 `models/rollout/vllm_adapter/`：
 
 - **megatron weight loaders**（`megatron_weight_loaders.py`）：`load_format='megatron'`，按模型族（llama/qwen 等）把 Megatron 分片权重在线灌进 vLLM 模型，含 QKV fused 拆分；EPLB 专家映射则在 `resharding/vllm_weight_container.py`（`eplb_map` / 冗余专家收发），二者配合完成训→推权重重组织。
 - **acl graph**：`enforce_eager` 控是否禁用 ACL graph，另有 `torchair_graph` 开关（[vllm-ascend](vllm_ascend.md) 提供 NPU 后端与图模式）。
@@ -92,20 +90,14 @@ Worker 都是 Ray actor：`@ray.remote(resources={"NPU": 0.7})` 标注的 `Integ
 
 ## verl_npu 适配线
 
-`verl_npu/`（独立子包）以**运行时 monkey-patch** 方式给上游 verl 打昇腾适配，不改 verl 源树：`import verl_npu` 即触发 `_initialize_npu_plugin()`→`apply_npu_plugin()`（`plugin.py`）。机制：`patch_summary.yaml` 声明各依赖（verl / vllm / vllm_ascend / megatron-core / mindspeed / transformers / mbridge）的 **commit_id + patch 目录**，`apply_repo_patches` 先校验已装版本 commit 匹配，再 `patch -p1 -N` 逐个打 `.patch`（已打过自动跳过），`after_patch_check` 回查新增行是否落地；另含 tensordict NPU 同步 hook 修精度。patch 覆盖 `main_ppo`/`main_dapo`/`ray_trainer`/`ppo_megatron_trainer`/`vllm_rollout_spmd`/`agent_loop` 等。verl 框架本体语义见 [verl](verl.md)。
+`verl_npu/`（独立子包）在导入时对已安装依赖包文件应用**持久补丁**（editable 安装还可能定位到源码目录）：`import verl_npu` 即触发 `_initialize_npu_plugin()`→`apply_npu_plugin()`（`plugin.py`）。机制：`patch_summary.yaml` 声明各依赖（verl / vllm / vllm_ascend / megatron-core / mindspeed / transformers / mbridge）的 **commit_id + patch 目录**，`apply_repo_patches` 先校验已装版本 commit 匹配，再 `patch -p1 -N` 逐个打 `.patch`（已打过自动跳过），`after_patch_check` 回查新增行是否落地；这会修改目标包文件；另有 tensordict 的函数级 monkey-patch NPU 同步 hook 修精度，应与文件补丁分开理解。patch 覆盖 `main_ppo`/`main_dapo`/`ray_trainer`/`ppo_megatron_trainer`/`vllm_rollout_spmd`/`agent_loop` 等。verl 框架本体语义见 [verl](verl.md)。
 
 ## Evidence
 
-源页 [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL)。blob base `https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/`：
-
-- 全共卡多继承 / share_backbone：`mindspeed_rl/workers/integrated_worker.py`（`IntegratedWorker`、`initialize`、`compute_ref_log_prob`、`temporary_micro_batch_size`）
-- 训推共卡 Actor：`mindspeed_rl/workers/actor_hybrid_worker.py`（`ActorHybridWorkerBase.initialize`、`enter_infer_mode`、`generate_sequences`、`update`、`_build_rollout`、`_build_sharding_manager`）
-- Ray 角色 / 设备绑定：`mindspeed_rl/workers/base_worker.py`（`BaseRayWorker`）
-- 训推态切换状态机：`mindspeed_rl/workers/resharding/megatron_sharding_manager.py`（`MegatronShardingManager.enter_infer_mode`/`enter_train_mode`/`enter_forward_mode`）
-- vLLM 适配 + megatron weight loader：`mindspeed_rl/models/rollout/vllm_engine.py`（`VLLMInferEngine`）、`mindspeed_rl/models/rollout/vllm_adapter/megatron_weight_loaders.py`（`load_megatron_weights`）
-- 分层配置 / batch 语义：`mindspeed_rl/config_cls/{rl_config,megatron_config,generate_config,base_config,validate_config}.py`
-- verl 适配线：`verl_npu/verl_npu/plugin.py`（`apply_npu_plugin`、`apply_repo_patches`）、`verl_npu/verl_npu/__init__.py`、`verl_npu/verl_npu/patch/`
-- 特性文档：[`integrated_worker.md`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/features/integrated_worker.md)（全共卡 Integrated Worker 设计）、[`offload.md`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/features/offload.md)（训推态 offload/onload 编排）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/README.md)（primary）
+- [integrated_worker.md](../../../../../cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/docs/zh/features/integrated_worker.md)（supporting）
+- [plugin.py](../../../../../cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/verl_npu/verl_npu/plugin.py)（implementation）
+- [validate_config.py](../../../../../cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/mindspeed_rl/config_cls/validate_config.py)（implementation）
 
 ## Links
 

@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/8
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - agnostic
 ---
@@ -65,9 +65,5 @@ platforms:
 
 ## Evidence
 
-- `doc 披露` + `diff 事实`（@9d9199e3577c）：量化策略 doc 明写两条设计理由（按瓶颈分级、共享输入不量化省拷贝）；建模 diff 把 `q_a_proj` / `kv_a_proj_with_mqa` 置 `quant_config=None`、`indexer.wq_b` 置 `config.quant_config`。
-- `diff 事实`（@2c45117）：`convert_model.py generate_ignore_item` 不量化清单、`init_cache_for_indexer` 在 C8 时 KVCache dtype = int8 + 并列 fp16 `past_key_scales`。
-- `doc 披露`（@9d9199e3577c）：「SparseFlashAttention 耗时瓶颈点在离散聚合访存，即使实现存 8 算 8，端到端时延依旧无法提升」为维护者设计理由，非独立 profiling 复测。
-- 溯源下探：
-  - [cann-recipes-infer-pr-7-feat-add-deepseek-v3-2-exp-w8a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/7)
-  - [cann-recipes-infer-issue-8-rfc-deepseek-v3-2-exp-w8a8c8](https://gitcode.com/cann/cann-recipes-infer/issues/8)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/7)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/8)（evidence）

@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: CFG 样本并行规则：比较双分支设备投入、通信与单步时延
-description: 将 cond/uncond 分到两组设备，权重切分沿用各组配置；先核对原 pipeline 的 batching，再测量收益，不承诺前向时延减半。
+description: CFG样本并行设备/通信取舍；更新Wan默认CFG2×Ulysses4并区分来源性能表CFG1×Ulysses8。
 tags:
 - task.debugging
 - topic.diffusion
@@ -9,14 +9,14 @@ tags:
 - topic.data_movement.communication.collective_communication
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/218
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/49
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/fdb79bf65a8b34eadc4f3f224ed06cb6a9b7f625/models/hunyuan-image-3.0/adaptor_patches/hunyuan_image_3_pipeline.py
-  role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan_image_3_pipeline.py
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/config/14b_cfg2_ulysses4.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/README.md
+  role: constraint
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T14:15:06Z'
 platforms:
 - a2
 ---
@@ -41,17 +41,17 @@ CFG 组内的 all_gather / guidance 合成机制见 [cfg-parallel](../../concept
 
 ## 何时不适用 / 取舍
 
-- CFG 并行吃掉 `cfg_size=2` 份设备，直接挤占同一集群里能给序列并行（[ulysses](../../concepts/parallelism/ulysses.md)）/ TP 的度，受 `world_size = cfg_size × sp_size × tp_size` 约束式限制。卡紧时把全部卡给 SP（`cfg_size=1`）通常比分 2 卡给 CFG 更划算——因此它是**可选能力、非默认路径**。
+- CFG 并行吃掉 `cfg_size=2` 份设备，直接挤占同一集群里能给序列并行（[ulysses](../../concepts/parallelism/ulysses.md)）/ TP 的度，受 `world_size = cfg_size × sp_size × tp_size` 约束式限制。当前Wan默认YAML采用`cfg_size=2, ulysses_size=4`；README性能表却采用CFG1×Ulysses8，二者不是同一配置，缺同卡数CFG消融，不能据此判断哪种分配更划算。应按目标负载比较两种分配的通信、质量和时延。
 - 仅在 CFG 组恰为 2 时走并行分支；关闭后回到来源 pipeline 的本地 cond/uncond 路径，具体是拼 batch 还是分别前向应核对实现。
 
 ## 参考实现及其约束
 
 - HunyuanImage-3.0（文生图 DiT，Atlas A2/A3）：去噪循环里 `cfg_factor = 1 + do_classifier_free_guidance`，`cfg_parallel_size > 1` 时 `cfg_factor = 1`；guidance 段 `all_gather(cfg_preds_list, pred, group=cfg_parallel_group)` → `pred_cond, pred_uncond = cfg_preds_list`，与 VAE 并行并列为该样例新增的两个功能开关之一。示例排布 TP2+CFGP。
-- [Wan2.2-I2V](../../concepts/models/wan2_2_i2v.md)（Atlas A2）：`--cfg_size N` 控 CFG 度，面向用户即 `nproc_per_node == cfg_size × ulysses_size`；`sample_guide_scale` 按 high/low-noise 边界在两档 guide_scale 间切；8 卡默认 `cfg_size=1, ulysses_size=8` 不开 CFG 并行。
+- [Wan2.2-I2V](../../concepts/models/wan2_2_i2v.md)（Atlas A2）：`--cfg_size N` 控 CFG 度，面向用户即 `nproc_per_node == cfg_size × ulysses_size`；`sample_guide_scale` 按 high/low-noise 边界在两档 guide_scale 间切；当前8卡默认`cfg_size=2, ulysses_size=4`；README性能表CFG1×Ulysses8不能直接作为该默认的结果。
 - 上述开关名/配置是参考实现的细节，样本级正交并行的思想不受其约束。DiT 步间缓存与多卡并行的共存边界另见 [dit-cache-with-sequence-parallel](dit_cache_with_sequence_parallel.md)。
 
 ## Evidence
 
-- `diff 事实`（HunyuanImage-3.0 @fdb79bf65a8b）：`hunyuan_image_3_pipeline.py` 去噪循环的 `cfg_factor` 塌缩 + `cfg_parallel_size>1` 分支 all_gather 互取；与优化文档「CFG并行优化」一致。溯源下探：[cann-recipes-infer-pr-218-feat-support-hunyuanimage-3-0-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)
-- `diff 事实`（Wan2.2-I2V, PR 合并 2025-10-30）：`image2video.py` 的 `get_classifier_free_guidance_world_size()==2` 分支 + `get_cfg_group().all_gather(..., separate_tensors=True)`，`parallel_mgr` 的 `use_cfg_parallel→cfg_degree=2`；「非默认、挤占 SP」取舍据 README（8 卡默认不开）。溯源下探：[cann-recipes-infer-pr-49-feat-add-wan2-2-i2v-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/49)
-- 无独立性能数字，故不预设减半时延；应计入新增设备、通信与原始 batching 的影响。
+- [hunyuan_image_3_pipeline.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan_image_3_pipeline.py)（primary）
+- [14b_cfg2_ulysses4.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/config/14b_cfg2_ulysses4.yaml)（example）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/README.md)（constraint）

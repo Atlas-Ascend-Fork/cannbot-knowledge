@@ -9,12 +9,12 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/navigation/alpamayo-r1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/navigation/alpamayo-r1/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a2
 ---
@@ -83,4 +83,4 @@ if image_features is not None and n_masked_elements != image_features.numel():
 - 同源动作生成结构：[flow-matching-action-expert](../modules/flow_matching_action_expert.md)
 - 同域运动控制模型：[lqc](../locomotion/lqc.md)
 - 跨域：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)（FA/注意力融合）
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

@@ -8,12 +8,12 @@ tags:
 - topic.memory
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/recomputation.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/recomputation.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
 - agnostic
 ---
@@ -22,11 +22,11 @@ platforms:
 
 ## Summary
 
-重计算（activation checkpointing / rematerialization）用算力换显存：前向只保留少量关键张量，把中间激活在反向需要时按保存的输入重新算一遍，从而压低激活显存峰值。Megatron 提供两个正交粒度——granularity（`full` 整层 / `selective` 只重算注意力核）与 method（`uniform` 均匀分块 / `block` 前若干层），由 `--recompute-num-layers` 控层数。MindSpeed 在此之上补三件事：**激活函数重计算**（`--recompute-activation-function`，丢弃 gelu/swiglu 那块 `(b,s,4h)` 输出，反向用 `register_hook` 在 `4h→h` 反向前重算）、**Norm 重计算**（`--recompute-norm`，复用同一套 `CheckpointWithoutOutput` 机制重算 RMSNorm/LayerNorm 输出，仅 mcore 分支）、以及**按 PP rank 计层**（`--enable-recompute-layers-per-pp-rank` 把 `--recompute-num-layers` 的语义从「每 VPP chunk」改成「每 PP rank」）。统一的层选择由 `should_recompute` 按优先级排序：前 `recompute_num_layers` 层做全量、其后若干层做激活函数/Norm 细粒度，二者不重叠。流水内的重计算调度（气泡内/提前重算）由 ripipe 承载，见 [pipeline-parallel-advanced](../parallelism/pipeline_parallel_advanced.md)。
+重计算（activation checkpointing / rematerialization）用算力换显存：前向只保留少量关键张量，把中间激活在反向需要时按保存的输入重新算一遍，从而压低激活显存峰值。Megatron 提供两个正交粒度——granularity（`full` 整层 / legacy 分支若开 `--use-flash-attn` 则不支持 selective；`selective` 只重算注意力核）与 method（`uniform` 均匀分块 / `block` 前若干层），由 `--recompute-num-layers` 控层数。MindSpeed 在此之上补三件事：**激活函数重计算**（`--recompute-activation-function`，丢弃 gelu/swiglu 那块 `(b,s,4h)` 输出，反向用 `register_hook` 在 `4h→h` 反向前重算）、**Norm 重计算**（`--recompute-norm`，复用同一套 `CheckpointWithoutOutput` 机制重算 RMSNorm/LayerNorm 输出，仅 mcore 分支）、以及**按 PP rank 计层**（`--enable-recompute-layers-per-pp-rank` 把 `--recompute-num-layers` 的语义从「每 VPP chunk」改成「每 PP rank」）。统一的层选择由 `should_recompute` 按优先级排序：前 `recompute_num_layers` 层做全量、其后若干层做激活函数/Norm 细粒度，二者不重叠。流水内的重计算调度（气泡内/提前重算）由 ripipe 承载，见 [pipeline-parallel-advanced](../parallelism/pipeline_parallel_advanced.md)。
 
 ## 为什么要重计算：激活显存与算力的取舍
 
-Transformer 训练的显存大头之一是前向激活——它要一直存到反向用完。序列越长、micro-batch 越大，激活越占地方，且在 1F1B 流水里靠前 stage 还要缓存多份在途激活，stage-0 峰值最高。重计算的思路是：前向丢弃可重算的激活、只留它的输入（checkpoint 的 saved_tensors），反向需要时再算一遍。代价是这部分前向多算一次——整层全量重计算约带来三成额外算力，而只重算「计算量小但产物大」的部分则几乎不掉性能。因此重计算不是开/关的二元选择，而是按「单位显存收益 / 单位算力代价」从高到低分层启用。
+Transformer 训练的显存大头之一是前向激活——它要一直存到反向用完。序列越长、micro-batch 越大，激活越占地方，且在 1F1B 流水里靠前 stage 还要缓存多份在途激活，stage-0 峰值最高。重计算的思路是：前向丢弃可重算的激活、只留它的输入（checkpoint 的 saved_tensors），反向需要时再算一遍。代价是这部分前向多算一次——整层全量重计算会增加一遍相应前向的计算成本，实际比例取决于模型与配置，而只重算「计算量小但产物大」的部分则几乎不掉性能。因此重计算不是开/关的二元选择，而是按「单位显存收益 / 单位算力代价」从高到低分层启用。
 
 ## 全量 vs 选择性：粒度与分块方式
 
@@ -140,8 +140,8 @@ if vpp_size is None or not getattr(config, 'enable_recompute_layers_per_pp_rank'
 
 | 特性 | 开关 | 省什么 | 关键约束 |
 |---|---|---|---|
-| 全量重计算 | `--recompute-granularity full --recompute-method {uniform,block} --recompute-num-layers N` | 整层激活 | 算力代价最大（约 +30%） |
-| 选择性重计算 | `--recompute-granularity selective` | 注意力核激活 | 近零性能损失 |
+| 全量重计算 | `--recompute-granularity full --recompute-method {uniform,block} --recompute-num-layers N` | 整层激活 | 增加相应前向计算成本，比例需实测 |
+| 选择性重计算 | `--recompute-granularity selective` | 注意力核激活 | legacy + use-flash-attn 不支持；收益需按配置验证 |
 | 激活函数重计算 | `--recompute-activation-function [--recompute-activation-function-num-layers N]` | gelu/swiglu 的 `(b,s,4h)` 输出 | 与全量同开仅支持 `block`；不兼容自适应重计算 |
 | Norm 重计算 | `--recompute-norm [--recompute-norm-num-layers N]` | LayerNorm/RMSNorm 输出 | 仅 mcore；TP+SP 下收益弱；与全量同开仅支持 `block` |
 | 按 PP rank 计层 | `--enable-recompute-layers-per-pp-rank` | —（改 `--recompute-num-layers` 语义） | 每 PP rank 计层 vs 每 VPP rank 计层 |
@@ -149,20 +149,8 @@ if vpp_size is None or not getattr(config, 'enable_recompute_layers_per_pp_rank'
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — 官方特性文档（pin `1432cb09`）：
-  - [`docs/zh/features/recomputation.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/recomputation.md) — Megatron 全量/选择性重计算底座：`--recompute-granularity full` + `--recompute-method uniform/block` 的分块语义、`--recompute-num-layers` 含义、`--recompute-method block --recompute-granularity full --num-layers-per-virtual-pipeline-stage N` 下 `--recompute-num-layers` 默认按 VPP stage 计层而 `--enable-recompute-layers-per-pp-rank` 改为按 PP stage 计层
-  - [`docs/zh/features/activation-function-recompute.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/activation-function-recompute.md) — 传统重计算只省输入的局限、MLP 中 gelu 输出 `(b,s,4h)` 释放与 `register_hook` 重算、`--recompute-activation-function[-num-layers]`、与全量同开仅 `block`、llama2-7B 内存收益表、`CheckpointWithoutOutput` 自定义用法
-  - [`docs/zh/features/norm-recompute.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/norm-recompute.md) — 复用 checkpoint 机制重算 Norm、`--recompute-norm[-num-layers]`、仅 mcore、TP/SP 下收益弱
-  - [`docs/zh/features/recompute_independent_pipelining.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/recompute_independent_pipelining.md) — 重计算与反向解耦、`--recompute-in-bubble` / `--recompute-in-advance`、激活保留块数降到 `PP×VPP`
-- MindSpeed 源码（pin `1432cb09`）：
-  - [`mindspeed/features_manager/recompute/activation_function.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/recompute/activation_function.py)（`RecomputeActivationFeature`：参数注册、`num_layers` 校验、patch `MLP.forward`）
-  - [`mindspeed/features_manager/recompute/norm_function.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/recompute/norm_function.py)（`RecomputeNormFeature`：patch `TransformerLayer.forward` / `TransformerBlock._build_layers`）
-  - [`mindspeed/features_manager/recompute/recompute_method.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/recompute/recompute_method.py)（`RecomputeMethodFeature`：`block` 且非 swap_attention 时 patch `_checkpointed_forward`）
-  - [`mindspeed/features_manager/recompute/enable_recompute_layers_per_pp_rank.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/recompute/enable_recompute_layers_per_pp_rank.py)（`--enable-recompute-layers-per-pp-rank` 语义）
-  - [`mindspeed/core/memory/recompute/recompute_common.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/recompute/recompute_common.py)（`CheckpointWithoutOutput`/`CheckpointFunctionWithoutOutput` 的 `discard_output`/`recompute` + RNG 回拨、`should_recompute` 优先级与 full→细粒度名额划分）
-  - [`mindspeed/core/memory/recompute/activation/activation_recompute_forward.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/recompute/activation/activation_recompute_forward.py)（`core_activation_recompute_forward_impl`：gelu/swiglu 融合、checkpoint+discard+register_hook）；[`activation/should_recompute.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/recompute/activation/should_recompute.py)（`should_recompute_activation` + ripipe 接管）
-  - [`mindspeed/core/memory/recompute/norm/norm_recompute_forward.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/recompute/norm/norm_recompute_forward.py)（`norm_recompute_forward_impl`：`norm_ckpt1`/`norm_ckpt2`、TE `IdentityOp` 走 `enable_recompute_norm_checkpoint`）；[`norm/should_recompute.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/recompute/norm/should_recompute.py)（`should_recompute_norm`）
-  - [`mindspeed/core/memory/common.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/common.py)（`transformer_block_checkpointed_forward`：uniform/block 两支、`reduce_recompute_for_last_chunk` 末层免重算）
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [recomputation.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/recomputation.md)（supporting）
 
 ## Links
 

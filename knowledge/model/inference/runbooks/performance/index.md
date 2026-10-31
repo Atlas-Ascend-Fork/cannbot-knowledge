@@ -10,3 +10,5 @@
 - [稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss](graph_mode_stable_input_signature_recompile.md)：从重编译与 guard 日志定位 shape、stride、dtype 和 warm-up 差异；仅对确认的输入试验静态化或连续化，区分动态支持与持久缓存失效。
 - [MoE 优化/并行在 decode 静默不生效的四类根因：硬编码 False / yaml 键名不匹配 / 漏切间接层 / 误挂 is_prefill](moe_optimization_silently_disabled_decode.md)：MoE 优化/并行在 decode 静默不生效的四类根因：硬编码 False / yaml 键名不匹配 / 漏切间接层 / 误挂 is_prefill。配置里明明开了某项优化（superkernel / 多流 / 新量化分支 / 张量并行），运行时却看不到预期的 overlap / 加速 / 切分，而且不报错、不告警。尤其常发生在 decode 路径。遇到「配了却像没生效」，优先按下面四类根因逐一核查开关到建模侧的真实传播链，而不是先怀疑功能本身。
 - [推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过](warmup_silent_slow_and_dummy_cache.md)：推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过。在昇腾上拉起大模型推理，正式服务前会先跑一次 warmup（用 dummy 输入跑一遍真实 prefill 前向，触发算子编译 / cache 分配 / 图捕获）。这一步有两个反复出现的坑： 看似卡死：war…
+
+- [MTP/DSpark 开启 Profiling 后 Decode 平均时延失真或显示零](post_profile_decode_latency.md)：在 MTP/DSpark 的统计分支中检查计时窗口、接受长度与实际输出数是否对齐，使用 post-profile 统计并在空窗口时回退完整 Decode 数据。

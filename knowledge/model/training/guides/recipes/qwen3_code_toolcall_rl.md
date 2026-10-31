@@ -8,13 +8,14 @@ tags:
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/README.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-10-29T15:39:15Z'
 platforms:
+- a2
 - a3
 ---
 
@@ -71,15 +72,15 @@ ScaleBox 的工具调用配置在 `tool_config/scalebox_tool_config.yaml`，verl
 
 ### RL 训练与结果
 
-RL 由 `bash run_code_rl_demo.sh` 拉起。训练指标（下图三联：训练数据得分 / 推理长度·截断比例 / 工具调用交互轮次）显示，随训练推进 `score`、`response_length_non_aborted_mean`、`num_turns_mean` 同步上升——模型学会更长链路、更多轮工具调用来解题：
+RL 由 `bash run_code_rl_demo.sh` 拉起。训练指标（下图三联：训练数据得分 / 推理长度·截断比例 / 工具调用交互轮次）显示，score 总体上升，非截断回复长度先降后升；工具轮次则先降至约6轮、再增至约step150附近25轮，后回落至约22–23轮。三者不始终同步，得分提高不能简单解释为工具越调越多：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/figures/training_progress.png" width="55%">
-<sub>图：基础样例训练指标（steps 0–250）——上 `accuracy/score`（训练数据得分，无重复数据）、中 `response_length_non_aborted_mean`（非截断推理长度）、下 `num_turns_mean`（工具调用交互轮次均值），三者随训练上升（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/figures/training_progress.png" width="55%">
+<sub>图：基础样例训练指标（steps 0–250）——上 `accuracy/score`（训练数据得分，无重复数据）、中 `response_length_non_aborted_mean`（非截断推理长度）、下 `num_turns_mean`（工具调用交互轮次均值），得分总体增加，回复长度先降后增，工具轮次先降后增、后期回落（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
 
-模型评测在 **LiveCodeBench**（release v5、start_date 2024-08-01、代码执行用 ScaleBox），推理参数遵循 DeepSeek-R1 设置（n=4、temperature=0.6、top_p=0.95、max_tokens=32768）。LiveCodeBench pass@1 随训练步数从 step20 的 **16.03** 单调爬升到 step240 的 **28.39**（step60 18.08 / 120 20.14 / 160 24.45 / 200 25.97 / 240 28.39）：
+模型评测在 **LiveCodeBench**（release v5、start_date 2024-08-01、代码执行用 ScaleBox），推理参数遵循 DeepSeek-R1 设置（n=4、temperature=0.6、top_p=0.95、max_tokens=32768）。LiveCodeBench pass@1 随训练步数从 step20 的 **16.03** 总体提升到 step240 的 **28.39**（中间step180 26.20→step200 25.97存在回落；step60 18.08 / 120 20.14 / 160 24.45 / 200 25.97 / 240 28.39）：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/figures/evaluation_progress.png" width="55%">
-<sub>图：训练各 ckpt 在 LiveCodeBench（n=4, temperature=0.6, top_p=0.95, max_tokens=32768, v5, start_date 2024-08-01）上的 pass@1——从 16.03（step20）升至 28.39（step240）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·模型评测）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/figures/evaluation_progress.png" width="55%">
+<sub>图：训练各 ckpt 在 LiveCodeBench（n=4, temperature=0.6, top_p=0.95, max_tokens=32768, v5, start_date 2024-08-01）上的 pass@1——从 16.03（step20）升至 28.39（step240）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·模型评测）</sub>
 
 ## 推测解码扩展（EAGLE3 + Suffix）
 
@@ -101,22 +102,22 @@ bash suffix_rl_run.sh    # 含 Suffix 投机解码
 
 ### 结果：端到端吞吐 +38% / 步时间 -25% / 精度无损
 
-与基线相比，Suffix 与 EAGLE3 投机解码端到端吞吐量**最高提升 38%**、训练步时间缩短 **25%**，且精度无损失。逐 step 吞吐提升曲线显示 eagle3 与 suffix 的均值提升均在 +35% 量级（图内标注 eagle3 mean ≈ +34.9%、suffix mean ≈ +35.6%），单步峰值可达 ~56%：
+与基线相比，Suffix 与 EAGLE3 投机解码端到端吞吐量**最高提升 38%**、训练步时间缩短 **25%**，且精度无损失。逐 step 吞吐提升曲线显示 图内标注 eagle3 mean=+34.9%、suffix mean=+38.4%；Suffix 在约step10峰值约+60%，EAGLE3峰值约+56%。README“最高提升38%”是汇总表述，与逐step瞬时峰值不是同一口径：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/figures/throughput_speedup.png" width="55%">
-<sub>图：相对基线（0% nospec）的逐 RL step 吞吐提升（tokens/s）——eagle3 与 suffix 均值约 +35%，峰值约 +56%，最高 +38%（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/figures/throughput_speedup.png" width="55%">
+<sub>图：相对基线（0% nospec）的逐 RL step 吞吐提升（tokens/s）——eagle3均值+34.9%、suffix均值+38.4%；Suffix逐step峰值约+60%，README汇总称最高+38%，口径不同（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
 
 精度对照（critic score 均值随 RL step）显示 nospec / eagle3 / suffix 三条曲线高度重合、终点差异在 ±1.0% 噪声内，印证「精度无损」：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/figures/sd_nosd_accuracy.png" width="55%">
-<sub>图：投机 vs 无投机精度对照（critic score 均值随 RL step）——nospec/eagle3/suffix 曲线高度重合，终点差 ±1.0%，投机解码精度无损（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/figures/sd_nosd_accuracy.png" width="55%">
+<sub>图：投机 vs 无投机精度对照（critic score 均值随 RL step）——nospec/eagle3/suffix 曲线高度重合，终点差 ±1.0%，投机解码精度无损（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
 
 ### 局限：冻结草稿模型导致接受率衰减
 
 由于 **EAGLE3 草稿模型在 RL 训练期间保持冻结**，随着 Actor 策略逐渐偏离草稿模型的训练分布，草稿接受率呈**缓慢下降趋势**（图中从约 0.46 随训练步数滑落到约 0.35）：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/figures/acceptance_rate_overall.png" width="55%">
-<sub>图：RL 训练过程中整体草稿接受率（Raw）——冻结的 EAGLE3 草稿模型因 Actor 策略漂移，接受率从约 0.46 缓慢降至约 0.35（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/figures/acceptance_rate_overall.png" width="55%">
+<sub>图：RL 训练过程中整体草稿接受率（Raw）——冻结的 EAGLE3 草稿模型因 Actor 策略漂移，接受率从约 0.46 缓慢降至约 0.35（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/README.md">Qwen3 Code Toolcall RL README</a>·训练结果）</sub>
 
 据此可行的缓解方向：**在线草稿模型训练**（RL 中联合训练 EAGLE3 草稿模型对抗策略漂移）、**弹性投机**（自适应调整投机 token 数）、块验证、Ngram 投机修复、在线 MTP。
 
@@ -135,11 +136,8 @@ bash suffix_rl_run.sh    # 含 Suffix 投机解码
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`agent_rl/qwen3_code_toolcall/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md)（概述与贡献点、硬件 A2/A3 单机八卡、软件版本表（verl c651b7b / vllm 0.11.0·0.13.0 / vllm-ascend v0.11.0rc1·v0.13.0 / CANN 8.3.RC1·8.5.0）、文件说明、基础样例 verl 三补丁与修改清单、SFT 冷启动 sft_step_50 + model_merger、RL `run_code_rl_demo.sh`、训练/评测结果（LiveCodeBench 16.03→28.39）、SD 扩展 rollout 占比 78.3%、`0004`/vllm `0001-enable-eagle-sprl` 补丁、eagle3/suffix/no_spec 脚本、`process_all_the_logs_sprl.py`、吞吐 +38%/步时间 -25%/精度无损、接受率衰减与未来工作）
-- recipe 文件（`agent_rl/qwen3_code_toolcall/` 目录下）：[`patches/verl/0001-verl-feature-improve_rl_usability.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/patches/verl/0001-verl-feature-improve_rl_usability.patch)、[`patches/verl/0002-enable-tool-agent-loop.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/patches/verl/0002-enable-tool-agent-loop.patch)、[`patches/verl/0003-toolcall-reward.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/patches/verl/0003-toolcall-reward.patch)、[`patches/verl/0004-enable-specrl-clean.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/patches/verl/0004-enable-specrl-clean.patch)、[`patches/vllm/0001-enable-eagle-sprl.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/patches/vllm/0001-enable-eagle-sprl.patch)、[`tool_config/scalebox_tool_config.yaml`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/tool_config/scalebox_tool_config.yaml)、[`scalebox.py`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/scalebox.py)、[`build_rl_dataset.py`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/build_rl_dataset.py)、[`download_eagle.py`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/download_eagle.py)、[`run_code_rl_demo.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/run_code_rl_demo.sh)、[`run_toolcall_sft_demo.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/run_toolcall_sft_demo.sh)、[`run_multi_turn_livecodebench_eval.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/run_multi_turn_livecodebench_eval.sh)、[`eagle3_rl_run.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/eagle3_rl_run.sh)、[`suffix_rl_run.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/suffix_rl_run.sh)、[`no_spec_rl_run.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/no_spec_rl_run.sh)、[`process_all_the_logs_sprl.py`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/process_all_the_logs_sprl.py)
-- [verl](https://github.com/volcengine/verl) — 上游 RL 框架仓（commit `c651b7b4207e408875f132c4226969ef3495d408`）
-- [vllm-ascend](https://github.com/vllm-project/vllm-ascend) — 上游 rollout 推理引擎仓（SD 扩展 v0.13.0、commit `6281c1207a7a499e9f23a42b3a1e7027469f2b10`）
-- [scalebox](https://gitcode.com/icip-cas/ScaleBox) — ScaleBox 代码执行沙盒仓（`gitcode.com/icip-cas/ScaleBox`）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/README.md)（supporting）
 
 ## Links
 

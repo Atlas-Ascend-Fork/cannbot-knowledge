@@ -8,16 +8,12 @@ tags:
 - topic.graph_execution
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/docs/models/longcat-flash/longcat_flash_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/50e41b5b8220284f6721223e9f0d3471cd0b0944/models/qwen3-moe-sglang/README.md
-  role: constraint
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/50e41b5b8220284f6721223e9f0d3471cd0b0944/models/qwen3-moe-sglang/patches/0009-feat-support-superkernel.diff
-  role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/332
-  role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a3
 scope:
@@ -65,4 +61,4 @@ scope:
 
 ## 回退与适用边界
 
-保存原配置，按案例的真实开关关闭 SuperKernel 并重核编译产物、缓存和输出，不把直接切 eager 等同于只关闭一个优化。LongCat 文档的 acl_graph 不支持、CANN 8.5.0.alpha002 部分算子未完全融合只描述固定版本，不能当作当前所有实现的永久限制。
+保存原配置，按案例的真实开关关闭 SuperKernel 并重核编译产物、缓存和输出，不把直接切 eager 等同于只关闭一个优化。当前 LongCat SuperKernel 只接受 GE，npugraph_ex/eager 会被校验拒绝；其他模型按自己的入口核对。

@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/353
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - agnostic
 ---
@@ -99,12 +99,7 @@ export DISABLE_XFORMERS=1   # 让 attention 跳过 xformers 分支，回落到 N
 
 ## Evidence
 
-- **代码事实**（HunyuanVideo，clone `cann/cann-recipes-infer@5d15b2598ffa`）：`hyvideo/monkey_patch.py` 的 `npu_fia` 与全局符号替换、`appendix/xfuser/envs.py`·`config.py` 的 try-import、`appendix/yunchang/ring/ring_flashinfer_attn.py` 的 P2P 循环、README 附录"侵入式修改外部依赖库"。
-- **维护者确认**（HunyuanVideo）：try-import 双路径是"为了兼容 GPU"。
-- **代码事实**（SANA-Video，clone `@d7174ec0ba19`）：`config/2b_480p_single.yaml` 的 `DISABLE_XFORMERS: "1"`（注释"route attention to NPU fused kernel"）+ `docs/design/mm_inference_design.md`。
-- **代码事实**（稀疏 ⊥ Ring，clone `@a12b2affe2d0`）：`models/hunyuan-video/sample_video.py main()` 新增 `raise ValueError` 守卫（diff 事实）；README 表述与守卫矛盾，取代码为准。
-- 溯源下探：
-  - [cann-recipes-infer-issue-29-rfc-hunyuanvideo-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/29)
-  - [cann-recipes-infer-pr-34-feat-add-hunyuanvideo-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/34)
-  - [cann-recipes-infer-pr-353-feat-hunyuanvideo-support-ulysses-parallelism-with-block-wise-sparse-att](https://gitcode.com/cann/cann-recipes-infer/merge_requests/353)
-  - [cann-recipes-infer-pr-356-refactor-unified-inference-script-for-multimodal-models](https://gitcode.com/cann/cann-recipes-infer/merge_requests/356)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/29)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/34)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/356)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/353)（evidence）

@@ -9,14 +9,12 @@ tags:
 - topic.kv_cache
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen3-next/README.md
-  role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen3-moe-sglang/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T13:54:05Z'
 platforms:
 - agnostic
 ---
@@ -48,15 +46,16 @@ platforms:
 ## Constraints
 
 - NPU 适配需要额外的 patch 和算子替换
-- 部分高级特性（如 CP）需在框架外实现
+- 该固定版本的 CP 需通过样例补丁扩展 SGLang：stage4 / stage6 将通信域、Attention 与 GDN CP 直接集成到 SGLang 源码，不属于独立框架外实现
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 多个模型基于 SGLang 框架部署
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md)（supporting）
 
 ## Known Integrations
 
-- **Qwen3-Next** 基于 SGLang v0.5.6 + 六个 stage patch（stage1 适配与 MoE 多流，stage2 W8A8/C8 量化，stage3 GDN+MTP，stage4 CP+ZigZag，stage5 GDN/rmsnormgated 融合算子接入，stage6 GDN 的 CP+TP 混合并行 / `ENABLE_CONTEXT_PARALLEL_GDN`，对应 `patches/stage6/0001-support-gdn-cp.patch`）完成 NPU 部署。
+- **Qwen3-Next** 的本地集成要求 Atlas A3、Linux ARM；启用 GDN 融合算子需 CANN 8.5.0。它基于 SGLang v0.5.6 + 六个 stage patch（stage1 适配与 MoE 多流，stage2 W8A8/C8 量化，stage3 GDN+MTP，stage4 CP+ZigZag，stage5 GDN/rmsnormgated 融合算子接入，stage6 GDN 的 CP+TP 混合并行 / `ENABLE_CONTEXT_PARALLEL_GDN`，对应 `patches/stage6/0001-support-gdn-cp.patch`）完成 NPU 部署。
  - 新增入口：`zigzag_cp_utils.py`、`get_cp_group` / `context_model_parallel_all_gather`、`fused_gdn_gating.py`、`ascend_backend.py` C8 路径、`eagle_worker_v2.py` MTP v2。
  - 使能方式由 `set_env.sh` 环境变量控制（`ENABLE_ASCENDC_FUSION_GDN`、`USE_CUSTOM_NORM_KERNEL`、`ENABLE_NPU_DEEPEP_MOE_MULTI_STREAM`、`ASCEND_USE_C8`、`CP_USE_ZIGZAG`、`SGLANG_ENABLE_SPEC_V2` 等）。
 

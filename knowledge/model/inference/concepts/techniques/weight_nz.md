@@ -1,9 +1,7 @@
 ---
 type: Concept
 title: weightNZ Format
-description: '将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速
-  DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。由 YAML `enable_weight_nz: True` 使能，模型加载阶段由
-  各模块 `quant_method.process_weights_after_loading` 执行 NZ 转换；`convert_model.py` 负责权重量化转换。'
+description: '将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速 DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。由 YAML `enable_weight_nz: True` 使能，模型加载阶段由 各模块 `quant_method.process_weights_after_loading` 执行 NZ 转换；`convert_model.py` 负责权重量化转换。'
 tags:
 - task.optimization
 - topic.attention
@@ -11,12 +9,16 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/linear.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - a3
 ---
@@ -29,13 +31,13 @@ platforms:
 ## Mechanism
 
 - NZ 是昇腾 Cube 单元亲和的"分形"数据布局：内层 16 × 16（或 16 × 32，视 dtype 而定）的 tile 沿外层 row/col 堆叠，满足 **512 字节对齐**。
-- 相对于 ND（普通 row-major）布局，NZ 布局使 L1/L0A/L0B 的数据加载指令更长、连续，**硬件带宽访问效率显著提升**。
+- 相对于 ND（普通 row-major）布局，NZ 布局使 L1/L0A/L0B 的数据加载指令更长、连续，**目标是提高适配算子的硬件访问效率，实际收益需测量**。
 - 转换示例：int8 Tensor shape `[16384, 7168]` → NZ 布局 `[224, 1024, 16, 32]`（内层 16 × 32，int8 下 512 字节对齐：N 维 7168/32=224、K 维 16384/16=1024）。
-- 覆盖范围：模型中所有 Matmul 权重（Q/K/V proj、gate_up_proj、down_proj、kv_b_proj、o_proj、MoE experts GroupedMatMul、lm_head 等），不覆盖 LayerNorm/RMSNorm/RoPE 的非 matmul tensor。
+- 覆盖范围：仅覆盖实际由相应 quant_method 执行 NZ 转换的模块与 dtype，不能概括为所有 Matmul。固定 R1 的遍历明确跳过 kv_b_proj；init_splited_kv_b_weight 仅连续化拆分权重，没有 NZ 转换。module/linear.py 的非量化 Linear 还排除 float32 权重。LayerNorm/RMSNorm/RoPE 等非 Matmul tensor 不在此范围。
 
 ### 代码入口
 
-`models/deepseek_r1/models/modeling_deepseek.py:L925` / `L2093` / `L2408`：
+当前R1的process_weights_after_loading和各量化method：
 
 ```python
 self.enable_weight_nz = self.infer_config.model_config.enable_weight_nz
@@ -49,13 +51,13 @@ NZ 转换没有独立的 `process_weight_nz` 函数，而是由 module 的 `quan
 
 ## Applicable Scenarios
 
-- 任何以 Matmul 为主的 LLM 推理路径。
-- BF16 / W8A8 / W8A8C8 都适用；量化路径下权重已是 int8，转换为 NZ 后带宽优势更明显。
+- 有对应NZ算子支持的Matmul推理路径。
+- BF16 / W8A8 / W8A8C8 都适用；量化路径下权重已是 int8，是否从NZ获益还取决于实际算子和shape。
 - DeepSeek-R1 全部 Decode / Prefill YAML 默认 `enable_weight_nz: True`。
 
 ## Constraints
 
-- 权重需要一次性转换，加载时间略增；对静态权重推理无影响。
+- 权重需要一次性转换，加载时间略增；转换后布局必须与消费算子匹配。
 - 对训练或需要频繁修改权重的场景不适合。
 - 与其他权重格式优化（如 `cache_mode="PA_NZ"` 的 KVCache NZ 布局）相互配合但互不依赖。
 
@@ -65,7 +67,10 @@ NZ 转换没有独立的 `process_weight_nz` 函数，而是由 module 的 `quan
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md) "Matmul 类算子使能 weightNZ 格式"章节；`models/deepseek_r1/config/*.yaml` 中 `enable_weight_nz: True`；`models/deepseek_r1/models/modeling_deepseek.py` 中 `process_weights_after_loading` 及模块 `quant_method.process_weights_after_loading`。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_r1_prefill_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md)（supporting）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py)（implementation）
+- [linear.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/linear.py)（implementation）
 
 ## Links
 

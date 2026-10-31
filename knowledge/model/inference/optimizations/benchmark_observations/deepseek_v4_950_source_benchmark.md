@@ -1,16 +1,16 @@
 ---
 type: Optimization
 title: DeepSeek-V4 950DT混合量化的来源性能观测
-description: 集中 V4 总览与量化卡已引用的 950DT 数据，补齐 GBS，保留 MTP、强制 EPLB 和统计缺口。
+description: 更新当前950DT的Flash/Pro完整来源表及HiF8混合方案，保留MTP、强制EPLB和测量缺口。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-10-21T09:02:44Z'
-updated_at: '2026-10-21T09:02:44Z'
+updated_at: '2026-10-29T15:57:02Z'
 platforms:
 - '950'
 scope:
@@ -28,11 +28,11 @@ scope:
 
 ## Workload
 
-固定指南自报的 Offline Decode，不含 Serving 调度和框架负载均衡。下表集中旧 V4 总览和混合量化卡已引用的行，补回原表 GBS；不加入未被这两张卡引用的新测量点。Flash/Pro 分开，Seq Length 不补作输入/输出拆分，并发未给出。
+当前指南自报的Offline Decode，不含Serving调度和框架负载均衡。Flash/Pro、GBS、序列、MTP及三种混合量化分别保留，当前新增HiF8方案；旧版MXFP8时延已由当前表替换，不混列为当前结果。Seq Length不自行解释为输入/输出拆分。
 
 ## Hardware
 
-950DT，16 Chips，Attention DP 与 MoE EP；不是 950PR 测量，也不把 16 Chips 自动换算为 die 或进程数。
+950DT，源表多数16 Chips，Pro另有64 Chips一行，Attention DP与MoE EP；不是 950PR 测量，也不把 16 Chips 自动换算为 die 或进程数。
 
 ## Software
 
@@ -48,20 +48,40 @@ TPOT 与 Throughput 沿用源表字段和单位；来源未完整说明计时起
 
 ## Baseline 与 Variant
 
-两种 Hybrid 格式的模块配置由[混合量化机制](../../concepts/quantization/hybrid_mxfp8_mxfp4.md)维护。这里只在同规格、GBS、序列和 MTP 下比较来源结果；来源未提供完整受控试验记录。MTP 和强制 EPLB 同时参与，不能把整网结果归因给单一量化或多流开关。
+三种 Hybrid 格式的模块配置由[混合量化机制](../../concepts/quantization/hybrid_mxfp8_mxfp4.md)维护。这里只在同规格、GBS、序列和 MTP 下比较来源结果；来源未提供完整受控试验记录。MTP 和强制 EPLB 同时参与，不能把整网结果归因给单一量化或多流开关。
 
 ## Result
 
 | 规格 | GBS | Chips | MTP | DataType | Seq Length | TPOT(ms) | Throughput(Tokens/p/s) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Flash | 256 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 9.84 | 1625.31 |
-| Flash | 1536 | 16 | 1 | Hybrid MXFP8-MXFP4 | 8192 | 20.33 | 4722.22 |
-| Flash | 256 | 16 | 3 | Hybrid MXFP8-MXFP4 | 131072 | 10.69 | 1496.36 |
-| Flash | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 1048576 | 8.22 | 121.70 |
+| Flash | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 6.55 | 152.79 |
+| Flash | 256 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 8.78 | 1821.75 |
+| Flash | 1536 | 16 | 1 | Hybrid MXFP8-MXFP4 | 8192 | 16.46 | 5830.65 |
+| Flash | 2880 | 16 | 1 | Hybrid MXFP8-MXFP4 | 8192 | 25.54 | 7047.44 |
+| Flash | 256 | 16 | 3 | Hybrid MXFP8-MXFP4 | 131072 | 9.66 | 1655.64 |
+| Flash | 768 | 16 | 1 | Hybrid MXFP8-MXFP4 | 131072 | 10.50 | 4569.64 |
+| Flash | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 1048576 | 8.04 | 124.36 |
+| Flash | 64 | 16 | 3 | Hybrid MXFP8-MXFP4 | 1048576 | 9.46 | 422.88 |
+| Flash | 16 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 8192 | 6.27 | 159.49 |
+| Flash | 256 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 8192 | 8.41 | 1902.50 |
+| Flash | 1536 | 16 | 1 | Hybrid HiF8-MXFP8-MXFP4 | 8192 | 15.95 | 6017.70 |
+| Flash | 16 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 131072 | 6.45 | 155.03 |
+| Flash | 256 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 131072 | 9.22 | 1735.36 |
+| Flash | 16 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 1048576 | 7.71 | 129.70 |
+| Flash | 64 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 1048576 | 9.11 | 439.08 |
 | Flash | 256 | 16 | 3 | Hybrid FP8-MXFP4 | 8192 | 11.06 | 1447.00 |
 | Flash | 1536 | 16 | 1 | Hybrid FP8-MXFP4 | 8192 | 24.28 | 3953.49 |
 | Pro | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 17.64 | 56.7 |
+| Pro | 64 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 19.03 | 210.16 |
+| Pro | 128 | 16 | 3 | Hybrid MXFP8-MXFP4 | 8192 | 20.61 | 388.23 |
+| Pro | 3072 | 64 | 1 | Hybrid MXFP8-MXFP4 | 8192 | 27.79 | 1727.24 |
 | Pro | 16 | 16 | 3 | Hybrid MXFP8-MXFP4 | 131072 | 19.46 | 51.38 |
+| Pro | 64 | 16 | 3 | Hybrid MXFP8-MXFP4 | 131072 | 21.23 | 188.42 |
+| Pro | 16 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 8192 | 16.33 | 61.24 |
+| Pro | 64 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 8192 | 17.23 | 232.22 |
+| Pro | 128 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 8192 | 18.68 | 428.16 |
+| Pro | 16 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 131072 | 16.55 | 60.44 |
+| Pro | 64 | 16 | 3 | Hybrid HiF8-MXFP8-MXFP4 | 131072 | 18.22 | 219.57 |
 
 来源称 MTP3 平均每 3 个 Draft Token 接受 1.44 个，MTP1 平均每 1 个接受 0.7 个；未给完整输入与统计过程，不能用于保证新任务的接受率或自行折算收益。
 
@@ -71,6 +91,4 @@ TPOT 与 Throughput 沿用源表字段和单位；来源未完整说明计时起
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)
-
-本次核对固定来源及必要配置，不将文档自报、来源固定或 Lint 通过记作硬件验证事件。
+- [deepseek_v4_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md)（primary）

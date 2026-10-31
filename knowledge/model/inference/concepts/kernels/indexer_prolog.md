@@ -1,16 +1,7 @@
 ---
 type: Concept
 title: Indexer Prolog Kernel
-description: '`Indexer Prolog` 是 LightningIndexer 之前的准备算子，为 LI 提供输入 q、weight、q_scale，处理
-  Indexer Q / Indexer Cache(K) / Indexer Weight 三条独立计算流（Q 不含 LayerNorm，K 含 LayerNorm；Q/K 涉及 RoPE、Hadamard 与动态量化，Weight 仅投影与缩放且不量化）。DeepSeek-V3.2-Exp(DSA)：PyPTO 单一大融合算子 npu_lightning_indexer_prolog_pto，4
-  batch×MTP1×64K 逼近理论极限（Indexer Q 四段理论拆解、瓶颈在搬运、Q 掩盖 Cache/Weight）；配合 torchair npu_stream_switch
-  多流。DeepSeek-V4 适配（PyPTO）：IndexerProlog 仅出现在 compress_ratio=4 的 CSA 层（C128A/HCA 无
-  LI 模块，代码 cmp_ratio:4 only c4a have li module）。Query q_hadamard/Quant 流程：q_tmp=qr@idx_wq_b·scale
-  → q_hadamard=Cat(q_tmp[:,:nope_dim],Rope(q_tmp[:,nope_dim:]))@hadamard → q,q_scale=Quant；代码实际展开为
-  wq_b→inplace_partial_rotary_mul(interleave)→rotate_activation(hadamard_matrix=get_had_pow2)→量化（int8
-  走 npu_dynamic_quant 转 FP16 / FP8 走 npu_dynamic_block_quant）。Weights=x@weights_proj·1/sqrt(idx_nq·head_dim)（代码
-  softmax_scale=head_dim**-0.5·n_heads**-0.5 一致），不量化转 FP16/FP32。doc 描述 fused 而 code
-  为展开步骤（V4 图模式是否回落单一融合 PyPTO 算子源未明示，待验证）。'
+description: 区分 V3.2 的 PyPTO 三流融合与 V4 压缩 K、HiF8/FP8/Int8 Q 前处理，并修正 GLM-5 模型身份和当前 FP8 支持。
 tags:
 - task.implementation
 - topic.attention
@@ -18,12 +9,16 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_pypto_operator_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/indexer.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:35:31Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 - '950'
@@ -39,8 +34,8 @@ platforms:
 
 ## Role In Pipeline
 
-![Indexer Prolog 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/IndexerPrologQuant.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/IndexerPrologQuant.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/IndexerPrologQuant.png)（cann-recipes-infer @ 2f82d10）*
+![Indexer Prolog 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/IndexerPrologQuant.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/IndexerPrologQuant.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/IndexerPrologQuant.png)（cann-recipes-infer @ 944d2d3）*
 
 在 `models/deepseek-v3.2-exp/models/indexer.py:L184` 处入口：
 
@@ -100,8 +95,8 @@ Weight 不量化，最后转 FP16 喂给后续 LI。
 
 典型 Shape（4 batch × MTP1 × KV-Cache 64K）Profiling 泳道图：
 
-![Indexer Prolog 泳道图](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/IndexerPrologSwimLane.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/IndexerPrologSwimLane.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/IndexerPrologSwimLane.png)（cann-recipes-infer @ 2f82d10）*
+![Indexer Prolog 泳道图](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/IndexerPrologSwimLane.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/IndexerPrologSwimLane.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/IndexerPrologSwimLane.png)（cann-recipes-infer @ 944d2d3）*
 
 **计算流特点**（源文档）：
 
@@ -126,8 +121,8 @@ Weight 不量化，最后转 FP16 喂给后续 LI。
 
 除了融合本身，**Indexer Prolog 前的一系列 Cube 和 Vector 算子**可进一步使用 torchair 的 `npu_stream_switch` 多流并行，流水示意：
 
-![IndexerProlog 多流并行](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/indexer_prolog_multi_stream.jpg)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/indexer_prolog_multi_stream.jpg`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/indexer_prolog_multi_stream.jpg)（cann-recipes-infer @ 2f82d10）*
+![IndexerProlog 多流并行](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/indexer_prolog_multi_stream.jpg)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/indexer_prolog_multi_stream.jpg`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/indexer_prolog_multi_stream.jpg)（cann-recipes-infer @ 944d2d3）*
 
 见 [moe-multi-stream](../techniques/moe_multi_stream.md)（本技术页面同时记录 MoE 多流与 Indexer Prolog 多流两种 V3.2-Exp 多流场景）。
 
@@ -139,30 +134,13 @@ Weight 不量化，最后转 FP16 喂给后续 LI。
 
 源文档明示："仿照 Indexer Prolog 的调优过程，将其他几个子算子进行独立性能调优，达到极致性能。"
 
-## DeepSeek-V4 适配（PyPTO）
+## DeepSeek-V4 当前前处理
 
-与 DeepSeek-V3.2 不同，DeepSeek-V4 的 **IndexerProlog 只出现在 `compress_ratio = 4` 的层（即 C4A / CSA 层）**——只有 CSA 层才在 Compressor 压缩后的 cmp_KV 上叠加 LI 稀疏选择，因此只有 CSA 层需要 IndexerProlog 为后续 [lightning-indexer](lightning_indexer.md) 计算提供输入 `q`、`weight` 及 `q_scale`（C128A / HCA 层不带 LI 模块）：`Indexer.__init__(..., compress_ratio=4)`、`cmp_ratio: 4  # only c4a have li module`（`models/deepseek-v4/models/modules/indexer.py`）。上文 V3.2-Exp 的三流公式、泳道图、极限性能分析继续有效（对应 V3.2-Exp 谱系）。
+CSA 仅在 compress_ratio=4 时建立 Indexer；K 路通过 Compressor 生成压缩 cache，不能照搬 V3.2 的独立 wk/LayerNorm 流。Q 由 wq_b(qr,dynamic_scale=qr_scale) 投影，再做 interleaved Partial RoPE。Int8/FP8 分支执行 Hadamard，随后分别 dynamic_quant（FP16 scale）或 dynamic_block_quant（FP32 scale）。HiF8 用 Partial RoPE 后量化并跳过 Hadamard，Q scale 为单位；weights_proj 在 HiF8 模式也采用量化 Linear。
 
-### Query 计算：q_hadamard / Quant 流程
+weights = weights_proj(x) / sqrt(head_dim×index_n_heads)，Int8 转FP16、浮点分支转FP32，供当前 quant_lightning_indexer。离线 CP 从临时压缩缓存读取并按 prev/next 分段，不能继续访问旧 cache_data 字典。PyPTO 技术报告提供融合优化参考；当前 V4 indexer.py 是展开的前处理及多流事件链，不据文档标题推断调用 V3.2 的 custom_pypto prolog。
 
-PyPTO guide 给出 V4 IndexerProlog 的 Query 计算公式（`Rope` 为旋转位置编码、`Quant` 为量化）：
-
-$$q\_tmp = qr @ idx\_wq\_b \cdot qr\_scale \cdot idx\_wq\_b\_scale$$
-$$q\_hadamard = \text{Cat}(\{q\_tmp[:, :nope\_dim],\ Rope(q\_tmp[:, nope\_dim:])\}, -1) @ hadamard$$
-$$q,\ q\_scale = Quant(q\_hadamard)$$
-
-`indexer.py` forward 把 Query 计算拆为独立步骤而非单一融合调用：`wq_b(qr, dynamic_scale=qr_scale)` → `inplace_partial_rotary_mul(..., rotary_mode="interleave", partial_slice=...)`（只对后 `rope_head_dim` 做 interleave RoPE）→ `rotate_activation(q, self.hadamard_matrix)`（Hadamard 右乘，`hadamard_matrix = get_had_pow2(head_dim)`）→ 量化。量化按 `li_cache_quant_mode` 分两路：
-
-- `"int8"`：`q, q_scale = torch_npu.npu_dynamic_quant(...)`，`q_scale` 转 FP16（Indexer Cache C8）；
-- **FP8**：`q, q_scale = torch_npu.npu_dynamic_block_quant(..., dst_type=cache_data["li_cmp_kv"].dtype)`，对应 950PR/DT 上 LI FP8 全量化版的 Indexer Q 输入。
-
-> **源/代码差异**：PyPTO guide 把 IndexerProlog 描述为单一融合算子（fused "IndexerProlog 算子"），而 V4 `indexer.py` 把上述步骤展开为 `wq_b` / `inplace_partial_rotary_mul` / `rotate_activation` / `dynamic_quant` 等独立 op（含 `enable_multi_streams` 多流切换）。V3.2-Exp 谱系的 `npu_lightning_indexer_prolog_pto` 单一大融合算子仍存在于 `ops/pypto/src/lightning_indexer_prolog_pto/`（commit `f8c6f67` 清理过其 `quant_lightning_indexer_prolog_impl.cpp` 冗余头文件）。**V4 是否在某图模式路径下回落到该单一融合 PyPTO 算子，源/代码未明示。**
-
-### Weights 计算
-
-$$weights = x @ weights\_proj \cdot \frac{1}{\sqrt{idx\_nq \cdot head\_dim}}$$
-
-实现为 `weights = self.weights_proj(x_for_weights_proj) * (self.softmax_scale * self.n_heads ** -0.5)`，其中 `softmax_scale = head_dim ** -0.5`、`n_heads = config.index_n_heads`（公式 `idx_nq` 对应代码 `index_n_heads`），合并即 $1/\sqrt{head\_dim\cdot idx\_nq}$。Weight 不量化，按 `li_cache_quant_mode` 转 FP16（int8 路）或 FP32（fp8 路）后喂给 LI。
+GLM-5 使用 models/glm_5，而非GLM-5.2；当前其 apply_hadamard_quant 已有 Int8 和 FP8 分支，RoPE 使用模型专属交错布局。多流的 GE/native 事件细节见[实现案例](../../optimizations/cases/indexer_prolog_streams_fixed_implementation.md)。
 
 ## 多流优化（case pattern）
 
@@ -170,14 +148,10 @@ $$weights = x @ weights\_proj \cdot \frac{1}{\sqrt{idx\_nq \cdot head\_dim}}$$
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md)（Indexer Prolog 三流公式、泳道图、极限性能分析）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md)（量化策略中 IndexerProlog 融合算子 A8C8 配置、多流并行）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v3.2-exp/models/indexer.py:L184`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/models/indexer.py#L184)（PyPTO prolog 调用）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/pypto/src/lightning_indexer_prolog_pto/op_kernel/`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/pypto/src/lightning_indexer_prolog_pto/op_kernel/)（V3.2-Exp PyPTO 实现源码；`quant_lightning_indexer_prolog_impl.cpp` 冗余头清理见 commit `f8c6f67`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md) `## IndexerProlog`（V4 仅 compress_ratio=4 层、q_hadamard / Quant 公式、Weights 公式）。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/indexer.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/indexer.py)（`compress_ratio=4` / `cmp_ratio:4 # only c4a have li module`、`wq_b`→`inplace_partial_rotary_mul`(interleave)→`rotate_activation`(hadamard)→`npu_dynamic_quant`/`npu_dynamic_block_quant`、`weights = weights_proj(x)*(head_dim**-0.5 * n_heads**-0.5)`；doc 描述 fused 而 code 为展开步骤）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/glm-5/models/indexer.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/models/indexer.py)（多流前处理切流核对 @2c45117：`enable_multi_streams = ... and not is_prefill`:169；`npu_stream_switch(.., "22")`:177（Q 路径，`wq_b`:80）；`npu_wait_tensor(qr, query_states[0])`:183；`npu_stream_switch(.., "33")`:202（`weights_proj`:90）；`npu_wait_tensor(x, q_b)`:207；RoPE 用 `npu_interleave_rope`；Q 量化再入 `"22"`:225；aclgraph 路径用 `npu_record_tagged_stream`/`npu_tagged_event_record/wait(indexer_npu_events[0..3])`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v3.2-exp/models/indexer.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v3.2-exp/models/indexer.py)（多流前处理切流核对 @2c45117：`"22"`:256（`wq_b`:85）、`"33"`:283（`weights_proj`:95）、`npu_wait_tensor(qr, query_states[0])`:262、`npu_wait_tensor(x, q_b)`:288、Q 量化再入 `"22"`:306；RoPE 用 `npu_rotary_mul`——与 GLM-5 的 `npu_interleave_rope` 不同）
+- [deepseek_v3.2_exp_pypto_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_pypto_operator_guide.md)（primary）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/indexer.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/indexer.py)（implementation）
 
 ## Links
 

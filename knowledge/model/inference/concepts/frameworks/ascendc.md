@@ -9,20 +9,21 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md
   role: supporting
 - resource: https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/docs/zh/api/SIMD-API/basic_api/data_structures/GlobalTensor/SetL2CacheHint.md
   role: constraint
 - resource: https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/.agent/skills/ascendc-api-kernel-debug/references/clock_and_timestamp.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-28T06:00:57Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 - '950'
 ---
+
 # AscendC
 
 ## Summary
@@ -64,7 +65,7 @@ LI 的核心是在长达数十万的序列中为每 token **精确**选出分数
 
 #### 理论周期如何得到、可以比较什么
 
-数字来自 [固定版本 Guide 的「实现指令和理论开销」](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md#top-k-950prdt-方案)。估算对象为一个 Query 的 Top-k 阶段，Score 保序变换为 uint32，`S_k=16384`、`k=512`；不含 LI 的矩阵乘法、整网调度等其他阶段。
+数字来自 [固定版本 Guide 的「实现指令和理论开销」](https://gitcode.com/cann/cann-recipes-infer/blob/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md#top-k-950prdt-方案)。估算对象为一个 Query 的 Top-k 阶段，Score 保序变换为 uint32，`S_k=16384`、`k=512`；不含 LI 的矩阵乘法、整网调度等其他阶段。
 
 | 方案与平台 | 从来源取得估算值的方法 | 该例理论周期 |
 | --- | --- | --- |
@@ -101,11 +102,10 @@ SAS / LI 这类「值依赖算子」仅靠 shape 无法做好分核，需运行�
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — ops/ascendc/ 目录包含多个 AscendC 算子实现
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md)（V4 AscendC：Compressor / LI 950PR/DT 直方图 / SAS / AICPU Scheduler，MR 985b882/5e9e41d）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/ascendc/src/{kv_compress_epilog, indexer_compress_epilog, hc_pre, hc_post}`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/ops/ascendc/src) + [`torch_ops_extension/custom_ops/converter/`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/ops/ascendc/torch_ops_extension/custom_ops/converter)（FP8 dtype / metadata 算子命名空间 grep 核对）
-- [SetL2CacheHint 固定版本文档](https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/docs/zh/api/SIMD-API/basic_api/data_structures/GlobalTensor/SetL2CacheHint.md) — 产品支持情况与驻留模式边界；接口可用不代表所有缓存模式均可用。
-- [clock 与时间戳固定版本说明](https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/.agent/skills/ascendc-api-kernel-debug/references/clock_and_timestamp.md) — 同线程局部周期差、打印位置及测量干扰；不将局部周期冒充完整算子或整网耗时。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_v4_ascendc_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md)（supporting）
+- [远程来源](https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/docs/zh/api/SIMD-API/basic_api/data_structures/GlobalTensor/SetL2CacheHint.md)（constraint）
+- [远程来源](https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/.agent/skills/ascendc-api-kernel-debug/references/clock_and_timestamp.md)（supporting）
 
 ## Known Kernels
 

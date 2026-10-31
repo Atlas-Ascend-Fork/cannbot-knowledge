@@ -13,8 +13,12 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/388
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/kv_cache/cache_utils.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gpt_oss/models/modeling_gpt_oss.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:29:24Z'
 platforms:
 - agnostic
 ---
@@ -29,9 +33,9 @@ platforms:
 
 昇腾上做分页注意力**不需要另造一个「paged attention 专用算子」**——用标准 [fused-infer-attention-score](../../concepts/kernels/fused_infer_attention_score.md) v2 + KV 写回算子，靠喂索引结构达成分页，且与 vLLM 相同的 block_table / slot_mapping 约定，故样例注意力层可直接移植到 vLLM 等分页 KV 框架：
 
-- **Decode 读分页 KV**：给 `npu_fused_infer_attention_score_v2` 传 `block_table` + `block_size`，从块池物理 cache 张量按块表寻址读非连续 KV。Prefill 对当前 prompt token 直接算 FA（不带 `block_table`），算完再写回。
+- **Decode 读分页 KV**：给 `npu_fused_infer_attention_score_v2` 传 `block_table` + `block_size`，从块池物理 cache 张量按块表寻址读非连续 KV。Prefill在当前GptOss实现也使用分页缓存及block_table；是否走直接prompt FA取决于具体模型，不能泛化为所有Prefill不分页。
 - **KV 写回**：用 `npu_scatter_nd_update_` 按 `slot_mapping` 把新 K/V 散写进块池（`dst.view(-1, num_kv_heads, head_dim)`、`slot_mapping.view(-1, 1)`、`src`）。
-- **框架侧索引由 KVCacheManager 三层结构产出**（[kv-cache-manager](../../concepts/frameworks/kv_cache_manager.md)）：`KVCacheManager`（请求级总协调）→ `SingleTypeKVCacheManager`（单 attention type 逻辑块管理，Full / SlidingWindow）→ `BlockPool`（物理 block 发放 / 回收）；`prepare_block_tables()` / `prepare_slot_mapping()` 按 `attn_type` 组织成字典。
+- **框架侧索引由 KVCacheManager 三层结构产出**（[kv-cache-manager](../../concepts/frameworks/kv_cache_manager.md)）：`KVCacheManager`（请求级总协调）→ `SingleTypeKVCacheManager`（单 attention type 逻辑块管理，Full / SlidingWindow）→ `BlockPool`（物理 block 发放 / 回收）；`prepare_block_tables()` / `prepare_slot_mapping()` 按manager_key组织成字典，每个管理器保留自身block_size；同一attention类型也可有不同管理组。
 
 **迁移时的算子约束（坑）**：融合注意力 / 分页算子**要求 block_table 中每一项都是合法 block 索引、不能有空洞**。故实现上额外申请一个 `_null_block` 占位块用于逻辑对齐（不承载真实 KV）：逻辑块表长度须与 `⌈kv_len/block_size⌉` 对齐，滑窗失效的历史 block 位置用 `_null_block` 占位并把物理块归还池。把 vLLM 的 block_table / slot_mapping 正确喂进算子、并保证块表无非法 / 空洞索引（必要时补 null block）即可移植。
 
@@ -53,8 +57,7 @@ offline 批量推理的分页 KV cache 预分配（`offline_max_len` 已知固�
 
 ## Evidence
 
-- `diff 事实` + `维护者确认`（@2c45117）：`GptOssAttention` decode 分支带 `block_table` / `block_size`、`update_cache` 用 `npu_scatter_nd_update_` + `slot_mapping`；`kv_cache_design.md` 的三层结构 + `_null_block` 系「算子要求 block table 必须存在合法 block 索引」的占位；维护者确认样例 FA/KVCache-update 算子 PA 场景可 work、可移植 vLLM。
-- `diff 事实`（@c0f5c30949703c）：`calculate_block_num` offline 分支新增 `torch.npu.mem_get_info()` 预校验块并 `raise MemoryError`；「过大 offline_max_len×batch 会深层崩溃」为守卫的显见意图（据代码 + 报错文案推断）。
-- 溯源下探：
-  - [cann-recipes-infer-issue-150-question-paged-attention-kv-cache](https://gitcode.com/cann/cann-recipes-infer/issues/150)
-  - [cann-recipes-infer-pr-388-fix-fix-page-attention-cache-management-and-packed-sequence](https://gitcode.com/cann/cann-recipes-infer/merge_requests/388)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/150)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/388)（evidence）
+- [cache_utils.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/kv_cache/cache_utils.py)（implementation）
+- [modeling_gpt_oss.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gpt_oss/models/modeling_gpt_oss.py)（implementation）

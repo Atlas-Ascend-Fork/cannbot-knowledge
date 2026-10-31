@@ -7,14 +7,15 @@ tags:
 - topic.reinforcement_learning
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen2_5/verl_npu_demo/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen2_5/verl_npu_demo/README.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-10-29T15:39:15Z'
 platforms:
 - a2
+- a3
 ---
 
 # Qwen2.5-1.5B veRL GRPO 单卡 A2 数学 RL 入门样例
@@ -65,7 +66,7 @@ mkdir run_log
 bash run_qwen2_5_1_5b_single.sh
 ```
 
-训练 checkpoint 落在 `verl/checkpoints/verl_grpo_example_math/qwen2_5_1_5b_math/`。单卡脚本 `run_qwen2_5_1_5b_single.sh` 的 GRPO 核心配置（与 4 卡脚本仅在并行/资源项不同，见下表）：
+单卡训练 checkpoint 落在 `verl/checkpoints/verl_grpo_example_math/qwen2_5_1_5b_math_single/`；4卡脚本对应 `verl/checkpoints/verl_grpo_example_math/qwen2_5_1_5b_math/`。单卡脚本 `run_qwen2_5_1_5b_single.sh` 的 GRPO 核心配置（与4卡脚本还存在环境安装路径、实验名等差异，见下表）：
 
 ```shell
 export VLLM_ASCEND_ENABLE_NZ=0
@@ -76,6 +77,7 @@ python3 -m verl.trainer.main_ppo \
     data.train_files=./data/math/data/train.parquet \
     data.val_files=./data/math/data/test.parquet \
     data.train_batch_size=256 \
+    data.val_batch_size=64 \
     data.max_prompt_length=512 \
     data.max_response_length=1024 \
     custom_reward_function.path=./verl/utils/reward_score/new_math_reward.py \
@@ -100,10 +102,11 @@ python3 -m verl.trainer.main_ppo \
 # llm_rl/qwen2_5/verl_npu_demo/run_qwen2_5_1_5b_single.sh
 ```
 
-GRPO 语义体现在脚本里：`adv_estimator=grpo`（组内相对优势，无 critic）、`rollout.n=8`（每 prompt 采 8 条组成一组）、`use_kl_loss=True` + `kl_loss_coef=0.001` + `kl_loss_type=low_var_kl`（KL 正则约束，原理见 [grpo-dapo](../../concepts/techniques/grpo_dapo.md)）。单卡与 4 卡脚本的差异仅在于：
+GRPO 语义体现在脚本里：`adv_estimator=grpo`（组内相对优势，无 critic）、`rollout.n=8`（每 prompt 采 8 条组成一组）、`use_kl_loss=True` + `kl_loss_coef=0.001` + `kl_loss_type=low_var_kl`（KL 正则约束，原理见 [grpo-dapo](../../concepts/techniques/grpo_dapo.md)）。单卡与 4 卡脚本的主要差异如下：
 
 | 项 | 单卡 `run_qwen2_5_1_5b_single.sh` | 4 卡 `run_qwen2_5_1_5b.sh` |
 | --- | --- | --- |
+| CANN/ATB 环境根目录、ASCEND_HOME_PATH | `/home/developer/Ascend` 下的安装 | `/usr/local/Ascend` 下的安装 |
 | `ASCEND_RT_VISIBLE_DEVICES` | `0` | `0,1,2,3` |
 | `rollout.tensor_model_parallel_size` | `1`（无需 TP） | `2` |
 | `rollout.enforce_eager` | `True`（关图模式） | 不设（默认） |
@@ -111,14 +114,16 @@ GRPO 语义体现在脚本里：`adv_estimator=grpo`（组内相对优势，无 
 | `trainer.save_freq` | `70` | `28` |
 | `experiment_name` | `qwen2_5_1_5b_math_single` | `qwen2_5_1_5b_math` |
 
+Docker 内常用 /usr/local/Ascend，一站式 CANNLab 安装可能在 /home/developer/Ascend；启动前须按实际位置同时修改 toolkit、ATB 的 source 路径与 ASCEND_HOME_PATH，不能因选择单卡/4卡就假定安装路径匹配。
+
 `data.train_batch_size=256` / `ppo_mini_batch_size=256` / `total_epochs=5` 等其余超参两脚本一致。
 
 ## 新奖励函数：语义等价 + 分级信号
 
 veRL 原生 MATH 奖励仅做「字符串等价性」二元打分，会把 `0.25` 与 `1/4` 判为不等、且 0/1 信号过稀疏。样例重写的 `new_math_reward.py` 修正两点：一是引入基于数学语义等价性的判断机制提升准确性；二是在准确度基础上新增格式规范性、思维链完整性两类分级奖励，用多维度信号缓解奖励稀疏。设计原则为「答案正确性优先」——若答案本身不正确，则不纳入格式规范性与思维链质量的评分。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen2_5/verl_npu_demo/figures/qwen2_5/reward_score.png" width="55%"></p>
-<p align="center"><sub>图：样例 MATH 新奖励函数设计——答案正确性优先，正确后再叠加格式规范性 / 思维链完整性分级奖励（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen2_5/verl_npu_demo/README.md">Qwen2.5 veRL RL 样例 README</a>·附录·新奖励函数介绍）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen2_5/verl_npu_demo/figures/qwen2_5/reward_score.png" width="55%"></p>
+<p align="center"><sub>图：样例 MATH 新奖励函数设计——答案正确性优先，正确后再叠加格式规范性 / 思维链完整性分级奖励（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen2_5/verl_npu_demo/README.md">Qwen2.5 veRL RL 样例 README</a>·附录·新奖励函数介绍）</sub></p>
 
 它通过训练脚本的 `custom_reward_function.path=./verl/utils/reward_score/new_math_reward.py` 注入，故 GRPO 的 reward 阶段调用的是这套自定义打分而非 veRL 原生 MATH 奖励。
 
@@ -135,11 +140,8 @@ veRL 原生 MATH 奖励仅做「字符串等价性」二元打分，会把 `0.25
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen2_5/verl_npu_demo/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen2_5/verl_npu_demo/README.md)（Qwen2.5-1.5B veRL GRPO 样例：环境/权重/数据/奖励准备、A2·A3 镜像、`verl release/v0.6.1` 安装、`math_dataset.py` 预处理、`model_merger` 合并、OpenCompass 43.48→53.26 验证、SwanLab/TensorBoard 指标解读、新奖励函数）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen2_5/verl_npu_demo/README_single.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen2_5/verl_npu_demo/README_single.md)（一站式 CANNLab 平台单卡快速启动版：镜像 `cann_8.5.2-A2/A3`、`run_qwen2_5_1_5b_single.sh`）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen2_5/verl_npu_demo/run_qwen2_5_1_5b_single.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen2_5/verl_npu_demo/run_qwen2_5_1_5b_single.sh) / `run_qwen2_5_1_5b.sh`（GRPO 单卡 / 4 卡启动脚本）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen2_5/verl_npu_demo/new_math_reward.py`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen2_5/verl_npu_demo/new_math_reward.py)（样例自定义 MATH 奖励函数，由 `custom_reward_function.path` 注入）
-- [verl](https://github.com/volcengine/verl) — 上游 veRL 代码仓（`release/v0.6.1`，本样例训练/推理调度框架）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen2_5/verl_npu_demo/README.md)（supporting）
 
 ## Links
 

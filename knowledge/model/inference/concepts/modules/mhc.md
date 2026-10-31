@@ -7,10 +7,12 @@ tags:
 - topic.model_architecture
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/op_impls/mhc.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - agnostic
 ---
@@ -65,7 +67,8 @@ flowchart TD
 `HcPre` 融合范围：RMSNorm 归一 → `mixes = linear(x, hc_fn) · rsqrt` → 三段切分与系数计算 → 用 Pre 系数把多路加权求和为一路；同时**输出 Post 与 comb 系数**供后续 `HcPost` 使用。代码 `mhc.py:hc_pre_native`：
 
 ```text
-rsqrt   = rsqrt(mean(x², dim=d) + norm_eps)         # RMSNorm 形式（无 weight 项）
+x_flat  = x.flatten(2).float()                    # [b,s,hc_mult·d]
+rsqrt   = rsqrt(mean(x_flat², dim=-1, keepdim=True) + norm_eps) # 每 token 一个标量；覆盖全部残差路，无 weight 项
 mixes   = linear(x_flat, hc_fn) · rsqrt
 pre     = sigmoid(pre_seg · hc_scale[0] + hc_base[:hc_mult]) + hc_eps        # 形状 [b, s, hc_mult]
 y       = sum(pre.unsqueeze(-1) · x, dim=multipath)  # 多路残差按 pre 权重融合回一路 [b, s, d]
@@ -103,18 +106,18 @@ for _ in range(hc_sinkhorn_iters - 1):              # 迭代：行归一 → 列
 
 > 算法细节（guide 将 comb 称 "Res Mapping 特征融合"，未逐步展开 Sinkhorn）：`mhc.py:hc_split_sinkhorn_torch`(L44-51) —— 首步 `comb.softmax(-1)`（沿 -1 轴即**行归一**，以 softmax 形式表达）+eps → 列归一(-2) → `iters-1` 轮行(-1)→列(-2)交替。即每轮行列各一次、与标准 Sinkhorn「先行后列」一致（softmax(-1) 就是首轮的行归一，**并非"第一步仅列归一"**）。PyPTO（`hc_pre_pypto.py:51-57`）与 TileLang（`hc_split_sinkhorn_kernel.py:104-109`）首步显式 `exp(x − row_max) / row_sum`（数值稳定 softmax，行归一）后列归一，三路数学等价、顺序相同。
 
+## 当前调用形态
+
+当前V4执行以[T,hc_mult,H]保持多路残差，主/draft的Worker边界可将其展为[T,hc_mult×H]，不能把它当普通[T,H]的logits输入。hc_pre_ascendc通过增加单例维连接cann_ops_transformer.mhc_pre_sinkhorn，再还原packed输出；Native/PyPTO参考公式仍以[B,S,hc_mult,H]书写，参数rank要按所选wrapper核对。HcPost当前调用cann_ops_transformer.mhc_post，输入顺序是residual、comb、子层输出、post。
+
 ## 与 Attention / MoE 的协作
 
 mHC 不改变 [mla](mla.md) 系（V4 实为 MQA/Shared-KV）或 MoE 子层内部的计算 —— 子层只看到 `HcPre` 融合出的**单路**输入、向外吐**单路**输出，多路残差的扩展/混合完全由 mHC 的 `HcPre`/`HcPost` 在子层外围承担。因此 mHC 可视为一个正交于注意力/FFN 选型的"残差增强层"：它作用于**层间残差流**，与在注意力输出后做元素级门控调制的模块（如 Qwen 系的门控注意力，作用于**注意力输出**）属不同层面。V4 每个 Layer 的三模块组成（mHC / Attention / MoE）与并行/量化部署见 [deepseek-v4](../models/deepseek_v4.md)。
 
 ## Evidence
 
-- **结构语义源**：[cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)（L67-74 mHC 结构语义：多路扩展 / Pre·Post·Res Mapping / 与 Attention·MoE 协作；论文归属 arXiv 2512.24880）—— 结构语义出处，frontmatter `source` 指此
-- **算子实现 + 命名/论文出处源**：[cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_mHC_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_mHC_guide.md)（`HcPre`/`HcPost` 融合范围与价值、Tiling/流水/性能；mHC 命名与论文出处；157 行算子实现文档，性能段见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)）
-- **代码源**：[cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/op_impls/mhc.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/op_impls/mhc.py)（`hc_split_sinkhorn_torch` 三段切分 `[hc_mult, hc_mult, hc_mult²]`；`pre=sigmoid(·scale[0]+base)+eps`、`post=2·sigmoid(·scale[1]+base)`；comb `softmax → 列归一 → iters-1 轮行列交替归一` 的 Sinkhorn-Knopp；`hc_pre_native` RMSNorm+linear+`y=sum(pre·x)`；`hc_post_native` `y=post·x + sum(comb·residual)`；`hc_pre` 三注册键 native/ascendc/pypto_a3，`hc_post` native/ascendc）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（`mix_hc=(2+hc_mult)·hc_mult`、`hc_dim=hc_mult·hidden_size`；`DeepseekV3DecoderLayer.forward` 两轮 `hc_pre→子层→hc_post`（attn 用 `hc_attn_*`、ffn 用 `hc_ffn_*`）；进网络 `unsqueeze(2).repeat(1,1,hc_mult,1)` 扩展多路；`hc_head` 收敛回单路；`hc_*` 参数 fp32 `nn.Parameter`）
-- 论文：[Manifold-Constrained Hyper-Connections (Xie et al., 2026)](https://arxiv.org/abs/2512.24880) —— mHC 命名与流形约束理论来源
-- 溯源（diff `2f82d10..2c45117`）：`5df82b1` support deepseek v4（MR `!366` merge publish into master，diaoyingyu）—— mHC guide 与 `mhc.py` 随 V4 0day 发布一并引入。
+- [deepseek_v4_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md)（primary）
+- [mhc.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/op_impls/mhc.py)（implementation）
 
 ## Links
 

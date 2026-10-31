@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/11
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:41:05Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a3
 ---
@@ -60,5 +60,6 @@ Qwen3-MoE 建模 `Qwen3MoeSparseMoeBlock.forward` 先经 `self.gate`（`npu_moe_
 
 ## Evidence
 
-- Qwen3-MoE 三路分派（TP-GMM / EP-prefill double-routing / EP-decode MC2）+ 各自算子调用链：diff 事实 @e8eb6979565c。溯源下探 [cann-recipes-infer-pr-4-qwen3moe](https://gitcode.com/cann/cann-recipes-infer/merge_requests/4)、[cann-recipes-infer-issue-4-rfc-qwen3-moe-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/4)。
-- 「decode 用 dispatch/combine 而非 double-routing、不增通信量、按实际 token 分发」：维护者确认（无独立 benchmark）；decode 分支走 `moe_infer_dispatch_combine`、double-routing 侧多段 `all_to_all_single` 为 diff 事实 @2c45117。溯源下探 [cann-recipes-infer-issue-11-question-prefill-moe-moe-infer-double-routing](https://gitcode.com/cann/cann-recipes-infer/issues/11)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/4)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/4)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/11)（evidence）

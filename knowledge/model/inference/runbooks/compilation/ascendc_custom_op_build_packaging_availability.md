@@ -23,7 +23,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/312
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-07-06T00:00:00Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - a2
 ---
@@ -71,7 +71,10 @@ AscendC 算子的 torch 扩展（`NpuExtension` + `torch.utils.cpp_extension.Bui
 
 ## Evidence
 
-- `diff 事实`（@2c45117）：`VENDOR_NAME=customize` 整包覆盖同名 vendor；`build.sh -n` 取 src 注册目录名、错名报 No SOURCES；`torch.ops.custom` 未注册算子 AttributeError；镜像内置算子滞后源码。
-- `diff 事实`（@3fa4f62）：`OpDef` 逐 SoC `AddConfig`，只有 ascend910_93 时 A2 不可用。
-- `仓自报`（@2ce177b）：ninja + `MAX_JOBS` 并行把算子编译约 5min→1min（无独立复测）。
-- 溯源下探：[cann-recipes-infer-issue-86-requirement-ops-custom-ops-custom-ops-custom-ops](https://gitcode.com/cann/cann-recipes-infer/issues/86)、[cann-recipes-infer-issue-87-bug-report-ops-bash-build-sh-op-name-n-op-name](https://gitcode.com/cann/cann-recipes-infer/issues/87)、[cann-recipes-infer-issue-69-requirement-910b-example-readme](https://gitcode.com/cann/cann-recipes-infer/issues/69)、[cann-recipes-infer-pr-198-feat-check-ops-check-more-ops-and-list-all-existing-custom-ops](https://gitcode.com/cann/cann-recipes-infer/merge_requests/198)、[cann-recipes-infer-issue-41-bug-report-readme-pr](https://gitcode.com/cann/cann-recipes-infer/issues/41)、[cann-recipes-infer-pr-429-fix-fix-scatter-nd-update-asc-def-cpp-to-support-910b](https://gitcode.com/cann/cann-recipes-infer/merge_requests/429)、[cann-recipes-infer-pr-312-feat-optimize-ops-ascendc-torch-api-compile-time-cost-using-multi-proces](https://gitcode.com/cann/cann-recipes-infer/merge_requests/312)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/86)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/87)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/69)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/198)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/41)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/429)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/312)（evidence）

@@ -1,68 +1,74 @@
 ---
 type: Guide
 title: DeepSeek-V3.2-Exp A3 长序列部署与验收流程
-description: DeepSeek-V3.2-Exp A3 长序列部署与验收流程，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+description: 更新当前Docker环境、六份YAML、统一Executor和真实后端/CP/offload约束，删除acl_graph旧配方。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py
+  role: implementation
 created_at: '2026-10-21T09:56:17Z'
-updated_at: '2026-10-21T09:56:17Z'
+updated_at: '2026-10-29T15:02:18Z'
 platforms:
 - a3
 ---
 
-# DeepSeek-V3.2-Exp A3 长序列部署与验收流程
+# DeepSeek-V3.2-Exp A3：当前统一 Executor 部署
 
-## 目标、输入与产物
+## 环境与权重
 
-面向固定来源中的 DeepSeek-V3.2-Exp 实现，输入包括平台、权重、实际配置和任务指标；产物为可追溯配置、正确性/性能记录及回退入口。模型结构由[模型 Concept](../../concepts/models/deepseek_v3_2_exp.md)维护。以下描述固定版本实践，不能当作当前所有软件版本的部署保证。
+当前README采用Docker镜像，宿主Ascend HDK25.2.0，镜像为CANN9.0/PyTorch2.8的模型专用环境，包含torch_npu和所需自定义算子；不要把旧手工安装步骤当作当前首选环境。各节点配置executor/scripts/set_env.sh的IP/CANN路径，挂载同一权重与源码目录。
 
-## 1. 确认实现与精度
+原始FP8权重在模型目录通过utils/weight_convert.sh转换，quant_mode支持bfloat16/w8a8c16/w8a8c8/w4a8c8；C8两档使用模型专用系数和clip。先source CANN环境，核对权重快照与系数，详见[转换选择](../deployment/quant_weight_conversion_path_selection.md)。
 
-区分 AscendC、PyPTO、TileLang 算子实现以及 BF16、W8A8C8、MoE W4A8 + Attention W8A8C8 配置，不因共享 DSA 机制混用 DSL 代码。`indexer.py` 的 PyPTO 分支还受 Decode 与 int8 KVCache 等条件约束。各模块的量化范围保留在下文，质量表统一引用独立观测。
+## 当前六份离线配置
 
-## 2. 按阶段选择配置
+以下文件均位于models/deepseek_v3_2_exp/config；表中名字省略公共deepseek_v3.2_exp_前缀和.yaml后缀。
 
-| 阶段 | YAML | world_size | 并行 | 量化 | 备注 |
-| ---- | ---- | ---- | ---- | ---- | ---- |
-| Prefill | `deepseek_v3.2_exp_rank_64_64ep_prefill_benchmark.yaml` | 64 | CP64 + MoE-EP64 | BF16 | `next_n: 3`、`enable_multi_streams: True` |
-| Prefill | `deepseek_v3.2_exp_rank_64_64ep_w8a8c8_prefill_benchmark.yaml` | 64 | CP64 + MoE-EP64 | W8A8C8 | `embed/lmhead_tp_size: 16`（单 node HCCS 内 TP） |
-| Decode | `deepseek_v3.2_exp_rank_128_128ep_decode_benchmark.yaml` | 128 | DP128 + MoE-EP128 | BF16 | `oproj_tp_size: 4`、`dense_tp_size: 4` |
-| Decode | `deepseek_v3.2_exp_rank_128_128ep_w8a8c8_decode_benchmark.yaml` | 128 | DP128 + MoE-EP128 | W8A8C8 | 主 benchmark 配置，`ge_graph` 图模式 |
-| Decode | `deepseek_v3.2_exp_rank_128_128ep_w8a8c8_offload_benchmark.yaml` | 128 | DP128 + MoE-EP128 | W8A8C8 | `enable_offload: True` |
-| Decode | `deepseek_v3.2_exp_rank_64_64ep_w8a8c8_decode_aclgraph_benchmark.yaml` | 64 | DP64 + MoE-EP64 | W8A8C8 | `acl_graph` 模式 |
+| 文件 | world/batch | 后端 | next_n | 重点 |
+| --- | --- | --- | ---: | --- |
+| rank_64_64ep_prefill_benchmark | 64/64 | ge_graph | 1 | BF16、CP64 |
+| rank_64_64ep_w8a8c8_prefill_benchmark | 64/64 | ge_graph | 3 | C8、CP64 |
+| rank_128_128ep_decode_benchmark | 128/256 | ge_graph | 1 | BF16、denseTP4 |
+| rank_128_128ep_w8a8c8_decode_benchmark | 128/256 | ge_graph | 3 | C8 |
+| rank_128_128ep_w8a8c8_offload_benchmark | 128/256 | ge_graph | 3 | C8、offline Host卸载 |
+| rank_64_64ep_w8a8c8_decode_npugraphex_benchmark | 64/256 | npugraph_ex | 0 | 当前原生图量化样例 |
 
-> `exe_mode: ge_graph / acl_graph / eager` 三选一（见 [torchair](../../concepts/frameworks/torchair.md)）。`world_size = 2 × chip_num` 在 A3（两 die 一卡）。
+旧aclgraph文件已被npugraphex样例替换，合法exe_mode只有eager/ge_graph/npugraph_ex。配置里的图模式只影响Decode，Prefill仍eager。当前所有表中多流放model_config.custom_params.enable_multi_streams，offload也在custom_params；投影字段统一o_proj_tp_size。
 
-Prefill 整域 CP 的数据/通信条件以 [DeepSeek/Kimi CP 案例](../../optimizations/cases/deepseek_kimi_a3_prefill_cp.md)为准；Decode 的投影、Dense、Embedding/LMHead 取 [局部 TP 规则](../../optimizations/rules/local_tp_memory_heavy_projections.md)，通信域与 rank/物理卡单位分别核对。PD 示意中的节点区间是固定来源建议，不能替代当前资源和 SLA 评估。
+CP要求world_size==cp_size及attnTP1，仅Prefill分段；Decode使用DP+EP及局部投影TP。各自rank/物理卡单位另核对，不把离线CP配置当在线D侧配置。见[CP案例](../../optimizations/cases/deepseek_kimi_a3_prefill_cp.md)。
 
-## 3. 确认量化、MTP 与内存路径
+## 启动与功能组合
 
-MLAProlog 仅 Q_b_proj W8A8，其余关联输入 Linear 保留高精度；SFA 的 cache Int8 存储、BF16 计算；Indexer Q 与 cache 分别 A8/C8；LI BatchMatmul Int8；路由专家 W8A8/W4A8，共享专家及 O_proj W8A8，LMHead 不量化。C8 的各模块粒度不能相互替换，具体机制见 [W8A8C8](../../concepts/quantization/w8a8c8.md)、[W4A8C8](../../concepts/quantization/w4a8c8.md)。
+从仓根执行，例如：
 
-MTP 的 MLA/LI/SFA 模块分析由 [DSA MTP 案例](../../optimizations/cases/mtp_benefit_sparse_attention_and_latency_metric.md)维护；`next_n=3` 不是收益保证。先按 [MTP 计时规则](../../optimizations/rules/mtp_decode_timing_two_metric_split.md)记录接受数与每步/每等效 token 时间，再判断收益。
+```bash
+bash executor/scripts/infer.sh --model deepseek_v3_2_exp --yaml deepseek_v3.2_exp_rank_128_128ep_w8a8c8_decode_benchmark.yaml
+```
 
-Offload 路径：Prefill 设备侧复用一层 MLA KV 缓冲并异步写 Host；Decode 由 LI TopK 选择并复用设备已有 cache。接入与容量检查见 [Offload 流程](../../optimizations/rules/kvcache_offload_host_swap.md)；不要把该 MLA 路径推广给任意模型 cache。
+模型已使用统一Executor；InfiniteBench文件放dataset/InfiniteBench，也可用default_prompt。每节点分别启动，日志在模型res目录。在线PD用--mode online和角色/config，offload被模型明确禁止用于在线。
 
-## 4. 多流与结果归属
+MLA仅q_b投影W8A8、SFA INT8存/BF16算、Indexer A8C8与路由专家W8A8/W4A8等粒度见[量化机制](../../concepts/quantization/w8a8c8.md)。当前量化SFA函数是npu_kv_quant_sparse_flash_attention。PyPTO Prolog与LI有不同量化门控，不与AscendC/TileLang配置混用。
 
-`enable_multi_streams` 控制相关路径，shared/routed expert 与 IndexerProlog 各自有依赖和同步要求，按 [多流验收流程](../../guides/optimization/multi_stream_optimization_workflow.md)检查真实重叠，不因使用了多个 stream 就认定加速。
+模型eager拒绝多流、SuperKernel或cache_compile，npugraph_ex拒绝SuperKernel。offload使用统一SWAPPED_MEMORY缓存加独立设备workspace，不能只预算Host Full KV。MTP需核对实际预测层权重、状态和接受长度，样例宽度不等于收益承诺。
 
-端到端与容量数据集中 [A3 来源观测](../../optimizations/benchmark_observations/deepseek_v32_a3_source_benchmark.md)；量化精度表归 [量化精度待核验观测](../../optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy.md)，不据此制定其他模型的验收阈值。
+## 验收、停止与回退
 
-## 验证、停止与回退
+先保存合法eager/关闭待验特性的输出与资源基线，再依次验证融合、量化、图、多流、CP、投机及offload。覆盖变长/多请求、边界长度、EOS、缓存所有者，比较输出/任务精度、峰值内存、TTFT与Decode计时；分开冷启动、预热、稳态和服务端时延。
 
-保存实际权重、软件版本、平台、并行组、输入与输出；以未启用待验优化的路径作对应基线，逐项比较 logits/任务质量、时延和峰值内存，并分别记录冷启动、warmup 与稳态重复测量。遇到源中未覆盖的形状、后端或平台时停止套用。失败后恢复对应版本的配置、权重与编译缓存，再按关联 Runbook 排查；没有实际跑通的回退不写为已验证。
-
-本卡未记录独立的模型执行或硬件复测。来源自报和输出“看起来正常”不能替代本部署的精度验收；执行后应另存实际环境、配置和测量记录。
-
+[性能来源](../../optimizations/benchmark_observations/deepseek_v32_a3_source_benchmark.md)仍有MTP3/perfect-EPLB数据，不能把人工路由结果作为生产精度基线；[当前精度表](../../optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy.md)缺评测环境。失败时恢复权重、合法配置及缓存，本次没有模型执行或硬件复测。
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/README.md)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/README.md)（primary）
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py)（implementation）

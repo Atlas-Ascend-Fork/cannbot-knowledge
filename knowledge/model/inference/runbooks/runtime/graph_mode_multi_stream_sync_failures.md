@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/497
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -66,10 +66,10 @@ platforms:
 
 ## Evidence
 
-- diff 事实（@7d1f25d29aff）：indexer 补 q、weights 两对 tagged-event（事件对数=跨流边数），守卫 `enable_multi_streams and enable_aclgraph`；具体报错/精度 PR 未给，症状类别为据 diff 反推。溯源下探 [cann-recipes-infer-pr-269-fix-bugfix-ds3-2-aclgraph-multistream](https://gitcode.com/cann/cann-recipes-infer/merge_requests/269)
-- diff 事实（@ef0f82d05d89）：两处 `if not is_prefill:` → `if enable_multi_streams:`，守卫与 stream-switch 闸门取同一开关。溯源下探 [cann-recipes-infer-pr-59-fix-fix-minibatch-1-bug-and-remove-redundent-code](https://gitcode.com/cann/cann-recipes-infer/merge_requests/59)
-- diff 事实：实例级 `self.npu_events` 删除 + 模块级 `*_npu_events` 全局创建；"MTP→第二张图→重复"为作者描述+推断、已标注。溯源下探 [cann-recipes-infer-pr-236-fix-duplicate-creation-of-multi-stream-events-when-mtp-enable-skip-guard](https://gitcode.com/cann/cann-recipes-infer/merge_requests/236)
-- diff + 代码事实（@2c45117）：MTP 层委派新增 `shared_expert_stream=getattr(self,'shared_expert_stream',None)`，该流条件创建故须 getattr；精确 NPU 崩溃点为据代码路径推断、已标注。溯源下探 [cann-recipes-infer-pr-497-fix-update-modeling-deepseek-py](https://gitcode.com/cann/cann-recipes-infer/merge_requests/497)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/269)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/59)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/236)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/497)（evidence）
 
 ## 定位探针与修复验收
 

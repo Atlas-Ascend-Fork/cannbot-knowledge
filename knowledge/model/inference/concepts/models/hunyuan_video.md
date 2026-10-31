@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: HunyuanVideo
-description: HunyuanVideo 的视频 DiT、文本编码与 VAE 结构；并行、缓存、量化和性能按版本分开维护。
+description: HunyuanVideo视频DiT、文本编码与VAE结构，统一YAML以及当前缓存、Ring稀疏和950 MXFP8入口。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,19 +9,19 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/sample_video.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T14:13:04Z'
 platforms:
 - a2
 - a3
 - '950'
 ---
-
-
 
 # HunyuanVideo
 
@@ -39,12 +39,12 @@ HunyuanVideo 是文生视频DiT模型，文本编码、双流/单流去噪Block�
 - **目录结构**：
  - `models/hunyuan-video/sample_video.py` — 推理入口
  - `models/hunyuan-video/hyvideo/modules/{attention.py, norm_layers.py, posemb_layers.py, mxfp8_a8w8.py}` — 融合算子与量化
- - `models/hunyuan-video/hyvideo/sparse/sparse_config.yaml` — 块稀疏配置
+ - `models/hunyuan-video/config/*.yaml` — 统一运行、dit_cache、sparse配置
  - `models/hunyuan-video/scripts/` — 运行脚本
  - `module/unified_sp/{core.py, uaa.py}` — Ulysses / Ring / UAA
  - `module/dit_cache/cache_method.py` — DiT cache
  - `module/blockwise_sparse/{sparse_method.py, offline_profiling/}` — 块稀疏
- - `module/fa_quant/fa_quant.py` — FP8 量化 attention
+ - `module/fa_quant/fa_quant.py` — MXFP8 量化 attention
  - `module/vae_patch_parallel.py` — VAE patch 并行
 
 ## 部署与证据入口
@@ -56,12 +56,9 @@ HunyuanVideo 是文生视频DiT模型，文本编码、双流/单流去噪Block�
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md)（582 行完整优化实践）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hunyuan-video/{README.md, sample_video.py, hyvideo/, scripts/}`](https://gitcode.com/cann/cann-recipes-infer/tree/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`module/{unified_sp/, dit_cache/, blockwise_sparse/, fa_quant/, vae_patch_parallel.py}`](https://gitcode.com/cann/cann-recipes-infer/tree/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module)
-- 块稀疏 × SP 协同（@2c45117，MR!353 / MR!369）：[`models/hunyuan-video/sample_video.py#L116-L126`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-video/sample_video.py)（ring_degree ValueError + apply_head_reorder_for_load_balance 调用）、[`hyvideo/modules/attention.py#L275`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-video/hyvideo/modules/attention.py)（`parallel_sparse_attention`）、[`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/hunyuan-video/hunyuan_video_optimization.md) `Ulysses + TopK/SVG 联合优化` 章节
-- 块稀疏 Attention 性能表（TopK 76% / SVG 80%）：[cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md#不同块稀疏-attention算法的性能数据`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/hunyuan-video/hunyuan_video_optimization.md)
-- Ring + TopK / Ring + TopK + overlap 性能表与 Ring 路径块稀疏机制：[cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md#ring-attention--topksvg-性能数据`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/hunyuan-video/hunyuan_video_optimization.md) `TopK/SVG + 序列并行联合优化` 章节
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/README.md)（primary）
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（supporting）
+- [sample_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/sample_video.py)（implementation）
 
 ## Links
 

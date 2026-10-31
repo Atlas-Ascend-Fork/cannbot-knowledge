@@ -22,7 +22,7 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/4797
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -120,9 +120,9 @@ elif "experts" in prefix:
 
 ## Evidence
 
-- `diff 事实`（@8c6c58b / @dce3a77）：W4A8 MoEGMM 三件套（输出通道打包 int4 / FP32 scale→UINT64 / assistance_bias）。
-- `diff 事实`（@50e41b5）：对称 W8A8 剔除恒零 weight_offset + 重建 weight_map。
-- `diff 事实`（@358ff96）：scale→weight_scale 改名按 `any("w13_weight_scale" in key ...)` 门控。
-- `diff 事实 / 维护者确认`（@2053fc2）：NZ cast 按 dtype 门控、ND→nk / NZ→kn。
-- `diff 事实 / PR 描述 + reviewer comment`（vLLM-Ascend @0d09453）：取 MoE experts 量化方法两处各加 `elif "experts" in prefix` 分支，扫 experts 前缀聚合量化类型（合并态用子串 `prefix in layer`，reviewer 建议改 `startswith` 未被采纳）；根因为「代码假设聚合权重键 vs 配置按逐专家序号命名」不匹配（`quant_config.py:157-166` / `utils.py:52-68`）。
-- 溯源下探：[cann-recipes-infer-pr-13-feat-add-deepseek-v3-2-exp-w4a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)、[cann-recipes-infer-pr-464-add-w4a8-int-for-deepseekv4-pro](https://gitcode.com/cann/cann-recipes-infer/merge_requests/464)、[cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)、[cann-recipes-infer-pr-296-feat-support-fp8-mxfp8-mxfp4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/296)、[cann-recipes-infer-pr-422-fix-unconsistent-weight-scale-name](https://gitcode.com/cann/cann-recipes-infer/merge_requests/422)、[vllm-ascend-pr-4797-bugfix-fixed-the-bug-in-retrieving-the-quantization-method-for-mlp](https://github.com/vllm-project/vllm-ascend/pull/4797)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/464)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/296)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/422)（evidence）
+- [远程来源](https://github.com/vllm-project/vllm-ascend/pull/4797)（evidence）

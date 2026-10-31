@@ -15,10 +15,20 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/462
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/README.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:57:02Z'
 platforms:
 - a3
+scope:
+  schema: model.inference.v1
+  any_of:
+  - all_of:
+      phase:
+      - prefill
 ---
 
 # Prefill MLA 并行选型：大请求量走纯 DP、少 / 长请求走 SP-TP-SP（RS+AG 保持层间序列切分）
@@ -67,10 +77,13 @@ SP RS+AG（LongCat-Flash-Lite，EP=8，昇腾 8 卡）两组受控点：
 
 ## 参考实现及其约束
 
-- 纯 DP / SP-TP-SP 两套切分参考 [DeepSeek-R1](../../concepts/models/deepseek_r1.md) / [Kimi-K2](../../concepts/models/kimi_k2_thinking.md)（二者复用同建模，Atlas A3）的 prefill 配置（如 32DP+32EP 与 32SP+32TP+32EP 两套 yaml）；选型规则来自本仓一手 prefill 优化文档。
+- 纯 DP / SP-TP-SP 两套切分参考 [DeepSeek-R1](../../concepts/models/deepseek_r1.md) / [Kimi-K2](../../concepts/models/kimi_k2_thinking.md)（当前Kimi-K2-Thinking为独立MLA副本，Atlas A3）的 prefill 配置（按最新R1配置目录选择，历史rank数不构成当前YAML文件名）；选型规则来自本仓一手 prefill 优化文档。
 - RS+AG 层间保切分的实现参考 [LongCat-Flash-Lite](../../concepts/models/longcat_flash_lite.md) 的 MLA `_forward_prefill`（`is_sp` 守卫、attn_tp=4 + attn_dp=2）。约束限定到 MLA prefill 且 attn_tp>1 且 attn_dp>1；技术思想（层间保持序列切分省 per-layer 计算 / 激活）可迁移到同类 MLA + EP 结构，具体收益随 batch / 序列长度而定。
 
 ## Evidence
 
-- `config/diff 事实` + `doc 披露`（@2c45117 / @f5bf59cf）：DeepSeek-R1 两套切分 yaml 并存、DP 与 SP-TP-SP 优缺点与选型建议为本仓 `deepseek_r1_prefill_optimization.md` 原文。溯源下探 [cann-recipes-infer-issue-17-rfc-deepseek-r1-kimi-k2-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/17)、[cann-recipes-infer-pr-72-feat-add-deepseek-r1-kimi-k2](https://gitcode.com/cann/cann-recipes-infer/merge_requests/72)。
-- `diff 事实`（@895615c）：`LongcatFlashMLA._forward_prefill` 的 `is_sp` 守卫、prefill 入口 `all_gather_into_tensor` + 出口 `reduce_scatter_tensor` 取代 `all_reduce`、decode 保留 `all_reduce`、`T_real`/`T_padded` slice / re-pad；benchmark 表出自仓内 `optimization_report_ep.md`（仓自报、两受控点）。溯源下探 [cann-recipes-infer-pr-462-refactor-longcat-flash-lite-tnd-pa-npugraph-ex-mc2-ep-decode](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/17)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/72)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)（evidence）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/README.md)（implementation）
+- [modeling_longcat_flash_lite.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py)（implementation）

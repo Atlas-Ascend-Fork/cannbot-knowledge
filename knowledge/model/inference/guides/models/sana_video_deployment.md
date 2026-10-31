@@ -1,21 +1,24 @@
 ---
 type: Guide
 title: Sana-Video NPU 适配、量化与生成验收流程
-description: Sana-Video NPU 适配、量化与生成验收流程，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+description: 当前Sana补丁时序、必传quant_type、加载后量化替换、本地离线权重、DP和950混合位宽验收。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/sana-video/SANA-Video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/inference_video_scripts/inference_sana_video.py
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/patches/quant_module.py
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/patches/__init__.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/__init__.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/quant_module.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py
+  role: implementation
 created_at: '2026-10-21T09:56:21Z'
-updated_at: '2026-10-22T10:38:03Z'
+updated_at: '2026-10-29T14:16:27Z'
 platforms:
 - a2
 - a3
@@ -34,15 +37,20 @@ platforms:
 
 ## 2. 按规范规则核对patch
 
+当前README基线环境为CANN8.5.0、PyTorch2.6.0/torch_npu 2.6.0.post5（发布v7.3.0）；950量化还需相应MX算子和硬件，不能把基线安装示例当成每组量化测量build。普通YAML使用本地DiT、WanVAE、Gemma文本编码器并开启离线变量，先准备完整本地目录。
+
+当前入口在上游导入前先调用patch_triton_rms_norm_import和patch_local_text_encoder_path；解析配置后才apply_all(args.quant_type)，该函数现在必须传bf16/a8w8/a4w4，旧无参调用失效。加载真实权重、同步t_conv_swap之后，量化档才replace_quant_module。普通入口accelerate，平台模板直python；多卡DP按prompt分发，不能当SP。
+
+
 1×1 Conv转Matmul必须满足stride1、padding0、groups1等等价条件；时序Conv交换的是[T,H*W]两轴，加载后还要同步置换权重，不是交换视频原始H/W。机制由 [Conv改写规则](../../optimizations/rules/dit_cnn_operator_algebraic_rewrite_npu.md)维护。RMSNorm、interleave RoPE和非因果fusion_attention分别验收mask、layout、dtype与输出恢复，不能从单个融合算子推导整网精度。
 
 ## 3. 区分量化档和实际替换层
 
-quant_type=bf16/a8w8/a4w4；2c45117量化模块用MXFP8/MXFP4的QuantLinear与Conv-as-Linear。a4w4配置仍把attn.proj、MLP的1×1卷积固定在a8w8，不写“全模型MXFP4”或用OR Scope表达混合组成。QuantConv2d类存在不表示replace_quant_module实际选择它；当前MLP使用QuantConv1x1AsLinear，按 [低比特Conv规则](../../optimizations/rules/dit_mxfp_lowbit_quant_conv_as_linear.md)核对。
+quant_type=bf16/a8w8/a4w4；当前量化模块用MXFP8/MXFP4的QuantLinear与Conv-as-Linear。a4w4配置仍把attn.proj、MLP的1×1卷积固定在a8w8，不写“全模型MXFP4”或用OR Scope表达混合组成。QuantConv2d类存在不表示replace_quant_module实际选择它；当前MLP使用QuantConv1x1AsLinear，按 [低比特Conv规则](../../optimizations/rules/dit_mxfp_lowbit_quant_conv_as_linear.md)核对。
 
 ## 4. 按平台选择数据并验收生成
 
-Atlas A5在本仓沿注册值950索引，来源950档的量化对比集中 [950来源观测](../../optimizations/benchmark_observations/sana_video_950_source_benchmark.md)；A2/A3合并标注的一行数据没有区分具体硬件或实际测量精度（默认配置 BF16 不能证明测量使用 BF16），保留 [平台待细分草稿](../../optimizations/benchmark_observations/sana_video_bf16_source_observations.md)。不能把950量化结果外推给A2/A3。保存prompt、seed、步数与视频；比对质量与速度，源无逐项消融或精度记录，不默认选更低位宽。
+当前README直接以Atlas 950标注，来源950档的量化对比集中 [950来源观测](../../optimizations/benchmark_observations/sana_video_950_source_benchmark.md)；A2/A3合并标注的一行数据没有区分具体硬件或实际测量精度（默认配置 BF16 不能证明测量使用 BF16），保留 [平台待细分草稿](../../optimizations/benchmark_observations/sana_video_bf16_source_observations.md)。不能把950量化结果外推给A2/A3。保存prompt、seed、步数与视频；比对质量与速度，源无逐项消融或精度记录，不默认选更低位宽。
 
 ## 验证、停止与回退
 
@@ -52,7 +60,7 @@ Atlas A5在本仓沿注册值950索引，来源950档的量化对比集中 [950�
 
 ## 融合适配的输入输出对照
 
-以下片段来自固定 `2f82d10` 的 Sana patch，供步骤 2 对照 dtype、layout、mask 和输出恢复；它们不是完整启动程序。Conv 改写与权重置换示例统一见上文规则入口。
+以下片段来自当前 Sana patch，供步骤 2 对照 dtype、layout、mask 和输出恢复；它们不是完整启动程序。Conv 改写与权重置换示例统一见上文规则入口。
 
 ### npu_rms_norm 算子适配（`patch_rms_norm`）
 
@@ -113,9 +121,8 @@ x = x.transpose(1, 2).contiguous()
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/sana-video/SANA-Video_optimization.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/inference_video_scripts/inference_sana_video.py)
-- [固定来源 4](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md)
-- [固定来源 5](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/patches/quant_module.py)
-- [固定来源 6](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/patches/__init__.py)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md)（primary）
+- [npu_patches.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py)（implementation）
+- [__init__.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/__init__.py)（implementation）
+- [quant_module.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/quant_module.py)（implementation）
+- [inference_sana_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py)（implementation）

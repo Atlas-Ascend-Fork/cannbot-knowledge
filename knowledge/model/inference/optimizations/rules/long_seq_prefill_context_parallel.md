@@ -9,14 +9,14 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/fa6892b54681724ac433118b2088ac9b614779f6/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/da13d661535741e1b2f3d6c1443a422af54150ba/docs/models/kimi-k2-thinking/kimi_k2_thinking_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/kimi_k2_thinking/kimi_k2_thinking_inference_guide.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/874b41df5de8107dd241c2cd2ac0712ad3a758a0/docs/models/qwen3-next/qwen3_next_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md
   role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a3
 scope:
@@ -53,10 +53,10 @@ DSA 的 Indexer、稠密 MLA 与混合注意力有不同代价。DeepSeek 的文
 
 ## 实施入口与边界
 
-- [DeepSeek/Kimi A3 整域 CP 案例](../cases/deepseek_kimi_a3_prefill_cp.md)：固定入口要求启用 CP 时 `cp_size == world_size`，建模按 Prefill 门控，记录序列切分、KV 汇聚和通信组的边界。
+- [DeepSeek/Kimi A3 整域 CP 案例](../cases/deepseek_kimi_a3_prefill_cp.md)：当前统一配置与引擎要求cp_size==world_size且attn_tp_size=1，按请求构造ZigZag/所有者/计算与持久KV视图；建模按Prefill门控。
 - [Qwen3-Next A3/SGLang CP+TP 案例](../cases/qwen3_next_a3_prefill_cp_tp.md)：记录 Gated Attention/GDN 分层处理、ZigZag、PD 分离和通信域限制。
 
-上面两类实现共享优化选择，不共享一套参数。整域 CP、MoE 复用通信域、节点数或 PD 限制只在各自证据范围内成立。新案例不因链接本规则而获得另一实现的条件。
+上面两类实现共享优化选择，不共享一套参数。整域 CP、MoE 通信组、节点数或 PD 限制只在各自证据范围内成立。新案例不因链接本规则而获得另一实现的条件。
 
 ## 收益、风险与回退
 
@@ -70,4 +70,6 @@ DSA 的 Indexer、稠密 MLA 与混合注意力有不同代价。DeepSeek 的文
 
 ## Evidence
 
-固定 DeepSeek、Kimi 与 Qwen3-Next 官方优化文档支撑本规则的 A3 范围与选择依据。参数、入口校验和源码差异在对应案例保留固定文件；没有增加 `verified` 或量化收益承诺。
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（primary）
+- [kimi_k2_thinking_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/kimi_k2_thinking/kimi_k2_thinking_inference_guide.md)（supporting）
+- [qwen3_next_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md)（supporting）

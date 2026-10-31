@@ -9,12 +9,14 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/world_model/cosmos-predict2.5/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/cosmos-predict2.5/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/cosmos-predict2.5/npu_adapt.sh
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 ---
@@ -35,7 +37,7 @@ Cosmos-Predict2.5-2B 是 NVIDIA 推出的世界基础模型（World Foundation M
 
 ## 昇腾 NPU 适配（一手）
 
-适配通过 **Monkey Patch** 机制动态生效：执行 `npu_adapt.sh` 后由 `adaptor_patches/monkey_patch.py` 在运行期替换关键实现，无需侵入式改官方源码。`monkey_patch.py` 顶部 `from torch_npu.contrib import transfer_to_npu` + `setup_npu_device()` 按 `LOCAL_RANK` 绑定 `npu:{rank}`。
+适配包含文件预处理与运行时 Monkey Patch：npu_adapt.sh 先用 sed -i 修改上游 minimal_v4_dit.py、qwen2_5_vl.py、初始化与 distributed.py 等文件（删除 TE/CUDA 检查等），再由 adaptor_patches/monkey_patch.py 在运行期替换关键实现。准备时须保留原始版本并核对脚本改动，不能按纯运行时无侵入补丁理解。`monkey_patch.py` 顶部 `from torch_npu.contrib import transfer_to_npu` + `setup_npu_device()` 按 `LOCAL_RANK` 绑定 `npu:{rank}`。
 
 ### 融合算子替换（Predict 侧）
 
@@ -83,4 +85,4 @@ ASCEND_RT_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node=8 --master_p
 - DiT 模块：[dit](../../../inference/concepts/modules/dit.md)｜FA 融合：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
 - 并行：[context-parallel](../../../inference/concepts/parallelism/context_parallel.md)｜[cfg-parallel](../../../inference/concepts/parallelism/cfg_parallel.md)
 - 平台：[atlas-a3](../../../inference/concepts/platforms/atlas_a3.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

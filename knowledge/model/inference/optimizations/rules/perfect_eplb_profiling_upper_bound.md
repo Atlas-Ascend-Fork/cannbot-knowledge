@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/205
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:41:21Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - agnostic
 ---
@@ -62,6 +62,6 @@ expert_idx = row + col * step_gap    # 全局 expert id = rank 块起点 + 局�
 
 ## Evidence
 
-- 列优先新公式 vs 行优先旧公式（专家按 rank 连续切块的 EP mc2 路径）：diff/代码事实 @af319f1125bd + 维护者确认（审查追问「跟 mc2 算子确认过分核发送逻辑了嘛」、作者答「已确保 mc2 正常」后合并）；每 rank 均摊为确定性数学推演。溯源下探 [cann-recipes-infer-pr-243-fix-perfect-eplb](https://gitcode.com/cann/cann-recipes-infer/merge_requests/243)。
-- `force_eplb` round-robin 覆盖 `topk_idx`、prefill/decode 注入时机、暴露 `num_experts`/`num_experts_per_tok` 前置：diff 事实 @b7a110bd6812；「仅 profiling 非正确性路径」为覆盖机制直接推断。溯源下探 [cann-recipes-infer-pr-326-refactor-mtp-refactor-and-r1-adaptation-framework](https://gitcode.com/cann/cann-recipes-infer/merge_requests/326)。
-- `--perfect-eplb` 入参 + `gen_cur_topk_idx` 覆盖 topk、README benchmark 在 forced eplb 下测：diff 事实 @50e41b5b8220。溯源下探 [cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/243)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/326)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)（evidence）

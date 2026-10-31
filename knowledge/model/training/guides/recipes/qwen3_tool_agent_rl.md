@@ -9,12 +9,14 @@ tags:
 - topic.model_adaptation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/patches/0004-Fix-local-parquet-loading-for-retool-datasets.patch
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-train/merge_requests/210
+  role: evidence
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-10-29T15:39:15Z'
 platforms:
 - a3
 ---
@@ -43,13 +45,13 @@ platforms:
 | 训练后端 | FSDP（SFT 后 `verl.model_merger merge --backend fsdp`） |
 | 验证数据集 | `yentinglin/aime_2025`（RL `val`），训练数据 `BytedTsinghua-SIA/DAPO-Math-17k` |
 
-样例附带三个 patch（`git am` 入 verl）：`0001-Fix-reward-function-not-accessing-num_turns.patch`（修复奖励函数获取不到 `num_turns` 值的 bug）、`0002-Update-paths-in-retool_sft_preprocess.py.patch`（修改数据预处理路径配置）、`0003-Modify-compute_score-to-encourage-tool-call.patch`（修改奖励函数，鼓励工具调用）。
+当前样例附带四个 patch（`git am` 入 verl）：`0001-Fix-reward-function-not-accessing-num_turns.patch`（修复奖励函数获取不到 `num_turns` 值的 bug）、`0002-Update-paths-in-retool_sft_preprocess.py.patch`（修改数据预处理路径配置）、`0003-Modify-compute_score-to-encourage-tool-call.patch`（修改奖励函数，鼓励工具调用）、`0004-Fix-local-parquet-loading-for-retool-datasets.patch`（显式 parquet 加载并隔离默认数据配置）。
 
 ## 环境与 verl 准备
 
 环境：`quay.io/ascend/vllm-ascend:v0.10.2rc1-a3` 镜像（A3）。
 
-承重事实：retool **已从 verl 迁出至 verl-recipe 仓库，最新分支无该项目**，故装 verl 时必须 checkout 含 retool 的历史版本 `95470480` 再 `git am ../patches/*.patch` 打入三个 patch，之后 `pip install -e .` 并进 `recipe/retool`：
+承重事实：retool **已从 verl 迁出至 verl-recipe 仓库，最新分支无该项目**，故装 verl 时必须 checkout 含 retool 的历史版本 `95470480` 再 `git am ../patches/*.patch` 打入四个 patch，之后 `pip install -e .` 并进 `recipe/retool`：
 
 ```shell
 git checkout 95470480   # 含 retool 的历史版本（最新分支已无该项目）
@@ -84,9 +86,10 @@ SFT 取 `global_step_186` 检查点合并为 HuggingFace 格式权重，作为 R
 
 ## RL 阶段（DAPO-Math-17k + Sandbox 工具）
 
-**1. 准备 Sandbox 环境。** A3 上若无法获取 Docker 镜像，按 SandboxFusion 的 `Manual` 装法拉 [SandboxFusion](https://github.com/bytedance/SandboxFusion) 源码到 `qwen3_tool_agent` 目录，建双 conda 环境：`sandbox`（python 3.12 + `poetry install`）跑服务、`sandbox-runtime`（python 3.10 + `requirements-runtime.txt`，该文件修改自 SandboxFusion 原始 runtime requirements、移除了安装失败的依赖包）跑代码执行运行时。再启服务：
+**1. 准备 Sandbox 环境。** 当前固定 recipe 选择 SandboxFusion 的 `feat/runtime` 分支，按对应 Manual 流程创建 `sandbox`（Python 3.12），安装 poetry 依赖并准备 `docs/build`，随后运行服务。该流程不要求额外创建 `sandbox-runtime` conda 环境；`make run-online` 也依赖该分支，不能在任意上游 main 上照抄。
 
 ```shell
+git clone --branch feat/runtime https://github.com/bytedance/SandboxFusion.git
 cd SandboxFusion
 conda activate sandbox
 make run-online
@@ -113,6 +116,12 @@ bash run_qwen3_4b_dapo_npu.sh
 
 启动脚本内含 TensorBoard 配置：`trainer.logger=['console','tensorboard']`（默认开 TensorBoard）、`trainer.log_val_generations=10`（每次验证查看的 response 数，默认 10）；TensorBoard 日志输出至 `qwen3_tool_agent/verl/recipe/retool/tensorboard_log/retool`，训练曲线在 `TIME SERIES` 页签、验证 response 文本在 `TEXT` 页签。
 
+## 当前准备步骤与失败检查
+
+运行 SFT/RL 前先把两个启动脚本按固定 README 的命令放到历史 verl 的 `recipe/retool` 目录，核对当前工作目录再启动。预处理脚本来自外部 verl checkout，不是 Recipes 根中的独立文件。国内网络可按来源使用 HF_ENDPOINT 或 modelscope，不能据此省略权重/数据完整性检查。
+
+PR210 同时新增本地 parquet 的 0004 patch，避免自动加载器推断错误及 AIME 其他配置 schema 混入，诊断和验收见 [ReTool parquet 加载失败](../../runbooks/runtime/retool_local_parquet_loading.md)。来源作者报告 A3 8 卡 SFT/RL 验证，本批未复测。下列 0.29→0.57 等曲线保留原观测口径，不作为本次新实验。
+
 ## 训练结果
 
 RL 在 `aime_2025` 上的验证指标：
@@ -124,11 +133,11 @@ RL 在 `aime_2025` 上的验证指标：
 
 `num_turns` 指每一次 user 或 assistant 输入都算一次 num_turn 的均值——训练后准确率近乎翻倍，同时模型学会用**更少轮数**解题。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.assets/image-20251127110205011.png" width="80%">
-<sub>图：关键验证曲线——`val-core/aime_2025/acc/mean@30`（验证集准确率）与 `val-aux/num_turns/mean`（验证 num_turns）随训练推进的变化（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·关键训练曲线）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.assets/image-20251127110205011.png" width="80%">
+<sub>图：关键验证曲线——`val-core/aime_2025/acc/mean@30`（验证集准确率）与 `val-aux/num_turns/mean`（验证 num_turns）随训练推进的变化（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·关键训练曲线）</sub>
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.assets/image-20251127110452948.png" width="80%">
-<sub>图：训练曲线——`critic/rewards/mean`（训练时单 step 平均奖励）与 `response_length/mean`（单 step 平均响应长度）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·关键训练曲线）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.assets/image-20251127110452948.png" width="80%">
+<sub>图：训练曲线——`critic/rewards/mean`（训练时单 step 平均奖励）与 `response_length/mean`（单 step 平均响应长度）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·关键训练曲线）</sub>
 
 训练后的模型 response 遵循多轮工具调用流程：
 
@@ -136,8 +145,8 @@ RL 在 `aime_2025` 上的验证指标：
 
 即模型先用大段文本推理分析问题，再调用代码工具处理复杂的动态规划计算，代码工具算出结果作为新输入回传给模型，模型校验后输出最终答案。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.assets/response样例.png" width="72%">
-<sub>图：训练后模型 response 样例——文本推理（图中省略）后调用代码工具做动态规划计算、校验结果再输出答案（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·训练后模型 response 样例）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.assets/response样例.png" width="72%">
+<sub>图：训练后模型 response 样例——文本推理（图中省略）后调用代码工具做动态规划计算、校验结果再输出答案（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·训练后模型 response 样例）</sub>
 
 ## 执行机制
 
@@ -148,11 +157,9 @@ RL 阶段的多轮工具调用执行流水完全由 `asyncLLM` + `agent_loop` �
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`agent_rl/qwen3_tool_agent/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md)（verl-retool agent 样例：概述 SFT(ReTool-SFT)+RL(DAPO-Math-17k) 两步、支持产品 A3 8卡16die、三个 patch 说明、Docker 环境、`git checkout 95470480`+`git am`、`retool_sft_preprocess.py`/`hf download Qwen3-4B-Instruct-2507`/`run_qwen3_4b_sft_npu.sh`/`verl.model_merger merge --backend fsdp global_step_186`、SandboxFusion Manual 装法+`make run-online`、DAPO-Math-17k/aime_2025 下载、`run_qwen3_4b_dapo_npu.sh`、训练结果 acc@30 0.29→0.57 / num_turns 7.0→5.4、response 流程、TensorBoard 配置、附录 ToolAgent 代码结构/异步流水）
-- 图：三图取自 `agent_rl/qwen3_tool_agent/README.assets/`（验证曲线 acc/num_turns、训练曲线 reward/response_length、训练后 response 样例）
-- recipe 脚本/文件：[`agent_rl/qwen3_tool_agent/run_qwen3_4b_sft_npu.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/run_qwen3_4b_sft_npu.sh)、[`run_qwen3_4b_dapo_npu.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/run_qwen3_4b_dapo_npu.sh)、[`retool_sft_preprocess.py`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/retool_sft_preprocess.py)、[`requirements.txt`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/requirements.txt)、[`requirements-runtime.txt`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/requirements-runtime.txt)、[`patches/0001-Fix-reward-function-not-accessing-num_turns.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/patches/0001-Fix-reward-function-not-accessing-num_turns.patch)、[`patches/0002-Update-paths-in-retool_sft_preprocess.py.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/patches/0002-Update-paths-in-retool_sft_preprocess.py.patch)、[`patches/0003-Modify-compute_score-to-encourage-tool-call.patch`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/patches/0003-Modify-compute_score-to-encourage-tool-call.patch)
-- [verl](https://github.com/volcengine/verl) — 上游 RL 框架仓（retool 项目位于含 retool 的历史版本 `95470480`）
-- 外部参考：[SandboxFusion](https://github.com/bytedance/SandboxFusion)、[verl/recipe retool](https://github.com/volcengine/verl)、数据集 `ReTool-SFT` / `BytedTsinghua-SIA/DAPO-Math-17k` / `yentinglin/aime_2025`
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md)（primary）
+- [0004-Fix-local-parquet-loading-for-retool-datasets.patch](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/patches/0004-Fix-local-parquet-loading-for-retool-datasets.patch)（implementation）
+- [远程来源](https://gitcode.com/cann/cann-recipes-train/merge_requests/210)（evidence）
 
 ## Links
 

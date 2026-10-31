@@ -8,14 +8,12 @@ tags:
 - topic.memory
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/249
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/issues/99
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md
-  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/ffn.py
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
+  role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-23T09:41:54Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a3
 scope:
@@ -46,15 +44,19 @@ scope:
 
 ## 修法
 
-对 FFN 侧访存 Bound 的算子（MoE-GMM、MatMul）做**通信间隙权重预取**（[`npu_prefetch`](../../concepts/techniques/weight_prefetch.md)），尝试利用 Send/Recv 通信间隙隐藏部分访存等待、尝试降低 FFN 侧耗时、缩短拖尾，实际效果须对比 profiling 验证：
+以下步骤限定固定 LongCat AFD 的 **Decode** 分支：本层 w2 和跨层 router/w13 预取均由 `not is_prefill` 门控，Prefill 走独立 double-routing 路径。对 FFN 侧访存 Bound 的算子（MoE-GMM、MatMul）做**通信间隙权重预取**（[`npu_prefetch`](../../concepts/techniques/weight_prefetch.md)），尝试利用 Send/Recv 通信间隙隐藏部分访存等待、尝试降低 FFN 侧耗时、缩短拖尾，实际效果须对比 profiling 验证：
 
 - 当前层：router 出结果后预取本层 GMM2(w2) 权重 `npu_prefetch(enable_prefetch, experts.w2_weight.data, router_logits, gmm2_prefetch_size, 0)`。
 - 跨层流水：拿到 `gmm2_out` 后预取**下一层** `layers[i+1]` 的 `router.classifier.weight`、`experts.w13_weight`（GMM1）。
 - 预取字节数按张量规模换算（`gmm1_prefetch_size = hidden_size*intermediate_size*2*dtype_bit//...` 等）。
 
-## 为什么 AFD 才做得了 MoE-GMM 预取（可迁移判断）
+## 按实际带宽窗口选择预取
 
-非分离场景里 Stream0 计算耗时与 Stream1 上 Router/Dispatch/MoE-GMM/Combine 耗时相当、**没有好的时间窗口**，故当时只对 QBMM/MLA_Prolog/matmul 预取、对 MoE-GMM 未做；AFD 把 MoE 独立到 FFN 节点后才腾出可预取 MoE-GMM 的时间窗。即**预取哪些权重要看该部署形态下有没有可用的通信/计算间隙，不是无脑全预取**。AFD 下 Attention 侧的权重预取与非分离场景保持一致（QBMM/MLA_Prolog/matmul）。
+非分离场景里 Stream0 计算耗时与 Stream1 上 Router/Dispatch/MoE-GMM/Combine 耗时相当、**没有好的时间窗口**，故当时只对 QBMM/MLA_Prolog/matmul 预取、对 MoE-GMM 未做；AFD 将 MoE 独立到 FFN 节点后可获得不同的预取窗口；当前非 AFD 代码也有 router 等预取，不能将旧案例选择理解为永久不支持。即**预取哪些权重要看该部署形态下有没有可用的通信/计算间隙，不是无脑全预取**。AFD 下 Attention 侧的权重预取与非分离场景保持一致（QBMM/MLA_Prolog/matmul）。
+
+## 当前 npugraph_ex 路径
+
+当前 FFN 在 npugraph_ex、多流与预取同开时建立专用预取流；router 处触发本层 w2 预取，gmm2_event 控制下一层 router/w13 预取，模型出口等待预取完成事件。GE 使用对应的依赖张量调用。预取调用发生不证明 FFN 拖尾已消除。
 
 ## 验证与回退
 
@@ -62,8 +64,9 @@ scope:
 
 ## 适用边界
 
-这是 AFD 特有的可复用失败签名——下一个在 MoE 上做 AFD 的 agent 遇到 Recv EVENT_WAIT 拖尾可对号入座、优先补 FFN 侧 GMM 权重预取。参考实现为 LongCat-Flash-560B FFN 节点（Atlas A3、W8A8、torchair ge_graph）。
+这是 AFD 特有的可复用失败签名——下一个在 MoE 上做 AFD 的 agent 遇到 Recv EVENT_WAIT 拖尾可对号入座、优先补 FFN 侧 GMM 权重预取。参考实现为 LongCat-Flash-560B FFN 节点的 Decode（Atlas A3、W8A8、torchair ge_graph）；不能直接将这些预取步骤推广到 Prefill。
 
 ## Evidence
 
-- FFN 侧层间/层内 `npu_prefetch`（router 分类器、experts w13/w2 权重）+ `gmm1/gmm2_prefetch_size` 换算：diff 事实 @72495f0ee845；「EVENT_WAIT 拖尾 + AFD 后 FFN 成瓶颈」为 doc 披露（作者 profiling 叙述、示意图，无独立复现数字），整体收益并入 AFD benchmark。溯源下探 [cann-recipes-infer-pr-249-feat-longcat-support-attention-ffn-disaggregation-afd](https://gitcode.com/cann/cann-recipes-infer/merge_requests/249)、[cann-recipes-infer-issue-99-rfc-longcat-flash-model-support-afd-feature](https://gitcode.com/cann/cann-recipes-infer/issues/99)。
+- [ffn.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/ffn.py)（primary）
+- [longcat_flash_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md)（supporting）

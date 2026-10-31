@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/187
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - agnostic
 ---
@@ -56,7 +56,5 @@ platforms:
 
 ## Evidence
 
-- 维护者确认 + diff 事实（clone `@2c45117`）：Discussion 中维护者「gate 不会量化，可以直接传 None」「默认 gate 都是不做量化的，K2 原始的 config 就没在 ignore 里配置 gate，直接拿过来用就有问题」；转换器 ignore 列表新增 MTP 层 `eh_proj`/`shared_head.head`，三模型 `lm_head`（及 V3.2-Exp 建模层 `gate`/`eh_proj`）改 `quant_config=None`。
-  - 溯源下探：[cann-recipes-infer-pr-113-feat-modify-quant-config-ignore-in-kimi-k2-thinking-and-deepseek-r1-and](https://gitcode.com/cann/cann-recipes-infer/merge_requests/113)
-- diff 事实（clone `@6293961c1089`）：`compressed_tensors.py` 的 quant_mode 由位宽拼串、kv 布尔→字符串泛化；三份 DeepSeek modeling 的 mm/gmm 用 `"a8" in`、`down_proj` 用精确 `== "w8a8"`；`indexer.py`/`offload_cache.py` 的 kv 用精确 `== "int8"`。
-  - 溯源下探：[cann-recipes-infer-pr-187-fix-w4a8-a8](https://gitcode.com/cann/cann-recipes-infer/merge_requests/187)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/113)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/187)（evidence）

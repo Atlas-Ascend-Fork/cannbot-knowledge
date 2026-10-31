@@ -8,13 +8,20 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/400
-  role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/quant_module.py
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py
+  role: constraint
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md
+  role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T14:16:48Z'
 platforms:
 - '950'
 ---
+
 # 在 NPU 上对含 1×1 卷积的 DiT 做 MXFP 低比特量化 — 卷积当线性算·加载期模块替换 + a4w4 混合精度部分回退 a8w8
 
 ## 适用场景
@@ -81,8 +88,13 @@ for block in model.blocks:
 - 上述层级划分/开关名/重排细节是该参考实现（cann-recipes-infer 的 SANA-Video 建模文件）的具体形态；可迁移的是"conv1×1 加载期模块替换 + 关 bf16 快路径""a4w4 预留部分层回退 a8w8"两条策略，具体层由各模型敏感性决定。
 - DiT 视频模型搬上 NPU 的注意力/SP 后端 bringup 另见 [cuda-native-dit-video-attention-sp-npu-adaptation](cuda_native_dit_video_attention_sp_npu_adaptation.md)。
 
+## 当前模块边界
+
+replace_quant_module实际只替换所列Linear与两个1×1卷积；QuantConv2d虽定义HiF8路径，但未被该替换函数调用。QuantLinear.qweight为普通张量，w_scale/bias注册为buffer；该实现应在已加载并放置到目标设备的模型上替换，不能假设之后通用module.to()/state_dict自动迁移或序列化qweight。回退BF16须重建并加载原权重，不能只恢复forward。
+
 ## Evidence
 
-- **diff 事实 + 维护者确认**（clone `@9c08a4ba17d2`）：`models/sana-video/patches/quant_module.py` 新增 `QuantConv1x1AsLinear` / `replace_quant_module`，`npu_patches.py` 的 `patch_conv1x1_matmul` 分支加 `and not enable_quant`、签名多出 `enable_quant` 形参；`replace_quant_module` 中 `attn.proj` 与两处 MLP conv 硬编码 `"a8w8"`、其余传 `quant_mode`；`LINEAR_MODES` / `CONV2D_MODES` 常量。维护者确认"量化时权重在初始化时量化、不复用当前 forward、替换为 QuantConv1x1AsLinear"。
-- **仓自报**（clone `@9c08a4ba17d2`）：Atlas 950 三行性能表出自 `models/sana-video/README.md`，无独立复测、无 correctness/精度数据；"为何这几层钉 a8w8"源未披露。
-- 溯源下探：[cann-recipes-infer-pr-400-feat-add-sanavideo-4bit-8bit-quant](https://gitcode.com/cann/cann-recipes-infer/merge_requests/400)
+- [quant_module.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/quant_module.py)（primary）
+- [npu_patches.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py)（implementation）
+- [inference_sana_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py)（constraint）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md)（supporting）

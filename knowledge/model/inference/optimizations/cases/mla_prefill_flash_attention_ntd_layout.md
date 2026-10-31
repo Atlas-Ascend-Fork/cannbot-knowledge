@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/17
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a3
 ---
@@ -52,6 +52,5 @@ NoPE/RoPE 分离入参须与建模里 q_pe / k_rope 的实际张量对齐（`npu
 
 ## Evidence
 
-- `doc 披露`（@f5bf59cf）：`deepseek_r1_prefill_optimization.md`「TND 格式支持」节——TND 两问题、改用 NTD、+15%、NoPE/RoPE 分离消除 split/concat/transpose 均为文档原文。溯源下探 [cann-recipes-infer-pr-72-feat-add-deepseek-r1-kimi-k2](https://gitcode.com/cann/cann-recipes-infer/merge_requests/72)。
-- `diff 事实`（@2c45117 / @f5bf59cf）：`modeling_deepseek.py` 的 Prefill `forward_page_attention_normal`、FIA v1 `NTD_TND` 布局处理、`npu_fused_infer_attention_score(..., query_rope=q_pe, key_rope=k_rope)` NoPE/RoPE 分离入参。溯源下探 [cann-recipes-infer-issue-17-rfc-deepseek-r1-kimi-k2-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/17)。
-- +15% 属 doc 披露、无独立复测；NTD 布局与 mla_prolog / FIA 调用为代码事实。归因主语为 cann-recipes-infer 的建模实现。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/72)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/17)（evidence）

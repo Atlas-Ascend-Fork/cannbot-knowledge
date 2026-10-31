@@ -9,29 +9,31 @@ tags:
 - topic.three_dimensional_reconstruction
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/gaussian_sort.cpp
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/gaussian_sort.cpp
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/algorithms/gaussian_splatting/rasterization/rasterizer.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a2
 ---
 
 # GaussianSort —— 3DGS tile 内高斯球深度排序算子
 
-Alpha-blending 渲染依赖累乘，必须保证高斯球在每个 tile 内**按深度排序后依次渲染**。`GaussianSort` 负责把每个 tile 命中的高斯球按深度排序，输出排序后的高斯球 ID。host 定义见 [`gaussian_sort.cpp`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/gaussian_sort.cpp)，被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联在精确相交映射之后、渲染之前。
+Alpha-blending 渲染依赖累乘，必须保证高斯球在每个 tile 内**按深度排序后依次渲染**。`GaussianSort` 负责把每个 tile 命中的高斯球按深度排序，输出排序后的高斯球 ID。host 定义见 [`gaussian_sort.cpp`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/gaussian_sort.cpp)，被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联在精确相交映射之后、渲染之前。
 
 ## 算子接口
 
 `GaussianSort`：
 
-- 输入：`lb_sched`（负载均衡调度）、`gaussian_cnt`、`gs_ids`（候选高斯球 ID）、`depths`（深度）、`sorted_offset`（各 tile 排序后偏移）。
+- 输入：`lb_sched`（负载均衡调度）、`gaussian_cnt`、`gs_ids`（候选高斯球 ID）、`depths`（深度）、`sorted_offset`（各 view 输出段的累计结束偏移，长度 B×C；tile 内偏移由 lb_sched 提供）。
 - 输出：`sorted_gs_ids`（排序后高斯球 ID）。
 - 属性：`max_tile_gauss`(int)。
 
-Python 封装签名见 [`ops/gaussian_sort.py`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/ops/gaussian_sort.py)：`gaussian_sort(lb_sched, gaussian_cnt, depths, gs_ids, sorted_offset, max_tile_gauss)`。
+Python 封装签名见 [`ops/gaussian_sort.py`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/meta_gauss_render/ops/gaussian_sort.py)：`gaussian_sort(lb_sched, gaussian_cnt, depths, gs_ids, sorted_offset, max_tile_gauss)`。
 
 ## 在渲染流程中的位置
 
@@ -45,7 +47,7 @@ Python 封装签名见 [`ops/gaussian_sort.py`](https://gitcode.com/cann/cann-re
 
 排序结果按 `sorted_offset` 切片后逐 view 送入 `calc_render`（[calc-render](calc_render.md)）做 alpha-blending。
 
-> 排序键为 tile 内高斯球深度（`depths`/`tile_depths`），保证渲染时由近及远依次混合。该算子未配套独立优化文档，细节以 host/kernel 源码为准（[`op_kernel/gaussian_sort.cpp`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_kernel/gaussian_sort.cpp)）。
+> 排序键为 tile 内高斯球深度（`depths`/`tile_depths`），保证渲染时由近及远依次混合。该算子未配套独立优化文档，细节以 host/kernel 源码为准（[`op_kernel/gaussian_sort.cpp`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_kernel/gaussian_sort.cpp)）。
 
 ## 相关页面
 

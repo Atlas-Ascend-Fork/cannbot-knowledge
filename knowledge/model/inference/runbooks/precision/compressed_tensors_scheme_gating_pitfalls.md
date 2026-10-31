@@ -15,7 +15,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/366
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -63,7 +63,6 @@ platforms:
 
 ## Evidence
 
-- `diff 事实`（@ece4dde）：加载器三处硬失败源于假设有激活量化，修为容许纯权重/pack_quantized。
-- `diff 事实`（@524914b）：MX vs fp8 靠 `weight_block_size==[1,32]` 区分路由。
-- `维护者确认`（@2c45117）：AWQ int4 纯权重走 W4A16 compressed-tensors、参考 kimi-k2-thinking。
-- 溯源下探：[cann-recipes-infer-issue-79-question-w8a8-w16a16](https://gitcode.com/cann/cann-recipes-infer/issues/79)、[cann-recipes-infer-pr-103-fix-quantization-support-w4a16int8-and-pack-quantized](https://gitcode.com/cann/cann-recipes-infer/merge_requests/103)、[cann-recipes-infer-pr-366-support-deepseek-v4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/366)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/79)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/103)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/366)（evidence）

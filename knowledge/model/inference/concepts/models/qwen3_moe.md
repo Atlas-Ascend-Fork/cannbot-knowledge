@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Qwen3-MoE
-description: Qwen3-MoE 的 GQA、QK Norm 与纯路由专家结构；双实现部署和时延观测分开治理。
+description: 当前Qwen3-MoE结构、packed/FP8缓存、950量化、Hadamard与精确Prefill SP触发和实际通信顺序。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,17 +9,18 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-moe/qwen3_moe_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/models/modeling_qwen3_moe.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen3_moe/qwen3_moe_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-21T10:02:02Z'
+updated_at: '2026-10-29T14:21:59Z'
 platforms:
 - a3
+- '950'
 ---
-
-
 
 # Qwen3-MoE
 
@@ -47,14 +48,22 @@ flowchart TD
  Add2 --> Out[Hidden']
 ```
 
-- **经典 Softmax Attention**：GQA，单个 Attention Head 计算 **O(S²)**。Qwen3-235B-A22B 头数参数由 HF 配置决定（见 `configuration_qwen3_moe.py`）。
+- **经典 Softmax Attention**：GQA，单个 Attention Head 计算 **O(S²)**。Qwen3-235B-A22B 头数参数须由具体权重 config 决定，不能以 configuration_qwen3_moe.py 的默认值代替。
 - **MoE**：**无 shared expert**（与 DeepSeek-R1 / Kimi-K2 / Qwen3-Next 不同）、纯 routed experts。
 - **与 Qwen3-Next / Qwen3.5-MoE 的对比**：Qwen3-Next 与 [qwen3-5-moe](qwen3_5_moe.md) 都是混合注意力（full/Gated Attention + GDN）+ MoE（含 shared expert）；Qwen3-MoE 是经典 Attention + MoE（无 shared expert、无 linear attention），**不共享代码路径**。见 [qwen3-next](qwen3_next.md)。
-- **与 Qwen Dense（非 MoE）的关系**：[qwen-dense](qwen_dense.md)（Qwen2/Qwen3-8B 等）共享 `merged_qkv_proj` 建模血缘（QK-Norm 为 Qwen3 共有：Qwen3-8B dense 与本页 Qwen3-MoE 均启用，Qwen2.5 dense 无），但 FFN 为单一稠密 MLP（`gate_up_proj` + 普通 Matmul + 手写 SiLU·mul），而非本页的 MoE 专家（`w13_weight` + `GroupedMatmul` + `npu_swiglu`）；两者各有独立建模文件。
+- **与 Qwen Dense（非 MoE）的关系**：[qwen-dense](qwen_dense.md)（Qwen2/Qwen3-8B 等）共享 `merged_qkv_proj` 建模血缘（QK-Norm 为 Qwen3 共有：Qwen3-8B dense 与本页 Qwen3-MoE 均启用，Qwen2.5 dense 无），但 FFN 为单一稠密 MLP（`gate_up_proj` + 普通 Matmul + BF16手写SiLU·mul或W8A8融合MLP），而非本页的 MoE 专家（`w13_weight` + `GroupedMatmul` + `npu_swiglu`）；两者各有独立建模文件。
+
+## 当前 packed、量化与 Prefill 分支
+
+当前统一模型采用packed token及1D position_ids，Prefill用累计q/kv长度直接计算有效K/V，随后更新Page cache；Decode使用cache。FP8 KV分支额外维护FP32 K/V scale cache，FIA以quant_mode4读缓存；不能等同BF16或其他模型的C8布局。
+
+prefill_opt精确条件为attn_tp_size==moe_ep_size、gmm_quant_mode=w4a8mxfloat4且mm_quant_mode=w8a8mxfloat8，单有并行度相等不够。对应Prefill在RMSNorm后量化/AllGather数据与scale，QKV和FA后先AlltoAll重组head输出，再由ReplicatedLinear o_proj计算。文档文字把o_proj放在AlltoAll前，此处按实际代码顺序。MoE gate读FP32归一化输出、专家读BF16，接MX量化AllGather路由与ReduceScatter；其他量化档不自动进入此路径。
+
+Hadamard只在enable_hadamard且Attention mm_quant_mode=w4a4mxfloat4时生效，需匹配每层变换文件；W4A8或HiF8即使填写开关也不进入该分支。量化精度和配置见[当前指南](../../guides/models/qwen3_moe_deployment.md)。
 
 ## 架构图（stock HF 基线）
 
-下图是 Qwen3-MoE 的 **stock HuggingFace 架构基线**（部署前先验，源自 HF `config.json` + `modeling_qwen3_moe.py`，架构类 `Qwen3MoeForCausalLM`、`model_type=qwen3_moe`），与本页其余的 NPU 部署优化（`merged_qkv_proj` / FIA / TP·EP·DP 切分 / 图模式）互补——上面的「Architecture And Serving Traits」描述的是部署后算子融合视角，本节是未做任何部署改写的原始网络拓扑。参数取自 `Qwen/Qwen3-235B-A22B/config.json`（verified 2026-05-14）。
+下图是 Qwen3-MoE 的 **stock HuggingFace 架构基线**（部署前先验，源自 HF `config.json` + `modeling_qwen3_moe.py`，架构类 `Qwen3MoeForCausalLM`、`model_type=qwen3_moe`），与本页其余的 NPU 部署优化（`merged_qkv_proj` / FIA / TP·EP·DP 切分 / 图模式）互补——上面的「Architecture And Serving Traits」描述的是部署后算子融合视角，本节是未做任何部署改写的原始网络拓扑。固定来源没有归档 Qwen3-235B-A22B 的权重 config；本节仅表示结构关系，不提供该检查点的确定维度，也不保留无法复核的历史核验声明。
 
 ```mermaid
 flowchart TD
@@ -78,21 +87,7 @@ flowchart TD
     head --> logits([logits])
 ```
 
-精简关键参数表（Qwen3-235B-A22B 规格，仅保留对部署有意义的行）：
-
-| Module | Param | Value (235B-A22B) |
-|--------|-------|-------------------|
-| —   | n_layers         | 94     |
-| —   | hidden           | 4096   |
-| GQA | n_q_heads        | 64     |
-| GQA | n_kv_heads       | 4      |
-| GQA | head_dim         | 128    |
-| MoE | n_routed_experts | 128    |
-| MoE | n_shared_experts | 0      |
-| MoE | top_k            | 8      |
-| MoE | moe_intermediate | 1536   |
-
-> `n_routed_experts=128`（top-8）取自 `Qwen/Qwen3-235B-A22B/config.json`（verified 2026-05-14）。Qwen3-235B-A22B 单 token 激活参数 ≈ 22B（128 个 routed expert 中 top-8，加上非 MoE 的 attention / norm / embed 权重）。Attention 为标准 GQA（非 MLA），KV 按 per-kv-head 全粒度缓存。**no shared expert** 与本页正文「无 shared expert」口径一致，区别于 [deepseek-r1](deepseek_r1.md) / [qwen3-5-moe](qwen3_5_moe.md) 等含 shared expert 的 MoE。
+具体层数、hidden、Q/KV 头数、专家维度必须读取所用权重的 config.json。仓内 configuration_qwen3_moe.py 是通用配置类默认值，不能替代 235B-A22B 检查点。可由固定建模代码确认 GQA、无 shared expert 与 routed MoE 的结构；本卡不据未归档配置提供内存或并行规模的定量推导。
 
 ## 部署与证据入口
 
@@ -101,9 +96,9 @@ flowchart TD
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/qwen3-moe/qwen3_moe_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-moe/qwen3_moe_optimization.md)（概述 / Attention TP 切分与计算分解 / MoE TP 切分与计算分解 / 融合算子 / 图模式 / 缓存 / AIV 五大章节）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/qwen3_moe/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3_moe/README.md) + `models/qwen3_moe/config/*.yaml`（自研 executor 四份部署模板）、`models/qwen3_moe/models/modeling_qwen3_moe.py`（`Qwen3MoeSparseMoeBlock` 三条路径：`moe_infer_tp` / `moe_infer_double_routing`(prefill) / `moe_infer_dispatch_combine`(decode)）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/qwen3-moe-sglang/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-moe-sglang/README.md)（SGLang v0.5.7 容器镜像、W8A8 msmodelslim 量化、9 个 patch 说明、Benchmark 30 ms）、`models/qwen3-moe-sglang/patches/*.diff`、`models/qwen3-moe-sglang/infer_{prefill,decode,router,""}.sh`、`models/qwen3-moe-sglang/utils/`
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/README.md)（primary）
+- [modeling_qwen3_moe.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/models/modeling_qwen3_moe.py)（implementation）
+- [qwen3_moe_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen3_moe/qwen3_moe_optimization.md)（supporting）
 
 ## Links
 

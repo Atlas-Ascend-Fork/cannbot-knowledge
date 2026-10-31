@@ -10,5 +10,5 @@ okf_version: "0.2"
 - [社区贡献](contrib/index.md)：社区贡献的工程知识入口。
 - [算子知识](ops/index.md)：按 DSL 隔离的算子知识入口。
 - [图知识](graph/index.md)：图领域知识入口。
-- [模型知识](model/index.md)：模型推理、训练、空间智能和具身智能知识入口。
+- [模型知识](model/index.md)：共 507 张知识卡，分布在 4 个子目录（embodied、inference、spatial 等）。
 - [Runtime 知识](runtime/index.md)：CANN Runtime 领域知识入口。

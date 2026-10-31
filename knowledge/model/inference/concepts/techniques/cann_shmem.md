@@ -9,10 +9,10 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_shmem_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - a3
 ---
@@ -38,7 +38,7 @@ shmem 的对称内存原理（guide 对称内存原理示意，dispatch&combine 
 
 算子内通过 `GetShmemDataAddr` / `GetShmemSignalAddr` 获取目标对端卡数据区 / 状态区的内存起始地址。
 
-**SHMEM 使能：init → context 传递机制。** 通算融合算子复用 SHMEM 基础语义需先初始化对称内存并取得通信 context：`ShmemInit(rank, 总die数)` 为当前 die 分配数据区 + 状态区共用的 win 内存，再经 `InitAndGetMC2CommContext()` 把共享内存信息封装成 `shmem_context`，作为入参传给 dispatch/combine 算子；整网用 `init_shmem_once` 保证 shmem 内存只初始化一次（重复初始化会报错）。具体 byte/rank 数等案例参数可省。
+**SHMEM 使能：init → context 传递机制。** 通算融合算子复用 SHMEM 基础语义需先初始化对称内存并取得通信 context：先以 MoeDistributeCppBuffer(<bytes>, 1) 为当前 die 分配数据区与状态区共用的 win 内存，再调用 dc_buffer.ShmemInit(<world_size>, rank, t) 设置通信总 die 数与 rank，随后经 `InitAndGetMC2CommContext()` 把共享内存信息封装成 `shmem_context`，作为入参传给 dispatch/combine 算子；整网用 `init_shmem_once` 保证 shmem 内存只初始化一次（重复初始化会报错）。具体 byte/rank 数等案例参数可省。
 
 ## Host 侧接口：HBM&DDR 混合编址
 
@@ -81,9 +81,7 @@ cache_nope = torch_npu._C._construct_NPU_Tensor_From_Storage_And_Metadata(metada
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_shmem_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md)（简介 / Highlights / KVCache Offload / 对称内存原理 / pyPTO-shmem API / TileLang-shmem API；主源 656 行，本页取 SHMEM 编程模型部分）
-- 外部仓：SHMEM 运行时库与 kernel 实现 [`gitcode.com/cann/shmem`](https://gitcode.com/cann/shmem)
-- 溯源：shmem_guide 随 V4 引入（`5df82b1` support deepseek v4，MR!366）
+- [deepseek_v4_shmem_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_shmem_guide.md)（primary）
 
 ## Links
 

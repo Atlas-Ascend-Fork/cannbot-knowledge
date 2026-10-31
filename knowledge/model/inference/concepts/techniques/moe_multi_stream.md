@@ -12,12 +12,14 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T06:30:56Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - a3
 ---
@@ -28,7 +30,7 @@ platforms:
 
 MoE 层上的多 NPU stream 并行是 cann-recipes-infer 在多个模型里反复使用的优化手段，共同思想是 **把 MoE 层内部可并行的子计算/通信段分配到多条 stream，让它们在时间轴上重叠**，隐藏 AllToAll、GroupedMatMul 或专家计算的时延。不同模型对应不同的多流拓扑：
 
-- **Shared + Routed Overlap 变体**（Qwen3-Next / Qwen2-MoE / DeepSeek-R1 Decode / DeepSeek-V3.2-Exp / Kimi-K2-Thinking / HunyuanImage-3.0）：shared-expert 的 `gate_up_proj`/`act_fn`/`down_proj` 放在独立 stream，与主 stream 上的 `topk → dispatch → GroupedMatMul → combine` 重叠。
+- **Shared + Routed Overlap 变体**（Qwen3-Next / Qwen2-MoE / DeepSeek-R1 Decode / DeepSeek-V3.2-Exp / Kimi-K2-Thinking / HunyuanImage-3.0）：shared-expert 的 `gate_up_proj`/`act_fn`/`down_proj` 放在独立 stream，与主 stream 路由分支的部分计算/通信重叠。combine 能否参与重叠取决于是否消费共享输出：当前V3.2-Exp已将combine与shared_expert_x解耦并在末尾相加；原生流路径仍在combine前wait共享输出，因此解耦本身不证明该段已重叠。
 - **ScMoE Stream Switch + Core Limit 变体**（LongCat-Flash）：ScMoE 双段 "Attention → FFN → Attention → MoE" 结构里，**把第二段 Attention 与 FFN 提前到与 MoE 并行**，通过 `npu_stream_switch("1")` 与 `limit_core_num` 联合限定每条 stream 占用的 Cube/Vector Core（核数取值随平台与配置核对），使双流计算时间接近，无明显拖尾。
 
 两个变体都依赖 NPU 多 stream 调度与 stream 间 event 同步，但作用的 MoE 结构和约束不同，故独立列出。
@@ -37,7 +39,7 @@ MoE 层上的多 NPU stream 并行是 cann-recipes-infer 在多个模型里反�
 
 ### 共享专家与路由专家
 
-两条分支汇合前可以重叠，必须保留路由、共享输出与最终相加之间的依赖。下面是结构示意，具体算子和事件顺序按实现核对。
+两条分支汇合前可以重叠，必须保留路由、共享输出与最终相加之间的依赖。下面仅示意 combine 与共享输出解耦、末尾相加的形式；当前V3.2-Exp原生流路径仍在combine前等待共享分支，不能直接套用此时序图。具体算子和事件顺序按实现核对。
 
 ```mermaid
 sequenceDiagram
@@ -74,12 +76,9 @@ LongCat 的 shortcut MoE 与第二段 Attention/FFN 可形成并行分支；与�
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 共享专家双流 @2c45117：[`models/deepseek-v3.2-exp/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v3.2-exp/models/modeling_deepseek.py) L418–L430（`npu_stream_switch("11")` + `npu_record_tagged_stream` + `moe_npu_events`，L69 事件创建，L218 `enable_aclgraph`，L1659–L1664 superkernel `stream-fusion=1`）；[`models/glm-5/models/modeling_glm.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/models/modeling_glm.py) L406–L418（同构，L1663–L1668 superkernel）；`models/kimi-k2-thinking/models/modeling_deepseek.py` L414。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — Qwen3-Next patch @2c45117：[`models/qwen3-next/patches/stage1/0003-feat-moe-multi-stream.patch`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen3-next/patches/stage1/0003-feat-moe-multi-stream.patch)（`get_npu_shared_expert_stream`、`npu_forward_normal_dual_stream` 三段 `wait_stream`、`ENABLE_NPU_DEEPEP_MOE_MULTI_STREAM`、`w8a8_int8.py` w2_weight_scale→bf16）。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — HunyuanImage-3.0 @2c45117：[`models/hunyuan-image-3.0/adaptor_patches/hunyuan.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py) L205（`share_mlp_stream` 字段）、L729（init 注入各层）、L295/L332（`with torch.npu.stream`）、L292–L297/L375（`torch.npu.Event` record/wait）。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — Qwen3-Next: [`models/qwen3-next/patches/stage1/0003-feat-moe-multi-stream.patch`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-next/patches/stage1/0003-feat-moe-multi-stream.patch)（`get_npu_shared_expert_stream`、`npu_forward_normal_dual_stream`、`ENABLE_NPU_DEEPEP_MOE_MULTI_STREAM`）；README "新增特性使能" 表。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — DeepSeek-R1: [`models/deepseek_r1/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/models/modeling_deepseek.py) L414–L466（`DeepseekV3MoE.forward` 中 `enable_multi_streams` + `npu_stream_switch("22")` + `npu_wait_tensor`），L537（`shared_experts_down_proj` 上的 stream switch）；[`models/deepseek_r1/config/decode_r1_rank_*.yaml`](https://gitcode.com/cann/cann-recipes-infer/tree/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/config) 中 `enable_multi_streams: True`。
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — LongCat-Flash: [`docs/models/longcat-flash/longcat_flash_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md) "多流并行与控核" 章节（含原策略图、调整后方案图、伪代码、stage1/stage2 控核策略）；[`models/longcat-flash/models/modeling_longcat_flash.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/longcat-flash/models/modeling_longcat_flash.py)（`npu_stream_switch` + `limit_core_num` 使用处）。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [longcat_flash_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md)（supporting）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
 
 ## Links
 
@@ -90,7 +89,7 @@ LongCat 的 shortcut MoE 与第二段 Attention/FFN 可形成并行分支；与�
 - [kimi-k2-thinking](../models/kimi_k2_thinking.md)
 - [hunyuan-image-3](../models/hunyuan_image_3.md)
 - [expert-parallel](../parallelism/expert_parallel.md)
-- [moe-dispatch-combine-v2](moe_dispatch_combine_v2.md)（shared expert 计算与 dispatch/combine AllToAll 重叠的对端融合算子）
+- [moe-dispatch-combine-v2](moe_dispatch_combine_v2.md)（shared expert 可与路由分支部分重叠；combine 是否等待共享输出按实现核对）
 - [sglang](../frameworks/sglang.md)
 - [torchair](../frameworks/torchair.md)
 - [atlas-a3](../platforms/atlas_a3.md)

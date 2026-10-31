@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/266
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -63,5 +63,5 @@ if params.joint_tensor_key is not None:
 
 ## Evidence
 
-- diff 事实（@2c45117，merged patch）：joint K/V 顶部拼接删除、按 ulysses rank 沿 head 切分、`ring_world_size==1` 直接拼、新增 `_kv_post_process`；ulysses seq-len 补齐块删除的**理由**为推断、不并入事实面；精度 before→after 数值源未给。溯源下探 [cann-recipes-infer-pr-287-fix-fix-hunyuanvideo-sequence-parallel-and-vae-parallel-debug](https://gitcode.com/cann/cann-recipes-infer/merge_requests/287)
-- diff 事实（回退动作，@366a74296cb5）：`UnifiedSPAttention`→`xFuserLongContextAttention`、requirements 加 xfuser/yunchang、README 删侵入式补丁附录；「自研 SP 精度损失」这一**回退原因**仅见 PR 描述、非维护者展开、无 benchmark，已降级标注。溯源下探 [cann-recipes-infer-pr-266-feat-hunyuanvideo-support-taylorseer-offload-prefetch-vae-parallel-rolli](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/287)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)（evidence）

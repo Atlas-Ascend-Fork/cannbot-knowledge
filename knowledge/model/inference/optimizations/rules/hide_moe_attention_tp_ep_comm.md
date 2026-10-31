@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/305
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - a2
 ---
@@ -72,5 +72,5 @@ npu_mm_reduce_scatter_base(rearrange(o, 'b n s d -> (s b) (n d)'), weight.T, hcc
 
 ## Evidence
 
-- `diff 事实`（@fdb79bf65a8b）：`moe_forward` 的 `dist.all_reduce(..., async_op=True)` → `shared_mlp(...)` → `wait()` → 两路相加。收益定性，无独立 benchmark。溯源下探：[cann-recipes-infer-pr-218-feat-support-hunyuanimage-3-0-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)
-- `diff 事实` + `维护者确认`（@f4a8014a8db0）：`npu_all_gather_base_mm` / `npu_mm_reduce_scatter_base` 调用 + `(s b)` 合轴；"算子只支持 2 维、只沿第 0 轴切、S 前 B 后否则精度错"及"融合优于不融合"为维护者确认，无独立复测数字。溯源下探：[cann-recipes-infer-pr-305-feat-hunyuanimage-3-0-supports-moe-ep-and-the-performance-is-optimized](https://gitcode.com/cann/cann-recipes-infer/merge_requests/305)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/305)（evidence）

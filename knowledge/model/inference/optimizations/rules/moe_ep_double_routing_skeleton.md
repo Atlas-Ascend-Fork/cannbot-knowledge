@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/17
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a3
 ---
@@ -55,5 +55,5 @@ MoE 在 [TP](../../concepts/parallelism/tensor_parallel.md) 切分下，routing 
 
 ## Evidence
 
-- `moe_infer_double_routing`/`moe_dispatch_double_routing` 的 8 步算子调用链、TP routing/finalizing 不随份数缩、EP→1/ep_size + 共享专家独立 stream 掩盖：diff 事实 @f4a8014a8db0；`1/ep_size` 为源文档披露 + 机制推断。溯源下探 [cann-recipes-infer-pr-305-feat-hunyuanimage-3-0-supports-moe-ep-and-the-performance-is-optimized](https://gitcode.com/cann/cann-recipes-infer/merge_requests/305)。
-- prefill 侧 double-routing（`init_routing_v2`/`re_routing`/`finalize_routing`/`all_to_all_single`）与 decode 侧 `distribute_dispatch_v2/combine_v2` 并存、double-routing 相对 AllGather 峰值内存/通信更优：diff 事实 + 本仓一手优化文档披露 @2c45117。溯源下探 [cann-recipes-infer-issue-17-rfc-deepseek-r1-kimi-k2-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/17)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/305)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/17)（evidence）

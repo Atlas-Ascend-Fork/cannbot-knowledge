@@ -8,14 +8,14 @@ tags:
 - topic.model_adaptation
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/README.md
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/training/finetune/mcore/lora_finetune.md
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/docs/zh/pytorch/training/finetune/mcore/lora_finetune.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
-- agnostic
+- a2
 ---
 
 # PEFT / LoRA 家族（LoRA / CC-LoRA / QLoRA / LU-LoRA / LoRA-MoE）
@@ -23,6 +23,8 @@ platforms:
 ## Summary
 
 参数高效微调（PEFT）只训练极少量旁路参数、冻结预训练主干，省下全参微调的优化器状态与梯度显存。MindSpeed-LLM 的 PEFT 全部围绕 **LoRA** 展开：在目标线性层上挂一对低秩矩阵 `A`（降维到 rank `r`）和 `B`（升回输出维），前向给基座输出叠一项 `(α/r)·B(Ax)`，反向只更新 `A,B`，基座权重 `W₀` 始终冻结。在这个基线上派生出四个变体，各解决一类成本：**CC-LoRA**（`--lora-fusion`）把低秩分支与 TP/SP 通信异步重叠、消冗余通信换吞吐；**QLoRA**（`--qlora`）把冻结基座量化成 NF4、省主干权重显存；**LU-LoRA**（`--lu-lora-final-layer-index`）把浅层的反向传播换成局部学习规则、省浅层激活与反向耗时；**LoRA-MoE**（`LoraParallelLinearMoE`）让低秩适配器适配 TP/EP 切分的专家线性层。四者复用同一套 PEFT 接入（`peft` 库的 `LoraConfig` + `get_peft_model`）、同一组权重合并/转换脚本，可按 SFT 场景叠加或择一。机制承自 [mindspeed](../frameworks/mindspeed.md) 的 MindSpeed-LLM `tasks/posttrain/lora`。
+
+本文的低秩数学原理可跨硬件复用，但 CC-LoRA 直接调用 torch_npu、QLoRA 依赖 NPU 版 bitsandbytes，具体实现不是硬件无关。A2 范围依据 CC-LoRA 的 Atlas 900 A2 PODc 实测；其他变体与产品组合应分别核实依赖和可运行性，不能由这组实测外推。
 
 ## LoRA 基础：冻结基座 + 低秩增量
 
@@ -42,7 +44,7 @@ y  = x·W₀ᵀ + (α/r)·(x·Aᵀ)·Bᵀ
 - `--lora-target-modules`：挂 LoRA 的线性层，可选 `linear_qkv` / `linear_proj` / `linear_fc1` / `linear_fc2`。
 - `--lora-load`：加载已有 LoRA 断点续训或推理。
 
-LoRA 适配器内部强制升到 FP32（`megatron_config.params_dtype = torch.float32`）以免低秩矩阵数值溢出。训练产物是独立的 LoRA 权重，推理/部署时用 `convert_ckpt` 系脚本带 `--lora-load --lora-r --lora-alpha --lora-target-modules` 把 `A,B` 合并回基座并转回 HF 格式；合并经 `peft` 落到 FP16，bf16 基座（如 Qwen 系）合并转 HF 有精度损失，可临时把原 HF `config.json` 的 dtype 改成 float16 规避。合并场景当前不支持 `--mtp-num-layers`。
+LoRA 适配器内部强制升到 FP32（`megatron_config.params_dtype = torch.float32`）以免低秩矩阵数值溢出。训练产物是独立的 LoRA 权重，推理/部署时用 `convert_ckpt` 系脚本带 `--lora-load --lora-r --lora-alpha --lora-target-modules` 把 `A,B` 合并回基座并转回 HF 格式；合并经 `peft` 落到 FP16，bf16 基座（如 Qwen 系）合并转 HF 有精度损失，可临时把原 HF `config.json` 的 dtype 改成 float16 规避。当前 LoRA 微调阶段不支持开启 `--mtp-num-layers`，限制不限于合并。
 
 ## CC-LoRA：低秩分支与 TP 通信重叠
 
@@ -126,16 +128,8 @@ LoRA 微调的数据侧（指令样本打包 / 动态序列）与 [data-packing-
 
 ## Evidence
 
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/training/finetune/mcore/lora_finetune.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/training/finetune/mcore/lora_finetune.md)（`W'=W+A·B`、`lora-r`/`lora-alpha`(α/r≈2)/`lora-target-modules`(linear_qkv/proj/fc1/fc2)/`lora-load`、`lora-fusion` 即 CCLoRA）、[`develop/mcore/lora_finetune_adaptation.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/develop/mcore/lora_finetune_adaptation.md)（合并转 HF：peft 合并落 FP16、bf16 精度损失、不支持 `--mtp-num-layers`）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/features/mcore/cc_lora.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/features/mcore/cc_lora.md)（单流水→通算双流水、SP&Row 合并 all_gather、`BS<H`/`BS≥H` 的 scale 合并、与 `--overlap-param-gather` 冲突、Llama2/Mixtral 吞吐表）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/training/finetune/mcore/qlora_finetune.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/training/finetune/mcore/qlora_finetune.md)（NF4 查找表量化、`--qlora-nf4`/`--qlora`/`--qlora-save-dequantize`、Llama-2-70b 129→35GB、不支持 lora-fusion）、[`lu_lora_finetune.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/training/finetune/mcore/lu_lora_finetune.md)（`--lu-lora-final-layer-index`(取 37.5% 层)/`--lu-lora-lr`(1.25e-6)/`--lu-lora-lr-ratio`、Hebb 初始化、ECAI 2025 引用）
-- [`mindspeed_llm/features_manager/finetune/lora.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/finetune/lora.py) — `LoraFeature`：`--lora-r/-alpha/-target-modules/-load/-fusion/--qlora/--qlora-save-dequantize` 注册、QLoRA patch 集、`validate_args`（MoE 须 `alltoall_seq`、禁 `moe-tp-extend-ep`）；[`finetune/lu_lora.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/finetune/lu_lora.py) — `--lu-lora-final-layer-index/-lr/-lr-ratio`
-- [`mindspeed_llm/training/training.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/training/training.py) — `model_provider_func_wrapper`：`get_peft_model`/`LoraConfig` 接入、`LoraParallelLinear→LoraParallelLinearMoE`、`lora_fusion` 时 `LoraParallelLinear.forward=CCLoraParallelLinearForward`（+ `MLP.forward=ParallelSwigluMLPLoRAForward`）、`lu_lora_final_layer_index` 时换 `CCLULoRAParallelLinear`
-- [`mindspeed_llm/tasks/posttrain/lora/cc_lora_forward.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lora/cc_lora_forward.py) — 五个 `_Fused*ParallelLoRAFunction`（`ctx.combine = seq_size≥d`、`npu_mm_reduce_scatter_base`/`npu_all_gather_base_mm`、`dequantize` 兼 QLoRA）、`column/row_cc_lora_parallel_linear_forward`、`CCLoraParallelLinearForward`；[`cc_lora_mlp_forward.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lora/cc_lora_mlp_forward.py) — `ParallelSwigluMLPLoRAForward`（fc1/fc2 LoRA + `npu_swiglu` 融合）
-- [`mindspeed_llm/tasks/posttrain/lora/qlora.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lora/qlora.py) — `parallel_linear_init_wrapper`(权重落 CPU)、`linear_with_frozen_weight_forward/backward`(`dequantize_4bit`)、`save/load_from_state_dict_wrapper`(`Params4bit.from_prequantized`/`quant_state`)、`WeightNf4QuantGMMFunction`(MoE GMM 反量化)；[`lora/utils.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lora/utils.py) — `is_enable_lora`/`is_enable_qlora`/`filter_lora_keys`
-- [`mindspeed_llm/tasks/posttrain/lora/lora_moe.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lora/lora_moe.py) — `LoraParallelLinearMoE`：Row/Column 基座的 `lora_A`/`lora_B` 切分策略、共享专家 `SE*ParallelLinear`、适配器 FP32、`forward` 叠加
-- [`mindspeed_llm/tasks/posttrain/lu_lora/optimizer.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lu_lora/optimizer.py) — `LULoRALayerOptimizer.update`(accumulation_step 累积、TP all-reduce、`weight−=lr·ΣΔ/step`)；[`lu_lora/rules.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lu_lora/rules.py) — `OjasRule`(`Δ=η(yx−y²w)` + `F.normalize`)
-- [`mindspeed_llm/tasks/posttrain/lu_lora/layers/tp_lu_lora_linear.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lu_lora/layers/tp_lu_lora_linear.py) — `CCLULoRAParallelLinear`(`enable_lu_lora` 置 `requires_grad=False`+`lora_B=randn×1e-4`、`_lora_forward` 兼 CC-LoRA)；[`layers/lu_lora_forward.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lu_lora/layers/lu_lora_forward.py) — 只前向无反向的 `_Fused*LULoRAFunction` + 前向内 `optimizer.update`；[`lu_lora/bootstrap.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/posttrain/lu_lora/bootstrap.py) — `get_lu_lora_layers_indices_on_rank`/`configure_lr_for_lu_lora_layers`/`LULoRALRScheduler`
+- [README.md](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md)（primary）
+- [lora_finetune.md](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/docs/zh/pytorch/training/finetune/mcore/lora_finetune.md)（supporting）
 
 ## Links
 

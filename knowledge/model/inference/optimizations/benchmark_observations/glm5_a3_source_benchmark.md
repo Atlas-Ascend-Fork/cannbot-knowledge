@@ -1,17 +1,17 @@
 ---
 type: Optimization
 title: GLM-5 A3 W8A8 Decode 的来源性能观测
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+description: 集中当前GLM-5 A3性能与新增GSM8K来源观测，明确force_eplb覆盖和评测缺口。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml
 created_at: '2026-10-21T09:56:23Z'
-updated_at: '2026-10-21T09:56:23Z'
+updated_at: '2026-10-29T15:05:36Z'
 platforms:
 - a3
 scope:
@@ -56,14 +56,18 @@ Atlas A3，源表64 Chips；world_size128不替代物理卡单位。
 
 来源平均3个draft接受1.44个；未提供绑定输入及逐次测量记录。
 
+## 当前新增精度观测
+
+当前README还报告W8A8在GSM8K的accuracy为96.59%。未给完整权重快照、评测命令、样本/提示配置和多轮波动，不能与性能表默认视为同一次运行，也不能据此宣布无损。此平台字段来自A3样例上下文，不补造独立测量记录或verified。950配置存在不表示该分数来自950。
+
 ## Limitations 与验证
 
-README称采样开启perfect EPLB，而所列固定YAML默认perfect_eplb=False；需补实际生效配置，不把配置默认值当作采样记录。不能用V3.2-Exp的质量或吞吐数字补齐GLM-5评测，也不能从脚本支持的其他量化模式推导它们已测得同样结果。
+当前README称采样开启force EPLB，而所列YAML默认force_eplb=false；需补实际生效配置，不把配置默认值当作采样记录。不能用V3.2-Exp的质量或吞吐数字补齐GLM-5评测，也不能从脚本支持的其他量化模式推导它们已测得同样结果。
 
 复现与回退入口：[模型部署与验收流程](../../guides/models/glm_5_deployment.md)。性能与输出质量分别验收；来源自报不构成本仓复现。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/README.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/glm-5/config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/README.md)（primary）
+- [glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml)（primary）

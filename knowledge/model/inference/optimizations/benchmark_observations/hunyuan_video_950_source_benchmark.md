@@ -1,16 +1,20 @@
 ---
 type: Optimization
 title: HunyuanVideo 950PR 量化的来源性能表
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+description: 当前950PR量化来源表，标明MXFP8实现与offload对照因素，保留单卡/八卡独立baseline。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/config/single.yaml
+  role: constraint
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/config/single_fp8.yaml
+  role: constraint
 created_at: '2026-10-21T09:56:25Z'
-updated_at: '2026-10-21T09:56:25Z'
+updated_at: '2026-10-29T14:13:05Z'
 platforms:
 - '950'
 scope:
@@ -63,11 +67,13 @@ scope:
 
 ## Limitations 与验证
 
-FA量化与Matmul量化分别看同组对照；不能把单卡baseline与Ulysses8行相除解释纯量化收益。缺质量/相似度指标，不能写跨模型优先级或无损保证。
+FA量化与Matmul量化分别看同组对照；不能把单卡baseline与Ulysses8行相除解释纯量化收益。当前实现为MXFP8 FA与A8W8；源表未给各行完整build，且single_fp8与single配置的CPU offload默认不同，复现应固定该因素。缺质量/相似度指标，不能写跨模型优先级或无损保证。
 
 复现与回退入口：[模型部署与验收流程](../../guides/models/hunyuan_video_deployment.md)。性能与输出质量分别验收；来源自报不构成本仓复现。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md)
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（primary）
+- [single.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/config/single.yaml)（constraint）
+- [single_fp8.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/config/single_fp8.yaml)（constraint）

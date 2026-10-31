@@ -1,72 +1,66 @@
 ---
 type: Guide
-title: Wan2.2-I2V A2/A3 并行与缓存生成验收流程
-description: Wan2.2-I2V A2/A3 并行与缓存生成验收流程，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+title: Wan2.2-I2V 当前部署与验收
+description: 当前A2/A3/950部署、统一三类YAML、CFG2默认与CFG1性能表差异、单卡缓存和多卡强制NoCache。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/wan2.2-i2v/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/06656b0519fde3256eed1b2a77e5327898e0b00f/models/wan2.2-i2v/infer.sh
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/06656b0519fde3256eed1b2a77e5327898e0b00f/models/wan2.2-i2v/config/14b_cfg2_ulysses4.yaml
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/config/14b_cfg2_ulysses4.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/config/14b_single.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/generate.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md
+  role: supporting
 created_at: '2026-10-21T09:56:21Z'
-updated_at: '2026-10-22T01:37:00Z'
+updated_at: '2026-10-29T14:15:06Z'
 platforms:
 - a2
 - a3
+- '950'
 ---
-# Wan2.2-I2V A2/A3 并行与缓存生成验收流程
 
-## 目标、输入与产物
+# Wan2.2-I2V 当前部署与验收
 
-面向固定来源中的 Wan2.2-I2V 实现，输入包括平台、权重、实际配置和任务指标；产物为可追溯配置、正确性/性能记录及回退入口。模型结构由[模型 Concept](../../concepts/models/wan2_2_i2v.md)维护。以下描述固定版本实践，不能当作当前所有软件版本的部署保证。
+## 环境与输入
 
-## 1. 固定启动版本与输入
+当前README覆盖A2/A3/950：A2/A3要求CANN≥8.5.0、PyTorch2.7.1与torch_npu发布v7.3.0；950要求CANN≥9.0.0、PyTorch2.7.1与扩展发布v26.0.0。按架构、Python和驱动匹配实际wheel，不把不同平台组合混用。
 
-旧优化文档的generate.py/run.sh与后续infer.sh/YAML入口分开使用。2c45117 README明确A2/A3单/多卡；普通输入为参考图、prompt、seed、尺寸、帧数和步数。统一14b_single与14b_cfg2_ulysses4分别配置单卡缓存或CFG2×Ulysses4/VAE/FSDP，不能混读旧JSON与新YAML参数名。启动机制见 [多模态启动](../../concepts/frameworks/mm_inference_launch.md)。
+上游Wan2.2代码非覆盖合入模型目录，安装requirements；准备I2V-A14B BF16的high_noise_model、low_noise_model、T5与Wan2.1_VAE。YAML的model_args.ckpt_dir指向完整权重，image/prompt/base_seed/size/frame_num/sample_steps确定任务。实际权重与依赖版本另记入运行记录。
 
-## 2. 核对融合与数值
+## 当前统一入口
 
-Attention的实际长度、BNSD与输出transpose/contiguous、interleave RoPE、RMSNorm各自对齐原模型。三个LN与modulate的融合只在对应gamma/beta条件下讨论；旧文档FusedLayerNormModulate的scale未定义，属于不可直接复制的片段，必须先核对实际实现，不能作为开箱修复配方。
+在models/wan2.2-i2v运行infer.sh，以YAML_FILE_NAME选择配置：
 
-## 3. 分别验收并行和cache
+- 14b_single.yaml：单卡640×360、61帧、40步，convert_model_dtype=true；dit_cache.method可选NoCache/FB/Tea。
+- 14b_cfg2_ulysses4.yaml：8卡、CFG2×Ulysses4、Ring1，1280×720×81、40步，DiT/T5 FSDP和VAE并行开启。
+- 14b_single_platform.yaml：由infer_platform.sh读取的平台模板，实际路径先按本机填写。
 
-VAE空间边界由 [VAE流程](../../optimizations/rules/vae_multicard_spatial_parallel.md)维护；CFG条件/无条件预测的通信由 [CFG流程](../../optimizations/rules/cfg_parallel_sample_level_diffusion.md)维护；Ring异步本地/远程FA与LSE合并由 [Ring流程](../../optimizations/rules/ring_attention_comm_compute_overlap_lse_merge.md)维护。逐一确认通信组和输出，不把示意当作所有组合已运行。
+普通入口调用mm_function.sh并torchrun generate.py；项目PYTHONPATH仅给子进程注入，日志在res/<日期>/<模型>/。布尔false被省略，不能假设可关闭argparse中默认为true的键；需显式字面量时核对解析器。
 
-Step cache的旧入口JSON为NoCache/FBCache/TeaCache，cond/uncond状态须分开。旧文档给出的module/dit_cache_step/cache_step.py在固定2f82d10下获取失败，不将该路径视为已恢复实现；新YAML的dit_cache.method按其版本入口处理。阈值、warmup与多项式系数是旧样例参数，不保证其他帧数/输入质量。缓存规则见 [cache与SP规则](../../optimizations/rules/dit_cache_with_sequence_parallel.md)。
+## 并行、融合与缓存
 
-## 4. 验证任务而非片段
+world_size=cfg_size×ulysses_size×ring_size；帧数按模型4n+1约束。CFG并行分别处理条件/负向分支并聚合；VAE使用共享H/W空间patch，卷积边界、插值与进程组按[VAE专题](../../concepts/parallelism/vae_patch_parallel.md)核对。Ring默认可用AllGather与本地FA重叠，再LSE合并。
 
-保存生成视频并验收参考图一致性、时间连贯性、内存和端到端时延；旧优化文档未给完整benchmark，后续README的数字须另绑定该版本配置，不在迁移中补造测量或阈值。
+单卡缓存配置已归统一YAML的dit_cache.method/params，实际公共实现是module/dit_cache/cache_method.py。Tea内置阈值0.15，单卡YAML注释仍示例0.1，取消注释即覆盖默认，两者不混同。串行CFG保留enable_separate_cfg并验证分槽。多卡world_size>1入口会记录日志且强制替换NoCache，不会获得缓存跳步加速。
 
-## 验证、停止与回退
+当前优化文档的LayerNorm调制片段已将入参修正为scale，旧“未定义scale”的结论撤销；片段仍需核对实际gamma/beta和布局后使用，来源文档不是任意形状保证。
 
-保存实际权重、软件版本、平台、并行组、输入与输出；以未启用待验优化的路径作对应基线，逐项比较 logits/任务质量、时延和峰值内存，并分别记录冷启动、warmup 与稳态重复测量。遇到源中未覆盖的形状、后端或平台时停止套用。失败后恢复对应版本的配置、权重与编译缓存，再按关联 Runbook 排查；没有实际跑通的回退不写为已验证。
+## 来源性能与验收
 
-本卡未记录独立的模型执行或硬件复测。来源自报和输出“看起来正常”不能替代本部署的精度验收；执行后应另存实际环境、配置和测量记录。
+README的8卡性能表使用CFG1×Ulysses8、Ring1，区别于默认CFG2×Ulysses4：832×480×61的A2/950 E2E为102.54/52.24s，1280×720×81为418.01/303.17s。来源未给完整build、逐轮样本与方差，不将该表直接归给默认配置，本次未复测。
 
+先NoCache固定seed验收参考图一致性和时间连贯性，再逐项比较并行/缓存，记录Host/NPU峰值、输出质量、重复E2E及日志中的最终缓存方法。异常恢复相同规格的NoCache和合法并行；不要用旧JSON片段或旧run.sh参数拼接当前YAML。
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/wan2.2-i2v/README.md)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/06656b0519fde3256eed1b2a77e5327898e0b00f/models/wan2.2-i2v/infer.sh)
-- [固定来源 4](https://gitcode.com/cann/cann-recipes-infer/blob/06656b0519fde3256eed1b2a77e5327898e0b00f/models/wan2.2-i2v/config/14b_cfg2_ulysses4.yaml)
-
-## 历史 JSON 配置对照
-
-下例来自旧 2f82d10 优化文档，不是后续统一 YAML 的字段契约；旧 cache_step 路径仍未恢复，不作为已运行配置。
-
-```json
-{
- "cache_forward": "NoCache",
- "enable_separate_cfg": true,
- "FBCache": {"cache_name": "FBCache", "rel_l1_thresh": 0.05, "latent": "latent", "judge_input": "cache_latent"},
- "TeaCache": {"cache_name": "TeaCache", "rel_l1_thresh": 0.1,
- "coefficients": [733.226126, -401.131952, 67.5869174, -3.149879, 0.0961237896],
- "latent": "latent", "warmup": 2, "judge_input": "modulated_inp"}
-}
-```
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/README.md)（primary）
+- [14b_cfg2_ulysses4.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/config/14b_cfg2_ulysses4.yaml)（example）
+- [14b_single.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/config/14b_single.yaml)（example）
+- [generate.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/wan2.2-i2v/generate.py)（implementation）
+- [wan2.2-i2v_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md)（supporting）

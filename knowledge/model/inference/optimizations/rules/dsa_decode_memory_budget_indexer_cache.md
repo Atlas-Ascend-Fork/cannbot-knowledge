@@ -9,12 +9,16 @@ tags:
 - topic.long_context
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/fa6892b54681724ac433118b2088ac9b614779f6/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: primary
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/3
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/offload_cache.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - agnostic
 scope:
@@ -39,10 +43,14 @@ scope:
 在原模型权重、激活、workspace、通信缓冲及运行时预留之外，还须计入以下注意力相关项目：**Full MLA KVCache + Indexer Key Cache + Indexer 新增权重**。这不是整机总显存等式：
 
 - **Full MLA KVCache**：为保障效果，DSA 仍缓存完整 MLA 的 Full KVCache（不因稀疏而少存 KV），是显存占比最高项。
-- **Indexer Key Cache（易漏）**：为避免 decode 阶段重复计算 Indexer Key，需新增缓存 Indexer Key Cache，大小 ≈
+- **Indexer Key Cache（易漏）**：为避免 decode 阶段重复计算 Indexer Key，需新增缓存 Indexer Key Cache，在未量化且无额外padding的粗略估计中，大小 ≈
   `batch_size × kv_length × Indexer_head_dim × storage_bytes × num_layers`。
   文档示例：每 rank 4 batch、64K 序列、BF16 下约 **4GB**——长序列 / 大 batch 下不可忽略。
 - **Indexer 新增权重**：Lightning Indexer 是轻量类 MQA 结构，新增 `q_b_proj`、`wk_proj`、`weight_proj` 三个 Linear，综合所有 Layer 权重参数量新增约 **0.85B**。
+
+## 当前源码预算补充
+
+Indexer Key与可选INT8 scale以各层CacheEntry声明，独立于MLA nope/rope；真实预算需含页块取整、null block和scale。CP Prefill存在全局临时计算视图与请求所有者持久视图，不能把每rank4batch的文档示例无条件乘到所有拓扑。启用offload时Full MLA移至Host，设备仍有逐层selection、临时KV及状态/块表workspace，不能只减掉整份Full MLA而漏加这些项目。框架在分配前纳入模型申报的OffloadWorkspaceMemoryInfo。
 
 ## 可迁移判断
 
@@ -57,5 +65,7 @@ scope:
 
 ## Evidence
 
-- `doc 披露`（@fa6892b）：`deepseek_v3.2_exp_inference_guide.md`「DeepSeek-V3.2-Exp vs V3.1」的权重内存 / KVCache 内存分析给出 Indexer Key Cache 公式、~4GB / ~0.85B 示例；`indexer.py` 存在 Lightning Indexer 实现。「仍缓存 Full MLA KVCache + 新增 Indexer Key Cache」为首方 doc 披露。
-- 溯源下探：[cann-recipes-infer-pr-3-feat-add-deepseek-v3-2-exp-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/3)
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（primary）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/3)（evidence）
+- [offload_cache.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/offload_cache.py)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）

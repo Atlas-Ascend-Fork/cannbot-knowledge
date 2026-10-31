@@ -9,16 +9,16 @@ tags:
 - topic.diffusion
 status: stable
 sources:
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/optimization_report_tp.md
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/README.md
+  role: constraint
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/11
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/33
   role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/8fd8db72e333d38e15e54b8907a45da6134fa8fc/models/longcat_flash_lite/README.md
-  role: constraint
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/8fd8db72e333d38e15e54b8907a45da6134fa8fc/models/longcat_flash_lite/optimization_report.md
-  role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T06:43:54Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a2
 - a3

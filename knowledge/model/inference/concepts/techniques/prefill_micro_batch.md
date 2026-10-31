@@ -9,12 +9,14 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T14:57:06Z'
 platforms:
 - a3
 ---
@@ -22,13 +24,13 @@ platforms:
 
 ## Summary
 
-Prefill微批次把输入拆成两份，以主计算流与副通信流的事件依赖交错执行。目标是掩盖MoE通信空洞，是否获益取决于输入切分后的效率与真实并行，不能从双流本身推导完全掩盖。
+Prefill 微批次把输入拆成两份并通过事件交错执行；下面的主计算流/副通信流六段形式专指 mode=1 的 DP+EP MoE 层。目标是掩盖MoE通信空洞，是否获益取决于输入切分后的效率与真实并行，不能从双流本身推导完全掩盖。
 
 ## Mechanism
 
 ### 设计前提
 
-Prefill 在大 EP MoE 下通常是 compute-bound + ~30% 通信占比；计算由 Cube/Vector 完成，通信走 HCCL/SDMA，硬件路径互不冲突。把 batch 切成 2 份，可以构造两条流水，使得一路的通信与另一路的计算严格并行。
+固定 R1 Prefill 实践以计算密集场景为例，称通信占比“可达 30%”，并非所有大 EP 场景通常约 30%；计算由 Cube/Vector 完成，通信走 HCCL/SDMA，硬件路径互不冲突。把 batch 切成 2 份，可以构造两条流水，使得一路的通信与另一路的计算严格并行。
 
 理想情况下，通信耗时被完全掩盖 → 芯片侧无空闲 → 端到端性能大幅提升。但要满足两个前置条件：
 
@@ -37,7 +39,7 @@ Prefill 在大 EP MoE 下通常是 compute-bound + ~30% 通信占比；计算由
 
 ### 6 阶段划分
 
-prefill 每层划分为 6 个阶段：
+此六段图仅适用于 micro_batch_mode=1 / forward_microbatch_v1 的 DP+EP MoE 层；前置 dense 层走独立分支。SP-TP-EP 的 mode=2 / forward_microbatch_v2 在两流分别放 mb0/mb1 的 forward_attn 和 forward_mlp，不是专用计算流/通信流，不能套用本图：
 
 ```mermaid
 sequenceDiagram
@@ -67,8 +69,8 @@ sequenceDiagram
 
 源图原貌（Prefill DP + Micro-Batch 双流水时序），结构示意见上方 mermaid：
 
-![DeepSeek-R1 Prefill DP + Micro-Batch 双流](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/figures/image_prefill_dp_mb.png)
-*来源：[`docs/models/deepseek-r1/figures/image_prefill_dp_mb.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/figures/image_prefill_dp_mb.png)（cann-recipes-infer @ 2f82d10）*
+![DeepSeek-R1 Prefill DP + Micro-Batch 双流](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_prefill_dp_mb.png)
+*来源：[`docs/models/deepseek-r1/figures/image_prefill_dp_mb.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_prefill_dp_mb.png)（cann-recipes-infer @ 944d2d3）*
 
 - **atten**：MLA + o_proj；
 - **init_routing**：`npu_moe_init_routing_v2`（本卡 expand + 排序）；
@@ -89,25 +91,13 @@ sequenceDiagram
 
 因此 micro-batch 与 Decode 阶段常用的 `HCCL_OP_EXPANSION_MODE=AIV`（Decode 小通信量 + 低时延场景）**互斥**。
 
-## Applicable Scenarios
+## 当前实现与限制
 
-- DeepSeek-R1 / Kimi-K2 Prefill 阶段 MLA-DP + MoE-EP（或 SP-TP-EP）部署。
-- 单 micro-batch 已经 compute-bound 但仍留有 ~30% 通信 gap 的大 EP 场景。
-- 每卡至少有 2 个请求（`gen_microbatch_input` 在 `request_count < 2` 时抛 RuntimeError，调用方须关闭该模式或调整请求数，`:1691/:1699`）。
+当前mode1/2仍分别选择forward_microbatch_v1/v2，配置位于model_config.custom_params.micro_batch_mode。统一Executor传packed input_ids、position_ids、slot_mapping与每请求seq_lens；按累计token接近一半的请求边界拆两份，不会把单个请求切半。少于两个请求显式RuntimeError，缺position_ids也拒绝。
 
-## Constraints
+mode1要求attnTP1、moeTP1。mode2可有SP补齐，并在各微批进入层循环前单独计算EP一致chunk数；使用MAX与tensor_split保持空片和非空rank的集合通信轮次一致。实施细节见[当前Guide](../../guides/optimization/prefill_micro_batch_dual_stream_moe_overlap.md)。
 
-- 每卡请求数 ≥2（`request_count >= 2`），否则 `gen_microbatch_input` 抛 RuntimeError，不自动回退（`:1699`）。
-- 与 `HCCL_OP_EXPANSION_MODE=AIV` 互斥。
-- Host bound 场景下会劣化。
-- 输入长度过小（每 micro-batch 计算量 < 通信时延）时无收益甚至负收益。
-- `micro_batch_mode=1` 要求 `attn_tp_size=1` + `moe_tp_size=1`（纯 DP+EP），源码校验：
- ```python
- # modeling_deepseek.py:2767-2769（@2c45117）
- if micro_batch_mode == MicroBatchMode.PREFILL_MICRO_BATCH_DP_EP:
- if self.moe_tp_size != 1 or self.attn_tp_size != 1:
- raise ValueError("micro_batch_mode 1 can only be enabled when atten only DP and moe only EP!")
- ```
+输入太小、切分后算子效率下降或Host下发瓶颈都可能无收益；默认SDMA建议来自该Prefill实践，不能当作所有模型/阶段的后端规则。请求数、padding和输出边界需共同验收。
 
 ## Known Results
 
@@ -119,8 +109,9 @@ sequenceDiagram
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md) "micro-batch 优化"章节；`models/deepseek_r1/models/modeling_deepseek.py`（`MicroBatchMode` 枚举、`forward_microbatch_v1` / `forward_microbatch_v2`、`gen_microbatch_input`、`micro_batch_mode` 校验）；`models/deepseek_r1/config/prefill_r1_rank_32_32dp_32ep_a8w8.yaml`（`micro_batch_mode: 1`）。
-- 多流编排代码（已核实 @2c45117）：[`models/deepseek_r1/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek_r1/models/modeling_deepseek.py)（`:49` import `MicroBatchMode`、`:56-62` import `record_event`/`wait_event` 等、`:1597-1598` `self.stream1 = torch.npu.Stream()`、`:1638-1641` mode↔fn 映射、`forward_microbatch_v1` `:2018-2195` / `forward_microbatch_v2` `:1914-2015` 的逐事件 `record_event`/`wait_event` 流水；`:286-298` 的 `record_event(enable_npugraphex_and_multistream, self.npu_events, idx)` indexed-Event helper 属 decode 路径（索引普通 NPU Event，不是 tagged event））；[`executor/utils/stream_utils.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/utils/stream_utils.py)（`record_event` / `wait_event` helper 定义）；[`executor/utils/common_utils.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/utils/common_utils.py)（`MicroBatchMode` 枚举 `:187-190`）。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_r1_prefill_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md)（supporting）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py)（implementation）
 
 ## Links
 

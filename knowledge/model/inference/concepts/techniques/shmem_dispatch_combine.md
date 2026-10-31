@@ -9,10 +9,10 @@ tags:
 - topic.data_movement.communication.collective_communication
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_shmem_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - agnostic
 ---
@@ -25,7 +25,7 @@ DeepEP（DeepSeek 开源的**通用 MoE EP dispatch/combine 通信库**，也见
 
 > 知识归属：该 SHMEM dispatch&combine 重写记于 **DeepSeek-V4 的 shmem_guide**（随 V4 引入）。DeepEP 本身是 DeepSeek 开源的通用 MoE EP 通信库（同 guide 标题"集成至 DeepEP"），不限于单一模型版本；guide 中 DeepSeek-V3.2-Exp 仅出现在 KV-Offload + shmem 显存收益的论述里，与 dispatch&combine 重写无直接依据。
 
-> ⚠️ gap（文档级演示）：shmem_guide 是"如何基于 SHMEM 重写 dispatch&combine"的开发指南。V4 生产模型 [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py) L578/L616 实际调用的是**融合算子** `npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（torch_npu 原生），而非 SHMEM 重写路径。SHMEM 重写所用符号（`shmem_ub_put_nbi_new` / `ShmemPut` / `WaitUntil` / `aclshmem_create_tensor` 等）仅出现于 shmem_guide.md，运行时库在外部 [`cann/shmem`](https://gitcode.com/cann/shmem) 仓（`libcommshmem.so` + `_pyshmem.*.so`）。下述 API 记法以 guide 为准。
+> ⚠️ gap（文档级演示）：shmem_guide 是"如何基于 SHMEM 重写 dispatch&combine"的开发指南。V4 生产模型 [`models/deepseek-v4/models/modeling_deepseek.py`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py) 当前Decode EP路径 实际调用的是**融合算子** `npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（torch_npu 原生），而非 SHMEM 重写路径。SHMEM 重写所用符号（`shmem_ub_put_nbi_new` / `ShmemPut` / `WaitUntil` / `aclshmem_create_tensor` 等）仅出现于 shmem_guide.md，运行时库在外部 [`cann/shmem`](https://gitcode.com/cann/shmem) 仓（`libcommshmem.so` + `_pyshmem.*.so`）。下述 API 记法以 guide 为准。
 
 ## 通信流程（四步范式）
 
@@ -54,18 +54,19 @@ shmem 初始化三步：`MoeDistributeCppBuffer(<bytes>, 1)` 为当前 die 分�
 
 用 [pypto](../frameworks/pypto.md) 声明式 Tensor 图描述。Dispatch 拆**三张子图**：`send_token`（按专家表 `ShmemPut` 发 token + 三元组 `moeSendMsg` 到对称内存）、`send_signal`（`ShmemPut` 计数 + `ShmemSignal(..., AtomicType::ADD)` 通知对端）、`receive_token`（`WaitUntil(..., moeExpertNum, true)` 等齐 → `ShmemGet` + `CumSum` 求偏移 → `Assemble` 拼出 `expandX` / `assistInfoForCombine`）。Combine 拆**两张子图**：`send`（按三元组 `ShmemPut` 原路返回 + `ShmemSignal(ADD)`）、`receive`（`WaitUntil(..., topK)` 等齐 K 条 → `ShmemGet` → 与 `expertScales` 做 `Matmul` 加权融合 → `Assemble` 输出）。pyPTO-shmem 对应的 OpenSHMEM 语义 API（`shmem_put`/`shmem_get`/`shmem_signal`/`shmem_wait`/`shmem_barrier_all` + 非标准 `create_shmem_tensor`/`shmem_clear_data`/`shmem_signal_data`/`my_symbolic_pe`）见 cann-shmem 页。
 
+## 当前模型分派边界
+
+V4 普通EP的Prefill仍双路由，Decode调用distribute_dispatch_v2/combine_v2；950新增low_latency_tp分支改走本地routing+TP专家GMM+all_reduce。A4W4 Decode会以FP4量化dispatch传输。上述当前生产分支均不能被描述为本页SHMEM示例已接入。
+
 ## Notes
 
 - **与融合算子路径区分**：SHMEM 手写重写（显式发/等状态 + win 拷贝机制）与 `npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（torch_npu **一体化融合算子**，[moe-dispatch-combine-v2](moe_dispatch_combine_v2.md)，Qwen3-MoE/Qwen3.5/Gemma-4 及 V4 生产路径普遍调用）是不同机制——融合算子把发/等/拷贝封装在算子内部，不暴露 win 区。两者的输出字段互为对应：SHMEM 重写的 `epRecvCountsOut` ↔ CombineV2 `epSendCounts`、`assistInfoForCombineOut` ↔ DispatchV2 三元组。
-- **与 Double-Routing 区分**：[double-routing](double_routing.md) 是 Prefill 阶段基于 `npu_moe_init_routing_v2` + `dist.all_to_all_single` 的 **8 步集合通信路由**（init-routing×2 + finalize-routing×2），走 HCCL AllToAll；SHMEM 重写则基于对称内存 win 区 + put/signal/wait 做**单边通信**，两者解决同一 EP All-to-All 问题但通信原语不同。
+- **与 Double-Routing 区分**：[double-routing](double_routing.md) 是 Prefill 阶段基于 `npu_moe_init_routing_v2` + `dist.all_to_all_single` 的 **8 步集合通信路由**（两轮路由与两轮顺序恢复；npu_moe_init_routing_v2、npu_moe_re_routing、index_select、npu_moe_finalize_routing 各调用一次，逻辑轮数不等于同名接口次数），走 HCCL AllToAll；SHMEM 重写则基于对称内存 win 区 + put/signal/wait 做**单边通信**，两者解决同一 EP All-to-All 问题但通信原语不同。
 - **接口名记法**：`shmem_ub_put_nbi_new` / `aclshmem_create_tensor` / `aclshmem_finialize`[sic typo] / `MoeDistributeCppBuffer` / `InitAndGetMC2CommContext` / `ShmemSignal` / `WaitUntil` 均按 guide 原拼写记录；guide 代码片段为示意（`...` 略去细节），非完整可编译代码。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_shmem_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md)（L130-655「基于 SHMEM 实现 Dispatch&Combine 并集成至 DeepEP」：介绍 / 原生 SHMEM API / Tilelang-shmem / pyPTO-shmem 三路）
-- 融合算子对照：[`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（L578/L616 调 `npu_moe_distribute_dispatch_v2`/`combine_v2`，非 SHMEM 重写路径）
-- 外部仓：SHMEM 运行时库与 kernel 实现 [`gitcode.com/cann/shmem`](https://gitcode.com/cann/shmem)；pyPTO 测例参考 [`cann/pypto` Dispatch and Combine Testcase User Guide](https://gitcode.com/cann/pypto/blob/6b3e198d5a5aa742c13a1805b1f0cda56e93c52b/framework/tests/st/distributed/ops/docs/Dispatch%20and%20Combine%20Testcase%20User%20Guide.md)
-- 溯源：shmem_guide 随 V4 引入（`5df82b1` support deepseek v4，MR!366）；mooncake+HIXL 集成见 `cffb850`（[feat] mooncake + hixl，MR!452，未改本 guide）
+- [deepseek_v4_shmem_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_shmem_guide.md)（primary）
 
 ## Links
 

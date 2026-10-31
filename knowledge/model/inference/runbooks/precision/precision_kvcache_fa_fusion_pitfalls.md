@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/205
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - agnostic
 ---
@@ -65,5 +65,5 @@ if self.use_fia:
 
 ## Evidence
 
-- diff 事实（@73ed847）：SKILL.md 的症状分类 / 快速验证清单 / 常见精度陷阱表 / 附录 F.1–F.6 逐条对上；本仓 skill 文档。溯源下探 [cann-recipes-infer-pr-328-feat-add-agent-optimization-skills-and-evaluation-reports](https://gitcode.com/cann/cann-recipes-infer/merge_requests/328)
-- diff 事实（@50e41b5b8220）：patch 按 `use_fia` 给 `kv_item_lens` 乘 `page_size`（+16/-7），根因由 diff 结构直接可读。溯源下探 [cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/328)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)（evidence）

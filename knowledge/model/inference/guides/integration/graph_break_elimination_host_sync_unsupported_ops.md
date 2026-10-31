@@ -20,7 +20,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/348
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - agnostic
 ---
@@ -78,12 +78,12 @@ decode/并行解码里"对每个 batch 起 Python 循环、内含 `torch.sum(...
 
 ## Evidence
 
-- 维护者确认 + diff 佐证（@f7e80e5fbd73）：forward 内 `.cpu().tolist()` prefill 断流/decode 断图，图 decode 路径无 host 同步；仓自报 decode 293→~28.4 ms/t。溯源下探 [cann-recipes-infer-pr-403-feat-adapt-and-optimize-hy3-preview-inference-via-deepseek-v4-pro-recipe](https://gitcode.com/cann/cann-recipes-infer/merge_requests/403)
-- diff 事实（@f8bb1545）：aclgraph 捕获区 host list 构造改 `torch.arange(...)`。溯源下探 [cann-recipes-infer-pr-204-feat-dsv3-2-support-acl-graph](https://gitcode.com/cann/cann-recipes-infer/merge_requests/204)
-- diff 事实（@8cd85a87af03）：DLLM 去掩码更新向量化消除 `.item()` 同步以入图（单点稀疏写、`input_ids.copy_`）。溯源下探 [cann-recipes-infer-pr-284-feat-llada2-x-sglang-ascend](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)
-- diff 事实 + 作者报告（@8721be444490）：图模式 `npu_geglu` 不可用、`aten::gelu` aclgraph 回退 CPU，decode 手动 `npu_fast_gelu(gate)*up`、prefill 保留融合；手动路径与 eager 非比特一致。溯源下探 [cann-recipes-infer-pr-408-feat-add-gemma-4-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/408)
-- diff 事实（@895615c）：GE 后端无 `cummax`，图路径用固定形状展开 `torch.maximum` 链，`cummax` 留 eager(prefill)；注释"GE graph backend has no cummax"，版本锁定。溯源下探 [cann-recipes-infer-pr-462-refactor-longcat-flash-lite-tnd-pa-npugraph-ex-mc2-ep-decode](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)
-- diff 事实 + 仓自报数值（@8fd8db72）：decode 整图消除图中断清单（乘法掩码/register_buffer/cummax 展开/actual_seq_lengths Tensor/PA cache 返回值/mark_static）；92→18.5 ms 为 optimization_report 仓自报。溯源下探 [cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/403)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/204)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/408)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)（evidence）
 
 ## 验收与停止条件
 

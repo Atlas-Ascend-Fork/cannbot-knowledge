@@ -9,14 +9,16 @@ tags:
 - topic.graph_execution
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/Isaac-GR00T/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/Isaac-GR00T/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/docs/manipulation/GR00T%20N1.6/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/docs/manipulation/GR00T N1.6/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/Isaac-GR00T/adaptor_patches/modeling_siglip2_patch.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:37Z'
 platforms:
 - a3
 ---
@@ -48,7 +50,7 @@ GR00T N1.6 由 **慢系统 + 快系统** 两部分串行组成（源 doc）：
 
 - **图模式使能（torchair）**：backbone 含大量动态操作无法整图编译，仅对 **action head** 部分编译后一次性下发指令，减少 device 等待。`standalone_inference_script.py` 对 `policy.model.action_head.model` 用 `torch.compile(..., backend="npugraphs", fullgraph=True, dynamic=False)`；`adaptor_patches/gr00t_n1d6_patch.py` 另用 `torchair.get_npu_backend(compiler_config=...)`（`frozen_parameter=True`、`tiling_schedule_optimize=True`）。首步推理增加约两分钟图编译时间，后续推理步大幅提速。在线图模式详见 [npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)。
 - **FA 融合算子替换**：在 `modeling_siglip2.py` 用猴子补丁换 `npu_fused_infer_attention_score` 融合算子，复用 NPU 快速 attention 计算。跨链 [fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)。
-- **RoPE sin/cos 计算逻辑优化**：改写 `apply_rope`，用 `torch_npu.npu_rotary_mul` 融合算子，Q/K_states 融合计算后拆分，并把 sin/cos 计算提到 for 循环外统一计算、减少重复。
+- **RoPE sin/cos 计算逻辑优化**：改写 `apply_rope`，用 `torch_npu.npu_rotary_mul` 融合算子，固定 apply_rope_npu 对 Q、K 分别调用一次 npu_rotary_mul，没有先合并再拆分，并把 sin/cos 计算提到 for 循环外统一计算、减少重复。
 - **LayerNorm 原生算子优化**：把 layernorm+add 替换为 `npu_add_rms_norm` 融合算子，`layer.input_layernorm` 用昇腾原生 `npu_rms_norm`（`NpuRMSNorm` 模块在 NPU 上走 `torch_npu.npu_rms_norm`）。注：`npu_add_rms_norm` 系 docs 表述；当前钉定版代码仅落地 `npu_rms_norm`（`NpuRMSNorm.forward` 调 `torch_npu.npu_rms_norm`），add 融合未在 patch 中体现。
 
 **优化结果**：基于 MindStudio Insight profiling，A3 上计算时间总占比从开箱 <20% 提升至约 **70%**，单次推理计算总耗时从开箱 **280ms 降至 82ms**。
@@ -58,4 +60,4 @@ GR00T N1.6 由 **慢系统 + 快系统** 两部分串行组成（源 doc）：
 - 双系统动作生成范式对照：[flow-matching-action-expert](../modules/flow_matching_action_expert.md)、[action-chunking](../modules/action_chunking.md)
 - 同走 torch 在线 + 昇腾算子化路线：[spirit-v1.5](spirit_v1_5.md)、[openvla](openvla.md)
 - cann-infer 复用概念：[dit](../../../inference/concepts/modules/dit.md)、[npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)、[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

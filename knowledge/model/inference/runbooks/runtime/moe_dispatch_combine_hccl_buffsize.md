@@ -16,7 +16,7 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/issues/4051
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:33:02Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - a3
 ---
@@ -65,6 +65,6 @@ NEEDED_HCCL_BUFFSIZE = (maxBs * tokenNeedSizeDispatch * ep_worldsize * localMoeE
 
 ## Evidence
 
-- 维护者给出 `export HCCL_BUFFSIZE=205`、报告者复现确认 eager 随后可跑：维护者确认 + 报告者复现；默认 200MB 由 executor 转发注入、LongCat decode EP 走 dispatch_v2/combine_v2 并提示检查 HCCL_BUFFSIZE：diff/doc 事实 @2c45117。溯源下探 [cann-recipes-infer-issue-160-bug-report-longcat](https://gitcode.com/cann/cann-recipes-infer/issues/160)。
-- 默认 200MB 不足、`calc_moe_hccl_buffer_size` → `hccl_buffer_size` 传参链、某 R1 级配置报需约 479MB：diff 事实 @d4b8eb61；200MB/479MB 数字为仓内注释自报、无独立复测。溯源下探 [cann-recipes-infer-pr-421-refactor-mc2-use-independent-communication-group](https://gitcode.com/cann/cann-recipes-infer/merge_requests/421)。
-- vLLM/vllm-ascend 上 Qwen3-Next-80B-A3B EP 推理，`profile_run` dummy 前向即 `MoeDistributeDispatchV2 do tiling failed, ret is -1`：报错字符串、`NEEDED_HCCL_BUFFSIZE` 公式与各参数（`maxBs=64/h=2048/epWorldSize=4/localMoeExpertNum=128/k=10/sharedExpertNum=0`）、`294MB` vs `200MB` 均来自 issue 正文中 CANN 算子（`MoeDistributeDispatchA3TilingFuncImpl`, `moe_distribute_dispatch_v2_tiling.cc:941`）自身打印的 EZ9999 日志，非报告人推测；修法 `export HCCL_BUFFSIZE=1024` 由 COLLABORATOR 维护者答复给出、issue closed COMPLETED = 维护者确认；无 linked PR / diff。溯源下探 [vllm-ascend-issue-4051-bug-qwen3-next-ep-inference-failure](https://github.com/vllm-project/vllm-ascend/issues/4051)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/160)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/421)（evidence）
+- [远程来源](https://github.com/vllm-project/vllm-ascend/issues/4051)（evidence）

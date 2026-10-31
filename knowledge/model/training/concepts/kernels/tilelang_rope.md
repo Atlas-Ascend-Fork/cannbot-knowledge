@@ -1,19 +1,19 @@
 ---
 type: Concept
 title: TileLang RoPE（旋转位置编码，TileLang-Ascend 训练算子）
-description: TileLang-Ascend RoPE 训练融合算子（DeepSeek-V3.2，前向+反向，训推通用）：interleave/half 两种旋转模式（interleave rotate([x0,x1,x2,x3])=[-x1,x0,-x3,x2]；half=[-x2,-x3,x0,x1]），前向 out=x*cos+rotate(x)*sin、反向 dx=cos*dy+swap(sin_masked*dy)；Partial RoPE 仅末 rope_dim 维；纯 Vector 算子（按操作类型推断）+ fp32 计算（前向为逐元素 FMA，非归约累加）；block_M 默认 64(fp16/bf16)/32(fp32)；6 步 TileLang 流程（block load→cast fp32→sin/cos load→gather+mask 元素重排→RoPE 计算→writeback）。是 npu_rope converter 绑定算子的 TileLang 实现。
+description: TileLang RoPE 的双旋转、Partial RoPE 和训练反向数学；当前 TorchTitan AscendC override 的位置表与尾部旋转边界。
 tags:
 - task.implementation
 - topic.attention
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md
-  role: supporting
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/rope.py
+  role: implementation
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:41Z'
 platforms:
 - a2
 - a3
@@ -27,7 +27,7 @@ RoPE（Rotary Position Embedding，旋转位置编码）是大模型中的位置
 
 算子有两个核心特性：**Partial RoPE**（仅对张量最后 `rope_dim` 维做旋转，前 `dim_start` 维保持不变，匹配 MLA 的「nope + rope」分量切分）与**双旋转模式**（interleave / half，决定元素重排映射）。FP16/BF16 输入统一提升到 FP32 计算以保数值稳定，算完再 cast 回原 dtype。
 
-在 TorchTitan-npu 训练栈里，模型侧的旋转变换由 [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md) 的 `npu_rope` converter 绑定（替换 3 个上游 rope 函数，均以 `torch_npu.npu_rotary_mul` 为后端算子——`cos_sin` 路径用默认 half 模式，`complex` / `single-complex` 路径传 `rotary_mode="interleave"`）；TileLang-Ascend RoPE 是与之等价语义的另一条算子实现路径，可作为 op 替换候选。
+当前 TorchTitan-NPU 使用显式 RoPE override，而非旧 npu_rope converter。TileLang 实现与当前 AscendC 实现是分别验证的路径，数学意图相近不代表已接入或可直接替换。
 
 ## 算法流程详解
 
@@ -89,32 +89,25 @@ flowchart TD
 
 ### Cube/Vector 核划分与精度
 
-RoPE 全程为逐元素的乘加与重排（gather / cast / mul / add），无矩阵乘，据此应为 **Vector-only** 算子（源文档 RoPE 章节未显式标注 Cube/Vector 核划分，此为据计算特征的推断）；`T.tile.cast` / `T.tile.gather` 等原语映射到 AscendC 的 Vector 指令。关键精度处理是 **fp32 计算**：fp16/bf16 进 UB 后统一升 fp32 做 `x*cos + rotate(x)*sin`，避免低精度乘加的舍入误差，算完再降回原 dtype 写出。RoPE 前向是逐元素 FMA 而非归约累加，「FP32 累加」术语另指 MoE Gather-Reduce 与 RMSNorm 平方和。TileLang 的核间/核内同步、UB 内存分配由原语/编译器处理（见 framework 页）。
+RoPE 全程为逐元素的乘加与重排（gather / cast / mul / add），无矩阵乘，据此应为 **Vector-only** 算子（源文档 RoPE 章节未显式标注 Cube/Vector 核划分，此为据计算特征的推断）；`T.tile.cast` / `T.tile.gather` 等原语映射到 AscendC 的 Vector 指令。关键精度处理是 **fp32 计算**：fp16/bf16 进 UB 后统一升 fp32 做 `x*cos + rotate(x)*sin`，避免低精度乘加的舍入误差，算完再降回原 dtype 写出。RoPE 前向是逐元素乘加 而非归约累加，「FP32 累加」术语另指 MoE Gather-Reduce 与 RMSNorm 平方和。TileLang 的核间/核内同步、UB 内存分配由原语/编译器处理（见 framework 页）。
 
-## op 绑定与替换路径
+## 当前训练绑定与替换边界
 
-模型侧旋转变换在 TorchTitan-npu 由 `npu_rope` converter（`NpuRoPEConverter`，`@register_model_converter("npu_rope")`）绑定，其 `_ROPE_REPLACEMENTS` 替换 3 个上游 `common.rope` 函数（`apply_rotary_emb_cos_sin` / `apply_rotary_emb_complex` / `apply_rotary_emb_single_complex`），均以 `torch_npu.npu_rotary_mul` 为后端算子，按上游函数语义选择旋转模式：
+当前 override.common.rope 中 asc_complex/asc_cossin 分别为 ComplexRoPE/CosSinRoPE 提供 npu_rotary_mul 的 interleave/half 模式；输入提升 fp32，输出恢复原 dtype。融合位置表取 positions 第一行，要求各 batch 行的位置布局相同；不能将其用于各行位置不同的场景并假定等价。CosSin 变体不支持 inverse。
 
-```python
-# cos_sin 路径：默认 half 模式（不传 rotary_mode）
-xq_out = torch_npu.npu_rotary_mul(xq_f, cos, sin)
-xk_out = torch_npu.npu_rotary_mul(xk_f, cos, sin)
-# complex / single-complex 路径：传 rotary_mode="interleave"
-y = torch_npu.npu_rotary_mul(x_f, cos, sin, rotary_mode="interleave")
-```
+asc_partial 使用 inplace_partial_rotary_mul，将完整输入复制后只旋转尾部 partial_slice，要求输入宽度恰为 split+dim，split 非负、dim 正偶数，避免 slice/cat。它与 TileLang 训练核是独立后端；替换需核对模式、位置表、dtype、形状、AC/compile 和完整梯度。
 
-TileLang-Ascend RoPE 与该 converter 语义等价（同样支持 interleave / half、partial、前向+反向），是「TileLang 算子替换」框架下可挂载的另一实现路径——算子替换接入方式见 torchtitan-npu `tilelang_ops` feature guide。converter 绑定细节（含 `rope` 模块须优先 import 的 patch 顺序）见 [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)。
+另有 HalfRotation override 将半宽 cos/sin 扩为全宽；不同样本位置表通过将 batch 折入序列来保留。不能把其契约与第一行位置表变体混用。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（『训练算子实现』→『1、Rotary Position Embedding』：概述 / 6 步算法流程 / `row_sin_cos` 索引公式 / interleave·half 重排 / 前向 `out=x*cos+rotate(x)*sin` 与反向 `dx=cos*dy+swap(sin_masked*dy)` / partial RoPE / fp32 计算）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_pretrain/deepseekv32_pre_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/f1c9603d914cff495c00b04e91b91f264dbb736d/docs/llm_pretrain/deepseekv32_pre_train_optimization.md)（guide 指向的 DeepSeek-V3.2 预训练优化文档，提供 RoPE 所在训练上下文）
-- [`torchtitan-npu` · `docs/feature_guides/tilelang_ops.md`](https://gitcode.com/cann/torchtitan-npu/blob/dbfd45a557197064fa749708108415f2b48a0d13/docs/feature_guides/tilelang_ops.md)（guide 指向的 TileLang 算子替换 feature guide）
+- [deepseek_v3.2_exp_tilelang_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（primary）
+- [rope.py](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/rope.py)（implementation）
 
 ## Links
 
 - [tilelang](../../../inference/concepts/frameworks/tilelang.md)（TileLang-Ascend 编程模型 / CodeGen / JIT；本算子的实现框架与 8 训练算子归属）
-- [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)（`npu_rope` converter 绑定本旋转变换，默认走 `npu_rotary_mul`，可替换为本 TileLang 实现）
+- [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)（当前 RoPE override 的旋转变换与后端接入边界）
 - [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md)（所属预训练实践，RoPE 用于其 MLA/注意力路径）
 - [tilelang-moe-token-permute](tilelang_moe_token_permute.md)（同批 TileLang-Ascend 训练算子）
 - [tilelang-rmsnorm-swiglu](tilelang_rmsnorm_swiglu.md)（同批 TileLang-Ascend 训练算子）

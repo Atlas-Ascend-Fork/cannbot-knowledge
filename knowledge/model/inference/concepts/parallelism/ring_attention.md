@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Ring Attention Sequence Parallelism
-description: Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**，每张卡仅维护自己那 1/SP 的 Q；通过 概念上以 P2P 环形逐跳传 KV，但本仓 module/unified_sp/core.py 实际用一次 all_gather_into_tensor 把其他 rank 的 1/SP KV 一次性收齐，对本地 FA 与远端合并 FA 两路输出做 LSE（Log-Sum-Exp）合并（非逐跳 P2P）。适合 Ulysses 规模受限（`num_heads` 不够切）或与 Ulysses 组成 2D hybrid SP 的场景。 Wan2.2-I2V 在此基础上实现了 ring-attention-overlap：异步 AllGather + 本地 FA 并行，用计算掩盖通信。
+description: Ring概念与当前AllGather实现、两路LSE、Hybrid及MXFP8/UAA/块稀疏组合边界。
 tags:
 - task.design
 - topic.parallelism
@@ -9,12 +9,14 @@ tags:
 - topic.diffusion
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/unified_sp/core.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/blockwise_sparse/sparse_method.py
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T14:12:39Z'
 platforms:
 - agnostic
 ---
@@ -23,16 +25,18 @@ platforms:
 
 ## Summary
 
-Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**，每张卡仅维护自己那 1/SP 的 Q。概念上（见下方 HunyuanVideo 文档引用）以 P2P 环形逐跳传递 KV；但本仓 `module/unified_sp/core.py` 的实际实现是用一次 `all_gather_into_tensor` 把其他所有 rank 的 1/SP KV 一次性收齐，再对「本地 FA」与「其他 rank 合并 FA」共 2 路输出做 LSE（Log-Sum-Exp）合并（非逐跳 P2P、非 SP-1 串行轮）。适合 Ulysses 规模受限（`num_heads` 不够切）或与 Ulysses 组成 2D hybrid SP 的场景。
+Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**，每张卡仅维护自己那 1/SP 的 Q。概念上（见下方 HunyuanVideo 文档引用）以 P2P 环形逐跳传递 KV；但本仓 `module/unified_sp/core.py` 的实际实现是用一次 `all_gather_into_tensor` 把其他所有 rank 的 1/SP KV 一次性收齐，默认 overlap 路径再对「本地 FA」与「其他 rank 合并 FA」共 2 路输出做 LSE（Log-Sum-Exp）合并（非逐跳 P2P、非 SP-1 串行轮）。适合 Ulysses 规模受限（`num_heads` 不够切）或与 Ulysses 组成 2D hybrid SP 的场景。
 
 Wan2.2-I2V 在此基础上实现了 [ring-attention-overlap](../techniques/ring_attention_overlap.md)：异步 AllGather + 本地 FA 并行，用计算掩盖通信。
 
 ## Mechanism
 
-![Ring Attention](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/hunyuan-video/figures/ring.png)
-*来源：[`docs/models/hunyuan-video/figures/ring.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/figures/ring.png)（cann-recipes-infer @ 2f82d10；原图来源 [feifeibear/long-context-attention](https://github.com/feifeibear/long-context-attention)）*
+![Ring Attention](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/figures/ring.png)
+*来源：[`docs/models/hunyuan-video/figures/ring.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/figures/ring.png)（cann-recipes-infer @ 944d2d3；原图来源 [feifeibear/long-context-attention](https://github.com/feifeibear/long-context-attention)）*
 
 > 源（HunyuanVideo 优化文档）：首先将 input 沿着 S 维度切分为 S/SP，其中 SP 为序列并行数量，输入模型。当 attn 计算时，保持本卡的 1/SP 的 Q 不动，通过 P2P(Peer-To-Peer)，将当前维护的 1/SP 的 KV 对传递给下一张卡。每张卡循环接收其他卡的 KV 对，与本卡的 Q 计算注意力。
+
+下图仅展示 use_ring_overlap=True 的路径；同步基线收齐全部 KV 后直接单次 attention，不调用 _merge_two_outputs。
 
 ```mermaid
 flowchart LR
@@ -52,9 +56,9 @@ flowchart LR
 - `_ring_attention_overlap`（默认）：以 `async_op=True` 异步发起 KV 的 `all_gather_into_tensor`，在通信进行时先算本地 FA（`out_local, lse_local`），`handle.wait()` 后再算其他 rank 的合并 FA（`out_others, lse_others`），用计算掩盖通信，详见 [ring-attention-overlap](../techniques/ring_attention_overlap.md)。
 - `_ring_attention_allgather`：串行先 `all_gather_into_tensor` 收齐全部 KV，拼成整段 KV 后做单次 `_compute_attention`，无重叠。
 
-### LSE 两路合并
+### overlap 路径的 LSE 两路合并
 
-两条路径的多 rank 输出由 `_merge_two_outputs(out1, lse1, out2, lse2)` 做数值稳定的 2 路合并：先取 `max_lse = max(lse1, lse2)` 重标定，`lse_new = max_lse + log(exp(lse1-max_lse) + exp(lse2-max_lse))`，再以 `weight_i = exp(lse_i - lse_new)` 加权求和 `out_merged = weight1*out1 + weight2*out2`。注意该函数仅合并两路（本地 vs 其他 rank 合并），并非逐轮累积。
+仅 _ring_attention_overlap 的两路输出由 `_merge_two_outputs(out1, lse1, out2, lse2)` 做数值稳定的 2 路合并：先取 `max_lse = max(lse1, lse2)` 重标定，`lse_new = max_lse + log(exp(lse1-max_lse) + exp(lse2-max_lse))`，再以 `weight_i = exp(lse_i - lse_new)` 加权求和 `out_merged = weight1*out1 + weight2*out2`。注意该函数仅合并两路（本地 vs 其他 rank 合并），并非逐轮累积。
 
 ## Applicable Scenarios
 
@@ -65,14 +69,14 @@ flowchart LR
 ## Configuration
 
 - `ring_group` / `ulysses_group` 由各模型的分布式管理层构造后传入：Wan2.2-I2V 在 `wan/distributed/parallel_mgr.py`（`ulysses_group=PROCESS_GROUP.ULYSSES_PG, ring_group=PROCESS_GROUP.RING_PG`），HunyuanVideo 在 `hyvideo/inference.py`（`get_sp_group().ulysses_group / .ring_group`）。`module/unified_sp/core.py` 的 `UnifiedSPAttention.__init__` 只消费这两个进程组（`self.ulysses_pg = ulysses_group; self.ring_pg = ring_group`），不构造它们
-- 可与 `ulysses_anything` / FP8 量化解耦使用（但 FP8 量化 attention 当前不支持 Ring，仅支持 Ulysses）
+- 标准Ulysses可与Ring组成Hybrid；UAA及MXFP8 attention当前均不支持Ring
 
 ## Constraints
 
 - 本仓实现以一次 `all_gather_into_tensor` 收齐 ring 组内其他 rank 的 KV（而非逐跳 P2P 的 SP-1 串行轮），通信量随 ring 组大小增长
-- Attention 输出需要 2 路（本地 / 其他 rank）LSE 合并，对实现精度更敏感
+- 默认 overlap 路径的 Attention 输出需要 2 路（本地 / 其他 rank）LSE 合并，对实现精度更敏感
 - 不兼容 FP8 量化 attention（HunyuanVideo 文档明示）
-- 与 [blockwise-sparse-attention](../modules/blockwise_sparse_attention.md) 的协同未在钉定版（@2f82d10）代码中验证：`sample_video.py` 的 sparse 分支仅在 `sparse_method != "no_sparse"` 时替换 block.forward，未见 `ring_degree > 1` 的互斥守卫，故不在此断言两者强制互斥
+- 当前HunyuanVideo块稀疏已实现Ring TopK及SVG；TopK overlap另依赖稀疏算子LSE，SVG overlap回退普通路径，详见[块稀疏](../modules/blockwise_sparse_attention.md)。
 - Ring 将计算与通信串行化时掩盖率低，需要借助 overlap 技巧（见 [ring-attention-overlap](../techniques/ring_attention_overlap.md)）
 
 ## Known Deployments
@@ -82,8 +86,9 @@ flowchart LR
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md) Ring Attention SP 章节
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md) Ring Attention Overlap 章节
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（primary）
+- [core.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/unified_sp/core.py)（implementation）
+- [sparse_method.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/blockwise_sparse/sparse_method.py)（supporting）
 
 ## Links
 

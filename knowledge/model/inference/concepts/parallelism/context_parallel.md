@@ -12,15 +12,20 @@ tags:
 - topic.kv_cache
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/qwen3-next/qwen3_next_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage6/0001-support-gdn-cp.patch
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 ---
+
 # 上下文并行（Context Parallel / CP）
 
 ## Summary
@@ -46,21 +51,24 @@ CP 的共同点是沿序列拆分计算；交换方式由实现决定。以下�
 
 以下具体接口约束来自固定 Qwen3-Next/SGLang 路径，不是 Context Parallel 的通用限制；其他模型按各自案例选择通信域和切分。
 
-- `cp_size < tp_size`（CP 仅 PD 分离场景可开，复用 DP 通信域故与 DP 互斥）
-- 典型配置如 mCP * nTP（如 CP4 * TP2）
+- 启动参数 cp_size < tp_size 且 tp_size % cp_size == 0（CP 仅 PD 分离场景可开，P/D 卡数须相同；复用 DP 通信域故与 DP 互斥）
+- 典型配置如 mCP * nTP（如 CP4 * 局部 TP2，对应整体 tp_size=8）
 - 需配合 ZigZag 负载均衡解决因果注意力的计算不均
 
 ## Constraints
 
-- Qwen3-Next/SGLang 的固定接口要求 `cp_size < tp_size`，且该路径只在 PD 分离模式启用，复用 DP 通信域；不向其他 CP 实现推广。
+- Qwen3-Next/SGLang 的固定接口要求 `cp_size < tp_size`，且整体 tp_size 须被 cp_size 整除；该路径只在 P/D 卡数相同的 PD 分离模式启用（SGLang KV 传输限制），复用 DP 通信域；不向其他 CP 实现推广。
 - 带序列依赖的卷积需要处理跨分片状态，不能直接沿用 Attention 的切分；GDN 的固定实现与后续受门控路径按模型 Guide 分别核对。
 - KV 汇聚开销需明确总序列还是每 rank 长度固定、统计单 rank 还是全域后计算；这里不作随 CP size 线性增长的通用承诺。
 - 本卡固定证据集中于长序列 Prefill；不能由单 token 描述推出所有 CP 实现都不支持 Decode。
-- 口径差异：Known Deployments 的 64K·CP4·TP2 取自 opt doc 部署示例的 m=4(CP)·n=2(TP) 口径（cp=4>tp=2）；README 接口约束写 `cp_size < tp_size`——两处口径不同，引接口约束为准。
+- TP 口径：部署图 CP4×局部 TP2 对应启动参数整体 tp_size=8；cp_size=4、8%4=0 满足接口约束。图中的局部 TP2 不能直接与启动参数 tp_size 比较，两者不是互斥方案。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — Qwen3-Next 等模型在 Prefill 阶段使用 CP+TP 混合并行
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md)（primary）
+- [qwen3_next_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md)（supporting）
+- [0001-support-gdn-cp.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage6/0001-support-gdn-cp.patch)（implementation）
+- [sgl_kernel_npu_support_gdn_cp.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch)（implementation）
 
 ## Known Deployments
 

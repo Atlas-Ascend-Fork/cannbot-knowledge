@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: 训练数据效率（EOD Reset + 变长 Flash Attention + 多样本 Packing）
-description: MindSpeed-LLM 用三项协同机制提升训练数据利用率：EOD Reset 在文档边界重置 attention mask 与 position_ids，阻断跨样本注意力；变长 Flash Attention 以 TND 布局和 actual_seq_len 只计算真实 token；多样本 Packing 用贪心装箱减少 padding，并通过 neat-pack 编号重建 position_ids 和序列边界。Packing 发生在预处理阶段，EOD/varlen 在训练运行时保证样本隔离；neat-pack 依赖 pack 与 reset-attention-mask。
+description: MindSpeed-LLM 用三项协同机制提升训练数据利用率：EOD Reset 在文档边界重置 attention mask 与 position_ids，阻断跨样本注意力；变长 Flash Attention 以 TND 布局和 actual_seq_len 减少跨样本注意力计算；多样本 Packing 用贪心装箱减少 padding，并通过 neat-pack 编号重建 position_ids 和序列边界。Packing 发生在预处理阶段，EOD/varlen 在训练运行时保证样本隔离；neat-pack 依赖 pack 与 reset-attention-mask。
 tags:
 - task.optimization
 - topic.data_pipeline
@@ -9,12 +9,12 @@ tags:
 - topic.model_adaptation
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/README.md
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/features/mcore/variable_length_flash_attention.md
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/docs/zh/pytorch/features/mcore/variable_length_flash_attention.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
 - agnostic
 ---
@@ -29,7 +29,7 @@ platforms:
 - **变长 Flash Attention**（varlen FA，TND 布局 + `actual_seq_len`）——不再 materialize 稠密 `[S,S]` 下三角 mask，而是把各文档/各子样本的真实累计长度打成 `actual_seq_len` 传给 FA 算子，算子按 TND（token×head×dim 的扁平打包）布局只算每条文档对角块内的注意力，跨文档的左下空白区直接不算。
 - **多样本 Packing**（`--pack` / `--neat-pack`）——数据预处理阶段用贪心装箱把多条短样本拼成一条恰好 `seq-length` 的「Pack」，把 padding 浪费降到每条 Pack 末尾的一小段，配合 EOD reset / neat-pack 锯齿 mask 保持子样本间相互隔离。
 
-三者本质是一条流水线：Packing 在**离线预处理**阶段决定「怎么把短样本塞满一条序列」，EOD Reset 与变长 FA 在**训练运行时**保证「塞在一起的样本互不串扰、且不为 padding 与跨样本区域浪费算力」。机制属 [mindspeed](../frameworks/mindspeed.md) 的 MindSpeed-LLM 数据栈，SFT 与 pretrain 共用同一套 EOD/varlen 内核。
+三者本质是一条流水线：Packing 在**离线预处理**阶段决定「怎么把短样本塞满一条序列」，EOD Reset 与变长 FA 在**训练运行时**保证「塞在一起的样本互不串扰、且减少跨样本区域的注意力计算；padding 占比由 Packing 降低」。机制属 [mindspeed](../frameworks/mindspeed.md) 的 MindSpeed-LLM 数据栈，SFT 与 pretrain 共用同一套 EOD/varlen 内核。
 
 ## EOD Reset：在文档边界重置 mask 与 position_ids
 
@@ -51,7 +51,7 @@ flowchart TB
   RPI --> ISO
 ```
 
-## 变长 Flash Attention：免 pad 的 TND 直算
+## 变长 Flash Attention：按边界计算对角块
 
 稠密 mask 路线下，attn_mask 是一张压缩的下三角矩阵（如 2048×2048），多文档共享一条序列、全 token 参与计算。变长 FA 改走 FA 算子的可变长模式：**不初始化 mask**，转而根据 EOD 位置生成 `actual_seq_len` 标识各文档拼接后的真实累计长度，实际计算量由 `actual_seq_len` 决定，对角块左下角的跨文档空白区不参与计算。
 
@@ -60,9 +60,9 @@ flowchart TB
 启用链路两步走：
 
 - **数据准备**：预处理须给每条文档末尾补 EOD token（`--append-eod`）。pretrain handler 的 `_filter` 在每条 `doc_ids` 末尾追加 `tokenizer.eod`（同步给 `attention_mask` 补 1、`labels` 补 EOD）；TND 必须配 EOD 才能切分文档。
-- **训练参数**：脚本加 `--reset-attention-mask`，运行时据 EOD 位置生成 `actual_seq_len` 传入 FA，算子随后按 **TND** 格式计算。TND 把多条变长序列在 token 维直接首尾相接成一条扁平张量（区别于 BSND 的等长矩形 + padding），无需把每条样本 pad 到等长，padding token 与跨文档区域都不进算子。
+- **训练参数**：脚本加 `--reset-attention-mask`，运行时据 EOD 位置生成 `actual_seq_len` 传入 FA，算子随后按 **TND** 格式计算。TND 把多条变长序列在 token 维直接首尾相接成一条扁平张量（区别于 BSND 的等长矩形 + padding），避免每个子样本各自 pad 到统一长度，跨文档块不计算。但固定链路的 Pack 仍补齐到 `seq_length`；neat-pack 将 padding 的 position_ids 置零，`_compute_actual_seq_len` 把这些零位作为边界并追加总长，padding token 仍进入计算序列，不能声称算子完全跳过 padding。
 
-这恰好与 EOD Reset 互补：EOD Reset 负责语义隔离（哪些 token 能互相看见），变长 FA 负责算力节省（不算 padding、不算跨文档块）。开了变长 FA，pretrain 侧的稠密 `attention_mask` 即可由 `create_attention_mask=False` 省去。
+这恰好与 EOD Reset 互补：EOD Reset 负责语义隔离（哪些 token 能互相看见），变长 FA 负责减少跨文档块的计算，Packing 则降低 padding 占比。开了变长 FA，pretrain 侧的稠密 `attention_mask` 即可由 `create_attention_mask=False` 省去。
 
 ## 多样本 Packing：贪心装箱拼满序列
 
@@ -95,22 +95,16 @@ flowchart LR
 |---|---|---|---|
 | 多样本 Packing | 离线预处理 | 短样本各占一条序列、padding 占比高 | `--pack` / `--neat-pack` / `greedy_knapsack` |
 | EOD Reset | 训练运行时 | 拼接序列内跨文档/跨样本注意力串扰 | `--reset-attention-mask` / `--reset-position-ids` |
-| 变长 Flash Attention | 训练运行时（FA 算子） | padding 与跨文档块的无效算力 | `--append-eod` + `actual_seq_len` + TND |
+| 变长 Flash Attention | 训练运行时（FA 算子） | 跨文档块的无效注意力计算（不保证移除 padding token） | `--append-eod` + `actual_seq_len` + TND |
 
-典型组合是「Packing 拼满序列 → neat-pack 写子样本编号 → reset-attention-mask 生成 actual_seq_len → 变长 FA 在 TND 下只算对角块」。pretrain 侧多用 EOD + varlen FA（文档边界即 EOD），SFT 侧在此之上叠加 Packing 把一问一答的短样本拼满。三者叠加后，一条 `seq-length` 序列里几乎每个 token 都是有效计算，且各文档/子样本严格隔离。
+典型组合是「Packing 拼满序列 → neat-pack 写子样本编号 → reset-attention-mask 生成 actual_seq_len → 变长 FA 在 TND 下只算对角块」。pretrain 侧多用 EOD + varlen FA（文档边界即 EOD），SFT 侧在此之上叠加 Packing 把一问一答的短样本拼满。三者叠加后，一条 `seq-length` 序列里有效 token 占比可提高，残余 padding 仍可能计算，且各文档/子样本严格隔离。
 
 这条数据效率链与 [peft-lora](peft_lora.md) 正交叠加——LoRA/QLoRA 压低可训练参数与显存，Packing+varlen 压低数据冗余与无效算力，常在同一 SFT 任务里同时启用。多模态训练的 Packing 与变长处理另见 [multimodal-data](multimodal_data.md)，图文样本的拼接需额外处理视觉 token 边界。
 
 ## Evidence
 
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/features/mcore/variable_length_flash_attention.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/features/mcore/variable_length_flash_attention.md)（多文档拼接场景 / `--append-eod` 数据准备 / `--reset-attention-mask` 生成 `actual_seq_len` / 使能前后稠密 mask vs 锯齿 / `[2,2,0,2,2]→[2,4,4,6,8]` 示例）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/training/finetune/mcore/multi_sample_pack_finetune.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/training/finetune/mcore/multi_sample_pack_finetune.md)（多样本 Pack 动机与等长 Pack / 锯齿 `attn_mask` / `--neat-pack` / `--reset-attention-mask` / `--padded-samples` / `--neat-pack` 依赖 `--pack` 与 `--reset-attention-mask` 的约束）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/training/finetune/mcore/single_sample_finetune.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/training/finetune/mcore/single_sample_finetune.md)（`--no-pad-to-seq-lengths` 动态序列长度 / pad 到 8 的整数倍 / `--pad-to-multiple-of`）
-- [`mindspeed_llm/core/datasets/gpt_dataset.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/datasets/gpt_dataset.py) — `_get_ltor_masks_and_position_ids`（按 `eod_index` 逐边界 `attention_mask[0,(i+1):,:(i+1)]=0` 阻断跨文档注意力、`position_ids[(i+1):] -= i+1-prev_index` 重置位置、`eod_mask_loss`、`create_attention_mask=False` 让 FA 自产 mask）
-- [`mindspeed_llm/tasks/preprocess/decoder_packed_mtf_dataset.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/preprocess/decoder_packed_mtf_dataset.py) — `DecoderPackedMTFDataset.__getitem__`（`reset_attention_mask`/`reset_position_ids`/`neat_pack` 分支、`actual_seq_len = eod_index + 1` 或经 position_ids 折算、`F.pad(..., value=-1)` 对齐）、`_get_neat_pack_position_ids`（从子样本编号重建 position_ids）
-- [`mindspeed_llm/tasks/preprocess/data_handler.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/preprocess/data_handler.py) — `_pack_serialize_to_disk`（`greedy_knapsack(lengths, seq_length-1)` 装箱、neat-pack 时 `attention_mask` 写子样本编号 `[i+1]*len`、pad 段 `input_ids→pad_token_id` / `attention_mask→0` / `labels→ignored_label`）、pretrain `_filter`（`--append-eod` 末尾追加 `tokenizer.eod`）
-- [`mindspeed_llm/tasks/preprocess/utils.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/preprocess/utils.py) — `greedy_knapsack` / `search_for_fit`（`bisect` 二分找 ≤ 剩余容量的最大长度的贪心背包）
-- [`mindspeed_llm/training/utils.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/training/utils.py) — `compute_actual_seq_len` / `_compute_actual_seq_len`（取零值分隔位 + 总长得边界、MTP 逐层错位）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md)（primary）
+- [variable_length_flash_attention.md](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/docs/zh/pytorch/features/mcore/variable_length_flash_attention.md)（supporting）
 
 ## Links
 

@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/23
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:41:21Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a3
 ---
@@ -40,7 +40,4 @@ LightningIndexer 是 DSA 的前处理算子：计算 index query × index key �
 
 ## Evidence
 
-- **代码事实**（clone `@2c45117`）：`ops/ascendc/docs/custom-npu_quant_lightning_indexer.md` 功能说明原文「对输入 query 和 key 进行量化实现存8算8，获取最大收益」，含 top-k 选择、int8 Q/K、Per-Token-Head 量化、PA_BSND、图模式、Atlas A3 支持。
-- **维护者确认**：「现在量化版本已经发布，对 Vector 做了优化，建议关注量化版本」。
-- **命名漂移（diff 事实）**：维护者曾在 master 引用文件名 `custom-npu_lightning_indexer_quant.md`；clone `@2c45117` 处已改名 `custom-npu_quant_lightning_indexer.md`（同一算子）。
-- 溯源下探：[cann-recipes-infer-issue-23-question-lightningindexer](https://gitcode.com/cann/cann-recipes-infer/issues/23)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/23)（evidence）

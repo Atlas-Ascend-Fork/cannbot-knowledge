@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/421
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-07-06T00:00:00Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - a2
 ---
@@ -75,14 +75,7 @@ if self.moe_ep_size > 1:
 
 ## Evidence
 
-- **约束一（A2 专家上限）**
-  - **代码事实**（clone `@8fd8db72`）：`longcat_flash_lite_ep8.yaml` 头注 "A2 fallback: MC2 dispatch_v2 caps moe_expert_num <= 24 in unlayered mode (Lite has 32/rank at ep=8)" + 两条回退；`LongcatFlashMoE.__init__` 的默认逻辑。回退机制为 diff 事实，≤24 为注释来源。
-  - 溯源下探：[cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)
-- **约束二（mm-reduce-scatter 未使能）**
-  - **代码事实**：`models/hunyuan-image-3.0/adaptor_patches/hunyuan.py` 的设备分支与两条 layout、doc "(A2平台下暂未使能该融合算子)"。设备分支为 diff 事实。
-  - **维护者确认**：融合算子只在 EP 分支用到；报障侧 issue（HunyuanImage-3.0 在 A2 EP 并行报错）确认 `npu_mm_reduce_scatter_base` 在 A2「暂未使能」、按设备名回退。
-  - 溯源下探：[cann-recipes-infer-pr-405-fix-a2](https://gitcode.com/cann/cann-recipes-infer/merge_requests/405)、[cann-recipes-infer-issue-178-bug-report-models-hunyuan-image-3-0](https://gitcode.com/cann/cann-recipes-infer/issues/178)
-- **约束三（fullmesh_v2 零专家）**
-  - **代码事实**（clone `@d4b8eb61`）：6 模型 `set_mc2_kwargs` 差异化处理（5 加 `comm_alg=fullmesh_v2`、longcat-flash 不加且带 `copy_expert_num`）。
-  - **仓自报**："fullmesh_v2 不支持零专家"为作者描述披露、与 diff 差异化自洽。
-  - 溯源下探：[cann-recipes-infer-pr-421-refactor-mc2-use-independent-communication-group](https://gitcode.com/cann/cann-recipes-infer/merge_requests/421)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/405)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/178)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/421)（evidence）

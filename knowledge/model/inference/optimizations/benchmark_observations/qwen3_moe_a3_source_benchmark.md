@@ -7,11 +7,12 @@ tags:
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-moe/qwen3_moe_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen3_moe/qwen3_moe_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-moe-sglang/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md
+  role: supporting
 created_at: '2026-10-21T09:56:24Z'
-updated_at: '2026-10-21T09:56:24Z'
+updated_at: '2026-10-29T13:54:05Z'
 platforms:
 - a3
 scope:
@@ -26,7 +27,7 @@ scope:
 
 ## Workload
 
-自研BF16单batch与SGLang W8A8为不同记录，没有匹配的共同baseline。
+自研概述未明确模型规格；其BF16单batch与SGLang Qwen3-235B-A22B W8A8为不同记录，没有匹配的共同baseline。
 
 ## Hardware
 
@@ -53,7 +54,7 @@ scope:
 | 来源路径 | 条件 | 原指标 |
 | --- | --- | --- |
 | 自研优化文档概述 | BF16，8卡，单batch；输入/完整YAML未披露 | 推理时延<20ms |
-| SGLang README | W8A8，GBS256，dp16/tp4/ep64，max_prompt5120/max_response500，32卡 | 纯模型时延30ms |
+| SGLang README | Qwen3-235B-A22B，W8A8，GBS256，dp16/tp4/ep64，max_prompt5120/max_response500，32卡 | 纯模型时延30ms |
 
 SGLang来源开启SuperKernel、perfect EPLB与cache compile；“纯模型时延”不替换为在线端到端时延，源概述不补写成逐token样本。
 
@@ -66,5 +67,5 @@ SGLang来源开启SuperKernel、perfect EPLB与cache compile；“纯模型时�
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-moe/qwen3_moe_optimization.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-moe-sglang/README.md)
+- [qwen3_moe_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen3_moe/qwen3_moe_optimization.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md)（supporting）

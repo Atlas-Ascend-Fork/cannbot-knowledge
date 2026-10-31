@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/266
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:54:12Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - a2
 ---
@@ -60,7 +60,6 @@ VAE decode 沿 latent 宽度维在各 rank 间切分：因卷积感受野，非�
 
 ## Evidence
 
-- `diff 事实`（HunyuanImage-3.0 @fdb79bf65a8b，新增 `vae_patch_parallel.py` +752）：`assert w_split*h_split==world_size`、halo P2P、`wraps_fa` 的 all_gather K/V、两阶段 all_gather 重拼。溯源下探：[cann-recipes-infer-pr-218-feat-support-hunyuanimage-3-0-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)
-- `diff 事实`（Wan2.2-I2V, 合并 2025-10-30）：`Parallel_VAE_SP` 的 halo/all_gather/两阶段 all_gather，对上优化文档 8 卡 VAE 并行章节。溯源下探：[cann-recipes-infer-pr-49-feat-add-wan2-2-i2v-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/49)
-- `diff 事实`（HunyuanVideo @366a74296cb5，新增 `vae_parallel.py`）：`decode` 的带 overlap 分片、`up_rate=8` 去 pad、`all_gather` 拼回；`types.MethodType` monkeypatch 接线。溯源下探：[cann-recipes-infer-pr-266-feat-hunyuanvideo-support-taylorseer-offload-prefetch-vae-parallel-rolli](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)
-- 三处均无 VAE 段独立 before→after 数字。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/49)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)（evidence）

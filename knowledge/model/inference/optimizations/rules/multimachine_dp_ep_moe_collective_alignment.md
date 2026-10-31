@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/92
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a2
 ---
@@ -52,5 +52,4 @@ MoE 模型多机 / 多进程 [DP](../../concepts/parallelism/data_parallel.md) +
 
 ## Evidence
 
-- `diff 事实`（@2c45117，`contrib/vllm-pd-hybrid-dp-ep/omni_v0.5.0.patch`）：phase-hint all-reduce / dummy-batch / 分离调度 / chunk-prefill 互斥断言、`qwen3_moe` 的变长 `all_gather_v` 换 `all_reduce(MAX)` pad + two-stage all_gather 均落在合并 diff。"变长算子不支持多机"为该 patch 作者动机说明。
-- 溯源下探：[cann-recipes-infer-pr-92-support-pd-hybrid-dp-ep-on-4-a2-machines-for-vllm](https://gitcode.com/cann/cann-recipes-infer/merge_requests/92)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/92)（evidence）

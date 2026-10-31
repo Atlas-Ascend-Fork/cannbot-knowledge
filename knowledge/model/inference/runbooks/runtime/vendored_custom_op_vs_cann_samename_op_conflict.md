@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/130
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -64,7 +64,5 @@ platforms:
 
 ## Evidence
 
-- **命名空间碰撞 · diff 事实**（clone `@98946b6` / `@2c45117`）：`ops_def_registration.cpp` 的 `custom::npu_sparse_flash_attention` 签名确为 6 个位置参数（`sparse_block_size` 在 `*` 前），样例按 6 个位置参数调用；报错声明里的 `npu::` 版为 5 个位置参数（`sparse_block_size` 仅限关键字）——两签名差异精确解释 "takes 5 ... but 6 were given"。`custom_ops/__init__.py` 的 `setattr(torch_npu, op_name, custom_op_func)` 别名挂载在钉定 sha 仍在、且作用于当前保留的其它自带算子。**维护者确认**：建议用 CANN 包内同名算子、或按 README 编译方式调仓内算子，或降 torch_npu 版本。
-  - 溯源下探：[cann-recipes-infer-issue-117-bug-report-test-npu-sparse-flash-attention-py](https://gitcode.com/cann/cann-recipes-infer/issues/117)
-- **接口漂移 · 维护者确认 + diff 事实**（clone `@239c0c1a`）：`ops/ascendc/src/` 现存 vendored 算子中已**无 `mla_prolog_v3`**（已移除），各建模文件改调 `torch_npu.npu_mla_prolog_v3`。维护者确认根因（算子合入 ops-transformer 时改了接口、recipes 未同步）与修法（已适配、当时用 README 镜像规避）。
-  - 溯源下探：[cann-recipes-infer-issue-130-bug-report-mla-prolog-v3-cann-transformer](https://gitcode.com/cann/cann-recipes-infer/issues/130)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/117)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/130)（evidence）

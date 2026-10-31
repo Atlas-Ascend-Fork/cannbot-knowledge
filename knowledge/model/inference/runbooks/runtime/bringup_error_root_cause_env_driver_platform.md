@@ -20,8 +20,12 @@ sources:
   role: evidence
 - resource: https://github.com/vllm-project/vllm-ascend/issues/2210
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/common_modules.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-07-15T00:00:00Z'
+updated_at: '2026-10-29T15:57:04Z'
 platforms:
 - a3
 ---
@@ -62,7 +66,7 @@ platforms:
 ### D. A3 变体核数少于硬编码值 → limit_core EE1001
 
 - 信号：`SetStreamResLimit ... EE1001 The value exceeds the total number of cores (value=24, total=20)`。
-- 根因：多流控核 `enable_limit_core` 把 aic 总核数硬编码为 24（`total_aic_num=24`，仅 A3），且 infer.py 只校验 `platform_version=="A3"`、**不校验设备实际核数**；在实际核数少于 24 的 A3 变体（如一站式平台）上越界。
+- 根因：该历史报错来自24核假设。当前V4已查询stream实际核数，允许A3/950、要求多流且与PyPTO互斥；一站式A3配方仍要求关闭控核，不能把旧infer.py断言当当前入口；在实际核数少于 24 的 A3 变体（如一站式平台）上越界。
 - 修法：把 `enable_limit_core` 设为 `False`（或按实际核数调整）。
 
 ### E. A3-only 部署样例在 A2（910B3）上静默卡死
@@ -87,7 +91,11 @@ platforms:
 
 ## Evidence
 
-- `diff 事实 / 维护者确认`（@2c45117）：EC0010 缺 `attr`；107001 为 device 未透传；A2 静默卡死为平台不匹配（维护者确认）；`enable_limit_core` 硬编码 24 且只校验 platform_version=="A3"。
-- `维护者确认`（@2c45117）：A3 首 reduce_scatter HCCL 15 + AICPU 0x2a 根因驱动过旧、升级解决。
-- `维护者确认 + 一手 traceback`（F，vllm-ascend v0.10.0rc1 发布 checklist）：release manager（collaborator）明写「CANN 8.2.1 仍需 pin `numpy < 2.0`」并贴出完整复现栈——`SetPrecisionMode ... error code 500001` → `EC0010 ... AttributeError: np.float_ was removed in the NumPy 2.0 release` → `AOE Failed to call InitCannKB` → `Failed to init tbe` / `op store adapter failed` → `GEInitialize failed`；checklist 项标注「numpy>2.0 not work with CANN 8.2.1」。范围按证据限定到 CANN 8.2.1。
-- 溯源下探：[cann-recipes-infer-issue-177-question-torch-npu](https://gitcode.com/cann/cann-recipes-infer/issues/177)、[cann-recipes-infer-issue-182-bug-report-a3-ds4flash](https://gitcode.com/cann/cann-recipes-infer/issues/182)、[cann-recipes-infer-issue-22-bug-report-readme-torchnpu](https://gitcode.com/cann/cann-recipes-infer/issues/22)、[cann-recipes-infer-issue-190-bug-report-models-deepseek-v4-deepseek-v4-flash-runtimeerror-customize-d](https://gitcode.com/cann/cann-recipes-infer/issues/190)、[cann-recipes-infer-issue-39-question-910b3-w8a8-b3](https://gitcode.com/cann/cann-recipes-infer/issues/39)、[vllm-ascend-issue-2210-release-release-checklist-for-v0-10-0rc1](https://github.com/vllm-project/vllm-ascend/issues/2210)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/177)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/182)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/22)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/190)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/39)（evidence）
+- [远程来源](https://github.com/vllm-project/vllm-ascend/issues/2210)（evidence）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
+- [common_modules.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/common_modules.py)（implementation）

@@ -74,7 +74,7 @@ cases:
     domain: model
     technology: inference
     platform: a3
-    status: stable
+    status: deprecated
     match: text
     k: 5
   scope:
@@ -86,6 +86,7 @@ cases:
   expected:
   - model/inference/concepts/parallelism/kvp
   excluded: []
+  description: 当前Recipes已移除KVP入口；显式查询停用机制，默认排除由独立用例覆盖。
 - id: model_scope_05
   query: 是否/何时启用图模式：按 host 下发占比与 profiling 决策（freetime / host gap / 动态 shape）
   filters:
@@ -1270,7 +1271,7 @@ cases:
   expected:
   - model/inference/guides/deployment/kvp_longseq_decode
 - id: scope_kvp_mechanism_unknown
-  description: 机制 Concept 未声明当前部署 Scope，显式 KVP 条件只能得到未知，不能确认当前可启用。
+  description: 当前Recipes已移除KVP入口；显式查询停用机制，默认排除由独立用例覆盖。
   query: KVP
   filters:
     domain: model
@@ -1279,6 +1280,7 @@ cases:
     platform: a3
     match: literal
     k: 10
+    status: deprecated
   scope:
     schema: model.inference.v1
     any_of:
@@ -1514,7 +1516,7 @@ cases:
   - model/inference/optimizations/cases/qwen3_next_a3_prefill_cp_tp
 - id: scope_cluster_scale_prefill
   description: 同一核对规则的 phase 数组是 OR，两个阶段可分别命中。
-  query: 集群配置核对
+  query: 集群配置
   filters:
     domain: model
     technology: inference
@@ -1536,7 +1538,7 @@ cases:
     model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch: match
 - id: scope_cluster_scale_decode
   description: 同一核对规则的 phase 数组是 OR，两个阶段可分别命中。
-  query: 集群配置核对
+  query: 集群配置
   filters:
     domain: model
     technology: inference
@@ -1558,7 +1560,7 @@ cases:
     model/inference/optimizations/rules/prefill_decode_cluster_scale_mismatch: match
 - id: scope_cluster_scale_objective_conflict
   description: 配置核对主目标为 bringup；不因正文讨论显存就声明独立 memory 优化。
-  query: 集群配置核对
+  query: 集群配置
   filters:
     domain: model
     technology: inference
@@ -1978,7 +1980,7 @@ cases:
   - model/inference/optimizations/cases/torchless_lowprec_dtype_acl_override
 - id: migration_unknown_benchmark_not_default
   description: 平台未核实的精度观测保持 draft，不进入默认 stable 查询。
-  query: 三档量化精度
+  query: 当前量化精度来源表
   filters:
     domain: model
     technology: inference
@@ -1992,7 +1994,7 @@ cases:
   - model/inference/optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy
 - id: migration_unknown_benchmark_explicit_draft
   description: 显式 draft 与 include-unlocated 才召回平台未知观测，Scope 不标为已确认。
-  query: 三档量化精度
+  query: 当前量化精度来源表
   filters:
     domain: model
     technology: inference
@@ -2086,7 +2088,7 @@ cases:
   expected_error: --include-unlocated cannot be combined with --platform
 - id: closure_fp8_950_positive
   description: 固定 950 源码支持 FP8+DiT，规则与数据案例分开。
-  query: 视频 DiT FP8 量化规则
+  query: 视频 DiT MXFP8
   filters:
     domain: model
     technology: inference
@@ -2110,7 +2112,7 @@ cases:
     model/inference/optimizations/rules/video_dit_fp8_mxfp8_quantization: match
 - id: closure_fp8_a3_excluded
   description: 同名 950 实现不能由 A3 平台过滤召回。
-  query: 视频 DiT FP8 量化规则
+  query: 视频 DiT MXFP8
   filters:
     domain: model
     technology: inference
@@ -2214,7 +2216,7 @@ cases:
     model/inference/concepts/quantization/hybrid_mxfp8_mxfp4: unknown
 - id: closure_prefill_throughput_positive
   description: 吞吐目标与阶段共同满足时召回对应流程。
-  query: Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算
+  query: R1 Prefill 微批双流：按请求切分并对齐通信轮次
   filters:
     domain: model
     technology: inference
@@ -2237,7 +2239,7 @@ cases:
     model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap: match
 - id: closure_prefill_guide_decode_conflict
   description: 已确认 Decode 不匹配 Prefill micro-batch 流程。
-  query: Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算
+  query: R1 Prefill 微批双流：按请求切分并对齐通信轮次
   filters:
     domain: model
     technology: inference
@@ -2337,7 +2339,7 @@ cases:
   - model/inference/runbooks/runtime/aclgraph_print_bisect_silent_hang
 - id: online_decode_admission_match
   description: 固定源码支持在线 Decode CANN Executor 入场控制，不推断并发或 batch。
-  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  query: 在线 Decode 的缓存准入与压力驱逐
   filters:
     domain: model
     technology: inference
@@ -2361,8 +2363,8 @@ cases:
   expected_scope_states:
     model/inference/optimizations/rules/online_decode_kv_admission_retraction: match
 - id: online_decode_admission_offline_conflict
-  description: 明确离线场景与在线调度规则冲突。
-  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  description: 明确离线场景与在线调度规则冲突。 当前查询按准入规则的新标题定位，只断言该候选的审计冲突；未知条件行为由framework_unknown独立覆盖。
+  query: 在线 Decode 的缓存准入与压力驱逐
   filters:
     domain: model
     technology: inference
@@ -2385,13 +2387,10 @@ cases:
   - model/inference/optimizations/rules/online_decode_kv_admission_retraction
   expected_scope_excluded:
   - model/inference/optimizations/rules/online_decode_kv_admission_retraction
-  expected_scope_states:
-    model/inference/optimizations/rules/ascend_paged_attention_kv_cache: unknown
-  expected:
-  - model/inference/optimizations/rules/ascend_paged_attention_kv_cache
+  expected: []
 - id: online_decode_admission_prefill_conflict
-  description: 在线模式不能抵消已确认的 Prefill/Decode 冲突。
-  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  description: 在线模式不能抵消已确认的 Prefill/Decode 冲突。 当前查询按准入规则的新标题定位，只断言该候选的审计冲突；未知条件行为由framework_unknown独立覆盖。
+  query: 在线 Decode 的缓存准入与压力驱逐
   filters:
     domain: model
     technology: inference
@@ -2414,13 +2413,10 @@ cases:
   - model/inference/optimizations/rules/online_decode_kv_admission_retraction
   expected_scope_excluded:
   - model/inference/optimizations/rules/online_decode_kv_admission_retraction
-  expected_scope_states:
-    model/inference/optimizations/rules/ascend_paged_attention_kv_cache: unknown
-  expected:
-  - model/inference/optimizations/rules/ascend_paged_attention_kv_cache
+  expected: []
 - id: online_decode_admission_framework_unknown
   description: 没有确认框架时保留相关规则并提示 CANN Executor 前提。
-  query: online decode 调度防 KV 打满死锁：入场预留 + cheapest-victim retraction + break→continue
+  query: 在线 Decode 的缓存准入与压力驱逐
   filters:
     domain: model
     technology: inference
@@ -2709,8 +2705,8 @@ cases:
   excluded:
   - model/inference/optimizations/benchmark_observations/deepseek_v4_a3_source_benchmark
 - id: model_v4_performance_owner
-  description: 性能数字由观测卡维护，模型与量化 Concept 不重复保存性能表。
-  query: '1625.31'
+  description: 性能数字由观测卡维护；使用当前950DT Flash、GBS256、MTP3、8K、MXFP8表中的1821.75，模型与量化Concept不重复性能表。
+  query: '1821.75'
   filters:
     domain: model
     technology: inference
@@ -2751,7 +2747,7 @@ cases:
   - model/inference/guides/models/deepseek_v3_2_exp_deployment
 - id: catalog_gemma4_26b_a4b_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Gemma-4 文本 Decoder 的 A2/A3 部署与精度验收
+  query: Gemma-4 文本 Decoder 当前部署
   filters:
     domain: model
     technology: inference
@@ -2764,7 +2760,7 @@ cases:
   - model/inference/guides/models/gemma4_26b_a4b_deployment
 - id: catalog_glm_5_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: GLM-5 A3 部署、量化与 DSA 验收流程
+  query: GLM-5 当前部署：A3 W8A8 与 950 MXFP8
   filters:
     domain: model
     technology: inference
@@ -2803,7 +2799,7 @@ cases:
   - model/inference/guides/models/hstu_deployment
 - id: catalog_hy3_preview_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Hy3-preview A3 部署与路由精度验收流程
+  query: Hy3 A3/950 当前部署与 MTP 验收
   filters:
     domain: model
     technology: inference
@@ -2816,7 +2812,7 @@ cases:
   - model/inference/guides/models/hy3_preview_deployment
 - id: catalog_kimi_k2_thinking_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Kimi-K2-Thinking A3 混合精度部署与验收流程
+  query: Kimi-K2-Thinking A3：当前统一 Executor 部署
   filters:
     domain: model
     technology: inference
@@ -2842,7 +2838,7 @@ cases:
   - model/inference/guides/models/longcat_flash_lite_deployment
 - id: catalog_qwen3_5_moe_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Qwen3.5-MoE A3 三规格部署与 GDN 验收流程
+  query: Qwen3.5-MoE A3/950 当前部署
   filters:
     domain: model
     technology: inference
@@ -2855,7 +2851,7 @@ cases:
   - model/inference/guides/models/qwen3_5_moe_deployment
 - id: catalog_qwen3_moe_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Qwen3-MoE A3 双实现部署与优化验收流程
+  query: Qwen3-MoE 当前自研与 SGLang 部署
   filters:
     domain: model
     technology: inference
@@ -2868,7 +2864,7 @@ cases:
   - model/inference/guides/models/qwen3_moe_deployment
 - id: catalog_qwen_dense_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Qwen Dense A2 的变体、图模式与量化验收流程
+  query: Qwen Dense A2/A3 当前部署与量化验收
   filters:
     domain: model
     technology: inference
@@ -2920,7 +2916,7 @@ cases:
   - model/inference/guides/models/sana_video_deployment
 - id: catalog_wan2_2_i2v_deployment
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Wan2.2-I2V A2/A3 并行与缓存生成验收流程
+  query: Wan2.2-I2V 当前部署与验收
   filters:
     domain: model
     technology: inference
@@ -2954,7 +2950,7 @@ cases:
     model/inference/optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark: match
 - id: catalog_deepseek_r1_a3_decode_source_benchmark
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: DeepSeek-R1 A3 Decode 的来源数据与 Chips 分歧
+  query: DeepSeek-R1 A3 Decode 当前来源数据
   filters:
     domain: model
     technology: inference
@@ -2997,7 +2993,7 @@ cases:
     model/inference/optimizations/benchmark_observations/deepseek_v32_a3_source_benchmark: match
 - id: catalog_gemma4_a2_source_benchmark
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Gemma-4 A2 图模式的两组来源性能口径
+  query: Gemma-4 A2 当前来源性能与累计阶段
   filters:
     domain: model
     technology: inference
@@ -3019,7 +3015,7 @@ cases:
     model/inference/optimizations/benchmark_observations/gemma4_a2_source_benchmark: match
 - id: catalog_gemma4_a3_source_benchmark
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Gemma-4 A3 图后端与 EP 路由的来源观测
+  query: Gemma-4 A3 当前图后端来源观测
   filters:
     domain: model
     technology: inference
@@ -3062,7 +3058,7 @@ cases:
     model/inference/optimizations/benchmark_observations/glm5_a3_source_benchmark: match
 - id: catalog_hy3_a3_source_benchmark
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Hy3-preview A3 分阶段性能与批次口径观测
+  query: Hy3 A3 基础优化来源记录与当前配置边界
   filters:
     domain: model
     technology: inference
@@ -3105,16 +3101,16 @@ cases:
   expected_scope_states:
     model/inference/optimizations/benchmark_observations/longcat_lite_a3_prolog_source_benchmark: match
 - id: catalog_longcat_lite_ep_source_observations
-  description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: LongCat-Lite EP 报告的平台与源码待核验观测
+  description: 最新来源已明确A3 EP实验，按当前稳定卡与已知平台查询。
+  query: LongCat-Lite A3 EP 量化与多流来源观测
   filters:
     domain: model
     technology: inference
     type: optimizations
-    status: draft
+    status: stable
     match: literal
     k: 5
-    include_unlocated: true
+    platform: a3
   expected:
   - model/inference/optimizations/benchmark_observations/longcat_lite_ep_source_observations
   scope:
@@ -3125,9 +3121,9 @@ cases:
         - decode
   expected_scope_states:
     model/inference/optimizations/benchmark_observations/longcat_lite_ep_source_observations: unknown
-- id: catalog_longcat_lite_ep_source_observations_default_excluded
-  description: 平台未知的来源记录保持 draft，不进入默认稳定检索。
-  query: LongCat-Lite EP 报告的平台与源码待核验观测
+- id: catalog_longcat_lite_ep_source_observations_default_included
+  description: 最新来源明确A3 EP实验，默认稳定查询应返回当前观测。
+  query: LongCat-Lite A3 EP 量化与多流来源观测
   filters:
     domain: model
     technology: inference
@@ -3135,7 +3131,7 @@ cases:
     platform: a3
     match: literal
     k: 5
-  excluded:
+  expected:
   - model/inference/optimizations/benchmark_observations/longcat_lite_ep_source_observations
 - id: catalog_qwen3_moe_a3_source_benchmark
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
@@ -3237,7 +3233,7 @@ cases:
   - model/inference/optimizations/benchmark_observations/hunyuan_video_sparse_source_observations
 - id: catalog_sana_video_950_source_benchmark
   description: 职责拆分后，按实际 Profile、平台和已核实条件检索规范入口。
-  query: Sana-Video 来源 A5（950）量化性能观测
+  query: Sana-Video 950 量化来源观测
   filters:
     domain: model
     technology: inference
@@ -3292,7 +3288,7 @@ cases:
   - model/inference/optimizations/benchmark_observations/sana_video_bf16_source_observations
 - id: catalog_deepseek_r1_a3_decode_source_benchmark_phase_conflict
   description: 明确相反阶段的来源观测排除，并在过滤审计中回显。
-  query: DeepSeek-R1 A3 Decode 的来源数据与 Chips 分歧
+  query: DeepSeek-R1 A3 Decode 当前来源数据
   filters:
     domain: model
     technology: inference
@@ -3334,7 +3330,7 @@ cases:
   - model/inference/optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark
 - id: catalog_gemma4_a2_source_benchmark_wrong_platform
   description: 分平台的来源观测不能因模型相同而跨硬件召回。
-  query: Gemma-4 A2 图模式的两组来源性能口径
+  query: Gemma-4 A2 当前来源性能与累计阶段
   filters:
     domain: model
     technology: inference
@@ -3360,7 +3356,7 @@ cases:
   - model/inference/optimizations/benchmark_observations/hunyuan_video_950_source_benchmark
 - id: catalog_sana_video_950_source_benchmark_wrong_platform
   description: 分平台的来源观测不能因模型相同而跨硬件召回。
-  query: Sana-Video 来源 A5（950）量化性能观测
+  query: Sana-Video 950 量化来源观测
   filters:
     domain: model
     technology: inference
@@ -3535,7 +3531,7 @@ cases:
   - model/inference/optimizations/benchmark_observations/pypto_v4_operator_source_observations
 - id: delivery_deepseek_v32_offload_stream_events
   description: 固定来源仅确认 Prefill D2H 片段；已知阶段补标后，Decode 查询须产生明确冲突排除。
-  query: V3.2-Exp KV Offload 搬运流与事件配对案例
+  query: V3.2-Exp Offload 的 Prefill 搬运流与事件
   filters:
     domain: model
     technology: inference
@@ -3555,7 +3551,7 @@ cases:
   - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
 - id: delivery_indexer_prolog_streams_fixed_implementation
   description: 固定 A3 模型文档、调用链和开关支持 Indexer Decode 分流，查询阶段匹配。
-  query: A3 DeepSeek/GLM Indexer Prolog 前处理分流实现
+  query: Indexer Decode 前处理
   filters:
     domain: model
     technology: inference
@@ -3576,7 +3572,7 @@ cases:
     model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation: match
 - id: source_review_indexer_wrong_platform_excluded
   description: A3 Indexer 案例不能作为 A2 已确认实现。
-  query: A3 DeepSeek/GLM Indexer Prolog 前处理分流实现
+  query: Indexer Decode 前处理
   filters:
     domain: model
     technology: inference
@@ -3678,7 +3674,7 @@ cases:
   - model/inference/optimizations/rules/multi_lora_bgmv_ascendc_vector_kernel
 - id: source_review_indexer_prefill_excluded
   description: Indexer 开关排除 Prefill，并保留明确冲突审计。
-  query: A3 DeepSeek/GLM Indexer Prolog 前处理分流实现
+  query: Indexer Decode 前处理
   filters:
     domain: model
     technology: inference
@@ -4064,12 +4060,12 @@ cases:
   expected_scope_excluded:
   - model/inference/optimizations/rules/mla_prolog_v3_prefill_seqlen_doc
 - id: scope_partial_bias_prefill_moe
-  query: 量化 MoE 专家 GMM 的 phase-gated bias 跳过：Prefill 去 bias 提速、Decode 保留
+  query: W4A8 Prefill 跳过 bias
   filters:
     domain: model
     technology: inference
     platform: a3
-    status: stable
+    status: deprecated
     match: literal
     k: 5
   scope:
@@ -4085,8 +4081,9 @@ cases:
   - model/inference/optimizations/rules/w4a8_moe_gmm_prefill_skip_bias
   expected_scope_states:
     model/inference/optimizations/rules/w4a8_moe_gmm_prefill_skip_bias: match
+  description: 显式回顾已停用规则的原Prefill范围，当前实现两阶段均保留bias。
 - id: scope_partial_bias_decode_excluded
-  query: 量化 MoE 专家 GMM 的 phase-gated bias 跳过：Prefill 去 bias 提速、Decode 保留
+  query: 跳过 bias
   filters:
     domain: model
     technology: inference
@@ -4104,10 +4101,11 @@ cases:
   - model/inference/runbooks/performance/moe_optimization_silently_disabled_decode
   expected_scope_states:
     model/inference/runbooks/performance/moe_optimization_silently_disabled_decode: unknown
-  expected_scope_excluded:
+  excluded:
   - model/inference/optimizations/rules/w4a8_moe_gmm_prefill_skip_bias
+  description: 默认稳定查询排除已停用的省bias规则，仍可召回阶段诊断。
 - id: scope_partial_online_offline_conflict
-  query: 在线 PD 分离推理执行机制：多机实例、DP 分发与 KV 传输（Online PD Inference）
+  query: 在线 PD 分离：控制面、缓存传输与阶段协商
   filters:
     domain: model
     technology: inference
@@ -4125,7 +4123,7 @@ cases:
   expected_scope_excluded:
   - model/inference/concepts/frameworks/online_pd_inference
 - id: scope_partial_online_pd_match
-  query: 在线 PD 分离推理执行机制：多机实例、DP 分发与 KV 传输（Online PD Inference）
+  query: 在线 PD 分离：控制面、缓存传输与阶段协商
   filters:
     domain: model
     technology: inference
@@ -4189,7 +4187,7 @@ cases:
   expected_scope_states:
     model/inference/guides/integration/sfa_dsa_cp_cross_group_kv_allgather: match
 - id: scope_partial_taylor_dit_absent
-  query: TaylorSeer 规则：预测式跳步的精度取舍、内存预算与版本边界
+  query: TaylorSeer：预测质量、导数缓存与当前配置
   filters:
     domain: model
     technology: inference
@@ -4208,7 +4206,7 @@ cases:
   expected_scope_excluded:
   - model/inference/optimizations/rules/taylorseer_predictive_dit_cache
 - id: scope_partial_taylor_does_not_invent_llm_phase
-  query: TaylorSeer 规则：预测式跳步的精度取舍、内存预算与版本边界
+  query: TaylorSeer：预测质量、导数缓存与当前配置
   filters:
     domain: model
     technology: inference
@@ -4272,7 +4270,7 @@ cases:
   expected_scope_excluded:
   - model/inference/optimizations/rules/afd_attn_ffn_disaggregation
 - id: scope_partial_offload_decode_conflict
-  query: V3.2-Exp KV Offload 搬运流与事件配对案例
+  query: V3.2-Exp Offload 的 Prefill 搬运流与事件
   filters:
     domain: model
     technology: inference
@@ -4290,7 +4288,7 @@ cases:
   expected_scope_excluded:
   - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
 - id: scope_partial_offload_prefill_match
-  query: V3.2-Exp KV Offload 搬运流与事件配对案例
+  query: V3.2-Exp Offload 的 Prefill 搬运流与事件
   filters:
     domain: model
     technology: inference
@@ -4308,3 +4306,35 @@ cases:
   - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
   expected_scope_states:
     model/inference/optimizations/cases/deepseek_v32_offload_stream_events: match
+- id: current_kvp_concept_default_excluded
+  description: 最新源码移除KVP；默认稳定查询排除停用Concept。
+  query: KVP
+  filters:
+    domain: model
+    technology: inference
+    type: concepts
+    platform: a3
+    match: literal
+    k: 10
+  excluded:
+  - model/inference/concepts/parallelism/kvp
+- id: current_bias_rule_deprecated_decode_conflict
+  description: 显式查停用规则时仍保留原Prefill阶段条件，Decode产生审计过的Scope冲突。
+  query: W4A8 Prefill 跳过 bias
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    status: deprecated
+    match: literal
+    k: 10
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_count: 0
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/w4a8_moe_gmm_prefill_skip_bias

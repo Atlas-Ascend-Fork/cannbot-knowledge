@@ -19,8 +19,10 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/142
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/utils/weight_convert.sh
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:36Z'
 platforms:
 - agnostic
 ---
@@ -52,7 +54,7 @@ MLA 的 KV int8 scale 是一份**预先标定的 per-model 参数、不是从权
 
 ### C. 兄弟模型脚本中的系数 URL 不构成适用性证据
 
-历史 GLM-5 转换脚本曾引用 DeepSeek-V3.2-Exp 的系数包，但 Issue142 明确答复 GLM-5 的 SFA C8 未支持。不能由结构同构或脚本可执行推导“无需标定即可复用”；应确认目标权重、量化路径和精度验收。未知时保留未验证状态，不将该包作为 GLM-5 的部署建议。
+当前GLM-5转换脚本仍引用DeepSeek-V3.2-Exp的系数包。Issue142的支持状态属于历史事件；最新代码已有浮点KV/LI分支，仍须逐条验证指定量化路径与系数。不能由结构同构或脚本可执行推导“无需标定即可复用”；应确认目标权重、量化路径和精度验收。未知时保留未验证状态，不将该包作为 GLM-5 的部署建议。
 
 ## correctness 验证
 
@@ -70,8 +72,9 @@ MLA 的 KV int8 scale 是一份**预先标定的 per-model 参数、不是从权
 
 ## Evidence
 
-- `diff 事实 / 维护者确认`（@2c45117）：`weight_convert.sh` w8a8c8 分支 wget OBS scale 包、离线 exit 1、维护者给离线预取修法。
-- `维护者确认`（@2c45117）：预置系数与权重快照绑定、权重变了须 amct 逐 block PTQ 重生成。
-- `diff 事实`（@b88d340）：C8 scale 预标定、从 OBS 下载；`kv_b_proj`/`mlp.gate(i>=3)`/`lm_head` 保 bf16。
-- 历史脚本引用与适用性分开：Issue142 的维护者答复确认 GLM-5 SFA C8 未支持；Issue90 确认权重变化后需重生成参数。兄弟模型系数 URL 不证明复用正确。
-- 溯源下探：[cann-recipes-infer-issue-80-bug-report-cann-ai-obs-cn-north-4-myhuaweicloud-com](https://gitcode.com/cann/cann-recipes-infer/issues/80)、[cann-recipes-infer-issue-90-question-deepseek-3-2-w4a8c8](https://gitcode.com/cann/cann-recipes-infer/issues/90)、[cann-recipes-infer-pr-82-feat-add-deepseek-r1-c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/82)、[cann-recipes-infer-pr-281-glm-5-w8a8-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/281)、[cann-recipes-infer-issue-142-requirement-glm5-ds32](https://gitcode.com/cann/cann-recipes-infer/issues/142)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/80)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/90)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/82)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/281)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/142)（evidence）
+- [weight_convert.sh](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/utils/weight_convert.sh)（implementation）

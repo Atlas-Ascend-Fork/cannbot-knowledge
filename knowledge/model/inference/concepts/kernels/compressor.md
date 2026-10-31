@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Compressor (C4A / C128A KV 压缩融合算子)
-description: 'Compressor 是 DeepSeek-V4 的 KV 压缩融合算子，将 Linear、分组 softmax、Hadamard/reduce、RMSNorm 和 Partial RoPE 合并为单一算子，为 SAS 与 Lightning Indexer 生成压缩缓存。C4A 以 4:1 压缩 CSA，需处理相邻组 overlap 和错位写入；C128A 以 128:1 压缩 HCA。AscendC 在 A3 采用不同 C4A/C128A 基本块与双缓冲，950PR/DT 使用 256³ 基本块；PyPTO 按 compress_ratio/rotate 分支并以 split-K、子图分区和 scatter_update_3d 刷新状态。Epilog 负责量化、拼接 scale 并写回 KV/Indexer Cache，FP8 与非 FP8 路径不同。'
+description: V4 C4A/C128A 压缩算法、当前独立 RMSNorm/RoPE 与缓存写回；区分 HiF8、FP8 和离线/在线 CP 状态生命周期。
 tags:
 - task.implementation
 - topic.attention
@@ -9,10 +9,18 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/compressor.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/attention_data.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto_python/impl/compressor_pypto.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:17:34Z'
 platforms:
 - a3
 - '950'
@@ -29,7 +37,7 @@ platforms:
 - **C4A**（`compress_ratio=4`，对应 [deepseek-v4](../models/deepseek_v4.md) 的 **CSA** 层）：每 4 个 token 压缩成 1 个，且需用**相邻两组 token**语义（`coff=2`，引入数据重排 / 错位写入）。
 - **C128A**（`compress_ratio=128`，对应 V4 的 **HCA** 层）：每 128 个 token 压缩成 1 个，仅依赖单一 KV 序列（`coff=1`）。
 
-代码侧实现为 `Compressor(nn.Module)`（`models/deepseek-v4/models/modules/compressor.py`），其 `compressor_prolog` 调用融合算子 `torch.ops.custom.compressor(**cmpr_input_kwargs)` 产出压缩 KV，再由 `compressor_epilog` 把压缩 KV 量化 / 拼接 Scale / 刷新到对应 Cache（见 [#CompressEpilog](#compressepilog-kvcompressepilog--indexercompressepilog)）。LI 路径与 KV 路径共用同一 `Compressor` 类（`"index" in self.prefix` 区分），算子内部结构相同（inference guide 明示"LI 部分 Compressor 结构与 KV 的 Compressor 结构相同"）。
+代码侧实现为 `Compressor(nn.Module)`（`models/deepseek-v4/models/modules/compressor.py`），其 `compressor_prolog` 调用融合算子 `compressor(**cmpr_input_kwargs)` 产出压缩 KV，当前 wrapper 在 compressor 后独立执行 RMSNorm 与 Partial RoPE，再由 `compressor_epilog` 把压缩 KV 量化 / 拼接 Scale / 刷新到对应 Cache（见 [#CompressEpilog](#compressepilog-kvcompressepilog--indexercompressepilog)）。LI 路径与 KV 路径共用同一 `Compressor` 类（`"index" in self.prefix` 区分），算子内部结构相同（inference guide 明示"LI 部分 Compressor 结构与 KV 的 Compressor 结构相同"）。
 
 cann-recipes-infer 同时提供 **AscendC**（Atlas-A3 / 950PR/DT）与 **PyPTO** 两路实现。
 
@@ -102,15 +110,13 @@ $$\frac{(baseM+baseN)\times baseK\times 2\text{ Bytes}}{\text{Bandwidth}}\le\fra
 
 融合算子用**错位写入**完成这一重排：注意到 C4A 中 $Z^b,C^b$ 计算 $C_i^{\text{Comp}}$ 的下标与 $Z^a,C^a$ 计算 $C_{i+1}^{\text{Comp}}$ 的下标**有重叠**。完成前序矩阵乘后，红色部分的计算结果在写入目标地址时**额外加一个地址偏移**，保证红色部分与黄色部分计算结果对齐，将 `state_cache` 里所需数据读入 UB 即可直接做后续向量计算 —— 把数据重排"随路"嵌进 Cube 结果回写阶段，避免独立的 transform 算子。
 
-> C4A 的 `state_cache` 在 `cache_mode=1`（连续 buffer）下为**非连续**存储；仓内 commit `13c7ad5`（!407）将相关拦截从前端移入 Tiling 处理，使 Compressor 适配该非连续 `state_cache` 布局。
-
 ## PyPTO 实现
 
 PyPTO 在同一个算子内根据 `compress_ratio` / `rotate` 等配置分支，对每个分支各自优化。计算过程：
 
 $$kv=X@W^{KV},\quad score=X@W^{Gate}+ape$$
 
-用 `kv` 与 `score` 刷新 `kv_state` / `score_state`；当 `start_pos+1` 为 `compress_ratio` 倍数时生成压缩 KV：$kv=(kv\_state\cdot\text{softmax}(score\_state,\dim=1)).\text{sum}(\dim=1)$，再 $kv=\text{ROPE}(\text{RMSNorm}(kv))$（`rotate=true` 时叠加 Hadamard）。
+用 `kv` 与 `score` 刷新 `kv_state` / `score_state`；对输入内每个 token 偏移 i，按 (start_pos+i+1) % compress_ratio == 0 触发压缩 KV（start_pos+1 条件仅适用于 s1=1；该分支允许一次输入 1～4 个 token）：$kv=(kv\_state\cdot\text{softmax}(score\_state,\dim=1)).\text{sum}(\dim=1)$，再 $kv=\text{ROPE}(\text{RMSNorm}(kv))$（`rotate=true` 时叠加 Hadamard）。
 
 PyPTO 侧两类关键优化（以 `compress_ratio=4, rotate=false` 场景为例）：
 
@@ -122,14 +128,18 @@ PyPTO 后端跨代际兼容（PTO-ISA），框架语义见 [pypto](../frameworks
 
 ## CompressEpilog（KvCompressEpilog / IndexerCompressEpilog）
 
-V4 Attention 部分的融合 Kernel 链为 `Compressor → CompressEpilog → (LI) → SAS`。压缩 KV 产出后，由 `Compressor.compressor_epilog`（`compressor.py:L89-125`）负责量化 + 刷新 Cache，按 `prefix` 与量化模式分两条 Epilog 路径：
+当前 wrapper 的压缩投影/聚合后，独立执行 RMSNorm 与 cann_ops_transformer.inplace_partial_rotary_mul；HiF8 分支调用 quant_compressor，并传 x/wkv/wgate descale。Kernel 技术报告的融合范围与实际 wrapper 边界要分别核对。
 
-- **KvCompressEpilog**（SFA / KV 路径，`"index" not in prefix`）：包含**对压缩后 KV 的量化、量化后压缩 KV 和其 Scale 的拼接、刷新到 KV Cache** 的操作。`kv_cache_quant_mode == "float8"` 时调融合算子 `torch.ops.custom.kv_compress_epilog(x, slot_mapping, kv_compress_cache=sfa_cmp_kv)`；非量化时用 `scatter_nd_update_asc` 直接把 `kv` 刷进 `sfa_cmp_kv`。
-- **IndexerCompressEpilog**（LI 路径，`"index" in prefix`）：包含 **Indexer Cache 的量化、刷新**操作。`li_cache_quant_mode == "float8"` 时调融合算子 `torch.ops.custom.indexer_compress_epilog(x, slot_mapping, indexer_compress_cache=li_cmp_kv, indexer_compress_scale=li_key_dequant_scale)`；**非 float8 / 动态量化路径**（`else` 分支，`compressor.py:L104-112`）则先 `kv, k_scale = torch_npu.npu_dynamic_quant(kv)` 做动态量化，再两次 `scatter_nd_update_asc` 分别把 scale 刷进 scale cache（`li_key_dequant_scale`）、把量化后 `kv` 刷进 `li_cmp_kv`——并非"非量化直写"。
+`update_compress_cache` 统一处理两类写回：
 
-> CompressEpilog 内容紧贴 `Compressor` 类（同一 `compressor_epilog` 方法、共用 `cmp_slot_mapping`），故并入本页作小节而非独立成页。源 commit：`6490156`（!426）改进 `kv_compress_epilog` 的 row-local 地址计算；`e43b65a`（!433）令 `indexer_compress_epilog` 与 `kv_compress_epilog` 支持 HiFloat8（hifp8）量化。
+- KV float8 用 cann_ops_transformer.kv_compress_epilog，quant_mode=fp8_bf16；HiF8 用 indexer_quant_cache，x_scale=1.0，slot_mapping 为连续 INT32；非量化 scatter 写回。
+- LI float8/HiF8 用 indexer_quant_cache，HiF8 设置 round_scale；Int8 用 dynamic_quant 后分别 scatter 数据和 FP16 scale。仅非 HiF8 的 rotate 分支执行 Hadamard。
 
-> gap：CompressEpilog 在 FP8 / HiFloat8 路径下的 row-local 地址布局、Scale 拼接的具体存储格式，以及与 V4 整体量化矩阵（A3 W8A8C16 / 950 Hybrid FP8-MXFP4 / MXFP8-MXFP4）的对应尚未收录；量化总览见 [deepseek-v4](../models/deepseek_v4.md) Quantization Overview。
+## 当前缓存生命周期
+
+CacheEntry 由 Attention 声明，管理器绑定后通过 cache_getter 获取；不再由旧 CacheData.init_cache_data 申请。C4A 的 sfa/li_kv_state 为 FP32，包含 state 与 score，不单独创建 sfa_score_state；压缩数据和 scale 共用 c4a_cmp_kv manager，state 用 c4a_cmp_state。
+
+离线 CP Prefill 使用全序列临时 compressed cache，state_cache_by_layer 必须逐层隔离，且 cp_mini_batch=1。前后 ZigZag 段执行后 all_gather 并重排 compressed KV，state 选最后有效段所属 rank；仅有 decode_token_indices 的 rank 刷新持久 Decode 缓存。C4A 按有序非零 block id 写回，C128A 取目标末块，warmup 跳过。在线 CP 则按实际 block ids gather/scatter 持久 state，不能把临时 cache 的连续地址当 Decode 页号。
 
 ## Role In Pipeline
 
@@ -146,16 +156,13 @@ flowchart LR
  LI -.cmp_sparse_indices.-> SAS
 ```
 
-代码状态结构（`attention_data.py`，已核对）：`Compressor` 写出的压缩 Cache 为 `sfa_cmp_kv`（SFA/KV）与 `li_cmp_kv`（LI）。实际**创建并传入** `Compressor` 的 state cache 是 `sfa_kv_state`（SFA 路径，`attention_data.py:L117`）与 `li_kv_state`（LI 路径，`L119`）——二者由 `create_state_cache(state_block_num, compress_ratio, cache_dim)` 创建（`L80`），其 `cache_dim` 形参在 SFA 路径取 `config.head_dim`（`L117`）、在 LI 路径取 `config.index_head_dim`（`L119`）。`compressor_prolog` 据 `prefix` 把对应的 `li_kv_state` / `sfa_kv_state`（`.flatten(-3)` 后）作为 `state_cache` 入参传给融合算子（`compressor.py:L170/L174`）。`sfa_score_state` / `li_score_state` 在 `init_cache_data` 里仅作 `None` 占位（`attention_data.py:L156`），**不创建、也不传给** `Compressor`，不应列为已创建的 state cache。这些 state cache 由 `c{ratio}a_cmp_state` block_table 寻址，压缩 KV 由 `c{ratio}a_cmp_kv` slot_mapping 寻址。
-
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md)（Compressor 节：C4A/C128A 计算公式、阶段拆解、Atlas-A3/Decode/950 Tiling、基本块 Cost Model、`coff`/overlap_transform、错位写入；frontmatter 主源）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md)（Compressor 节：PyPTO 计算过程、MatMul/向量操作优化、`scatter_update_3d` 刷 state）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)（融合 Kernel 节：Compressor / KvCompressEpilog / IndexerCompressEpilog 在 `Compressor→CompressEpilog→LI→SAS` 链路中的职责，及 Attention 整体结构图）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/compressor.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/compressor.py)（已代码核对：`class Compressor(nn.Module)`；`compressor_prolog` 调 `torch.ops.custom.compressor(...)`；`compressor_epilog` 按 `kv_cache_quant_mode`/`li_cache_quant_mode == "float8"` 分派 `kv_compress_epilog` / `indexer_compress_epilog`，非量化走 `npu_dynamic_quant`+`scatter_nd_update_asc`；`coff = 1 + self.overlap`、`self.overlap = compress_ratio == 4`；`ape` positional bias 为 `nn.Parameter(torch.empty(compress_ratio, coff*head_dim))`；`cmpr_input_kwargs` 含 `cmp_ratio`/`coff`/`rotary_mode=2`/`cache_mode=1`/`state_cache`/`state_block_table`/`norm_eps`；`rotate` 时 `rotate_activation(kv, hadamard_matrix)`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/attention_data.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/attention_data.py)（已代码核对：压缩 Cache `sfa_cmp_kv`/`li_cmp_kv`；创建并传入 `Compressor` 的 state cache 为 `sfa_kv_state`（L117，`cache_dim=config.head_dim`）/`li_kv_state`（L119，`cache_dim=config.index_head_dim`），签名 `create_state_cache(state_block_num, compress_ratio, cache_dim)`（L80）；`sfa_score_state`/`li_score_state` 仅 `None` 占位（L156）不传入；`c{ratio}a_cmp_state` block_table / `c{ratio}a_cmp_kv` slot_mapping）
-- 溯源（diff `2f82d10..2c45117` + MR）：`5df82b1` support deepseek v4（!366）；`985b882` 更新 deepseek_v4_ascendc_operator_guide（!367）；`13c7ad5` compressor 适配 cachemode=1 下 state_cache 非连续（!407）；`761fb91` enable bsh format for compressor in decode stage（!490）；`6490156` improve kv_compress_epilog row-local address calculation（!426）；`e43b65a` indexer_compress_epilog and kv_compress_epilog support hifp8 quant（!433）。
+- [deepseek_v4_ascendc_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md)（primary）
+- [compressor.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/compressor.py)（implementation）
+- [attention_data.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/attention_data.py)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
+- [compressor_pypto.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto_python/impl/compressor_pypto.py)（implementation）
 
 ## Links
 

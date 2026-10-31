@@ -9,14 +9,21 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/deepseek-v3_pre_train_hif8_mxfp8.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/patch_utils.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/megatron_basic/arguments_basic.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/megatron_basic/megatron_basic.py
+  role: implementation
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:13Z'
 platforms:
 - '950'
+- a3
 ---
 
 # MindSpeed（昇腾大模型训练加速框架 + 低精度训练）
@@ -29,8 +36,8 @@ MindSpeed（**MindSpeed Core**）是面向华为昇腾设备的大模型加速�
 
 MindSpeed Core 是**亲和加速底座**，向上派生面向不同场景的套件，向下落到 PyTorch / MindSpore → CANN → 昇腾硬件。DeepSeek-V3 低精度 LLM 场景用的是 **MindSpeed LLM 套件**：
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/figures/deepseek_v3/image8.png" width="72%"></p>
-<p align="center"><sub>图：MindSpeed 框架分层——上层 LLM/MM/RL 套件，中间 MindSpeed Core 亲和加速模块（并行/内存/通信/计算优化），下接 PyTorch/MindSpore → CANN → 昇腾硬件（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md">DeepSeek-V3 低精度优化文档</a>·MindSpeed 低精度训练框架）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/figures/deepseek_v3/image8.png" width="72%"></p>
+<p align="center"><sub>图：MindSpeed 框架分层——上层 LLM/MM/RL 套件，中间 MindSpeed Core 亲和加速模块（并行/内存/通信/计算优化），下接 PyTorch/MindSpore → CANN → 昇腾硬件（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/deepseek-v3_pre_train_hif8_mxfp8.md">DeepSeek-V3 低精度优化文档</a>·MindSpeed 低精度训练框架）</sub></p>
 
 - **MindSpeed Core 亲和加速模块**：四类优化——**并行优化**（多维混合并行、自动并行搜索、高效流水排布）、**内存优化**（内存压缩算法、**自适应 Swap**、Gelu 重计算优化）、**通信优化**（通信隐藏、流量冲突管理、通算融合）、**计算优化**（高性能融合算子、昇腾亲和优化、脚本等价改写）。
 - **MindSpeed LLM 套件**：100+ LLM 模型（稠密 Qwen/LLaMA、稀疏 DeepSeek 等）+ LLM 核心组件（数据预处理、全流程、偏好对齐）。DeepSeek-V3 低精度 recipe 即跑在此套件上。
@@ -68,7 +75,7 @@ DeepSeek-V3 低精度 recipe 的训练栈由三层拼装（recipe README「源�
 `mindspeed/patch_utils.py` 的 `MindSpeedPatchesManager` 是补丁注册表（`patches_info: Dict[str, Patch]`），**两阶段**生效：
 
 1. **`register_patch(orig_func_name, new_func=None, force_patch=False, create_dummy=False)`** 只登记不生效。`orig_func_name` 是点路径全名（如 `'megatron.core.optimizer.distrib_optimizer.DistributedOptimizer'`）。三条关键语义：① `new_func` 名字以 `wrapper`/`decorator` 结尾 → 作为**装饰器叠加**（可重复叠多层，多个特性能各自包一层）；否则作为**整体替换**，`force_patch=False` 时同一目标不可二次替换（避免特性冲突）。② `create_dummy=True` 时若目标模块/函数不存在，造一个 dummy module 占位，保证 `import` 不炸（用于可选依赖如 TE 缺失场景）。③ `new_func=None` 配 dummy 表示「调用即报错」的占位。
-2. **`apply_patches()`** 才真正生效：遍历每个 `Patch`，解析目标点路径定位原模块/原函数，叠完所有 wrapper 后用 `setattr` 把最终函数写回原模块**以及 `sys.modules` 中所有已引用该函数的模块**——这一步是 monkey-patch 的本体，保证已经 `from x import f` 拿到旧引用的模块也被刷新。`remove_patches()` 反向把原函数 restore 回去（RL repatch 依赖它）。
+2. **`apply_patches()`** 才真正生效：遍历每个 `Patch`，解析目标点路径定位原模块/原函数，叠完所有 wrapper 后用 `setattr` 把最终函数写回原模块及 `sys.modules` 中属性名与原函数名相同、且属性对象身份仍匹配旧函数的模块。异名引用（如 `from x import f as alias`）不满足条件，不能保证刷新全部旧引用。`remove_patches()` 反向把原函数 restore 回去（RL repatch 依赖它）。
 
 ### features_manager：按档位编排全部特性
 
@@ -76,7 +83,7 @@ DeepSeek-V3 低精度 recipe 的训练栈由三层拼装（recipe README「源�
 
 ### 入口与两层补丁框架（ms-core ⇄ ms-llm）
 
-入口 `mindspeed/megatron_adaptor.py` 在 import 期即执行 `patch_features()`：取 `mindspeed_args` → `apply_features_pre_patches` → `apply_features_patches`；并通过 `arguments.py` 的 `parse_args_wrapper` / `validate_args_wrapper` 把特性的 `register_args` / 三段校验**织入 Megatron 自己的 `parse_args` / `validate_args`**。于是用户脚本只要 `import mindspeed.megatron_adaptor`，无需改 Megatron 源码，NPU 亲和实现就已注入。
+入口 `mindspeed/megatron_adaptor.py` 在 import 期即执行 `patch_features()`：取 `mindspeed_args` → `apply_features_pre_patches` → `apply_features_patches`；并由 `MegatronBasicFeature.register_patches` 注册 `core/megatron_basic/arguments_basic.py` 的 `parse_args_wrapper` / `validate_args_wrapper` 把特性的 `register_args` / 三段校验**（pre → 原 Megatron validate → post → validate_features）织入 Megatron 自己的 `parse_args` / `validate_args`**。于是用户脚本只要 `import mindspeed.megatron_adaptor`，无需改 Megatron 源码，NPU 亲和实现就已注入。
 
 **ms-core 与 ms-llm 是同机制的两层**：[mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) 的 `mindspeed_llm/features_manager/__init__.py` 复用 ms-core 的 `MindSpeedFeature` / `MindSpeedFeaturesManager` / `MindSpeedPatchesManager` 基础设施，但**重新装配自己的 `FEATURES_LIST`**——既直接复用一批 ms-core 的 `*Feature`（如 `UnalignedLinearFeature` / `GroupedMatmulFeature` / `SwapOptimizerFeature` / `ReuseFP32Param`），又新增 LLM 专属特性（`TrainingDefaultFeature` / `MLAFeature` / `MoERouter` / `DPOFeature` / `LoraFeature` / `FinetuneFeature` / `CheckpointFeature` 等）。其入口 `mindspeed_llm/tasks/megatron_adaptor_v2.py` 的 `FeatureAdaptor.execute()` 先 `MindSpeedFeaturesManager.remove_patches()` 清掉 ms-core 默认补丁，再用 ms-llm 的参数与特性列表重打——即**上层套件用「同一打补丁机制 + 自己的特性集」覆盖底座**。这也是 [megatron-bridge](megatron_bridge.md) 等外部框架经此机制接入、以及 [mindspeed-rl](mindspeed_rl.md) / [mindspeed-mm](mindspeed_mm.md) 各自定制特性集的统一底座。
 
@@ -90,8 +97,8 @@ MindSpeed 低精度训练流程的核心在于，将前向传播（Fprop）、�
 
 也就是说：**只把 Linear 层的三段 MatMul（Fprop/Dgrad/Wgrad）下沉到 FP8/HiF8 路径**，Softmax / LayerNorm / Loss 等数值敏感算子仍走高精度（与 BF16 AMP 一致），Optimizer 维护 FP32/BF16 Master Weights 保证更新精度——这与 [hif8](../quantization/hif8.md) 实验「仅量化 MM / GMM」一致。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/figures/deepseek_v3/image9.png" width="78%"></p>
-<p align="center"><sub>图：TE 量化代码模块——模型 Linear 层（TERowParallelLinear/TEColumnParallelLinear）/ 量化粒度 recipe / Tensor 类三大块，FP8GlobalStateManager 单例维护全局 FP8 状态（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md">DeepSeek-V3 低精度优化文档</a>·MindSpeed 低精度训练框架）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/figures/deepseek_v3/image9.png" width="78%"></p>
+<p align="center"><sub>图：TE 量化代码模块——模型 Linear 层（TERowParallelLinear/TEColumnParallelLinear）/ 量化粒度 recipe / Tensor 类三大块，FP8GlobalStateManager 单例维护全局 FP8 状态（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/deepseek-v3_pre_train_hif8_mxfp8.md">DeepSeek-V3 低精度优化文档</a>·MindSpeed 低精度训练框架）</sub></p>
 
 模块职责：TERowParallelLinear 和 TEColumnParallelLinear 对应 Linear 层实现，其核心是将 Fprop、Dgrad 和 Wgrad 中的 MatMul 运算替换为 FP8 / HiF8 低精度路径。FP8GlobalStateManager 是一个单例对象，用于维护全局 FP8 状态以及各 TE Module 的运行信息。各 Recipe 类负责执行不同的量化策略，并通过对应的 Tensor 类管理 Scale 与数据张量。
 
@@ -106,8 +113,8 @@ MindSpeed 低精度训练流程的核心在于，将前向传播（Fprop）、�
 - **Blockwise Scaling**：对 Tensor 分块、逐块算 Amax 并 scaling。
 - **MX Scaling**：块级共享 Scale + 低位宽元素组合成 MX 块，动态量化（[hif8](../quantization/hif8.md) 中 MXFP8 走此路）。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/figures/deepseek_v3/image7.png" width="78%"></p>
-<p align="center"><sub>图：Delayed Scaling——以 interval=K iterations 为周期更新 Amax_history_buffer，用上一周期的 Scale_{i-1} 量化当前 iteration 的输入 X，N_guard 为防上溢保护参数（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md">DeepSeek-V3 低精度优化文档</a>·缩放方案）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/figures/deepseek_v3/image7.png" width="78%"></p>
+<p align="center"><sub>图：Delayed Scaling——以 interval=K iterations 为周期更新 Amax_history_buffer，用上一周期的 Scale_{i-1} 量化当前 iteration 的输入 X，N_guard 为防上溢保护参数（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/deepseek-v3_pre_train_hif8_mxfp8.md">DeepSeek-V3 低精度优化文档</a>·缩放方案）</sub></p>
 
 HiF8 因动态范围大（[-22,15] 共 38 个指数，接近 FP16），**可走 Per-Tensor + Delayed Scaling 长周期（interval=10 steps）**仍稳定；FP8/MXFP8 动态范围小，往往要细粒度 Per-Block。当前支持的格式 × 算子组合：
 
@@ -130,24 +137,19 @@ MindSpeed 在 [deepseek-v3-low-precision-pretrain](../../guides/recipes/deepseek
 
 ## 在 RL 训练中的角色
 
-除低精度预训练外，MindSpeed 也是 RL 后训练的**训练后端**：[verl](verl.md) 经 `MegatronWorker` repatch 用 MindSpeed / MindSpeed-LLM 承载 actor / reference 的**训练态**计算（与 rollout 推理后端 [vllm-ascend](vllm_ascend.md) 在同一组卡上**全共卡分时复用**）；其 **MindSpeed-RL** 提供的 `onload` / `init_cache` 等接口承载 RL [train-rollout-switch](../techniques/train_rollout_switch.md) 的 offload（训练后权重保留、`init_cache` 后置降峰值）。[deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md) 即复用 MindSpeed 的内存/通信/计算优化（actor/ref TP4EP8PP8）。这与 RL 套件（§框架层次）的 LLM/MM/Agent 全场景 RL 能力一脉相承。
+除低精度预训练外，MindSpeed 也是 RL 后训练的**训练后端**：[verl](verl.md) 经 `MegatronWorker` repatch 用 MindSpeed / MindSpeed-LLM 承载 actor / reference 的**训练态**计算（与 rollout 推理后端 [vllm-ascend](vllm_ascend.md) 在同一组卡上**全共卡分时复用**）；其 **MindSpeed-RL** 提供的 `onload` / `init_cache` 等接口承载 RL [train-rollout-switch](../techniques/train_rollout_switch.md) 的 offload（训练后权重保留、`init_cache` 后置降峰值）。[deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md) 即复用 MindSpeed 的内存/通信/计算优化（Atlas A3 128卡、actor/ref TP4EP8PP8；不是950实测）。这与 RL 套件（§框架层次）的 LLM/MM/Agent 全场景 RL 能力一脉相承。
+
+## 当前基础补丁的加载细节
+
+`MegatronBasicFeature.register_patches` 用 `importlib.util.find_spec("megatron.training")` 判断是否只有 mcore，避免为探测可用性而提前 import 训练模块。基础补丁还分别接管 `DistributedOptimizer.load_parameter_state` 与 `ChainedOptimizer.load_parameter_state`；不能把优化器恢复概括为只替换 `load_state_dict`。具体 checkpoint 格式和并行兼容仍由相应实现校验。
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — 上游代码仓。特性接入机制（ms-core，pin `1432cb09`）：
-  - [`mindspeed/features_manager/feature.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/feature.py) — `MindSpeedFeature` 基类：`__init__(feature_name, optimization_level)` / `is_need_apply` / `register_args` / `pre_validate_args`·`validate_args`·`post_validate_args` / `pre_register_patches`·`register_patches` / `incompatible_check`·`dependency_check`
-  - [`mindspeed/features_manager/features_manager.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/features_manager.py) — `MindSpeedFeaturesManager`：`FEATURES_LIST` / `apply_features_pre_patches`·`apply_features_patches`（按 `is_need_apply` 过滤）/ `register_features_args` / 三段 `*_validate_features_args` / `remove_patches`
-  - [`mindspeed/features_manager/__init__.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/__init__.py) — `create_features_list()` 按域装配（megatron_basic / context_parallel / fusions / moe / pipeline / optimizer / memory …）
-  - [`mindspeed/patch_utils.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/patch_utils.py) — `MindSpeedPatchesManager.register_patch`（`wrapper`/`decorator` 后缀叠加 vs 整体替换、`force_patch`、`create_dummy`）/ `apply_patches`（`setattr` 落补丁到原模块 + `sys.modules`）/ `remove_patches`；`Patch` 类
-  - [`mindspeed/megatron_adaptor.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/megatron_adaptor.py) — 入口 `patch_features()`（pre/正式两阶段应用）+ `repatch(args)`（remove→改参→重打，RL 共卡分时复用依赖）
-  - [`mindspeed/arguments.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/arguments.py) — `--optimization-level`（`choices=[0,1,2]` 默认 2：0 最小 NPU 适配 / 1 亲和优化 / 2 高级加速）；`parse_args_wrapper`·`validate_args_wrapper` 把特性参数与校验织入 Megatron
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — 上层套件，同机制第二层（pin `183e02c2`）：
-  - [`mindspeed_llm/features_manager/__init__.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/__init__.py) — 复用 ms-core `*Feature` + 新增 LLM 专属特性（`TrainingDefaultFeature` / `MLAFeature` / `MoERouter` / `DPOFeature` / `LoraFeature` / `FinetuneFeature` / `CheckpointFeature`），`create_features_list()` 重装 `FEATURES_LIST`
-  - [`mindspeed_llm/tasks/megatron_adaptor_v2.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/megatron_adaptor_v2.py) — `FeatureAdaptor.execute()`：`remove_patches()` 清 ms-core 默认补丁 → 用 ms-llm 参数与特性集重打；`repatch(config)` 同理
-
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md)（第四章「低精度训练框架」4.1 MindSpeed：框架分层图、TE 兼容模块、Fprop/Dgrad/Wgrad MatMul 量化流程、四类 scaling、支持矩阵表 5；第三章 3.2 缩放方案 Delayed Scaling）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_pretrain/DeepSeekV3/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/DeepSeekV3/README.md)（MindSpeed + MindSpeed-LLM + Megatron-LM(core_v0.12.1) 安装组装、数据/权重转换脚本、`run_pretrain_dsk3_A5_8P_{hif8,mxfp8}.sh` 拉起命令、PyTorch 2.7.1 + torch_npu 环境）
-- 上游仓：MindSpeed `gitcode.com/Ascend/MindSpeed @ 1432cb09`、MindSpeed-LLM `gitcode.com/Ascend/MindSpeed-LLM @ 183e02c2`、Megatron-LM `github.com/NVIDIA/Megatron-LM @ core_v0.12.1`
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [deepseek-v3_pre_train_hif8_mxfp8.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_pretrain/deepseek-v3_pre_train_hif8_mxfp8.md)（supporting）
+- [patch_utils.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/patch_utils.py)（implementation）
+- [arguments_basic.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/megatron_basic/arguments_basic.py)（implementation）
+- [megatron_basic.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/megatron_basic/megatron_basic.py)（implementation）
 
 ## Links
 

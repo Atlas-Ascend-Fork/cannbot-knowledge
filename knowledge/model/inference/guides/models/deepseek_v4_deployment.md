@@ -1,28 +1,52 @@
 ---
 type: Guide
 title: DeepSeek-V4 A3与950部署及优化验收流程
-description: 按平台分开准备 DeepSeek-V4 权重与配置，串联 CP、MTP 缓存、多流和来源观测，保留实际验收条件。
+description: 更新 V4 当前环境与六类启动配置，串联 CacheEntry/CP 状态写回、原生 MTP、950 低时延 TP 和 DSpark 验证。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/attention_data.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/compressor.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_950/deepseek_v4_flash_rank_16_16ep.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_950/deepseek_v4_flash_rank_4_1bs_low_latency_tp_dspark.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_950/deepseek_v4_flash_rank_4_4ep_dspark.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_flash_rank_128_128ep_128cp_w8a8.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_flash_rank_128_128ep_w8a8.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_flash_rank_16_16ep_w8a8_platform.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_pd/decode.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_pd/prefill.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_pro_rank_64_64ep_w4a8.yaml
+  role: implementation
 created_at: '2026-10-21T09:02:44Z'
-updated_at: '2026-10-21T09:02:44Z'
+updated_at: '2026-10-29T15:20:09Z'
 platforms:
 - a3
 - '950'
 ---
 
-
 # DeepSeek-V4 A3与950部署及优化验收流程
 
 ## 目标、输入与产物
 
-本流程面向 cann-recipes-infer `2c45117d781ab9ab88dcb89a28ae30f5d2450399` 的 DeepSeek-V4 Flash/Pro，分别核对 Atlas A3 与 950PR/DT 路径。输入为具体平台/部署形态、权重规格与量化、卡数、序列和目标；输出为配置快照、正确性与计时记录、缓存/通信检查和回退记录。本次没有执行模型，机制见[模型总览](../../concepts/models/deepseek_v4.md)。
+本流程面向 当前锁定的 cann-recipes-infer 提交 的 DeepSeek-V4 Flash/Pro，分别核对 Atlas A3 与 950PR/DT 路径。输入为具体平台/部署形态、权重规格与量化、卡数、序列和目标；输出为配置快照、正确性与计时记录、缓存/通信检查和回退记录。本次没有执行模型，机制见[模型总览](../../concepts/models/deepseek_v4.md)。
 
 ## 1. 先分开平台与权重路径
 
@@ -34,9 +58,22 @@ A3 整数量化条件由[INT8/INT4 机制](../../concepts/quantization/int8_int4
 
 按固定 README 选 `config/ci_a3` 或 `config/ci_950`、设置实际权重路径、IP 与 CANN 路径，再指定 `YAML_FILE_NAME`。来源配置默认使用 `npugraph_ex`；其他后端的可用性仍须按对应版本检查。
 
-固定 README 的一站式 A3 8 卡环境只支持 Flash，使用 `ci_a3/deepseek_v4_platform.yaml`，并要求 `enable_limit_core=False`；它与 Atlas A3 Pod 的控核配置不能相互覆盖。平台范围不是卡数、die 数和算力规格完全相同的证明。
+固定 README 的一站式 A3 8 卡环境只支持 Flash，使用 `ci_a3/deepseek_v4_flash_rank_16_16ep_w8a8_platform.yaml`，并要求 `enable_limit_core=False`；它与 Atlas A3 Pod 的控核配置不能相互覆盖。平台范围不是卡数、die 数和算力规格完全相同的证明。
 
 按来源在模型目录、各节点同步执行 `bash infer.sh`，保存有效配置、版本、输入和输出。完整依赖、启动与最小部署单元以固定 README 为准，不把部署示例环境直接当作 benchmark 的测量环境。
+
+当前 A3 README 使用 CANN9.2/PT2.9、HDK25.5.1；950 示例为 x86、CANN9.2 weekly 与 PT2.9/torch_npu2.9 对应开发包。按 README 固定镜像和 requirements 配套，不把其他模型的 CANN9/PT2.8 环境混用。
+
+| 当前配置文件（config 下） | world / CP / batch | 投机配置 |
+| --- | --- | --- |
+| ci_a3/deepseek_v4_flash_rank_128_128ep_w8a8.yaml | 128 / 1 / 256 | next_n=1 |
+| ci_a3/deepseek_v4_flash_rank_128_128ep_128cp_w8a8.yaml | 128 / 128 / 256，cp_mini_batch=1 | next_n=1 |
+| ci_a3/deepseek_v4_pro_rank_64_64ep_w4a8.yaml | 64 / 1 / 256，o_proj TP16 | next_n=1 |
+| ci_950/deepseek_v4_flash_rank_16_16ep.yaml | 16 / 1 / 16 | next_n=3 |
+| ci_950/deepseek_v4_flash_rank_4_4ep_dspark.yaml | 4 / 1 / 4 | DSpark width5 |
+| ci_950/deepseek_v4_flash_rank_4_1bs_low_latency_tp_dspark.yaml | 4 / 1 / 1 | DSpark width7 |
+
+A3 的 world_size 统计与双 die 芯片对应，不能把 world128 当作128张物理卡。配置是启动样例，不等同于性能表的完整测量命令。当前 V4 仅允许 eager/npugraph_ex；eager 拒绝 cache_compile/SuperKernel，enable_limit_core 需要多流、与 PyPTO 互斥。V4 的 enable_pypto 仍只接受 A3，不能由编程框架跨代际能力推断整网支持。
 
 ## 3. 并行与 MTP 的集成检查
 
@@ -52,9 +89,13 @@ A3 整数量化条件由[INT8/INT4 机制](../../concepts/quantization/int8_int4
 
 Decode 参考 DeepSeek-R1 / V3.2 方案：Attention 用 **Data Parallel（DP）**、MoE 用 **Expert Parallel（EP）**、LM_head 用 **Tensor Parallel（TP）**。Output Projection 中 `o_a_proj` 权重大、访存重，低时延场景可**选择性对其做 TP 切分**，经 `all_to_all` + `reduce_scatter` 实现 DP↔TP 转换。见 [data-parallel](../../concepts/parallelism/data_parallel.md)、[expert-parallel](../../concepts/parallelism/expert_parallel.md)、[tensor-parallel](../../concepts/parallelism/tensor_parallel.md)。
 
+### 950 低时延 TP
+
+`low_latency_tp=True` 要求 attn_tp_size=world_size>1、cp_size=1，o_proj/moe/embed/lmhead TP 也等于 world；attention heads 和 o_groups 必须可整除 TP。每 rank 保留全部专家的 TP 分片，路由后专家输出 all_reduce，不走普通 EP Dispatch/Combine。开启稀疏 grouplist 时依赖带 KEY_VALUE 空专家修复的算子包；共享专家侧流必须在 finalize 前等待，避免未完成输出被读取。它与普通 DP/EP 并行是不同配置路径。
+
 ### MTP
 
-V4 沿用原生 Multi-Token Prediction（[mtp-speculative-decoding](../../concepts/techniques/mtp_speculative_decoding.md)）。Main Model 针对 Window KV 与 Compressor 的 `kv_state`/`score_state` 设计 **Ring Buffer**（`block_table` + `slot_mapping` 复用少数 Cache 块），其余 KV Cache 按压缩后最大长度申请；MTP 场景沿用 LI / SAS 内置的**梯形掩码**，确保待验证 token 的压缩 Cache 不参与主模型 token 计算。**MTP Spec Model 仅使用 Window Attention（SWA）**，`next_n` 个 Draft Token 共享一份 MTP 权重和 KV Cache。MTP 在 SWA/HCA/LI 上 Cache 搬运量与非 MTP 几乎一致，自然提升计算访存比；CSA 的 FA 极端下搬运量为非 MTP 的 `next_n+1` 倍。来源提出高吞吐场景尝试 MTP1、低时延场景尝试 MTP3；这是固定实践的选择，不是按目标自动启用的规则，需要测量实际接受率、时延和输出。
+V4 沿用原生 Multi-Token Prediction（[mtp-speculative-decoding](../../concepts/techniques/mtp_speculative_decoding.md)）。Main Model 针对 Window KV 与 Compressor 的 `kv_state`/`score_state` 设计 **Ring Buffer**（`block_table` + `slot_mapping` 复用少数 Cache 块），其余 KV Cache 按压缩后最大长度申请；MTP 场景沿用 LI / SAS 内置的**梯形掩码**，确保待验证 token 的压缩 Cache 不参与主模型 token 计算。**MTP Spec Model 仅使用 Window Attention（SWA）**，原生 MTP 的多个 Draft Step 复用其声明的模型权重与 CacheEntry。MTP 在 SWA/HCA/LI 上 Cache 搬运量与非 MTP 几乎一致，自然提升计算访存比；CSA 的 FA 极端下搬运量为非 MTP 的 `next_n+1` 倍。来源提出高吞吐场景尝试 MTP1、低时延场景尝试 MTP3；这是固定实践的选择，不是按目标自动启用的规则，需要测量实际接受率、时延和输出。
 
 #### Main Model 额外 Cache 定量（源 §MTP › Main Model 方案）
 
@@ -71,6 +112,16 @@ $$
 $$
 
 MTP 的通用取舍与计时见[MTP 机制](../../concepts/techniques/mtp_speculative_decoding.md)和[计时规则](../../optimizations/rules/mtp_decode_timing_two_metric_split.md)；o_proj 的通用取舍见[局部 TP 规则](../../optimizations/rules/local_tp_memory_heavy_projections.md)。这些入口不替代上述 V4 特有的滑窗、压缩和缓存前提。
+
+### 当前缓存申请与 CP 写回
+
+模型 get_cache_info 声明各层 SlidingWindow/FullAttention CacheEntry，框架按 manager_key 分配并通过 setter 绑定。Compressor 的 state/score 在同一 FP32 state tensor；C4A 的 SFA/LI 各有 state，不能沿用旧 CacheData 的 None 占位结构。
+
+离线 CP Prefill 使用临时全长压缩缓存与逐层 state_cache_by_layer；前后段计算、all_gather、ZigZag 重排后，仅有效 Decode 归属 rank 写回持久缓存。C128A state 写目标末块，C4A 按有序 block ids 映射；warmup 不写回。上述 Ring Buffer 公式解释算法余量，实际预算按当前管理器/CacheEntry、量化记录与临时空间核算，不能仅用公式替代框架申请。
+
+### DSpark
+
+当前 V4 DSpark 与原生 MTP 的配置、拒绝采样、缓存和 PD 状态传输见[专用流程](deepseek_v4_dspark.md)。V4 DSpark 明确拒绝 CP>1；通用 Worker 的 CP 行序修复不表示这个具体模型支持 CP。A3 PD 配置位于 ci_a3/deepseek_v4_pd，P/D 均 width5、CP1，需保持量化与 attention TP 匹配。
 
 ## 4. 多流数据依赖检查
 
@@ -97,7 +148,17 @@ V4 借助 CANN 软件栈的算子控核与多流并行能力，对跨算子无�
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/README.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)
-
-本次核对固定来源及必要配置，不将文档自报、来源固定或 Lint 通过记作硬件验证事件。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/README.md)（primary）
+- [deepseek_v4_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
+- [attention_data.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/attention_data.py)（implementation）
+- [compressor.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/compressor.py)（implementation）
+- [deepseek_v4_flash_rank_16_16ep.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_950/deepseek_v4_flash_rank_16_16ep.yaml)（implementation）
+- [deepseek_v4_flash_rank_4_1bs_low_latency_tp_dspark.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_950/deepseek_v4_flash_rank_4_1bs_low_latency_tp_dspark.yaml)（implementation）
+- [deepseek_v4_flash_rank_4_4ep_dspark.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_950/deepseek_v4_flash_rank_4_4ep_dspark.yaml)（implementation）
+- [deepseek_v4_flash_rank_128_128ep_128cp_w8a8.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_flash_rank_128_128ep_128cp_w8a8.yaml)（implementation）
+- [deepseek_v4_flash_rank_128_128ep_w8a8.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_flash_rank_128_128ep_w8a8.yaml)（implementation）
+- [deepseek_v4_flash_rank_16_16ep_w8a8_platform.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_flash_rank_16_16ep_w8a8_platform.yaml)（implementation）
+- [decode.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_pd/decode.yaml)（implementation）
+- [prefill.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_pd/prefill.yaml)（implementation）
+- [deepseek_v4_pro_rank_64_64ep_w4a8.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/config/ci_a3/deepseek_v4_pro_rank_64_64ep_w4a8.yaml)（implementation）

@@ -8,12 +8,12 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md
   role: supporting
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-10-29T15:24:41Z'
 platforms:
 - a2
 - a3
@@ -132,11 +132,8 @@ flowchart TD
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`deepseek_v3.2_exp_tilelang_operator_guide.md` §2 `moe_token_permute`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（接口参数 + 6 步算法流程：对齐填充 / 直方图 / 前缀和 / Scatter）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`…operator_guide.md` §3 `moe_token_permute_grad`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（Gather-Reduce + Cast-to-FP32 双核函数）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`…operator_guide.md` §4 `moe_token_unpermute`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（has_probs / AXPY 乘加 / Cast-Up-Down）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`…operator_guide.md` §5 `moe_token_unpermute_grad`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（perm_grad + probs_grad 双梯度 / 双矢量单元 vid 维）
-- 训练上下文：cann-recipes-train DeepSeek-V3.2 预训练优化文档（见 [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md)）；PyTorch 侧的 TileLang 算子替换由 torchtitan-npu 完成（绑定关系见 [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)）。上游 cann-recipes-infer guide「训练算子实现」一节将算子替换指向 torchtitan-npu @master 的 `docs/feature_guides/tilelang_ops.md` 外链；该文件在本页钉定的 torchtitan-npu checkout 中暂未见，待上游版本核实。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_v3.2_exp_tilelang_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（supporting）
 
 ## Links
 

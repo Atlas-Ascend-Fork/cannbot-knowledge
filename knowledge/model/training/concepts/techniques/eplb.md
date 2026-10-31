@@ -9,12 +9,12 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:15Z'
 platforms:
 - a3
 ---
@@ -25,7 +25,7 @@ platforms:
 
 **EPLB（Expert Parallelism Load Balancer，专家并行负载均衡器）**最早由 **DeepSeek** 针对大规模 MoE 模型训练中「负载不均」核心痛点推出，是一种**动态负载均衡**解决方案。MoE 门控网络把样本分配给适配专家，导致专家负载**两极分化**（热/冷专家分化），且「冷热」身份随数据批次切换**动态漂移**形成负载热点；在专家并行架构下专家固定分配至 NPU 节点，这种冷热分化直接传导为节点利用率失衡。EPLB 的核心目标是通过智能调度策略消除专家模块及计算节点间的负载差异、最大化 NPU 资源利用率。它提供**分层 / 全局两种调度模式**，并依托**历史负载估计动态调整专家复制与分配方案**，快速适配批次切换、领域迁移导致的负载热点漂移。需说明的是：DeepSeek 对 EPLB 的原生定位是 **MoE 训练态**的专家负载均衡器，而本实践把它落地于 **RL 的 rollout 推理子阶段**（vLLM-Ascend 推理引擎），下文三组实验的观测对象均为推理 `generate_sequences` 耗时与每卡 token 分布——「训练负载均衡器」与「推理实测」属不同语境，勿混淆。
 
-在 Qwen3-30B / 235B **加载真实权重**的 RL rollout 推理场景下，各卡负载本身并无明显不均衡，**开启 EPLB 无明显性能收益**；只有在**人为构造的极端负载不均场景**下 EPLB 才带来推理耗时 -17.78% 的提升。即「负载均衡时 EPLB 不带收益，仅极端不均才有效」。它与 [Rollout Rebalance](rollout_rebalance.md)（序列级长尾均衡）同属 RL rollout 推理的负载均衡优化方向但作用对象不同——EPLB 作用于**专家/节点维度**，Rebalance 作用于**请求序列维度**。
+在 Qwen3-30B / 235B **加载真实权重**的 RL rollout 推理场景下，各卡负载本身并无明显不均衡，**开启 EPLB 无明显性能收益**；第三组**人为构造的极端负载不均场景**观测到推理耗时 -17.78% 的提升。这些观测不构成“仅极端不均有效”的阈值：中等不均程度未被这些实验覆盖，实际收益需对照验证。它与 [Rollout Rebalance](rollout_rebalance.md)（序列级长尾均衡）同属 RL rollout 推理的负载均衡优化方向但作用对象不同——EPLB 作用于**专家/节点维度**，Rebalance 作用于**请求序列维度**。
 
 ## 现象分析：专家冷热分化传导为节点负载失衡
 
@@ -53,8 +53,8 @@ EPLB 提供**分层**与**全局**两种调度模式，适配不同训练/推理
 - 分层策略以**节点**为粒度逐层均衡（组→节点→NPU 三级），保留组限制路由结构，约束是「专家组数量须能被节点数整除」；它把均衡问题分解为「节点间均衡 + 节点内冗余复制 + NPU 间均衡」三个子问题，避免跨组的全局重排，调度开销相对可控。
 - 全局策略放弃组边界，把所有 NPU 视作一个扁平的专家承载池直接复制/分配，自由度更高、能应对更复杂的不均分布，代价是更大的重分配范围；它适用于不满足分层前提（专家组数可被节点数整除）的其他情况——源文档以解码阶段为例，此时 EPLB 回退到全局策略而非把它当作一个固定的「decode→全局」配置。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image20.png" width="72%"></p>
-<p align="center"><sub>图：EPLB 分层负载均衡策略——专家组均匀分配到各节点（节点间均衡）→ 节点内复制冗余热专家 → 节点内专家分配到不同 NPU（NPU 间均衡）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 长序列 RL 训练优化文档</a>·2.3.2 Expert Parallelism Load Balance）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image20.png" width="72%"></p>
+<p align="center"><sub>图：EPLB 分层负载均衡策略——专家组均匀分配到各节点（节点间均衡）→ 节点内复制冗余热专家 → 节点内专家分配到不同 NPU（NPU 间均衡）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 长序列 RL 训练优化文档</a>·2.3.2 Expert Parallelism Load Balance）</sub></p>
 
 ### 实时负载估计与动态调整
 
@@ -65,7 +65,7 @@ EPLB 依托**历史计算数据**（如任务耗时、调用频率）构建负�
 1. **负载估计**：以历史的任务耗时 / 调用频率为观测量，移动平均平滑掉单批次抖动，得到各专家、各节点的稳定负载画像，从而识别出当前的「热专家」与饱和节点；
 2. **动态调整**：据画像把热专家复制更多份、铺到利用率低的节点 / NPU 上，把整体负载向均衡推。当下一批数据使冷热身份漂移时，估计随之更新、复制方案再次调整——这正是它能对抗「负载热点漂移」而静态调度不能的原因。
 
-## 实测效果：真实权重无收益，仅极端不均才有效
+## 实测效果：两组真实权重无明显收益，人工极端负载有收益
 
 三组实验显示——EPLB 在真实权重场景下并未带来收益，并非普遍正收益。
 
@@ -76,7 +76,7 @@ EPLB 依托**历史计算数据**（如任务耗时、调用频率）构建负�
 | Qwen3-30B | gsm8k | 1K 推 3K | 32*16 | 16 | 16 | 16 | 1 | 否 | 80.19 |
 | Qwen3-30B | gsm8k | 1K 推 3K | 32*16 | 16 | 16 | 16 | 1 | 是 | 83.16 |
 
-推理第 1000 个迭代的负载（每卡专家分到的 token 总和）显示**每卡负载并无特别大的差异**，故 EPLB 无从优化。三个代表性 layer 的逐卡（16 die）token 总和（单位 token）：
+推理第 1000 个迭代的负载（每卡专家分到的 token 总和）显示**每卡负载并无特别大的差异**，对应这组实验未观测到收益。三个代表性 layer 的逐卡（16 die）token 总和（单位 token）：
 
 | | rank0 | rank1 | rank2 | rank3 | rank4 | rank5 | rank6 | rank7 | rank8 | rank9 | rank10 | rank11 | rank12 | rank13 | rank14 | rank15 |
 |--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|
@@ -84,7 +84,7 @@ EPLB 依托**历史计算数据**（如任务耗时、调用频率）构建负�
 | layer20 | 200978 | 213408 | 326325 | 317587 | 245067 | 220074 | 298096 | 176724 | 201202 | 246980 | 282587 | 102573 | 170262 | 142857 | 94099 | 419867 |
 | layer47 | 232567 | 326583 | 121142 | 253510 | 316796 | 108912 | 211056 | 212969 | 101383 | 313065 | 223130 | 213813 | 175164 | 355333 | 176536 | 182247 |
 
-各卡负载虽有波动但同处一个数量级（约 10 万~42 万），不存在「某卡饱和、某卡近零」的极端不均，这正是真实权重下 EPLB 无收益的直接证据；实验三作为对比实验构造负载不均衡场景、验证 EPLB 的有效性。
+各卡负载虽有波动但同处一个数量级（约 10 万~42 万），不存在「某卡饱和、某卡近零」的极端不均，这是该组负载分布观测，不能单独证明无收益的因果或普遍阈值；实验三作为对比实验构造负载不均衡场景、验证 EPLB 的有效性。
 
 **实验二（Qwen3-235B 真实权重）**：结果**开启 EPLB 并无明显性能提升**。
 
@@ -100,20 +100,15 @@ EPLB 依托**历史计算数据**（如任务耗时、调用频率）构建负�
 | Qwen3-30B | gsm8k | 1K 推 3K | 32*16 | 16 | 16 | 16 | 1 | 否 | 127.52 |
 | Qwen3-30B | gsm8k | 1K 推 3K | 32*16 | 16 | 16 | 16 | 1 | 是 | 104.85 |
 
-**实验结论**：Qwen3-30B 和 Qwen3-235B 基于加载真实权重场景测试，并无明显性能提升，推理过程中每卡负载并无明显负载不均衡情况；实验三构造明显的负载不均衡场景，显示**在极端场景下 EPLB 有明显的性能提升**。即**当负载并无明显不均衡情况，EPLB 不能带来性能收益**。
+**实验结论**：Qwen3-30B 和 Qwen3-235B 基于加载真实权重场景测试，并无明显性能提升，推理过程中每卡负载并无明显负载不均衡情况；实验三构造明显的负载不均衡场景，显示**在极端场景下 EPLB 有明显的性能提升**。这些结论仅覆盖表中配置，未验证任意真实权重或中等不均负载的表现。
 
 ## 适用性判断
 
-由上可得 EPLB 的工程取舍：它的收益**完全取决于实际负载是否真的不均衡**，而非「开了就快」。
+EPLB 应在目标权重、数据与并行配置上比较收益。上述三组实验未建立负载差异与性能收益之间的通用阈值，也未通过消融将耗时变化归因于调度开销。
 
-- 在真实权重 RL rollout 推理中，门控路由本身已使各卡负载较为均衡（无热点漂移到数量级差异），EPLB 的复制/重分配只增加调度开销而无均衡收益（实验一甚至略有劣化 80.19→83.16）。
-- 只有当负载存在**明显不均衡**（如实验三人为固定专家、或数据分布导致真实热点漂移）时，EPLB 才把热专家复制到空闲节点、拉平利用率，从而缩短端到端 `generate_sequences` 耗时。
-
-因此 EPLB 应作为**条件触发**的优化，建议的判定流程：
-
-1. 在目标负载（真实权重 + 真实数据）下打印推理过程中每卡的负载（每卡专家分到的 token 总和，可取代表性 layer 多次采样）；
-2. 若各卡负载同处一个数量级、无饱和/近零的极端分化 → **不开 EPLB**（实验一/二即此情形，开启反而引入调度开销，Qwen3-30B 实测 80.19→83.16 略劣化）；
-3. 仅当观测到明显不均衡（数量级差、热点漂移）→ 开启 EPLB，按场景选分层（组数可被节点数整除时）或全局（解码 / 复杂分布）模式。
+1. 采样目标负载下各层每卡专家 token 数与 generate_sequences 耗时，确认是否有负载集中、热点漂移等现象；数量级差、饱和/近零只是排查示例。
+2. 对相同输入、配置进行 EPLB 开关对照，同时记录额外复制/映射成本；即使负载差异不极端，也应以该测量决定是否保留优化。
+3. 依据组数与节点数的整除关系选择分层或全局策略，并检查映射有效性。
 
 这与负载均衡类优化「效果与数据集长尾分布强相关」的一贯判断一致：[Rollout Rebalance](rollout_rebalance.md) 同样指出，若数据集本身或经 data balancing 已使负载均衡，则均衡特性能带来的额外收益会降低。两者共同的工程启示是——**负载均衡类优化的价值不是恒定的，必须先量化不均衡程度再决定是否投入**。
 
@@ -125,7 +120,7 @@ MindSpeed-RL 在 RL rollout 推理路径（vLLM-Ascend 引擎）上把 DeepSeek 
 flowchart LR
     A["rollout 前向<br/>开 eplb_token_collects"] -->|每卡统计 topk_ids| B["eplb_token_collects_{rank}.json<br/>层→专家→token 数"]
     B -->|collect_json_file.sh scp 汇聚| C["主节点 json_folder"]
-    C -->|cli/eplb_generate_map_ds.py 离线| D["rebalance_experts<br/>分层/全局 + 去重"]
+    C -->|cli/eplb_generate_map_ds.py 离线| D["rebalance_experts<br/>分层/全局 + 去重尝试<br/>固定版本重复分支会报错"]
     D --> E["expert_map.json<br/>层→device→device_expert"]
     E -->|generate.expert_map_path| F["resharding 时<br/>_send_receive_redundancy_experts"]
     F -->|同卡 copy / 跨卡 P2P| G["专家权重落到目标冗余映射"]
@@ -137,12 +132,12 @@ flowchart LR
 
 ### 离线生成冗余专家映射
 
-`cli/eplb_generate_map_ds.py` 离线运行（不在训练 loop 内）：`load_and_aggregate` 把所有每卡 JSON 聚合成 `[num_layers, num_experts]` 负载张量 → 调 `eplb.rebalance_experts(weight, num_replicas, num_groups, num_nodes, num_gpus)` 算出冗余专家与落卡 → `find_replacement` 去重（同一 NPU 内不重复放同一逻辑专家，命中重复就换成「负载最接近且未用过」的专家）→ `tensor_to_json` 落 `expert_map.json`，结构为 `moe_layer_count / layer_list[].{layer_id, device_count, device_list[].{device_id, device_expert}}`。
+`cli/eplb_generate_map_ds.py` 离线运行（不在训练 loop 内）：`load_and_aggregate` 把所有每卡 JSON 聚合成 `[num_layers, num_experts]` 负载张量 → 调 `eplb.rebalance_experts(weight, num_replicas, num_groups, num_nodes, num_gpus)` 算出冗余专家与落卡 → `find_replacement` 去重（同一 NPU 内不重复放同一逻辑专家，设计意图是替换为负载接近且未用过的专家，但此版本实现存在下述维度错误）。当前实现将一维 `weight_layer = weight[layer]` 传入 `find_replacement`，后者先访问 `weight.size(1)`，命中重复时会维度越界并中断，不能保证完成去重与输出；应先修复并验证映射再使用。无重复路径才继续 `tensor_to_json` 落 `expert_map.json`，结构为 `moe_layer_count / layer_list[].{layer_id, device_count, device_list[].{device_id, device_expert}}`。
 
 关键参数（`examples/eplb/eplb.sh`，671B 案例取 num_replicas 512 / num_groups 16 / num_nodes 16 / num_gpus 256）：
 
 - `num_replicas`：冗余后的物理专家总数（含原始专家），须被 `num_gpus` 整除——`num_replicas − num_logical` 即冗余副本数；
-- `num_groups`：专家分组数，须被 `num_nodes` 整除、且须整除逻辑专家数（代码 `rebalance_experts_hierarchical` 校验 `num_logical_experts % num_groups == 0` 与 `num_groups % num_nodes == 0`），是分层策略复用 DeepSeek-V3 组限制路由的入口；
+- `num_groups`：专家分组数；分层分支要求被 `num_nodes` 整除、且整除逻辑专家数（代码 `rebalance_experts_hierarchical` 校验 `num_logical_experts % num_groups == 0` 与 `num_groups % num_nodes == 0`），是分层策略复用 DeepSeek-V3 组限制路由的入口；不整除节点数时走全局回退，内部改用 num_groups=1、num_nodes=1，原始组数不受这两项分层校验限制；
 - `num_nodes` / `num_gpus`：节点数 / 总 NPU 数，`num_gpus` 须被 `num_nodes` 整除。
 
 ### rebalance_experts：分层/全局双策略的代码落点
@@ -165,28 +160,18 @@ flowchart LR
 
 ### 适用边界
 
-推理目前只支持单实例；每个 NPU 上的专家数须一致（去重逻辑保证）；权重重分发涉及 P2P 通信，建议资源充足时使用；`yaml` 配置优先于代码默认值。整体是一条 **profile-then-apply 的离线管线**——采集是一次性 profiling、映射离线由 CLI 生成、权重在加载/resharding 时重分发一次，区别于训练 loop 内逐 step 在线滚动调整。
+推理目前只支持单实例；每个 NPU 上的物理专家槽数须一致，映射还须检查同卡重复；当前实现的去重错误不能视为已满足该要求；权重重分发涉及 P2P 通信，建议资源充足时使用；`yaml` 配置优先于代码默认值。整体是一条 **profile-then-apply 的离线管线**——采集是一次性 profiling、映射离线由 CLI 生成、权重在加载/resharding 时重分发一次，区别于训练 loop 内逐 step 在线滚动调整。
 
 与同域 [moe-load-balance](moe_load_balance.md)（MindSpeed **训练态**原生：`--balanced-moe-experts` 广播复制热专家 + token 本地化、`--enable-expert-placement` EMA 预测 + 物理迁移专家及优化器状态，均在训练 loop 内按频率在线触发）的关系：两者同解「专家冷热分化传导为 device 负载不均」，但作用阶段（训练 vs RL rollout 推理）、调度时机（在线逐步 vs 离线一次）与机制（placement 物理迁移不复制 / EPLB 与 balanced 走复制冗余）不同——本节是 RL rollout 推理侧借 DeepSeek 分层/全局 EPLB 算法的离线 collect→map→redistribute。
 
 ## 跨域对照：推理侧的 perfect eplb
 
-EPLB 概念在 cann-infer 推理侧也有落地：DeepSeek-R1 推理 benchmark 在 **perfect eplb** 条件下采集性能数据（Prefill 64×4K 输入达 6522 tokens/卡/s，Decode 128 卡 W8A8C8+MTP1 达 TPOT 44.9 ms），并通过 decode 配置 `force_eplb: True` 强制专家均衡（见 [deepseek-r1](../../../inference/concepts/models/deepseek_r1.md)）。推理侧用「perfect/force eplb」作为构造均衡负载的基准条件来逼近峰值吞吐；训练侧本实践则反向验证了——真实权重负载本就均衡时，动态 EPLB 不带来额外收益。两侧互为印证：EPLB 的价值锚定在「负载确实不均」这一前提上。
+EPLB 概念在 cann-infer 推理侧也有落地：DeepSeek-R1 推理 benchmark 在 **perfect eplb** 条件下采集性能数据（Prefill 64×4K 输入达 6522 tokens/卡/s，Decode 64卡（128 rank）W8A8C8+MTP1 达 TPOT 44.9 ms），并通过 decode 配置 `force_eplb: True` 强制专家均衡（见 [deepseek-r1](../../../inference/concepts/models/deepseek_r1.md)）。推理侧用「perfect/force eplb」作为构造均衡负载的基准条件来逼近峰值吞吐；训练侧本实践则反向验证了——真实权重负载本就均衡时，动态 EPLB 不带来额外收益。两侧互为印证：EPLB 的价值锚定在「负载确实不均」这一前提上。
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（§2.3.2 Expert Parallelism Load Balance：现象分析（专家冷热分化 / 节点利用率失衡）、优化方案（分层/全局双模式调度 + 实时负载估计动态调整）、优化效果（实验一 Qwen3-30B 真实权重无收益 + 逐卡负载表、实验二 Qwen3-235B 真实权重无明显收益、实验三构造极端不均 -17.78%、实验结论）；分层策略图 `docs/llm_rl/figures/qwen3_figures/image20.png`）
-- recipe 文件：`llm_rl/qwen3`（Qwen3 RL recipe 目录，承载本优化文档与配置）
-- 外部参考：EPLB 由 DeepSeek 针对 MoE 训练负载不均提出（文档 §2.3.2 表述），分层策略依托 DeepSeek-V3 组限制路由（Group-Limited Expert Routing）
-
-MindSpeed-RL 实现（钉定版 `398fd9a5`）：
-
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`docs/zh/features/EPLB.md`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/features/EPLB.md)（三步使用流程：MoE Token Collect / Eplb_map Generate / EPLB Usage，含 JSON 格式、参数说明与单实例限制）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/workers/eplb/eplb.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/eplb/eplb.py)（`rebalance_experts` 入口分层/全局分流、`rebalance_experts_hierarchical` 组→节点→NPU 三步、`balanced_packing` 贪心打包、`replicate_experts` 按 `weight/logcnt` 最大复制热专家）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`cli/eplb_generate_map_ds.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/cli/eplb_generate_map_ds.py)（`load_and_aggregate` 聚合每卡 JSON 成 `[layers,experts]`、调 `rebalance_experts`、`find_replacement` 同卡去重、`tensor_to_json` 落 `expert_map.json`）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/models/rollout/vllm_adapter/fused_moe.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/rollout/vllm_adapter/fused_moe.py)（`apply` 内 `get_EPLB_args` 触发 token 采集、`torch.unique(topk_ids)` 按 `moe_instance_id` 累计、写 `eplb_token_collects_{rank}.json`）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/workers/resharding/vllm_weight_container.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/resharding/vllm_weight_container.py)（`create_initial_map` 构造初始均匀映射、`_send_receive_redundancy_experts` 按 `eplb_map` 用 `dist.P2POp` + `batch_isend_irecv` 跨卡重分发专家权重）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/config_cls/generate_config.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/config_cls/generate_config.py)（`eplb_token_collects` / `eplb_token_save_path` / `expert_map_path` 三个 generate 配置项，`expert_map_path` 为 None 即不启用）+ [`examples/eplb/`](https://gitcode.com/Ascend/MindSpeed-RL/tree/398fd9a5fa6358c50071db2d09919e414accea90/examples/eplb)（`eplb.sh` num_replicas 512/num_groups 16/num_nodes 16/num_gpus 256、`collect_json_file.sh` scp 汇聚、`grpo_trainer_deepseek_r1_671b_eplb.sh` 16×16 卡启动；配 `configs/grpo_deepseek_r1_671b_A3_eplb.yaml`）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [qwen3_235B_32k_longseq_rl_train_optimization.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（supporting）
 
 ## Links
 

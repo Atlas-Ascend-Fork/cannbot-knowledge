@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: GatherSelectionKvCache
-description: '`npu_gather_selection_kv_cache` 是 cann-recipes-infer 为 DeepSeek-V3.2-Exp **KVCache Offload** 场景新开发的 AscendC 自定义算子。在 Decode 阶段，根据 lightning-indexer 返回的 TopK（2048）个相关 token index，**从 Host 内存上的 Full KVCache 中选出参与计算的 KV 并搬回设备**，再喂给 sparse-flash-attention。 其核心优化是利用**前后 Token 在同一层上 TopK 命中率（相似度）特性**复用设备上已有 cache：若当前步 TopK 与前一步 TopK 有 60% 重叠，仅从 Host 读取 40% 未复用的 KV，60% 直接从设备上读，显著减少 H2D 耗时。 算子源码：`ops/ascendc/src/gather_selection_kv_cache/`。自定义算子文档 `ops/ascendc/docs/custom-npu_gather_selection_kv_cache.md`。'
+description: 说明TopK选择缓存复用、当前packed TND调用和workspace来源，区分Host卸载场景与算子可接受的device输入。
 tags:
 - task.implementation
 - topic.attention
@@ -9,12 +9,18 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/offload_cache.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/ascendc/docs/custom-npu_gather_selection_kv_cache.md
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T14:47:07Z'
 platforms:
 - a3
 ---
@@ -39,26 +45,7 @@ flowchart LR
  GS --> SFA[SparseFlashAttention<br/>读 selection_kv_cache]
 ```
 
-模型调用入口（`models/deepseek-v3.2-exp/models/modeling_deepseek.py:L1340`）：
-
-```python
-if self.enable_offload and not is_prefill:
- selection_k_rope = offload_cache.selected_key_values[self.layer_idx][1]
- selection_kv_cache = offload_cache.selected_key_values[self.layer_idx][0]
- full_kv_cache = k_nope.squeeze(2)
- full_k_rope = k_pe.squeeze(2) if not self.kv_cache_quant_mode == "int8" \
- else offload_cache.empty_rope
- selection_kv_block_table = offload_cache.selection_kv_block_table[self.layer_idx]
- selection_kv_block_status = offload_cache.selection_kv_block_status[self.layer_idx]
-
- topk_indices = topk_indices.view(bsz, -1, 1, self.index_topk)
- selection_kv_actual_seq = torch_npu.npu_gather_selection_kv_cache(
- selection_k_rope, selection_kv_cache,
- selection_kv_block_table, selection_kv_block_status,
- topk_indices, full_k_rope, full_kv_cache,
- block_table, actual_seq_lengths_kv,
- actual_seq_qlen, selection_topk_block_size=1)
-```
+当前调用位于models/deepseek_v3_2_exp/models/modeling_deepseek.py::apply_attention_fusion。输入已为packed TND：按token_num切取selection块表/状态，将topk_indices reshape为[token_num,1,index_topk]，Q/KV实际长度转int32，调用torch_npu.npu_gather_selection_kv_cache(..., selection_topk_block_size=1)。INT8用empty_rope，非量化传真实rope；完整与选择缓存分别来自绑定的CacheEntry和OffloadWorkspace。
 
 返回 `selection_kv_actual_seq` 表示实际有效的 selection KV 长度，随后生成 `sparse_indices = where(default_topk_indices < selection_kv_actual_seq, default_topk_indices, -1)` 交给 SFA。
 
@@ -71,7 +58,7 @@ self.selection_kv_block_status # 初始 -1，记录当前 block 在设备上的�
 self.default_topk_indices # [batchseq, index_topk]
 ```
 
-`selection_kv_block_status` 是命中率复用的核心数据结构：算子文档定义其**记录 `selection_kv_cache` 和 `selection_k_rope` 中已缓存的有效 topk 对应的 id**，shape 为 `[B, S, H, TOPK + 1]`（BSND 格式；TND 格式为 `[B*S, H, TOPK + 1]`）。算子据此判断当前步 TopK 哪些已在设备上、哪些需从 `full_kv_cache` gather，从而实现前后 Token 的 cache 复用。
+`selection_kv_block_status` 是命中率复用的核心数据结构：算子文档定义其**记录 `selection_kv_cache` 和 `selection_k_rope` 中已缓存的有效 topk 对应的 id**，文档接口shape为 `[B, S, H, TOPK + 1]`（BSND 格式；TND 格式为 `[B*S, H, TOPK + 1]`）。算子据此判断当前步 TopK 哪些已在设备上、哪些需从 `full_kv_cache` gather，从而实现前后 Token 的 cache 复用。
 
 ## Performance Signals
 
@@ -96,7 +83,7 @@ self.default_topk_indices # [batchseq, index_topk]
 
 ### 下一步优化方向
 
-源文档 Future Plan："KVCache Offload：利用前后 Token 命中率关系或跨 layer 预取等手段，进一步降低 GatherSelectionKvCache 耗时。"
+当前指南保留的后续方向（未证实已实现）："KVCache Offload：利用前后 Token 命中率关系或跨 layer 预取等手段，进一步降低 GatherSelectionKvCache 耗时。"
 
 ### 与量化模式的耦合
 
@@ -109,11 +96,11 @@ self.default_topk_indices # [batchseq, index_topk]
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md) KVCache Offload 章节（命中率复用说明）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v3.2-exp/models/modeling_deepseek.py:L1330-L1412`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/models/modeling_deepseek.py#L1330-L1412)（Offload 分支 + SFA 调用）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v3.2-exp/models/offload_cache.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/models/offload_cache.py)（`OffloadCache` 数据结构）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/ascendc/src/gather_selection_kv_cache/`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/ascendc/src/gather_selection_kv_cache/)（算子源码）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/ascendc/docs/custom-npu_gather_selection_kv_cache.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/ascendc/docs/custom-npu_gather_selection_kv_cache.md)（自定义算子文档）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（supporting）
+- [offload_cache.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/offload_cache.py)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
+- [custom-npu_gather_selection_kv_cache.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/ascendc/docs/custom-npu_gather_selection_kv_cache.md)（implementation）
 
 ## Links
 

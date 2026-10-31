@@ -9,12 +9,16 @@ tags:
 - topic.diffusion
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/world_model/cosmos-transfer2.5/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/cosmos-transfer2.5/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/cosmos-transfer2.5/npu_adapt.sh
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/world_model/cosmos-transfer2.5/adaptor_patches/graph_patch.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 ---
@@ -34,7 +38,7 @@ Cosmos-Transfer2.5-2B 是 NVIDIA Cosmos 平台的世界基础模型之一，是�
 
 ## 昇腾 NPU 适配（与 Predict 的差异）
 
-适配同样靠 `npu_adapt.sh` 触发的 patch 文件（非侵入式），`adaptor_patches/` 下含 `inference_patch.py` / `graph_patch.py` / `minimal_v4_dit_patch.py` / `minimal_v4_lvg_dit_control_vace_patch.py` / `qwen2_5_vl_patch.py`。
+适配由 npu_adapt.sh 的上游文件原地修改（sed -i，含 config.py）与运行时 patch 共同组成，`adaptor_patches/` 下含 `inference_patch.py` / `graph_patch.py` / `minimal_v4_dit_patch.py` / `minimal_v4_lvg_dit_control_vace_patch.py` / `qwen2_5_vl_patch.py`。
 
 ### 融合算子（与 Predict 对照）
 
@@ -52,7 +56,7 @@ DiT 侧 RMSNorm/Rotary 两个融合算子是 Transfer/Predict 共用的算子适
 
 ### 计算图捕获
 
-`adaptor_patches/graph_patch.py` 重写了 TransformerEngine 的 `make_graphed_callables`，使其适配 **inference-only** 计算图捕获（基于 `torch._C._graph_pool_handle` 的 CUDA-graph 式静态图复用）。这是 Transfer 独有的计算逻辑优化，**与昇腾 torchair 图模式不是同一机制**（不要与 [npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md) 混淆）。该图捕获把多个 callable 编排为可复用图，配合多流可降低分发开销，思路与 cann-infer [multi-stream](../../../inference/concepts/techniques/multi_stream.md) 的调度优化目标相通。
+adaptor_patches/graph_patch.py 的设计目标是 inference-only 图捕获，与昇腾 torchair 图模式不同。但此固定快照只在本模块局部重绑定导入符号；内部 graph_pool_handle、hook_fn 等未定义，patch_make_graphed_callables 也未返回可回放 callable。这些静态缺陷意味着不能把该文件当作已生效、已验证的图捕获优化，更不能归因其多流或分发收益。使用前须补齐接线、捕获与 replay 返回路径并在目标环境验证；本卡不登记未验证修复。
 
 ## 多卡并行使能（CFG 并行核心改造在本模型）
 
@@ -87,4 +91,4 @@ ASCEND_RT_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node=8 --master_p
 - DiT 模块：[dit](../../../inference/concepts/modules/dit.md)｜FA 融合：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
 - 并行：[cfg-parallel](../../../inference/concepts/parallelism/cfg_parallel.md)｜[context-parallel](../../../inference/concepts/parallelism/context_parallel.md)
 - 平台：[atlas-a3](../../../inference/concepts/platforms/atlas_a3.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

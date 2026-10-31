@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: DualPipeV（V 形双向流水 + Zero-Bubble dw 分离）
-description: DualPipeV 是 MindSpeed 面向 MoE 大模型训练的流水并行（PP）调度，脱胎自 DeepSeek DualPipe：从 PP 维只截取 DualPipe 一半，再把每个 PP rank 的层二次切分成 chunk0/chunk1、前向沿 rank 下行、回程上行，呈 V 字排布，由此把 DualPipe 的参数翻倍与启动规模翻倍各砍一半。配合 --moe-fb-overlap（MoE 跨 microbatch 前反向通信掩盖）在 overlap 稳定阶段全掩盖专家 All2All/P2P；warmup 尽量多 P2P 掩盖；warmup/cooldown 引入 Zero-Bubble 的 dw（权重梯度）分离压气泡，经 WeightGradStore（start_decouple/flush_chunk_grad/pop_single）实现。MindSpeed 默认取消 cooldown 阶段 dw 分离以降重计算场景内存峰值，--dualpipev-dw-detach 可重开。V 字使首尾 stage 同卡（PP rank0，chunk0 含 embedding、chunk1 含 output head），免 embedding 梯度 AllReduce、天然亲和 MTP、便于 PP 负载均衡。开关 --schedules-method dualpipev；约束层数 ≥2·PP、microbatch ≥2·PP−1、需 untie_embeddings_and_output_weights、与 VPP/CP/异步DDP/swap-attention/tp_2d/custom-fsdp 互斥。气泡 (PP−1)·(F&B+B−W)−F 优于 1F1B/VPP。profiling 场景 DeepSeek-V3 671B PP8 TP2 EP32。
+description: DualPipeV 是 MindSpeed 面向 MoE 大模型训练的流水并行（PP）调度，脱胎自 DeepSeek DualPipe：从 PP 维只截取 DualPipe 一半，再把每个 PP rank 的层二次切分成 chunk0/chunk1、前向沿 rank 下行、回程上行，呈 V 字排布，由此把 DualPipe 的参数翻倍与启动规模翻倍各砍一半。配合 --moe-fb-overlap（MoE 跨 microbatch 前反向通信掩盖）在 overlap 稳定阶段全掩盖专家 All2All/P2P；warmup 尽量多 P2P 掩盖；warmup/cooldown 引入 Zero-Bubble 的 dw（权重梯度）分离压气泡，经 WeightGradStore（start_decouple/flush_chunk_grad/pop_single）实现。MindSpeed 默认取消 cooldown 阶段 dw 分离以降重计算场景内存峰值，--dualpipev-dw-detach 可重开。V 字使首尾 stage 同卡（PP rank0，chunk0 含 embedding、chunk1 含 output head），免 embedding 梯度 AllReduce、天然亲和 MTP、便于 PP 负载均衡。开关 --schedules-method dualpipev；约束模型层数为2·PP的倍数、microbatch ≥2·PP−1、需 untie_embeddings_and_output_weights、与 VPP/CP/异步DDP/swap-attention/tp_2d/custom-fsdp 互斥。气泡公式为(PP−1)·(F&B+B−W)−F，须按v/F/B/W/F&B比较，不保证优于所有1F1B/VPP配置。profiling 场景 DeepSeek-V3 671B PP8 TP2 EP32。
 tags:
 - task.design
 - topic.parallelism
@@ -9,12 +9,14 @@ tags:
 - topic.data_movement.communication.collective_communication
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/dualpipev_feature.py
+  role: implementation
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:41Z'
 platforms:
 - agnostic
 ---
@@ -86,7 +88,7 @@ embedding 与 output 同卡后，`_allreduce_embedding_grads` 被包成空操作
 | `interleaved_backward` | 交错反向 |
 | `cooldown` | 收尾反向；计数是三元组 `[i+1, pp_size−2i−2, i+1]` |
 
-稳定（overlap）阶段是收益主体：相邻 microbatch 的前向计算与另一 microbatch 反向引发的专家 All2All、stage 间 P2P 在时间上重叠，从而被「没有依赖关系的计算」掩盖。跨 microbatch 前反向通信掩盖的机制本体见 [MoE 跨 microbatch 前反向通信掩盖文档](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md)，由 `--moe-fb-overlap` 单独开启。
+稳定（overlap）阶段是收益主体：相邻 microbatch 的前向计算与另一 microbatch 反向引发的专家 All2All、stage 间 P2P 在时间上重叠，从而被「没有依赖关系的计算」掩盖。跨 microbatch 前反向通信掩盖的机制本体见 [MoE 跨 microbatch 前反向通信掩盖文档](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md)，由 `--moe-fb-overlap` 单独开启。
 
 **warmup 尽量多 P2P 掩盖**：warmup 段除最后一步外都用 `send_forward_recv_forward` 把前向激活向下游发送、同时收上游激活（末步改用 `recv_forward` + 异步 `send_forward`），让 P2P 通信尽量与前向计算并行，压低预热段的串行气泡。
 
@@ -124,23 +126,25 @@ cooldown 阶段，PP 尾卡会**连续计算 `PP_size` 个反向 stage**；在�
 | VPP | `(PP−1)·(F+B)/v` |
 | DualPipeV | `(PP−1)·(F&B+B−W)−F` |
 
-DualPipeV 把前反向并入 `F&B`、并把 dw（`W`）从关键气泡里减去，再扣掉一段前向 `F`，气泡相对 1F1B / VPP 进一步收窄。
+DualPipeV 把前反向并入 `F&B`、并把 dw（`W`）从关键气泡里减去，再扣掉一段前向 `F`，这些公式不能推出无条件优于1F1B/VPP；须固定v、F、B、W与F&B逐项比较，尤其VPP气泡还随v变化。
 
 ## 配置与约束
 
 启动脚本开关：
 
 - `--schedules-method dualpipev`：开启 DualPipeV 流水排布（`choices=['dualpipev']`）。
-- `--moe-fb-overlap`：额外开启 MoE 跨 microbatch 前反向通信掩盖（稳定阶段掩盖 All2All 的关键，需与 DualPipeV 组合才发挥）。
+- `--moe-fb-overlap`：额外开启 MoE 跨 microbatch 前反向通信掩盖（稳定阶段掩盖 All2All 的关键，DualPipeV仅是调度载体之一；也支持Megatron VPP，以及PP=1的多microbatch场景）。
 - `--dualpipev-dw-detach`：额外开启 cooldown 阶段 dw 分离（默认关）。
 
 `validate_args` 强约束：
 
-- 模型层数 `num_layers ≥ 2·PP`（即应设为 `2·PP` 的倍数以均分两个 chunk）。
+- 代码校验最低层数 `num_layers ≥ 2·PP`；文档均分两个chunk还要求模型层数为 `2·PP` 的倍数，二者不能等同。
 - 每 PP 组 microbatch 数 `≥ 2·PP − 1`（官方文档建议设为 `≥ 2·PP`）。
 - `pipeline_model_parallel_size > 1`。
 - 必须 `untie_embeddings_and_output_weights`（首尾同卡，embedding 与 lm head 不再共享、无需 embedding 梯度 AllReduce）。
 - 与以下特性**互斥**：VPP（`num_layers_per_virtual_pipeline_stage`）、长序列并行 / CP（`context_parallel_size > 1`）、异步 DDP（`overlap_grad_reduce`）、`swap_attention`、`tp_2d`、`use_custom_fsdp`、`use_multiparameter_pipeline_model_parallel`、`--pipeline-model-parallel-layout`。
+
+组合 `--moe-fb-overlap` 另需 alltoall dispatcher、expert-tensor-parallel-size=1、expert-model-parallel-size>1、--moe-grouped-gemm，并遵守[完整fb-overlap约束](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md)。该特性目前仅在DeepSeek V3验证，其他MoE模型仍需验证和适配，不能作为任意MoE配置可直接追加的开关。
 
 ## 性能与内存的场景依赖
 
@@ -149,14 +153,21 @@ DualPipeV 把前反向并入 `F&B`、并把 dw（`W`）从关键气泡里减去�
 
 profiling 取证场景：DeepSeek-V3 671B 模型、`PP8 TP2 EP32` 下采集的 PP 通信组 profiling（图见官方文档）。
 
+## 跨 microbatch 掩盖的显存开关
+
+当前 `--moe-fb-overlap` 文档补充三项调节：
+
+- `--disable-fb-overlap-linear-dw-detach` 关闭普通 TP Linear 反向的权重梯度分离，以性能损失换取显存节省；它与 DualPipeV cooldown 的 `--dualpipev-dw-detach` 分属不同控制面。
+- `--recompute-dense-mlp` 对 Dense MLP 的 FC1 输出做激活重计算，减少保存但增加一次 FC1 前向。
+- `--swap-dense-mlp` 异步把该输出换到 CPU，并在反向前恢复到 NPU；与 `--recompute-dense-mlp` 互斥。
+
+这些开关调节 fb-overlap 的峰值，不能由其存在推断所有模型或并行配置已受支持，仍需满足原有 dispatcher、专家并行和流水限制。
+
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/dualpipev.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/dualpipev.md)（背景与挑战 / DualPipe→DualPipeV 解决方案 / warmup-cooldown dw 分离 / 气泡对比表 / 使用方法与约束 / 使用效果与内存场景分析；含 `dualpipev.png`（PP4×10 microbatch 流水时间线）、`dualpipev_dw_detach.png`（开 dw 分离后的流水时间线）、`dualpipev_profiling.png`（DeepSeek-V3 671B PP 通信组 profiling）三张图）
-- [`docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md)（`--moe-fb-overlap` 跨 microbatch 前反向通信掩盖机制本体）
-- [`mindspeed/core/pipeline_parallel/dualpipev/dualpipev_schedules.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/dualpipev/dualpipev_schedules.py) — `generate_dualpipev_schedule`（七阶段计数、microbatch×2 / pp_size×2、cooldown 三元组）、`forward_backward_pipelining_with_cutinhalf`（warmup P2P 掩盖、overlap 稳定段、cooldown `dualpipev_dw_detach` 分支、`WeightGradStore` 流转）
-- [`mindspeed/core/pipeline_parallel/dualpipev/dualpipev_chunks.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/dualpipev/dualpipev_chunks.py) — `get_transformer_layer_offset`（V 字 chunk0 正序 / chunk1 反序）、`get_num_layers_to_build`（每 rank `//2`）、`dualpipev_fp16forward`、`_allreduce_embedding_grads_wrapper`（首尾同卡免 embedding AllReduce）
-- [`mindspeed/features_manager/pipeline_parallel/dualpipev_feature.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/pipeline_parallel/dualpipev_feature.py) — `--schedules-method` / `--dualpipev-dw-detach` 参数注册、`validate_args` 全部互斥与层数 / microbatch 约束、patch 注入点
-- [`mindspeed/core/transformer/moe/moe_feature/fb_overlap/modules/weight_grad_store.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/moe/moe_feature/fb_overlap/modules/weight_grad_store.py) — `WeightGradStore`（`is_decoupleBlock` / `start_decouple` / `end_decouple` / `flush_chunk_grad` / `pop_single`）dw 分离队列
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [megatron-moe-fb-overlap.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/megatron_moe/megatron-moe-fb-overlap.md)（supporting）
+- [dualpipev_feature.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/dualpipev_feature.py)（implementation）
 
 ## Links
 

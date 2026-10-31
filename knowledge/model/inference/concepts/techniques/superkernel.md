@@ -1,10 +1,7 @@
 ---
 type: Concept
 title: SuperKernel
-description: 'TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 优化计算融合与任务调度**
-  的优化能力。目标是减少算子间任务调度的等待时间与下发开销，尤其针对 Decode 阶段大量细碎算子（MLA prolog、FA、MoE dispatch/combine、GroupedMatMul、finalize
-  等）叠加时的 host 下发与调度开销。 在 DeepSeek-R1 Decode W8A8C8 + MTP1 的 benchmark YAML (`decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`)
-  中默认 `enable_superkernel: True`。'
+description: SuperKernel 的 scope 调度与融合目标，当前 R1/LongCat 范围差异及通用编译选项和模型限制的边界。
 tags:
 - task.optimization
 - topic.attention
@@ -12,15 +9,20 @@ tags:
 - topic.graph_execution
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/common_utils.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/graph_utils.py
+  role: constraint
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T13:55:50Z'
 platforms:
 - a3
 ---
+
 # SuperKernel
 
 ## Summary
@@ -45,7 +47,7 @@ with superkernel_scope(switch, scope, options):
     ...  # 此处放入待融合模块；完整边界按固定模型核对
 ```
 
-实际用例（`models/deepseek_r1/models/modeling_deepseek.py:L1605`）：
+实际用例（当前 DeepSeek-R1 模型）：
 
 ```python
 with superkernel_scope(self.enable_superkernel and not forward_metadata.is_prefill,
@@ -69,7 +71,7 @@ with superkernel_scope(self.enable_superkernel and not forward_metadata.is_prefi
 
 ## Constraints
 
-- **仅 ge_graph 模式支持**：`npugraph_ex`（reduce-overhead）与 eager 模式下不可用。
+- 本页scope helper使用TorchAir GE scope；当前通用npugraph_ex编译器另可传super_kernel_optimize选项，不能将该选项与GE scope混为同一API。模型可能额外拒绝组合（如LongCat拒绝npugraph_ex+SuperKernel），需分别检查。
 - 源码显式条件 `enable_superkernel and not forward_metadata.is_prefill` → Prefill 路径不进入 SuperKernel scope。
 - scope 边界不当会导致编译失败或性能退化。
 - 与 micro-batch 的互动 source 未明确，待验证。
@@ -80,9 +82,10 @@ with superkernel_scope(self.enable_superkernel and not forward_metadata.is_prefi
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-r1/deepseek_r1_decode_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md) "SuperKernel 优化"章节
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek_r1/config/`](https://gitcode.com/cann/cann-recipes-infer/tree/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/config)（`decode_r1_rank_128_128ep_a8w8c8_mtp*.yaml` 中 `enable_superkernel: True`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek_r1/models/modeling_deepseek.py#L1605`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/models/modeling_deepseek.py#L1605)（`superkernel_scope` 使用处）
+- [deepseek_r1_decode_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py)（implementation）
+- [common_utils.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/common_utils.py)（implementation）
+- [graph_utils.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/graph_utils.py)（constraint）
 
 ## LongCat-Flash 路径差异
 
@@ -92,13 +95,7 @@ LongCat-Flash 同样在 `ge_graph` 下使能 `enable_superkernel`。由于 LongC
 
 ## Links
 
-- [deepseek-r1](../models/deepseek_r1.md)
-- [kimi-k2-thinking](../models/kimi_k2_thinking.md)
-- [longcat-flash](../models/longcat_flash.md)
-- [hy3-preview](../models/hy3_preview.md)（Decode 层循环外包单个 `superkernel_scope`；combine_v2 `shared_expert_x` 融合因 >2 stream 限制回退）
-- [moe-multi-stream](moe_multi_stream.md)
-- [moe-dispatch-combine-v2](moe_dispatch_combine_v2.md)（combine_v2 `shared_expert_x` 在 CANN 8.5.0 与 >2 real stream SuperKernel 不兼容，hy3-preview 已回退）
-- [torchair](../frameworks/torchair.md)
-- [atlas-a3](../platforms/atlas_a3.md)
-- [deepseek-v4](../models/deepseek_v4.md)（Future Plan：使能 Super Kernel 降低算子启动/调度间隙）
-- [multi-stream](multi_stream.md)（图模式多流 `stream-fusion=1` scope 与多流编排协同）
+- [范围选择](../../optimizations/rules/superkernel_decode_ge_graph_fusion_scope.md)
+- [LongCat范围](../../optimizations/cases/longcat_a3_superkernel_layout_fusion.md)
+- [Qwen3-MoE范围](../../optimizations/cases/qwen3_moe_a3_superkernel_scopes.md)
+- [当前图编译](../../guides/optimization/graph_mode_decode_only_compile_backends.md)

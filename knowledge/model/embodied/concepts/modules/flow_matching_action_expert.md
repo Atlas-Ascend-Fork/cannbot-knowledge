@@ -9,14 +9,20 @@ tags:
 - topic.diffusion
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/pi0/infer_with_torch/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi0/infer_with_torch/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/pi05/infer_with_torch/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/infer_with_torch/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi0/infer_with_torch/modeling_pi0.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/docs/manipulation/pi0/infer_with_torch/README.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/infer_with_torch/modeling_pi05.patch
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - agnostic
 ---
@@ -36,8 +42,8 @@ flowchart LR
     subgraph 慢系统["VLM 主干（PaliGemma）"]
         IMG[多路 RGB 图像] --> VLM
         LANG[语言指令 tokens] --> VLM
-        STATE[机器人本体状态] --> VLM
-        VLM[图像/语言/状态前缀编码] --> KV[past_kv_tensor + prefix_pad_masks]
+        STATE[机器人本体状态] --> AE
+        VLM[图像/语言前缀编码] --> KV[past_kv_tensor + prefix_pad_masks]
     end
     subgraph 快系统["动作专家（Gemma）"]
         NOISE[动作噪声 x_t] --> AE
@@ -48,8 +54,8 @@ flowchart LR
     end
 ```
 
-- **VLM 主干（慢系统）**：基于 PaliGemma 的视觉语言模型，处理多路 RGB 图像、语言指令和机器人本体状态（state），提取多模态前缀特征，输出可复用的 KV cache（`past_kv_tensor`）与前缀 padding 掩码（`prefix_pad_masks`）。一次推理只需执行一次。
-- **动作专家（快系统）**：基于 Gemma 的 Transformer，复用 VLM 的 KV cache，从高斯噪声出发**多步去噪**（Pi0/Pi0.5 默认 `num_steps = 10`）生成连续动作块。该段需循环调用 10 次。
+- **VLM 主干（慢系统）**：基于 PaliGemma 的视觉语言模型，在这里展示的 Pi0 实现中处理多路 RGB 图像和语言指令，提取多模态前缀特征，输出可复用的 KV cache（`past_kv_tensor`）与前缀 padding 掩码（`prefix_pad_masks`）。一次推理只需执行一次。
+- **动作专家（快系统）**：Pi0 的 state 在 embed_suffix 中经 state_proj 接入动作专家，不进入 embed_prefix；不能把这一状态接入方式直接推及 Pi0.5 的不同预处理。动作专家基于 Gemma 的 Transformer，复用 VLM 的 KV cache，从高斯噪声出发**多步去噪**（Pi0/Pi0.5 默认 `num_steps = 10`）生成连续动作块。该段需循环调用 10 次。
 
 两段在推理流上**解耦**：VLM 计算 image/language prefix KV cache，action expert 在其上多步 denoise。这一边界既是模型原生结构，也被 OM 离线部署沿用为两段 OM 的切分点（见 [om-atc-offline](../techniques/om_atc_offline.md)）。
 
@@ -79,7 +85,7 @@ VLM 主干与动作专家都是标准 Transformer 堆叠，原生开箱在 NPU �
 - **QKV 融合**：把 q/k/v 三个独立投影 concat 成单个 `qkv` 线性层一次大矩阵乘，再 split，提升 Cube 利用率、减少缓存换入换出。
 - **图模式整图编译**：用 torchair 把慢系统与快系统尽可能整图编译，消除 host-bound（见下）。
 
-优化后 profiling 实测：昇腾计算时间总占比提升至 94%，AI_CORE 融合算子占比提升至 50%，单次推理总耗时 71.6 ms（空闲 4.58 ms）；端到端约 80 ms。
+Pi0 koch 推理样例在 Atlas A2、CANN 8.3.RC1、torch-npu 2.1.0.post12 下的优化后 profiling 观测（不代表 Pi0.5 或其他硬件）：昇腾计算时间总占比提升至 94%，AI_CORE 融合算子占比提升至 50%，单次推理总耗时 71.6 ms（空闲 4.58 ms）；端到端约 80 ms。
 
 > 训练侧也有同源融合：Pi0.5 训练默认开启 `PI05_FUSE_PALIGEMMA_QKV`、`PI05_USE_NPU_FUSION_ATTENTION`（`npu_fusion_attention`，约 +5%）、Gemma MLP grouped GEMM（`gate_proj`/`up_proj` 合并，约 +1%）。详见 [gradient-checkpoint-refine](../techniques/gradient_checkpoint_refine.md)。
 
@@ -98,7 +104,7 @@ self.denoise_step_all_compile = torch.compile(
     self.denoise_step_all, dynamic=False, fullgraph=True, backend=npu_backend)
 ```
 
-图模式机制详见 [npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)；torchair 编译入口见 [torchair](../../../inference/concepts/frameworks/torchair.md)。flow-matching action expert 的图模式应用即「Pi0/Pi0.5 慢系统 prefix 编码 + 快系统 10 步 denoise 各编译为一张静态图」。
+图模式机制详见 [npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)；torchair 编译入口见 [torchair](../../../inference/concepts/frameworks/torchair.md)。该固定 Pi0 实现为 prefix 编码编译一张图、单步 denoise 编译一张图；sample_actions 的 Python for 循环重复调用 denoise_step_all_compile，默认 10 次。没有把整个 10 步循环编译成单图；Pi0.5 的编译行为须另查对应实现。
 
 ## OM 离线版的算子退化
 
@@ -111,5 +117,9 @@ OM 离线部署（310P）目标不同于 torch 推理优化版：优先保证 ON
 - 离线部署：[om-atc-offline](../techniques/om_atc_offline.md)、[ascend-310p](../platforms/ascend_310p.md)
 - 训练优化：[gradient-checkpoint-refine](../techniques/gradient_checkpoint_refine.md)、[ddp-static-graph](../techniques/ddp_static_graph.md)
 - 注意力融合与图编译：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)、[npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)
 - 应用于：[smolvla](../manipulation/smolvla.md)（SmolVLA 同样采用 VLM 主干 + flow-matching 动作专家）
+
+## Pi0.5 在线 mask 的当前实现
+
+Pi0.5 的 torch 适配补丁使用 `_inference_dtype()` 决定 `torch.finfo(dtype).min`，将 4D bool mask 转成 0/该有限最小值的加性 mask。这是该在线补丁的数值契约，不能把 Pi0 融合算子的 bool mask 约定或 OM 静态接口直接套到它上面。

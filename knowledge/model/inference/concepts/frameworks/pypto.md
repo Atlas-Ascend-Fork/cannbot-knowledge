@@ -1,18 +1,19 @@
 ---
 type: Concept
 title: PyPTO
-description: PyPTO 以声明式 Tensor 图表达融合算子，经 PTO-ISA、MPMD 调度和后端编译实现不同硬件的适配；本卡维护框架机制，Duration
-  与 VF 收益由独立观测记录。
+description: PyPTO 以声明式 Tensor 图表达融合算子，经 PTO-ISA、MPMD 调度和后端编译实现不同硬件的适配；本卡维护框架机制，Duration 与 VF 收益由独立观测记录。
 tags:
 - task.implementation
 - topic.architecture
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_pypto_operator_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto_python/impl/hc_pre_pypto.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:35:31Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a2
 - a3
@@ -67,7 +68,7 @@ PyPTO 后端基于 **PTO 虚拟指令集（PTO ISA）** 打造。算子前端无
 
 - **合图优化**：通过 `pass_options={"cube_nbuffer_mode": 1, "vec_nbuffer_mode": 2, "vec_nbuffer_setting": {-1: 2}}`（实现位置：mla_prolog_quant_pypto.py:508-510）合并相同结构子图，避免子图数过大与重复搬运，增大核内流水调度可能性。
 - **切 K MatMul**：Decode 场景 MatMul 的 K 轴很长（如 hc_pre 16K）而 M/N 轴较小，采用 `pypto.set_cube_tile_shapes(..., enable_split_k=True, enable_multi_data_load=True)` 切 K（实现位置：hc_pre_pypto.py:176）把数据切到不同核充分利用算力；shape 大时开大包搬运提带宽利用率。
-- **免广播 / scatter_update / 转置技巧**：Sinkhorn-Knopp 的归约串联逐元素乘除经 `pypto.experimental.set_operation_config(combine_axis=True)`（实现位置：hc_pre_pypto.py:136）避免显式广播；Compressor 的 `kv_state`/`score_state` 刷新用 `scatter_update_3d`（实现位置：compressor_pypto.py:453,611）规避反复搬入 UB + concat；hc_pre Prefill 用 `hc_fn^T @ x^T` 转置技巧把归约轴置于 -2/-3 提效。各算子级细节见对应 kernel 页。
+- **免广播 / scatter_update / 转置技巧**：Sinkhorn-Knopp 的归约串联逐元素乘除经 `pypto.experimental.set_operation_config(combine_axis=True)`（实现位置：hc_pre_pypto.py:136）避免显式广播；Compressor 的 `kv_state`/`score_state` 刷新用 `scatter_update_3d`（实现位置：compressor_pypto.py:453,611）规避反复搬入 UB + concat；仅 guide/test 的 hc_pre_kernel_prefill 示例用 hc_fn^T @ x^T 转置技巧把归约轴置于 -2/-3；生产入口 hc_pre_kernel 使用 matmul(x_fp32, hc_fn, b_trans=True)，不能将示例转置归为整网 Prefill 的生产实现。各算子级细节见对应 kernel 页。
 
 ### 毕昇 PTO 编译器 VF 自动融合
 
@@ -113,11 +114,8 @@ Tiling 得到 Tile Operation 粒度的计算图后，框架对计算图切分并
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — ops/pypto/ 与 ops/pypto_python/ 目录包含 PyPTO 算子实现
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_pypto_operator_guide.md)（V4 PyPTO 算子优化全文：PTO-ISA / hc_pre / MlaProlog / Compressor / IndexerProlog / SWA·CFA·SCFA / hc_post VF 融合，MR!366 support deepseek v4 + !449 docs update）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/pypto_python/impl/{hc_pre_pypto.py, compressor_pypto.py, mla_prolog_pypto.py, ...}`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/ops/pypto_python/impl)（V4 算子 kernel 实现）
-- 编译器依赖（以下能力依据 guide 文档）：PTO-ISA / 毕昇 PTO 编译器 / DFX(TPRINT) 在 [Cann-PyPTO](https://gitcode.com/cann/pypto)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md)（V3.2-Exp PyPTO 算子开发指南：§Parallel Tile Operation 的 PTO ISA 指令分类表、§核内 SRAM 的管理 的子图切分三权衡、§MPMD 运行时 的三步机制）
+- [deepseek_v4_pypto_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_pypto_operator_guide.md)（primary）
+- [hc_pre_pypto.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto_python/impl/hc_pre_pypto.py)（implementation）
 
 ## Known Usages
 

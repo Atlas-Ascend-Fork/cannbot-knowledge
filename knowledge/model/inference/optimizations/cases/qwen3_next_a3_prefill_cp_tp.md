@@ -7,14 +7,16 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/874b41df5de8107dd241c2cd2ac0712ad3a758a0/docs/models/qwen3-next/qwen3_next_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/874b41df5de8107dd241c2cd2ac0712ad3a758a0/models/qwen3-next/README.md
-  role: constraint
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/874b41df5de8107dd241c2cd2ac0712ad3a758a0/models/qwen3-next/patches/stage4/0001-feat-support-context-parallel.patch
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage6/0001-support-gdn-cp.patch
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch
   role: implementation
 created_at: '2026-10-20T12:16:14Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a3
 scope:
@@ -48,13 +50,13 @@ scope:
 
 ## 条件与规则入口
 
-本案例补充[长序列 CP 决策](../rules/long_seq_prefill_context_parallel.md)，限定 `874b41df5de8107dd241c2cd2ac0712ad3a758a0` 的 Qwen3-Next / Atlas A3 / SGLang Prefill，部署边界按该提交的 PD 分离说明核对。不能继承 DeepSeek/Kimi 的整域 CP 参数。
+本案例补充[长序列 CP 决策](../rules/long_seq_prefill_context_parallel.md)，限定当前选定来源的 Qwen3-Next / Atlas A3 / SGLang Prefill，部署边界按该提交的 PD 分离说明核对。不能继承 DeepSeek/Kimi 的整域 CP 参数。
 
 ## 分层切分与布局
 
 官方优化文档对 Gated Attention 使用 CP+TP，将序列分给 CP rank、head 交给局部 TP；GDN 涉及沿序列的卷积，固定实践保留 TP。文档中的 `4CP × 2TP`、64K 输入只是说明例子，不是统一推荐配置。
 
-stage4 patch 使用 CP 通信域与 `dp_size = max(server_args.dp_size, server_args.cp_size)` 等布局逻辑。`CP_USE_ZIGZAG=1` 对应负载均衡路径，包含 `linear_to_zigzag_all_to_all`、`zigzag_to_linear_all_to_all` 和 KV 汇聚后的重排。只设置环境变量不能证明所有模块或任意负载均获益。
+stage4 patch 使用 CP 通信域与 `dp_size = max(server_args.dp_size, server_args.cp_size)` 等布局逻辑。`CP_USE_ZIGZAG=1` 对应面向长序列单 batch 的负载均衡路径，包含 `linear_to_zigzag_all_to_all`、`zigzag_to_linear_all_to_all` 和 KV 汇聚后的重排。多 batch 的收益需要另行验证，此处不据此断言多 batch 不受支持。只设置环境变量不能证明所有模块或任意负载均获益。
 
 ## 部署说明与代码校验分别核对
 

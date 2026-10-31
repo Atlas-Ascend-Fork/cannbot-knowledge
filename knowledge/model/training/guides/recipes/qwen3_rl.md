@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）
-description: Qwen3-235B-A22B（MoE，22B 激活）：在 64 卡 A3（128die） 上跑 GRPO/DAPO，Prompt/Response 最大 2K / 32K 的长序列场景，加载真实权重的 GRPO 系统吞吐达 122 TPS/卡（recipe README 标称 120 TPS/卡）。技术栈为 veRL 前端 + Megatron+MindSpeed 训练引擎 + vLLM+vLLM-Ascend 推理引擎，全共卡部署。 Qwen3-32B（dense）：在 16 卡 A3（32die） 上跑 GRPO/DAPO 2K 推 34K，使能 SAM 无模型投机解码，端到端约 +10%、叠加 npugraph_ex 后首步推理时间提升 29%~33%。
+description: Qwen3-235B-A22B（MoE，22B 激活）：在 64 卡 A3（128die） 上跑 GRPO/DAPO，GRPO Prompt/Response 最大2K/32K、DAPO最大2K/34K 的长序列场景，加载真实权重的 GRPO 系统吞吐达 122 TPS/卡（recipe README 标称 120 TPS/卡）。技术栈为 veRL 前端 + Megatron+MindSpeed 训练引擎 + vLLM+vLLM-Ascend 推理引擎，全共卡部署。 Qwen3-32B（dense）：在 16 卡 A3（32die） 上跑 GRPO/DAPO 2K 推 34K，使能 SAM 无模型投机解码，端到端约 +10%、叠加 npugraph_ex 后两者叠加后相对均关闭基线，首步推理耗时下降约29%~33%。
 tags:
 - task.implementation
 - topic.speculative_decoding
@@ -9,12 +9,20 @@ tags:
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/patches/verl/0005-verl-feature-moe_alltoallv.patch
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/patches/verl/0016-verl-bugfix-hot_swap_expandable_segments.patch
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/README.md
+  role: implementation
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:15Z'
 platforms:
 - a3
 ---
@@ -25,13 +33,13 @@ platforms:
 
 Qwen3 系列长序列强化学习（RL）训练在昇腾 Atlas A3 上有两条主线（`llm_rl/qwen3` recipe）：
 
-- **Qwen3-235B-A22B**（MoE，22B 激活）：在 **64 卡 A3（128die）** 上跑 GRPO/DAPO，**Prompt/Response 最大 2K / 32K** 的长序列场景，加载真实权重的 GRPO 系统吞吐达 **122 TPS/卡**（recipe README 标称 120 TPS/卡）。技术栈为 veRL 前端 + Megatron+MindSpeed 训练引擎 + vLLM+vLLM-Ascend 推理引擎，全共卡部署。
-- **Qwen3-32B**（dense）：在 **16 卡 A3（32die）** 上跑 GRPO/DAPO 2K 推 34K，使能 **SAM 无模型投机解码**，端到端约 **+10%**、叠加 npugraph_ex 后首步推理时间提升 29%~33%。
+- **Qwen3-235B-A22B**（MoE，22B 激活）：在 **64 卡 A3（128die）** 上跑 GRPO/DAPO，**GRPO Prompt/Response 最大2K/32K、DAPO最大2K/34K** 的长序列场景，加载真实权重的 GRPO 系统吞吐达 **122 TPS/卡**（recipe README 标称 120 TPS/卡）。技术栈为 veRL 前端 + Megatron+MindSpeed 训练引擎 + vLLM+vLLM-Ascend 推理引擎，全共卡部署。
+- **Qwen3-32B**（dense）：在 **16 卡 A3（32die）** 上跑 GRPO/DAPO 2K 推 34K，使能 **SAM 无模型投机解码**，端到端约 **+10%**、叠加 npugraph_ex 后两者叠加后相对均关闭基线，首步推理耗时下降约29%~33%。
 
 RL 系统底座沿用 [deepseek-r1-rl](deepseek_r1_rl.md)（同样的 veRL 全共卡 + 训推切换 + 零冗余 reshard），新增长序列特有问题的优化：**长尾序列负载不均**、**HBM 随序列线性增长的显存瓶颈**。算法、框架、训推切换、投机、负载均衡等通用机制各有概念页（见下方链接）；Qwen3-235B 专属的推理内存部署/计算调度与训练 HDP 混合数据并行见后文专节。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image1.png" width="72%">
-<sub>图：Qwen3-235B RL 长序列推理/训练优化总览——推理侧（切分策略/图模式/FIA 负载均衡/Rollout Rebalance/EPLB/Expert Parallelism Load Balance）与训练侧（MindSpeed 内存与性能优化 + Hybrid Data Parallelism）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§1.2 优化实践总览</a>）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image1.png" width="72%">
+<sub>图：Qwen3-235B RL 长序列推理/训练优化总览——推理侧（切分策略/图模式/FIA 负载均衡/Rollout Rebalance/EPLB/Expert Parallelism Load Balance）与训练侧（MindSpeed 内存与性能优化 + Hybrid Data Parallelism）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§1.2 优化实践总览</a>）</sub>
 
 ## 训练配置
 
@@ -48,18 +56,18 @@ RL 系统底座沿用 [deepseek-r1-rl](deepseek_r1_rl.md)（同样的 veRL 全�
 
 ### 权重切分（零冗余 reshard）
 
-235B 权重离线 HF→mcore 切分时使能 `USE_ALLTOALL_OVERLAP=1`，触发基于 AlltoAllV 的零冗余专家 reshard（`moe_alltoall_overlap_comm` 会改 GMM 权重命名，切分需与其对齐），是 235B 训推切换的关键，详见 [train-rollout-switch](../../concepts/techniques/train_rollout_switch.md)。
+235B 权重离线 HF→mcore 切分时设置 `USE_ALLTOALL_OVERLAP=1` 以生成匹配 moe_alltoall_overlap_comm 的专家权重布局；运行时是否走 AlltoAllV 零冗余专家 reshard 另由 `ALL_TO_ALL_RESHARD=1` 选择。两者由 qwen3_235b_env.sh 分别设置，0005补丁按 ALL_TO_ALL_RESHARD 选通信分支；离线布局对齐不触发运行时通信，是235B训推切换的两个不同条件，详见 [train-rollout-switch](../../concepts/techniques/train_rollout_switch.md)。
 
 ## Benchmark（§1.3 详细性能）
 
-**GRPO（235B，64 卡，2K 推 32K，真实权重，deepscaler）**：单步数据生成 5351.17s（其中 rollout 4065.71s、ref prefill 1262.27s、reward 21.54s、adv 1.65s）+ 训练 update 2353.23s = 总耗时 7780.36s；推理吞吐 233.56、训练吞吐 403.5、**系统吞吐 122.05 TPS/卡**（doc §1.3.1）。
+**GRPO（235B，64 卡，2K 推 32K，真实权重，deepscaler）**：单步数据生成 5351.17s（其中 rollout 4065.71s、ref prefill 1262.27s、reward 21.54s、adv 1.65s），训练update 2353.23s；来源另记总耗时7780.36s（前两项合计7704.40s，未提供差额计时，不能写直接相加等式）；推理吞吐 233.56、训练吞吐 403.5、**系统吞吐 122.05 TPS/卡**（doc §1.3.1）。
 
 **DAPO（235B，64 卡，2K 推 34K，真实权重，dapo-math-17k）**：因回复变长调 GBS=128；打开样本过滤后首个 step 做 2 个 batch 推理（单轮 3262.39s，总推理 6619.78s），update 797.93s，单步总耗时 7833.16s，推理吞吐 100.56、系统吞吐 41.88 TPS/卡（doc §1.3.2）。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image4.png" width="60%">
-<sub>图：Qwen3-235B 推理优化历程（系统吞吐）——base 59 → prompt balance & 多档位编图 78 → 数据及模型并行策略优化 97 → 使能 FIA 算子负载均衡 109 → HostBound 优化 118 → RolloutRebalance 优化 122 TPS（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§2 推理优化</a>）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image4.png" width="60%">
+<sub>图：Qwen3-235B 推理优化历程（系统吞吐）——base 59 → prompt balance & 多档位编图 78 → 数据及模型并行策略优化 97 → 使能 FIA 算子负载均衡 109 → HostBound 优化 118 → RolloutRebalance 优化 122 TPS（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§2 推理优化</a>）</sub>
 
-**Qwen3-32B SAM（16 卡，2K 推 34K）**：首步推理时间 GRPO 2444→开 SAM 2106（13%）→ 再开 npugraph_ex 1621（33%）；DAPO 4562→4109（10%）→3261（29%）（README）。SAM 单独收益另见 sam_decoding 文档实测：32B 32die DAPO 单步总时间 -8.13%、235B 128die DAPO -10.60%，长尾阶段达非投机 **1.35X**（[sam-speculative](../../concepts/techniques/sam_speculative.md)）。
+**Qwen3-32B SAM（16 卡，2K 推 34K）**：首步推理时间 GRPO 2444→开 SAM 2106（13%）→ 再开 npugraph_ex 1621（33%）；DAPO 4562→4109（10%）→3261（29%）（README）。SAM 单独收益另见 sam_decoding 文档实测：32B 32die DAPO相对加速收益8.13%（4730.86→4374.99s，耗时下降7.52%）、235B 128die DAPO相对加速10.60%（15441.45→13960.98s，耗时下降9.59%），长尾阶段达非投机 **1.35X**（[sam-speculative](../../concepts/techniques/sam_speculative.md)）。
 
 ## 关键优化
 
@@ -69,7 +77,7 @@ GRPO（组内相对优势 + on-policy）与 DAPO（在 GRPO 上加 clip-higher�
 
 ### 框架适配与训推切换
 
-veRL × MindSpeed × vLLM-Ascend 的角色/数据流、repatch、additional_config 等见三张框架页；本实践相对 DeepSeek-R1 的两点新适配：(1) veRL 开启 `moe_alltoall_overlap` 后专家权重加载异常的修复（doc §1.2）；(2) 长序列下推理 sleep 模式依赖 `torch_npu` 虚拟内存动态切换尚不可用，仍沿用前序 `onload/offload` 方案（见 [train-rollout-switch](../../concepts/techniques/train_rollout_switch.md)）。reshard 的零冗余 AlltoAllV 专家路由是 235B 训推切换的关键（专家层参数占比高、`moe_alltoall_overlap_comm` 会改 GMM 权重命名）。
+veRL × MindSpeed × vLLM-Ascend 的角色/数据流、repatch、additional_config 等见三张框架页；本实践相对 DeepSeek-R1 的两点新适配：(1) veRL 开启 `moe_alltoall_overlap` 后专家权重加载异常的修复（doc §1.2）；(2) 旧 GE 优化实践当时因 torch_npu 虚拟内存动态切换限制沿用 onload/offload；当前固定 CANN8.5.0 recipe 已包含0016-verl-bugfix-hot_swap_expandable_segments.patch，为 NPU allocator 动态切换 expandable_segments、支持 sleep mode 热切换，不能把旧限制推广到当前启动链路（见 [train-rollout-switch](../../concepts/techniques/train_rollout_switch.md)）。reshard 的零冗余 AlltoAllV 专家路由是 235B 训推切换的关键（专家层参数占比高、`moe_alltoall_overlap_comm` 会改 GMM 权重命名）。
 
 ### 投机解码：SAM（Qwen3-32B 为主，235B 亦验证）
 
@@ -90,15 +98,15 @@ SAM 是基于**动态后缀自动机**的**无模型（draft-model-free）投机
 
 235B-A22B 在 TP4DP32EP128 下权重仅占 **7.09GB**（Embedding/LmHead 0.58 + QKV 1.65 + O 1.47 + MoE 3.30 + Gate 0.09）。KV Cache 按激活与权重之外的剩余内存按比例分配。TP4 下单 BS 的 32K KV Cache 占 **1.47GB**，单卡 BS 上限保守估算仅 30~40。但实测 response 长尾分布——多数序列早退释放 KVCache，故按最大长度严格限 `max_num_seqs` 会严重损初期吞吐。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image7.png" width="62%">
-<sub>图：左为 DeepScalar 单次推理 256 条回复的长度分布（仅少数长尾达最大长度），右为「各长度下剩余序列数」实测蓝线始终位于「给定 KVCache 容量下序列长度-最大序列数」红色反比例曲线之下，故 max_num_seqs=256 仍不触发 OOM（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§2.1 内存占用分析与部署策略选择</a>）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image7.png" width="62%">
+<sub>图：左为 DeepScalar 单次推理 256 条回复的长度分布（仅少数长尾达最大长度），右为「各长度下剩余序列数」实测蓝线始终位于「给定 KVCache 容量下序列长度-最大序列数」红色反比例曲线之下，故 max_num_seqs=256 仍不触发 OOM（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§2.1 内存占用分析与部署策略选择</a>）</sub>
 
 据此最终配置：**TP4DP32EP128**（大 TP 降单卡权重占比、Decode 访存 bound 下缓解瓶颈并留更多 KV Cache 空间）+ `max_num_seqs=256` + `max_num_batched_tokens=32768` + `gpu_memory_utilization=0.87`（配合 Chunk-MoE 特性降 prefill 峰值内存，doc §2.1）。
 
 ### 计算与调度优化（doc §2.2）
 
 - **切分策略** §2.2.1：长尾低 BS 下 Matmul 访存 bound（实测随 request 减少、shape 变小但耗时不等比下降）。非 MoE 部分用更大 TP（TP4DP32 vs TP1DP128）让每卡只加载小权重、提高计算占比——TP1 切分 Matmul 严重访存 bound，TP4DP32 整网更优、更不易 KVCache 换出。
-- **图模式路径** §2.2.2：veRL+vLLM 有 5 种图模式路径，Qwen3-235B 长序列优化文档对比 Full_decode_only ACLGraph 与 TorchAir GE，选 **GE 图模式**——GE 可配更大 `max_num_seqs` 并开多档位编图，总体推理耗时最优；且 Full Graph 要求 kernel 地址固定、必须用 vLLM 原生 sleep mode（依赖关闭虚拟内存，与训练侧冲突易 OOM），大集群 RL 训练下无法正常运行。版本注记：优化文档（d17909e）采用 TorchAir GE；同一来源版本的 recipe README 与启动脚本采用 **npugraph_ex**。README 注明部分 GE 相关 patch 已不适用，完整 GE 实现见 v0.1.0；235B 128die 启动脚本使用 `CUDAGRAPH_SIZES` + `cudagraph_capture_sizes`，无 TorchAir GE 配置。因此，GE 实验结果与 npugraph_ex 启动配置不能作为同一图模式使用。
+- **图模式路径** §2.2.2：veRL+vLLM 有 5 种图模式路径，Qwen3-235B 长序列优化文档对比 Full_decode_only ACLGraph 与 TorchAir GE，选 **GE 图模式**——GE 可配更大 `max_num_seqs` 并开多档位编图，总体推理耗时最优；且 Full Graph 要求 kernel 地址固定、必须用 vLLM 原生 sleep mode（依赖关闭虚拟内存，与训练侧冲突易 OOM），大集群 RL 训练下无法正常运行。版本注记：优化文档（来源工作项）采用 TorchAir GE；同一来源版本的 recipe README 与启动脚本采用 **npugraph_ex**。README 注明部分 GE 相关 patch 已不适用，完整 GE 实现见 v0.1.0；235B 128die 启动脚本使用 `CUDAGRAPH_SIZES` + `cudagraph_capture_sizes`，无 TorchAir GE 配置。因此，GE 实验结果与 npugraph_ex 启动配置不能作为同一图模式使用。
 - **FIA 算子负载均衡** §2.2.3：长序列 decode 各 batch cache 长度不一，IFA（IncreFlashAttention）多核负载不均（部分核空闲）。改用 **FIA（FusedInferAttention）**，基于核数循环模拟求最优核数 + 贪心块分配均衡各核开销；该优化已集成 CANN 8.3.RC1。系统吞吐 105→117（**+11.4%**）。算法/公式见下方专节。
 - **Decode HostBound** §2.2.4：Decode 通信拖尾根因是 Host 侧 GC 与内存操作引入空泡导致下发延迟。**Decode step 临时禁用 GC + taskset 绑核**（Ray 拉起时 device id 都被设 0，`CPU_AFFINITY_CONF` 失效，改用 taskset）：forward 137.64→124.66ms（-9.4%）、总推理 4851.98→4192.09s（-13.6%）。
 
@@ -149,7 +157,7 @@ FIA（FusedInferAttention）当前支持更优的负载均衡逻辑，本实践�
 
 ### EPLB（链 [eplb](../../concepts/techniques/eplb.md)）
 
-本实践适配 EPLB（`VLLM_ENABLE_EPLB`）：Qwen3-30B/235B 真实权重实测**无明显收益**（各卡负载本身无明显不均），仅构造极端不均场景下推理耗时 -17.78%。EPLB 原理、分层/全局双调度与三组实验详见 [eplb](../../concepts/techniques/eplb.md)。
+本实践适配 EPLB（`VLLM_ENABLE_EPLB`）：Qwen3-30B/235B 真实权重实测**无明显收益**（各卡负载本身无明显不均），人工极端负载实验观测耗时下降17.78%；三组观测未建立中等不均负载的收益阈值。EPLB 原理、分层/全局双调度与三组实验详见 [eplb](../../concepts/techniques/eplb.md)。
 
 ## Qwen3-235B 训练优化（doc §3）
 
@@ -157,8 +165,8 @@ FIA（FusedInferAttention）当前支持更优的负载均衡逻辑，本实践�
 
 训练静态内存（权重+梯度+优化器状态）相对固定，动态内存（激活）正比于序列长度，长序列下成为瓶颈。本实践用 MindSpeed **swap optimizer** 卸载绝大部分优化器静态内存（见 [swap-optimizer](../../concepts/techniques/swap_optimizer.md)），TP4PP4EP32 下静态内存仅留 BF16 权重+梯度约 **12.51GB**（叠加推理后残留 8~9GB，训练态单卡约 21.5GB）。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image28.png" width="68%">
-<sub>图：Qwen3-235B 单层动态激活内存来源——ATTN（QKVO/RingAttention）与 MoE（AllToAll Dispatch/GroupedMatMul/SwiGLU/Combine）；MoE 激活含 SMoE 因子（S/Tp·TopK ~ S/Tp·E），负载越不均膨胀越大（8~128 倍间波动）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§3.1 内存占用分析和模型切分策略选择</a>）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image28.png" width="68%">
+<sub>图：Qwen3-235B 单层动态激活内存来源——ATTN（QKVO/RingAttention）与 MoE（AllToAll Dispatch/GroupedMatMul/SwiGLU/Combine）；MoE 激活含 SMoE 因子（S/Tp·TopK ~ S/Tp·E），负载越不均膨胀越大（8~128 倍间波动）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§3.1 内存占用分析和模型切分策略选择</a>）</sub>
 
 动态内存上不开 CP 时首个 PP rank 仅 ATTN 激活就 55.07GB（32K 下必须开 CP）；MoE 层重计算 `moe_zero_memory`（前置依赖 `moe_alltoall_overlap_comm`，后者改 GMM 权重命名、靠前序零冗余 reshard 支撑）消除随负载剧变的 MoE 激活。最终选 **TP4PP4CP4EP32**：CP2 实测 OOM、CP4 可正常执行；相比 CP8，CP4 把 DP 翻倍并减少 RingAttention 通信次数，训练吞吐 263→412（**+30%+**，doc §3.1 表）。
 
@@ -166,8 +174,8 @@ FIA（FusedInferAttention）当前支持更优的负载均衡逻辑，本实践�
 
 纯 CP 的效率缺陷：序列打包到 `max_packing_token_size` 后无论长短都走相同 CP 划分与通信，短序列被强制切分引入不必要通信。**HDP（Hybrid Data Parallelism）**把 DP 与 CP 融合统一调度，内置装箱算法按序列长度自动选最优并行——长序列走 CP、短序列尽量划到 DP 组避免无谓通信。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image32.png" width="72%">
-<sub>图：CP4 vs HDP——seq packing 后 batch2 [seq0 24k, seq1 8k] 在 CP4 下 seq1 仍被 4 卡切分产生冗余通信（Redundant Comm.），HDP 装箱后 seq0 占 rank0~2 做 CP3、seq1 单独占 rank3 无通信（Efficient Comm.）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§3.2 HDP 混合数据并行</a>）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image32.png" width="72%">
+<sub>图：CP4 vs HDP——seq packing 后 batch2 [seq0 24k, seq1 8k] 在 CP4 下 seq1 仍被 4 卡切分产生冗余通信（Redundant Comm.），HDP 装箱后 seq0 占 rank0~2 做 CP3、seq1 单独占 rank3 无通信（Efficient Comm.）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B 32K 长序列 RL 训练优化文档·§3.2 HDP 混合数据并行</a>）</sub>
 
 HDP 装箱按序列预估占用 rank 数动态分组、溢出部分轮转合并并设上下阈值保鲁棒；框架侧需改 Positional Embedding（RoPE CP 通信范围调到组内）与 Ring Attention（`rank/cp_rank/cp_global_ranks/cp_outer_ranks`）。**收益强依赖数据长度分布**：Deepscaler（序列普遍 >3000，难均衡分组）下前 3 step 训练仅约 5%、端到端更小；而 DeepSeek-V3 + openr1-220k（序列普遍 <3000，大量纯 CP8 转 DP）训练耗时收益 **25%+**（178.234→133.139s，吞吐 77→107，doc §3.2 表）。recipe 通过 `USE_HDP` 环境变量 + megatron/mindspeed/verl 三处 `enable_hdp` patch（含 `0015-verl-feature-hdp_binpack_optimization`）使能。
 
@@ -178,17 +186,23 @@ HDP 装箱按序列预估占用 rank 数动态分组、溢出部分轮转合并�
 - **KVP 切分**（[kvp](../../../inference/concepts/parallelism/kvp.md)）：Qwen3-235B RL 配置通过分析推理侧实际内存、设置 `max_num_seqs=256` 不触发 continuous batching 来规避 OOM；对 Device 侧内存不够、必须 continuous batching 的极端长序列场景，沿 KV/序列维度做 KV-Parallel 切分可在单实例内进一步摊薄单卡 KV Cache 压力，与 Seer 的 Divided Rollout（每块最多推 8K token、推完放回缓存池再分配，规避 OOM 与中途 preempt）思路一致，是 Rollout Rebalance 之外的另一条长尾/显存缓解方向（doc §2.2.2、§2.3.1 与 Seer 论文对比）。
 - **Qwen-Next gated_delta_rule**（[recurrent-gated-delta-rule](../../../inference/concepts/kernels/recurrent_gated_delta_rule.md)）：上述训练配置使用标准 attention 的 Qwen3-235B-A22B；Qwen-Next 引入的 **gated delta rule 线性/递归注意力**使 KV Cache 不再随序列长度线性增长，可缓解 §2.1 所述「HBM 随序列长度线性增长」的长序列显存瓶颈，是长序列 RL 后续模型迭代的算子方向（doc §1.1 背景）。
 
+## 当前目录与可选 Dynamic RL
+
+本实践入口现位于 `llm_rl/qwen3/verl-mindspeed/`，依赖准备、`apply_all_patches.sh` 和 `internal/` 启动脚本均在该目录执行。当前新增 `train_grpo_qwen3_30b_16die_dynamic_rl.sh`，提供 History Tree 响应复用与 EAGLE3 chain 草稿的动态切换；它是 Qwen3-30B 的独立可选配置，不能当作上文 235B 观测已经启用的特性。配置、预热和可比指标见 [History Tree Dynamic RL](../../concepts/techniques/history_tree_dynamic_rl.md)。
+
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（§1.2 优化总览、§1.3.1 GRPO 122 TPS 拆解 + §1.3.2 DAPO 41.88 TPS、§2.1 内存与部署 TP4DP32EP128 / max_num_seqs=256 / 7.09GB / 1.47GB、§2.2 切分/图模式 GE/FIA 负载均衡 +11.4%/HostBound -13.6%、§2.3 Rollout Rebalance/EPLB/DataBalance、§3.1 静态 12.51GB / CP4 +30% / moe_zero_memory、§3.2 HDP 装箱与收益）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md`（§2.2.3 FIA 多核负载均衡算法/公式）](https://gitcode.com/cann/cann-recipes-train/blob/ece44cf36b1a980649a0ca9931d2695eb8e27e8f/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（最优核数判据 `TotalBlocks` vs `(TotalCores-2)·TotalCores`、核数范围 `MinCore=min(sqrt(TotalBlocks+1/4)+1/2,TotalCores)` / `MaxCore=min(TotalBlocks,TotalCores)`、`TotalTime=max(CoreCost_0..k)+ρ·k`、贪心 `CostLimit=UndistributedLoad/(k-i)` + `CoreCost_i+LoadCost_j·0.5<CostLimit`、CANN 8.3.RC1 集成、105→117 +11.4%）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/sam_decoding.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md)（Qwen3-32B/235B SAM 投机 RL 后训练精度无损 + 性能：32B DAPO -8.13%、235B DAPO -10.60%、长尾 1.35X；自适应阈值 8 / 投机 token 3）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen3/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen3/README.md)（235B 120 TPS / 32B SAM±npugraph_ex 提升表、`ray_start_npu.sh` 拉起、`internal/train_*` 启动脚本、`converter_hf_to_mcore.py` 权重切分、`apply_all_patches.sh` + patch 清单 HDP/data_rebalance/SAM/EPLB/rollout_rebalance/length_aware_resampler、Length-Aware Resampler 可选特性）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [qwen3_235B_32k_longseq_rl_train_optimization.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（supporting）
+- [0005-verl-feature-moe_alltoallv.patch](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/patches/verl/0005-verl-feature-moe_alltoallv.patch)（implementation）
+- [0016-verl-bugfix-hot_swap_expandable_segments.patch](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/patches/verl/0016-verl-bugfix-hot_swap_expandable_segments.patch)（implementation）
+- [sam_decoding.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md)（implementation）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/README.md)（implementation）
 
 ## Links
-- [npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)（跨域：Qwen3 RL 训练使能的 npugraph_ex 图模式，叠加 SAM 再 +29~33%）
+- [npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)（跨域：Qwen3 RL 训练使能的 npugraph_ex 图模式，SAM与npugraph_ex叠加后，相对两者均关闭基线首步推理耗时约下降29%~33%）
 
-- [grpo-dapo](../../concepts/techniques/grpo_dapo.md)（本实践 RL 算法：GRPO on-policy old_log_prob 免计算 + DAPO clip-higher/token-IS/样本过滤）
+- [grpo-dapo](../../concepts/techniques/grpo_dapo.md)（本实践 RL 算法：同批一次参数更新条件下 GRPO old_log_prob 免计算 + DAPO clip-higher/token-IS/样本过滤）
 - [sam-speculative](../../concepts/techniques/sam_speculative.md)（Qwen3-32B/235B 使能的无模型 SAM 投机，长尾 1.35X）
 - [train-rollout-switch](../../concepts/techniques/train_rollout_switch.md)（全共卡 RL 的 reshard/offload/D2D，长序列 235B 训推切换基础）
 - [rollout-rebalance](../../concepts/techniques/rollout_rebalance.md)（推理时序列级动态重均衡，缓解长尾木桶效应）

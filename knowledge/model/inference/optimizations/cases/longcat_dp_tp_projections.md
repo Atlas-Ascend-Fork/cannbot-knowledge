@@ -10,12 +10,10 @@ status: stable
 platforms:
 - a3
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/docs/models/longcat-flash/longcat_flash_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/models/modeling_longcat_flash.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/README.md
-  role: constraint
 scope:
   schema: model.inference.v1
   any_of:
@@ -36,18 +34,18 @@ scope:
       framework:
       - cann_executor
 created_at: '2026-10-20T11:49:50Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:39Z'
 ---
 
 # LongCat A3 局部 TP 案例：o_proj 与 dense MLP 的 DP/TP 边界
 
 ## 条件与规则入口
 
-本案例补充[局部 TP 决策](../rules/local_tp_memory_heavy_projections.md)的 LongCat-Flash 实施细节，来源固定在 `0640521a817001f560fc30617acad41af585dfe1`，平台限定 Atlas A3，主结论针对 Decode 的 Attention-DP 路径。优化选择与复现方法由规则卡维护；本卡只记录该模型的切分和通信。
+本案例补充[局部 TP 决策](../rules/local_tp_memory_heavy_projections.md)的 LongCat-Flash 实施细节，来源为当前选定源码，平台限定 Atlas A3，主结论针对 Decode 的 Attention-DP 路径。优化选择与复现方法由规则卡维护；本卡只记录该模型的切分和通信。
 
 ## o_proj：输入维分片与布局恢复
 
-源码在 `o_proj_tp_size > 1` 且 `attn_tp_size == 1` 时，把 Attention 输出按 head/输入特征重排，执行 `all_to_all_single`，使每个 rank 获得自己负责的输入特征段。o_proj 沿输入 K 轴分片，本地线性投影后通过 `reduce_scatter_tensor` 合并部分和并恢复 batch 分布。
+源码在 `o_proj_tp_size > 1` 且 `attn_tp_size == 1` 时，把 Attention 输出按 head/输入特征重排，执行 `all_to_all_single`，使每个 rank 获得自己负责的输入特征段。o_proj 沿输入 K 轴分片，本地线性投影后通过 `reduce_scatter_tensor` 合并部分和；当前 packed-token/Attention-SP 路径还处理 token padding，恢复正确 token 分布。Attention TP>1 时要求其组宽与 o_proj TP 相等，按对应分支合并。
 
 输入维与分片大小必须吻合。这个守卫描述本案例的 DP 路径，不是所有 LongCat 版本或其他模型对 Attention TP 的总限制；也不能把历史 KVP 的 AllReduce 分支拼接到这条 AllToAll/ReduceScatter 路径。
 
@@ -63,6 +61,5 @@ updated_at: '2026-10-20T12:49:18Z'
 
 ## Evidence
 
-- [优化文档](https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/docs/models/longcat-flash/longcat_flash_optimization.md)：o_proj 与 MLP TP 的设计说明。
-- [固定模型源码](https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/models/modeling_longcat_flash.py)：`LongcatFlashMLP`、`o_proj_forward` 与通信组构造；静态核对 AllGather、AllToAll 和 ReduceScatter 的位置。
-- [固定 README](https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/README.md)：Atlas A3 产品范围；没有独立真机复测。
+- [longcat_flash_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md)（primary）
+- [modeling_longcat_flash.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py)（implementation）

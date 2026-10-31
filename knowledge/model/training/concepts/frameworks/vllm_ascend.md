@@ -9,12 +9,16 @@ tags:
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/deepseek/verl_patches/workers/vllm_rollout/vllm_rollout_spmd.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/docs/zh/install_guide.md
+  role: implementation
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:15Z'
 platforms:
 - a3
 ---
@@ -39,8 +43,8 @@ DeepSeek-R1 每一步 RL 训练分三个计算密集阶段，三个模型 **全�
 
 rollout 是数据生成阶段，长序列场景下其耗时可占总体 80% 以上，1K 推 3K 场景也接近一半，因此是 RL 优化的重中之重。本实践 rollout 未采用推理常用的 **PD 分离部署**——因整个 RL 训练中推理 Prefill 部分耗时占比很小、优化收益不高，故走 P/D 共卡。训练与推理并行策略不同（rollout 的 DP/EP 大、ref/update 的 TP/EP/PP），故每步 update 后需经 reshard 把训练权重重新划分给推理侧（见 [deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md) 的训推切换优化）。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image2.png" width="55%"></p>
-<p align="center"><sub>图：本实践对 veRL 的四方面性能优化（模型间调度 / 训推切换 / 训练 / 推理），rollout 优化集中在「推理」一支（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·verl 适配和优化实践总览）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image2.png" width="55%"></p>
+<p align="center"><sub>图：本实践对 veRL 的四方面性能优化（模型间调度 / 训推切换 / 训练 / 推理），rollout 优化集中在「推理」一支（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·verl 适配和优化实践总览）</sub></p>
 
 ## verl + vLLM-Ascend 适配
 
@@ -51,9 +55,9 @@ rollout 是数据生成阶段，长序列场景下其耗时可占总体 80% 以�
 | **手动使能 vLLM-Ascend 的 patch** | patch 包含 vLLM-Ascend 对 vLLM 的一些类、函数、以及部分变量类型的调整，当前版本需要在 import vllm **前**手动引入 patch。 |
 | **初始化 DP 通信域** | 配置 `VLLM_DP_MASTER_PORT` 保证每个 DP group 都有独立的通信端口用于组内进程同步，同时通过 `VLLM_DP_MASTER_IP` 指定 DP 组主节点 IP，适应动态集群环境。 |
 | **关闭 sleep 模式** | 当前 NPU 上的 sleep 模式在多机上存在失效问题，无法释放显存；不显式关闭会导致 weight 与 kv_cache 被 vLLM 自定义的内存池管理，后续无法通过 torch_npu 手动卸载。 |
-| **配置 `max_num_batched_token`** | 加载真实权重后，默认值 8192 会导致专家负载不均时部分卡 OOM，因此需配置 `max_num_batched_token=1024`、`enable_chunked_prefill=True`。 |
+| **配置 `max_num_batched_tokens`** | 加载真实权重后，默认值 8192 会导致专家负载不均时部分卡 OOM，因此需配置 `max_num_batched_tokens=1024`、`enable_chunked_prefill=True`。 |
 
-> sleep/wake_up 失效是 RL 全共卡部署的关键约束：因 NPU 多机 sleep/wake_up 不可用，offload/onload 改由 `onload_model_weight`+`init_cache_engine`（替代 wake_up）与 `offload_model_weight`+`free_cache_engine`（替代 sleep）手动实现，参考 MindSpeed-RL（见 [deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md) 的 offload 优化）。
+> sleep/wake_up 失效是 RL 全共卡部署的关键约束：因 NPU 多机 sleep/wake_up 不可用，offload/onload 改由 `onload_model_weights`+`init_cache_engine`（替代 wake_up）与 `offload_model_weights`+`free_cache_engine`（替代 sleep）手动实现，参考 MindSpeed-RL（见 [deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md) 的 offload 优化）。
 
 ### 使能 vLLM-Ascend 优化特性
 
@@ -87,8 +91,8 @@ additional_config={
 
 数据生成推理阶段是 RL 优化的核心。本实践在 vLLM-Ascend 上做了多轮推理优化，**优化代码已全部合入 vLLM-Ascend 社区仓**，DeepSeek-R1 随机权重 1K 推 3K 场景的单卡推理吞吐从 162 token/p/s 提升到 618 token/p/s：
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image22.png" width="62%"></p>
-<p align="center"><sub>图：RL 推理吞吐优化历程（单卡 BS=64）：Base 162 → TorchAir+AIV+vLLM-V1 419 → 大 EP Transpose/Cumsum 消除 456 → MoE/MLA 多流+fix router 487 → 零冗余 TP 转 EP 通信 519 → DP 间 EoS 检测调度优化 618 token/p/s（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·性能优化：推理）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image22.png" width="62%"></p>
+<p align="center"><sub>图：RL 推理吞吐优化历程（单卡 BS=64）：Base 162 → TorchAir+AIV+vLLM-V1 419 → 大 EP Transpose/Cumsum 消除 456 → MoE/MLA 多流+fix router 487 → 零冗余 TP 转 EP 通信 519 → DP 间 EoS 检测调度优化 618 token/p/s（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·性能优化：推理）</sub></p>
 
 贡献较大的几项特性（各自的完整原理见所链推理域专页）：
 
@@ -102,8 +106,8 @@ additional_config={
 
 纯模型优化后，Prefill+Decode 纯模型计算在 rollout 整体耗时占比已不足 60%，其余 40% 集中在 Decode 前后处理、vLLM V1 Engine 调度、训推切换前权重内存卸载等调度操作上。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image44.png" width="72%"></p>
-<p align="center"><sub>图：rollout 373s 耗时拆解——vLLM Sche 31s / Prefill 2s / Decode Forward Model 223s / Decode pre/post process 94s / RL Sche 20s，纯模型计算占比已不足 60%（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·RL 推理调度 bound 优化）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image44.png" width="72%"></p>
+<p align="center"><sub>图：rollout 373s 耗时拆解——vLLM Sche 31s / Prefill 2s / Decode Forward Model 223s / Decode pre/post process 94s / RL Sche 20s，纯模型计算占比已不足 60%（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·RL 推理调度 bound 优化）</sub></p>
 
 关键调度瓶颈在 vLLM 调度前的全卡 DP 域间 EOS 检测同步与 Decode 前的 P/D 检测同步——均通过 CPU 的 AllReduce 获取 `has_unfinished_requests`，单次平均 10ms，Decode 3000 次后各叠加耗时高达 30s。优化把 `has_unfinished_requests` 与 `_get_forward_metadata_across_dp` 中的 AllReduce 通信后端由 **Gloo（CPU-TCP）改为 HCCL（NPU-HCCS）**：单通信耗时由 14ms 降到 3ms 以内，128 卡整网推理吞吐由 519 优化到 618 tps、推理耗时 385s→322s（提升约 20%）。
 
@@ -135,7 +139,7 @@ additional_config={
 ### prefix cache 与 chunked prefill 在 rollout 的边界
 
 - **prefix cache**：`enable_prefix_caching` 透传给 `LLM(...)`，缓存已处理请求 Prefill 阶段的 KV 中间结果，新请求命中相同前缀时直接复用、跳过重复 Prefill；只在 Prefill 生效、不影响输出，适合 RL 里同 system prompt / 同few-shot 前缀的批量 rollout。
-- **chunked prefill**：把长 prompt 切块跨多个 forward step 调度、与 decode 拼 batch 拉平每步算量，降 P90 TTFT/TPOT 并缓解单 batch 过大 OOM（veRL 实践即靠 `enable_chunked_prefill=True`+`max_num_batched_token=1024` 防专家不均 OOM）。边界：**不能与 prefix cache(APC) / KVCache 量化同开**；vLLM V1 scheduler 默认开 chunked prefill，但开 `ascend_scheduler_config.enabled=True`（`VLLMInferEngine` 默认 `ascend_scheduler_config_enabled=True`）后 chunked prefill **默认关闭**（非硬互斥，是默认值切换），rollout 默认走昇腾自研 scheduler。
+- **chunked prefill**：把长 prompt 切块跨多个 forward step 调度、与 decode 拼 batch 拉平每步算量，降 P90 TTFT/TPOT 并缓解单 batch 过大 OOM（veRL 实践即靠 `enable_chunked_prefill=True`+`max_num_batched_tokens=1024` 防专家不均 OOM）。边界：**不能与 prefix cache(APC) / KVCache 量化同开**；vLLM V1 scheduler 默认开 chunked prefill，但开 `ascend_scheduler_config.enabled=True`（`VLLMInferEngine` 默认 `ascend_scheduler_config_enabled=True`）后 chunked prefill **默认关闭**（非硬互斥，是默认值切换），rollout 默认走昇腾自研 scheduler。
 
 ### engine_core / 多模态 patch
 
@@ -148,23 +152,16 @@ adapter 在 import vllm 后立刻打两类 patch（`from vllm_ascend.patch impor
 
 ## 环境与版本
 
-依赖版本基线：vLLM `v0.9.1` + vLLM-Ascend `v0.9.1rc2`；CANN `8.2.RC1` + torch_npu `7.1.0` + PyTorch `2.5.1`；recipe 附 `0001-FIX-KVcache-NZ.patch`（KVCache NZ 优化），框架本体自行拉取。真实权重 123.16 TPS/卡 是在「复用 MindSpeed 训练优化 + TorchAir 整图下沉 + MoE/MLA 多流 + KVCache 支持 NZ」四项特性同开下达成，对应代码已合入 verl PR #3427 与 vLLM-Ascend v0.9.1rc2。
+旧 veRL DeepSeek-R1 recipe 的依赖基线（不覆盖 MindSpeed-RL adapter）：vLLM `v0.9.1` + vLLM-Ascend `v0.9.1rc2`；CANN `8.2.RC1` + torch_npu `7.1.0` + PyTorch `2.5.1`；recipe 附 `0001-FIX-KVcache-NZ.patch`（KVCache NZ 优化），框架本体自行拉取。真实权重 123.16 TPS/卡 是在「复用 MindSpeed 训练优化 + TorchAir 整图下沉 + MoE/MLA 多流 + KVCache 支持 NZ」四项特性同开下达成，对应代码已合入 verl PR #3427 与 vLLM-Ascend v0.9.1rc2。
+
+MindSpeed-RL adapter另按当前安装指南：CANN 8.5.0、torch/torch_npu 2.7.1、vLLM `releases/v0.11.0`、vLLM-Ascend `v0.11.0-dev`。两套接口与版本矩阵不能拼接使用。
 
 ## Evidence
 
-- [vllm-ascend](https://github.com/vllm-project/vllm-ascend) — vLLM-Ascend 上游仓 source 页（含 URL 与各 recipe pin ref）
-
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — MindSpeed-RL rollout vLLM-Ascend adapter（blob base `https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/`）：
-  - [`mindspeed_rl/models/rollout/vllm_engine.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/rollout/vllm_engine.py) — `VLLMInferEngine`（`LLM(load_format='dummy', distributed_executor_backend='external_launcher', additional_config=...)`、`sync_model_weights`/`_process_mla`、`offload_model_weights`/`init_cache_engine`/`free_cache_engine`（替 wake_up/sleep）、`generate_sequences`）
-  - [`.../vllm_adapter/megatron_weight_loaders.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/rollout/vllm_adapter/megatron_weight_loaders.py) — `update_megatron_weight_loader`/`parallel_weight_loader`、`MODEL_MEGATRON_WEIGHT_LOADER_REGISTRY`、`deepseek/qwen/llama_*_weight_loader`、`qkv_split_weight`、MoE `w13/w2` 按 EP reshape
-  - [`.../vllm_adapter/engine_core.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/rollout/vllm_adapter/engine_core.py) — patch `EngineCore._initialize_kv_caches`（共享中心控制器、统一 `kv_cache_configs[0]`）与 `NPUModelRunner.initialize_kv_cache`（`if not self.attn_groups` 防重复建 attn_backend）
-  - [`.../vllm_adapter/patch/rotary_embedding_patch.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/rollout/vllm_adapter/patch/rotary_embedding_patch.py) — `replace_qwenvl_mrope` → `torch_npu.npu_mrope`（VLM rollout 多模态 patch，`patch/__init__.py` 仅 `is_multimodal()` 时生效）
-  - [`docs/zh/features/{acl_graph,vLLM_prefix_cache,chunked_prefill,task_queue,resharding}.md`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/features/acl_graph.md) — 图模式/前缀缓存/chunked prefill/task_queue/在线重切分特性说明
-
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/deepseek_rl_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md)（§1.2.2 为何选择 vLLM Ascend、§1.3 引擎适配、§1.4 性能表、§2.2 verl+vLLM-Ascend 适配（四项操作表 + additional_config）、§6 性能优化：推理（TorchAir/多流/零冗余 TP 转 EP/NZ/大 EP 冗余算子/调度 bound）、§4.2 offload）
-- [`llm_rl/deepseek/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/deepseek/README.md) — 选型框架表（verl/vLLM/vLLM-Ascend/Megatron-LM/MindSpeed）、依赖版本（vLLM v0.9.1 / vLLM-Ascend v0.9.1rc2 / CANN 8.2.RC1 / torch_npu 7.1.0）、vllm-ascend 镜像与 patch 拉取命令、128 卡 120 TPS/卡 benchmark
-- `llm_rl/deepseek/vllm_ascend_patches/0001-FIX-KVcache-NZ.patch` — KVCache NZ 优化 patch（README 手动环境章节 git apply）
-- `verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py`（veRL 上游，本仓以 patch 修改）— `vLLMRollout` 初始化的接口参数适配点（doc §2.2 所述修改集中处）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [deepseek_rl_train_optimization.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md)（supporting）
+- [vllm_rollout_spmd.py](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/deepseek/verl_patches/workers/vllm_rollout/vllm_rollout_spmd.py)（implementation）
+- [install_guide.md](../../../../../cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/docs/zh/install_guide.md)（implementation）
 
 ## Links
 

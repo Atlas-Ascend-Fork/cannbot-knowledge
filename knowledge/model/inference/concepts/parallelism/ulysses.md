@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Ulysses Sequence Parallelism
-description: Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。相比于 Ring Attention 依赖 P2P 循环传 KV，Ulysses 用集合通信 all-to-all 实现，简单高效，是 HunyuanVideo / HunyuanImage-3.0 / Wan2.2-I2V 长序列 DiT 推理的首选序列并行。 cann-recipes-infer 在 `module/unified_sp/` 提供统一 SP 框架，支持 Ulysses / Ring / Hybrid（Ulysses × Ring）三种模式，并通过 **Ulysses Anything Attention (UAA)** 在满足 padding 边界时支持头数不整除并行度的配置。
+description: Ulysses序列/head交换、UAA填充边界、纯Ulysses限制和当前块稀疏接入。
 tags:
 - task.design
 - topic.parallelism
@@ -9,16 +9,18 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
-  role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module/unified_sp/uaa.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/unified_sp/core.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module/unified_sp/core.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/unified_sp/uaa.py
   role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/blockwise_sparse/sparse_method.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py
+  role: constraint
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-09-12T03:21:42Z'
+updated_at: '2026-10-29T14:12:39Z'
 platforms:
 - agnostic
 ---
@@ -27,14 +29,14 @@ platforms:
 
 ## Summary
 
-Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。相比于 Ring Attention 依赖 P2P 循环传 KV，Ulysses 用集合通信 all-to-all 实现，简单高效，是 HunyuanVideo / HunyuanImage-3.0 / Wan2.2-I2V 长序列 DiT 推理的首选序列并行。
+Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。相比于 Ring Attention 依赖 P2P 循环传 KV，Ulysses 用集合通信 all-to-all 实现，来源确认 HunyuanVideo 与 Wan2.2-I2V 提供该实现；方案取舍仍需按头数、通信和负载实测，来源没有建立优于 Ring 的通用推荐排序。
 
 cann-recipes-infer 在 `module/unified_sp/` 提供统一 SP 框架，支持 Ulysses / Ring / Hybrid（Ulysses × Ring）三种模式，并通过 **Ulysses Anything Attention (UAA)** 在满足 padding 边界时支持头数不整除并行度的配置。
 
 ## Mechanism
 
-![Ulysses 序列并行](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/hunyuan-video/figures/ulysses.png)
-*来源：[`docs/models/hunyuan-video/figures/ulysses.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/figures/ulysses.png)（cann-recipes-infer @ 2f82d10）*
+![Ulysses 序列并行](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/figures/ulysses.png)
+*来源：[`docs/models/hunyuan-video/figures/ulysses.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/figures/ulysses.png)（cann-recipes-infer @ 944d2d3）*
 
 > 源（HunyuanVideo 优化文档）：假设 input 的 shape 为 B，S，N，D，分别代表（batch size，sequence，number of head，dimension），序列并行即将 input 沿着 S 维度进行切分，在多卡上实现更低的动态显存占用，和更高的 DiT 性能。
 >
@@ -92,11 +94,12 @@ x = fc.all_to_all_single(x, output_split_sizes, input_split_sizes, self.ulysses_
 
 ## Applicable Scenarios
 
-- 长序列 DiT 推理（HunyuanVideo 119k、HunyuanImage-3.0、Wan2.2-I2V）
+- 长序列 DiT 推理（已接入的 HunyuanVideo、Wan2.2-I2V 等），不能仅由 Attention TP 推定使用 Ulysses
 - 需要跨卡均摊 sequence 方向动态显存的场景
 - 可与 Ring Attention 组合（hybrid SP，2D mesh）
-- 与 FP8 量化注意力配合：**FP8 量化 attention 当前仅支持 Ulysses SP，不支持 Ring**
-- 与 [blockwise-sparse-attention](../modules/blockwise_sparse_attention.md) 配合：块稀疏仅与单卡/Ulysses 协同（不支持 Ring）。块稀疏 × Ulysses 负载均衡为本页钉定版 @2f82d10 之后由提交 `dcabc6a`（"HunyuanVideo support Ulysses parallelism with block-wise sparse attention"）引入的 master 演进，@2f82d10 的 `module/blockwise_sparse/` 尚不含相关符号：`ulysses_degree > 1` 时对**实现该方法的 TopK 路径**（在 `sample_video.py` 经 `getattr(args, "ulysses_degree", 1) > 1 and hasattr(..., "apply_head_reorder_for_load_balance")` 守卫，SVG 路径因无该方法而跳过）调 `apply_head_reorder_for_load_balance` 重排 head 以均衡各 rank 的稀疏计算量，`parallel_sparse_attention` 为 SP 下执行入口（落点为 `module/blockwise_sparse/sparse_method.py` 与 `models/hunyuan-video/hyvideo/modules/attention.py`，非 `unified_sp/core.py`）
+- 与 FP8 量化注意力配合：**MXFP8 量化 attention 当前仅支持 Ulysses SP，不支持 Ring**
+- 当前HunyuanVideo的[块稀疏](../modules/blockwise_sparse_attention.md)已接入Ulysses和Ring。Ulysses通信后拥有全序列、部分head；TopK专用重排按各head计算量均衡负载，SVG未实现该重排方法。
+- UAA仅支持纯Ulysses；标准Ulysses可组成Hybrid，但不能据此将UAA与Ring混合。MXFP8 attention同样不支持Ring。
 
 ## Configuration
 
@@ -121,15 +124,17 @@ attn = UnifiedSPAttention(
 
 ## Known Deployments
 
-- **HunyuanVideo**：`ulysses5`（搭配 VAE 并行 + 融合算子 + 虚拟内存 + UAA（性能表 UAA 列为 √）→ 4.65× 端到端）；`ulysses8`（最佳 7.73×–7.81×，叠加 UAA 仍有 7.81×）
-- **HunyuanImage-3.0**：文档未明确给出 SP 规模，但序列并行基础建在同一套 `module/unified_sp/` 上
+- **HunyuanVideo（Atlas A3 来源累计优化对比）**：基线为仅替换 FIA 的单卡配置；下列数字叠加 VAE、融合算子、虚拟内存等，并非 Ulysses 单项受控收益。`ulysses5`（搭配 VAE 并行 + 融合算子 + 虚拟内存 + UAA（性能表 UAA 列为 √）→ 4.65× 端到端）；`ulysses8`（最佳 7.73×–7.81×，叠加 UAA 仍有 7.81×）
+- **HunyuanImage-3.0 对照**：固定 hunyuan.py 按 attn_tp_size 切投影权重，输出 AllReduce 或 ReduceScatter；没有接入 UnifiedSPAttention，不能归为本 Ulysses 统一实现
 - **Wan2.2-I2V**：Ring Attention Overlap 形式使用，见 [ring-attention-overlap](../techniques/ring_attention_overlap.md)
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md) 序列并行 / Ulysses Anything Attention
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`module/unified_sp/core.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module/unified_sp/core.py) `module/unified_sp/uaa.py`
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 块稀疏 × Ulysses 负载均衡（@2f82d10 之后引入）：[`module/blockwise_sparse/sparse_method.py`](https://gitcode.com/cann/cann-recipes-infer/blob/dcabc6a21962ab5cf21bfd51099c08c7c21de88e/module/blockwise_sparse/sparse_method.py) `apply_head_reorder_for_load_balance` / [`models/hunyuan-video/hyvideo/modules/attention.py`](https://gitcode.com/cann/cann-recipes-infer/blob/dcabc6a21962ab5cf21bfd51099c08c7c21de88e/models/hunyuan-video/hyvideo/modules/attention.py) `parallel_sparse_attention` / [`models/hunyuan-video/sample_video.py`](https://gitcode.com/cann/cann-recipes-infer/blob/dcabc6a21962ab5cf21bfd51099c08c7c21de88e/models/hunyuan-video/sample_video.py) `ulysses_degree > 1` + `hasattr` 守卫（提交 `dcabc6a`）
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（primary）
+- [core.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/unified_sp/core.py)（implementation）
+- [uaa.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/unified_sp/uaa.py)（implementation）
+- [sparse_method.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/blockwise_sparse/sparse_method.py)（implementation）
+- [hunyuan.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py)（constraint）
 
 ## Links
 

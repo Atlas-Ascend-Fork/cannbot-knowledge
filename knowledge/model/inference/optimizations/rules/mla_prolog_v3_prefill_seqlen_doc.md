@@ -10,10 +10,10 @@ status: stable
 sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/89
   role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v3.2-exp/models/modeling_deepseek.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
   role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-23T09:41:54Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - agnostic
 scope:
@@ -29,7 +29,7 @@ scope:
 
 ## 条件 → 优先怎么做
 
-给 MLA 类模型（[mla](../../concepts/modules/mla.md)，如 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md) / LongCat-Flash / Kimi-K2-Thinking）在昇腾 NPU 上搭 attention 前处理（Q/KV 投影 + RMSNorm + RoPE + KV Cache 写入）融合路径时，**Prefill 与 Decode 应共用同一个超级融合前处理算子 [npu_mla_prolog_v3](../../concepts/kernels/mla_prolog.md)**——不要因为看到该算子文档标「Seq-Length 取值范围 0~16」就把它排除出 prefill、退回分步小算子。该算子实际支持的 Seq-Length 是 **1–65536**，可覆盖长序列 prefill。
+给 MLA 类模型（[mla](../../concepts/modules/mla.md)，如 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md) / LongCat-Flash / Kimi-K2-Thinking）在昇腾 NPU 上搭 attention 前处理（Q/KV 投影 + RMSNorm + RoPE + KV Cache 写入）融合路径时，**可评估在Prefill与Decode复用超级融合前处理算子 [npu_mla_prolog_v3](../../concepts/kernels/mla_prolog.md)**——不要因为看到该算子文档标「Seq-Length 取值范围 0~16」就把它排除出 prefill、退回分步小算子。Issue所述环境披露支持的Seq-Length是 **1–65536**，可覆盖长序列 prefill。
 
 ## 问题信号（会误导 agent 的坑）
 
@@ -39,7 +39,7 @@ scope:
 
 - **维护者确认**：`npu_mla_prolog_v3` 当前 Seq-Length 实际支持范围是 **1–65536**，可应用于 prefill；文档标注的 0~16 并非真实上限。这是「1–65536」这一具体数字的唯一来源（未独立读到 op-plugin 算子规格文档做二次核对）。
 - **参考实现印证「确用于 prefill」**（cann-recipes-infer 的 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md) 建模文件）：
-  - `modeling_deepseek.py` 有专门的 `mlaprolog_prefill(...)` 函数，内部调用 `torch_npu.npu_mla_prolog_v3(...)`，与 decode 路径的调用并列；参数按 prefill/decode 分别组装（如 CP 使能时 prefill 走 `cp_tmp_kv_cache_nope/rope` + `mla_prolog_slot_mapping`）。
+  - `modeling_deepseek.py` 有专门的 `mlaprolog_prefill(...)` 函数，内部调用 `torch_npu.npu_mla_prolog_v3(...)`，与 decode 路径的调用并列；参数按 prefill/decode 分别组装（如 CP 使能时 prefill 走 `临时BSND缓存、CP元数据与计算/持久PA双视图`）。
   - fusion 参考文档注明：`# ─── 超级融合 prolog（Prefill 和 Decode 都用 npu_mla_prolog_v3）───`。
 
 ## 反例 / 边界
@@ -50,6 +50,5 @@ scope:
 
 ## Evidence
 
-- **维护者确认**：Seq-Length 实际支持 1–65536、可用于 prefill（文档标注的 0~16 非真实上限）。
-- **diff 事实**（clone `@2c45117`）：`models/deepseek-v3.2-exp/models/modeling_deepseek.py` 存在函数 `mlaprolog_prefill` 且其中调用 `torch_npu.npu_mla_prolog_v3`；`.agents/skills/model-infer-fusion/references/module-attention-mla-indexer.md` 注明「Prefill 和 Decode 都用 npu_mla_prolog_v3」。二者独立印证「该算子确用于 prefill」。
-- 溯源下探：[cann-recipes-infer-issue-89-question-npu-mla-prolog-v3-prefill](https://gitcode.com/cann/cann-recipes-infer/issues/89)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/89)（evidence）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）

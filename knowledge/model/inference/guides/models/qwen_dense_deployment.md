@@ -1,57 +1,55 @@
 ---
 type: Guide
-title: Qwen Dense A2 的变体、图模式与量化验收流程
-description: Qwen Dense A2 的变体、图模式与量化验收流程，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+title: Qwen Dense A2/A3 当前部署与量化验收
+description: 当前Qwen Dense六类YAML、W8A8全量化导出与融合MLP、共享执行器和分阶段来源性能验收。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/qwen/qwen_dense_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/qwen/qwen_dense_optimization.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen/models/modeling_qwen.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen/models/modeling_qwen.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen/qwen_dense_optimization.md
+  role: supporting
 created_at: '2026-10-21T09:56:20Z'
-updated_at: '2026-10-21T09:56:20Z'
+updated_at: '2026-10-29T14:21:59Z'
 platforms:
 - a2
+- a3
 ---
 
-# Qwen Dense A2 的变体、图模式与量化验收流程
+# Qwen Dense A2/A3 当前部署与量化验收
 
-## 目标、输入与产物
+## 环境与变体
 
-面向固定来源中的 Qwen Dense (Qwen2 / Qwen3 非 MoE) 实现，输入包括平台、权重、实际配置和任务指标；产物为可追溯配置、正确性/性能记录及回退入口。模型结构由[模型 Concept](../../concepts/models/qwen_dense.md)维护。以下描述固定版本实践，不能当作当前所有软件版本的部署保证。
+当前README要求CANN9.0.0+、PyTorch2.8.0、torch_npu v26.0.0（wheel2.8.0.post4）、transformers5.0.0、compressed-tensors0.6.0与Python3.11。Qwen3-8B有QK-Norm且attention_bias=False；Qwen2.5-7B没有QK-Norm且bias=True。按实际HF配置核对，不套用其他规格维度。
 
-## 1. 确认变体与权重
+## 当前六类YAML与入口
 
-Qwen3-8B启用 QK-Norm、attention_bias=False；Qwen2.5-7B没有 QK-Norm、bias=True。核对实际 HF config、model_name与注册入口，不把同族 Qwen3-32B 架构表的标量当作8B/7B。此卡沿原 A2实践范围，来源另声明A3支持不替代目标平台验收。
+models/qwen/config中，Qwen3-8B提供qwen3_8b_1tp/2tp与qwen3_8b_w8a8_1tp/2tp四种YAML；Qwen2.5提供qwen25_7b_instruct_1tp/2tp。设置model_path和输入输出预算，从仓库根运行：
 
-## 2. 配置新执行器与 TP
+```bash
+bash executor/scripts/infer.sh --model qwen --yaml qwen3_8b_1tp.yaml
+```
 
-4份YAML为qwen3_8b和qwen25_7b_instruct的1/2TP。新InferenceConfig路径的实际model_path、输入截断、scheduler batch/输出数、块式KV预算一起保存。Dense MLP按attn_tp_size切分，moe_tp_size在模板中存在并不表示模型含MoE。细节由 [TP机制](../../concepts/parallelism/tensor_parallel.md)、[KV管理](../../concepts/frameworks/kv_cache_manager.md)维护。
+当前示例为offline，使用packed TND和Page Attention。图执行和缓存由共享执行器负责；旧QwenRunner编译与模型目录CASE_NAME缓存片段不是当前接口，实际缓存路径按[编译缓存规则](../../optimizations/rules/torchair_cache_compile_persisted_graph.md)核对。
 
-## 3. 验收融合与图后端
+## W8A8权重与融合分支
 
-merged_qkv_proj、gate_up_proj加载后分别拆出Attention/MLP分支；非量化MLP为手写激活乘up，不能按MoE专家GroupedMatmul替换。Residual在层间传递，npu_add_rms_norm的输出/残差要同时核对。RoPE预计算、FIA v2实际长度与图编译入口随新/旧执行器区分。源README已验证特性表不等于本次硬件验证；npugraph_ex的static_kernel与GE配置分开保存。
+Qwen3-8B使用AMCT导出compressed-tensors W8A8：INT8 per-channel权重、per-token动态激活，覆盖attention q/k/v/o与MLP gate/up/down；框架通过fused_mapping映射非融合层名。不要仅量化MLP后套用这组全量化配置。当前README报告不匹配导出会输出异常，不解释为任意部分量化必然失效。
 
-## 4. 区分两个固定版本的量化能力
+AMCT依赖安装可能改变torch_npu，完成后复核并恢复目标wheel；setuptools<82是来源流程的pkg_resources兼容建议。量化模型需实际命中mm_quant_mode=w8a8int8和dequant_swiglu_quant融合路径，见[模型机制](../../concepts/models/qwen_dense.md)，不能以YAML文件名证明量化已启用。
 
-2c45117优化文档只述BF16，46485bef文档另含Qwen3-8B W8A8：权重per-channel、激活per-token，覆盖4个Linear；mm_quant_mode=w8a8int8和compressed-tensors权重共同决定路径。MLP使用npu_dequant_swiglu_quant的int32+scale→int8+scale链路。不得从后一个版本的说明反推前一个版本源码已含相同开关。
+## 当前来源性能与验证
 
-相关精度排查见 [转换/配置精度规则](../../optimizations/rules/precision_quant_convert_model_config_pitfalls.md)；源无端到端时延表，不新造基准。
+README给出Atlas A3/910C单die64GB、GE、输入截断4096/输出256的Qwen3-8B表：BF16 TP1/TP2 Prefill41.12/51.56ms，Decode15.48/10.35ms；W8A8 TP1/TP2 Prefill36.00/58.95ms，Decode10.46/7.90ms。TP2的Prefill在该表更慢，不能将Decode收益推广全部阶段。来源披露采集环境和日期，但缺原始逐轮样本/方差；本次未复测。
 
-## 验证、停止与回退
-
-保存实际权重、软件版本、平台、并行组、输入与输出；以未启用待验优化的路径作对应基线，逐项比较 logits/任务质量、时延和峰值内存，并分别记录冷启动、warmup 与稳态重复测量。遇到源中未覆盖的形状、后端或平台时停止套用。失败后恢复对应版本的配置、权重与编译缓存，再按关联 Runbook 排查；没有实际跑通的回退不写为已验证。
-
-本卡未记录独立的模型执行或硬件复测。来源自报和输出“看起来正常”不能替代本部署的精度验收；执行后应另存实际环境、配置和测量记录。
-
+以相同prompt、权重、并行和软件对照BF16/W8A8，验token/任务质量、峰值内存、冷编译与稳态。异常时重载匹配BF16权重和配置；不能只关闭一个flag继续使用已量化张量。
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/qwen/qwen_dense_optimization.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/qwen/qwen_dense_optimization.md)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen/README.md)
-- [固定来源 4](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen/models/modeling_qwen.py)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen/README.md)（primary）
+- [modeling_qwen.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen/models/modeling_qwen.py)（implementation）
+- [qwen_dense_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen/qwen_dense_optimization.md)（supporting）

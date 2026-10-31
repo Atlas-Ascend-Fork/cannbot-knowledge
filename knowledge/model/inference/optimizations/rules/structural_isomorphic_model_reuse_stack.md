@@ -14,8 +14,12 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/288
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_5/models/modeling_qwen3_5_moe.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T15:29:36Z'
 platforms:
 - agnostic
 ---
@@ -37,7 +41,7 @@ platforms:
 ## 参考实现（两组同构族）
 
 - **`glm_moe_dsa` 族 ≈ DeepSeek-V3.2-Exp**：GLM-5（`model_type="glm_moe_dsa"`）与 DeepSeek-V3.2-Exp 同构——同一套 MLA + DSA lightning-indexer + MoE(含 shared expert) + MTP。GLM-5 即以复用 DeepSeek-V3.2-Exp 建模栈与优化路径落地，无需另写算子。
-- **Qwen3.5-MoE ≈ Qwen3-Next**：两者共用「GatedDeltaNet 线性注意力 + 交错 full-attention + sparse-MoE」混合架构；decode 关键原语（[recurrent-gated-delta-rule](../../concepts/kernels/recurrent_gated_delta_rule.md) 递推核、RMSNormGated 融合、GDN-CP、MoE 多流）在两族间可迁移。做 Qwen3.5-MoE decode 适配应从 Qwen3-Next 的 GDN 工具链起步。
+- **Qwen3.5-MoE ≈ Qwen3-Next**：两者共用「GatedDeltaNet 线性注意力 + 交错 full-attention + sparse-MoE」混合架构；decode实现仍需逐模块适配，当前Qwen3.5已是独立建模副本；可参考的关键原语（[recurrent-gated-delta-rule](../../concepts/kernels/recurrent_gated_delta_rule.md) 递推核、RMSNormGated 融合、GDN-CP、MoE 多流）在两族间可迁移。做 Qwen3.5-MoE decode 适配应从 Qwen3-Next 的 GDN 工具链起步。
 
 ## 复用的粒度与仍需改的点
 
@@ -50,7 +54,7 @@ platforms:
 
 ## 量化系数须独立核对来源与校准
 
-结构同构不能证明目标模型可直接复用 W8A8C8/W4A8C8 系数或免标定。先确认目标权重快照、具体量化路径支持、系数生成依据与精度验收；来源要求重新生成时应重新校准。固定工作项中 GLM-5 的 SFA C8 尚不支持，DS3.2 权重变化需重新生成参数；细节与证据由 [C8 scale 来源规则](c8_kv_scale_provenance_reuse_offline.md)统一维护。
+结构同构不能证明目标模型可直接复用 W8A8C8/W4A8C8 系数或免标定。先确认目标权重快照、具体量化路径支持、系数生成依据与精度验收；来源要求重新生成时应重新校准。历史工作项中GLM-5的C8状态不能替代当前代码核对；当前GLM5已有FP8 LI与KV分支，但脚本中的DS3.2系数URL仍不证明适用于GLM5权重，DS3.2权重变化也需重新生成参数；细节与证据由 [C8 scale 来源规则](c8_kv_scale_provenance_reuse_offline.md)统一维护。
 
 ## 风险 / 边界
 
@@ -59,6 +63,8 @@ platforms:
 
 ## Evidence
 
-- `diff 事实`（@1ce713f / @b451d3e）：GLM-5（`glm_moe_dsa`）复用 DeepSeek-V3.2-Exp 的 MLA+DSA+MoE(shared)+MTP 建模栈落地。
-- `维护者确认`（@2c45117）：Qwen3.5-MoE 与 Qwen3-Next 共用 GDN + 交错 full-attention + sparse-MoE，decode 原语可迁移。
-- 溯源下探：[cann-recipes-infer-issue-148-requirement-qwen3-5-27b-v10-910b-fp32](https://gitcode.com/cann/cann-recipes-infer/issues/148)、[cann-recipes-infer-pr-281-glm-5-w8a8-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/281)、[cann-recipes-infer-pr-288-glm-5-adapt-class-name-and-function-name-support-bf16-fix-bug-caused-by](https://gitcode.com/cann/cann-recipes-infer/merge_requests/288)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/148)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/281)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/288)（evidence）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/indexer.py)（implementation）
+- [modeling_qwen3_5_moe.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_5/models/modeling_qwen3_5_moe.py)（implementation）

@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/353
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:43:19Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - agnostic
 ---
@@ -56,6 +56,6 @@ platforms:
 
 ## Evidence
 
-- `diff 事实`（序列 pad/unpad，PR head @1e865ed2183c）：`UnifiedSPAttention.forward` 序列维 pad→all-to-all→切回。演进：基准 sha @2c45117d 处 `_forward_core` 已不再对序列维补齐，改由 `_all_to_all_qkv_anything` 承接任意/动态切分，头维由 `_maybe_pad_qkv_head` 补齐，头数硬约束由 `--ulysses-anything` 放宽。溯源下探：[cann-recipes-infer-pr-253-fix-fix-the-issue-where-the-sequence-length-is-not-divisible-when-ulysse](https://gitcode.com/cann/cann-recipes-infer/merge_requests/253)
-- `diff 事实`（UAA head padding，@dfa1a889）：`_maybe_pad_qkv_head`（补数须 < 本地 head 数否则 `raise`）、`_gather_size_by_comm` + `all_to_all_single`、patch 对齐 split_func；UAA 仅纯 Ulysses 的约束。doc 自报 ulysses8 下 UAA-on 482.65s vs off 487.68s（额外开销可忽略，仅此配置）。溯源下探：[cann-recipes-infer-pr-325-feat-hunyuanvideo-support-fa-matmul-quant-and-uaa](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)
-- `diff 事实`（稀疏场景 UAA，@a12b2affe2d0）：`_slice_ulysses_local_heads_with_uaa`（pad→slice→unpad、标准分支不整除 `raise ValueError`）、`_resolve_ulysses_local_sparsity_override`（跨 rank 收本地 head 数、非均匀切分）。溯源下探：[cann-recipes-infer-pr-353-feat-hunyuanvideo-support-ulysses-parallelism-with-block-wise-sparse-att](https://gitcode.com/cann/cann-recipes-infer/merge_requests/353)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/253)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/353)（evidence）

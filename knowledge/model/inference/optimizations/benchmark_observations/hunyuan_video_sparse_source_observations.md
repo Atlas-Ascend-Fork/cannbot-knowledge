@@ -1,17 +1,20 @@
 ---
 type: Optimization
 title: HunyuanVideo 稀疏与 Ring 的来源数据及平台缺口
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+description: 最新稀疏与Ring来源表、已接入的当前实现和仍缺失的硬件/build/质量信息。
 tags:
 - task.testing
 - topic.performance.analysis
 status: draft
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/hunyuan-video/hunyuan_video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/models/hunyuan-video/sample_video.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/sample_video.py
+  role: constraint
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/blockwise_sparse/sparse_method.py
+  role: implementation
 created_at: '2026-10-21T09:56:25Z'
-updated_at: '2026-10-22T03:20:00Z'
+updated_at: '2026-10-29T14:13:05Z'
 platforms: []
 ---
 
@@ -66,15 +69,16 @@ Ring overlap在209帧/CAC0.66下1385→1327s，而129帧下554→584s反而更�
 
 ## Limitations 与验证
 
-2c45117源码拒绝sparse+Ring，46485bef文档及同文件已改变该入口；需匹配实际稀疏算子与版本后再验，不把这些数字推广为旧版本已可运行。画质、逐轮样本和硬件仍待补。
+当前源码已实现Ring TopK、LSE overlap与SVG，旧拒绝组合的结论已撤销；仍须匹配稀疏算子接口后验证，源码存在不补齐各表硬件与测量缺口。画质、逐轮样本和硬件仍待补。
 
 复现与回退入口：[模型部署与验收流程](../../guides/models/hunyuan_video_deployment.md)。性能与输出质量分别验收；来源自报不构成本仓复现。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/hunyuan-video/hunyuan_video_optimization.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/models/hunyuan-video/sample_video.py)
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（primary）
+- [sample_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/sample_video.py)（constraint）
+- [sparse_method.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/blockwise_sparse/sparse_method.py)（implementation）
 
 ## 本轮来源核对与剩余缺口
 

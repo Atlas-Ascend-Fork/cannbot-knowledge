@@ -7,12 +7,12 @@ tags:
 - topic.reinforcement_learning
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/README.md
+- resource: cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/rule_reward.py
+- resource: cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/mindspeed_rl/workers/rule_reward.py
   role: supporting
 created_at: '2026-06-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
 - agnostic
 ---
@@ -21,7 +21,7 @@ platforms:
 
 ## Summary
 
-RLVR（Reinforcement Learning with Verifiable Reward，可验证奖励 RL）把奖励信号交给**确定性的规则/验证器**而非一个训练出来的 reward model：对一条 rollout 响应，直接用「答案是否对、格式是否合规」算出标量奖励。MindSpeed-RL 的 `RuleReward` worker 就是这条路径的落地——它在 RL 流水的 reward 阶段从 TransferDock 取出 `prompts/responses/labels`，按配置的一组 verifier 逐响应打分、加权求和，再把 `rm_scores` 写回，供 advantage 估计（[grpo-dapo](grpo_dapo.md)）使用。核心机制三类：**数学答案校验**（抽取 `\boxed{}` 答案后与标准答案做数值/符号比对）、**DAPO 数学 reward**（二值正误 + soft overlong 长度惩罚）、**格式与推理结构校验**（`<think>/<answer>` 标签、步骤模式正则）。因为奖励来自规则而非模型前向，reward 阶段不占独立的 NPU 资源——全共卡 RL（[mindspeed-rl](../frameworks/mindspeed_rl.md)）里它由 `RewardWorkerBase` 内联提供，配独立 `reward_resource` 反而会被校验拒绝。
+RLVR（Reinforcement Learning with Verifiable Reward，可验证奖励 RL）把奖励信号交给**确定性的规则/验证器**而非一个训练出来的 reward model：对一条 rollout 响应，直接用「答案是否对、格式是否合规」算出标量奖励。MindSpeed-RL 的 `RuleReward` worker 就是这条路径的落地——它在 RL 流水的 reward 阶段从 TransferDock 取出 `prompts/responses/labels`，按配置的一组 verifier 逐响应打分、加权求和，再把 `rm_scores` 写回，供 advantage 估计（[grpo-dapo](grpo_dapo.md)）使用。核心机制三类：**数学答案校验**（抽取 `\boxed{}` 答案后与标准答案做数值/符号比对）、**DAPO 数学 reward**（二值正误 + soft overlong 长度惩罚）、**格式与推理结构校验**（`<think>/<answer>` 标签、步骤模式正则）。因为奖励来自规则而非模型前向，reward 阶段不占独立的 NPU 资源——规则路径由独立的 CPU `RuleReward` Ray actor 承担，trainer 通过 `compute_rm_score.remote()` 调用。`RewardWorkerBase` 则加载 reward 模型执行模型打分，两者不可混同；集成模式禁配 reward_resource 也不能证明规则打分在 Actor 内联。
 
 > 各 verifier 的判分机制与奖励组合方式见下文各节。RuleReward worker 如何从队列消费/回写经验、保证消费顺序的 DP 切分，属于数据调度，见 [transferdock-data-scheduling](transferdock_data_scheduling.md)；奖励进入 advantage 后的策略更新见 [grpo-dapo](grpo_dapo.md)。
 
@@ -30,11 +30,11 @@ RLVR（Reinforcement Learning with Verifiable Reward，可验证奖励 RL）把�
 `RuleReward` 是个 Ray actor（`workers/rule_reward.py`），消费阶段名为 `rule_reward`。它的 `compute_rm_score` 是一个「取一批→打分→回写」的循环，直到 TransferDock 该阶段的经验全部消费完：
 
 - **取经验**：从 `cur_td.get_experience` 拉 `['prompts', 'responses', 'response_length', *dataset_additional_keys]`（`labels` 即标准答案就在 `dataset_additional_keys` 里），`get_n_samples=True` 一次取齐同一 prompt 的 `n_samples_per_prompt` 条响应；多轮工具场景额外带 `tool_call_num`。
-- **类别掩码**：若数据带 `categories` 列，只有 `categories[:,0]` 为真的样本走规则校验（混合数据集里非可验证样本被跳过），其余被滤掉。
+- **类别掩码**：仅非多模态路径：若数据带 `categories` 列，只有 `categories[:,0]` 为真的样本走规则校验（混合数据集里非可验证样本被跳过），其余被滤掉；多模态分支不使用该掩码，直接逐条调用 math_compute_score。
 - **打分**：调 `compute_verifier_score` 得到每条响应的标量分 `rm_scores`（形状对齐 `response_length`）。
 - **回写**：`put_experience({"rm_scores": ...})`；同时把各 verifier 的逐样本指标 `*_rewards/mean` 累加进 metrics。
 
-奖励完全由 CPU 上的规则计算得出，不跑任何模型前向——这是它能在全共卡部署里「不另占卡」的根因：MindSpeed-RL 的 `validate_rl_args` 在 `use_integrated_worker` 下显式**禁止**配置 `reward_resource`，规则奖励由 `RewardWorkerBase` 随 Actor 共卡内联（见 [mindspeed-rl](../frameworks/mindspeed_rl.md)）。
+奖励完全由 CPU 上的规则计算得出，不跑任何模型前向——这是它能在全共卡部署里「不另占卡」的根因：MindSpeed-RL 的 `validate_rl_args` 在 `use_integrated_worker` 下显式**禁止**配置 `reward_resource`，该配置限制与规则 worker 的承载位置是两个问题；规则奖励由独立 RuleReward actor 执行，RewardWorkerBase 的模型前向属于模型奖励路径。
 
 ## verifier 分发表与加权组合
 
@@ -103,13 +103,13 @@ DAPO 的另一招 **soft overlong punishment**（软超长惩罚）不在 verifi
 
 $$\text{overlong\_reward} = \min\!\Big(-\frac{\min(\text{len}-\text{expected\_len},\ \text{buffer})}{\text{buffer}}\times\text{penalty\_factor},\ 0\Big)$$
 
-即进入缓冲区后惩罚随超长线性增长、到缓冲区尾封顶，超过期望长度才扣、未超不扣。这把「别写太长」做成连续可导的软约束附加到答案奖励上，避免长序列 RL 里的长度爆炸。
+即进入缓冲区后惩罚随超长线性增长、到缓冲区尾封顶，超过期望长度才扣、未超不扣。这把「别写太长」做成按响应长度计算的分段线性奖励惩罚附加到答案奖励上；实现通过 response_length.item()、Python 列表再新建 tensor 计算，不保留长度到奖励的可反向图，策略通过奖励信号优化而非直接对长度求导。
 
 ## 格式与推理结构校验
 
 不依赖标准答案的 verifier 校验响应的**形状**：
 
-- `format`（`format_reward`）：整串匹配 `^<think>.*?</think>\s*<answer>.*?</answer>$` → 1.0 否则 0.0。
+- `format`（`format_reward`）：用 re.match 与 DOTALL|MULTILINE 匹配 `^<think>.*?</think>\s*<answer>.*?</answer>$` → 1.0 否则 0.0；$ 可匹配行尾，标签后接换行及额外文本仍可能通过，不等同于 re.fullmatch 的整串校验。
 - `strict_format`（`strict_format_reward` → `_validate_response_structure`）：更严——要求 `<think>`/`</think>`/`<answer>`/`</answer>` 各恰好出现一次、`\boxed{}` 恰好一处，且**先后次序**正确（think_start < think_end < answer_start，answer_start < boxed_start < answer_end），并须以 `<think>` 开头、`</answer>` 结尾；通过给 1.0、结构错给 −0.5。
 - `step`（`reasoning_steps_reward`）：数 `Step N:`、`^N.` 编号、`-`/`*` 列表项、`First,/Second,/Next,/Finally,` 过渡词的出现次数，按 `min(1.0, count/3)` 给分——鼓励至少三段可见的分步推理，但不强制更多。
 
@@ -123,24 +123,18 @@ sympy/latex 解析与正则回溯遇到对抗样本可能挂死或炸内存，`a
 
 `compute_verifier_score` 把 verifier 加权和叠加 overlong 惩罚后，reshape 成 `response_length` 的形状作为 `rm_scores` 回写。两处与 DAPO 协同：
 
-- **DAPO 过滤指标**：开 `filter_groups_enable` 时，额外把 `metrics[filter_groups_metric]`（默认 `acc`）reshape 后作为 `metric_for_dapo` 一并回写，供 DAPO 动态采样按组内准确率过滤掉「全对/全错」的零梯度样本组（机制见 [grpo-dapo](grpo_dapo.md)）。
+- **DAPO 过滤指标**：开 `filter_groups_enable` 时，额外把 `metrics[filter_groups_metric]`（默认 `acc`）reshape 后作为 `metric_for_dapo` 一并回写，供 DAPO 动态采样按组内准确率过滤掉「全对/全错」的指标无方差样本组；最终奖励还可能因长度惩罚等不同，不保证优势为零（机制见 [grpo-dapo](grpo_dapo.md)）。
 - **多模态分支的组内归一化**：多模态路径用 `math_compute_score`（acc 0.9 + format 0.1 加权）逐条打分后，把奖励按 `n_samples_per_prompt` 分组做 `(r − mean) / (std + 1e-6)` 标准化再回写 `token_level_rewards`——这一步本质就是 GRPO 的组内相对优势，在 reward 阶段就地完成。
 
 至此，规则奖励把「数学对错 + 格式 + 长度 + 过滤信号」压成一份可被 advantage 直接消费的标量，全程零模型前向。
 
 ## Evidence
 
-源页 [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL)。blob base `https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/`：
-
-- RuleReward worker：[`mindspeed_rl/workers/rule_reward.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/rule_reward.py)（`RuleReward.compute_rm_score`、`categories`/`use_verifier_mask` 掩码、`rm_scores`/`metric_for_dapo` 回写、多模态组内归一化）
-- verifier 分发与组合：[`mindspeed_rl/models/rule_verifier.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/rule_verifier.py)（`verifier` 加权累加、`rule_verifier_function` 分发表、`compute_verifier_score` overlong 惩罚、`acc_worker`/`_validate_response_structure`/`format_reward`/`reasoning_steps_reward`、`GlobalProcessPool` 进程池超时）
-- Math-Verify 后端：[`mindspeed_rl/models/math_verify.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/math_verify.py)（`compute_math_score`、`LatexExtractionConfig`/`ExprExtractionConfig`）
-- DAPO 数学 reward：[`mindspeed_rl/models/math_dapo.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/math_dapo.py)（`compute_score` ±1 二值、`is_correct_strict_box`/`is_correct_minerva`、`normalize_final_answer`）
-- 数值/符号判等工具箱：[`mindspeed_rl/utils/math_eval_toolkit/grader.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/utils/math_eval_toolkit/grader.py)（`math_equal` 数值 `isclose(1e-4)`+百分比变体 / `symbolic_equal` sympy 多解析器 `simplify(a-b)==0`、`numeric_equal`）、[`parser.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/utils/math_eval_toolkit/parser.py)（`extract_answer`）
-- 奖励相关配置项：[`mindspeed_rl/config_cls/rl_config.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/config_cls/rl_config.py)（`verifier_function`/`verifier_weight` 默认 `["base_acc"]`/`[1.0]`、`overlong_buffer_*`/`rollout_max_tokens`、`filter_groups_enable`/`filter_groups_metric`、`reward_dispatch_size`）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/README.md)（primary）
+- [rule_reward.py](../../../../../cann-recipes-raw/mindspeed-rl/adb494ad777ef4314bca717b56983feb67a41ea4/mindspeed_rl/workers/rule_reward.py)（supporting）
 
 ## Links
 
 - [grpo-dapo](grpo_dapo.md)（规则奖励的下游：`rm_scores` 进组内相对 advantage；`metric_for_dapo` 服务 DAPO 动态样本过滤；overlong 惩罚是 DAPO 长序列约束）
 - [transferdock-data-scheduling](transferdock_data_scheduling.md)（RuleReward worker 经 TransferDock 消费/回写经验，`guarantee_order` 的 DP 切分顺序）
-- [mindspeed-rl](../frameworks/mindspeed_rl.md)（承载框架：规则奖励由 `RewardWorkerBase` 全共卡内联、`validate_rl_args` 禁配独立 `reward_resource`）
+- [mindspeed-rl](../frameworks/mindspeed_rl.md)（承载框架：规则由 CPU RuleReward Ray actor 打分；RewardWorkerBase 运行 reward 模型；集成模式禁配 reward_resource 是另一个配置约束）

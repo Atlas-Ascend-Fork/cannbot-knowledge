@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/133
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - agnostic
 ---
@@ -63,5 +63,5 @@ platforms:
 
 ## Evidence
 
-- diff/code 事实 + 维护者确认（PyPTO @239c0c1；pin 2c45117 blob 拉取失败、注册架构稳定两 sha 一致）：`custom_pypto` 三算子仅 `TORCH_LIBRARY_IMPL(..., Meta)` + GE converter、无 NPU eager impl；维护者答"只支持 GE 图模式，不支持 eager""支持 GE 入图，不支持 acl graph"。溯源下探 [cann-recipes-infer-issue-83-question-pypto-acl-graph](https://gitcode.com/cann/cann-recipes-infer/issues/83)
-- code 事实 + 维护者确认（tilelang-ascend @1319a0da60cf）：`examples/aclgraph/` 用 `torch.npu.NPUGraph`+`torch.npu.graph(g)` capture 后 replay 捕获 `@tilelang.jit` 算子、`pass_configs` 四项；"短期无 GE 图规划"为维护者 roadmap、"kernel 常驻 device 内存"为口头确认。溯源下探 [cann-recipes-infer-issue-133-requirement-tilelang](https://gitcode.com/cann/cann-recipes-infer/issues/133)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/83)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/133)（evidence）

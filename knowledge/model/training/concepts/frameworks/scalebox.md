@@ -8,12 +8,18 @@ tags:
 - topic.reinforcement_learning
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen2_code_rl/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/scalebox.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/scalebox.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/patches/verl/0001-verl-feature-improve_rl_usability.patch
+  role: implementation
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T15:39:13Z'
 platforms:
 - a2
 - a3
@@ -85,7 +91,7 @@ ScaleBox 接入 veRL 训练流的核心适配点是 recipe 自带的 **`scalebox
 - 延长 `prime reward manager` 任务超时时间从 **300s 延长至 3000s**，以支持更大批量数据下的代码执行；
 - 增强训练过程日志打印，便于调试。
 
-可见 veRL↔ScaleBox 的工程难点不在算法、而在**沙盒并发与执行超时的协调**——reward manager 的并发要压到沙盒能稳定承载的水平（32），单次代码执行的超时要放宽到能跑完大批量用例（3000s）。应用方式：`git apply patches/verl/0001-verl-feature-improve_rl_usability.patch`。
+可见 veRL↔ScaleBox 的工程难点不在算法、而在**沙盒并发与执行超时的协调**——reward manager 的并发要压到沙盒能稳定承载的水平（32），奖励评分任务的等待超时被放宽至3000s；它不是沙盒单次执行或HTTP超时。固定 scalebox.py 的 compile_timeout/run_timeout 默认30s、total_timeout=30，HTTP请求超时需另按请求代码核对。应用方式：`git apply patches/verl/0001-verl-feature-improve_rl_usability.patch`。
 
 ## 数据与统一评估
 
@@ -99,25 +105,26 @@ ScaleBox + veRL 的 Code RL 训练在 LiveCodeBench(pass@1) 上的端到端效�
 | Qwen3-4B-Instruct-2507 | Atlas A3 16 卡 | 128 | 8 | 450 | 44.18 |
 | Qwen3-30B-A3B-Instruct-2507 | Atlas A3 32 卡 | 128 | 8 | 450 | 56.27 |
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen2_code_rl/figures/training_progress_qwen3_4b.png" width="55%"></p>
-<p align="center"><sub>图：Qwen3-4B-Instruct-2507 在 veRL + ScaleBox 上的 Code RL 训练进度曲线（LiveCodeBench pass@1 最终 44.18）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen2_code_rl/README.md">qwen2_code_rl recipe·模型评测</a>）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/figures/training_progress_qwen3_4b.png" width="55%"></p>
+<p align="center"><sub>图：Qwen3-4B-Instruct-2507 在 veRL + ScaleBox 上的 Code RL 训练进度曲线（LiveCodeBench pass@1 最终 44.18）（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/README.md">qwen2_code_rl recipe·模型评测</a>）</sub></p>
 
 ## 在工具调用 Code RL 中的复用
 
 ScaleBox 也是**多轮工具调用 Code RL**（Agent RL）实践的代码执行后端：recipe `agent_rl/qwen3_code_toolcall` 让 Qwen3-1.7B 把 ScaleBox 当成「Python 工具」在推理过程中多轮调用（首个开源的、基于 veRL 支持多轮工具调用的 Coding Agent RL recipe，详见 [qwen3-code-toolcall-rl](../../guides/recipes/qwen3_code_toolcall_rl.md)）。此场景下：
 
 - ScaleBox 服务部署方式与基础样例一致（`make run-online`、`/run_code` 验证），区别仅在 `MAX_MEM=50000000`（限单进程内存）而非 `unlimited`，且工具调用由 `tool_config/scalebox_tool_config.yaml` 配置；
-- `scalebox.py` 自定义奖励函数与 `0001-verl-feature-improve_rl_usability.patch` **直接沿用基础样例、未作修改**，叠加 `0002-enable-tool-agent-loop.patch`（多轮工具调用）与 `0003-toolcall-reward.patch`（工具调用奖励）支撑 agent-loop；
-- 推测解码扩展（Suffix/EAGLE3，见 [sam-speculative](../techniques/sam_speculative.md) 的同类 Suffix 路线）换用更新的 `vllm 0.13.0` / `vllm_ascend v0.13.0`，但 ScaleBox 服务与奖励桥接逻辑不变——说明 ScaleBox 与 rollout 引擎版本解耦，沙盒侧无需随推理栈升级而改。
+- `0001-verl-feature-improve_rl_usability.patch` 与单轮样例一致；多轮 `scalebox.py` 在单轮执行逻辑之上新增 `compute_reward` 和工具调用奖励，并调整重试、退避及响应处理，叠加 `0002-enable-tool-agent-loop.patch`（多轮工具调用）与 `0003-toolcall-reward.patch`（工具调用奖励）支撑 agent-loop；
+- 推测解码扩展（Suffix/EAGLE3，见 [sam-speculative](../techniques/sam_speculative.md) 的同类 Suffix 路线）换用更新的 `vllm 0.13.0` / `vllm_ascend v0.13.0`，但 此推测解码扩展相对同页的多轮基础样例，ScaleBox 服务与奖励桥接逻辑不变；不能据此断言多轮与 qwen2_code_rl 原样相同——说明 ScaleBox 与 rollout 引擎版本解耦，沙盒侧无需随推理栈升级而改。
 
 可见 ScaleBox 在「单轮 Code RL」与「多轮工具调用 Agent RL」两类实践中是**同一个可复用的执行底座**，靠 `scalebox_tool_config.yaml` 与奖励函数差异适配不同 RL 形态。
 
 ## Evidence
 
-- [scalebox](https://gitcode.com/icip-cas/ScaleBox) — ScaleBox 上游开源仓 `gitcode.com/icip-cas/ScaleBox`（`make run-online` 在线服务入口、`/run_code` 与 `common_evaluate_batch` 接口、分布式部署）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`agent_rl/qwen2_code_rl/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen2_code_rl/README.md)（ScaleBox 三大核心特性、融合镜像 `verl.Dockerfile`/`verl_sandbox.Dockerfile`、`make run-online` 部署 + `/run_code` 验证、`scalebox.py` 自定义奖励函数、`0001-verl-feature-improve_rl_usability.patch`（并发 64→32 避沙盒竞争、超时 300s→3000s）、数据集 `build_dataset.py`、LiveCodeBench benchmark）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`agent_rl/qwen3_code_toolcall/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md)（ScaleBox 作工具调用后端：`tool_config/scalebox_tool_config.yaml`、`scalebox.py`/patch 沿用基础样例、`MAX_MEM=50000000`、`0002-enable-tool-agent-loop.patch`/`0003-toolcall-reward.patch`、推测解码扩展 vllm 0.13.0）
-- 上游开源仓：ScaleBox `gitcode.com/icip-cas/ScaleBox`、veRL `github.com/volcengine/verl @ c651b7b`、华为云 ModelArts（迁移目标平台）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/README.md)（supporting）
+- [scalebox.py](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/scalebox.py)（implementation）
+- [scalebox.py](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_code_toolcall/scalebox.py)（implementation）
+- [0001-verl-feature-improve_rl_usability.patch](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen2_code_rl/patches/verl/0001-verl-feature-improve_rl_usability.patch)（implementation）
 
 ## Links
 

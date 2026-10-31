@@ -1,21 +1,25 @@
 # 模型
 
-- [DeepSeek-R1 模型结构](deepseek_r1.md)：DeepSeek-R1 的 MLA、共享与路由专家及模型结构；部署流程和性能数据分别引用规范入口。
-- [DeepSeek-V3.2-Exp 模型结构](deepseek_v3_2_exp.md)：DeepSeek-V3.2-Exp 的 DSA、MLA 与 Indexer 状态机制；部署、量化和性能各归对应入口。
-- [DeepSeek-V4机制](deepseek_v4.md)：DeepSeek-V4 是面向长序列的 DeepSeek 新一代模型，包含 Flash 285B 与 Pro 1.6T。它以 C1A/SWA（窗口 128）、CSA（4:1 压缩后由 LI 按权重配置选 Top-k）和 HCA（128:1 压缩）交错组成 Hybrid Attention，统一使用 MQA/Shared-KV、Attention Sink 和 mHC；128K 序列下 HCA 约保留 1K KV，CSA 约保留 32K。MoE 每 token 激活 6 个路由专家和 1 个共享专家，Flash/Pro 分别有 256/384 个路由专家。Prefill 使用 CP+zigzag，Decode 使用 DP+EP，并支持 MTP1/MTP3。A3 主要采用 W8A8C16 或 INT8-INT4，950PR/DT 支持 FP8/MXFP4；图模式默认 npugraph_ex。性能数据必须同时限定平台、卡数、量化、序列长度和 MTP 配置。
-- [Gemma-4-26B-A4B 模型结构](gemma4_26b_a4b.md)：Gemma-4 文本 Decoder 的混合滑窗/全局注意力、并联 Dense/MoE 与异构缓存机制。
-- [GLM-5 模型结构](glm_5.md)：GLM-5 的 DSA、MLA/Indexer 与 MoE 规格；平台配置、投机解码与性能记录分别维护。
-- [GPT-OSS 模型结构](gpt_oss.md)：GPT-OSS 的 GQA、可学习 attention sink、滑窗与带 bias 的 clamped GLU 专家机制。
-- [HSTU 模型结构](hstu.md)：HSTU 生成式推荐的离散 ID、jagged 序列、稀疏 Embedding 容量与推荐缓存机制。
-- [HunyuanImage-3.0 模型结构](hunyuan_image_3.md)：HunyuanImage-3.0 的 DiT、MoE 与图像生成模块；并行、融合和部署差异分别引用任务入口。
-- [HunyuanVideo 模型结构](hunyuan_video.md)：HunyuanVideo 的视频 DiT、文本编码与 VAE 结构；并行、缓存、量化和性能按版本分开维护。
-- [Hy3-preview 模型结构](hy3_preview.md)：Hy3-preview 的 GQA、Dense/MoE、共享专家、sigmoid 路由及 MTP 层结构。
-- [Kimi-K2-Thinking 模型结构](kimi_k2_thinking.md)：Kimi-K2-Thinking 的 MLA/MoE 谱系、64 Attention heads 与原生混合精度边界。
-- [LongCat-Flash](longcat_flash.md)：说明 ScMoE 双段结构、MLA 和零计算专家；部署流程、优化差异与来源性能分别链接到对应 Guide、规则/案例和观测。
-- [LongCat-Flash-Lite 模型结构](longcat_flash_lite.md)：LongCat-Lite 的双子层 MLA、shortcut MoE、零专家和 N-gram Embedding 结构及文档差异。
-- [Qwen3.5-MoE 模型结构](qwen3_5_moe.md)：Qwen3.5-MoE 的 Full Attention、GDN 与 MoE 混合结构，区分模型机制和平台实现。
-- [Qwen3-MoE 模型结构](qwen3_moe.md)：Qwen3-MoE 的 GQA、QK Norm 与纯路由专家结构；双实现部署和时延观测分开治理。
-- [Qwen3-Next](qwen3_next.md)：阿里千问团队发布了 Qwen3-Next 模型，使用混合注意力架构，结合 GatedAttention 和 GatedDeltaNet 模块，实现超长上下文长度的有效上下文建模。以 `Qwen3-Next-80B-A3B-Instruct` 为代表规格，总参数 80B，激活参数 ~3B。后续 Qwen3.5-MoE 延续了这一混合注意力 + MoE 思路，但 Prefill GDN 改用 torch_npu 原生 ChunkGDN 算子（非 PyPTO），且引入 full attention（merged_qkv 同时产 gate）层。cann-recipes-infer 在 Atlas A3 上基于 SGLang 框架完成 Qwen3-Next 的推理优化实践，重点介绍针对混合注意力架构设计的并行策略、高性能融合算子、MTP 投机推理及 W8A8C8 量化方案，以实现长序列场景下的高性能表现。Prefill 并行：Gated Attention 走 CP+TP 混合（CP 复用 SGLang DP 通信域、与 DP 互斥，激活方式 infer_prefill.sh `--cp-size` 替 `--dp-size`），ZigZag 负载均衡由 `CP_USE_ZIGZAG=1` 使能面向长序列单 batch；GDN 默认纯 TP（Conv1d 沿 Sequence 卷积不适合切分），但设 `ENABLE_CONTEXT_PARALLEL_GDN=1`（默认 false）后 GDN 不再强制 full TP、改走 CP+TP 混合（stage6 patch：cp_rank 切序列 + overlap 窗口 P2P + conv_state 末 rank 广播）。
-- [Qwen Dense (Qwen2 / Qwen3 非 MoE) 模型结构](qwen_dense.md)：Qwen2/Qwen3 稠密模型的 GQA、QK-Norm/bias 差异及 MLP 结构；平台配置另行维护。
-- [Sana-Video 模型结构](sana_video.md)：Sana-Video 的去噪网络、时序卷积与 VAE 职责，区分模型结构和平台 patch/量化方案。
-- [Wan2.2-I2V 模型结构](wan2_2_i2v.md)：Wan2.2-I2V 的图文输入、DiT 去噪和 VAE 解码职责，部署并行与缓存另行维护。
+- [DeepSeek-R1](deepseek_r1.md)：DeepSeek-R1 的 MLA、共享与路由专家及模型结构；部署流程和性能数据分别引用规范入口。
+- [DeepSeek-V3.2-Exp](deepseek_v3_2_exp.md)：DeepSeek-V3.2-Exp 的 DSA、MLA 与 Indexer 状态机制；部署、量化和性能各归对应入口。
+- [DeepSeek-V4](deepseek_v4.md)：DeepSeek-V4 Flash/Pro 的 Shared-KV、SWA/CSA/HCA、mHC、当前 CacheEntry 生命周期，以及 HiF8、A4W4、DSpark 和 950 低时延 TP 入口。
+- [Gemma-4 文本 MoE Decoder](gemma4_26b_a4b.md)：当前Gemma文本Decoder结构、双类型Page cache、FIA v2混合布局、partial RoPE修正与移除local_experts。
+- [GLM-5](glm_5.md)：更新GLM-5统一Executor、DSA参数及A3整数/950 MXFP8路径，说明当前CP、Cache与offload边界。
+- [GPT-OSS](gpt_oss.md)：当前GPT-OSS的sink/滑窗与clamped GLU、packed/Page cache和独立TP组；部署以BF16、batch1/eager示例验收。
+- [HSTU](hstu.md)：HSTU 生成式推荐的离散 ID、jagged 序列、稀疏 Embedding 容量与推荐缓存机制。
+- [HunyuanImage-3.0](hunyuan_image_3.md)：当前HunyuanImage的统一YAML、CFG每rank缓存修正、融合布局、A2回退与实际精度/稳态验收边界。
+- [HunyuanVideo](hunyuan_video.md)：HunyuanVideo视频DiT、文本编码与VAE结构，统一YAML以及当前缓存、Ring稀疏和950 MXFP8入口。
+- [Hy3：GQA、共享专家与当前 PA/MTP 接入](hy3_preview.md)：正式Hy3的当前packed/PA、FP8 QKV融合、SP精确条件、共享专家多流和已接入MTP；纠正旧preview实现。
+- [Kimi-K2-Thinking：MLA/MoE 与原生混合精度](kimi_k2_thinking.md)：依据当前Kimi统一Executor实现说明64 heads、原始W4A16/BF16混合精度、packed MLA、CP与MTP边界。
+- [LongCat-Flash](longcat_flash.md)：说明 LongCat-Flash 的 ScMoE 双段结构、MLA 与零计算专家；部署流程、优化差异和来源性能分别由 Guide、规则/案例和观测卡维护。
+- [LongCat-Flash-Lite](longcat_flash_lite.md)：当前 Lite 双子层、独立N-gram词表、packed/PA缓存、已落地Prefill SP、自动MC2回退与Prolog/多流边界。
+- [Qwen3.5-MoE](qwen3_5_moe.md)：当前Qwen3.5混合结构、两组GDN投影、索引Mamba状态、token分片、纯EP/TP与950量化/next_n0边界。
+- [Qwen3-MoE](qwen3_moe.md)：当前Qwen3-MoE结构、packed/FP8缓存、950量化、Hadamard与精确Prefill SP触发和实际通信顺序。
+- [Qwen3-Next](qwen3_next.md)：Qwen3-Next 是交替使用 Gated Attention 与 Gated DeltaNet、并结合 MoE FFN 的混合注意力模型；模型结构与具体昇腾部署参数分开治理。
+- [Qwen Dense (Qwen2 / Qwen3 非 MoE)](qwen_dense.md)：当前Qwen2.5/Qwen3 Dense的GQA与变体差异、packed/PA及新增W8A8融合MLP和scale处理。
+- [Sana-Video](sana_video.md)：当前Sana去噪/时序卷积/VAE分工、DP启动、离线文本权重及950混合量化边界。
+- [Wan2.2-I2V](wan2_2_i2v.md)：Wan2.2-I2V图文条件、双噪声DiT与VAE，当前CFG默认配置和单卡缓存接入边界。
+
+- [Kimi K3：KDA、Gated MLA、AttnRes 与 LatentMoE](kimi_k3.md)：说明 Kimi K3 混合注意力、沿深度聚合的 AttnRes，以及请求级递推状态与 KV Cache 的区别；部署优化另按 950 实践核对。
+
+- [GLM-5.3-Flash 混合注意力与混合量化](glm_5_3_flash.md)：说明 950DT 适配的34层KDA与11层MLA/DSA、4流mHC、MoE及HiF8/MXFP8/MXFP4的分工和并行边界。

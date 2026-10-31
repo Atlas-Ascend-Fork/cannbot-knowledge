@@ -7,11 +7,11 @@ tags:
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_autofuse_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4_flash_tilelang_and_inductor_af/README.md
 created_at: '2026-10-22T01:37:00Z'
-updated_at: '2026-10-22T01:55:16Z'
+updated_at: '2026-10-29T14:38:30Z'
 platforms:
 - a3
 ---
@@ -20,7 +20,7 @@ platforms:
 
 ## Workload
 
-DeepSeek-V4-Flash 部分编译的两类 step；hc_post 独立片段的 shape 与模型级记录分开。
+DeepSeek-V4-Flash 使用 BF16 权重、MoE(MP=16)+Attn(MP=4) 部署，测量部分编译的两类 step；hc_post 独立片段的 shape 与模型级记录分开。
 
 ## Hardware
 
@@ -32,7 +32,7 @@ Atlas A3。
 
 ## Baseline 与 Variant
 
-模型级 baseline 已替换 TileLang 算子，统计 Device 非 Hcom Kernel 总和；片段比较未编译、dynamic=False 和 dynamic=True。
+模型级 baseline 已替换 TileLang 算子；variant 仅编译 `Expert.forward`、`RMSNorm.forward`、`Transformer.hc_head`、`hc_pre`、`hc_post` 五处。49.8→39.5 ms 与 52.8→42.0 ms 均对应上述权重、并行与编译范围，统计 Device 非 Hcom Kernel 总和；片段比较未编译、dynamic=False 和 dynamic=True。
 
 ## Metric Definition
 
@@ -72,5 +72,5 @@ DeepSeek-V4 的 `hc_post` 片段含多个小算子组合，适合 AutoFuse 融�
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/README.md)
+- [deepseek_v4_autofuse_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_autofuse_guide.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4_flash_tilelang_and_inductor_af/README.md)（primary）

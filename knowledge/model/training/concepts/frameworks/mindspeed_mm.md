@@ -1,13 +1,7 @@
 ---
 type: Concept
 title: MindSpeed-MM（昇腾 NPU 多模态大模型训练套件）
-description: >-
-  MindSpeed-MM 面向 VLM、DiT 图像/视频生成和 Omni 训练，提供 Megatron-mcore 与插件式 FSDP2 两条后端，
-  由 NON_MEGATRON 分流。FSDP2 通过 model/data 注册表和顶层 YAML 接入新模型，使用逐参数 DTensor
-  sharding、逐模块 fully_shard 和 reshard_after_forward 切换 ZeRO-2/3；其约束包括禁用分布式优化器与
-  Megatron 完全重计算、桥接式 TP=1、仅 DCP 检查点。Bridge 层按架构解析模型，通过通配参数映射
-  双向拆分、合并和重排权重；Canonical Model 保留 HF 计算布局，使 LoRA 可跨 HF/Megatron 复用。
-  套件还通过 verl_plugin 接入 GRPO、DanceGRPO 和 Sora-DPO。
+description: MindSpeed-MM 面向 VLM、DiT 图像/视频生成和 Omni 训练，提供 Megatron-mcore 与插件式 FSDP2 两条后端， 由 NON_MEGATRON 分流。FSDP2 通过 model/data 注册表和顶层 YAML 接入新模型，使用逐参数 DTensor sharding、逐模块 fully_shard 和 reshard_after_forward 切换 ZeRO-2/3；其约束包括禁用分布式优化器与 Megatron 完全重计算、插件式 TP=1、仅 DCP 检查点。Bridge 层按架构解析模型，通过通配参数映射 双向拆分、合并和重排权重；Canonical Model 保留 HF 计算布局，使 LoRA 可跨 HF/Megatron 复用。 套件通过 verl_plugin 接入 GRPO；DanceGRPO 和 Sora-DPO 由不依赖 verl 的原生训练入口承载。
 tags:
 - task.implementation
 - topic.architecture
@@ -15,12 +9,16 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/README.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/fsdp2.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/fsdp2.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/guides/development/fsdp2_model_migration_guide.md
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/checkpoint/vlm_model/converters/qwen3vl_megatron.py
+  role: implementation
 created_at: '2026-06-24T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:13Z'
 platforms:
 - agnostic
 ---
@@ -33,9 +31,9 @@ MindSpeed-MM 是昇腾 NPU 的**多模态大模型训练套件**，建在 [minds
 
 ## 双训练后端：Megatron-mcore vs 插件式 FSDP2
 
-仓内**同时存在两套容易混淆的后端**，入口、配置、模型/数据接入方式都不同（下表逐维度对照）。新增模型/数据集**推荐优先接入新版插件式 FSDP2**；Megatron 桥接式属过渡形态，仅用于存量入口兼容、后续不再迭代新特性。
+仓内**同时存在两套容易混淆的后端**，入口、配置、模型/数据接入方式都不同（下表逐维度对照）。新增模型/数据集**推荐优先接入新版插件式 FSDP2**；其中 Megatron 桥接式 FSDP2 属过渡形态，仅用于存量入口兼容、后续不作为新特性迭代方向；这不表示普通 Megatron-mcore 后端被废弃。
 
-| 维度 | 新版插件式 FSDP2（主线） | Megatron-mcore 路线（旧 / 桥接） |
+| 维度 | 新版插件式 FSDP2（主线） | Megatron-mcore 入口的桥接式 FSDP2 |
 |---|---|---|
 | 常见入口 | `mindspeed_mm/fsdp/train/trainer.py`，或 `fsdp/tasks/*` 任务专用入口 | `pretrain_vlm.py` / `pretrain_omni.py` / `pretrain_sora.py` / `pretrain_transformers.py` |
 | 配置形态 | 一份顶层 YAML（`parallel`/`data`/`model`/`features`/`training`/`tools` 六段） | 主训练配置 + 额外 `fsdp2_config.yaml`（桥接式 FSDP2 时） |
@@ -44,6 +42,8 @@ MindSpeed-MM 是昇腾 NPU 的**多模态大模型训练套件**，建在 [minds
 | 数据接入 | `@data_register.register` + `build_mm_dataset/build_mm_dataloader` | `train_valid_test_datasets_provider` / `get_batch` |
 | 分片字段 | `parallel.fully_shard_parallel_size`、`parallel.fsdp_plan.apply_modules` | `sharding_size`、`sub_modules_to_wrap` |
 | 分片表示 | PyTorch FSDP2 / per-parameter DTensor | Megatron TP/PP/CP/DP 切分 |
+
+表中额外 fsdp2_config.yaml 和 --use-torch-fsdp2 仅描述桥接式 FSDP2，普通 Megatron-mcore 训练不以这些配置为通用前提。
 
 **设计取舍**：Megatron 路线靠融合算子（`linear_qkv`/`linear_fc1`）+ 5D 并行换性能，但模型适配成本高、权重与 HF 不兼容；插件式 FSDP2 与模型结构解耦、新模型接入成本低（量级是写一个注册类 + 一份 YAML），代价是单后端约束更多（见下）。两条路线靠启动脚本里的 `NON_MEGATRON=true` 环境变量在入口处分流。
 
@@ -112,22 +112,26 @@ Bridge 与 Canonical Model 两层抽象解决"Megatron 训练 ↔ HF 生态"的�
 - 计算等价（数值与 HF 一致，仅浮点误差）、权重免拆分/合并直接互转、**LoRA 适配器跨框架通用**（融合实现下 qkv 的 LoRA-A 参数量仅为标准的 1/3，算法不等价）。
 - 启用方式：模型 JSON 的 `vision_encoder`/`text_decoder` 下置 `canonical_model: true`；当前支持 `Qwen2.5-VL`。取舍：跨框架迁移/LoRA 强烈建议开；纯预训练无跨框架需求可不开（Megatron 融合算子性能略优）。
 
-**命令行**：`mm-convert`（`checkpoint/convert_cli:main`，用 `jsonargparse.auto_cli` 把全部 `Commandable` 子类自动暴露为子命令）。Megatron 路线按模型提供独立 Converter（Qwen2/2.5/3-VL、InternVL、GLM、DeepSeekVL、Mistral3、Qwen2.5-Omni、Sora 系列 CogVideo/StepVideo/HunyuanVideo/Wan 等十余个），各支持 `hf_to_mm` / `mm_to_hf` / `resplit`；**插件式 FSDP2 后端则走通用 `GenericDCPConverter`（`hf_to_dcp` / `dcp_to_hf`，不区分模型结构）**，区别于 Megatron 路线的 per-model 转换器。通用权重转换工具另见 [model-custom-converter](model_custom_converter.md)。
+**命令行**：`mm-convert`（`checkpoint/convert_cli:main`，用 `jsonargparse.auto_cli` 把全部 `Commandable` 子类自动暴露为子命令）。Megatron 路线按模型提供独立 Converter（Qwen2/2.5/3-VL、InternVL、GLM、DeepSeekVL、Mistral3、Qwen2.5-Omni、Sora 系列 CogVideo/StepVideo/HunyuanVideo/Wan 等十余个），转换方向须逐个核对，不能由 CLI 命令名推定已实现：至少固定 `Qwen3VLMegatronConverter.resplit()` 只有 `pass`，不能用于重切分；其他转换器的 `hf_to_mm` / `mm_to_hf` / `resplit` 按实际方法体确认；**插件式 FSDP2 后端则走通用 `GenericDCPConverter`（`hf_to_dcp` / `dcp_to_hf`，不区分模型结构）**，区别于 Megatron 路线的 per-model 转换器。通用权重转换工具另见 [model-custom-converter](model_custom_converter.md)。
 
 ## 生成式 RL 插件 verl_plugin
 
 MindSpeed-MM 内有多条生成式 RL 路径：① `verl_plugin/`（`verl_npu/plugin.py` 把 [verl](verl.md) 适配到昇腾）复现 **GRPO**（当前样例 Qwen2.5-VL / Qwen3-VL）；② 仓内**原生 RL 路径**（与 verl 无关）——**DanceGRPO**（`posttrain_flux_dancegrpo.py` → `tasks/rl/soragrpo` FluxGRPOTrainer）、**Sora-DPO**（`posttrain_sora_dpo.py` → `tasks/rl/dpo` SoRADPOTrainer）。
 
+## 当前 FSDP2 启动与迁移契约
+
+原生 FSDP2 是新增模型的推荐入口：先设置 `NON_MEGATRON=true`，再用 torchrun 运行 `mindspeed_mm/fsdp/train/trainer.py`，唯一位置参数为六段式 YAML 路径。缺少该环境变量会漏掉所需算子适配；不能混入 Megatron 命令行与旧 `fsdp2_config.yaml` 字段。
+
+以 `training.init_model_with_meta_device: true` 初始化时，文档要求先用 `mm-convert GenericDCPConverter hf_to_dcp` 转换，`training.load` 指向输出 `release` 的上一级。`reshard_after_forward=True` 是前向后重分片、反向再次 all-gather；False 保留聚合参数到反向，省通信但更占显存。
+
+基于 Megatron 的 FSDP2 当前已明确不推荐并计划退出，普通 Megatron-mcore 路线不因此被废弃。旧桥接路径对原本绑定 embedding/lm_head 的模型设置 untie 会破坏绑定，需要转换时处理权重复制并核对结构，不能只切换参数后直接沿用原检查点。
+
 ## Evidence
 
-源页：[mindspeed-mm](https://gitcode.com/Ascend/MindSpeed-MM)（钉定 ref `8e740b46cb82…`）。blob base `https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/`：
-
-- 插件式后端入口与装配链：`mindspeed_mm/fsdp/train/trainer.py`（`Trainer.initialize` / `get_model` / `enable_lora`）、`mindspeed_mm/fsdp/train/train_engine.py`。
-- FSDP2 sharding/混精/预取：`mindspeed_mm/fsdp/distributed/fully_shard_parallel.py`（`fully_shard_parallel_modules` / `get_mixprecision_policy` / `set_modules_to_prefetch`）。
-- FSDP1→FSDP2 取舍与单后端约束：[`docs/zh/features/fsdp2.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/fsdp2.md)、[`docs/zh/features/fsdp2_developer_migration_guide.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/fsdp2_developer_migration_guide.md)、[`docs/zh/pytorch/quickstart_fsdp2.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/pytorch/quickstart_fsdp2.md)。
-- Bridge 参数映射：`bridge/models/conversion/auto_bridge.py`（`AutoBridge`）、`mapping_registry.py`（`MegatronMappingRegistry`）、`param_mapping.py`。
-- Canonical Model + 转换 CLI：[`docs/zh/features/canonical_model.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/canonical_model.md)、[`docs/zh/features/mm_convert.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/mm_convert.md)、`checkpoint/convert_cli.py`。
-- 生成式 RL：`verl_plugin/README.md`、`verl_plugin/verl_npu/plugin.py`、`posttrain_flux_dancegrpo.py`、`posttrain_sora_dpo.py`。
+- [README.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md)（primary）
+- [fsdp2.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/parallel/fsdp2.md)（supporting）
+- [fsdp2_model_migration_guide.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/guides/development/fsdp2_model_migration_guide.md)（implementation）
+- [qwen3vl_megatron.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/checkpoint/vlm_model/converters/qwen3vl_megatron.py)（implementation）
 
 ## Links
 

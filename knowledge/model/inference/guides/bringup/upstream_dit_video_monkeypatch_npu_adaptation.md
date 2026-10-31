@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: 上游 DiT/视频生成模型搬昇腾：运行时 monkey-patch 层替代 fork + 版本门控融合算子替换
-description: 上游 DiT/视频生成模型搬昇腾：运行时 monkey-patch 层替代 fork + 版本门控融合算子替换。把一个上游持续更新的开源扩散/DiT 模型（如 DiT 生成模型）搬上昇腾，且不想把上游源码 fork 进仓再手改（fork 会让上游更新变成痛苦的 rebase）时，用运行时 monkey-patch 层做零侵入适配。
+description: 当前Sana导入兼容补丁、必传quant_type的方法注入时序、加载后权重同步与量化替换。
 tags:
 - task.debugging
 - topic.attention
@@ -9,12 +9,16 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/341
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/b3001576a6c2051b9f288c33ae64242c7e4dfc07/models/sana-video/patches/npu_patches.py
-  role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/__init__.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:38:03Z'
+updated_at: '2026-10-29T14:16:27Z'
 platforms:
 - a2
 ---
@@ -32,7 +36,9 @@ platforms:
 
 ## 做什么：统一 monkey-patch 入口
 
-用一个统一 `apply_all()` 入口，在运行时把上游模块的层/算子替换成昇腾版，对上游源码**零侵入**，上游更新只需重拉源码。要成立必须满足**三条前置约束**：
+用一个统一 `apply_all(quant_type)` 入口，在运行时把上游模块的层/算子替换成昇腾版，对上游源码**零侵入**，无需维护上游文件改动，但上游升级仍须重新核对补丁绑定、接口、权重同步与输出；当前README约定的Sana上游版本须保持，不能由补丁存在推定兼容任意新上游。要成立必须满足**三条前置约束**：
+
+当前入口先安装Triton导入stub与本地文本权重适配，再导入上游；解析quant_type后调用apply_all。apply_all不再负责提前安装stub，不能把旧无参调用直接移植。_npu_available现在使用packaging.version比较版本；Conv快路径另由enable_quant门控，量化模块在权重加载后替换。
 
 1. **按补丁类型确定注入时机**——导入兼容 stub 要早于依赖导入；方法替换可以在模块导入后进行，但须早于相关实例构造或调用，并检查已缓存的旧绑定；
 2. **核对来源版本的导入兼容层**——Sana PR341 使用 Triton stub 绕过未执行的 CUDA 依赖导入；这不表示 NPU 没有 Triton。只有确认相关内核不会被调用时才可采用 stub，否则应接入受支持的实现；
@@ -60,8 +66,10 @@ platforms:
 
 ## Evidence
 
-- `diff 事实`（@b300157）：统一 `apply_all()` monkeypatch 层 + 三类前提（按补丁类型核对注入时机 / triton stub / zeros-init 层 load_state_dict 后同步）；部分融合计算分支用 `_npu_available` 门控、全量非因果 attn → `npu_fusion_attention` BNSD 约定。
-- 溯源下探：[cann-recipes-infer-pr-341-refactor-simplify-sana-video-npu-patches](https://gitcode.com/cann/cann-recipes-infer/merge_requests/341)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md)（primary）
+- [__init__.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/__init__.py)（implementation）
+- [npu_patches.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py)（implementation）
+- [inference_sana_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py)（implementation）
 
 ## bringup 验收与停止条件
 

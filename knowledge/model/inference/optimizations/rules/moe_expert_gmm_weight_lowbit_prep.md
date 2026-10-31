@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/13
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a3
 ---
@@ -71,7 +71,7 @@ Atlas A3、DeepSeek-V3.2-Exp、MoE 改 W4A8（注意力仍 W8A8C8）、序列长
 
 ## Evidence
 
-- W4A8 scheme 判据、grouped-matmul bias/output_dtype 对照、2-per-int8 打包、建模 `bias=True`、EP 分支扩展：diff 事实（含源码注释）@47228911d04d。溯源下探 [cann-recipes-infer-pr-12-feat-support-moe-gmm-w4a8](https://gitcode.com/cann/cann-recipes-infer/merge_requests/12)。
-- W4A16 识别谓词、antiquant grouped_matmul、unpack→transpose→convert_weight_to_int4pack 重打包、混合精度落点：diff 事实（注释直证重打包动机）@da13d66。溯源下探 [cann-recipes-infer-pr-93-feat-support-kimi-k2-thinking](https://gitcode.com/cann/cann-recipes-infer/merge_requests/93)。
-- 加载后 `npu_format_cast(...,29)` 转 NZ、W8A8 分支 transpose 前置：diff 事实 @50e41b5b8220。溯源下探 [cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)。
-- W4A8 vs W8A8 decode benchmark 表（含 seq 65536、chips、TPOT、吞吐）：doc 披露（仓自报、非独立复跑结果）@8c6c58b36bac。溯源下探 [cann-recipes-infer-pr-13-feat-add-deepseek-v3-2-exp-w4a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/12)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/93)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)（evidence）

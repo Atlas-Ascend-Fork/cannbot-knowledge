@@ -9,12 +9,14 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-21T09:02:45Z'
+updated_at: '2026-10-29T13:46:35Z'
 platforms:
 - a3
 ---
@@ -27,7 +29,7 @@ LongCat-Flash 是 560B MoE 模型，核心为 ScMoE：每个 Transformer Block �
 
 来源的 NPU 实践面向 Atlas A3、自研 CANN Executor。原始并行策略图仅用于说明计算路径：
 
-![LongCat-Flash 原始 overlap 策略](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/figures/overlap_strategy.png)
+![LongCat-Flash 原始 overlap 策略](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/figures/overlap_strategy.png)
 
 ## 部署、优化与观测入口
 
@@ -41,22 +43,23 @@ LongCat-Flash 是 560B MoE 模型，核心为 ScMoE：每个 Transformer Block �
 | Attention/FFN 分离与回退 | [AFD 规则](../../optimizations/rules/afd_attn_ffn_disaggregation.md) |
 | 固定负载的自报性能 | [LongCat A3 来源观测](../../optimizations/benchmark_observations/longcat_a3_afd_source_benchmark.md) |
 
-## 历史与验证边界
+## 当前实现与验证边界
 
-KVP 部署在后续固定版本撤回；历史配置、legacy 代码与入口守卫由[KVP 机制](../parallelism/kvp.md)和[已停用 Guide](../../guides/deployment/kvp_longseq_decode.md)统一说明。本模型卡不把旧配置列为当前可启用规格。
+当前主模型与 MTP 使用 InferenceConfig/CommManager 和 ForwardMetaData；KV Cache 由共享管理器绑定到模块，packed-token Prefill 与 Attention-SP 路径负责 token padding/布局恢复。模型级入口统一计算 Prefill MoE chunk 数，避免每层重复 EP 同步。
 
-实际部署需要核对具体提交、卡数/并行、精度、后端和输入。结构相似不表示可继承其他模型的配置；本次迁移没有执行模型，也不把来源的自报 benchmark 当作已验证收益。
+当前支持 eager、GE、npugraph_ex，但多流不支持 eager、SuperKernel只支持GE，CP仅1，MTP宽度仅0/1/2。AFD采用两半rank配对，npugraph_ex Decode可延迟接收至汇合点。KVP已无配置与实现入口。
+
+结构与API存在不代表已在本次运行验证；吞吐仍需按实际软件、路由与输入复测。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/longcat-flash/longcat_flash_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md)（11 大章节：通用优化 / 图模式 / 图编译缓存 / 多流并行与控核 / 权重预取 / SuperKernel / MLA 低秩压缩 + o_proj TP / KVP / MoE EP / MLP 合并与 TP / MTP / AFD）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/longcat-flash/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/longcat-flash/README.md)（benchmark 表、长序列 OOM 处理、Send/Recv 1:1 约束）；`models/longcat-flash/config/*.yaml`（5 份默认 + 3 份 CI 部署配置）；`models/longcat-flash/models/modeling_longcat_flash.py` / `ffn.py` / `mtp.py`（`LongcatFlashAttention.forward_page_attention_absorb`、MoE forward、`npu_prefetch`、`npu_stream_switch`、`limit_core_num`、`superkernel_scope` 使用处）；`models/longcat-flash/runner_longcat_flash.py`（主 runner）；`models/longcat-flash/utils/convert_model.py`（BF16 → W8A8 权重转换）
-- 原始模型：Meituan LongCat-Flash-Chat HF repo（`meituan-longcat/LongCat-Flash-Chat`）；论文 arXiv 2509.01322（四阶段并行策略来源）
-- KVP 撤回与遗留代码的来源见 [PR501](https://gitcode.com/cann/cann-recipes-infer/merge_requests/501)、[固定入口守卫](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat-flash/models/model_setting.py)；具体历史机制由 KVP 卡维护。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/README.md)（primary）
+- [modeling_longcat_flash.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py)（implementation）
+- [longcat_flash_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md)（supporting）
 
 ## Links
 
-- [longcat-flash-lite](longcat_flash_lite.md)（减配验证模型：保留 MoE+MLA+N-gram Embedding 核心结构、缩小层/expert 数，A2/A3 单节点冷启动优化）
+- [longcat-flash-lite](longcat_flash_lite.md)（减配验证模型：包含 MoE、MLA 与 Lite 独立的 N-gram Embedding 模块、缩小层/expert 数，A2/A3 单节点冷启动优化）
 - [atlas-a3](../platforms/atlas_a3.md)
 - [torchair](../frameworks/torchair.md)
 - [ascendc](../frameworks/ascendc.md)

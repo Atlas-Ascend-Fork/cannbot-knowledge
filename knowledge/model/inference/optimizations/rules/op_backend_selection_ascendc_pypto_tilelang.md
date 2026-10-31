@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/2
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - agnostic
 ---
@@ -46,7 +46,4 @@ platforms:
 
 ## Evidence
 
-- `维护者确认`（cann-recipes-infer，`@2c45117d781a`）：事件 Discussion 中维护者官方答复「当前阶段推荐 Ascend C 版本，性能最优；pyPTO & TileLang 版本会持续优化」，非提问者猜测。
-- `仓库结构事实`（`@2c45117d781a`）：clone 核实 `ops/ascendc` / `ops/pypto`(`ops/pypto_python`) / `ops/tilelang` 三套后端目录确实并存且覆盖同类算子，佐证「三后端并行」。
-- 无 benchmark 数据；时效限定「当前阶段」，需随仓库演进复核。
-- 溯源下探：[cann-recipes-infer-issue-2-question](https://gitcode.com/cann/cann-recipes-infer/issues/2)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/2)（evidence）

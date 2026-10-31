@@ -18,6 +18,7 @@ import importlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -662,6 +663,68 @@ class RecipeSourceRegistryTests(unittest.TestCase):
                          f"cann-recipes-raw/unregistered/{definition['revisions'][0]}/README.md"):
             with self.subTest(resource=resource):
                 self.assertFalse(source_checks.is_safe_local_resource(contract, resource))
+
+
+class RecipeSourceCorpusTests(unittest.TestCase):
+    """Model cards must keep readable, commit-qualified registered provenance."""
+
+    def test_model_repositories_each_select_one_revision(self):
+        contract = Contract(ROOT)
+        definitions = [value for value in contract.local_sources.values()
+                       if value.get("root", "").startswith("cann-recipes-raw/")]
+        self.assertTrue(definitions)
+        for definition in definitions:
+            with self.subTest(repository=definition["repository"]):
+                self.assertEqual(1, len(definition["revisions"]))
+
+    def test_model_text_and_image_references_share_selected_revision(self):
+        contract = Contract(ROOT)
+        definitions = [value for value in contract.local_sources.values()
+                       if value.get("root", "").startswith("cann-recipes-raw/")]
+        for path in sorted((ROOT / "knowledge/model").rglob("*.md")):
+            text = path.read_text()
+            for definition in definitions:
+                prefixes = [definition["root"]]
+                for repository in (
+                    definition["repository"],
+                    definition["repository"].replace("https://gitcode.com/", "https://raw.gitcode.com/"),
+                ):
+                    prefixes.extend(repository + "/" + kind for kind in ("blob", "raw", "tree"))
+                pattern = "(?:" + "|".join(re.escape(prefix) for prefix in prefixes) + r")/([0-9a-f]{40})\b"
+                for revision in re.findall(pattern, text, re.IGNORECASE):
+                    with self.subTest(card=path.relative_to(ROOT), repository=definition["repository"]):
+                        self.assertEqual(definition["revisions"], [revision])
+
+    def test_model_git_sources_are_localized_and_exist_when_restored(self):
+        contract = Contract(ROOT)
+        definitions = [definition for definition in contract.local_sources.values()
+                       if definition.get("kind") == "git" and definition["root"].startswith("cann-recipes-raw/")]
+        checked = set()
+        references = 0
+        for path in sorted((ROOT / "knowledge/model").rglob("*.md")):
+            if path.name == "index.md":
+                continue
+            metadata, _ = api_links.ingest.contract_module().split_frontmatter(path.read_text())
+            for entry in metadata["sources"]:
+                value = entry["resource"]
+                if not any(value.startswith((definition["root"] + "/", definition["repository"] + "/"))
+                           for definition in definitions):
+                    continue
+                source = resources.git_source(contract, value)
+                if source is None or not source.root.startswith("cann-recipes-raw/"):
+                    continue
+                references += 1
+                with self.subTest(card=path.relative_to(ROOT), source=value):
+                    self.assertEqual(source.resource, value)
+                    if not (ROOT / source.root).exists():
+                        continue
+                    key = (source.root, source.revision)
+                    if key not in checked:
+                        definition = contract.local_source_definition(value)
+                        resources.validate_checkout(ROOT, definition, source.revision)
+                        checked.add(key)
+                    self.assertTrue(source.local_path(ROOT).exists())
+        self.assertGreater(references, 0)
 
 
 class OperatorSourceCorpusTests(unittest.TestCase):

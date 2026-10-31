@@ -20,7 +20,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/114
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:32:47Z'
 platforms:
 - a3
 ---
@@ -58,13 +58,8 @@ W4 权重对离群值（outlier）敏感、量化困难、易掉精度。降路�
 
 ## Evidence
 
-- `diff 事实`（@8c6c58b36bac）：`generate_w4a8_quant` 仅纳入 `mlp.experts`、`group_1` MoEGMM `w4a8`、`--clip` 门控。
-- `diff 事实`（@dce3a777）：DeepSeekV4 converter `generate_quant_config` 把 `group_1`(MoEGMM `w_num_bits=4`) 的启用条件从 `is_fp` 改为 `w4a8`；「路由 W4A8 / 共享 W8A8」的角色划分为 `doc 披露`。
-- `doc 披露`（@d3c31919）：W4A8C8 比 W8A8C8 省 MoE 权重显存 2x、大 EP 装更多专家 / 单机部署；W4A8 绝对 benchmark（64 chips TPOT 20.18ms、32 chips 22.51ms），无 W8A8 并列对照。
-- `维护者确认`：PR 评审纠正「整模型省 2x」误判为「仅 GMM 权重减半」；Kimi 原生 W4A16 + BF16 由维护者 + doc 确认。
-- 溯源下探：
-  - [cann-recipes-infer-issue-105-question-dsv3-2-w8a8c8-w4a8c8](https://gitcode.com/cann/cann-recipes-infer/issues/105)
-  - [cann-recipes-infer-pr-464-add-w4a8-int-for-deepseekv4-pro](https://gitcode.com/cann/cann-recipes-infer/merge_requests/464)
-  - [cann-recipes-infer-issue-16-rfc-deepseek-v3-2-exp-w4a8c8](https://gitcode.com/cann/cann-recipes-infer/issues/16)
-  - [cann-recipes-infer-pr-13-feat-add-deepseek-v3-2-exp-w4a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)
-  - [cann-recipes-infer-issue-114-question-kimi](https://gitcode.com/cann/cann-recipes-infer/issues/114)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/105)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/464)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/16)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/114)（evidence）

@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/26
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - agnostic
 ---
@@ -56,12 +56,12 @@ platforms:
 - [MoE + 投机解码：draft dummy_run 误带 profile-run 语义触发](../precision/mtp_draft_dummy_run_in_profile_run_random_experts.md)
 - [序列并行(FlashComm V1)分支用只查环境变量的窄谓词门控：漏掉 shared_ex](../precision/sp_gate_narrow_env_predicate_misses_shared_expert_dp.md)
 
-- 另见 [量化 MoE 专家 GMM 的 phase-gated bias 跳过：Prefill 去 bias 提速、Decode 保留](../../optimizations/rules/w4a8_moe_gmm_prefill_skip_bias.md)。
+- 另见 [已停用的旧 Prefill 跳过 bias 规则（当前两阶段均保留 bias）](../../optimizations/rules/w4a8_moe_gmm_prefill_skip_bias.md)。
 
 
 ## Evidence
 
-- 三处 `enable_*=False` 硬编码 → 改读 `custom_params`、`layer_idx=None` 取值 bug → 形参化透传：diff 事实 @caa72a0c8625。溯源下探 [cann-recipes-infer-pr-345-fix-fix-r1-multistream-and-superkernel-add-time-printing](https://gitcode.com/cann/cann-recipes-infer/merge_requests/345)。
-- `.get("enable_superkernel", False)` 键名不匹配静默回落 + decode-only `superkernel_scope` 门控：diff 事实 @699396c6be87。溯源下探 [cann-recipes-infer-pr-262-fix-fix-longcat-config-yaml](https://gitcode.com/cann/cann-recipes-infer/merge_requests/262)。
-- 间接层 `self.moe_ffn` 绑定但 forward 两处调用点写死 `self.experts` → 新 int4 分支从不被调用 → 两处切 `self.moe_ffn`：diff 事实 @6857a2062f66 + 维护者确认（报告死代码 + 复审确认接入两条路径）。溯源下探 [cann-recipes-infer-pr-410-feat-w4a8int4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/410)。
-- dense-MLP TP 门控误挂 `is_prefill` → decode 不切分、去 `is_prefill` + all-gather 布局改沿 batch 维 + `world_size % dense_tp_size` 整除校验：diff 事实 @29f28af1e40c + reviewer 要求补校验。溯源下探 [cann-recipes-infer-pr-26-bugfix-support-dense-mlp-tp](https://gitcode.com/cann/cann-recipes-infer/merge_requests/26)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/345)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/262)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/410)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/26)（evidence）

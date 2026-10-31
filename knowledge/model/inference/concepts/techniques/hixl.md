@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: HIXL（Huawei Xfer Library 单边零拷贝通信库）
-description: HIXL 是基于 SHMEM 全局统一编址的昇腾单边通信库，主要解决超长序列推理将 KV Cache 卸载到 CPU DRAM 后的 Device→Remote Host PUT 与 Remote Host→Device GET。它通过 SDMA 直接访问对端 DRAM，无需对端进程参与或内核态中转，并屏蔽 HCCS、RoCE 等链路差异。vLLM 侧选择 Mooncake 后端且 protocol=ascend 时调用 HIXL；依赖 libcann_hixl.so、libllm_datadist.so，并需 Mooncake 以 USE_ASCEND_DIRECT 构建。HCCS IPC 缓冲区基址要求 2 MiB 对齐，RoCE 无此约束；默认 memfabric 后端不使用 HIXL。Mooncake 接入行为依据封装代码；HIXL 内部机制依据 guide 文档，未作源码级验证。
+description: HIXL 是基于 SHMEM 全局统一编址的昇腾单边通信库，主要解决超长序列推理将 KV Cache 卸载到 CPU DRAM 后的 Device→Remote Host PUT 与 Remote Host→Device GET。它通过 SDMA 直接访问对端 DRAM，无需对端进程参与或内核态中转，并屏蔽 HCCS、RoCE 等链路差异。共享Executor选择Mooncake后端且 protocol=ascend 时调用 HIXL；依赖 libcann_hixl.so、libllm_datadist.so，并需 Mooncake 以 USE_ASCEND_DIRECT 构建。HCCS IPC 缓冲区基址要求 2 MiB 对齐，RoCE 无此约束；默认 memfabric 后端不使用 HIXL。Mooncake 接入行为依据封装代码；HIXL 内部机制依据 guide 文档，未作源码级验证。
 tags:
 - task.optimization
 - topic.kv_cache
@@ -9,10 +9,10 @@ tags:
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_shmem_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - agnostic
 ---
@@ -51,6 +51,12 @@ HIXL 集成 SHMEM 的核心目标是**跨进程全局统一编址**，依托 SHM
 - **2 MiB 对齐约束**：HIXL HCCS IPC 要求注册内存基址 **2 MiB 对齐**——`HIXL_ALIGNMENT = 2 * 1024 * 1024`（`buffer.py:98`、`cache_utils.py:81-108`：:81 注明 "2 MiB aligned HIXL HCCS IPC contract"，:104-108 为 slack 计算 + `align_memory` + `narrow`），KV cache 与 metadata buffer 分配时统一 `align_memory()` over-allocate 后 `narrow` 切到对齐起点（代码核对）。ROCE 路径（`HCCL_INTRA_ROCE_ENABLE=1`）无对齐要求（transfer_engine.py:360-361）。
 - **lazy import**：`mooncake` 模块仅在 `engine_backend=="mooncake"` 路径下 lazy import，memfabric-only 部署无需安装（transfer_engine.py:315-323）。
 
+## 当前缓存与元数据分配
+
+KV按各CacheEntry自己的block_size布局和管理，get_contiguous_buf_infos返回包含每项block_sizes的五元组，不能继续把所有KV按一个统一块大小传输。MetadataBufferPool保留64字节固定header，但slot_size还包含speculative codec载荷和对齐；DSpark包含完整FP32 proposal概率，因此不能再以64字节乘请求数估算整个池。两者仍按2MiB对齐后注册，具体布局协商见[在线PD](../frameworks/online_pd_inference.md)。
+
+Mooncake当前4个位置参数、延迟导入和batch_transfer_sync_write接口仍与本页一致；memfabric后端则在initialize成功后才获取并发布有效RPC端口，不能在构造阶段缓存端口。
+
 ## 性能测试（A3 超节点）
 
 guide 性能数据（A3 超节点，HIXL+SHMEM）：
@@ -63,11 +69,7 @@ guide 性能数据（A3 超节点，HIXL+SHMEM）：
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_shmem_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md)（HIXL 介绍 / 集成 SHMEM / 全局统一编址 / 性能测试节）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`executor/online/kv_transfer/transfer_engine.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/online/kv_transfer/transfer_engine.py)（`MooncakeAscendTransferEngine`、`protocol="ascend"`+`P2PHANDSHAKE`、`libcann_hixl.so`、`batch_transfer_sync_write`；代码核对）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`executor/online/kv_transfer/buffer.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/online/kv_transfer/buffer.py) + [`executor/core/kv_cache/cache_utils.py:81-108`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/core/kv_cache/cache_utils.py#L81-L108)（`HIXL_ALIGNMENT = 2 MiB`、`align_memory` over-allocate+narrow；代码核对）
-- 外部仓（未核对源码）：HIXL 库 [`gitcode.com/cann/hixl`](https://gitcode.com/cann/hixl)
-- 引入 / 演进：MR!452（`cffb850` [feat] mooncake + hixl, import, support models lazy import）；diff 区间 `2f82d10..2c45117`
+- [deepseek_v4_shmem_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_shmem_guide.md)（primary）
 
 ## Links
 
@@ -80,4 +82,4 @@ guide 性能数据（A3 超节点，HIXL+SHMEM）：
 ## Notes
 
 - **实现与证据范围**：HIXL 库本体（`OPTION_ENABLE_USE_FABRIC_MEM`、SDMA 引擎、全局物理地址池构建等）由独立的 `cann/hixl` 提供，其内部机制依据 guide 文档，未作源码级验证。cann-recipes-infer 实现的是 Mooncake `protocol="ascend"` 后端对 HIXL 的接入封装（`MooncakeAscendTransferEngine` + 2 MiB 对齐契约），其具体行为见「在 cann-recipes-infer 中的落地」节。
-- **memfabric vs mooncake**：默认后端 `memfabric`（`AscendTransferEngine` 基于 `memfabric_hybrid`）非 HIXL 路径；mooncake 为 opt-in 的 HIXL 路径。区别详见 [online-pd-inference](../frameworks/online_pd_inference.md)「传输后端」节。
+- **memfabric vs mooncake**：默认后端 `memfabric`（`AscendTransferEngine` 基于 `memfabric_hybrid`）为另一传输后端；mooncake 为 opt-in 的 HIXL 路径。区别详见 [online-pd-inference](../frameworks/online_pd_inference.md)「传输后端」节。

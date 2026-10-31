@@ -1,19 +1,23 @@
 ---
 type: Concept
 title: DSA（DeepSeek Sparse Attention）架构模式
-description: DSA（DeepSeek Sparse Attention）是一种注意力架构模式（非单个 kernel、非 MLA 替代品）：MLA 的 Q/K/V LoRA 计算图 + 并行的学习式 indexer overlay，indexer 为每个 query 选 index_topk 个最相关 key、产出 softmax 前的加性 -inf mask，把非 top-k 位置置零；因此 attention_type=dsa 的模型隐式携带完整 MLA 前向图（DSA ⊇ MLA，MLA 是严格子图）。本页讲清 DSA(架构模式) / MLA(子图) / Lightning Indexer(选 token 模块) / Sparse Flash Attention(稀疏注意力 kernel 落地) 四者边界关系。已验证实例：DeepSeek-V3.2-Exp 与 GLM-5（严格 MLA⊕indexer；indexer RoPE 布局 per-model 差异——V3.2-Exp 非交错 npu_rotary_mul / GLM-5 交错 npu_interleave_rope）、DeepSeek-V4（注意力主体改 MQA/Shared-KV，DSA 思想下沉到压缩 Cache 的稀疏选择）。
+description: DSA 的 MLA 与学习式 Indexer 关系；区分教学 mask 与实际稀疏算子，并更新 GLM-5 FP8 和 V4 Shared-KV 的例外。
 tags:
 - task.design
 - topic.model_architecture
 - topic.attention
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/indexer.py
+  role: implementation
 created_at: '2026-06-03T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a3
 ---
@@ -28,7 +32,7 @@ DSA（DeepSeek Sparse Attention）是一种**注意力架构模式**，不是单
 
 ## 架构图
 
-> 模型无关结构图。已验证适用于 DeepSeek V3.2-Exp（`DeepseekV32ForCausalLM`，`model_type=deepseek_v32`）与 GLM-5（`GlmMoeDsaForCausalLM`，`model_type=glm_moe_dsa`）。任何"注意力类包裹一张 MLA 形状的 Q/K/V 图 + 一个发出 per-query top-k mask 的学习式 indexer"的模型都复用此结构；per-model 变体（旋转技巧、FP8 布局、indexer 头数）写在该模型自己的 Notes。
+> 模型无关结构图。以下结构用于 DeepSeek V3.2-Exp（`DeepseekV32ForCausalLM`，`model_type=deepseek_v32`）与 GLM-5（`GlmMoeDsaForCausalLM`，`model_type=glm_moe_dsa`）。任何"注意力类包裹一张 MLA 形状的 Q/K/V 图 + 一个发出 per-query top-k mask 的学习式 indexer"的模型都复用此结构；per-model 变体（旋转技巧、FP8 布局、indexer 头数）写在该模型自己的 Notes。
 
 ```mermaid
 flowchart TD
@@ -62,7 +66,7 @@ flowchart TD
     q_concat --> q_rot[rotate_act]
     k_concat --> k_rot[rotate_act]
 
-    q_rot --> idx_score["index_score<br/><i>Σ_h w_h · (q_h · k)</i>"]
+    q_rot --> idx_score["index_score<br/><i>Σ_h w_h · ReLU(q_h · k)</i>"]
     k_rot --> idx_score
     wp --> idx_score
 
@@ -94,29 +98,25 @@ flowchart TD
 - **LI vs SFA 是 DSA 的两段**：LI 负责"选哪些 token"（产 top-k index / 加性 mask），SFA 负责"在选中的稀疏子集上算注意力"。cann-recipes-infer 把这条链路在算子层进一步表达为 LightningIndexer + IndexerProlog + SparseFlashAttention，乃至融成单 kernel（见 [deepseek-indexer-attention](../kernels/deepseek_indexer_attention.md)）。
 - **架构图 vs 算子页**：此结构图是 stock HF 架构先验（部署无关）。Atlas A3 上的算子级落地——离散 gather、FP8/C8 量化、MegaKernel 融合——见 [sparse-flash-attention](../kernels/sparse_flash_attention.md) 与 [deepseek-indexer-attention](../kernels/deepseek_indexer_attention.md)。
 
-## 已验证实例
+## 当前来源实例
 
 | 模型 | 注意力类 / indexer 类 | model_type | 备注 |
 | --- | --- | --- | --- |
 | DeepSeek V3.2-Exp | `MLA` 内 `self.indexer = Indexer(args)` | `deepseek_v32` | `MLA.forward` 算完 Q/KV 后调用 indexer，把 `topk_indices` 散射成加性 `-inf` mask 累加进注意力分数再 softmax |
-| GLM-5 | `GlmMoeDsaAttention` 内 `GlmMoeDsaIndexer` | `glm_moe_dsa` | indexer top-k 索引同样构成 softmax 前的加性 `-inf` mask；stock HF 口径下 indexer 跑 bf16/fp32、无 Hadamard / FP8（注：cann-recipes-infer 的 NPU `GlmMoeDsaIndexer` 与 V3.2 同构，含 `apply_hadamard` + Int8/FP8 量化路径，由 `li_cache_quant_mode` 门控、默认 `unquant`，见下 Notes） |
+| GLM-5 | `GlmMoeDsaAttention` 内 `GlmMoeDsaIndexer` | `glm_moe_dsa` | indexer top-k 索引同样构成 softmax 前的加性 `-inf` mask；当前NPU分支支持Int8/FP8量化，见下文条件 |
 | DeepSeek-V4 | SAS / LI 谱系（CSA 层挂 Indexer） | `deepseek_v4` | V4 注意力主体改用 MQA/Shared-KV 而非 MLA，DSA 思想下沉到压缩 Cache 上的稀疏选择；详见 [deepseek-v4](../models/deepseek_v4.md) |
 
 per-model 数值（`index_n_heads`、`index_head_dim`、`index_topk` 及任何 per-model 变体）放在 [deepseek-v3.2-exp](../models/deepseek_v3_2_exp.md)、[glm-5](../models/glm_5.md)、[deepseek-v4](../models/deepseek_v4.md) 各自的参数小节。
 
 > ⚠️ DeepSeek-V4 的注意力主体已是 MQA/Shared-KV（**非** MLA），此处列为 DSA 实例指「稀疏 indexer 选 token」的**模式思想延续**，而非严格的 MLA ⊕ indexer 结构复用；详见 [deepseek-v4](../models/deepseek_v4.md) 的矛盾标记。V3.2-Exp 与 GLM-5 才是严格的 MLA ⊕ indexer 实例。
 
-## Notes
+## 当前实现与配置边界
 
-- **indexer ⊆ MLA（实现层面）**：indexer 是注意力类的成员模块（`self.indexer = Indexer(args)`），不是 MLA 的兄弟块。`MLA.forward` 先算 Q/KV，再调 `self.indexer(x, qr, ...)`，把返回的 `topk_indices` 散射成加性 `-inf` mask，累加进原始注意力分数，**之后**才 softmax；MLA 的 KVCache（`c_KV + k_rope`）不变。
-- **indexer RoPE 布局是 per-model 差异（kernel 陷阱）**：indexer 对自己 `q_idx_pe / k_idx_pe` 的 RoPE 布局随模型不同——DeepSeek-V3.2-Exp 用**非交错**（`indexer.py` 调 `npu_rotary_mul`，rotate-half），GLM-5 用**交错**（`indexer_rope_interleave=True`，`indexer.py` 调 `npu_interleave_rope`）；MLA（见 [mla](mla.md)）一般用交错布局。kernel 实现必须按 per-model config 的 `indexer_rope_interleave` 分支，不能跨模型、也不能跨 indexer/MLA 两路盲目复用同一个 RoPE kernel。
-- **prefill MHA / decode MQA 吸收**：上图同时覆盖 prefill 与 decode，下游唯一差异是哪种 MLA 模式消费被 mask 的分数——prefill 走 MHA 吸收（逐头 K/V 全量物化），decode 走 MQA 吸收（按需从 `c_KV` 重建逐头 K/V）。indexer 路径两阶段完全一致。
-- **`index_topk` 截断退化为全注意力**：若运行上下文长度 `< index_topk`，实现会截断到运行长度（`min(index_topk, end_pos)`）。因此短序列下 DSA 优雅退化为全注意力。
-- **per-model 部署特化不属于 DSA 模式本身**：V3.2-Exp 的 indexer Q/K 在打分前加 Hadamard `rotate_activation` 并量化到 FP8、indexer K-cache 以 FP8 存储另带 FP32 scale cache；stock HF 的 GLM-5 `GlmMoeDsaIndexer` 三者都没有。这些是 V3.2-Exp 的部署特化，写在该模型页 Notes，不属于 DSA 模式本身。（注一：此处 FP8 是 stock HF `inference/model.py` 口径；cann-recipes-infer 的 V3.2-Exp **NPU 部署实际以 Int8 / C8 + FP16 scale** 落地 indexer Q/K 与 Cache，见 [deepseek-v3.2-exp](../models/deepseek_v3_2_exp.md) 量化段与 [lightning-indexer](lightning_indexer.md)。注二：GLM-5 的"无 Hadamard/无量化"同样只是 stock HF 口径——cann-recipes-infer 的 NPU `GlmMoeDsaIndexer`（`models/glm-5/models/indexer.py`）与 V3.2 同构，持 `self.hadamard_matrix = nn.Parameter(get_had_pow2(128))` 与 `apply_hadamard` / `apply_hadamard_quant`，`li_cache_quant_mode=='int8'` 走 `npu_dynamic_quant`、`'float8'` 走 `npu_dynamic_block_quant(dst_type=torch.float8_e4m3fn)`，`forward` 在 `li_cache_quant_mode != 'unquant'` 时对 q/k 调 `apply_hadamard_quant`，默认 `unquant`。即 GLM-5 的 NPU indexer 同样具备 Hadamard 旋转 + Int8/FP8 量化，仅 quant_mode 默认关闭。）
+V3.2 与 GLM-5 的模型代码通过 LI 的 TopK 索引直接调用稀疏注意力，教学图中的加性 mask 是等价算法表达，不表示 NPU 实现会物化完整 N×N mask。Naive/Absorb 是计算流选择；V3.2 Prefill 同样使用 Absorb+SFA。
 
-## Source basis
+Indexer RoPE 是模型专属约定：V3.2 用非交错 npu_rotary_mul，GLM-5 使用交错 npu_interleave_rope。GLM-5 当前 apply_hadamard_quant 同时支持 Int8 与 FP8，不能继续写“没有 float8 分支”；950 浮点量化会设置 FP8 LI cache，A3整数模式为Int8。V4的HiF8路径又不执行Hadamard。
 
-拓扑取自 `deepseek-ai/DeepSeek-V3.2-Exp/inference/model.py` 的 stock HF 架构（verified 2026-05-15）：`MLA` 类实例化 `self.indexer = Indexer(args)` 并通过 `scatter_` → `+= index_mask` 把 indexer 的 `topk_indices` 折进注意力 mask；`Indexer` 类含 `wq_b` / `wk` / `weights_proj` / `k_norm` 投影、`*_pe` 半区上的 RoPE、`rotate_activation`、FP8 量化与 K-cache、`index_score.topk(...)`。GLM-5 一侧的等价结构（`GlmMoeDsaAttention` / `GlmMoeDsaIndexer`，top-k → 加性 `-inf` mask）对照 `transformers/main` 的 `modeling_glm_moe_dsa.py`（verified 2026-05-15）。本节为 stock HF 架构先验，部署无关；Atlas A3 上的算子/性能落地经 [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) 与各 kernel 页交叉印证。
+这里的 MLA⊕Indexer 结构限定 V3.2/GLM-5；V4 的 CSA 在压缩 Shared-KV 上稀疏选择，注意力主体不含 MLA 的 KV 升维机制。参数、dtype 和 TopK 以当前加载 config 及[模型页](../models/deepseek_v3_2_exp.md)为准；源码核对不等于硬件精度验证。
 
 ## Links
 

@@ -1,18 +1,18 @@
 ---
 type: Optimization
-title: DeepSeek-R1 A3 Decode 的来源数据与 Chips 分歧
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+title: DeepSeek-R1 A3 Decode 当前来源数据
+description: 保留当前README与Decode指南一致的64 Chips性能记录，明确人工路由条件和测量缺口。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml
 created_at: '2026-10-21T09:56:22Z'
-updated_at: '2026-10-21T09:56:22Z'
+updated_at: '2026-10-29T15:03:47Z'
 platforms:
 - a3
 scope:
@@ -23,7 +23,7 @@ scope:
       - decode
 ---
 
-# DeepSeek-R1 A3 Decode 的来源数据与 Chips 分歧
+# DeepSeek-R1 A3 Decode 当前来源数据
 
 ## Workload
 
@@ -31,7 +31,7 @@ W8A8C8，Global Batch6144，Seq Length4096；MTP1、perfect EPLB，来源平均�
 
 ## Hardware
 
-Atlas A3；Decode优化文档Chips=128，而README同组值Chips=64。world_size=128不是单独裁决物理卡数的证据。
+Atlas A3；当前README与Decode优化指南均标Chips=64。world_size=128是rank配置，不能另外当作128物理卡。
 
 ## Software
 
@@ -53,10 +53,14 @@ Atlas A3；Decode优化文档Chips=128，而README同组值Chips=64。world_size
 
 | 来源 | Quant Mode | Global Batch | Seq Length | Chips（原标注） | TPOT(ms) | Throughput(tokens/p/s) |
 | --- | --- | --- | --- | --- | --- | --- |
-| Decode优化文档 | W8A8C8 | 6144 | 4096 | 128 | 44.9 | 2138 |
+| Decode优化文档 | W8A8C8 | 6144 | 4096 | 64 | 44.9 | 2138 |
 | 模型README | W8A8C8 | 6144 | 4096 | 64 | 44.9 | 2138 |
 
-这两行保留来源分歧，不当作两次独立实验，也不选择其中一个作为已确认卡数。
+当前两来源已一致。它们是同组自报数据，不当作两次独立实验；旧128标注已由来源更正，不再混列。
+
+## 当前配置
+
+同名benchmark YAML为world128、batch6144、next_n1、force_eplb=true、enable_superkernel=true，max_prefill_tokens4096。普通C8 MTP样例batch512且force_eplb=false、SuperKernel关闭，长序列样例next_n3；不能把本表数值归给这些不同配置。
 
 ## Limitations 与验证
 
@@ -67,6 +71,6 @@ Atlas A3；Decode优化文档Chips=128，而README同组值Chips=64。world_size
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/deepseek_r1_decode_optimization.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/README.md)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml)
+- [deepseek_r1_decode_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_decode_optimization.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/README.md)（primary）
+- [decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml)（primary）

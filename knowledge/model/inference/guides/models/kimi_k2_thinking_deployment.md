@@ -1,68 +1,76 @@
 ---
 type: Guide
-title: Kimi-K2-Thinking A3 混合精度部署与验收流程
-description: Kimi-K2-Thinking A3 混合精度部署与验收流程，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+title: Kimi-K2-Thinking A3：当前统一 Executor 部署
+description: 更新当前A3环境、kimi_k2_thinking.yaml、统一启动入口和真实custom_params，撤回旧私有runner与过时规模表。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/kimi-k2-thinking/kimi_k2_thinking_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/runner_deepseek.py
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/models/modeling_deepseek.py
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/config/kimi_k2_thinking_rank_128_128ep_decode_benchmark.yaml
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/config/kimi_k2_thinking_rank_64_64ep_prefill_benchmark.yaml
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/config/kimi_k2_thinking.yaml
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/kimi_k2_thinking/kimi_k2_thinking_inference_guide.md
+  role: implementation
 created_at: '2026-10-21T09:56:19Z'
-updated_at: '2026-10-21T09:56:19Z'
+updated_at: '2026-10-29T14:52:59Z'
 platforms:
 - a3
 ---
 
-# Kimi-K2-Thinking A3 混合精度部署与验收流程
+# Kimi-K2-Thinking A3：当前统一 Executor 部署
 
-## 目标、输入与产物
+## 环境和输入
 
-面向固定来源中的 Kimi-K2-Thinking 实现，输入包括平台、权重、实际配置和任务指标；产物为可追溯配置、正确性/性能记录及回退入口。模型结构由[模型 Concept](../../concepts/models/kimi_k2_thinking.md)维护。以下描述固定版本实践，不能当作当前所有软件版本的部署保证。
+当前README要求A3、CANN9.0.0、PyTorch2.8.0、torch_npu 2.8.0.post4（扩展v26.0.0）、Python3.11；按该模型requirements安装依赖，配置executor/scripts/set_env.sh的IP和CANN路径。原始Kimi-K2-Thinking权重放各节点相同可达路径，无本模型weight_convert.sh。
 
-## 1. 确认独立 legacy 实现
+## 当前样例
 
-该实践使用 models/kimi-k2-thinking 内的 infer.py、runner_deepseek.py、建模及配置副本，复用 DeepSeek 架构思路，不是直接调用 R1 同一建模文件。MoE W4A16、Attention BF16 分别确认；源未支持 Kimi KV C8，不把 R1 的量化路径套用过来。
+models/kimi_k2_thinking/config/kimi_k2_thinking.yaml为当前离线样例，旧rank_64/rank_128 benchmark文件已删除：
 
-## 2. 按阶段选择配置
+| 配置 | 当前值 |
+| --- | --- |
+| world_size/cp_size | 32/32，CP只用于Prefill |
+| batch_size/输入截断/最大新token | 32/65536/256 |
+| attn_tp/o_proj_tp/dense_tp/moe_tp | 1/8/4/1 |
+| embed_tp/lmhead_tp | 16/16 |
+| exe_mode/static_kernel/cache_compile | npugraph_ex/true/false |
+| next_n/force_eplb | 0/false |
+| custom_params | enable_mla_prolog=true、enable_multi_streams=true、enable_superkernel=false |
 
-| 阶段 | 配置文件 | world_size | 并行 | 量化 | 备注 |
-| ---- | ------- | ---------- | ---- | ---- | ---- |
-| Prefill | `kimi_k2_thinking_rank_64_64ep_prefill_benchmark.yaml` | 64 | **CP64** + moe_ep=64 + dense_tp=1 | MoE W4A16 / Attn BF16 | `enable_multi_streams: True`，`input_max_len: 65536`，`batch_size: 64` |
-| Decode | `kimi_k2_thinking_rank_128_128ep_decode_benchmark.yaml` | 128 | **Attn-DP128** + MoE-EP128 + `oproj_tp=8` + `dense_tp=4` + `embed/lmhead_tp=16` | MoE W4A16 / Attn BF16 | `exe_mode: ge_graph`，`next_n: 0`（MTP 代码支持，benchmark 默认不开），`enable_multi_streams: True`，`input_max_len: 65536`，`batch_size: 256` |
+量化配置来自实际权重，不从文件名推定。默认原生MoE W4A16/Attention BF16；不能原样套R1的C8系数或量化命令。
 
-> Prefill YAML `cp_size: 64`、`attn_tp_size: 1`、`dense_tp_size: 1`；Decode YAML `cp_size: 128` 字段在 YAML 中保留但 decode 阶段不生效（字段标注 "only active at prefill stage"，代码约定）。
+## 启动
 
-机器/卡数量不能由world_size单独推导，分别核对rank/die拓扑。Prefill CP 条件和通信域复用由 [CP 案例](../../optimizations/cases/deepseek_kimi_a3_prefill_cp.md)维护；Decode Attention DP、MoE EP 与局部投影 TP 的决策读取 [局部 TP 规则](../../optimizations/rules/local_tp_memory_heavy_projections.md)。文档建议的节点区间不是当前任务的默认并行度。
+从仓根执行：
 
-## 3. 检查融合、MTP 与开关差异
+```bash
+bash executor/scripts/infer.sh --model kimi_k2_thinking --yaml kimi_k2_thinking.yaml
+```
 
-MLA-Prolog 的对应源码路径无通用 enable/disable 开关，不能照抄 R1 的 enable_mla_prolog；FIA 的 Flash Decode 与 W4A16 GMM 是不同算子路径。WeightNZ、多流由实际 YAML/实现决定；SuperKernel 未显式写入 benchmark YAML，不再表述为“全部继承即可用”。
+各节点分别启动。InfiniteBench长文本需放dataset/InfiniteBench；简单验证可改dataset=default并使用内置prompt。日志在模型res目录。
 
-MTP 是需要匹配权重的预留能力，benchmark next_n=0；64个 Attention head 不自动证明 MTP收益更好。先按 [MTP 接入](../../guides/integration/mtp_speculative_decode_model_onboarding.md)验收状态与精度，再按 [计时规则](../../optimizations/rules/mtp_decode_timing_two_metric_split.md)测量。
+在线用--mode online与--pd-role prefill/decode，当前PD配置在模型config/pd下；须按PD两端拓扑、缓存布局和传输约束核对，不能把离线cp_size=32直接搬到在线D侧（强制CP1）。
 
-## 4. 运行与边界
+## 开关与限制
 
-按固定 README 配置权重、输入、各节点环境并选择对应 infer 入口。小输入与256K长序列使用不同内存预算，不将“支持最大长度”当作任意 batch 都能运行。源文档未提供本页可复用的端到端性能表，不补造收益或接受率。
+enable_mla_prolog已是当前custom_params开关；多流和cache_compile属于图相关组合，eager打开会被模型拒绝。SuperKernel源码只在GE分支启用，npugraph_ex默认样例保持false；static_kernel只允许npugraph_ex。moe_chunk_max_len必须为正。
 
-## 验证、停止与回退
+原生MTP需要独立的预测层权重，next_n支持0~3，默认关闭。先按[MTP接入](../integration/mtp_speculative_decode_model_onboarding.md)核对注册、隐状态与缓存，再测接受长度；64heads不能替代实测收益。
 
-保存实际权重、软件版本、平台、并行组、输入与输出；以未启用待验优化的路径作对应基线，逐项比较 logits/任务质量、时延和峰值内存，并分别记录冷启动、warmup 与稳态重复测量。遇到源中未覆盖的形状、后端或平台时停止套用。失败后恢复对应版本的配置、权重与编译缓存，再按关联 Runbook 排查；没有实际跑通的回退不写为已验证。
+## 验收与回退
 
-本卡未记录独立的模型执行或硬件复测。来源自报和输出“看起来正常”不能替代本部署的精度验收；执行后应另存实际环境、配置和测量记录。
+保存权重/量化配置、软件、rank/设备映射与完整输入，先验证合法eager基线（关闭图专属开关），再逐项启用融合、图、多流和静态核。覆盖多请求不等长、EOS/最大长度、CP所有者及长输入，记录输出、峰值内存、TTFT、Decode与服务端计时，分开冷启动/预热/稳态。
+
+失败时恢复对应权重、配置和编译缓存；本次未运行模型，不宣称该部署或回退已验证。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/kimi-k2-thinking/kimi_k2_thinking_inference_guide.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/README.md)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/runner_deepseek.py)
-- [固定来源 4](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/models/modeling_deepseek.py)
-- [固定来源 5](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/config/kimi_k2_thinking_rank_128_128ep_decode_benchmark.yaml)
-- [固定来源 6](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/kimi-k2-thinking/config/kimi_k2_thinking_rank_64_64ep_prefill_benchmark.yaml)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/README.md)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/models/modeling_deepseek.py)（implementation）
+- [kimi_k2_thinking.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/config/kimi_k2_thinking.yaml)（implementation）
+- [kimi_k2_thinking_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/kimi_k2_thinking/kimi_k2_thinking_inference_guide.md)（implementation）

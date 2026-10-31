@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/462
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - agnostic
 ---
@@ -77,6 +77,6 @@ MLA 的 `softmax_scale = qk_head_dim ** -0.5`，YaRN 修正只在 `rope_type != 
 
 ## Evidence
 
-- diff 事实 + reviewer 确认（@ef0387836d77）：`cp_size>1→PA_BSND/else PA_NZ`（prefill-only）；`KV_CACHE_NZ_DIM=16*factor`（C8 factor 2），reviewer 评论「KV_CACHE_NZ_DIM 在 C8 的时候是 32」。溯源下探 [cann-recipes-infer-pr-153-fix-kimi-k2-thinking-enable-pa-nz-mla-prolog](https://gitcode.com/cann/cann-recipes-infer/merge_requests/153)
-- diff 事实 + 仓自报（@895615c）：`kc_scale=1.0` + `q_nope *= mla_scale_kv_lora` 的未缩放 cache 约定；`softmax_scale` 仅 `rope_type≠default` 乘 mscale²、新增 `elif mscale_all_dim` warning（PR 内 CANN 审查独立列出 YaRN 参数一致性）。溯源下探 [cann-recipes-infer-pr-462-refactor-longcat-flash-lite-tnd-pa-npugraph-ex-mc2-ep-decode](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)
-- diff 事实 + 仓自报（@8fd8db72）：`npu_mla_prolog_v3` 融合调用 + `enable_mla_prolog` 回退开关为 diff 事实；−6% / 5.86→5.49 ms、逐 token 分歧点为优化报告仓自报（含双缩放路径复现），无独立复测。溯源下探 [cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/153)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)（evidence）

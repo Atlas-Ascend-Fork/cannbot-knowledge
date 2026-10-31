@@ -7,12 +7,14 @@ tags:
 - topic.model_architecture
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/locomotion/NMR/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/locomotion/NMR/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/locomotion/NMR/src/metrics/humanoid_metric.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:37Z'
 platforms:
 - a3
 ---
@@ -48,7 +50,7 @@ flowchart LR
 
 ## 依赖与资产准备（复现硬前置）
 
-源 `locomotion/NMR/README.md` §一「依赖下载」——以下缺失则模型加载 / 评估直接失败：
+依赖以固定 README 及实际读取代码共同核对；其中碰撞评估资产按 humanoid_metric.py 的构造入口定位，不能将文档列出的其他 URDF 代作该指标的硬前置：
 
 1. **GMR 子模块**（`tools/` 下）：
    ```bash
@@ -62,7 +64,7 @@ flowchart LR
    | `gmr_mean.npy` / `gmr_std.npy` | `data/gmr_data/` |
    | `smplx_mean.npy` / `smplx_std.npy` | `data/smplx_data/` |
 3. **SMPL-X 模型**：SMPL-X 官方下载页选 **"SMPL-X 2020: neutral model with FLAME 2020 expression blendshapes"**，下载得 `SMPLX_NEUTRAL_2020.npz` 后**重命名为** `SMPLX_NEUTRAL.npz` → `checkpoints/human_model/`（`cann-recipes-embodied-ai` 不分发，遵其非商业许可，见上「许可边界」）。`humanoid_model` 的 G1 文件按 [PHUMA asset](https://github.com/DAVIAN-Robotics/PHUMA/tree/f0306c1687c75aaa6623f5ed16c54f9480bb4f17/asset/) 说明自备。
-4. **碰撞评估 URDF**：`g1_custom_collision_with_fixed_hand.urdf`（取自 [YanjieZe/TWIST](https://github.com/YanjieZe/TWIST/blob/42d8c134739eee51f28d7cc0ff72a86728afb8dc/assets/g1/g1_custom_collision_with_fixed_hand.urdf)）→ `src/metrics/assets/g1/`（指标碰撞计算依赖）。
+4. **碰撞评估 URDF**：固定 HumanoidReconsMetric 实际读取项目根下 `tools/GMR/assets/unitree_g1/g1_custom_collision_29dof.urdf`，缺失会抛 FileNotFoundError。应准备对应 GMR 资产；将其他名称的 URDF 放到 src/metrics/assets/g1 不满足这条读取路径。
 
 ## 运行环境（昇腾 A3）
 
@@ -116,4 +118,4 @@ PYTHONPATH=. python tools/train.py configs/retarget_fwd.py --cfg-options train_c
 
 - 同域运动控制模型：[lqc](lqc.md)（RL 足式控制）
 - 同域智驾 VLA：[alpamayo-r1](../navigation/alpamayo_r1.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

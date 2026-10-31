@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/348
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:41:05Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - a3
 ---
@@ -45,5 +45,5 @@ LongCat-Flash 族含零专家：建模里两处传 `"copy_expert_num": self.num_
 
 ## Evidence
 
-- `copy_expert_num=zero_expert_num` 传参 + 零专家 mask + `expert_num=n_routed+zero`：diff 事实 @0640521a8170；`MoE(ori_x)=ori_x` 语义为文档披露 + 传参佐证。溯源下探 [cann-recipes-infer-pr-124-feat-support-longcat-flash-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/124)。
-- `_set_mc2_kwargs` 的 `copy_expert_num=zero_expert_num`、prefill double-routing / decode MC2 分派：diff 事实 @8fd8db72；`copy_expert_num` 算子内语义据代码调用、未对 MC2 算子规格独立核。溯源下探 [cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/124)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)（evidence）

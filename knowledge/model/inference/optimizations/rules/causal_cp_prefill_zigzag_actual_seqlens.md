@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: 因果稀疏注意力 CP prefill 的 zigzag 负载均衡：每 rank 两段两次调用 + 头尾因果前缀 actual_seq_lengths（qlen≠kvlen）
-description: 对因果掩码的注意力（含稀疏注意力：lightning-indexer 算 topk 索引 + sparse-flash-attention 下游）在 prefill 阶段开 context-parallel（query 沿序列维切到各 rank、KV 需完整）时，不要按「连续切分 + rank r 独占第 r 个 token」的朴素方式切——因果三角会让负载严重倾斜。正确做法是 zigzag 头尾配对切分，并且每 rank 对每个算子发两次调用、两次分别用「头段」「尾段」各自的因果前缀长度作 actual_seq_lengths_key。这是把 long-seq-prefill-context-parallel 的 CP 策略落到因果稀疏注意力时，决定正确性与均衡的一处关键实现细节。
+description: 解释每请求ZigZag头尾配对和两次因果调用，更新统一PrefillCPMetaData与双缓存映射，保留独立vLLM参考边界。
 tags:
 - task.optimization
 - topic.attention
@@ -15,14 +15,18 @@ sources:
   role: evidence
 - resource: https://github.com/vllm-project/vllm-ascend/pull/6733
   role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v3.2-exp/models/modeling_deepseek.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
   role: implementation
 - resource: https://github.com/vllm-project/vllm-ascend/blob/db51a1b9b6ee93c8c820b6833e244fe0405559b9/vllm_ascend/attention/context_parallel/sfa_cp.py
   role: implementation
 - resource: https://github.com/vllm-project/vllm-ascend/blob/db51a1b9b6ee93c8c820b6833e244fe0405559b9/tests/e2e/multicard/4-cards/long_sequence/test_basic.py
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-26T06:21:21Z'
+updated_at: '2026-10-29T14:49:38Z'
 platforms:
 - agnostic
 scope:
@@ -76,14 +80,11 @@ CP 下每 rank 只持 `q = seq/cp_size` 的 token，却对 AllGather 后的**完
 
 ## 参考实现及其约束
 
-参考实现见 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md)（[dsa](../../concepts/modules/dsa.md) / [deepseek-indexer-attention](../../concepts/kernels/deepseek_indexer_attention.md)，SGLang + PyPTO/AscendC 融合算子栈），`prepare_prefill_extra_input` 在 `cp_size>1` 分支给出 `cp_segment_num`、`zigzag_index`、`kv_len_prev/next`、`actual_seq_q`；`indexer.py` 的 CP prefill 路径 all-gather K 后两次调 `npu_lightning_indexer` 返回 `(topk_indices_prev, topk_indices_next)`，sparse_flash_attention 路径同样两次 `attn_func` 再 `cat`。以下是**该参考实现绑定这两个算子的约束，非 zigzag 思想本身的限制**——迁移「头尾配对 + 两段因果前缀 seqlen」这套算法到其它因果注意力 CP 时不受它们约束，照搬这套代码才受：
+当前cann-recipes-infer由ExecutionEngine._apply_prefill_cp逐请求构造PrefillCPMetaData，不再使用prepare_prefill_extra_input。模型使用local_prev_token_num/local_next_token_num拆Q，Indexer和SFA分别调用头/尾两次；每段actual_seq_q_prev/next为请求累计Q边界，kv_len_prev/next为每请求因果前缀。全局rank只在cp_size=world_size这一当前约束下与CP rank相同。
 
-- `npu_lightning_indexer` 侧 `actual_seq_lengths_key` / `block_table` 当前**必传**。
-- CP 下 `layout_query = "TND"`（packed 序列，故 `actual_seq_q` 走 `cumsum`）、`layout_key = "PA_BSND"`。
-- `sparse_mode = 3`（rightDownCausal，右顶点下三角）承接因果语义。
-- 序列需 pad 到 `2·CP` 对齐；KV 需跨 CP 组 all-gather；每 rank 每算子多一次 kernel 调用（代价换均衡）。
+当前按每请求ceil(seq_len/(2CP))构造段长，可叠加模型cp_segment_min_len；不能用全batch一个seg替代不等长请求。计算cache与持久cache分别按global与persistent映射写入，见[MLA缓存规则](mla_prolog_zigzag_cp_kv_write.md)。此处是CANN Executor，不能标为SGLang入口。算子layout/必传长度仍须按实际所选LI/SFA接口核对。
 
-### 应用在 vLLM：vllm-ascend PCP 的 head/tail q 切分
+## 应用在 vLLM：vllm-ascend PCP 的 head/tail q 切分
 
 同一套「头尾配对 + 两段各自因果前缀 seqlen」在 **vllm-ascend** 上有一份独立参考实现（vLLM 语境下称 **PCP**：prefill-context-parallel，`prefill_context_parallel_size>1`），与 cann-recipes-infer/SGLang 版栈不同但算法同构——第二份跨框架实现印证了这套 zigzag 负载均衡不绑定单一框架。
 
@@ -101,8 +102,8 @@ CP 下每 rank 只持 `q = seq/cp_size` 的 token，却对 AllGather 后的**完
 
 ## 正确性 / 风险 / rollback
 
-- **正确性锚点**：两次调用的 `actual_seq_lengths_key` 必须精确等于该段 token 的因果前缀（头 `seg·(r+1)`、尾 `seg·(2·CP−r)`），且写在 all-gather 完整 K **之后**；错设会取错因果前缀、静默破精度。
-- **均衡收益**：头短尾长配对使各 rank 因果工作量≈常数；无独立复测 TTFT / per-rank 负载 / 吞吐 before→after 数字，收益为机制层结论（vllm-ascend 与 cann-recipes-infer 两份实现均只给整体正确性、未给负载/吞吐对比）。
+- **正确性锚点**：两次调用的 `actual_seq_lengths_key` 必须精确等于该段 token 的因果前缀（头 `seg·(r+1)`、尾 `seg·(2·CP−r)`），算子计算前须完成 KV 汇聚与顺序恢复，并传入对应段的因果前缀长度；`_apply_prefill_cp` 可以提前构造长度元数据，不要求元数据晚于 all-gather 生成；错设会取错因果前缀、静默破精度。
+- **均衡收益**：头短尾长配对使各 rank 因果工作量≈常数；本仓无独立复测 TTFT / per-rank 负载 / 吞吐 before→after 数字，收益为机制层结论（vllm-ascend 与 cann-recipes-infer 两份实现均只给整体正确性、未给负载/吞吐对比）。
 - **源码中的测试配置**：固定 `test_basic.py` 的 `test_models_pcp_dcp_basic` 为 `vllm-ascend/DeepSeek-V3.2-W8A8-Pruning` 配置了 `enforce_eager=True, max_model_len=1024, TP=2, PCP=2, DCP=2, EP=True, block_size=128, quantization="ascend"` 并调用生成。该源码示例说明集成入口与参数组合，不表示本仓执行过测试，也不是下述分数对应的启动记录。
 - **PR 自报精度**：PR6733 给出 AISBench 的 `gsm8k accuracy = 96.35` 日志和 vLLM `v0.15.0` 版本，但没有能将该分数与上述配置、硬件或完整启动参数关联的运行记录。该分数只作为作者自报保留，不能据此确认具体 PCP/DCP 组合或头尾切分的独立精度收益。
 - **rollback（按实现区分）**：cann-recipes-infer 的参考路径将 `cp_size=1` 时回落单段、单次调用；vLLM 的 `pcp_size=1` 会绕过头尾切分，但 DCP 仍可独立参与 KV 聚合，不能把它等同于关闭全部上下文并行。
@@ -116,13 +117,11 @@ CP 下每 rank 只持 `q = seq/cp_size` 的 token，却对 AllGather 后的**完
 
 ## Evidence
 
-- **diff 事实**（clone `@2c45117`）：`models/deepseek-v3.2-exp/models/modeling_deepseek.py::prepare_prefill_extra_input` 的 `cp_size>1` 分支给出 `cp_segment_num=cp_size*2`、`zigzag_index`、`kv_len_prev=seg*(rank+1)`、`kv_len_next=seg*(2CP-rank)`、`actual_seq_q=seg.cumsum`（CP=16/seg=1 与维护者算例逐项吻合）；`indexer.py::prefill_decode_ascendc` 在 CP prefill 下 all-gather K 后两次调 `npu_lightning_indexer`；同文件 sparse_flash_attention 路径两次 `attn_func`（prev/next）再 cat，与 indexer 共用同一 `actual_seq_q`/`kv_len_prev`/`kv_len_next`。
-- **维护者确认**：SFA-under-CP 的 `qlen ≠ kvlen` 适用边界（「是否支持 qlen 与 kvlen 不对等？支持」）；zigzag 头尾配对 + 两次调用方案由维护者答复并标记 Accepted。
-- **第二份跨框架实现（diff 事实，vllm-ascend）**：合并态（merge commit `db51a1b9`）新增 `vllm_ascend/attention/context_parallel/sfa_cp.py`——`build_cp_metadata` 的 `q_head_kv_lens=(seq_lens//2)*(pcp_rank+1)`、`q_tail_kv_lens=seq_lens*pcp_size-(seq_lens//2)*pcp_rank`，`_execute_sparse_flash_attention_process` 用 `index_select(q_head_idx/q_tail_idx)` 切两段各调一次 SFA、`cat` 后 `index_select(q_full_idx)` 拼回，`indexer_select_post_process` 同套逻辑；`sfa_v1.py` 经 `enable_cp()` 分派 CP 变体。该固定实现的初始化注释还限定 PCP Prefill 不支持 MLAPO。
-- **测试源码与测量分开记录**：同一固定提交的 `test_basic.py` 提供上述模型的 Eager PCP/DCP 生成配置；PR6733 正文只给出 AISBench 96.35 与 vLLM 版本，未提供两者属于同一次运行的证据，也没有负载/吞吐 before→after。源码配置不作为该分数的实验条件。
-- **阶段与通信分开核对**：同一固定 `sfa_cp.py` 的 `gather_kv_cross_cp` 在 `dcp_size>1` 时执行 DCP all_gather；`_execute_sparse_flash_attention_process` 先取聚合后的 KV 执行 Decode，再按 `num_prefills` 决定是否进入头尾切分。cann-recipes-infer 固定建模文件的 `calc_input_embeddings` 则取 `cp_size = self.cp_size if is_prefill else 1`，两份实现的阶段门控不能互相外推。
-- **仓自报（doc）**：zigzag（`cp_size*2` 头尾对称 + Token 重排还原因果）为仓官方推理指南「Prefill 并行策略」章节披露；`sparse_mode=3=rightDownCausal` 与「必传」为算子文档披露。「可迁移到其它因果注意力 CP」为对 zigzag 通用性的合理推断，算子参数细节不外推。
-- 溯源下探：
-  - [cann-recipes-infer-issue-27-question-ds-v3-2-sfa-cp-sp-mindie](https://gitcode.com/cann/cann-recipes-infer/issues/27)
-  - [cann-recipes-infer-issue-67-question-torch-ops-custom-npu-sparse-flash-attention-torch-ops-custom-np](https://gitcode.com/cann/cann-recipes-infer/issues/67)
-  - [vllm-ascend-pr-6733-feat-ds3-2-support-pcp](https://github.com/vllm-project/vllm-ascend/pull/6733)（sfa_cp.py @`db51a1b9`，PR#6733 merged）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/27)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/67)（evidence）
+- [远程来源](https://github.com/vllm-project/vllm-ascend/pull/6733)（evidence）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
+- [远程来源](https://github.com/vllm-project/vllm-ascend/blob/db51a1b9b6ee93c8c820b6833e244fe0405559b9/vllm_ascend/attention/context_parallel/sfa_cp.py)（implementation）
+- [远程来源](https://github.com/vllm-project/vllm-ascend/blob/db51a1b9b6ee93c8c820b6833e244fe0405559b9/tests/e2e/multicard/4-cards/long_sequence/test_basic.py)（supporting）
+- [execution_engine.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py)（implementation）

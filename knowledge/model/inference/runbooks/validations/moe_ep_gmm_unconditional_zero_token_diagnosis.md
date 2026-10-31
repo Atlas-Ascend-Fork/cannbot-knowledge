@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/120
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - agnostic
 ---
@@ -49,5 +49,4 @@ hidden_states_ordered_by_experts = self.experts(**gmm_args)   # FusedMoEGMM → 
 
 ## Evidence
 
-- decode 路径 `self.experts(**gmm_args)` 在 dispatch 后无条件调用（无 token 计数守卫）、`FusedMoEGMM.forward` → `npu_grouped_matmul` 无零 token 分支、`expert_token_num` 为 dispatch 输出第 4 项：diff/code 事实 @2c45117d。溯源下探 [cann-recipes-infer-issue-120-question-longcat-4p](https://gitcode.com/cann/cann-recipes-infer/issues/120)。
-- 「eager 打印 expert_token_num 确认各专家 token 数」「即使 0 卡专家没 token，gmm 也会被调用」：维护者确认（官方 issue 讨论区答复，与代码互相印证）。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/120)（evidence）

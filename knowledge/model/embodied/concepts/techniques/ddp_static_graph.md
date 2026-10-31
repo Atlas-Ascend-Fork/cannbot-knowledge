@@ -1,32 +1,38 @@
 ---
 type: Concept
 title: DDP 静态图训练优化（static_graph=True）
-description: Pi0.5 在昇腾 Atlas A2 多卡 DDP（DistributedDataParallel）训练中的图固定优化：通过固定训练图、关闭无用参数探测、复用梯度 bucket view，减少 DDP 反向通信侧的额外开销。cann-recipes-embodied-ai 的 Pi0.5 训练样例默认开启。
+description: Pi0.5 在昇腾 Atlas A2 多卡 DDP（DistributedDataParallel）训练中的图固定优化：通过固定训练图、关闭无用参数探测、复用梯度 bucket view，减少 DDP 反向通信侧的额外开销。cann-recipes-embodied-ai 文档声明 Pi0.5 默认开启；固定快照的解析器接线存在缺陷，使用前须修复。
 tags:
 - task.optimization
 - topic.graph_execution
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/pi05/train/doc/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/train/doc/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/train/src/lerobot_train.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/train/src/utils.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/train/src/scripts/setup_lerobot.sh
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - a2
 ---
 
 # DDP 静态图训练优化（static_graph=True）
 
-Pi0.5 在昇腾 **Atlas A2** 多卡 DDP（DistributedDataParallel）训练中的图固定优化：通过固定训练图、关闭无用参数探测、复用梯度 bucket view，减少 DDP 反向通信侧的额外开销。`cann-recipes-embodied-ai` 的 Pi0.5 训练样例默认开启。
+Pi0.5 在昇腾 **Atlas A2** 多卡 DDP（DistributedDataParallel）训练中的图固定优化：通过固定训练图、关闭无用参数探测、复用梯度 bucket view，减少 DDP 反向通信侧的额外开销。`cann-recipes-embodied-ai` 文档声明 Pi0.5 默认开启；固定快照的解析器接线存在缺陷，使用前须修复。
 
 > 来源：`manipulation/pi05/train/doc/README.md`「优化项」表与正文。属于 Pi0.5 profiling 暴露的「训练图反向阶段重复 recomputation 与 DDP 同步成本」一类开销的优化。
 
 ## DDP 默认配置
 
-Pi0.5 在 DDP 包装层默认开启三项，由训练脚本（`run_train.sh` / `run_profiling.sh`）默认配置，经 `lerobot_train.py` 中 `_resolve_ddp_settings(policy_type)`（自 `lerobot.utils.utils` 导入）解析后，通过 `accelerate.utils.DistributedDataParallelKwargs` 应用到 DDP 包装层。注意：`modeling_pi05.py` 本身不含任何 DDP/static_graph 设置，它承载的是 in-model 的 QKV 融合 / NPU fusion-attention / grouped-gemma in-proj（受 `PI05_FUSE_PALIGEMMA_QKV` / `PI05_USE_NPU_FUSION_ATTENTION` / `PI05_USE_NPU_GROUPED_GEMMA_INPROJ` 控制），与这三项 DDP 设置分属不同层。
+文档声明 Pi0.5 的 DDP 默认配置如下，设计上通过 accelerate.utils.DistributedDataParallelKwargs 应用。固定 21a5ed7 快照不能据此视为可直接运行：lerobot_train.py 从 lerobot.utils.utils 导入 _resolve_ddp_settings，随后又本地定义同名函数并调用未定义的 _env_flag；setup_lerobot.sh 安装的 utils.py 也没有被导入的解析器。这会在导入或解析阶段阻断启动，必须先修正接线并验证，不能仅设置环境变量绕过。modeling_pi05.py 的模型内部融合与 DDP 包装属于不同层。
 
 | 配置 | 作用 |
 | --- | --- |
@@ -38,9 +44,9 @@ Pi0.5 在 DDP 包装层默认开启三项，由训练脚本（`run_train.sh` / `
 
 > 对于 `pi05`，DDP 默认采用 `find_unused_parameters=False`、`static_graph=True` 和 `gradient_as_bucket_view=True`，目的是减少动态图额外探测、稳定 bucket 组织并降低梯度通信侧的额外开销。
 
-接线机制：三项默认值由 `policy_type == "pi05"`（`is_pi05`）驱动——`is_pi05=True` 时分别得到 `find_unused=not is_pi05`（关闭探测）、`static_graph=is_pi05`（开图固定）、`gradient_as_bucket_view=is_pi05`（开 bucket-view），非 pi05 模型则三项反向、默认关闭。脚本以 `LEROBOT_DDP_FIND_UNUSED_PARAMETERS` / `LEROBOT_DDP_STATIC_GRAPH` / `LEROBOT_DDP_GRADIENT_AS_BUCKET_VIEW` 三个环境变量暴露覆盖入口（默认值 `auto`，由 `_resolve_ddp_settings` 按 `is_pi05` 解析）；显式置 `0` / `1` 即可强制关闭或开启对应项，无需改代码。
+设计中的默认值以 policy_type == "pi05" 判定：find_unused=False、static_graph=True、gradient_as_bucket_view=True；非 pi05 的默认值相反。LEROBOT_DDP_FIND_UNUSED_PARAMETERS / LEROBOT_DDP_STATIC_GRAPH / LEROBOT_DDP_GRADIENT_AS_BUCKET_VIEW 是预期覆盖入口，当前快照没有完整可用的解析实现。本卡没有登记并验证其修正版，因此不能承诺 0/1 覆盖已可用。
 
-实测结论：**保留，但不是主要瓶颈**——相比同样属于反向阶段优化的「关闭外层 suffix checkpoint」（见 [gradient-checkpoint-refine](gradient_checkpoint_refine.md)，当前收益最大单项），DDP 静态图属于稳态收益项，已默认开启、无需手工切换。
+训练文档将此项列为保留的稳态优化，收益小于关闭外层 suffix checkpoint；这属于来源记录，不能作为当前接线可运行的证据。
 
 ## 适用前提
 
@@ -49,14 +55,14 @@ Pi0.5 在 DDP 包装层默认开启三项，由训练脚本（`run_train.sh` / `
 
 ## 在 Pi0.5 训练的应用 — 多卡启动
 
-`manipulation/pi05/train/doc/README.md` 推荐训练命令（2 卡示例，配合 disable-outer-suffix-checkpoint）：
+`manipulation/pi05/train/doc/README.md` 记录的训练命令（2 卡示例；先修复上述接线并验证，再配合 disable-outer-suffix-checkpoint）：
 
 ```bash
 cd cann-recipes-embodied-ai/manipulation/pi05/train/src/scripts
 ./run_train.sh pi05 --nproc 2 --disable-outer-suffix-checkpoint
 ```
 
-样例面向昇腾 Atlas A2，CANN 8.3.RC1，LeRobot v0.4.4（commit `8fff0fde7c79f23a93d845d1a50e985de01f8b8a`）。多卡训练 profiling 会产出 `profiling/rank0/...`、`profiling/rank1/...`（每卡一份）；默认配置下 Pi0.5 稳定训练区间约 `5.75 ~ 5.85 s/it`。
+样例面向昇腾 Atlas A2，CANN 8.3.RC1，LeRobot v0.4.4（commit `8fff0fde7c79f23a93d845d1a50e985de01f8b8a`）。多卡训练 profiling 会产出 `profiling/rank0/...`、`profiling/rank1/...`（每卡一份）；文档记录的 Pi0.5 稳定训练区间约 `5.75 ~ 5.85 s/it`。
 
 > Pi0 训练样例（`manipulation/pi0/train/`）未在文档中显式列出这三项 DDP 配置，不能据 Pi0.5 配置推定 Pi0 的默认值；Pi0 的反向优化以 disable-outer-suffix-checkpoint 与 NPU fusion attention 为主（见 [gradient-checkpoint-refine](gradient_checkpoint_refine.md)）。
 
@@ -66,4 +72,4 @@ cd cann-recipes-embodied-ai/manipulation/pi05/train/src/scripts
 - 受益模型：[pi05](../manipulation/pi05.md)
 - 网络结构：[flow-matching-action-expert](../modules/flow_matching_action_expert.md)
 - 训练平台：[atlas-a2](../../../spatial/concepts/platforms/atlas_a2.md)（Pi0.5 多卡训练实际平台）；[ascend-310p](../platforms/ascend_310p.md) / [atlas-a3](../../../inference/concepts/platforms/atlas_a3.md)（family 对照）
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

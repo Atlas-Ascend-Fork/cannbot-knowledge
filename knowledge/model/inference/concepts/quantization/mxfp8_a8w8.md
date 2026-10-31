@@ -1,21 +1,18 @@
 ---
 type: Concept
 title: MXFP8 A8W8 (DiT Linear)
-description: HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8 矩阵量化方案：权重按
-  group（默认 `group_size=32`）per-group 量化为 FP8 E4M3FN，激活按 token 维度 per-token 量化为同格式，scale
-  采用 E8M0（纯指数，1 字节）。实现 8-bit × 8-bit 矩阵乘（A8W8），权重显存减半、带宽需求 -50%。调用 `torch_npu.npu_dynamic_mx_quant`
-  + `torch_npu.npu_quant_matmul` 完成量化与量化 GEMM。
+description: HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8 矩阵量化方案：权重按 group（默认 `group_size=32`）per-group 量化为 FP8 E4M3FN，激活按 token 维度 per-token 量化为同格式，scale 采用 E8M0（纯指数，1 字节）。实现 8-bit × 8-bit 矩阵乘（A8W8），BF16 权重数据本体由每元素 2 字节降为 1 字节（未计 scale）；这一理论数据比例和来源所称权重加载带宽降低 50%，均不代表包含激活、scale、未量化层的整体带宽需求减半。调用 `torch_npu.npu_dynamic_mx_quant` + `torch_npu.npu_quant_matmul` 完成量化与量化 GEMM。
 tags:
 - task.design
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/hunyuan-video/hunyuan_video_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T01:37:00Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - '950'
 ---
@@ -23,7 +20,7 @@ platforms:
 
 ## Summary
 
-HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8 矩阵量化方案：权重按 group（默认 `group_size=32`）per-group 量化为 FP8 E4M3FN，激活按 token 维度 per-token 量化为同格式，scale 采用 E8M0（纯指数，1 字节）。实现 8-bit × 8-bit 矩阵乘（A8W8），权重显存减半、带宽需求 -50%。调用 `torch_npu.npu_dynamic_mx_quant` + `torch_npu.npu_quant_matmul` 完成量化与量化 GEMM。
+HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8 矩阵量化方案：权重按 group（默认 `group_size=32`）per-group 量化为 FP8 E4M3FN，激活按 token 维度 per-token 量化为同格式，scale 采用 E8M0（纯指数，1 字节）。实现 8-bit × 8-bit 矩阵乘（A8W8），BF16 权重数据本体由每元素 2 字节降为 1 字节（未计 scale）；这一理论数据比例和来源所称权重加载带宽降低 50%，均不代表包含激活、scale、未量化层的整体带宽需求减半。调用 `torch_npu.npu_dynamic_mx_quant` + `torch_npu.npu_quant_matmul` 完成量化与量化 GEMM。
 
 ## Mechanism
 
@@ -76,7 +73,7 @@ def mxfp8_linear_forward(layer, original_dtype, x):
 | ------ | -------- | ---- |
 | `double_blocks` 中的 Linear | ✓ | 双流注意力块投影层 |
 | `single_blocks` 中的 Linear | ✓ | 单流注意力块投影层 |
-| Modulation 层（adaLN） | ✗ | 保持原始精度，保证调制精度 |
+| Modulation 层（adaLN） | ✗ | 保留原始精度；这是当前选层策略，不构成画质保证 |
 | 1D 权重层 | ✗ | 不适合量化 |
 
 ## Accuracy Impact
@@ -89,11 +86,17 @@ def mxfp8_linear_forward(layer, original_dtype, x):
 - DiT 类模型（HunyuanVideo 首发使用）
 - 大 MLP / 大投影层占比高，矩阵乘带宽敏感的场景
 
+## 当前实现的附加边界
+
+当前前向会把非BF16/FP16输入先转换为BF16，并在scale维数大于1时调用 `squeeze(0)`。`params_to_keep` 虽保留在函数签名中，但当前实现没有消费它，不能用该参数作为额外白名单。
+
+转换会冻结候选Linear的权重，并保存 `original_forward`；它不保存原始BF16权重副本。因此仅恢复forward方法不足以完整撤回量化，回退时应重载原始模型/权重。前向直接调用 `layer.bias.to(float32)`，没有处理bias为None的分支；移植到无bias Linear前需单独适配与验证。
+
 ## Constraints
 
 - 要求 NPU 支持 `npu_dynamic_mx_quant` / `npu_quant_matmul` + E8M0 scale
 - 仅量化 Transformer block 中的 2D Linear；adaLN / modulation 与 1D 权重跳过
-- 与 FP8 attention 互不依赖，可单独或叠加使用
+- 与当前 MXFP8 attention 开关相互独立，可单独或组合验收
 
 ## Known Results
 
@@ -101,8 +104,8 @@ def mxfp8_linear_forward(layer, original_dtype, x):
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md) MXFP8 矩阵量化 (A8W8)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py)
+- [hunyuan_video_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md)（primary）
+- [mxfp8_a8w8.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py)（supporting）
 
 ## Links
 

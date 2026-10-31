@@ -7,11 +7,11 @@ tags:
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_ascendc_operator_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_mHC_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_mHC_guide.md
 created_at: '2026-10-22T03:12:28Z'
-updated_at: '2026-10-22T03:12:28Z'
+updated_at: '2026-10-29T14:38:30Z'
 platforms:
 - a3
 ---
@@ -28,7 +28,7 @@ LI 主来源明确全文阐述两个融合算子在 A3 上的优化；HcPost 的
 
 ## Software
 
-LI 固定 2f82d10467e6fe8dae81c97a2cdac78d733a6703，HcPost 固定 2c45117d781ab9ab88dcb89a28ae30f5d2450399。各测点 CANN、torch_npu 与编译 build 未完整披露，不把两份指南认作同一环境。
+LI 与 HcPost 均取同一当前提交的两份指南。各测点 CANN、torch_npu 与编译 build 未完整披露，不把两份指南认作同一环境。
 
 ## Baseline 与 Variant
 
@@ -70,5 +70,5 @@ LI 的约 20% 沿用来源“收益”口径，不能自行改写为时延降低
 
 ## Evidence
 
-- [固定来源](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md)
-- [固定来源](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_mHC_guide.md)
+- [deepseek_v3.2_exp_ascendc_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_ascendc_operator_guide.md)（primary）
+- [deepseek_v4_mHC_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_mHC_guide.md)（primary）

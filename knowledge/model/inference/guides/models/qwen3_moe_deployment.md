@@ -1,66 +1,61 @@
 ---
 type: Guide
-title: Qwen3-MoE A3 双实现部署与优化验收流程
-description: Qwen3-MoE A3 双实现部署与优化验收流程，串联固定版本配置、来源冲突、精度与性能验证以及回退入口。
+title: Qwen3-MoE 当前自研与 SGLang 部署
+description: 当前A3/950与SGLang分立部署、三类量化/Hadamard、精确Prefill门控及已迁移的统一入口和缓存。
 tags:
 - task.implementation
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-moe/qwen3_moe_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3_moe/README.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3_moe/models/modeling_qwen3_moe.py
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-moe-sglang/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/models/modeling_qwen3_moe.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen3_moe/qwen3_moe_optimization.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/config/qwen3_235b_4tp_4ep_quant.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md
+  role: constraint
 created_at: '2026-10-21T09:56:20Z'
-updated_at: '2026-10-21T09:56:20Z'
+updated_at: '2026-10-29T14:21:59Z'
 platforms:
 - a3
+- '950'
 ---
 
-# Qwen3-MoE A3 双实现部署与优化验收流程
+# Qwen3-MoE 当前自研与 SGLang 部署
 
-## 目标、输入与产物
+## 先选实现与平台
 
-面向固定来源中的 Qwen3-MoE 实现，输入包括平台、权重、实际配置和任务指标；产物为可追溯配置、正确性/性能记录及回退入口。模型结构由[模型 Concept](../../concepts/models/qwen3_moe.md)维护。以下描述固定版本实践，不能当作当前所有软件版本的部署保证。
+自研models/qwen3_moe与integration/sglang/qwen3-moe是独立路径。自研当前README覆盖A3与950：A3 CANN9.0.0，950 CANN9.1.0-beta.1，均列PyTorch2.8.0/torch_npu2.8.0.post4（发布26.0.0）与Python3.11。SGLang依其README/分阶段patch验收，不混用权重、MTP、编译缓存或基准。
 
-## 1. 先选自研执行器或 SGLang 路径
+## 当前入口与量化配置
 
-models/qwen3_moe 与 models/qwen3-moe-sglang 是独立实践，配置、精度、batch 与计时不能拼接。自研路径按模型和卡数选择实际 YAML；SGLang 路径固定在其 README 声明的框架/patch 组合，不自动适配当前框架版本。
+统一入口bash executor/scripts/infer.sh --model qwen3_moe --yaml <文件>。在线另选--mode online --pd-role及--p-yaml-name/--d-yaml-name，PD默认目录qwen3_moe_pd。按实际YAML核对world_size、Attention TP/DP与MoE TP/EP和卡数。
 
-## 2. 自研执行器配置与分支核对
+950当前支持三种转换：默认W4A8 MXFP8；--quant_type w4a4c16配合Hadamard；--quant_type w8a8hif8_w4a8mxfp采用Attention HiF8和MoE MXFP4/MXFP8。前后两种可共用qwen3_235b_4tp_4ep_quant.yaml，真实量化来自权重config.quantization_config，不能由YAML文件名判断。
 
-| 配置文件 | world_size | 并行策略 | 备注 |
-| ---- | ---- | ---- | ---- |
-| `qwen3_235b_16tp.yaml` | 16 | `attn_tp=16`、`moe_tp=16` | 纯 TP 路径，`moe_infer_tp` 走 `npu_swiglu` |
-| `qwen3_235b_1tp_16ep.yaml` | 16 | `attn_tp=1`（DP16）、`moe_tp=1`（EP16） | DP Attention + EP MoE |
-| `qwen3_235b_128ep.yaml` | 128 | `attn_tp=1`、`moe_tp=1`（EP128） | 大 EP，`ge_graph`，benchmark 主用 |
-| `qwen3_235b_attn4tp8dp.yaml` | 32 | `attn_tp=4`（DP8）、`moe_tp=1`（EP32） | 混合 DP/TP Attention，eager 调试 |
+Hadamard使用qwen3_235b_mxfp4_hadamard.yaml，转换与运行都需匹配hadamard_weight_path及每层layer_<idx>_self_attn.pt。仅Attention A4W4且enable_hadamard时进入，缺目录或层文件会失败；不能在W4A8档开flag就声称启用。
 
-> `attn_tp_size` 必须整除 `num_heads`；`num_key_value_heads_per_rank = max(num_key_value_heads // attn_tp_size, 1)` 确保 GQA 场景每卡至少 1 个 KV head。
+## Prefill与缓存实现核对
 
-表中的 world_size 沿原配置单位；不从world_size单独推导A3物理卡数。Attention TP 头整除、QK Norm和行切输出由 [TP 机制](../../concepts/parallelism/tensor_parallel.md)维护。建模实际为 moe_infer_tp、Prefill double-routing、Decode dispatch/combine 三条路径；文档旧名 moe_infer_fusion 不作为真实方法。
+最新[模型机制](../../concepts/models/qwen3_moe.md)明确prefill_opt还要求两种特定MX量化模式，HiF8方案虽共用YAML也不满足相同条件。Prefill先AllGather量化数据和scale，FA后AlltoAll再o_proj；MoE用AG+RS，其余路径仍按TP/DoubleRouting/Decode MC2分派。
 
-## 3. SGLang 按 patch 依赖验收
+当前模型packed position_ids必须1D；Prefill按累计有效长度取末token，Page cache由CacheEntry声明block_size。FP8 KV包含独立scale缓存。来源旧Qwen3MoeRunner/./compile_cache/CASE_NAME片段已过时，按共享执行器实际output_path/compile_cache与图模式核对。force_eplb只作性能实验，会改变路由，质量验收关闭。
 
-先核对基础 NPU/量化修改，再检查 forced EPLB、profiler、主模型 GE、MTP1/MTP2 GE、lm_head加载、PD GQA FIA修复与SuperKernel。已有 [Qwen SuperKernel 案例](../../optimizations/cases/qwen3_moe_a3_superkernel_scopes.md)保存分段与整层门控差异，不另复制一套范围规则。MTP按 [接入流程](../../guides/integration/mtp_speculative_decode_model_onboarding.md)验收。
+## SGLang与验收
 
-W8A8权重转换中的msmodelslim/drop_offset与自研BF16不可互代；perfect EPLB 仅作性能上界，精度验收关闭。缓存按 [缓存规则](../../optimizations/rules/torchair_cache_compile_persisted_graph.md)核对 CASE_NAME、后端与形状；不能把一次缓存复用描述成普遍启动收益。
+SGLang按当前集成README核对基础NPU/量化、profiler、GE、MTP及SuperKernel各阶段patch；[SuperKernel案例](../../optimizations/cases/qwen3_moe_a3_superkernel_scopes.md)说明范围，不能将自研950分支外推该实现。
 
-## 4. 结果与边界
+当前优化文档概述A3八卡BF16 Decode<20ms、950四卡W4A8的4K Prefill<280ms/Decode<24ms；缺完整逐轮记录，不当作本机复现或任意规格保证。两条A3来源结果另见[观测](../../optimizations/benchmark_observations/qwen3_moe_a3_source_benchmark.md)。
 
-两条实践的数字集中 [A3 双实现来源观测](../../optimizations/benchmark_observations/qwen3_moe_a3_source_benchmark.md)；“纯模型时延”不改称端到端在线指标，来源概述阈值不改写成完整实验记录。
-
-## 验证、停止与回退
-
-保存实际权重、软件版本、平台、并行组、输入与输出；以未启用待验优化的路径作对应基线，逐项比较 logits/任务质量、时延和峰值内存，并分别记录冷启动、warmup 与稳态重复测量。遇到源中未覆盖的形状、后端或平台时停止套用。失败后恢复对应版本的配置、权重与编译缓存，再按关联 Runbook 排查；没有实际跑通的回退不写为已验证。
-
-本卡未记录独立的模型执行或硬件复测。来源自报和输出“看起来正常”不能替代本部署的精度验收；执行后应另存实际环境、配置和测量记录。
-
+固定prompt、模型、软件和并行，分别对照BF16/目标量化、eager/图模式和Prefill/Decode，验质量、缓存布局、shape与真实命中；异常时恢复匹配原权重和基线配置。本次未运行NPU。
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-moe/qwen3_moe_optimization.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3_moe/README.md)
-- [固定来源 3](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3_moe/models/modeling_qwen3_moe.py)
-- [固定来源 4](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/qwen3-moe-sglang/README.md)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/README.md)（primary）
+- [modeling_qwen3_moe.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/models/modeling_qwen3_moe.py)（implementation）
+- [qwen3_moe_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/qwen3_moe/qwen3_moe_optimization.md)（supporting）
+- [qwen3_235b_4tp_4ep_quant.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/config/qwen3_235b_4tp_4ep_quant.yaml)（example）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md)（constraint）

@@ -1,28 +1,24 @@
 ---
 type: Optimization
 title: DiT/CNN 层在昇腾的算子级代数改写：1×1 conv→matmul、卷积换末轴、LayerNorm+adaLN 折叠
-description: DiT/CNN 层在昇腾的算子级代数改写：1×1 conv→matmul、卷积换末轴、LayerNorm+adaLN 折叠。在昇腾上优化
-  DiT/扩散生成模型里的 conv / LayerNorm 密集段时，几处数学等价的代数改写能把算子换到 NPU 更亲和的路径（matmul 算力 / 末轴亲和布局
-  / 省一趟逐元素）。它们是等价变换、不改语义，只在满足前提时成立。
+description: 当前Conv代数改写、einops布局、enable_quant门控和加载后权重置换，保留数学等价前提。
 tags:
 - task.optimization
 - topic.diffusion
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/322
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/49
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md
   role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T10:17:52Z'
+updated_at: '2026-10-29T14:16:27Z'
 platforms:
 - a2
 ---
-
-
 
 # DiT/CNN 层在昇腾的算子级代数改写：1×1 conv→matmul、卷积换末轴、LayerNorm+adaLN 折叠
 
@@ -67,23 +63,22 @@ DiT block 内 γ/β 恒为初始 1/0 的 LayerNorm 若紧跟 adaLN 调制（scal
 
 ### 1×1 conv2d → matmul（`patch_conv1x1_matmul`）
 
-`patch_conv1x1_matmul` 对 `diffusion.model.nets.basic_modules.ConvLayer.forward` 加入 1×1 conv2d 的判断与转换逻辑。以下片段省略外层 dropout、norm 和 activation；矩阵乘法等价替换要求 `stride=1`、`padding=0`、`groups=1`，不能仅按 kernel_size 推广到任意卷积。具体性能收益应按输入、平台和实际算子实现测量。
+当前`patch_conv1x1_matmul(enable_quant)` 对 `diffusion.model.nets.basic_modules.ConvLayer.forward` 加入 1×1 conv2d 的判断与转换逻辑。以下片段省略外层 dropout、norm 和 activation；矩阵乘法等价替换要求 `stride=1`、`padding=0`、`groups=1`，不能仅按 kernel_size 推广到任意卷积。具体性能收益应按输入、平台和实际算子实现测量。
 
 ```python
-if self.conv.kernel_size == (1, 1):
-    B, Ci, H, W = x.shape
-    Co, *_ = self.conv.weight.shape
-    x_trans = x.view(B, Ci, -1).permute(0, 2, 1).contiguous()
-    kernel_trans = self.conv.weight.view(Co, Ci)
+if self.conv.kernel_size == (1, 1) and not enable_quant:
+    _, _, height, width = x.shape
+    x_trans = rearrange(x, "b c h w -> b (h w) c")
+    kernel_trans = rearrange(self.conv.weight, "o i 1 1 -> o i")
     x = x_trans @ kernel_trans.T
     if self.conv.bias is not None:
         x += self.conv.bias
-    x = x.permute(0, 2, 1).contiguous().view(B, Co, H, W)
+    x = rearrange(x, "b (h w) o -> b o h w", h=height, w=width)
 else:
     x = self.conv(x)
 ```
 
-推理入口将这些 patch 用于去噪网络，不能据此认定它们是 [VAE](../../concepts/modules/vae.md) 优化。
+量化档关闭该BF16快路径，加载后以QuantConv1x1AsLinear替换对应模块，不能直接读取旧weight。推理入口将这些 patch 用于去噪网络，不能据此认定它们是 [VAE](../../concepts/modules/vae.md) 优化。
 
 ### 时序 conv2d 的 HW 轴调换（`patch_temporal_conv_swap`）
 
@@ -112,6 +107,6 @@ for block in model.blocks:
 
 ## Evidence
 
-- `diff 事实`（@4b572b9）：1×1 conv2d 改 matmul；时序 conv 换末轴 + 权重 permute 一次性（维护者 review）。
-- `diff 事实`（@2c45117）：DiT block γ/β=1/0 的 LN+adaLN 折进单次 `npu_layer_norm_eval`，仅 γβ 固定时成立。
-- 溯源下探：[cann-recipes-infer-pr-322-feat-add-sana-video-sample](https://gitcode.com/cann/cann-recipes-infer/merge_requests/322)、[cann-recipes-infer-pr-49-feat-add-wan2-2-i2v-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/49)
+- [npu_patches.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/patches/npu_patches.py)（primary）
+- [inference_sana_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/inference_video_scripts/inference_sana_video.py)（implementation）
+- [wan2.2-i2v_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md)（supporting）

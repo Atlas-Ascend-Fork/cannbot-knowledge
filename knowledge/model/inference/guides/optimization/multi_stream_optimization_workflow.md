@@ -1,19 +1,21 @@
 ---
 type: Guide
 title: 多流优化流程：拆解依赖、选择后端并验收真实收益
-description: 从基线和依赖图开始，按实际后端实现跨流同步，逐步验证精度、重叠和端到端收益；实现参数由关联规则维护。
+description: 当前多流依赖拆解、后端API分发、LongCat GE/npugraph编排与真实性能验收，替换旧GE-only片段。
 tags:
 - task.optimization
 - topic.graph_execution
 - topic.implementation.synchronization
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/cann/zh/multi_stream_principles.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/a12e98a866f5f9ef51053e47f5e8151ac703caf3/docs/design/multi_stream_principles.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/stream_utils.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
+  role: implementation
 created_at: '2026-10-21T01:51:39Z'
-updated_at: '2026-10-22T10:38:03Z'
+updated_at: '2026-10-29T14:32:21Z'
 platforms:
 - a2
 - a3
@@ -27,9 +29,9 @@ platforms:
 
 ## 核心原则
 
-- **Stream ID 切对 ≠ 物理并行成立（最重要）**：`npu_stream_switch` 贴的是逻辑标签，**源码层级 ≠ 物理层级**。GE 编译期会重排算子——尤其把「消费副流输出的轻量 precompute」（Cast / Swish / Sigmoid）拉回主流形成 barrier。任何「副流已落 side stream」的结论都必须用 profiling 验证，不能凭 Stream ID 切对就判方案成立。
+- **Stream ID 切对 ≠ 物理并行成立（最重要）**：`npu_stream_switch` 贴的是逻辑标签，**源码层级 ≠ 物理层级**。编译后是否重排算子或形成额外等待，必须按具体后端/版本读取编译图和时间线；Cast / Swish / Sigmoid 等跨流位置只是待核对的候选原因，来源没有给出其出现频率或受控收益证据。任何「副流已落 side stream」的结论都必须用 profiling 验证，不能凭 Stream ID 切对就判方案成立。
 - **先整网后局部**：先回答整网主路径和模块间并行性，再下钻到模块内算子；decoder layer 不能当单个模块，必须再拆。
-- **开关必须可关闭**：多流路径要保留 enable 开关和原始回退路径（仓内统一用 `switch_flag` + `FakeContextManager` 兜底），方便调试、review 和淘汰时干净隔离。
+- **开关必须可关闭**：多流路径要保留 enable 开关和原始回退路径（按当前helper或模型显式条件实现回退），方便调试、review 和淘汰时干净隔离。
 - **先证明正确，再追性能**：先验证依赖、功能、精度，再看 overlap 与时延收益。
 - **overlap 不等于收益**：出现拖尾、资源争抢、host bound、shape 劣化时，overlap 真实成立也可能不降 wall，要继续评估控核与图模式限制。
 
@@ -52,22 +54,9 @@ platforms:
 3. **先做最小可验证 overlap**：只改一个明确并行点，先补同步再扩大窗口，始终保留原路径和 enable 开关。
 4. **overlap 成立后再评估控核**。
 
-**控核（`limit_core_num`）**：多流之后，一条流可能吃满全部 Core 把另一条流挤成拖尾，逻辑并行退化成物理串行。控核就是给每条流分配上限核数让双流计算时间接近——**来源示例按可用资源划分两条流的配额；超额或竞争可能破坏重叠，须按具体平台和调度验证**。Ascend IR 用算子级 `torchair.scope.limit_core_num`（优先级高于全局 `config.ge_config.aicore_num`），npugraph_ex 用 Stream 级 `torch.npu.npugraph_ex.scope.limit_core_num`（见 torchair use guide；@2c45117 仓内模型代码暂无实际调用，生产控核均走 GE 路径）。仓内封装 `limit_core_num(switch_flag, aic_num, aiv_num)` 转发 `tng.scope.limit_core_num`（[`executor/utils/common_utils.py` L133](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/utils/common_utils.py)）。
+**控核（`limit_core_num`）**：多流之后，一条流可能吃满全部 Core 把另一条流挤成拖尾，逻辑并行退化成物理串行。控核就是给每条流分配上限核数让双流计算时间接近——**来源示例按可用资源划分两条流的配额；超额或竞争可能破坏重叠，须按具体平台和调度验证**。Ascend IR 用算子级 `torchair.scope.limit_core_num`（优先级高于全局 `config.ge_config.aicore_num`），npugraph_ex 用 Stream 级 torch.npu.npugraph_ex.scope.limit_core_num（该来源仅支持 Ascend C 算子控核；混入不支持的算子可能失去收益甚至卡死，须核对每个算子支持并验证混合路径）；当前stream_utils按后端分发，须核对模型实际导入和算子支持。仓内封装 `limit_core_num(switch_flag, aic_num, aiv_num)` 转发 `tng.scope.limit_core_num`（[`executor/utils/common_utils.py` L133](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/common_utils.py)）。
 
-**LongCat-Flash 是 Atlas A3 Decode 代表案例**（仅 enable_multi_streams > 0 且 not is_prefill 时进入 multi_stream_forward；ge_graph，对应「同类计算池分核」）：ScMoE 双段结构里，shortcut **MoE 路径**切到副流 `npu_stream_switch(True, "1")`，与主流的**第二段 Attention + FFN 路径**并行；两条路径各用 `limit_core_num` 分到不同 AI/Vector Core，并叠加 `npu_prefetch` 预取下一层权重、`superkernel_scope` 标定（[`models/longcat-flash/models/modeling_longcat_flash.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/longcat-flash/models/modeling_longcat_flash.py) `multi_stream_forward`，L1206）。
-
-```python
-# L45  from executor.utils import npu_stream_switch, limit_core_num, npu_wait_tensor, superkernel_scope, npu_prefetch
-# L1246 npu_prefetch(self.enable_prefetch, self.mlp.router.classifier.weight.data, o_proj, 18*1024*1024, 0)
-with npu_stream_switch(True, "1"):                       # MoE shortcut → 副流 "1"
-    with limit_core_num(True, self.aic_num1, self.aiv_num1):     # L1248
-        shortcut_mlp_output = self.mlp(hidden_states_norm, ...)
-with limit_core_num(not self.enable_afd, self.aic_num2, self.aiv_num2):  # L1256 主流:二段 attn+FFN
-    hidden_states, _, dsq = self.mlps[0](hidden_states_norm, self.enable_prefetch, o_proj)
-    ...  # self_attn[1].prepare_qkv / fused_infer_attention_score / mlps[1] + 逐级 npu_prefetch
-```
-
-核数取值随 `enable_multi_streams` 分支：`==2` 时双流均 `c12v24`（L1107-1110）；否则副流 `c8v16`、主流 `c16v32`（L1112-1115）。控核的副作用是受限流上的 MLAProlog / FA / MM 耗时相比不控核时上升，LongCat 进一步用 AFD 把 MoE 分节点部署以解除主路径控核（与 AFD 互斥，见 [afd](../../concepts/techniques/afd.md)）。完整 ScMoE 拓扑见 [longcat-flash](../../concepts/models/longcat_flash.md)。
+LongCat-Flash当前支持GE与npugraph_ex的显式多流编排。enable_multi_streams=1时MoE为8/16核、主流16/32；=2时各12/24，分配需结合实际硬件。预取要求多流，SuperKernel该模型仅GE。AFD在npugraph Decode需在最终相加前等待接收。具体步骤和分组见[当前部署](../models/longcat_flash_deployment.md)，不能照搬旧GE-only片段。
 
 ## 调试与验证(真假并行)
 
@@ -75,8 +64,9 @@ with limit_core_num(not self.enable_afd, self.aic_num2, self.aiv_num2):  # L1256
 
 **性能无收益时先检查是否命中多流路径和是否真正重叠，再分析资源与 Host 开销**：
 
-- **3a 副流根本没真跑**：副流 ops 的 `stream_id` 仍落主流或退到 `sid=1`。查切流 with-block 是否在 `is_prefill / enable_multi_stream` 条件下真走到、兜底有没有被命中。
-- **3b 假并行 / GE auto-reorder barrier**：Stream ID 已分裂但 wall 与 baseline 持平。最常见根因是 **GE 把消费副流输出的轻量 precompute（Cast/Swish/Sigmoid/Reshape）拉回主流提前下发**，卡住主流 dominator。解法是把 barrier op 显式钉进 with-block（自己写出 precompute，不依赖 GE 自动放置），或重设 op 集合让副流有真正 dominator——两者都是新候选。
+- **3a 副流根本没真跑**：副流 ops 的 `stream_id` 仍落主流或退到 `sid=1`。查切流 with-block 是否在 `is_prefill / enable_multi_streams` 条件下真走到、兜底有没有被命中。
+- **3b 重排或等待的候选原因**：Stream ID 已分裂但端到端时延不变时，检查编译图和 profiling，确认轻量 precompute（Cast/Swish/Sigmoid/Reshape）是否被移动、是否引入跨流等待。来源没有证明这是“最常见根因”；显式放入 with-block 或改变算子集合都只是新候选，须保存后端版本、重排前后图与时间线、同输入性能对照后再判断，不能承诺这样即可解决。
+
 - **3c 真重叠但 wall 不变**：仅在 3a/3b 排除后才走，看 shape 变化、task 数增加、host bound、带宽争抢、拖尾。
 
 **用 profiling 检查重叠和净收益**：结合算子起止时间、流 ID、等待边与资源配置检查实际时间线，再对比相同输入下的端到端稳态时延。旧文的 overlap_pct=0.05/0.5 阈值未在所引固定设计文档中找到依据，撤下统一通过阈值；重叠比例也不能代替正确性和端到端收益验收。
@@ -200,7 +190,7 @@ block-beta
   class ln,add sync
 ```
 
-具体控核取值与仓内代码见上文「实现要点与控核」；完整 ScMoE 拓扑与 AFD 互斥见 [longcat-flash](../../concepts/models/longcat_flash.md) 与 [afd](../../concepts/techniques/afd.md)。
+具体控核取值与仓内代码见上文「实现要点与控核」；完整 ScMoE 拓扑与 AFD 分支的控核差异见 [longcat-flash](../../concepts/models/longcat_flash.md) 与 [afd](../../concepts/techniques/afd.md)。
 
 
 ## 验收、回退与停止

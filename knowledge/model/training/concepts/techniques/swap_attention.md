@@ -1,20 +1,19 @@
 ---
 type: Concept
 title: Swap Attention（激活换出 Host + SmartSwap + 自适应内存）
-description: MindSpeed 内存优化模块把前向激活换出 Host(CPU pinned)、反向预取回 device，用 H2D 带宽「以网补存」替代或补充重计算降激活显存，三层实现。--swap-attention：按 swap_modules(默认 input_norm,self_attention,post_attention_norm)经 saved_tensors_hooks 的 pack/unpack 钩子，前向 launch_d2h 换出后 storage.resize_(0) 释放显存、反向提前 interval 层 h2d 预取，可叠 --recompute-num-layers N 把前 N 层 MLP 重计算替换全重计算;策略由 solve_prefetch_policy 按 pp/vpp/recompute_method 算 swap/recompute_list,需先开 FA 融合算子,与自适应重计算/自适应内存/LoRA 互斥。--smart-swap(SmartSwap):替换 NPU allocator+patch train_step,经 WarmUp/SearchPolicy/Stable 三阶段迭代自动生成策略,swap_policy_config 旋钮(policy_v2/policy_pref/swap_bucket_size),仅静态序列不支持 MoE、占大量 Host 内存。--adaptive-memory-optimization:AdaptiveMemoryProfiling 逐模块 profiling(显存/耗时/layer0 样板层),求解器联合编排重算+swap+预取+OOM 兜底换出(SwapManager 的 prefetch 与 oom_rescue,cap_tensor/bro_tensors 共享 storage 处理),10 步稳定。关键术语:SwapTensor/SwappableTensorStat、prefetch_stream、no_swap_tensor、cap_tensor、swap_out_by_size。
+description: MindSpeed 内存优化模块把前向激活换出 Host(CPU pinned)、反向预取回 device，用 H2D 带宽「以网补存」替代或补充重计算降激活显存，三层实现。--swap-attention：按 swap_modules(默认 input_norm,self_attention,post_attention_norm)经 saved_tensors_hooks 的 pack/unpack 钩子，前向 launch_d2h 换出后 storage.resize_(0) 释放显存、反向同层钩子触发 H2D（本版本 interval=0），可叠 --recompute-num-layers N 把前 N 层 MLP 重计算替换全重计算;策略由 solve_prefetch_policy 按 pp/vpp/recompute_method 算 swap/recompute_list,需先开 FA 融合算子,与自适应重计算/自适应内存/LoRA 互斥。--smart-swap(SmartSwap):替换 NPU allocator+patch train_step,经 WarmUp/SearchPolicy/Stable 三阶段迭代自动生成策略,swap_policy_config 旋钮(policy_v2/policy_pref/swap_bucket_size),仅静态序列不支持 MoE、占大量 Host 内存。--adaptive-memory-optimization:AdaptiveMemoryProfiling 逐模块 profiling(显存/耗时/layer0 样板层),求解器联合编排重算+swap+预取+OOM 兜底换出(SwapManager 的 prefetch 与 oom_rescue,cap_tensor/bro_tensors 共享 storage 处理),策略连续 10 步不变时判稳。关键术语:SwapTensor/SwappableTensorStat、prefetch_stream、no_swap_tensor、cap_tensor、swap_out_by_size。
 tags:
 - task.optimization
 - topic.memory
-status: stable
+status: draft
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/swap_attention.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/swap_attention.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
-platforms:
-- agnostic
+updated_at: '2026-10-29T15:39:15Z'
+platforms: []
 ---
 
 # Swap Attention（激活换出 Host + SmartSwap + 自适应内存）
@@ -29,13 +28,15 @@ platforms:
 
 三者都是「显存 ↔ 算力/带宽」取舍的不同自动化程度，解决同一问题、通常择一启用（其中 swap-attention 与自适应内存有显式互斥校验，详见各节），且都与重计算特性配合或二选一。机制承自 MindSpeed Core 内存优化模块（见 [mindspeed](../frameworks/mindspeed.md)）。
 
+本页讲述的是具体 Ascend NPU allocator、torch_npu Stream/Event 实现；换出思路虽通用，现有证据未给出三条路线完整型号支持矩阵，故保留 draft、platforms 暂空，不能据此推导任意硬件可用。
+
 ## swap-attention：模块级激活换出 + 反向预取
 
 启用前提是已开 flash attention 融合算子。`--swap-attention` 对每层 attention 侧模块的激活做「前向换出 / 反向预取」；`--swap-modules` 指定换出哪些子模块，默认 `"input_norm,self_attention,post_attention_norm"`，mcore 场景默认仅预取 `self_attention`。
 
 两种用法对应两种收益：
 
-- **替换全重计算（性能）**：全重计算场景下用 `--swap-attention` + `--recompute-num-layers N` 替换全重计算——attention 激活由 Host 预取回来免去重算，仅对前 N 层的全连接（MLP）做重计算，相比完全重计算有性能收益。`N` 是**每个 pp stage 的层数**，取值应 ≤ `num_layers / pipeline_model_parallel_size`。
+- **替换全重计算（性能）**：全重计算场景下用 `--swap-attention` + `--recompute-num-layers N` 替换全重计算——attention 激活由 Host 预取回来免去重算，仅对前 N 层的全连接（MLP）做重计算，相比完全重计算有性能收益。未启用 VPP 时 N 可按 PP rank 层数理解；启用 VPP 且未开 `enable_recompute_layers_per_pp_rank` 时，源码将 N 乘 vpp_size，若 N≥per_vpp_layers 则截断为 per_pp_layers。开启该开关后才直接按 PP 总层数计数并截断。因此“前 N 层”需结合 chunk 分配理解。
 - **纯省内存**：不需要重计算的场景只开 `--swap-attention`，在几乎不损耗性能的前提下省出激活显存，以支撑更大模型配置。
 
 ### 换出 / 预取的张量级机制
@@ -43,7 +44,7 @@ platforms:
 换出的最小单位是 `SwapTensor`：每个持一份 `pin_memory=True` 的 CPU 副本，用四个状态 `device → d2h → host → h2d` 流转；搬运统一走 `SwapPrefetch` 持有的、独立于主计算流的 `prefetch_stream`。注入靠 PyTorch 的 `saved_tensors_hooks(pack_hook, unpack_hook)` 包住被换模块的前向：
 
 - **前向换出**：`pack_hook` 对每个待存激活调 `launch_d2h`——在 `prefetch_stream` 上把 device 激活 `copy_` 到 pinned CPU（`non_blocking=True`），与主计算流并行。该层前向结束后由注册在该层上的 forward-hook 调 `sync_d2h`：等首个张量 d2h 完成，再把 device 张量 `storage().resize_(0)` **真正释放激活显存**，并把这批 `SwapTensor` 入 `prefetch_list`。
-- **反向预取**：注册在层上的 backward-hook 在反向推进到该层时调 `h2d`——`resize_` 回原 storage 大小、在 `prefetch_stream` 上把 CPU 副本 `copy_` 回 device、record `h2d_event`。`unpack_hook` 在该激活真正被反向用到时调 `wait_h2d_finished` 取回 device 张量——该批最后一个张量在此让主/默认计算流 `wait_stream(prefetch_stream)`，确保 prefetch_stream 上的 h2d 全部完成。预取提前量由 `interval` 控制（`layer_id + interval == 当前反向层` 时触发 h2d），让 H2D 搬运与其它层的反向计算重叠。
+- **反向预取**：注册在层上的 backward-hook 在反向推进到该层时调 `h2d`——`resize_` 回原 storage 大小、在 `prefetch_stream` 上把 CPU 副本 `copy_` 回 device、record `h2d_event`。`unpack_hook` 在该激活真正被反向用到时调 `wait_h2d_finished` 取回 device 张量——该批最后一个张量在此让主/默认计算流 `wait_stream(prefetch_stream)`，确保 prefetch_stream 上的 h2d 全部完成。匹配条件为 `layer_id + interval == 当前反向层`；当前实现的solve_prefetch_policy 和 granular_module_allocation 都返回 interval=0，实际在同层钩子触发 H2D，未实现这里的跨层提前预取。
 
 并非所有张量都换出——`no_swap_tensor` 过滤掉：双倍字节数 < 1 MB 的小张量、`grad_fn is None`（非激活）、storage 已为 0、底层 storage 与 numel 不等的切片/视图张量、`_base.dim() >= 5` 的张量。底层 storage `data_ptr` 相同的多个激活由 `pack_hook` 去重、共享同一份 CPU 副本，避免对同一 storage 重复搬运。
 
@@ -56,7 +57,7 @@ flowchart LR
     F1 --> D2H --> RS0
   end
   subgraph BWD["反向（主计算流 ∥ prefetch_stream）"]
-    H2D["h2d（提前 interval 层）<br/>resize_ 回 + CPU → device"]
+    H2D["h2d（同层钩子，interval=0）<br/>resize_ 回 + CPU → device"]
     UP["unpack_hook<br/>wait_h2d_finished → 返回激活"]
     B1["attention 模块反向<br/>用预取回的激活，免重算"]
     H2D --> UP --> B1
@@ -97,6 +98,8 @@ flowchart LR
 - **预取换出**：`prefetch_pack` / `prefetch_unpack` 经 `saved_tensors_hooks` 在前向把激活 `launch_d2h` 到 pinned CPU（独立 `prefetch_stream`），`sync_d2h` 等预取完成后 `storage().resize_(0)` 释放显存并按 microbatch 入队；反向前 `h2d` 把对应 microbatch 的激活预取回 device。`no_swap_tensor` 过滤逻辑与 swap-attention 同源（<1 MB、无 grad_fn、storage 为 0、切片张量、`_base.dim()>=5` 跳过）。
 - **OOM 兜底换出**：`oom_rescue_pack` 把前向激活登记到 `oom_rescue_device_tensors`；当 allocator 触发 OOM，`swap_out_by_size(size)` 按需把够数的 storage 搬到 Host（`move_storage_out`），并处理共享底层 storage 的张量——同一 storage 的张量记为 `bro_tensors`、由占满整块 storage 的 `cap_tensor` 统一搬运，避免重复换出；`oom_rescue_unpack` 用到时 `move_storage_in` 搬回。`swap_out_by_size` 的统一入口 `core/memory/common.py` 按 `args.adaptive_memory_optimization` 路由到自适应内存的 `SwapManager` 或自适应重计算的 `SwapManager`。
 
+求解器内部联合安排重计算不代表可再开启用户显式重计算开关。`arguments.py` 还要求 ampipe_degree≤1、关闭自适应重计算、recompute_granularity 和 recompute_method 均为 None，且禁止 recompute_activation_function 与 recompute_in_bubble，否则启动断言失败。
+
 自适应内存与 `--swap-attention` 显式互斥（`SwapAttentionFeature.validate_args` 的 `incompatible_check('adaptive_memory_optimization')`，`arguments.py` 亦 `assert not args.swap_attention`）；与 `--smart-swap` 之间无显式互斥校验，但二者解决同一问题，按场景择一启用。
 
 ## 三条路线的取舍
@@ -111,17 +114,8 @@ flowchart LR
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — [`docs/zh/features/swap_attention.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/swap_attention.md)（背景 / 以网补存以网强算 / 两种使用场景 / `--swap-modules` 默认值 / `recompute-num-layers` 为每 pp stage 层数 / 不兼容 LoRA、跨 NUMA 绑核）、[`docs/zh/features/smart_swap.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/smart_swap.md)（WarmUp/SearchPolicy/Stable 三阶段 / `swap_policy_config.py` v2 旋钮 / 静态序列与 MoE 限制 / Host 内存占用 / 自定义算子 Hook）
-- [`mindspeed/features_manager/memory/swap_attention.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/memory/swap_attention.py) — `SwapAttentionFeature`：`--swap-attention` / `--swap-modules` 注册、`validate_args` 与自适应重计算/自适应内存/LoRA 互斥、`register_patches` 的四处 patch
-- [`mindspeed/features_manager/memory/smart_swap.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/memory/smart_swap.py) — `SmartSwapFeature`：`--smart-swap` 注册、`change_allocator()` + `SWAP_DELAY=10` + `train_step_wrapper` 注入
-- [`mindspeed/core/memory/swap_attention/prefetch.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/swap_attention/prefetch.py) — `SwapTensor`（`launch_d2h` / `wait_d2h_finished` resize_(0) / `launch_h2d` / `wait_h2d_finished`）、`SwapPrefetch`（`pack_hook` / `unpack_hook` / `sync_d2h` / `h2d` / `no_swap_tensor` / `interval`）、`prefetch_register_pre_forward_hook` / `prefetch_register_post_backward_hook`
-- [`mindspeed/core/memory/swap_attention/adaptor.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/swap_attention/adaptor.py) — `AdaptiveRecomputeSwap.solve_prefetch_policy`（`num_prefetch` 按 `recompute_method`、`granular_module_allocation` vpp 取模分配、`noop_layers` 置空）、`setup_model_and_optimizer_wrapper`、`prefetch_hook`
-- [`mindspeed/core/memory/swap_attention/swap_attention_apply.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/swap_attention/swap_attention_apply.py) — `AdaptiveRecomputeSwapReg.register_recursive_apply_prefetch`（命中 `swap_modules` → `hook_swap_manager_forward`，`mlp` 命中 recompute_list → 重计算钩子）
-- [`mindspeed/core/memory/common.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/common.py) — `transformer_block_checkpointed_forward`（`swap_attention=True` 时 uniform/block 重计算路径跳过 checkpoint）、`linear_forward/backward_main_grad_wrapper`、`swap_out_by_size` 路由
-- [`mindspeed/core/memory/adaptive_memory/adaptive_memory_swap_manager.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/adaptive_memory/adaptive_memory_swap_manager.py) — `SwappableTensor` / `SwappableTensorStat`、`SwapManager`（`prefetch_pack`/`prefetch_unpack`/`sync_d2h`/`h2d` 预取换出；`oom_rescue_pack`/`swap_out_by_size`/`move_storage_out`/`move_storage_in`、`cap_tensor`/`bro_tensors` 共享 storage 处理）
-- [`mindspeed/core/memory/adaptive_memory/adaptive_memory_profiling.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/adaptive_memory/adaptive_memory_profiling.py) — `AdaptiveMemoryProfiling`（`construct_ctx_recursively` 模块树、`forward_pre_hook`/`forward_post_hook` 记 `MEMORY`/`AVG_TIME`、`is_layer0` 样板层、`RecomputeHook`）
-- [`mindspeed/core/memory/adaptive_memory/adaptive_memory_opt.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/memory/adaptive_memory/adaptive_memory_opt.py) — `AdaptiveMemoryOpt`（`is_policy_stable` 10 步稳定、`remove_swap_manager_hook_step`、求解器/应用/缓存编排）
-- [`mindspeed/arguments.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/arguments.py) — `--swap-attention` / `--swap-modules` / `--adaptive-memory-optimization` 参数定义
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [swap_attention.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/swap_attention.md)（supporting）
 
 ## Links
 

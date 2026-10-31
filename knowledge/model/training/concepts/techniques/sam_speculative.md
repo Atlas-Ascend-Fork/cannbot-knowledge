@@ -9,12 +9,12 @@ tags:
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - a3
 ---
@@ -34,15 +34,15 @@ SAM 是能高效解决字符串问题的数据结构，直观上是给定字符�
 - **结束位置 `endpos`**：对子串 T，`endpos(T)` 是 T 在 S 中所有结束位置的集合（如字符串 ABCBC 的 `endpos(BC)`={2,4}）。`endpos` 相同的子串归入同一**状态**（`endpos` 等价类），由此实现 O(|S|) 空间压缩。
 - **后缀链接 `link`**：状态 u 的 `link(u)` 指向 u 最长子串的**最大真后缀**所在状态。后缀链接构成**后缀链接树**，使 SAM 能以 O(|S|) 线性时间[**增量构造**](https://oi-wiki.org/string/sam/)——每加入一个新字符同时更新转移函数 `next`（自动机部分）与 `link`（结构部分），单次更新 O(1)。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image35.png" width="55%"></p>
-<p align="center"><sub>图：基于字符串 ABCBC 构建的 SAM——左 `next` 为状态转移函数（自动机部分），右 `link` 为后缀链接（结构部分）；每加一字符同时更新两者，单次 O(1)（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·1.1 SAM 原理）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image35.png" width="55%"></p>
+<p align="center"><sub>图：基于字符串 ABCBC 构建的 SAM——左 `next` 为状态转移函数（自动机部分），右 `link` 为后缀链接（结构部分）；每加一字符同时更新两者，单次 O(1)（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·1.1 SAM 原理）</sub></p>
 
 [**SAM-Decoding**](https://arxiv.org/abs/2411.10666) **把 SAM 用于投机解码**：投机被转化为后缀自动机中的后缀匹配。SAM-Decoding 提出静态 SAM（S-SAM，基于已有语料库冷启动）与动态 SAM（D-SAM，完全基于当前 prompt 在线构建）两种；RL Rollout 落地**采用纯动态 SAM**——为实现零迁移成本、不引入额外系统维护复杂度，不涉及额外语料库。每生成一个 token 并被主模型验证通过后立即更新 D-SAM：可通过现有 `next` 边转移则直接更新状态，否则新建节点 + 添加 `next`/`link` 边，使 D-SAM 始终包含最新序列；同时维护每个状态的 `min_endpos`（等价类字符串首次出现位置）。
 
 **草稿生成**：从当前序列最后一个 token 起，沿 `link` 边回溯，直至找到能通过 `next` 边转移到下一 token 的节点；据其 `min_endpos` 在当前序列中定位匹配后缀起点，提取后续连续 token 作为候选。单次查询最坏 O(|S|)、平均 O(1)。以 ABCBC 为例，当前末 token 是 C，沿 `link` 回溯到节点 BC，该节点能 `next` 转移即停止——其最长子串 BC 是出现过的**最长后缀**，把其后续序列作为 draft token。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image37.png" width="50%"></p>
-<p align="center"><sub>图：草稿生成示例——末 token C 沿 link 回溯到节点 BC，该节点找到 next 边（蓝色虚箭头）即停止回溯，取其后续序列作为本次 draft token（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·1.1 基于 SAM-Decoding 的草稿生成）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image37.png" width="50%"></p>
+<p align="center"><sub>图：草稿生成示例——末 token C 沿 link 回溯到节点 BC，该节点找到 next 边（蓝色虚箭头）即停止回溯，取其后续序列作为本次 draft token（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·1.1 基于 SAM-Decoding 的草稿生成）</sub></p>
 
 生成草稿后用主模型逐 token 验证：候选 token 符合主模型预测分布则保留，否则触发「拒绝」——从拒绝位置由主模型重新生成，这就是**拒绝采样**。拒绝采样确保最终输出与主模型直接生成完全一致，实现「无损加速」。
 
@@ -63,8 +63,8 @@ SAM 是能高效解决字符串问题的数据结构，直观上是给定字符�
 
 用 Qwen3-8B 在 Math500 上测 SAM-Decoding 接受率：投机 token 个数 3、temperature=0、repetition penalty=1、不设 top-k/top-p、TP=4、推理框架 [vLLM-Ascend](../frameworks/vllm_ascend.md)。此处接受率指 **mean acceptance length**（含 1 个 bonus token），SAM 为不带额外语料库的动态 SAM。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image38.png" width="55%"></p>
-<p align="center"><sub>图：Qwen3-8B / Math500 上 SAM-Decoding 接受率随序列长度变化——不用冷启动时接受率与序列长度正相关，长序列场景收益更佳（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·1.3 SAM 接受率）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image38.png" width="55%"></p>
+<p align="center"><sub>图：Qwen3-8B / Math500 上 SAM-Decoding 接受率随序列长度变化——不用冷启动时接受率与序列长度正相关，长序列场景收益更佳（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·1.3 SAM 接受率）</sub></p>
 
 不使用冷启动时**接受率与序列长度正相关**——动态 SAM 在序列变长后积累更多可匹配子串，因此长序列推理场景使用 SAM 收益不错。默认投机个数设为 3（加 1 个本就要解码的 bonus token 刚好 4 个），因为投机个数增加带来的接受率提升有边界效应，不建议设太大。
 
@@ -74,8 +74,8 @@ SAM 是能高效解决字符串问题的数据结构，直观上是给定字符�
 
 **1. 算子精度。** 普通解码与投机解码用不同算子：vLLM-Ascend 中普通解码走 `torch_npu._npu_paged_attention`（token-by-token），投机解码走 `torch_npu._npu_paged_attention_splitfuse`（为 draft tokens 生成 logprobs）。统计相同输入下两个算子对各 token 预测 logprobs 的差值：
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image39.png" width="62%"></p>
-<p align="center"><sub>图：普通解码算子 `_npu_paged_attention` 与投机解码算子 `_npu_paged_attention_splitfuse` 对相同输入的逐 token logprobs 差值——严格为 0，表明两算子无精度差异（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·2.1 算子精度）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image39.png" width="62%"></p>
+<p align="center"><sub>图：普通解码算子 `_npu_paged_attention` 与投机解码算子 `_npu_paged_attention_splitfuse` 对相同输入的逐 token logprobs 差值——严格为 0，表明两算子无精度差异（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·2.1 算子精度）</sub></p>
 
 **2. 下游评测。** Qwen3-32B 在 GSM8k / AIME2024 纯推理测评（pass@1，temperature=0.6、repetition penalty=1、不设 top-k/top-p）：
 
@@ -101,9 +101,9 @@ LLM 强化学习后训练需大量交互式采样收集/评估数据，这个过
 
 投机性能取决于接受率与投机算法本身额外耗时（draft 生成/验证、拒绝采样）。落地做了两大优化（代码在 `llm_rl/qwen3`）：
 
-**自适应开关（batch size 阈值）。** 在 `vllm_ascend/worker/model_runner_v1.py` 适配了关于 batch size 的自适应开关：开关开启时，仅当 vLLM engine 当前处理请求数 ≤ 阈值才生效投机。双重动机——(a) 减少额外耗时：当前验证 draft token 的 Page Attention 算子在 (batch size, sequence length) 增大时劣化严重，大 batch 长序列下验证额外耗时会超过投机收益，故只在小 batch 开启；(b) 提高接受率：动态 SAM 在 Rollout 初期后缀树体量小、接受率低，而 Rollout 后期同步 RL 框架存在生成长度不均（请求排队/抢占导致长输出请求调度延迟、少数请求主导执行阶段），以单步请求总数作 Rollout 进程指示物，**在长尾请求中显著加速**。对应 patch `0001-vllm_ascend-feature-bs_threshold_for_spec_decode.patch`（`NPUModelRunner` 用 flag `speculative_decoding_active` 控制开关），环境变量 `VLLM_SPECULATIVE_BATCH_SIZE_THRE` 解析为 `speculative_auto_bs_thre`，**代码默认 `-1`**——仅当 `speculative_auto_bs_thre > 0` 才按阈值裁剪（`num_reqs > 阈值` 关投机），不设该变量则自适应裁剪开关关闭、恒投机（上游使用文档示例口径写默认 32，与代码不一致）。
+**自适应开关（batch size 阈值）。** 在 `vllm_ascend/worker/model_runner_v1.py` 适配了关于 batch size 的自适应开关：开关开启时，仅当 vLLM engine 当前处理请求数 ≤ 阈值才生效投机。双重动机——(a) 减少额外耗时：当前验证 draft token 的 Page Attention 算子在 (batch size, sequence length) 增大时劣化严重，大 batch 长序列下验证额外耗时会超过投机收益，故只在小 batch 开启；(b) 提高接受率：动态 SAM 在 Rollout 初期后缀树体量小、接受率低，而 Rollout 后期同步 RL 框架存在生成长度不均（请求排队/抢占导致长输出请求调度延迟、少数请求主导执行阶段），以单步请求总数作 Rollout 进程指示物，**在长尾请求中显著加速**。对应 patch `0001-vllm_ascend-feature-bs_threshold_for_spec_decode.patch`（`NPUModelRunner` 用 flag `speculative_decoding_active` 控制开关），环境变量 `VLLM_SPECULATIVE_BATCH_SIZE_THRE` 解析为 `speculative_auto_bs_thre`，**代码默认 `-1`**——仅当 `speculative_auto_bs_thre > 0` 才按阈值裁剪（`num_reqs > 阈值` 关投机），不设该变量则仅关闭按 batch 阈值裁剪，不保证每个请求都投机（上游使用文档示例口径写默认 32，与代码不一致）。
 
-**拒绝采样加速。** vllm-ascend 原生投机实现性能较差，单 step 带来超 50ms 额外耗时、完全掩盖收益；改用纯 PyTorch **向量化（Vectorization）**优化，**把拒绝采样耗时减到原本约十分之一**。主要重写 `vllm_ascend/sample/rejection_sampler.py` 三个函数：`expand_batch_to_tokens`（把 temperature/top-k/top-p 从「每请求一值」展开成「每 draft token 一值」）、`sample_recovered_tokens_pytorch`（为被否决草稿位置即时生成 recovered token）、`rejection_random_sample_pytorch`（按接受-拒绝规则逐位比对、全接受时追加 bonus token）。核心是去掉所有 Python 循环、消除循环内重复张量创建（原生实现含嵌套 for 与反复 `.clone()`/`torch.full()`，无法利用 NPU 并行）。该重写以 vllm_ascend 侧 patch 形式落在 `llm_rl/qwen3/patches/vllm_ascend/`（重写 rejection-sampler；patch 编号随上游推进而变——d17909e 该目录收录 0001–0006，master 上为 0009），后续可用 Triton 进一步优化。
+**拒绝采样加速。** vllm-ascend 原生投机实现性能较差，单 step 带来超 50ms 额外耗时、完全掩盖收益；改用纯 PyTorch **向量化（Vectorization）**优化，**把拒绝采样耗时减到原本约十分之一**。主要重写 `vllm_ascend/sample/rejection_sampler.py` 三个函数：`expand_batch_to_tokens`（把 temperature/top-k/top-p 从「每请求一值」展开成「每 draft token 一值」）、`sample_recovered_tokens_pytorch`（为被否决草稿位置即时生成 recovered token）、`rejection_random_sample_pytorch`（按接受-拒绝规则逐位比对、全接受时追加 bonus token）。核心是去掉所有 Python 循环、消除循环内重复张量创建（原生实现含嵌套 for 与反复 `.clone()`/`torch.full()`，无法利用 NPU 并行）。这是优化文档记录的历史向量化方案；当前 recipe 新增了 tree attention、`AscendTreeRejectionSampler` 和 History Tree/Dynamic RL 补丁，但这些不等于这里描述的 SAM 通用 `rejection_sampler.py` 三函数向量化重写；清单中仍未提供原文所指的独立重写补丁，不能把历史观测归给当前 tree sampler。复现这项约十分之一的观测还需要提供真正包含重写的固定提交及环境证据。
 
 实现上，`SAM` 类（`add_tokens(tokens)` 状态更新 / `gen_draft(index, start_token)` 序列预测）是动态自动机本体，`SAMDecodingProposer` 类（`spec_decode/sam_proposer.py`，文档简称 `SAMProposer`）是 `vllm-ascend` 后端调用接口——其暴露给 `NPUModelRunner` 投机入口的方法是 `generate_token_ids(...)`，内部再循环调 `propose(...)` 生成草稿（文档措辞称经 `propose_draft_token_ids` 调用，代码实名为 `generate_token_ids`）；vLLM 侧由 `0002-vllm-feature-enable_sam_decoding.patch` 在投机配置中支持 `method=sam`。
 
@@ -131,8 +131,8 @@ DAPO 长序列 RL 场景下，Qwen3-32B dense 与 Qwen3-235B-A22B MoE 两个代�
 
 **Rollout 长尾分析**：特别统计 SAM 在 Rollout 长尾阶段（当前请求数在投机阈值以下）的表现，性能达非投机 **1.35X**；若后续优化算子支持更大投机阈值，收益将更明显。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image42.png" width="50%"></p>
-<p align="center"><sub>图：SAM 投机在 Rollout 长尾阶段（紫色部分，请求数低于投机阈值）的加速——性能达非投机 1.35X（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·3.2.4 Rollout 长尾分析）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image42.png" width="50%"></p>
+<p align="center"><sub>图：SAM 投机在 Rollout 长尾阶段（紫色部分，请求数低于投机阈值）的加速——性能达非投机 1.35X（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md">SAM 投机推理文档</a>·3.2.4 Rollout 长尾分析）</sub></p>
 
 叠加 [npugraph_ex](../../../inference/concepts/techniques/npu_graph_mode.md) 入图的收益：Qwen3-32B GRPO 16 卡 2K+34K `generate_sequences` 首步推理 2444s（关）→2106s（开 SAM，+13%）→1621s（SAM+npugraph_ex，+33%）；DAPO 同设 4562s→4109s（+10%）→3261s（+29%）。
 
@@ -144,7 +144,9 @@ veRL Hydra 配置（Qwen3-32B 样例默认开启 `method=sam` + `num_speculative
 |---|---|---|
 | `actor_rollout_ref.rollout.engine_kwargs.vllm.speculative_config.method` | veRL Hydra 命令行参数 | 投机方法（如 `sam`），必须配置 |
 | `actor_rollout_ref.rollout.engine_kwargs.vllm.speculative_config.num_speculative_tokens` | veRL Hydra 命令行参数 | 投机预测 token 数，必须配置 |
-| `VLLM_SPECULATIVE_BATCH_SIZE_THRE` | 环境变量 | batch_size 自适应裁剪阈值，可选；代码默认 `-1`（不设则不裁剪、恒投机），仅 `>0` 生效（文档示例口径称默认 32） |
+| `VLLM_SPECULATIVE_BATCH_SIZE_THRE` | 环境变量 | batch_size 自适应裁剪阈值，可选；代码默认 `-1`（不设则不按 batch 阈值裁剪；请求仍可因不支持的采样配置被跳过），仅 `>0` 生效（文档示例口径称默认 32） |
+
+`SAMDecodingProposer.generate_token_ids` 对位于 spec_decode_unsupported_reqs 的请求返回空草稿，代码说明包括 top-p、top-k 等不支持的采样配置。因此 method/token数/阈值配置满足仍不保证每个请求使用 SAM。
 
 关闭 SAM 时移除启动脚本（`internal/train_grpo_qwen3_32b_32die_true_weight.sh`）中这两个 Hydra 配置即可：
 
@@ -159,12 +161,8 @@ python3 -m verl.trainer.main_ppo --config-path="${CONFIG_DIR}" \
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/sam_decoding.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/sam_decoding.md)（SAM 原理 §1.1 / 与 EAGLE-3·MTP 比较 §1.2 / 接受率 §1.3 / RL 落地意义 §1.4 / 算子精度 §2.1 / 下游评测 §2.2 / 端到端 §2.3 / 性能优化（自适应开关·拒绝采样向量化）§3.1 / Qwen3-32B·235B·客户场景·长尾 §3.2）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/features/sam_speculative_decoding.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/features/sam_speculative_decoding.md)（使用说明：method/num_speculative_tokens/VLLM_SPECULATIVE_BATCH_SIZE_THRE；实现方案：`SAM`/`SAMDecodingProposer` 类（文档简称 `SAMProposer`）、D-SAM、拒绝采样加速、batch_size 自适应开关）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/qwen3/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/qwen3/README.md)（Qwen3-32B/235B GRPO·DAPO benchmark；patch 清单 `0001/0002-...enable_sam_decoding`、`0001-vllm_ascend-feature-bs_threshold_for_spec_decode.patch`、`0002-vllm_ascend-feature-enable_sam_decoding.patch`、`spec_decode/sam_proposer.py`；启动脚本 `internal/train_{grpo,dapo}_qwen3_32b_32die_true_weight.sh`）
-- 外部参考：[SAM-Decoding 论文 arXiv:2411.10666](https://arxiv.org/abs/2411.10666)、[Seer arXiv:2511.14617](https://arxiv.org/abs/2511.14617)、[OI-Wiki 后缀自动机](https://oi-wiki.org/string/sam/)
-- [vllm-ascend](https://github.com/vllm-project/vllm-ascend) — 上游推理引擎仓（SAM 投机经 patch 适配 vLLM/vLLM-Ascend）
-- [verl](https://github.com/volcengine/verl) — 上游 RL 框架仓（Hydra `speculative_config` 经 vLLM rollout 后端透传）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [sam_decoding.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/sam_decoding.md)（supporting）
 
 ## Links
 

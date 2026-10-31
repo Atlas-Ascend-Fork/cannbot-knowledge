@@ -10,12 +10,16 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-next/qwen3_next_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage6/0001-support-gdn-cp.patch
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - a3
 ---
@@ -24,7 +28,7 @@ platforms:
 
 ## 适用范围
 
-本指南只覆盖 Atlas A3 上基于 SGLang 的 Qwen3-Next 推理实践。模型架构的跨平台定义见 [Qwen3-Next](../../concepts/models/qwen3_next.md)；其它平台不能直接复用下文命令、并行度、融合算子和性能数据。
+本指南只覆盖 Atlas A3 上固定 Qwen3-Next 推理实践：启用 GDN 融合算子需 CANN 8.5.0，配套 torch_npu 7.3.0、PyTorch 2.6.0、SGLang v0.5.6 和 sgl-kernel-npu 2026.03.01，并应用 README 对应各阶段补丁及 GDN-CP kernel 补丁。下文环境变量不能直接用于任意 SGLang/软件栈。模型架构的跨平台定义见 [Qwen3-Next](../../concepts/models/qwen3_next.md)；其它平台不能直接复用下文命令、并行度、融合算子和性能数据。
 
 cann-recipes-infer 在 Atlas A3 上基于 SGLang 框架完成 Qwen3-Next 的推理优化实践，重点介绍针对混合注意力架构设计的并行策略、高性能融合算子、MTP 投机推理及 W8A8C8 量化方案，以实现长序列场景下的高性能表现。
 
@@ -51,7 +55,7 @@ flowchart TD
 
 - **Gated Attention**：Softmax Attention + Gate，承担长程精确检索，计算复杂度 O(S²)，Head 数 = 16 限制纯 TP 上限 TP16。
 - **Gated DeltaNet（GDN）**：线性注意力 + Conv1d + 状态递推，沿 Sequence 做卷积，默认**不适合 Sequence 切分**，故默认走纯 TP；但设 `ENABLE_CONTEXT_PARALLEL_GDN=1` 后可走 CP + TP 混合并行（GDN-CP 路径见下文 Prefill 并行策略）。
-- **Linear Attention State**：GDN 维护 `conv_state` 与 `ssm_state` 形式的 `mamba_cache`，由 `mamba_cache_indices` 索引，每请求独占一槽。MTP 场景下需根据 `num_accepted_tokens` 选择性回写 state，保证下一轮推理状态正确。
+- **Linear Attention State**：GDN 维护 `conv_state` 与 `ssm_state` 形式的 `mamba_cache`，由 `mamba_cache_indices` 索引，每请求独占一槽。MTP 验证时保存候选中间状态，接受后按前缀管理持久状态；num_accepted_tokens 在自研 kernel 中选择上一轮初始槽位，不能把它当作本轮写回过滤器。
 
 ### 关键规格约束（来自 README）
 
@@ -60,7 +64,7 @@ flowchart TD
 - CP 仅 PD 分离可用，`cp_size < tp_size`，P/D 卡数需相同，CP 复用 DP 通信域不可与 DP 同开。
 - `chunked-prefill-size ≤ 71680`（Triton 算子规格限制）。
 - GDN TP 切头上限 `tp_size ≤ 32`。
-- `max-mamba-cache-size` 默认 2 时 `mamba_cache_indices=0` 会触发精度 bug，建议设为 512。
+- 当前 README 明确记录 mamba_cache_indices=0 的精度缺陷：增大 max-mamba-cache-size（如512）只降低循环命中0的概率并增加资源开销，不是根因修复；精度验收须覆盖槽位循环。
 
 ## Known Optimizations
 
@@ -70,8 +74,8 @@ Atlas A3 推荐部署策略：Prefill 使用 M 个节点部署，Decode 使用 N
 
 PD 部署总览如下图（源图原貌）：
 
-![Qwen3-Next PD 部署总览](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/qwen3-next/figures/pd_overview.jpg)
-*来源：[`docs/models/qwen3-next/figures/pd_overview.jpg`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-next/figures/pd_overview.jpg)（cann-recipes-infer @ 2f82d10）*
+![Qwen3-Next PD 部署总览](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/figures/pd_overview.jpg)
+*来源：[`docs/integration/sglang/qwen3-next/figures/pd_overview.jpg`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/figures/pd_overview.jpg)（cann-recipes-infer @ 944d2d3）*
 
 #### Prefill 并行策略
 
@@ -82,7 +86,7 @@ Qwen3-Next 引入的 Gated Attention 结构显著增强了长序列上下文的�
 针对 Gated Attention 与 GDN 模块计算特性的差异，Qwen3-Next 在 prefill 阶段采取分层异构的并行策略：
 
 1. **Gated Attention 层采用 CP + TP 混合并行**：Gated Attention 模块计算复杂度接近 O(S²)。在此处引入 Context Parallel (CP) 配合 Tensor Parallel (TP)。CP 将 Sequence 维度切分到不同 Rank，显著降低了单卡的激活值内存占用。
-2. **GDN 层默认采用 TP 并行**：GDN 模块涉及沿 Sequence 的卷积操作，不适合对 Sequence 轴的切分，且 num_head 足够 TP 切分，因此默认使用纯 TP 并行。设 `ENABLE_CONTEXT_PARALLEL_GDN=1` 后，GDN 可走 CP + TP 混合并行（GDN 不再强制 full TP）：CP 域内按 `cp_size` 把每条序列切成若干段，相邻 CP rank 间通过 P2P（isend/recv）交换 Conv1d 的 overlap 窗口以维持卷积因果性，并在 CP 域末 rank 广播 `conv_state`，从而在长序列下叠加 CP 减小 GDN 的激活值/TTFT 压力。CP+TP 的具体切分细节详见 stage6 patch（`patches/stage6/0001-support-gdn-cp.patch`）。
+2. **GDN 层默认采用 TP 并行**：GDN 模块涉及沿 Sequence 的卷积操作，不适合对 Sequence 轴的切分，且 num_head 足够 TP 切分，因此默认使用纯 TP 并行。设 `ENABLE_CONTEXT_PARALLEL_GDN=1` 后，GDN 可走 CP + TP 混合并行（GDN 不再强制 full TP）：CP 域内按 `cp_size` 把每条序列切成若干段，相邻 CP rank 间通过 P2P（isend/recv）交换 Conv1d 的 overlap 窗口以维持卷积因果性，并在 CP 域末 rank 广播 `conv_state`，从而在长序列下叠加 CP 减小 GDN 的激活值/TTFT 压力。该固定 stage6 的 conv_state 与递推状态 swap_kv 处理明确注明会破坏 chunked prefill 并引入通信开销，因此不能与 chunked prefill 直接组合；上文 71680 上限不代表 GDN-CP 对 chunked prefill 兼容。CP+TP 的具体切分细节详见 stage6 patch（`patches/stage6/0001-support-gdn-cp.patch`）。
 
 ```mermaid
 graph TD
@@ -97,8 +101,8 @@ graph TD
 
 源图原貌如下，结构示意见上方 mermaid：
 
-![Qwen3-Next Prefill 分层异构并行](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/qwen3-next/figures/prefill_parallel.jpg)
-*来源：[`docs/models/qwen3-next/figures/prefill_parallel.jpg`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-next/figures/prefill_parallel.jpg)（cann-recipes-infer @ 2f82d10）*
+![Qwen3-Next Prefill 分层异构并行](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/figures/prefill_parallel.jpg)
+*来源：[`docs/integration/sglang/qwen3-next/figures/prefill_parallel.jpg`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/figures/prefill_parallel.jpg)（cann-recipes-infer @ 944d2d3）*
 
 **Gated Attention 并行策略**：Gated Attention 使用 mCP × nTP 并行，CP 复用 SGLang 框架的 DP 通信域。以 m=4，n=2，64K 输入推理为例，每个 CP rank 处理 64K/cp_size=16K 个 token，每个 CP rank 内的 qkv_proj 基于 TP2 计算，在计算完 kv 之后，对所有 CP 域的 kv token 进行 AllGather，得到完整的 kv 结果。每个 rank 拿到 64K/cp_size 的 q token 和完整的 kv token，进行后续的 Attention 计算。完成 Attention 计算之后，将输出在 TP 组内进行 Reduce-Scatter，得到 MoE 输入需要的 Scattered 排布的数据。
 
@@ -160,7 +164,7 @@ SGLang 启用 `--speculative-algorithm NEXTN`，`speculative-num-steps 1`、`spe
 
 `--cuda-graph-bs` 开启图模式（与 MTP 互斥）。
 
-## Future Plan
+## 当前验证边界
 
 - `conv1d_update` 融合算子 AscendC 支持
 - **MegaKernel**：Decode 阶段仍然存在较多融合算子并行空间，可通过 PyPTO 实现更大范围的 MegaKernel，完成多核 MPMD 并行调度，提升计算效率
@@ -168,9 +172,10 @@ SGLang 启用 `--speculative-algorithm NEXTN`，`speculative-num-steps 1`、`spe
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/qwen3-next/qwen3_next_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-next/qwen3_next_optimization.md)（主优化文档，"概述" / "Highlights" / "并行策略" / "MTP" / "融合 Kernel" / "量化策略" / "Future Plan" 各章节）、`models/qwen3-next/README.md`（规格约束和使能开关）、`models/qwen3-next/patches/stage{1..5}/*.patch`（SGLang 适配）、`models/qwen3-next/ops/gated_delta_net/*`（AscendC 融合算子源码）、`models/qwen3-next/{set_env,infer,infer_prefill,infer_decode}.sh`
-- GDN-CP 支持（@2c45117）：[`models/qwen3-next/patches/stage6/0001-support-gdn-cp.patch`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen3-next/patches/stage6/0001-support-gdn-cp.patch)（`use_full_tp = get_context_model_parallel_world_size() > 1 and not get_bool_env_var("ENABLE_CONTEXT_PARALLEL_GDN", "false")`；`enable_context_parallel_gdn` 路径：`get_split_sizes` 按 cp_rank 切序列 + overlap 窗口 P2P isend/recv + `conv_state` 末 rank 广播）、[`models/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch)（sgl_kernel_npu 侧 GDN-CP kernel 适配）、[`models/qwen3-next/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/qwen3-next/README.md)「序列并行」条（`--cp-size` 替 `--dp-size` 激活、`CP_USE_ZIGZAG=1` CP 负载均衡、`ENABLE_CONTEXT_PARALLEL_GDN=1` 开 GDN CP+TP 混合）。窗口 commit 2c45117 "Support Context Parallel execution of GatedDeltaNet attention in Qwen3-Next"（stage6 patch）。
-- Benchmark（Atlas A3 16die，A8W8C8，dp_size=8，tp_size=2，ep_size=16，256K 输入，16 prompts）：**纯模型 decode 时延 20.6 ms**。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/README.md)（primary）
+- [qwen3_next_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/integration/sglang/qwen3-next/qwen3_next_optimization.md)（supporting）
+- [0001-support-gdn-cp.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage6/0001-support-gdn-cp.patch)（implementation）
+- [sgl_kernel_npu_support_gdn_cp.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/sgl_kernel_npu_support_gdn_cp.patch)（implementation）
 
 ## Links
 

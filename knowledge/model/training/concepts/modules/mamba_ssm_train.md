@@ -6,16 +6,19 @@ tags:
 - task.design
 - topic.model_architecture
 - topic.parallelism
-status: stable
+status: draft
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/README.md
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/features/mcore/mamba_context_parallel.md
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/docs/zh/pytorch/features/mcore/mamba_context_parallel.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/core/ssm/mamba_mixer.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/models/ssm/state_space_duality.py
+  role: implementation
 created_at: '2026-06-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
-platforms:
-- agnostic
+updated_at: '2026-10-29T15:24:41Z'
+platforms: []
 ---
 
 # Mamba2 SSM 训练（Mamba Mixer / 状态空间对偶 SSD / SSM 上下文并行）
@@ -26,30 +29,32 @@ MindSpeed-LLM 把 Mamba2 选择性状态空间模型搬到昇腾 NPU 训练侧�
 
 Patch 由 `MambaModel` feature 装配（`features_manager/models/mamba.py`）：`mamba_mixer_init_wrapper` 注入 `mamba_chunk_size`/`mamba_d_conv`/`mamba_expand`/`mamba_d_ssm` 并置 `use_mem_eff_path=False`，`mamba_mixer_forward`/`mamba_block_forward` 替换前向，`Mamba2RMSNorm` 顶替上游 `mamba_ssm` 的门控 RMSNorm；上游 Triton 的 `mamba_chunk_scan_combined` 等以 `create_dummy=True` 占位（NPU 不走 Triton）。层结构与并行类型由 `mamba_spec.layer_spec` 注册。
 
+本页包含 torch_npu/HCCL 专属实现，不能标为硬件无关。固定来源尚未将这些 Mamba 路径绑定到明确 SoC 支持范围，保留 draft/空平台；SSD 的可复用数学不作为硬件支持证明。
+
 ## Mamba Mixer 结构（训练前向）
 
 `mamba_mixer_forward` 处理 `(L, B, D)` 形状的 hidden state，一次前向走完：
 
 - `A = -exp(A_log.float())`：`A_log` 是每 head 一个标量的可训练参数，`A` 是 SSM 的（负）连续时间转移率，恒为负保证状态衰减；
-- `in_proj`（`ColumnParallelLinear`）产出 `xz`，按 `[d_mlp, d_mlp, d_inner_local, d_inner_local + 2·ngroups_local·d_state, nheads_local]` 切成 `z0, x0, z, xBC, dt`。`d_mlp` 由 `(xz_dim − 2·d_ssm_local − 2·ngroups_local·d_state − nheads_local) // 2` 推出：当 `--mamba-d-ssm` 设得比 `d_inner` 小时，多出的维度走一条 **门控 MLP 旁路**（`z0, x0`），SSM 只作用在 `d_ssm` 维上；缺省 `mamba_d_ssm=None` 时 `d_ssm_local = d_inner_local`、`d_mlp=0`，无旁路；
+- `in_proj`（`ColumnParallelLinear`）产出 `xz`，按 `[d_mlp, d_mlp, d_inner_local, d_inner_local + 2·ngroups_local·d_state, nheads_local]` 切成 `z0, x0, z, xBC, dt`。`d_mlp` 由 `(xz_dim − 2·d_ssm_local − 2·ngroups_local·d_state − nheads_local) // 2` 推出：设计意图是 `mamba-d-ssm < d_inner` 时给多出维度一条门控 MLP 旁路，但固定版本按 d_ssm_local 计算 d_mlp 后仍按 d_inner_local 切 z/xBC，切分长度总和会超过 xz 末维，torch.split 无法完成；该配置尚不能正常使用；缺省 `mamba_d_ssm=None` 时 `d_ssm_local = d_inner_local`、`d_mlp=0`，无旁路；
 - 因果短卷积：`xBC` 转成 `(B, D, L)` 过 `conv1d`（深度可分离、`groups = 通道数`、`kernel = mamba_d_conv`，脚本取 4），截断到原长后接 `SiLU`，再切回 `x, B, C`（`x` 是 SSM 输入，`B/C` 是输入/输出投影矩阵，按 `ngroups_local` 分组，GQA 式被多个 head 共享）；
 - 选择性 SSM 扫描：`StateSpaceProcessor.process` 吃 `x, dt, A, B, C, D` 出 `y`（SSD，下一节）；
-- 门控归一化：`Mamba2RMSNorm(y, z=z)`——`norm_before_gate=True` 即 `RMSNorm(y) · SiLU(z)`，全程 FP32（`use_fused_rmsnorm` 时调 `torch_npu.npu_rms_norm`，否则手写 `rstd = 1/√(mean(x²)+eps)`），支持 `group_size` 分组归一；
+- 门控归一化：`Mamba2RMSNorm(y, z=z)`——`norm_before_gate=True` 即 `RMSNorm(y) · SiLU(z)`，内部归一化与门控使用 FP32，输出固定转 BF16（`use_fused_rmsnorm` 时调 `torch_npu.npu_rms_norm`，否则手写 `rstd = 1/√(mean(x²)+eps)`），支持 `group_size` 分组归一；
 - 门控 MLP 旁路（`d_mlp>0`）：`y = cat([SiLU(z0)·x0, y])`，把不过 SSM 的维度以门控 MLP 形式拼回；
 - `out_proj`（`RowParallelLinear`）投回 hidden。
 
-推理 `inference_params` 存在时走 `step` 逐步递归（带 `conv_state`/`ssm_state` 缓存原地更新），与训练共享同一份 `A_log`/`conv1d`/`out_proj` 权重；训练态走上述完整 chunk 扫描、不经 `step` 分支。
+推理带 `inference_params` 时先拒绝 sequence_parallel；offset=0 准备缓存后仍走完整扫描，仅 `seqlen_offset > 0` 时走 `step` 逐步递归（带 `conv_state`/`ssm_state` 缓存原地更新），与训练共享同一份 `A_log`/`conv1d`/`out_proj` 权重；训练态走上述完整 chunk 扫描、不经 `step` 分支。
 
 ## 状态空间对偶 SSD：把递推写成 chunk 矩阵
 
-SSM 的朴素形式是沿序列的线性递推 `state_t = exp(A·dt_t)·state_{t−1} + B_t·x_t`、`y_t = C_t·state_t`，逐 token 串行、无法训练并行。SSD 的做法是沿序列切成 `chunk_size`（`--mamba-chunk-size`，脚本取 128/256）的块：**块内**用矩阵乘并行求解、**块间**沿状态递推，把 `O(L)` 串行压成 `O(L/chunk)` 个可并行块。`StateSpaceProcessor.process`（`cp_size==1` 分支）的算子链：
+SSM 的朴素形式是沿序列的线性递推 `state_t = exp(A·dt_t)·state_{t−1} + dt_t·B_t·x_t`、`y_t = C_t·state_t`，逐 token 串行、无法训练并行。SSD 的做法是沿序列切成 `chunk_size`（`--mamba-chunk-size`，脚本取 128/256）的块：**块内**用矩阵乘并行求解、**块间**沿状态递推，把 `O(L)` 串行压成 `O(L/chunk)` 个可并行块。`StateSpaceProcessor.process`（`cp_size==1` 分支）的算子链：
 
 - 时间步处理：`dt ← softplus(dt + dt_bias)`，再 `clamp` 到 `[dt_min, dt_max]`（`dt_min=0.001`/`dt_max=0.1`）；
-- 离散化：`x ← x·dt`、`A ← A·dt`，把连续时间参数离散到当前步长；
+- 离散化：记原始输入为 x_raw，`x ← x_raw·dt`、`A ← A·dt`，把连续时间参数离散到当前步长；
 - chunk + pad：补齐到 `chunk_size` 整数倍后 `rearrange("b (c l) ... -> b c l ...")`；B/C 先 `repeat` 把 `ngroups` 展成 `nheads`（`h_ratio = nheads_local // ngroups_local`）；
 - **对角块（块内）** `_compute_diagonal_blocks`：`A_cum = cumsum(A)`，`L = exp(segsum(A))` 是块内逐对位置的累积衰减下三角矩阵，`Y_diag = bmm((C·Bᵀ) ∘ L, x)`——块内每个输出只「看」本块内的历史，写成一次批量矩阵乘；同时算每块结束态 `states = Σ B·decay·x`；
 - **块间块（递推）** `_compute_inter_chunk_blocks`：把 `initial_states` 拼到块序列前，`decay_chunk = exp(segsum(pad(A_cum[...,-1])))` 是块到块的衰减，`new_states = einsum("bhzc,bchpn->bzhpn", decay_chunk, states)` 沿 chunk 维做状态递推，末块得 `final_state`；`Y_off = (C·states) · exp(A_cum)` 把每块的入口状态贡献加回；
-- 合成：`y = Y_diag + Y_off + D·x`，去 pad 回原长。
+- 合成：`y = Y_diag + Y_off + D·x_raw`，残差在离散化前由原始输入单独计算，不乘 dt，去 pad 回原长。
 
 `_segmented_sum` 是数值稳定的分段和：把向量 `repeat` 成 `(T,T)`、`tril(diag=-1)` 掩 0、沿倒数第二维 `cumsum`、再 `tril(diag=0)` 把上三角填 `-inf`，使 `exp` 后严格下三角、对角为 1。这套块内矩阵 + 块间递推与 [gated-deltanet-train](gated_deltanet_train.md) 的 chunk gated delta rule 是同一类「线性递推 → chunk 化训练并行」思想，区别在 Mamba 是标量衰减的对角 SSM（`A` 每 head 一标量）、GDN 是带 WY/UT 变换的 delta rule。前反向由 PyTorch autograd 在这些 `bmm`/`einsum`/`cumsum` 上自动求导（CP 路径下的状态传递另用自定义 `Function`，见下）。
 
@@ -97,12 +102,10 @@ flowchart LR
 
 ## Evidence
 
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/core/ssm/mamba_mixer.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/ssm/mamba_mixer.py)（`mamba_mixer_forward`：`A=-exp(A_log)`、`in_proj` 切 `z0/x0/z/xBC/dt`、`d_mlp` 门控 MLP 旁路、`conv1d`+SiLU、`StateSpaceProcessor` 调用、门控 MLP 拼回；`mamba_mixer_init_wrapper` 注入 chunk/d_conv/expand/d_ssm + `use_mem_eff_path=False`；`Mamba2RMSNorm` 的 `norm_before_gate` FP32 实现与 `npu_rms_norm` 融合分支）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/tasks/models/ssm/state_space_duality.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/ssm/state_space_duality.py)（`StateSpaceProcessor.process` 的 `cp_size==1` SSD 链：`_process_time_step` softplus+clamp、`_chunk_and_pad` 离散化、`_compute_diagonal_blocks` 块内 `Y_diag`、`_compute_inter_chunk_blocks` 块间状态递推、`_segmented_sum` 数值稳定分段和；`cp_size>1` 的 einsum 状态拼接路径）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/tasks/models/ssm/state_space_context_parallel.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/ssm/state_space_context_parallel.py)（`SequenceParallelConvFunction` 因果卷积尾巴 AllGather + 反向 ReduceScatter；`SSDAllgatherOverlapFn` 段末态 `local_decay`/`local_hidden_state` AllGather 与 `Y_diag` 计算掩盖、`cumprod` 跨 rank 入口初态、`segsum` 反向）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/core/ssm/mamba_block.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/ssm/mamba_block.py)（`mamba_block_forward` 逐层前向 + `make_viewless_tensor`；`recompute_granularity=full` 的 `uniform`/`block` 重计算）、[`mindspeed_llm/tasks/models/spec/mamba_spec.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/spec/mamba_spec.py)（`layer_spec`：`MambaMixer` in/out_proj 列/行并行、混合栈 mamba/attention/mlp 三类层）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`mindspeed_llm/features_manager/models/mamba.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/models/mamba.py)（`MambaModel`：`--mamba-d-ssm/-chunk-size/-d-conv/-expand` 注册、patch `MambaMixer`/`MambaStack`/`RMSNorm`、Triton 算子 `create_dummy`）、[`mindspeed_llm/features_manager/context_parallel/mamba_context_parallel.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/features_manager/context_parallel/mamba_context_parallel.py)（`mamba_cp_algo` 选项与 `validate_args`：seq/head 整除校验、强制 FA）、[`mindspeed_llm/core/context_parallel/get_batch_utils.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/core/context_parallel/get_batch_utils.py)（`mamba_cp_algo` 走 ulysses 式顺序切分）
-- [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM) — [`docs/zh/pytorch/features/mcore/mamba_context_parallel.md`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/features/mcore/mamba_context_parallel.md)（Mamba-CP 背景/问题/方案：状态时间依赖、AllGather local_decay/local_state 并发状态传递、与 TP/SP 正交、CP vs 重计算显存与性能对比）、[`examples/mcore/mamba2/pretrain_mamba2_2.7b_4k_ptd.sh`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/examples/mcore/mamba2/pretrain_mamba2_2.7b_4k_ptd.sh) / [`pretrain_mamba2_8b_4k_ptd.sh`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/examples/mcore/mamba2/pretrain_mamba2_8b_4k_ptd.sh) / [`pretrain_mamba2_hybrid_8b_4k_ptd.sh`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/examples/mcore/mamba2/pretrain_mamba2_hybrid_8b_4k_ptd.sh)（2.7B/8B/hybrid 规格、`--mamba-*` flag、混合比、重计算配置）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/README.md)（primary）
+- [mamba_context_parallel.md](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/docs/zh/pytorch/features/mcore/mamba_context_parallel.md)（supporting）
+- [mamba_mixer.py](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/core/ssm/mamba_mixer.py)（implementation）
+- [state_space_duality.py](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/models/ssm/state_space_duality.py)（implementation）
 
 ## Links
 

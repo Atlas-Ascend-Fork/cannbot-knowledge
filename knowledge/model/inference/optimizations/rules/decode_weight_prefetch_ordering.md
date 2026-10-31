@@ -7,18 +7,12 @@ tags:
 - topic.attention
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/docs/models/longcat-flash/longcat_flash_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/models/modeling_longcat_flash.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/README.md
-  role: constraint
-- resource: https://github.com/vllm-project/vllm-ascend/blob/78777237a9ae95af88ce6068b000635f96aafe25/vllm_ascend/ops/weight_prefetch.py
-  role: supporting
-- resource: https://github.com/vllm-project/vllm-ascend/pull/3203
-  role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a3
 scope:
@@ -38,7 +32,7 @@ scope:
 
 ## 适用场景
 
-后续 matmul 类算子暴露权重搬运等待，而前一段计算存在可利用的带宽窗口时，考虑[权重预取](../../concepts/techniques/weight_prefetch.md)。本卡已核验的适用范围为 Atlas A3 上 LongCat-Flash 的 Decode GE 图模式实践；Scope 和平台声明覆盖该主结论。
+后续 matmul 类算子暴露权重搬运等待，而前一段计算存在可利用的带宽窗口时，考虑[权重预取](../../concepts/techniques/weight_prefetch.md)。本卡来源覆盖 Atlas A3 LongCat-Flash Decode；当前实现另有 npugraph_ex 专用预取流；Scope 和平台声明覆盖该主结论。
 
 ## 问题信号
 
@@ -76,7 +70,7 @@ scope:
 
 ## 适用边界
 
-当前稳定证据限定上述 A3 LongCat 实现；平台待核验的 vLLM 案例不因引用本规则而获得 A3 或跨平台适用性。规则的 Scope 不代替案例的具体前提，不声明 Prefill 或所有 batch 均适用，也不把缺失条件写成 `any`。
+当前源码与来源报告限定上述 A3 LongCat 实现；平台待核验的 vLLM 案例不因引用本规则而获得 A3 或跨平台适用性。规则的 Scope 不代替案例的具体前提，不声明 Prefill 或所有 batch 均适用，也不把缺失条件写成 `any`。
 
 ## 相关经验
 
@@ -86,6 +80,5 @@ scope:
 
 ## Evidence
 
-- [LongCat 优化文档](https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/docs/models/longcat-flash/longcat_flash_optimization.md)：固定 LongCat 提交的“权重预取”章节描述相邻算子的搬运压力、预取空间取舍和开关；该实践明确以 Atlas A3 为范围。
-- [LongCat 模型源码](https://gitcode.com/cann/cann-recipes-infer/blob/0640521a817001f560fc30617acad41af585dfe1/models/longcat-flash/models/modeling_longcat_flash.py)：同一提交的 `LongcatFlashMLP.forward/forward_w8a8`、`LongcatFlashDecoderLayer.multi_stream_forward` 含预取调用与权重/依赖张量。只做静态核对，没有执行或独立复测。
-- vLLM 的独立固定来源、门控及证据缺口见对应案例；仅以机制补充引用，不将其平台、阶段或默认值与 LongCat 混用。
+- [longcat_flash_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/longcat_flash/longcat_flash_optimization.md)（primary）
+- [modeling_longcat_flash.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py)（implementation）

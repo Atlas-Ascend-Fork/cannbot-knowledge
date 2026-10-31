@@ -12,10 +12,10 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/226
   role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - agnostic
 ---
@@ -50,7 +50,7 @@ platforms:
 每步成本、每等效 token 时延以及平均接受数的定义统一见 [MTP 计时规则](../rules/mtp_decode_timing_two_metric_split.md)。本案例只保留 DSA 模块分析；比较 MTP on/off 时应采用同一计时范围和接受数口径。
 
 ## 参考实现及其约束
-- 收益分析参考 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md)（DSA，64K/4batch 这一组分析，非独立端到端复测）；度量口径参考同仓 DeepSeek-R1 / DSV3.2 的 MTP runner。搬运/计算量为 doc 披露的模型学分析量，不外推「越大越…」单调律。
+- 收益分析参考 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md)（DSA，64K/4batch 这一组分析，非独立端到端复测）；度量口径参考当前统一 Executor 的 offline 统计。搬运/计算量为 doc 披露的模型学分析量，不外推「越大越…」单调律。
 
 ## 相关经验
 - [DSA IndexCache 跨层 top-k 复用观测（草稿）](../benchmark_observations/dsa_indexcache_topk_reuse_throughput.md)
@@ -61,7 +61,7 @@ platforms:
 
 
 ## Evidence
-- `doc 披露`（@fa6892b）：DeepSeek-V3.2-Exp 推理 guide「MTP」小节的机制分析与搬运量/计算量表（首方 doc 分析，非独立复测的端到端 benchmark）。
-- `diff 事实` + `评审确认`（@41af2991a3bd）：R1 与 DSV3.2 两 runner 同一改动——等效时延归一基数由首 batch 接受数改为稳态平均接受数、并删去「first batch」注释；评审确认「已经不是 first batch 了」。
-- 溯源下探：[cann-recipes-infer-pr-3-feat-add-deepseek-v3-2-exp-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/3)、[cann-recipes-infer-pr-226-fix-cache-compile-print-time](https://gitcode.com/cann/cann-recipes-infer/merge_requests/226)
-- 相关：接入约定见 [mtp-speculative-decode-model-onboarding](../../guides/integration/mtp_speculative_decode_model_onboarding.md)；缓存/状态正确性见 [mtp-draft-cache-state-correctness](../rules/mtp_draft_cache_state_correctness.md)。
+
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/3)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/226)（evidence）
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（supporting）

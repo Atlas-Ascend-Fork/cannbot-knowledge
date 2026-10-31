@@ -7,21 +7,24 @@ tags:
 - topic.parallelism
 - topic.attention
 - topic.data_movement.communication.collective_communication
-status: stable
+status: draft
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/ulysses-context-parallel.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/ulysses-context-parallel.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/context_parallel/context_parallel_feature.py
+  role: implementation
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
-platforms:
-- agnostic
+updated_at: '2026-10-29T15:24:41Z'
+platforms: []
 ---
 
 # MindSpeed 上下文并行家族（Ulysses / Ring / Hybrid / Unaligned CP）
 
 ## Summary
+
+本卡的执行路径依赖昇腾 npu_fusion_attention。现有固定来源未给整套家族逐项明确的 SoC 支持范围，故用 draft/空平台保留实现信息；平台无关的算法思路不等于此后端与硬件无关。
 
 MindSpeed 训练侧用 **Context Parallel（CP，长序列并行）** 沿 Sequence 维把输入切到 `context_parallel_size` 个 rank，把 Attention 的 `O(S²)` 激活/计算压到单卡可承受。围绕「Attention 计算需要全量 KV」这一约束，MindSpeed 提供一族可选算法，由 `--context-parallel-algo` 在 `CPDotProductAttentionImpl`（经 `MindSpeedCPDotProductAttention` patch 进 Megatron 的 `DotProductAttention`）内分派：**Ulysses CP**（`ulysses_cp_algo`，在 head 维做 All2All，把序列切换成头切分）、**Ring CP**（`megatron_cp_algo`，KV 沿序列维 P2P 环形逐跳传递、分块 Softmax 累积，支持 Double Ring）、**Hybrid CP**（`hybrid_cp_algo`，Ulysses × Ring 二维 mesh，`cp = ulysses_degree × ring_degree`）、**KV-AllGather CP**（`kvallgather_cp_algo`，AllGather 全量 KV、本地 Q 算注意力，GQA/MQA（KV 头数远少于 Q 头）下 KV 体量小、最友好）、以及各算法的 **Unaligned（非对齐）变体**（各 rank 变长序列）。CP 还可叠加 **KV 缓存优化**（前向缓存 KV 带到反向，省一半 P2P 通信或省 repeat 内存）。训练侧 CP 需处理前反向两段通信与负载均衡切分，区别于推理侧 CP 与 torchtitan DSA 专用 CP（见末节）。
 
@@ -37,7 +40,7 @@ MindSpeed 训练侧用 **Context Parallel（CP，长序列并行）** 沿 Sequen
 | `kvallgather_cp_algo` | AllGather KV | 仅 KV | 无 | TE `MindSpeedTEDotProductAttention` → `KVAllGatherCPStrategy` |
 | `adaptive_cp_algo` / `hybrid_adaptive_cp_algo` | 自适应调度 | 动态 mask | — | `adaptive_attn_context_parallel` |
 
-分派逻辑（`dot_product_attention.py` · `CPDotProductAttentionImpl.forward`）：`ulysses_cp_algo` 且开启 `context_parallel_kv_cache_policy` 时走带 KV 缓存的 `ulyssesattn_context_parallel`；`megatron_cp_algo` / `hybrid_cp_algo` 走 `ringattn_context_parallel`（hybrid 取 hybrid-ring 子通信组）；自适应族走 `adaptive_attn_context_parallel`。在 `transformer_impl=transformer_engine`（缺省）下，`kvallgather_cp_algo` 与不带缓存的 Ulysses 改由 `MindSpeedTEDotProductAttention` 接管（注册见 `register_patches`，kvallgather 经 `CPStrategyFactory` 映射到 `KVAllGatherCPStrategy`）；非 TE 时不带缓存的 Ulysses 由 `UlyssesContextAttention` 包住本地 `CPDotProductAttentionImpl`。Ring / Hybrid / Ulysses / Adaptive 各族的 `validate_args` 都把 `use_flash_attn` 置 True，kvallgather 经 TE 也默认启用 FlashAttention——CP 全族都依赖 `npu_fusion_attention` 融合算子。
+分派先区分 transformer_impl：TE 下 ulysses_cp_algo 无条件注册 MindSpeedTEDotProductAttention，由 UlyssesCPStrategy 调用 AttnFuncWithCPAndQKVOA2A，不因缓存策略切回 CPDotProductAttentionImpl。只有非TE且实际到达 `CPDotProductAttentionImpl.forward` 的 ulysses 分支，开启缓存策略时才走 `ulyssesattn_context_parallel`；`megatron_cp_algo` / `hybrid_cp_algo` 走 `ringattn_context_parallel`（hybrid 取 hybrid-ring 子通信组）；自适应族走 `adaptive_attn_context_parallel`。在 `transformer_impl=transformer_engine`（缺省）下，`kvallgather_cp_algo` 与 Ulysses（含配置缓存策略时）均由 `MindSpeedTEDotProductAttention` 接管（注册见 `register_patches`，kvallgather 经 `CPStrategyFactory` 映射到 `KVAllGatherCPStrategy`）；非 TE 时不带缓存的 Ulysses 由 `UlyssesContextAttention` 包住本地 `CPDotProductAttentionImpl`。Ring / Hybrid / Ulysses / Adaptive 各族的 `validate_args` 都把 `use_flash_attn` 置 True，kvallgather 经 TE 也默认启用 FlashAttention——CP 全族都依赖 `npu_fusion_attention` 融合算子。
 
 ```mermaid
 flowchart TD
@@ -46,13 +49,15 @@ flowchart TD
   A --> H["hybrid_cp_algo"]
   A --> K["kvallgather_cp_algo"]
   A --> AD["adaptive / hybrid_adaptive"]
-  U -->|kv_cache_policy 开| UC["ulyssesattn_context_parallel<br/>(Repeat-All2All / AllGather-KV)"]
-  U -->|默认| TE["TE DotProductAttention"]
+  U -->|非TE且kv_cache_policy开| UC["ulyssesattn_context_parallel<br/>(Repeat-All2All / AllGather-KV)"]
+  U -->|TE，不按缓存策略改道| TE["TE DotProductAttention"]
   R --> RC["ringattn_context_parallel"]
   H --> RC
   K --> TE
   AD --> ADC["adaptive_attn_context_parallel"]
 ```
+
+CP>1 且 position_embedding_type=alibi 时，仅允许 megatron_cp_algo，并要求 alibi_fusion_attn_type=2、attention_mask_type=causal；Ulysses/Hybrid/KV-AllGather 不能直接替换该组合。
 
 ## Ulysses CP：head 维 All2All
 
@@ -145,15 +150,17 @@ Attention 反向同样要全量 KV。默认前向算完即丢弃 KV，反向需�
 - 推理侧 [context-parallel](../../../inference/concepts/parallelism/context_parallel.md)（及 [ulysses](../../../inference/concepts/parallelism/ulysses.md) / [ring-attention](../../../inference/concepts/parallelism/ring_attention.md)）面向 Prefill 长序列、`unified_sp` 框架、一次 AllGather KV + LSE 合并，无反向、无 KV 缓存换通信问题；MindSpeed 训练侧 CP 则要处理前反向两段通信、负载均衡切分与 KV 缓存。
 - [custom-cp-dsa](custom_cp_dsa.md) 是 torchtitan-npu 为 DeepSeek-V3.2 **DSA 稀疏注意力**定制的 CP（patch SDPA→DSA、对 KV 序列维 AllGather 后因果裁剪），走 PyTorch DTensor 栈；MindSpeed CP（Megatron 风格栈）是通用 Attention CP 算法族，二者框架与算子均不同。
 
+## DeepSeek V4 专用 CP 入口
+
+当前新增 `deepseek_v4_cp_algo`：CP>1 时要求 causal mask、禁止 ALiBi 与 `tp_2d`、序列长度可被 CP 整除，并开启 FlashAttention。它要求 DeepSeek V4 专用压缩 KV 通信路径，不能传给通用 `DotProductAttention`；后者会直接抛 `NotImplementedError`。不要将它作为 Ring/Ulysses 的通用可替换选项。
+
+`kvallgather_cp_algo` 当前也在参数校验阶段显式拒绝非 `transformer_engine` 后端。Ulysses 文档已将默认算法修正为 `megatron_cp_algo`，选择 Ulysses 应显式传参；GQA 还须满足 Q 头数能被 query groups 整除。
+
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — 上游训练加速栈 MindSpeed Core（CP 家族实现所在库）
-- 文档（@1432cb0）：[`docs/zh/features/ulysses-context-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/ulysses-context-parallel.md) · [`ring-attention-context-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/ring-attention-context-parallel.md) · [`hybrid-context-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/hybrid-context-parallel.md) · [`unaligned-ulysses-context-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/unaligned-ulysses-context-parallel.md) · [`unaligned-ring-context-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/unaligned-ring-context-parallel.md) · [`kvallgather-context-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/kvallgather-context-parallel.md) · [`context_parallelism_kv_cache.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/context_parallelism_kv_cache.md)
-- 分派（@1432cb0）：[`mindspeed/core/context_parallel/dot_product_attention.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/dot_product_attention.py)（`CPDotProductAttentionImpl.forward` 按 `context_parallel_algo` 分派 ulysses / ring / adaptive）；[`adaptor.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/adaptor.py)（`MindSpeedCPDotProductAttention`、`attention_init_wrapper` 把 `UlyssesContextAttention` 包到非 TE 的 ulysses/hybrid core_attention）；TE 路径 [`features_manager/.../context_parallel_feature.py · register_patches`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/context_parallel/context_parallel_feature.py)（ulysses/kvallgather 改派 `MindSpeedTEDotProductAttention`，kvallgather 经 `CPStrategyFactory._STRATEGY_MAP` → `KVAllGatherCPStrategy`）
-- Ulysses（@1432cb0）：[`ulysses_context_parallel.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/ulysses_context_parallel/ulysses_context_parallel.py)（`single_all_to_all`、`UlyssesContextAttention`、`GatherSizeCalculator`/`DynamicGatherSizeCalculator`、`RepeatAll2AllComm`/`AllGatherComm`、`UlyssesAttnWithKVCache`）；非对齐 [`unaligned_cp/mapping.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/ulysses_context_parallel/unaligned_cp/mapping.py)（`all_to_all`/`cal_split_sizes`）
-- Ring（@1432cb0）：[`ring_context_parallel.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/ring_context_parallel/ring_context_parallel.py)（`ringattn_context_parallel`、`causal_forward_fetch`/`tnd_forward_fetch`、`get_unaligned_cp_shapes`）；KV 缓存 [`context_parallel_kv_cache.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/ring_context_parallel/context_parallel_kv_cache.py)（`get_cache_policy`、`ContextParallelKVCache`）
-- Hybrid 组与负载均衡切分（@1432cb0）：[`model_parallel_utils.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/model_parallel_utils.py)（hybrid ulysses/ring 子组：连续 rank 给 Ulysses、跨步 rank 给 Ring）；[`get_batch_utils.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/context_parallel/get_batch_utils.py)（`get_batch_on_this_cp_rank` 的 2·cp 对称切分）
-- 开关与校验（@1432cb0）：[`features_manager/context_parallel/context_parallel_feature.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/context_parallel/context_parallel_feature.py)（`--context-parallel-algo` choices、ring/hybrid/kvallgather 的 `validate_args`、`--cp-window-size`/`--attention-mask-type`/`--use-cp-send-recv-overlap`）；[`ulysses_context_parallel.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/context_parallel/ulysses_context_parallel.py)（`--ulysses-degree-in-cp`、Ulysses 头数校验）
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [ulysses-context-parallel.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/ulysses-context-parallel.md)（supporting）
+- [context_parallel_feature.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/context_parallel/context_parallel_feature.py)（implementation）
 
 ## Links
 

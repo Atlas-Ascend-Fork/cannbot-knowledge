@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: HunyuanImage-3.0
-description: HunyuanImage-3.0 的 DiT、MoE 与图像生成模块；并行、融合和部署差异分别引用任务入口。
+description: 当前HunyuanImage的统一YAML、CFG每rank缓存修正、融合布局、A2回退与实际精度/稳态验收边界。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,18 +9,20 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/config/ep8_cfg.yaml
+  role: example
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-21T10:02:02Z'
+updated_at: '2026-10-29T14:17:52Z'
 platforms:
 - a2
 - a3
 ---
-
-
 
 # HunyuanImage-3.0
 
@@ -46,11 +48,10 @@ HunyuanImage-3.0 是MoE与DiT结合的文生图模型，去噪网络、文本输
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hunyuan-image-3.0/{run_image_gen.py, model_adaptor.py, adaptor_patches/, utils/}`](https://gitcode.com/cann/cann-recipes-infer/tree/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-image-3.0)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`module/vae_patch_parallel.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module/vae_patch_parallel.py)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 统一推理拉起结构（@2c45117，@2f82d10 尚为 `demo.sh`）：[`models/hunyuan-image-3.0/infer.sh`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-image-3.0/infer.sh) + [`config/ep8_cfg.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-image-3.0/config/ep8_cfg.yaml)（`world_size: 16` / `moe-ep: true` / `entry_script: run_image_gen.py` / `CFG_PARALLEL=1` / `USE_VAE_PARALLEL=1`）+ [`config/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-image-3.0/config/README.md)
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — MMReduceScatter A2 设备分支（@2c45117，commit 59a7906 MR!405）：[`adaptor_patches/hunyuan.py#L580-L607`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py)（`torch.npu.get_device_name()` / `"Ascend910B"` 设备分支：A2 走 `dist.reduce_scatter`、非 A2 走 `npu_mm_reduce_scatter_base`）+ [`docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md)（MMReduceScatter 句尾「(A2平台下暂未使能该融合算子)」）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/README.md)（primary）
+- [hunyuan_image_3_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md)（supporting）
+- [hunyuan.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py)（implementation）
+- [ep8_cfg.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/config/ep8_cfg.yaml)（example）
 
 ## Links
 
@@ -68,5 +69,6 @@ HunyuanImage-3.0 是MoE与DiT结合的文生图模型，去噪网络、文本输
 
 ## Notes
 
-- **gap**：源文档未给出 benchmark 数字、未列出 `attn_tp_size` / `moe_tp_size` / `ep_size` 推荐值
+- 当前YAML提供16卡EP8/Attention TP8并开启CFG/VAE的示例，不能当作任意负载最优值；来源缺完整受控性能表。
+- 当前CFG并行按每rank batch分配StaticCache/position_ids，避免重复乘CFG因子；融合Attention切片显式contiguous。
 - **gap**：文档提到 `HunyuanMoE` 类与 `HunyuanImage3ForCausalMM` 类，但未解释 `HunyuanImage-3.0` 的文本 tower 细节（是否为独立 LLM）

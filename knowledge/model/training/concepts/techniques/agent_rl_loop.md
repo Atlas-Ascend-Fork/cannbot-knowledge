@@ -8,12 +8,12 @@ tags:
 - topic.model_serving
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - agnostic
 ---
@@ -41,10 +41,10 @@ platforms:
 - **`_handle_generating_state()`**：负责调用大模型生成响应，并**检查是否需要调用工具**。
 - **`_handle_processing_tools_state()`**：负责**执行工具调用**，并将工具返回结果**格式化作为下一轮的输入**。
 
-两个状态交替推进，直到模型不再请求工具（输出最终答案），整条多轮轨迹拼成一条 response 序列送去算 reward。下图给出 README 附录的 ToolAgent 代码结构——`ToolAgentLoop` 在生成态经 `AsyncLLMServerManager` 拿模型响应、在工具态把代码送进 SandboxFusion 沙盒服务并回灌结果：
+两个状态交替推进，直到模型自然结束，或达到轮数/长度限制；固定 RL 脚本均设置 `max_user_turns=16`、`max_assistant_turns=16`、`max_response_length=16384`，达到限制不等于已给出最终答案。结束后，整条多轮轨迹拼成一条 response 序列送去算 reward。下图给出 README 附录的 ToolAgent 代码结构——`ToolAgentLoop` 在生成态经 `AsyncLLMServerManager` 拿模型响应、在工具态把代码送进 SandboxFusion 沙盒服务并回灌结果：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.assets/ToolAgent代码结构图.png" width="78%">
-<sub>图：ToolAgent 代码结构——`ToolAgentLoop` 的 `_handle_generating_state` 经 `AsyncLLMServerManager` 拿模型响应（output→res），`_handle_processing_tools_state` 把代码送 SandboxFusion 沙盒；底层 vLLM 引擎由 `vLLMHttpServer` 暴露（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·附录 ToolAgent 代码结构）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.assets/ToolAgent代码结构图.png" width="78%">
+<sub>图：ToolAgent 代码结构——`ToolAgentLoop` 的 `_handle_generating_state` 经 `AsyncLLMServerManager` 拿模型响应（output→res），`_handle_processing_tools_state` 把代码送 SandboxFusion 沙盒；底层 vLLM 引擎由 `vLLMHttpServer` 暴露（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·附录 ToolAgent 代码结构）</sub>
 
 ## asyncLLM：HTTP Server 化的异步生成
 
@@ -62,14 +62,14 @@ Agent RL 在 RL 之前通常需要一个 **SFT 冷启动**阶段——纯靠 RL 
 - **verl-retool**（[qwen3-tool-agent-rl](../../guides/recipes/qwen3_tool_agent_rl.md)）：SFT 用 `ReTool-SFT` 数据集训 Qwen3-4B-Instruct-2507，「帮助模型学会调用 Sandbox 工具进行 python 编程」；RL 用 `DAPO-Math-17k` 训前一步 SFT 过的模型，「帮助模型更好地使用 Sandbox 工具，辅助自身推理思考」。SFT 后用 `verl.model_merger merge --backend fsdp` 合并 `global_step_186` 权重再进 RL。
 - **Code RL 基础样例**（[qwen3-code-toolcall-rl](../../guides/recipes/qwen3_code_toolcall_rl.md)）：SFT 基于 `Gen-Verse/Open-AgentRL-SFT-3K` 过滤出含多轮 Python 工具调用的 Coding 推理数据（`run_toolcall_sft_demo.sh`，选 `sft_step_50` ckpt 合并）；RL 数据基于 `PrimeIntellect/verifiable-coding-problems` 过滤高质量 Python 题（`run_code_rl_demo.sh`）。它是首个开源的基于 verl 支持多轮工具调用的 Coding Agent RL Recipe。
 
-两阶段的产物在 RL 阶段才进入 `asyncLLM` + `agent_loop` 多轮执行流水；SFT 阶段仍是普通单轮序列训练。注意 Code RL 的推测解码扩展直接用 HuggingFace 公开 Qwen3-1.7B 权重、**跳过 SFT**，因其目标是验证 rollout 加速而非工具能力本身。
+两阶段的产物在 RL 阶段才进入 `asyncLLM` + `agent_loop` 多轮执行流水；SFT 是基于离线多轮消息与工具轨迹的监督序列训练，两份脚本均开 `data.multiturn.enable=true`、使用 `messages`/`tools` 字段；SFT 不运行在线工具交互，离线训练不等同于单轮。注意 Code RL 的推测解码扩展直接用 HuggingFace 公开 Qwen3-1.7B 权重、**跳过 SFT**，因其目标是验证 rollout 加速而非工具能力本身。
 
 ## 异步流水：推理与工具执行并行
 
 在 ToolAgent 异步流水中，每个 prompt 的 request 都遵循 `AsyncLLMServerManager` 的调度规则，在此基础上实现 **vLLM 推理与 Python CI（代码沙盒）工具调用的异步并行**。下图给出 rollout 过程中模型推理与外部工具执行的并行情况：上半部多个 `vLLMHttpServer`（gen 0/1/2）持续生成 token，下半部多个 Python CI worker 在不同时刻执行被触发的 tool call——当某请求进入工具执行（外部阻塞），NPU 推理流不空等，转去推进其它请求，工具结果就绪后再回灌对应轨迹：
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.assets/ToolAgent异步流水图.png" width="58%">
-<sub>图：ToolAgent 异步流水——vLLM 推理（蓝色 token 块）与 Python CI worker 的工具调用/返回（黄色 tool req）在时间轴上交错并行，prompt/res/tool call/tool res 四类事件异步推进（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·附录 ToolAgent 异步流水）</sub>
+<img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.assets/ToolAgent异步流水图.png" width="58%">
+<sub>图：ToolAgent 异步流水——vLLM 推理（蓝色 token 块）与 Python CI worker 的工具调用/返回（黄色 tool req）在时间轴上交错并行，prompt/res/tool call/tool res 四类事件异步推进（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md">verl-retool agent 样例 README</a>·附录 ToolAgent 异步流水）</sub>
 
 ## 工具后端：代码沙盒（Sandbox / ScaleBox）
 
@@ -85,18 +85,20 @@ Agent RL 在 RL 之前通常需要一个 **SFT 冷启动**阶段——纯靠 RL 
 
 `asyncLLM` + `agent_loop` + retool 不在 verl 主分支默认可用，需 checkout 特定历史版本并打 patch：
 
-- **verl-retool 样例**：retool 已从 verl 迁出，「最新分支无该项目」，需 `git checkout 95470480`（含 retool 的历史版本），`git am ../patches/*.patch` 打三个 fix/path/reward patch，`pip install -e .` 后进 `recipe/retool`。RL 启动 `bash run_qwen3_4b_dapo_npu.sh`（[DAPO](grpo_dapo.md) 算法 + DAPO-Math-17k）。TensorBoard 用 `trainer.logger=['console','tensorboard']` + `trainer.log_val_generations=10` 看训练曲线与每次验证的 response。
+- **verl-retool 样例**：retool 已从 verl 迁出，「最新分支无该项目」，需 `git checkout 95470480`（含 retool 的历史版本），`git am ../patches/*.patch` 打四个 patch（reward 取值、路径、工具奖励及本地 parquet 加载修复），`pip install -e .` 后进 `recipe/retool`。RL 启动 `bash run_qwen3_4b_dapo_npu.sh`（[DAPO](grpo_dapo.md) 算法 + DAPO-Math-17k）。TensorBoard 用 `trainer.logger=['console','tensorboard']` + `trainer.log_val_generations=10` 看训练曲线与每次验证的 response。
 
 - **Code RL 样例**：`git checkout c651b7b4207e408875f132c4226969ef3495d408`（基于 v0.7.0.dev），`git apply` 三个 patch——其中 `0002-enable-tool-agent-loop.patch` 即「支持 Coding 多轮工具调用的训练逻辑」。基础样例用 vLLM `0.11.0` / vLLM-Ascend `v0.11.0rc1`；推测解码扩展换 vLLM `0.13.0` / vLLM-Ascend `v0.13.0`（「更稳定的推测解码支持和异步实现」）。
 
 > Code RL 样例同时验证了在 agent_loop 多轮工具调用流水上叠加推测解码（EAGLE3 / Suffix）：分析表明 **Rollout 阶段占总 RL 训练步骤时间的 78.3%**（Qwen3-1.7B 每步 3596.5s 中的 2816.6s），推测解码直接加速 vLLM rollout，端到端吞吐量最高提升 **38%**、训练步骤时间缩短 **25%**、精度无损失。其局限在于：EAGLE3 草稿模型在 RL 训练期间保持冻结，随 Actor 策略逐渐偏离草稿模型训练分布，**草稿接受率呈缓慢下降趋势**（源给出在线草稿模型训练作为后续缓解方向）。Suffix 路线与 [SAM 无损投机](sam_speculative.md) 同属基于检索的 Model-Free 方案，无独立草稿模型——推断不受此策略漂移影响（源未直接对比 Suffix 漂移特性）。
 
+## 工具环境与本地数据接入
+
+ReTool 当前 recipe 选择 SandboxFusion 的 `feat/runtime` 分支，按其 Manual 流程准备 `sandbox` 环境并 `make run-online`，服务需在 RL 运行期间常驻。本地 DAPO/AIME 数据使用第四个补丁显式调用 parquet loader：目录优先匹配 `data/*.parquet`，其次目录直属 `*.parquet`，避免其他配置子目录混入不同 schema。这是输入接入修复，不改变 ToolAgentLoop 状态转移。
+
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`agent_rl/qwen3_tool_agent/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_tool_agent/README.md)（verl-retool agent 样例：`asyncLLM`/`agent_loop` 概述、SFT(ReTool-SFT)+RL(DAPO-Math-17k) 两步、Sandbox(SandboxFusion) 部署、`git checkout 95470480` + `git am patches/*.patch`、验证指标 `num_turns`/`acc@30`、附录 `ToolAgentLoop`/`_handle_generating_state`/`_handle_processing_tools_state`/`AsyncLLMServerManager`(负载均衡+粘性会话) 代码结构图与异步流水图、TensorBoard）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`agent_rl/qwen3_code_toolcall/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/agent_rl/qwen3_code_toolcall/README.md)（Qwen3-1.7B 长上下文多轮工具调用 Code RL：ScaleBox 沙盒特性、verl `c651b7b` + `0002-enable-tool-agent-loop.patch`/`0003-toolcall-reward.patch`、SFT+RL、LiveCodeBench 评测、推测解码扩展 Rollout 78.3% / +38% / -25% / 精度无损 / EAGLE3 冻结草稿接受率缓降）
-- 图：两图取自 `agent_rl/qwen3_tool_agent/README.assets/`（ToolAgent 代码结构图 / 异步流水图）
-- 外部参考：[ScaleBox](https://gitcode.com/icip-cas/ScaleBox)、[SandboxFusion](https://github.com/bytedance/SandboxFusion)、[verl/recipe retool](https://github.com/volcengine/verl)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/agent_rl/qwen3_tool_agent/README.md)（supporting）
 
 ## Links
 

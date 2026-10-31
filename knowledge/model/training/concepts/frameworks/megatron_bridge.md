@@ -1,13 +1,7 @@
 ---
 type: Concept
-title: MindSpeed-Bridge（Megatron-Bridge 昇腾非侵入适配 + HF↔Megatron 权重桥接）
-description: >-
-  MindSpeed-Bridge 通过外挂 mindspeed_bridge 包、少量 import 注入和 ConfigContainer.validate monkey-patch，在
-  model.finalize 前调用 MindSpeed repatch，将 Megatron-Bridge 非侵入适配到昇腾。配置合并顺序为
-  config.model、Bridge 控制位、extra_repatch_dict。权重桥接复用 MegatronParamMapping/AutoMapping：
-  基类负责 TP 分片、跨 TP gather 和跨 PP 配置广播，模型派生类只实现 HF 布局与 Megatron 中间布局的重排。
-  可用余弦相似度阈值 98% 和 roundtrip_hf 验证。该训练进程内桥接不同于 MindSpeed-LLM 离线 checkpoint
-  转换；后者用于 TP/PP/EP/VPP 重切分、noop 层和 LoRA 合并或单独导出。
+title: MindSpeed-Bridge（运行时注册与 HF/Megatron 权重映射）
+description: 当前 pip/.pth 运行时插件注册、委托训练入口、参数映射验证，以及离线 checkpoint 灵活 PP/VPP layout 的互斥限制。
 tags:
 - task.implementation
 - topic.architecture
@@ -15,71 +9,37 @@ tags:
 - topic.checkpointing
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/README.md
+- resource: cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/docs/zh/install_guide.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/docs/zh/install.md
-  role: supporting
+- resource: cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/tools/install_auto.sh
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/runtime/auto_register.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/scripts/training/run_recipe.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/models/glm_moe_dsa/glm_moe_mappings.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/examples/conversion/compare_hf_and_megatron/README.md
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/checkpoint/convert.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/checkpoint/convert_hf2mg.py
+  role: implementation
 created_at: '2026-06-24T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T13:38:33Z'
 platforms:
 - agnostic
 ---
 
-# MindSpeed-Bridge（Megatron-Bridge 昇腾非侵入适配 + HF↔Megatron 权重桥接）
+# MindSpeed-Bridge：运行时注册与权重映射
 
-MindSpeed-Bridge 把 NVIDIA **Megatron-Bridge**（NeMo 系的「HF 权重 ↔ Megatron-Core 训练」桥接层）
-适配到昇腾 NPU。它**不 fork** Megatron-Bridge 本体，而是以一个外挂包 `mindspeed_bridge/` +
-三处 import 注入 + 一个 `ConfigContainer.validate` monkey-patch，复用上游的 Bridge 权重桥接框架，
-在 `validate()` 时机触发 [mindspeed](mindspeed.md) 的 repatch（昇腾算子/特性补丁）。
-其**非侵入接入机制**与 **HF↔Megatron 双向权重映射抽象**是各模型 provider 的共同底座，当前覆盖两个模型族：**Qwen3.5-VL**（`qwen_vl/`，含 GatedDeltaNet 线性层映射）与 **GLM-5**（`glm_moe_dsa/`，MLA+DSA+MoE），各自的 `*_bridge.py`/`*_provider.py`/`*_mappings.py` 都在其上派生。
+## 当前接入机制
 
-## 非侵入接入机制
+当前安装采用可编辑 pip 包，.pth autoload 负责模型发现，runtime 插件注册模型与 recipe。训练入口为 `python -m mindspeed_bridge.scripts.training.run_recipe`（多卡用 torchrun --module）；委托 launcher 解析 Feature CLI，将 dotted Hydra override 交给上游，并在运行时补齐 step functions、dataset 等适配。
 
-接入只动 import，不改 Megatron-Bridge 源逻辑。`tools/install_auto.sh` 把
-`mindspeed_bridge/` **整目录拷进** Megatron-Bridge 根目录，再做三处**追加式** import 注入
-（事务式，任一步失败 `rollback_all` 回滚备份）：
+旧安装脚本复制 mindspeed_bridge 目录、修改 Megatron-Bridge 三处源文件的方式已移除。包顶层 __init__.py 也不再统一 monkey-patch ConfigContainer.validate；具体特性由 FeatureAdaptor 与运行时 adapter 安装，不能再引用旧全局 repatch 顺序解释全部配置。
 
-| 注入点 | 文件 | 追加内容 | 作用 |
-|--------|------|----------|------|
-| 模型注册 | `src/megatron/bridge/models/__init__.py` | `from mindspeed_bridge.models import *` | 让自定义 provider/bridge 进入 Megatron-Bridge 模型表 |
-| 配置注册 | `src/megatron/bridge/recipes/__init__.py` | `from mindspeed_bridge.recipes import *` | 注册训练 recipe |
-| 训练入口 | `scripts/training/run_recipe.py` | `import mindspeed.megatron_adaptor` + provider forward_step 注册 | 拉起 MindSpeed 适配 + 挂自定义前向 |
-
-逐模型的 forward_step（如 `qwen3_vl_step`）注册的机制即「在 `STEP_FUNCTIONS` dict 追加一项」：
-新 provider 把自己的前向步函数挂进同一个 dict，即被训练入口 `run_recipe.py` 按 recipe 选用。
-Step4 硬编码注册的是 `qwen3_vl_step`——因 Megatron-Bridge 0.3.1 尚未原生支持 `qwen35_vl`、必须手动补；上游缺哪个模型就手动追加哪个前向，并非自动泛化机制。
-
-### repatch 触发机制（核心非侵入点）
-
-`mindspeed_bridge/__init__.py` 只做一件事：**monkey-patch `ConfigContainer.validate`**。
-包一层 `_patched_validate`，在调用上游原 `validate()` **之前**先跑
-`apply_mindspeed_repatch(self)`，再走原逻辑（`utils/repatch.py`）：
-
-```python
-# mindspeed_bridge/__init__.py
-_original_validate = ConfigContainer.validate
-def _patched_validate(self) -> None:
-    from mindspeed_bridge.utils.repatch import apply_mindspeed_repatch
-    apply_mindspeed_repatch(self)   # MindSpeed repatch 必须在 model.finalize() 前生效
-    _original_validate(self)
-ConfigContainer.validate = _patched_validate
-```
-
-选 `validate` 作为切入点的原因：repatch 必须在 `model.finalize()` **之前**
-落地，才能让 `pack_sequences_in_batch` 等特性被 MindSpeed 的 feature system 正确处理——
-`validate` 是这之前唯一稳定的钩子。
-
-`apply_mindspeed_repatch` 把 Bridge 侧 config 翻译成 MindSpeed `megatron_adaptor.repatch()`
-的入参（`utils/repatch.py`），合并优先级 **`config.model` < Bridge 控制位 < `extra_repatch_dict`**：
-
-- `build_model_repatch_config`：`asdict(config.model)` 摊平模型配置；
-- `build_bridge_control_repatch_config`：从 `config.dataset` 抽 `pack_sequences_in_batch`、
-  从 `config.model` 抽 `mtp_num_layers` 等 MindSpeed 也要感知的控制位；
-- 若 `mindspeed.megatron_adaptor` 未安装则 `ImportError` 静默跳过（适配层对纯 GPU 环境无侵害）。
-
-另有 `apply_mindspeed_args_patch`：用 `@wraps` 包 `mindspeed.args_utils.get_mindspeed_args`，
-给返回的 args **就地注入/覆盖**字段；重复调用只更新已挂 wrapper 的 `_patch_dict`（幂等，避免
-多层包裹）。统一入口 `apply_mindspeed_patches(config, args_patch_dict, extra_repatch_dict)`。
+安装需按当前指南配套 Megatron-LM core_v0.18.0、Megatron-Bridge v0.5.0、MindSpeed Core、MegatronAdaptor、TransformerEngineNPU 和 MindSpeed-Ops。子模块安装是另一种依赖准备方式；是否使用 .pth autoload 和依赖路径应通过 runtime.get_status 的插件状态与 errors 核查。安装文档中的镜像地址仍是占位，不能当作已发布镜像。
 
 ## HF↔Megatron 权重桥接框架
 
@@ -93,14 +53,7 @@ ConfigContainer.validate = _patched_validate
   HF 布局；跨 PP 用 `broadcast_obj_from_pp_rank` 同步 config；带量化时 `maybe_dequantize`；
 - `resolve(captures)`：把名字里的占位（层号等正则 capture）解析成具体参数名，复制出一个就绪映射。
 
-MindSpeed-Bridge 在此抽象上**派生模型专用映射**而非另造体系。例如
-`mindspeed_bridge/models/conversion/param_mapping.py` 的 `GDNLinearMappingSeparate`
-（GatedDeltaNet 输入投影，Qwen3.5 把 Q/K/V/Z/B/A 拆成四个独立 HF 矩阵）：内部用
-`_fuse_gdn_separate_to_grouped` 把四张 flat HF 张量按 head 重排成上游
-`merge_gdn_linear_weights` 能吃的 head-grouped `qkvz`/`ba`，再委托一个 `AutoMapping`
-（`self._tp_mapping`）做实际 TP 切分；反向 `split_gdn_linear_weights` + `_split_gdn_grouped_to_separate`
-还原四张 HF 张量。**复用价值**：要支持新模型只需写「HF 布局 ↔ 上游 grouped 中间态」的纯重排，
-TP 分片逻辑全部交给基类，不碰并行细节。
+当前 GLM 派生映射负责 fused gate/up 和专家布局，并委托上游映射处理并行分片。GLMGatedMLPMapping.resolve 在解析 wildcard 后保留 pp/ep/tp/etp process groups；专家映射区分逐专家 2D 参数与 packed grouped 3D 权重，并检查形状。旧 GDNLinearMappingSeparate 已从当前树移除，不能继续作为当前适配接口。
 
 ### 单步精度对比验证
 
@@ -110,7 +63,7 @@ TP 分片逻辑全部交给基类，不碰并行细节。
 `--enable_debug_hooks`（逐组件前/反向 JSONL 落盘）。注意 Megatron 可能为 kernel 效率 pad
 `vocab_size`，对比时截断回 HF 词表大小。
 
-## MindSpeed-LLM checkpoint 转换（另一条路径）
+## MindSpeed-LLM checkpoint 转换
 
 [mindspeed](mindspeed.md) 生态里 **MindSpeed-LLM**
 （[mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM)）有一套独立、更早的 HF↔Megatron-Mcore 转换引擎
@@ -119,39 +72,39 @@ TP 分片逻辑全部交给基类，不碰并行细节。
 | 维度 | Megatron-Bridge | MindSpeed-LLM checkpoint |
 |------|------------------------|--------------------------|
 | 映射抽象 | `MegatronParamMapping` **类**，内建 TP 分片语义 | `module_mapping` **dict**，配置驱动 |
-| 映射来源 | 代码里按模型派生类 | `configs/checkpoint/model_cfg.json` 按 `model_type_hf` 查 `model_hf_key_mapping`（覆盖 100+ 模型） |
+| 映射来源 | 代码里按模型派生类 | `configs/checkpoint/model_cfg.json` 按 `model_type_hf` 查 `model_hf_key_mapping` |
 | 访问方式 | 类方法 `hf_to_megatron`/`megatron_to_hf` | `ModelBase.__register_functions` 用 dict 项**动态合成** `get_/set_/has_<key>_weight` 一族函数，统一作用于 HF 与 Megatron module |
 | 切分时机 | 转换即按当前 rank 切 | 离线 `Convert` 类（`convert_hf2mg.py`/`convert_mg2hf.py`）一次性重切分落盘 |
 
 MindSpeed-LLM 转换侧的可复用能力（`Convert`/`Hf2MgConvert`/`Mg2HfConvert`）：
 
-- **任意 TP/PP/EP/VPP 重切分**：`--target-{tensor,pipeline,expert}-parallel-size`、
+- **TP/PP/EP/VPP 重切分**：`--target-{tensor,pipeline,expert}-parallel-size`、
   `--num-layer-list`（动态 PP 划分）、`--num-layers-per-virtual-pipeline-stage`（VPP）、
-  `--noop-layers`（自定义空层，转换后层数 = HF 层数 + 空层数），VPP 与动态 PP 二选一；
+  `--noop-layers`（自定义空层，转换后层数 = HF 层数 + 空层数），均匀 PP 要求模型层数能被 PP 数整除，否则添加 noop 层或使用动态 PP；VPP 与动态 PP 二选一；
 - **Lora 合并/转换**：`--lora-load/-r/-alpha/--lora-target-modules` 把 Lora 权重与 base 合并后
-  转 MG 或 HF；`--save-lora-to-hf` 把 Lora 权重单独导出为 **HF 格式**（约束源 checkpoint 须为 mcore 格式）；
+  转 MG 或 HF；`--save-lora-to-hf` 把 Lora 权重单独导出为 **HF 格式**（源 checkpoint 须为 mcore 格式、fc_type=gate_up_down；该导出路径限制为 llama2/mixtral，不能与 --moe-grouped-gemm 或 --load-hf-from-config 同用）；
 - mg→hf 时强制 `TP=PP=1`（HF 不分片），`--save-dir` 须为含 config/词表的原始 HF 目录。
 
 > 选型：Bridge 路径与 Megatron-Core 训练态同进程、按 rank 实时映射，适合训练框架内桥接；
 > MindSpeed-LLM 路径是离线批量重切分工具，适合落盘 checkpoint 的并行策略迁移与 Lora 合并。
 
+
+## 灵活 PP/VPP 转换
+
+当前离线转换新增 pipeline_model_parallel_layout，按 VPP-major 再 PP-major 分配 decoder 层。它与 num_layer_list、num_layers_per_virtual_pipeline_stage、schedules_method、noop_layers 互斥，当前不支持含 MTP 层的此类转换。不能因为训练侧支持某个 layout 就跳过转换器校验。
+
 ## Evidence
 
-- 来源仓：[mindspeed-bridge](https://gitcode.com/Ascend/MindSpeed-Bridge) · [mindspeed-llm](https://gitcode.com/Ascend/MindSpeed-LLM)
-- MindSpeed-Bridge blob（@3655c07）：
-  - 非侵入 patch（`_patched_validate` / `ConfigContainer.validate`）：https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/mindspeed_bridge/__init__.py
-  - repatch 翻译（`apply_mindspeed_repatch` / `build_*_repatch_config` / `apply_mindspeed_args_patch`）：https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/mindspeed_bridge/utils/repatch.py
-  - 注入安装脚本（Step1 拷目录 + Step2-4 import 注入 + `rollback_all`）：https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/tools/install_auto.sh
-  - 适配机制文档（§3 自动/手动适配）：https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/docs/zh/install.md
-  - 权重映射（`GDNLinearMappingSeparate` / `_fuse_gdn_separate_to_grouped`，派生自 `MegatronParamMapping`/`AutoMapping`）：https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/mindspeed_bridge/models/conversion/param_mapping.py
-  - 单步精度对比（`compare.py`，余弦阈 98% / `--roundtrip_hf`）：https://gitcode.com/Ascend/MindSpeed-Bridge/blob/3655c07cbcc9f61d16b11e7d7831573e542c0e92/mindspeed_bridge/examples/conversion/compare_hf_and_megatron/README.md
-- MindSpeed-LLM blob（@183e02c）：
-  - 转换基类（`Convert`，TP/PP/EP/VPP/noop 切分）：https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/checkpoint/convert.py
-  - 动态合成访问器 + config 驱动 `module_mapping`（`ModelBase.__register_functions` / `get_module_mapping`）：https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/checkpoint/models.py
-  - hf2mg 入口（`Hf2MgConvert`）：https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/checkpoint/convert_hf2mg.py
-  - 转换文档（HF↔Mcore + Lora 合并/转换 + 特性清单）：https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/docs/zh/pytorch/tools/checkpoint_convert_hf_mcore.md
+- [install_guide.md](../../../../../cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/docs/zh/install_guide.md)（primary）
+- [install_auto.sh](../../../../../cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/tools/install_auto.sh)（implementation）
+- [auto_register.py](../../../../../cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/runtime/auto_register.py)（implementation）
+- [run_recipe.py](../../../../../cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/scripts/training/run_recipe.py)（implementation）
+- [glm_moe_mappings.py](../../../../../cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/models/glm_moe_dsa/glm_moe_mappings.py)（implementation）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-bridge/f74d52a8a318c4594202ccdcf96a615b1f2d32da/mindspeed_bridge/examples/conversion/compare_hf_and_megatron/README.md)（implementation）
+- [convert.py](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/checkpoint/convert.py)（implementation）
+- [convert_hf2mg.py](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/checkpoint/convert_hf2mg.py)（implementation）
 
 ## Links
 
-- 被 repatch 注入的训练加速底座：[mindspeed](mindspeed.md)
-- 权重转换邻近概念：[model-custom-converter](model_custom_converter.md)（torchtitan-npu 声明式 `to_hf`/`from_hf` 路径）、[npu-fused-op-converters](npu_fused_op_converters.md)（融合算子权重布局改写）
+- [MindSpeed](mindspeed.md)
+- [检查点管理](../techniques/checkpoint_dcp_hf.md)

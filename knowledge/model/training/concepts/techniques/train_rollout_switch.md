@@ -7,12 +7,12 @@ tags:
 - topic.reinforcement_learning
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - a3
 ---
@@ -21,7 +21,7 @@ platforms:
 
 ## Summary
 
-大模型 on-policy RL 训练中，**同一组卡**要在「训练态」（actor update / ref log_prob，由 Megatron+MindSpeed 承载）与「推理态」（rollout/generate，由 vLLM+vLLM-Ascend 承载）之间反复交替——这就是**训推切换**。两态对同一份 671B 权重采用**不同并行策略**：训练侧 `TP4EP8PP8`，推理侧 `DP64TP2EP128`（真实权重场景）甚至 `DP128TP2EP256`（随机权重场景）。每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；又因 ActorRolloutRef 三模型采用**全共卡部署**（分时复用计算资源），切换时还要把上一态模型 **offload 到 host**、把下一态模型 **onload 到 device**。训推切换由三个机制构成：**reshard**（训→推权重重切分，[§reshard 优化](#reshard-优化训推权重重切分)）、**offload**（训练态权重/KV 显存卸载，[§offload 优化](#offload-优化全共卡分时复用显存)），以及任务间**训推权重 D2D 高速数据传输**（device 间直传消除 host 中转，[§D2D 数据传输](#d2d-数据传输任务间张量直传)）。
+大模型 on-policy RL 训练中，**同一组卡**要在「训练态」（actor update / ref log_prob，由 Megatron+MindSpeed 承载）与「推理态」（rollout/generate，由 vLLM+vLLM-Ascend 承载）之间反复交替——这就是**训推切换**。两态对同一份 671B 权重采用**不同并行策略**：训练侧 `TP4EP8PP8`，推理侧 `DP64TP2EP128`（真实权重场景）甚至 `DP128TP2EP256`（随机权重场景）。每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；又因 ActorRolloutRef 三模型采用**全共卡部署**（分时复用计算资源），切换时还要把上一态模型 **offload 到 host**、把下一态模型 **onload 到 device**。训推切换由三个机制构成：**reshard**（训→推权重重切分，[§reshard 优化](#reshard-优化训推权重重切分)）、**offload**（训练态权重/KV 显存卸载，[§offload 优化](#offload-优化全共卡分时复用显存)），以及任务间**任务间输入输出张量 D2D 直传**（device 间直传消除 host 中转，[§D2D 数据传输](#d2d-数据传输任务间张量直传)）。
 
 > 训推切换是 DeepSeek-R1 与 Qwen3 等模型共享的 RL 系统优化问题。端到端配置、训推并行策略及性能结果分别见 [DeepSeek-R1 RL](../../guides/recipes/deepseek_r1_rl.md) 与 [Qwen3 RL](../../guides/recipes/qwen3_rl.md)。
 
@@ -44,8 +44,8 @@ RL 各阶段（generate_sequences / compute_ref_log_prob / update_actor）的输
 
 优化思路：**控制流维持 verl 单控制器逻辑不变，数据流解耦出来用 D2D 直传加速**。具体用 `TensorCache`（每个 worker 一个，device 侧管理前后任务共用 tensor），后续任务按需从缓存拉取，必须经 host 的数据才走原 Ray 通路。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image12.png" width="55%"></p>
-<p align="center"><sub>图：细化后的任务间数据流——gen 输出（attention_mask/input_ids/position_ids/responses）原地缓存供 ref 用，ref 输出（ref_log_prob）缓存供 update 用，仅必要 tensor（responses/advantages 等）经 host 主进程（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·性能优化：D2D 数据传输）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image12.png" width="55%"></p>
+<p align="center"><sub>图：细化后的任务间数据流——gen 输出（attention_mask/input_ids/position_ids/responses）原地缓存供 ref 用，ref 输出（ref_log_prob）缓存供 update 用，仅必要 tensor（responses/advantages 等）经 host 主进程（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·性能优化：D2D 数据传输）</sub></p>
 
 `TensorCache.get_cached_tensors()` 是否触发通信取决于前后任务 DP rank 排布：
 
@@ -66,8 +66,8 @@ RL 各阶段（generate_sequences / compute_ref_log_prob / update_actor）的输
 
 **优化方案**基于 AlltoAllV 设计**定向路由**，按训练侧全局 rank 的专家归属生成稀疏发送/接收表，只把分片送到目标推理 rank：
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image16.png" width="55%"></p>
-<p align="center"><sub>图：路由专家 AlltoAllV 定向路由——训练 EP4PP2→推理 EP8PP1，各训练 rank 仅向目标推理 rank 直传所持专家，无冗余通信（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·reshard 优化 / 专家参数定向路由）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image16.png" width="55%"></p>
+<p align="center"><sub>图：路由专家 AlltoAllV 定向路由——训练 EP4PP2→推理 EP8PP1，各训练 rank 仅向目标推理 rank 直传所持专家，无冗余通信（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·reshard 优化 / 专家参数定向路由）</sub></p>
 
 以单卡路由专家 W1 为例（单层 256 专家、推理 EP256），优化前 AllGather 需备齐全部专家空间 `0.0547*256=14G`，优化后 AlltoAllV **最多只需一个专家空间** `0.0547*(256/256)=0.0547G`——增量内存与通信量**相对收益均达 99.6%**。约束：当前只支持 Megatron 使能 `moe_tp_extend_ep`；训练 EP 须整除推理 EP。
 
@@ -75,15 +75,15 @@ RL 各阶段（generate_sequences / compute_ref_log_prob / update_actor）的输
 
 推理侧不用 PP，故训练 PP 域内的参数需聚合。**原方案**「先广播再聚合」：先 Broadcast 把参数分发到各训练 PP rank（每卡持有全 layer 切片），再逐 layer 做 TP 域 AllGather——同名参数在不同 PP rank 上**重复做 TP 域 AllGather**，通信冗余显著。**优化方案**重构为**先 TP 域 AllGather 局部聚合、再 PP 域一次 AlltoAll 广播**：
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image18.png" width="62%"></p>
-<p align="center"><sub>图：TP 参数 reshard（PP4TP2）——Step1 各 TP 域内 AllGather 聚合分片，Step2 PP 域内一次 AlltoAll 即广播 PP 个参数，每卡获得整网参数（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·reshard 优化 / PP 域 Broadcast 通信优化）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image18.png" width="62%"></p>
+<p align="center"><sub>图：TP 参数 reshard（PP4TP2）——Step1 各 TP 域内 AllGather 聚合分片，Step2 PP 域内一次 AlltoAll 即广播 PP 个参数，每卡获得整网参数（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·reshard 优化 / PP 域 Broadcast 通信优化）</sub></p>
 
 两点收益：先 TP 后 PP 的顺序调整减小总通信量与次数；原本 PP 域内一个参数一次 Broadcast，优化后**一次 AlltoAll 完成 PP 个参数的广播**。通信对比（n 层、单层完整参数量 m、单层 TP 参数数 k、训练 PP=p、TP=t，以每卡接收量计）：
 
-| | Step1（TP 域 AllGather） | Step2（PP 域广播/AlltoAll） |
+| | Step1 | Step2 |
 |---|---|---|
-| 优化前 | 通信量 ≈ `n*m/t`（PP 域广播收集全部参数）、次数 `n*k` | 通信量 ≈ `n*m`、次数 `n*k` |
-| 优化后 | 通信量 ≈ `n*m/p`（TP 域参数全聚合）、次数 `n*k/p` | 通信量 ≈ `n*m`、次数 `n*k/p` |
+| 优化前 | PP Broadcast：通信量 ≈ `n*m/t`、次数 `n*k` | TP AllGather：通信量 ≈ `n*m`、次数 `n*k` |
+| 优化后 | TP AllGather：通信量 ≈ `n*m/p`、次数 `n*k/p` | PP AlltoAll：通信量 ≈ `n*m`、次数 `n*k/p` |
 
 通常 p>t（如 p=8/t=4），优化后 Step1 通信量**减半**；TP 域 AllGather 与 PP 域通信**次数各减少 `(p-1)/p · n*k`**；Step2 通信量不变。注：`.mlp.experts.weight` 走上面的专家 AlltoAllV；`embedding`/`output_layer` 及 MLP dense 层暂未纳入，后续迭代。
 
@@ -94,8 +94,8 @@ vLLM 的 `wake_up`/`sleep` 在 NPU 多机实测仍有问题（无法释放显存
 - 训练后紧接着 reshard 时仍需训练模型权重，因此训练后无需卸载 Megatron 权重、推理前也无需再次加载，这两步冗余的 offload/onload 可省去。
 - `init_cache_engine` 尽量后置（例如放在 reshard 结束、卸载 Megatron 训练权重之后执行），可降低峰值内存、提高 vLLM 内存利用率，有助于提升推理性能。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image19.png" width="55%"></p>
-<p align="center"><sub>图：offload/onload 流程调整——「训练后」由卸载权重+梯度改为「仅卸载梯度、权重保留」供 reshard 复用，`init_cache_engine` 后置到 reshard 与训练权重卸载之后以降峰值（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·offload 优化）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image19.png" width="55%"></p>
+<p align="center"><sub>图：offload/onload 流程调整——「训练后」由卸载权重+梯度改为「仅卸载梯度、权重保留」供 reshard 复用，`init_cache_engine` 后置到 reshard 与训练权重卸载之后以降峰值（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·offload 优化）</sub></p>
 
 注意，verl 适配 vLLM-Ascend 时须**显式关闭 sleep 模式**——否则 weight 与 kv_cache 会被 vLLM 自定义内存池管理，后续无法用 torch_npu 手动卸载（详见 [verl](../frameworks/verl.md) 适配）。从 reshard 后的视角看，「权重保留」让训练权重与推理 cache 在切换瞬间的显存峰值通过**时序错开 + 后置 cache 分配**被压低，间接提升 rollout 阶段可用显存与吞吐。
 
@@ -144,11 +144,8 @@ veRL 侧之所以「用 `onload_model_weight` + `init_cache_engine` 替代 vLLM 
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/deepseek_rl_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md)（§3.2 D2D 数据传输：TensorCache / AlltoAllV / 单控制器解耦 / 收益 +14.4%；§4.1 reshard：专家 AlltoAllV 定向路由 99.6% / PP 域 Broadcast→TP-先-PP；§4.2 offload：MindSpeed-RL onload/init_cache 替代 wake_up/sleep + 权重保留 + init_cache 后置；§1.4 真实/随机权重 123.16/250.2 TPS 训推切换拆解）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/deepseek/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/deepseek/README.md)（128 卡 A3 / DeepSeek-V3-671B / GBS512 / 120 TPS recipe；`train_deepseekv3_256die_{random_init,true_weight}.sh` 启动脚本；`convert_ckpt_deepseek3.py` 权重切分 `--moe-tp-extend-ep` / TP4PP8EP8）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`docs/zh/features/resharding.md`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/features/resharding.md)（ShardingManager/WeightContainer/WeightAdaptor/MegatronOffloader 四模块；参数分桶 0 冗余切换；`actor_config`/`generate_config` 并行配置；TP×k / PP→DP / EP×k 变换约束表）、[`docs/zh/features/offload.md`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/features/offload.md)（`offload_train_optimizer/grad/param` 三开关；推理态卸训练态优化器/梯度降峰值）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/workers/resharding/megatron_sharding_manager.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/resharding/megatron_sharding_manager.py)（`MegatronShardingManager.enter_infer_mode` 四步 onload_infer→get_infer_params→offload_param→sync_model_weights；`exit_infer_mode`/`enter_train_mode`/`enter_forward_mode`；`offload/onload_infer_params`→`WeightBuffer.destroy/rebuild`）、[`vllm_weight_container.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/resharding/vllm_weight_container.py)（`get_infer_params`；`allgather_tp_param`/`split_tp_params`；`_update_weight_buffers_inter_pp` 的 `dist.broadcast`；`trans_ep_params_to_tp` 的 `torch.distributed.all_to_all`；`_send_receive_experts`/`get_expert_router` P2P；`_send_receive_redundancy_experts` EPLB）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/workers/resharding/megatron_off_loader.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/resharding/megatron_off_loader.py)（`offload/onload_{param,optimizer,grad}`；`swap_tensors_to_host/device` 的 `storage().resize_(0)` 换页 + `tensor_to_cpu_states_map` CPU 镜像；grad `copy_data=False`；`reuse_fp32_param` 的 `reuse_data_ptr` 地址重映射）、[`actor_hybrid_worker.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/actor_hybrid_worker.py)（`generate_sequences` 包 `enter/exit_infer_mode` 并打 `timing/resharding_*`；`update` 包 `enter_train_mode`；`init_cache_engine`/`free_cache_engine`；`_build_sharding_manager` 注入 `offload_train_*`）、[`integrated_worker.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/workers/integrated_worker.py)（Actor·Reference·Reward 全共卡多继承；`share_backbone` 时 ref 复用 actor offloader）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [deepseek_rl_train_optimization.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md)（supporting）
 
 ## Links
 
@@ -157,7 +154,7 @@ veRL 侧之所以「用 `onload_model_weight` + `init_cache_engine` 替代 vLLM 
 - [mindspeed](../frameworks/mindspeed.md)（训练侧引擎；本实践训练优化复用来源——内存/通信/计算优化、融合算子）
 - [swap-optimizer](swap_optimizer.md)（训练态优化器状态卸载，与训推切换的推理态显存卸载互补的显存优化）
 - [expert-parallel](../../../inference/concepts/parallelism/expert_parallel.md)（跨域：MoE 专家并行；reshard 把训练 EP 布局重切到推理 EP）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — DeepSeek-R1 RL 训练昇腾优化实践
+- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba) — DeepSeek-R1 RL 训练昇腾优化实践
 - [qwen3-rl](../../guides/recipes/qwen3_rl.md)（Qwen3 235B RL 训推切换）
 - [mindspeed-rl](../frameworks/mindspeed_rl.md)（MindSpeed-RL 训推共卡引擎实现训推态切换；onload/offload 范式来源——`onload_model_weight`/`init_cache_engine` 替代 `wake_up`、`offload_model_weight`/`free_cache_engine` 替代 `sleep`）
 - [vllm-ascend](../frameworks/vllm_ascend.md)（MindSpeed-RL rollout 经 vLLM-Ascend adapter 切换）

@@ -20,7 +20,7 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/5776
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:29:19Z'
 platforms:
 - a3
 - '950'
@@ -97,9 +97,8 @@ out_i = torch_npu.npu_prompt_flash_attention(
 
 ## Evidence
 
-- `维护者确认`（@e8eb697）：MoE 部署 TP vs DP+EP 的时延/吞吐权衡（RFC 答复）。
-- `维护者确认`（@2c45117）：DeepSeek-V4 无 910B 原生路径、建议 Flash 变体自行适配。
-- `diff 事实`（@938a6c2）：310P MLA decode 用 MQA 算子承载、多卡需定制 HCCL。
-- `diff 事实`（@524914b）：950 用 `hccl_op_expansion_mode:5` + `HCCL_BUFFSIZE`、单机 8 芯，由 platform_version 门控。
-- `维护者确认 + diff 事实`（@1ffca86）：310P 上 `_npu_flash_attention_unpad` 有精度问题（作者 review 明确陈述）；合并态 `mm_encoder_attention.py` 改用逐段 `npu_prompt_flash_attention`（BSND），diff 中未再出现 unpad 算子。
-- 溯源下探：[cann-recipes-infer-issue-4-rfc-qwen3-moe-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/4)、[cann-recipes-infer-issue-179-question-8-910b2-64gb-deepseekv4](https://gitcode.com/cann/cann-recipes-infer/issues/179)、[cann-recipes-infer-pr-128-feat-support-deepseekv3-on-ascend310p-20](https://gitcode.com/cann/cann-recipes-infer/merge_requests/128)、[cann-recipes-infer-pr-366-support-deepseek-v4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/366)、[vllm-ascend-pr-5776-feature-support-310p-device-run-qwen2-5-3-dense-and-qwen2-5vl-models](https://github.com/vllm-project/vllm-ascend/pull/5776)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/4)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/179)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/128)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/366)（evidence）
+- [远程来源](https://github.com/vllm-project/vllm-ascend/pull/5776)（evidence）

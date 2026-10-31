@@ -8,12 +8,14 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/smolvla/train/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/smolvla/train/README.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/smolvla/train/doc/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:37Z'
 platforms:
 - a2
 ---
@@ -62,15 +64,17 @@ platforms:
 | 910b | 昇腾 Atlas A2 8 卡 | 每卡 `batch_size:32` | `256` | `1.05 ~ 1.10s` | `233 ~ 244 samples/s` |
 | h20 | 2 卡 | 每卡 `batch_size:8` | `16` | `0.176 ~ 0.181s` | `88.4 ~ 90.9 samples/s` |
 
-基于 `100000` step checkpoint、`seed=3000`、`eval.n_episodes=1` 的一轮 LIBERO 在线评测（policy 走 NPU、仿真 CPU 侧 `MUJOCO_GL=osmesa`；CUDA 主机评测可用 `rename_map` 映射 image→camera）：`libero_spatial 90.0%` / `libero_object 100.0%` / `libero_goal 90.0%` / `libero_10 80.0%`，平均 `90.0%`。
+基于 `100000` step checkpoint、`seed=3000`、`eval.n_episodes=1` 的一轮 LIBERO 在线评测（来源记录 MUJOCO_GL=egl、PYOPENGL_PLATFORM=egl 与 rename_map；README 对应命令为 --policy.device=cuda。这组成功率不能归为 NPU/OSMesa 的验证结果，NPU 启动与 OSMesa 排障入口见上节）：`libero_spatial 90.0%` / `libero_object 100.0%` / `libero_goal 90.0%` / `libero_10 80.0%`，平均 `90.0%`。
 
 ## Evidence
 
-- [cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1) — [`manipulation/smolvla/train/README.md`](https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/smolvla/train/README.md)、[`manipulation/smolvla/train/doc/README.md`](https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/smolvla/train/doc/README.md)（训练样例 README 与迁移文档）。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/smolvla/train/README.md)（supporting）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/smolvla/train/doc/README.md)（supporting）
 
 ## 关联
 
 - 动作生成范式对照：[action-chunking](../modules/action_chunking.md)、[flow-matching-action-expert](../modules/flow_matching_action_expert.md)
 - 同为 LIBERO 操作类、走 VLM 主干的 VLA 样例：[openvla](openvla.md)
 - 多卡训练静态图相关（同仓训练侧技术）：[ddp-static-graph](../techniques/ddp_static_graph.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

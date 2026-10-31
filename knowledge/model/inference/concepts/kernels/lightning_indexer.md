@@ -1,17 +1,7 @@
 ---
 type: Concept
 title: Lightning Indexer Kernel
-description: '`LightningIndexer` 是 DeepSeek-V3.2-Exp / DeepSeek-V4 稀疏 Attention 的前置算子
-  —— 完整执行 `BatchMatmul → ReLU → Broadcast × W → ReduceSum → Top-k` 五步，为每 query token
-  精确（非近似）选出 TopK 个相关 KV index 喂给下游稀疏 Attention，将 Top-k 计算融合进单一算子（具体收益见平台限定的来源观测）。K 随模型而异：V3.2-Exp
-  DSA 在完整上下文选 TopK=2048 喂给 SparseFlashAttention；V4 仅在 C4A(compress_ratio=4,CSA)层对
-  Compressor 压缩后 cmp_KV 做 Top-k（运行时取 config.index_topk，guide 例 512）喂给 SAS 的 SCFA（不同模型不同
-  K 并列保留）。提供 AscendC/PyPTO/TileLang 三路实现。V4 CSA 层增强：A3 LI Tiling 沿用 V3.2-Exp，适配 compress_ratio
-  阶梯形状 mask 产 cmp_sparse_indices；950PR/DT 量化版 LI（INT8/FP8 共用 torch.ops.custom.npu_quant_lightning_indexer，非独立
-  FP8 算子；FP8 区别在上游 q 经 npu_dynamic_block_quant 量化、INT8 经 npu_dynamic_quant）；Top-k
-  两套平台分支并列：Atlas-A3 sort32+mrgsort（S_k=16384,k=512 约 28375 cycle，沿用 V3.2-Exp）/ 950PR/DT
-  Histograms 直方图（保序变换+多级直方图分桶 value_k=a1·2^24+a2·2^16+a3·2^8+a4+向量化筛选，理论 (S_k/256·111+192)
-  cycle，S_k=16384 约 7296 cycle，cycle 前提为 950PR/DT 平台）。阶梯 mask 形状参数源未给（待验证）。'
+description: LI 的精确 TopK、当前 V4 压缩长度/余数与 Int8、FP8、HiF8 模式，以及 CP 临时缓存和 metadata 配对。
 tags:
 - task.implementation
 - topic.attention
@@ -19,12 +9,18 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_ascendc_operator_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/indexer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:35:31Z'
+updated_at: '2026-10-29T15:22:24Z'
 platforms:
 - a3
 - '950'
@@ -68,8 +64,8 @@ flowchart LR
 
 LI 只有两个阶段 —— Matmul+ReLU ($C_1$) 与向量计算 ($V_1$)。朴素串行会互相阻塞，**提前下发（Preload）一次 $C_1$** 实现流水互相掩盖。
 
-![LI Pipeline](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/LIpipeline.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/LIpipeline.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/LIpipeline.png)（cann-recipes-infer @ 2f82d10）*
+![LI Pipeline](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/LIpipeline.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/LIpipeline.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/LIpipeline.png)（cann-recipes-infer @ 944d2d3）*
 
 **ReLU 随路实现**：Cube 核 FixP 组件提供随路 ReLU —— Matmul 完成后在数据搬出 Cube 核过程中直接做 ReLU，不需要显式从 Cube 向 Vector 核搬运后再算。参考 [基础 API: FixP 相关](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/ascendcopapi/atlasascendc_api_07_0251.html)。
 
@@ -77,18 +73,18 @@ LI 只有两个阶段 —— Matmul+ReLU ($C_1$) 与向量计算 ($V_1$)。朴�
 
 1. **分组排序**（`VBS32`）：每 32 个 token 按 Score 稳定降序排列；
 
- ![TopK Step 1](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/topkstep1.png)
- *来源：[`docs/models/deepseek-v3.2-exp/figures/topkstep1.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/topkstep1.png)（cann-recipes-infer @ 2f82d10）*
+ ![TopK Step 1](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/topkstep1.png)
+ *来源：[`docs/models/deepseek-v3.2-exp/figures/topkstep1.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/topkstep1.png)（cann-recipes-infer @ 944d2d3）*
 
 2. **归并**（`VMS4v2`）：至多 4 组（长度 32/128/512）已排序向量归并，重复至长度达 2048；
 
- ![TopK Step 2](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/topkstep2.png)
- *来源：[`docs/models/deepseek-v3.2-exp/figures/topkstep2.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/topkstep2.png)（cann-recipes-infer @ 2f82d10）*
+ ![TopK Step 2](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/topkstep2.png)
+ *来源：[`docs/models/deepseek-v3.2-exp/figures/topkstep2.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/topkstep2.png)（cann-recipes-infer @ 944d2d3）*
 
 3. **规约**（`VMS4v2` 耗尽模式）：至多 4 组长度 2048 向量归并，取前 k=2048 与未参与合并排序的向量重复 Top-k，直至得到全局 TopK。
 
- ![TopK Step 3](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/topkstep3.png)
- *来源：[`docs/models/deepseek-v3.2-exp/figures/topkstep3.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/topkstep3.png)（cann-recipes-infer @ 2f82d10）*
+ ![TopK Step 3](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/topkstep3.png)
+ *来源：[`docs/models/deepseek-v3.2-exp/figures/topkstep3.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/topkstep3.png)（cann-recipes-infer @ 944d2d3）*
 
 **TopK 总计算量**（源文档推导）：分组排序 + 归并 $= 4 S_k$；规约部分蒙特卡洛估计 $\approx 0.36 S_k + 3.32 k$；合计 $\approx 4.36 S_k + 3.32 k$。
 
@@ -110,22 +106,22 @@ $$\text{Top-}k\left\{\tilde{W}^T @ \text{ReLU}(Q_{index}^{INT8}@(K_{index}^{INT8
 6. Vector 核读 $P$，按 $Scale_K$ 反量化：$Score = P \odot Scale_K^T$；
 7. Vector 核上做 Top-k。
 
-![Mat-Duce 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/matduce_quant.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/matduce_quant.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/matduce_quant.png)（cann-recipes-infer @ 2f82d10）*
+![Mat-Duce 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/matduce_quant.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/matduce_quant.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/matduce_quant.png)（cann-recipes-infer @ 944d2d3）*
 
 > 收益："将大部分向量操作通过数学变换以 Cube 核实现（步骤 5），同时充分利用了 FixP 随路量化激活搬运能力，将量化矩阵乘法的结果从 INT32 数据类型转化为 FP16 数据类型（步骤 3, 4），得以进行第二次半精度的矩阵乘法操作，显著提升了算子性能。"
 
 ### PyPTO 实现
 
-![Lightning Indexer（PyPTO 视角）](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer.png)（cann-recipes-infer @ 2f82d10）*
+![Lightning Indexer（PyPTO 视角）](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/DeepseekLightningIndexer.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/DeepseekLightningIndexer.png)（cann-recipes-infer @ 944d2d3）*
 
 源码：`ops/pypto/src/lightning_indexer_pto/op_kernel/lightning_indexer_topk.cpp`。
 
 **首版开箱**泳道图（4 batch × 64K）：
 
-![LI 泳道图 V0](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_0.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_0.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_0.png)（cann-recipes-infer @ 2f82d10）*
+![LI 泳道图 V0](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/DeepseekLightningIndexer_0.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_0.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/DeepseekLightningIndexer_0.png)（cann-recipes-infer @ 944d2d3）*
 
 开发者通过可视化环境识别三个异常点：
 
@@ -144,81 +140,43 @@ TileShape::Current().SetVecTile({64, 256}); // MatMul 输出到连续内存后 V
 - 针对异常点 2：通过 `SetVecTile({64, 256})` 改为大颗粒度 Vector 运算。
 - 相对结果统一见[分组来源观测](../../optimizations/benchmark_observations/operator_tuning_source_observations.md)，新版泳道图仍用于解释依赖和调度：
 
-![LI 泳道图 V1](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_1.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_1.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_1.png)（cann-recipes-infer @ 2f82d10）*
+![LI 泳道图 V1](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/DeepseekLightningIndexer_1.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/DeepseekLightningIndexer_1.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/DeepseekLightningIndexer_1.png)（cann-recipes-infer @ 944d2d3）*
 
 ### TileLang 实现
 
 源码 `ops/tilelang/lightning_indexer.py`、文档 `ops/tilelang/docs/`。
 
-![TileLang LI 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/tl-lightning-indexer.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-lightning-indexer.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/tl-lightning-indexer.png)（cann-recipes-infer @ 2f82d10）*
+![TileLang LI 计算流程](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-lightning-indexer.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/tl-lightning-indexer.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/tl-lightning-indexer.png)（cann-recipes-infer @ 944d2d3）*
 
 - 输入输出：Query `(B, S1, N1, D)`、Key `(B, S2, N2, D)`、QK_RES `(B, N2, S1, G*S2)`、WEIGHTS `(B, S1, N2, G)`、OUT `(B, N2, S1, TOP_K)`；满足 `G × N2 = N1`。
 - **Cube 核**：L1 存 Q 和 K（`BLOCK_M/N/K=128`）、L0C 存 C；循环 `n2 → g → m(S1) → n(S2)` 分块矩阵乘；`T.gemm_v0(transpose_B=True)` + `T.copy(enable_relu=True)` 把 ReLU 随路到 FixPipe。
 - **Vector 核**：`N2*S1` 任务平均分到 2 个 Vector 核；按 `VECTOR_BASEN` 分块做 `reduce_sum` 沿分组维度求和得 Score；Top-K 用**增量式归并排序**：`merge_sort_times = TOP_K // VECTOR_BASEN`，首次 `T.merge_sort`，后续归并后再 Top-K 保持结果集大小；最终 Cube/Vector 通过 `T.set_cross_flag("FIX", 0)` 同步。
 
-## DeepSeek-V4 CSA 层增强
+## DeepSeek-V4 当前接口
 
-DeepSeek-V4 的交错 Hybrid Attention 中，仅 **C4A 层（compress_ratio=4，即 CSA）** 会对压缩后的 cmp_KV 做进一步稀疏化，这一稀疏选择延续 DSA 设计、基于 LI 进行。LI 的计算流程与核心功能保持不变（仍是 `Matmul → ReLU → 吸收反量化 → 广播乘 W → ReduceSum → 反量化 Score → Top-k`），V4 在三处做了增强；上文 V3.2-Exp 的 A3 Tiling / TopK 指令 / Mat-Duce 量化内容继续有效（A3 上 LI Tiling 沿用 V3.2-Exp 设计）。
+V4 仅 C4A/CSA 在压缩后 KV 上使用 LI，TopK 取加载权重的 config.index_topk，技术文档中的512只是示例。当前调用 cann_ops_transformer.quant_lightning_indexer，Query=TND、Key=PA_BBND，传压缩后的 seqused_k（原长度整除4）与 cmp_residual_k（余数），不能沿用原始上下文长度或旧 custom.npu_quant_lightning_indexer 参数。
 
-### 压缩比阶梯 mask 计算
+量化模式 Int8=2、FP8=1、HiF8=4，必须与 quant_lightning_indexer_metadata 一致。Int8 Query 使用 dynamic_quant 和 FP16 scale；FP8 用 dynamic_block_quant 和 FP32 scale；HiF8 在 RoPE 后量化、跳过 Hadamard，并传单位 Q/Key descale。Indexer weights_proj 在 HiF8 mm 模式也量化，其他模式不量化。
 
-V4 LI 作用于 Compressor 压缩后的 Indexer Cache（每 4 个 token 压成 1 个），因此 A3 上的 LI 在原算子基础上**适配了 compress_ratio 对应的阶梯形状 mask 计算逻辑**——使得每个 query token 在压缩后的 KV 序列上选取与其有效因果可见范围对齐的 cmp index。该路径产出 `cmp_sparse_indices`，供 [sparse-attn-sharedkv](sparse_attn_sharedkv.md)（SAS）的 SCFA（sparse compressed flash attention）离散选取压缩 KV。
+离线 CP 读临时完整压缩缓存，prev/next 各执行 LI，返回每段 packed [T,1,K] 索引供 SAS；主模型的持久压缩缓存经框架绑定。详细前处理见[Indexer Prolog](indexer_prolog.md)，格式见[950混合量化](../quantization/hybrid_mxfp8_mxfp4.md)。
 
-> 阶梯 mask 的具体形状参数（步长/对齐粒度）源文档未给出公式，仅说明"适配了 compress ratio 对应的阶梯形状 mask"，**待验证**。
-
-### 量化版 LI：INT8 / FP8（950PR/DT）
-
-INT8 与 FP8 两种 `li_cache_quant_mode` 走的是**同一个** `torch.ops.custom.npu_quant_lightning_indexer`（`indexer.py` `forward_li_quant`），并非独立的 FP8 算子；FP8 的差异在于**上游 q 的量化方式**——INT8 走 `npu_dynamic_quant`、FP8 走 `npu_dynamic_block_quant`（见 [indexer-prolog](indexer_prolog.md)）。
-
-V4 在 950PR/DT 上为 LI 适配了 **FP8（E4M3）量化版**：此模式下 $Q_{index}, K_{index}$ 为量化后的 FP8 矩阵，量化时已对每个头、每个 token 产出反量化系数 $Scale_q \in \mathbb{R}^{n\times S_q\times 1}$、$Scale_k \in \mathbb{R}^{S_k\times 1}$。计算流程：
-
-$$\text{Top-}k\left\{[1]_{1\times n}@_n\left[(W'@_1[1]_{1\times S_k})\odot\text{ReLU}(Q_{index}@_d K_{index}^T)\right]\right\},\quad W'=Scale_q\odot W,\ Score=(Scale_k@_1[1]_{1\times S_q})^T\odot Score$$
-
-模型侧调用走 `torch.ops.custom.npu_quant_lightning_indexer`（`models/deepseek-v4/models/modules/indexer.py:L216`，INT8/FP8 共用此算子；FP8 路径下 `li_cache_quant_mode != "int8"` 时 q 由 `npu_dynamic_block_quant` 量化为 FP8，INT8 路径则由 `npu_dynamic_quant` 量化）。此 FP8 精度与 V3.2-Exp 的 INT8 Mat-Duce 量化（上文）为不同量化精度，并列保留。
-
-### Top-k 950PR/DT 直方图方案
-
-LI 的核心是在数十万长度（$S_k$）序列中为每个 token **精确**选出分数最高的 $k$（V4 CSA 例如 512）个 index，**不能近似**。950PR/DT 提供 **Histograms（直方图）指令**——一个 cycle 可将 64 个 uint8 数字分到 0-127 或 128-255 桶——据此实现了一套替代 A3 `sort32`/`mrgsort` 的 Top-k 算法：
-
-**1. 保序变换**：把 float Score 的二进制 $x$ 变换为 uint32，使其大小序与浮点序一致（载荷片段原样保留）：
-
-```c
-uint32_t mask = (x & 0x80000000) ? 0xffffffff : 0x80000000;
-return (f == f) ? (x ^ mask) : 0x0;   // nan → 0；负数 → ~x；非负 → x ⊕ 2^31
-```
-
-bfloat16 Score 则同法转 uint16（只需二级直方图）。
-
-**2. 多级直方图分桶**：将 uint32 由高到低切为 4 个 8 位（uint8）。利用"高 8 位 `a_8 < b_8` ⇒ `a < b`"逐级定位第 $k$ 大值的每个 8 位：对当前剩余元素提取该级 8 位绘制直方图（返回长度 256 的前缀和数组），与临界值 $S_k-k+1$ 比较找出第 Top-$k$ 所在桶 $a_i$，mask 掉该级小于 $a_i$ 的元素（丢弃 $C_i$ 个），逐级缩小集合。四级后得第 $k$ 大值：
-
-$$value_k = a_1\times 2^{24} + a_2\times 2^{16} + a_3\times 2^{8} + a_4$$
-
-**3. 向量化筛选**：以 256B 为单位将原序列与 $value_k$ 向量比较——先用 mask 取出所有 `> value_k` 的 index（不足 $k$ 个），再循环取 `= value_k` 的 index 直到补满 $k$ 个退出。
-
-**理论开销**（源文档，uint32、$S_k=16384$、$k=512$）：分 `hist1/find1/hist2/find2/hist3/find3/hist4/findKth/findGTO/findEQ` 十段，单段如 `hist1` 约 $(S_k/256\cdot 9 + 10)$ cycle、`findGTO` 约 $S_k/64\cdot 7$ cycle，累计约 $(S_k/256\cdot 111 + 192)$ cycle，$S_k=16384$ 时 **≈ 7296 cycle**。
-
-> ⚠️ **平台分支并列（非覆盖）**：LI Top-k 现有两套实现，按平台选择：
-> - **Atlas-A3**：`sort32` + `mrgsort`，理论开销 $(1.36S_k + 3.32k + \lceil \frac{\max(\log_2(k)-5,0)}{2}S_k\rceil)/2$ cycle，$S_k=16384,k=512$ 时 **≈ 28375 cycle**（沿用 V3.2-Exp 设计，见上文 TopK 指令实现）；
-> - **950PR/DT**：直方图 + 向量化筛选，**≈ 7296 cycle**（同 $S_k$）。
->
-> 两者均为精确 Top-k；cycle 数差异来自硬件指令代际，**直方图方案的 cycle 前提是 950PR/DT 平台**。
+950 直方图 TopK 的保序变换、逐字节分桶和补齐等值元素算法仍见当前 AscendC 技术文档：S_k=16384、k=512、uint32 的7296 cycle 与 A3 排序28375 cycle 都是特定输入的理论估算，不能当新硬件实测或所有形状的固定倍率。
 
 ## Optimization Notes
 
 - **TilingKey 模板化**：LI/SFA 均采用 Ascend C 的 Tiling 模板编程替代传统 TilingKey 数字编码 —— 以模板参数组合管理分支，提高代码可读性。见 [Tiling 模板编程](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/83RC1alpha002/opdevg/Ascendcopdevg/atlas_ascendc_10_00025.html)。
-- **分核计算下沉**：Attention 类算子的分核策略对 `actualSeqLengths` 有值依赖，传统 AICPU Tiling 有调度开销。V3.2-Exp 阶段进一步把分核计算**从 AICPU 下沉到 AICore 内部**，消除 Tiling 依赖前序算子的调度开销，简化调用链。在 DeepSeek-V4 中 LI 的值依赖分核改由独立的 **AICPU Scheduler 算子** `npu_quant_lightning_indexer_metadata` 承载（与 SAS 共用同一技术机制，与上述 AICore 内下沉为不同机制/方向，区分详见 [aicpu-scheduler](../techniques/aicpu_scheduler.md)）。
+- **分核计算下沉**：Attention 类算子的分核策略对 `actualSeqLengths` 有值依赖，传统 AICPU Tiling 有调度开销。V3.2-Exp 阶段进一步把分核计算**从 AICPU 下沉到 AICore 内部**，消除 Tiling 依赖前序算子的调度开销，简化调用链。在 DeepSeek-V4 中 LI 的值依赖分核改由独立的 **AICPU Scheduler 算子** `quant_lightning_indexer_metadata` 承载（与 SAS 共用同一技术机制，与上述 AICore 内下沉为不同机制/方向，区分详见 [aicpu-scheduler](../techniques/aicpu_scheduler.md)）。
 - **在 Decode 端可与 MTP 配合加速**：LI 的 KV 搬运量在 MTP1 下不变，计算访存比提升 —— 是 DSA 下 MTP 加速的主要受益者（见 [lightning-indexer](../modules/lightning_indexer.md) Performance）。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md)（LI 算子 Tiling、Pipeline、ReLU 随路、TopK 指令、Mat-Duce 量化、TilingKey 模板、分核下沉）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md)（PyPTO LI 调优与异常点分析）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（TileLang LI Cube/Vector 分解）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/ascendc/src/`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/ascendc/src/)（AscendC LI kernel 源码）、`ops/pypto/src/lightning_indexer_pto/`、`ops/tilelang/lightning_indexer.py`
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md)（V4 LI 增强：compress_ratio 阶梯 mask、FP8 全量化、950PR/DT 直方图 Top-k 算法与 cycle 推导；A3 LI Tiling 沿用 V3.2-Exp）。文档由 commit `985b882`/`5e9e41d` 编辑（diff 2f82d10..2c45117）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/indexer.py#L216`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/indexer.py#L216)（代码核对：CSA 层 `torch.ops.custom.npu_quant_lightning_indexer` 调用，`cmp_ratio:4`、`metadata=lightning_indexer_quant`；FP8 路径 q 经 `npu_dynamic_block_quant` 量化）。QLI 适配 hifp8 见 commit `e1d356f`；`quant_lightning_indexer_prolog_impl.cpp` 冗余头清理见 commit `f8c6f67`
+- [deepseek_v3.2_exp_ascendc_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_ascendc_operator_guide.md)（primary）
+- [deepseek_v4_ascendc_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_ascendc_operator_guide.md)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/indexer.py)（implementation）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py)（implementation）
 
 ## Links
 

@@ -7,10 +7,10 @@ tags:
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-10-21T09:02:45Z'
-updated_at: '2026-10-21T09:02:45Z'
+updated_at: '2026-10-29T15:09:57Z'
 platforms:
 - a3
 scope:
@@ -65,6 +65,4 @@ GBS 变化不能直接映射为并发，也不把每行条件拆到其他平台�
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)
-
-本次核对固定来源及必要配置，不将文档自报、来源固定或 Lint 通过记作硬件验证事件。
+- [deepseek_v4_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md)（primary）

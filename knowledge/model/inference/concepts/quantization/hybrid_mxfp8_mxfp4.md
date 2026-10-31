@@ -1,17 +1,27 @@
 ---
 type: Concept
-title: DeepSeek-V4 950 混合量化：FP8/MXFP8 与 MXFP4
-description: 说明 DeepSeek-V4 在 950 上的混合浮点量化及模块精度，Scope 仅声明来源支持的 Prefill/Decode 阶段；混合量化格式留在正文，具体配置与性能须另行核对。
+title: DeepSeek-V4 950 混合量化：HiF8、MXFP8 与 MXFP4
+description: 更新 950 的 HiF8 混合矩阵、FP8/HiF8 KV 记录格式和 A4W4 的转换、路由及加载校验。
 tags:
 - task.design
 - topic.precision
 - topic.attention
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v4/deepseek_v4_inference_guide.md
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/utils/convert_model.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/utils/convert_config.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/common_modules.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modules/indexer.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-10-21T09:02:45Z'
+updated_at: '2026-10-29T15:17:34Z'
 platforms:
 - '950'
 scope:
@@ -23,78 +33,39 @@ scope:
       - decode
 ---
 
-# DeepSeek-V4 950 混合量化：FP8/MXFP8 与 MXFP4
+# DeepSeek-V4 950 混合量化
 
-## Summary
+## 格式与模块边界
 
-DeepSeek-V4 在 Ascend 950PR/DT 代际平台上的浮点混合量化方案，引入 **MXFP4**（Micro-scaling FP4，OCP 微缩放格式，dtype `float4_e2m1fn_x2`）量化：
+950 路径支持原生 FP8-MXFP4、MXFP8-MXFP4，以及新增的 HiF8-MXFP8-MXFP4；选择由转换后的 quant_config 和实际模块决定，不能只按文件夹名判断。
 
-- **Hybrid FP8-MXFP4（原生）**：HuggingFace 发布的原始权重格式 —— 部分 Matmul 用 FP8 量化、MoE 模块用 MXFP4 量化；可在 950 平台**权重无损平滑迁移**直接推理。
-- **Hybrid MXFP8-MXFP4（硬件亲和，推荐 Flash/Pro）**：用 **MXFP8** 替换原生 FP8 格式的 Linear 模块（部分 Matmul MXFP8 + MoE MXFP4），在 Prefill/Decode 高吞吐场景进一步提升 950 算力利用率。KV Cache 采用 **C8 伪量化（动态存 8 算 16，Per-Group-64 FP8，Scale 格式 E8M0）**，超长序列省 2× KV 显存。
+| 模块 | MXFP8-MXFP4 | HiF8-MXFP8-MXFP4 |
+| --- | --- | --- |
+| MLA Q/KV 投影、输出投影 | MXFP8 W8A8 | HiF8 W8A8 |
+| Indexer Q 投影 | MXFP8 W8A8 | HiF8 W8A8 |
+| Indexer weights_proj | 不量化 | HiF8 W8A8 |
+| Compressor wkv / wgate | 不量化 | HiF8 W8A8 |
+| 路由专家 | MXFP4 W4、MXFP8 A8 | MXFP4 W4、MXFP8 A8 |
+| 共享专家 | MXFP8 W8A8 | MXFP8 W8A8 |
+| LMHead | 不量化 | 不量化 |
 
-二者均区别于 Atlas A3 Pod 的整数路径（见 [int8-int4-hybrid](int8_int4_hybrid.md)）：A3 走 Int8/W4A8 整数 + KV C16；950 走 FP8/MXFP8 浮点 + KV C8。cann-recipes-infer 的 MXFP8 另有 DiT 场景实现（[mxfp8-a8w8](mxfp8_a8w8.md)，HunyuanVideo Linear），与此处 V4 LLM 场景为不同模型用途。
+HiF8 Linear 使用静态 Per-Channel 权重量化、Per-Tensor 激活与 FP32 scale。该路径的 Indexer 不做 Hadamard 旋转，Q 由 Partial RoPE 后量化为 HiF8，LI 使用 quant_mode=4 与单位 descale；不能照搬 Int8/FP8 的旋转和 scale 布局。
 
-## Mechanism
+## KV Cache 与当前算子接口
 
-### Hybrid MXFP8-MXFP4 逐模块量化矩阵
+`update_kv_quant_settings` 在 950 的 HiF8 mm 模式下将 KV/LI cache 设为 hifloat8，其他浮点 mm 模式设为 float8。两类格式不同：
 
-源（`deepseek_v4_inference_guide.md` 量化策略 / Ascend 950PR/DT / Hybrid MXFP8-MXFP4）：
+- float8 KV 是混合打包记录：NoPE 为 FP8，RoPE 为 BF16，另有每 64 个 NoPE 元素的 BF16 scale；最后按 32 字节对齐，以 uint8 保存，调用 mixed_quant_sparse_flash_mla 时转 FLOAT8 view。记录维度为 align_up(nope_dim + 2×rope_dim + 2×nope_dim/64, 32)，不是所有通道都减半。指南的 C8/约 2× 为总体策略口径，实际容量按记录和状态缓存计算。
+- hifloat8 KV 以 head_dim 个字节保存，Query/KV 经量化后走 quant_sparse_flash_mla，显式传 q/ori_kv/cmp_kv descale。LI cache 由 indexer_quant_cache 写回，HiF8 slot_mapping 要转连续 INT32；Q/Key scale 的当前接口与 FP8 Per-Token-Head scale 不相同。
 
-| 模块 | W 侧 | A 侧 | KV / Cache | 备注 |
-| ---- | ---- | ---- | ---- | ---- |
-| MLAProlog | `q_a_proj` / `q_b_proj` / `kv_proj` W8A8（MXFP8） | — | **KV Cache C8 伪量化** | 动态存 8 算 16 |
-| IndexerProlog | `q_b_proj` W8A8 | `indexer_q` A8 | Indexer Cache **C8** | `indexer_weight` 不量化 |
-| LightningIndexer | — | `batch_matmul` **FP8 计算** | — | A8C8，见 [lightning-indexer](../kernels/lightning_indexer.md) |
-| Compressor | Linear 不量化 | — | — | 见 [compressor](../kernels/compressor.md) |
-| MLAEpilog | `o_a_proj` / `o_b_proj` W8A8 | — | — | A3 Int8 档 `o_a_proj` 不量化，此处量化（差异） |
-| MoE | 路由专家 Linear **W4A8（MXFP4）** | 共享专家 Linear W8A8 | — | — |
-| LMHead | 不量化 | — | — | — |
+当前 FP8 LI 使用动态 Per-Token-Head FP8 与 FP32 scale。整数路径见[A3 量化](int8_int4_hybrid.md)，不可把 950 的格式套到 A3。
 
-源注：此处 W8A8 的 W 与 A 均指 **MXFP8** 量化；LI A8C8 = Indexer Q/Cache 动态 Per-Token-Head **FP8**（Scale 格式 FP32）；KV Cache C8 = 动态 Per-Group-64 **FP8**（Scale 格式 E8M0）。
+## 转换与新增 A4W4
 
-### MXFP4 量化算法（代码核对）
+原生混合权重推理仍需按 README 转换 config.json，先备份；转换脚本会覆盖它。当前 convert_model.py 的可执行选项包括 `w4a8-mx`、`w4a4-mx`、`w4a8-mx-hif`。`w4a4-mx` 对两次路由专家 Matmul 的激活均采用 MXFP4，config 中 moe_activation_bits=4；默认 A8 为 8。模型在加载前拒绝非 950 的 A4W4，并校验选择 W4A4MxFp4MoEGMMMethod。
 
-MXFP4 路径实现于 `module/quantization/mxfp4.py`：
+A4W4 Decode dispatch 提前量化激活以降低 EP 通信，quant_mode=4、y_dtype=float4_e2m1fn_x2，re-routing 需同一 tokens_dtype；不能只把 GMM 权重 dtype 改为 FP4。低时延 TP 与 EP 的路由流程不同，配置边界见[部署流程](../../guides/models/deepseek_v4_deployment.md)。
 
-- MoE GMM 方法类 `W4A8MxFp4MoEGMMMethod`，及上/下投影分别 W4A4/W4A8 的子类 `UpGateW4A4DownW4A8MxFp4MoEGMMMethod`（继承前者）。
-- MXFP4 权重 dtype 为 `torch_npu.float4_e2m1fn_x2`；激活量化经 `torch_npu.npu_dynamic_mx_quant(x, dst_type=torch.float8_e4m3fn)`（A8 用 FP8 E4M3）或 `dst_type=torch_npu.float4_e2m1fn_x2`（A4）。
-- 权重转换 `convert_model.py` 从 `mx_quantize.py`（`models/deepseek-v4/utils/mx_quantize.py`）导入 `quantize_mx` / `pack_uint4` / `unpack_uint4` / `f4_unpacked_to_f32` / `f32_to_f4_unpacked` 完成 MXFP4 打包。
-- 转换为 Hybrid MXFP8-MXFP4 权重：`--quant_type w4a8-mx`（源 README）。
+## 验证
 
-> `modeling_deepseek.py` 中 `quant_mode` 注释「2: mxfp8 for dst_dtype e5m2; 3: mxfp8 for dst_dtype e4m3; 4: fp8 for dst_dtype e5m2; 5: fp8 for dst_dtype e4m3」；950 平台当 `"float" in mm_quant_mode` 时 KV/LI Cache 置 `float8`，否则 LI Cache 置 `int8`（`update_kv_quant_settings`）。
-
-## Applicable Scenarios
-
-- **Ascend 950PR/DT，Flash/Pro**：Hybrid MXFP8-MXFP4 为推荐档，高吞吐 Prefill/Decode。
-- **权重平滑迁移**：原生 Hybrid FP8-MXFP4 权重可直接在 950 推理，无需 convert（源 README：原生权重推理可跳过转换步骤）。
-- 超长序列（128K~1M）：C8 KV 伪量化省 2× KV 显存。
-
-## Constraints
-
-- **仅 950PR/DT 代际**：FP8/MXFP8/MXFP4 浮点路径与 KV C8 为 950 平台特性；A3 Pod 走整数路径（[int8-int4-hybrid](int8_int4_hybrid.md)）。
-- **MXFP4 算法依赖 `mx_quantize`**：打包/解包逻辑在 cann-recipes-infer 的 `models/deepseek-v4/utils/mx_quantize.py`（`quantize_mx`）；底层 `npu_dynamic_mx_quant` / `float4_e2m1fn_x2` 由 torch_npu 提供。
-- **MXFP8 区分 DiT 场景**：V4 LLM 使用部分 Matmul MXFP8；[mxfp8-a8w8](mxfp8_a8w8.md) 是 HunyuanVideo DiT Linear 的 MXFP8 A8W8，用途不同。
-
-## Known Results
-
-来源自报的性能与完整负载条件统一维护在[分平台性能观测](../../optimizations/benchmark_observations/deepseek_v4_950_source_benchmark.md)。本机制卡只维护模块精度与格式边界，不重复性能表，也不将来源数字表述为性能保证。
-
-## Evidence
-
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)「量化策略 / Ascend 950PR/DT / Hybrid MXFP8-MXFP4」（逐模块矩阵 L248-269）+「Benchmark / 950DT」（Flash/Pro 表 L341-370）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`module/quantization/mxfp4.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/module/quantization/mxfp4.py)（已代码核对：`W4A8MxFp4MoEGMMMethod` / `UpGateW4A4DownW4A8MxFp4MoEGMMMethod` / `float4_e2m1fn_x2` / `npu_dynamic_mx_quant`）、[`models/deepseek-v4/utils/mx_quantize.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/utils/mx_quantize.py)（`quantize_mx` L375）、[`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（`quant_mode` 注释 L494、`update_kv_quant_settings` 950 float8 分支 L1786-1796）、[`models/deepseek-v4/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/README.md)（`--quant_type w4a8-mx` L140）
-- 溯源（@2c45117）：`5df82b1` support deepseek v4（MR!366，引入 MXFP4 量化路径）；`5ba7598` 950 combine quant
-
-## Links
-
-- [deepseek-v4](../models/deepseek_v4.md)
-- [int8-int4-hybrid](int8_int4_hybrid.md)
-- [mxfp8-a8w8](mxfp8_a8w8.md)
-- [w4a8c8](w4a8c8.md)
-- [lightning-indexer](../kernels/lightning_indexer.md)
-- [compressor](../kernels/compressor.md)
-- [ascend-950](../platforms/ascend_950.md)（原生 FP8 / MXFP4 浮点算力的硬件平台来路）
-- [sana-video](../models/sana_video.md)（MXFP4 `float4_e2m1fn_x2` 的另一用途：SANA DiT 的 `quant_type=a4w4`，`QuantLinear.forward_a4w4`，部分层回退 a8w8；与本页 DeepSeek-V4 MoE W4A8 MXFP4 为不同模型场景）
-## Scope 与证据边界
-
-Scope 仅声明固定指南支持的 Prefill/Decode 阶段。现有 `quantization` 数组表达备选值的 OR，无法表达本卡中 FP8/MXFP8 与 MXFP4 按模块共同组成的混合方案，因此暂不标注这一维度。即使查询显式指定 FP8、MXFP4 或 BF16，本卡的量化适用性仍为未知；保留召回不表示确认支持该格式。具体权重、模块配置和后端必须阅读全文核对。本次仅核对来源文档，未执行硬件复测，来源表不能作为本仓新增验证事件。
+固定权重、配置、后端和输入，检查转换结果、每个模块量化方法、scale/打包记录、接受率及输出精度，再比较时延与容量。来源性能见[950 观测](../../optimizations/benchmark_observations/deepseek_v4_950_source_benchmark.md)；本次未执行模型或复测。DiT MXFP8 是[另一条实现](mxfp8_a8w8.md)。

@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: GDN Chunk 算子（solve_tril / chunk_delta_h / chunk_o / wy_fast Triton 核）
-description: 门控 DeltaNet（GDN）线性注意力 prefill/训练侧的 chunk-parallel Triton 算子族（MindSpeed core mindspeed/ops/triton，经 triton-on-ascend 后端落昇腾），由 MindSpeed-LLM 的 ChunkGatedDeltaRuleFunction 串成正反向。算子链：chunk_local_cumsum（log 门控 g 前缀和）→ chunk_scaled_dot_kkt（β·tril(KKᵀ)·门控衰减）→ solve_tril（严格下三角求 (I+A)⁻¹，前代求逆 + 16×16→32×32 Schur 补块合并，WY/UT 变换核心）→ recompute_w_u_fwd（WY 表示 u=A@βv、w=A@β·e^g·k）→ chunk_gated_delta_rule_fwd_h（隐状态 h∈R^{K×V} 的 chunk 间门控扫描：v_res=u−w@h、g/gk 门控、h+=k@v_res、K 沿 64 拆块、h0/ht、cu_seqlens 变长）→ chunk_fwd_o（O=scale·Q@h+scale·tril(QKᵀ⊙门控)@v_new，grid=24 少核持久化）。反向 dv_local/dhu/dqkwg/wy_repr_bwd 与正向对偶。仅 bf16、fp32 累加；与推理 decode 侧 recurrent_gated_delta_rule 同属一条 delta-rule 的两种时间分解。
+description: 门控 DeltaNet（GDN）线性注意力 prefill/训练侧的 chunk-parallel Triton 算子族（MindSpeed core mindspeed/ops/triton，经 triton-on-ascend 后端落昇腾），由 MindSpeed-LLM 的 ChunkGatedDeltaRuleFunction 串成正反向。算子链：chunk_local_cumsum（log 门控 g 前缀和）→ chunk_scaled_dot_kkt（β·tril(KKᵀ)·门控衰减）→ solve_tril（严格下三角求 (I+A)⁻¹，前代求逆 + 16×16→32×32 Schur 补块合并，WY/UT 变换核心）→ recompute_w_u_fwd（WY 表示 u=A@βv、w=A@β·e^g·k）→ chunk_gated_delta_rule_fwd_h（隐状态 h∈R^{K×V} 的 chunk 间门控扫描：v_res=u−w@h、g/gk 门控、h+=k@v_res、K 沿 64 拆块、h0/ht、cu_seqlens 变长）→ chunk_fwd_o（O=scale·exp(g_i)·(Q@h)+scale·tril(QKᵀ⊙门控)@v_new，grid=24 少核持久化）。反向 dv_local/dhu/dqkwg/wy_repr_bwd 与正向对偶。仅 bf16、fp32 累加；与推理 decode 侧 recurrent_gated_delta_rule 同属一条 delta-rule 的两种时间分解。
 tags:
 - task.implementation
 - topic.model_architecture
@@ -9,14 +9,28 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/solve_tril.py
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/solve_tril.py
-  role: supporting
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_o.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/wy_fast.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_delta_h.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_scaled_dot_kkt.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/cumsum.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/l2norm.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/utils.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/models/transformer/chunk_gated_delta_rule.py
+  role: implementation
 created_at: '2026-06-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:31:31Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # GDN Chunk 算子（solve_tril / chunk_delta_h / chunk_o / wy_fast Triton 核）
@@ -29,6 +43,8 @@ platforms:
 
 它与推理 decode 侧的逐 token 融合算子 [recurrent-gated-delta-rule](../../../inference/concepts/kernels/recurrent_gated_delta_rule.md) 是同一 delta-rule 状态更新的两种时间分解：recurrent 形式按单 token 顺序推进 state，chunk 形式块内并行、块间扫描。
 
+通用 WY 数学与后端约束分开：本页描述当前 MindSpeed 核与 MindSpeed-LLM 包装器的 NPU 实现；旧 Qwen3-Next A3 启动脚本已移除，不能据此声称当前有同配置完整训练样例；固定 grid=24、CANN 扩展和 dtype 条件是核实现细节，不代表其他硬件通用。
+
 ## 正向算子链与各核位置
 
 `ChunkGatedDeltaRuleFunction.forward`（`use_qk_l2norm_in_kernel` 时先对 q/k 做 `l2norm_fwd`）按如下顺序下发，前一核的输出喂下一核：
@@ -39,12 +55,12 @@ chunk_local_cumsum(g)          # g 的 chunk 内前缀和（log 门控累积）
   → solve_tril(A)              # A ← (I+A)⁻¹，chunk 内下三角求逆（WY/UT 变换核心）
   → recompute_w_u_fwd          # u = A@(β·v)、w = A@(β·e^g·k)，构造 WY 表示
   → chunk_gated_delta_rule_fwd_h   # 隐状态 h 的 chunk 间门控扫描，出 h / v_new
-  → chunk_fwd_o                # O = scale·(Q@h) + scale·tril(Q Kᵀ·e^{g_i−g_j})@v_new
+  → chunk_fwd_o                # O = scale·exp(g_i)·(Q@h) + scale·tril(Q Kᵀ·e^{g_i−g_j})@v_new
 ```
 
 ### solve_tril — chunk 内 (I+A)⁻¹
 
-对严格下三角矩阵 $A$（`A.triu()==0`）求 $(I+A)^{-1}$，`BT∈{16,32,64}`。`solve_tril_64x64_kernel` / `solve_tril_16x16_kernel` 走按行前代（forward substitution）：取 `b_A = -A`（严格下三角），逐行 `i` 从 2 起算 `b_a = -A[i] + Σ_row(b_a ⊙ b_A)`、写回第 `i` 行，末了 `b_A += I`，得到的就是 delta-rule「$I$ 减严格下三角」那一项的逆。`BT=32` 不直接前代，而是 `merge_16x16_to_32x32_inverse_kernel` 先分别求两个对角 16×16 块的逆 $A^{-1}_{11},A^{-1}_{22}$，再用 Schur 补合成下三角块 $A^{-1}_{21}=-A^{-1}_{22}\,A_{21}\,A^{-1}_{11}$。`DOT_PRECISION` 由 `FLA_TRIL_PRECISION`（默认 `ieee`）控制，NPU 上 `USE_TMA=False` 一律走 `tl.make_block_ptr`。这一步把 chunk 内 delta-rule 的串行依赖转成一次可并行的矩阵求逆，是 WY/UT 表示能成立的关键。
+对严格下三角矩阵 $A$（`A.triu()==0`）求 $(I+A)^{-1}$，`BT∈{16,32,64}`。`solve_tril_64x64_kernel` / `solve_tril_16x16_kernel` 走按行前代（forward substitution）：取 `b_A = -A`（严格下三角），逐行 `i` 从 2 起算 `b_a = -A[i] + Σ_row(b_a ⊙ b_A)`、写回第 `i` 行，末了 `b_A += I`，得到的就是本页定义的 $(I+A)^{-1}$；内部 -A 是求逆步骤，并未改变输入 A 的定义。`BT=32` 不直接前代，而是 `merge_16x16_to_32x32_inverse_kernel` 先分别求两个对角 16×16 块的逆 $A^{-1}_{11},A^{-1}_{22}$，再用 Schur 补合成下三角块 $A^{-1}_{21}=-A^{-1}_{22}\,A_{21}\,A^{-1}_{11}$。`DOT_PRECISION` 由 `FLA_TRIL_PRECISION`（默认 `ieee`）控制，NPU 上 `USE_TMA=False` 一律走 `tl.make_block_ptr`。这一步把 chunk 内 delta-rule 的串行依赖转成一次可并行的矩阵求逆，是 WY/UT 表示能成立的关键。
 
 ### chunk_scaled_dot_kkt — chunk 内 β·K·Kᵀ 与门控衰减
 
@@ -56,7 +72,7 @@ $$A_{ij} = \beta_i\,(k_i\!\cdot\!k_j)\,e^{\,g_i-g_j}\,[\,i>j\,].$$
 
 ### wy_fast — WY 表示的 w / u 向量
 
-`recompute_w_u_fwd` 用 solve_tril 出的 $A=(I+\cdot)^{-1}$ 构造 WY 表示两组向量：值侧 `u = A@(β·v)`（`b_vb = v·β`，`b_u = dot(A, b_vb)`，即被 delta 修正后的「新值」），键侧 `w = A@(β·e^g·k)`（`b_kb = k·β·exp(g)`，带 `gk` 时再 `·exp(gk)`，`b_w = dot(A, b_kb)`）。`u`/`w` 随后分别作为 `chunk_gated_delta_rule_fwd_h` 的 `v`/`w` 输入。反向 `prepare_wy_repr_bwd` 由 `dw/du` 反传 `dk/dv/dbeta/dg`，其中对 $A$ 自身的反传是二次夹积 `b_dA = −A·masked·A`（masked 为掩码后的累积梯度）再经 `exp(g_i−g_j)` 门控。
+`recompute_w_u_fwd` 用 solve_tril 出的 $A=(I+\cdot)^{-1}$ 构造 WY 表示两组向量：值侧 `u = A@(β·v)`（`b_vb = v·β`，`b_u = dot(A, b_vb)`，即被 delta 修正后的「新值」），键侧 `w = A@(β·e^g·k)`（`b_kb = k·β·exp(g)`，带 `gk` 时再 `·exp(gk)`，`b_w = dot(A, b_kb)`）。`u`/`w` 随后分别作为 `chunk_gated_delta_rule_fwd_h` 的 `v`/`w` 输入。反向 `prepare_wy_repr_bwd` 由 `dw/du` 反传 `dk/dv/dbeta/dg`，其中对 $A$ 自身的反传是二次夹积 `b_dA = −Aᵀ·masked·Aᵀ`（核内 b_A 读取的是本页正向逆矩阵 A 的转置视图）（masked 为掩码后的累积梯度）再经 `exp(g_i−g_j)` 门控。
 
 ### chunk_delta_h — chunk 间隐状态门控扫描
 
@@ -74,13 +90,17 @@ $$A_{ij} = \beta_i\,(k_i\!\cdot\!k_j)\,e^{\,g_i-g_j}\,[\,i>j\,].$$
 
 `chunk_fwd_o`（`chunk_fwd_kernel_o`）算最终输出 `O`。逐 chunk：跨 chunk 项 `b_o = Σ_k Q_chunk@h_block`（`Q@h`），chunk 内分数 `b_A = Q@Kᵀ`；若 `USE_G` 则 `b_o *= exp(g)`、`b_A *= exp(g_i − g_j)`；`b_A` 再按因果下三角（`o_i ≥ o_j`）mask；最后
 
-$$O = \text{scale}\cdot(Q@h) + \text{scale}\cdot\big(\text{tril}(Q K^\top\!\odot e^{\,g_i-g_j})\big)@v_{\text{new}}.$$
+$$O = \text{scale}\cdot e^{g_i}(Q@h) + \text{scale}\cdot\big(\text{tril}(Q K^\top\!\odot e^{\,g_i-g_j})\big)@v_{\text{new}}.$$
 
 即跨 chunk 隐状态贡献 `Q@h` 与 chunk 内因果注意力两项各经 `g` 门控后相加再乘 `scale`。`v_new` 用的是 chunk_delta_h 写出的残差值。此核走 [triton-on-ascend](../frameworks/triton_on_ascend.md) 的少核持久化排布：`grid=(24,)`，核内用 `core_id`/`num_programs` 把 `NT` 个 chunk 手动均分到各核循环处理，而非「一 chunk 一 program」。
 
 ### cumsum / l2norm — 门控前缀和与 q/k 归一
 
 `chunk_local_cumsum` 对 log forget gate `g` 做 chunk 内（`CHUNK_SIZE=64`）前缀和，`reverse=True` 用于反向 `dg` 的回卷；它为上面所有 `exp(g_i−g_j)` / `exp(g_last−g)` 门控提供累积量。`l2norm`（`l2norm_fwd`/`l2norm_bwd`）在 `use_qk_l2norm_in_kernel` 时对 q/k 末维做 L2 归一 `y = x/√(Σx²+eps)` 并存 `rstd` 供反向，对应 GDN 里 Q/K 的单位范数约束。
+
+## 后端依赖
+
+当前包装器检测 Triton 工具导入是否成功，并在可用时定义完整 autograd 链；不可用分支提示安装 triton-ascend。相关核仍有其他直接导入，不能据这一局部保护认定无 Triton 时整个模块必定可导入。该变化未改变已对照的 chunk 核数学。
 
 ## 反向链路
 
@@ -105,17 +125,15 @@ GDN 模块整体结构语义见跨域 [gated-deltanet](../../../inference/concep
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core @1432cb0
-  - [`mindspeed/ops/triton/solve_tril.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/solve_tril.py)（`solve_tril` / `solve_tril_64x64_kernel` / `solve_tril_16x16_kernel` 前代求逆得 $(I+A)^{-1}$；`merge_16x16_to_32x32_inverse_kernel` 的 Schur 补 $A^{-1}_{21}=-A^{-1}_{22}A_{21}A^{-1}_{11}$；`USE_TMA=False`）
-  - [`mindspeed/ops/triton/chunk_scaled_dot_kkt.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/chunk_scaled_dot_kkt.py)（`chunk_scaled_dot_kkt_fwd` / `..._kernel`：`β·tril(KKᵀ)·exp(g_i−g_j)`、±50 钳位；`gk` 走 `intra_sub_inter`+`intra_sub_intra`）
-  - [`mindspeed/ops/triton/wy_fast.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/wy_fast.py)（`recompute_w_u_fwd`：`u=A@(βv)`、`w=A@(β·e^g·k)`；`prepare_wy_repr_bwd` 出 `dk/dv/dbeta/dg`）
-  - [`mindspeed/ops/triton/chunk_delta_h.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/chunk_delta_h.py)（`chunk_gated_delta_rule_fwd_h` / `chunk_gated_delta_rule_fwd_kernel_h_blockdim64`：`v_res=u−w@h`、`g`/`gk` 门控、`h+=k@v_res`、K 沿 64 拆 4 块、`h0`/`ht`、`cu_seqlens` 变长；反向 `chunk_gated_delta_rule_bwd_dhu` 出 `dh/dh0/dv2`）
-  - [`mindspeed/ops/triton/chunk_o.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/chunk_o.py)（`chunk_fwd_o` / `chunk_fwd_kernel_o`：`O=scale·Q@h + scale·tril(QKᵀ⊙e^{g_i−g_j})@v_new`、`grid=(24,)` 少核持久化手动均分；`chunk_bwd_dqkwg` 出 `dq/dk/dw/dg`、`chunk_bwd_dv_local` 出 `dv`）
-  - [`mindspeed/ops/triton/cumsum.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/cumsum.py)（`chunk_local_cumsum`：log 门控 `g` 的 chunk 内前缀和、`reverse` 反向回卷）
-  - [`mindspeed/ops/triton/l2norm.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/l2norm.py)（`l2norm_fwd`/`l2norm_bwd`：`y=x/√(Σx²+eps)` 存 `rstd`，q/k 单位范数）
-  - [`tests_extend/unit_tests/ops/triton/`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/tests_extend/unit_tests/ops/triton)（`test_solve_tril.py` / `test_chunk_scaled_dot_kkt_fwd.py` / `test_prepare_wy_repr_bwd.py` / `test_chunk_gated_delta_rule_fwd_h.py` / `test_chunk_gated_delta_rule_bwd_dhu.py` / `test_chunk_o.py` / `test_chunk_bwd_dqkwg.py` / `test_chunk_bwd_dv_local.py` / `test_cumsum.py` / `test_l2norm_fwd.py` 逐核佐证算子语义）
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed-LLM @183e02c
-  - [`mindspeed_llm/tasks/models/transformer/chunk_gated_delta_rule.py`](https://gitcode.com/Ascend/MindSpeed-LLM/blob/183e02c21011c2e423a599633cf2d55929ba9ea3/mindspeed_llm/tasks/models/transformer/chunk_gated_delta_rule.py)（`ChunkGatedDeltaRuleFunction` / `chunk_gated_delta_rule_fwd` / `chunk_gated_delta_rule_bwd`：正反向算子链编排、bf16-only、`scale=1/√K`、`cu_seqlens` 变长、`use_qk_l2norm_in_kernel`）
+- [solve_tril.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/solve_tril.py)（primary）
+- [chunk_o.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_o.py)（implementation）
+- [wy_fast.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/wy_fast.py)（implementation）
+- [chunk_delta_h.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_delta_h.py)（implementation）
+- [chunk_scaled_dot_kkt.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_scaled_dot_kkt.py)（implementation）
+- [cumsum.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/cumsum.py)（implementation）
+- [l2norm.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/l2norm.py)（implementation）
+- [utils.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/utils.py)（implementation）
+- [chunk_gated_delta_rule.py](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/mindspeed_llm/tasks/models/transformer/chunk_gated_delta_rule.py)（implementation）
 
 ## Links
 
@@ -123,5 +141,5 @@ GDN 模块整体结构语义见跨域 [gated-deltanet](../../../inference/concep
 - [recurrent-gated-delta-rule](../../../inference/concepts/kernels/recurrent_gated_delta_rule.md)（跨域：同一 delta-rule 的 decode 逐 token recurrent 形式，与本族 chunk 形式互为时间分解）
 - [gated-deltanet](../../../inference/concepts/modules/gated_deltanet.md)（跨域：GDN 线性注意力模块整体结构语义，Prefill ChunkGDN 即本算子族的语义对应）
 - [deltanet-pretrain](../../guides/recipes/deltanet_pretrain.md)（同域：训练侧 DeltaNet 线性注意力样例，Triton 算子在 NPU 上的前/反向性能对照）
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core @1432cb0 / MindSpeed-LLM @183e02c（`ops/triton` GDN chunk 核源与 autograd 封装）
+- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core （当前来源） / MindSpeed-LLM （当前来源）（`ops/triton` GDN chunk 核源与 autograd 封装）
 - [gated-deltanet-train](../modules/gated_deltanet_train.md)（调用这组 chunk 算子的 GDN 训练模块：三套后端、autograd 编排、GDN CP）

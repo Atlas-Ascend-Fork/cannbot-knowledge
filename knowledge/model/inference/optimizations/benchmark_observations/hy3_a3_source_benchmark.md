@@ -1,17 +1,28 @@
 ---
 type: Optimization
-title: Hy3-preview A3 分阶段性能与批次口径观测
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+title: Hy3 A3 基础优化来源记录与当前配置边界
+description: 最新文档保留的A3基础实验及其与当前npugraph/PA/MTP配置的边界，不混作新配置性能。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/optimization_report.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modeling_hy_v3.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modules/common.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hy3/hy3_optimization.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/agentic/optimization_report.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_a3/hy3_rank16_bf16_mtp.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_950/hy3_rank4_mxfp4_mtp.yaml
+  role: example
 created_at: '2026-10-21T09:56:23Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T14:28:49Z'
 platforms:
 - a3
 scope:
@@ -23,53 +34,35 @@ scope:
       - prefill
 ---
 
-# Hy3-preview A3 分阶段性能与批次口径观测
+# Hy3 A3 基础优化来源记录与当前配置边界
 
-## Workload
+## Workload、Hardware 与 Software
 
-BF16，eager→GE/SuperKernel/cache演进；Prefill1024token。来源基线batch4，最终配置batch16，且配置截断400/输出112与部分报告32token记录不同。
-
-## Hardware
-
-Atlas A3，来源明示16die（8卡×2die），64GB HBM/die；来源基线 BF16 部署显存占用约54.5GB/die。
-
-## Software
-
-来源固定到下列提交；没有与每行数据绑定的完整软件build和原始运行记录，安装章节示例不自动等于测量环境。
-
-## Baseline 与 Variant
-
-仅在同一来源明确对照的行内比较。不同平台、阶段、batch、框架、量化、并行与版本不拼接为一次受控试验，也不把累计优化归因给单个开关。
-
-## Metric Definition
-
-字段和单位沿用源表。时延起止、首token/warmup处理、吞吐分母和精度指标未完整披露时保持未知，不由字段名称自行补计算公式。
-
-## Repetition and Variance
-
-没有足够的逐轮原始样本、重复次数、方差或置信区间。本仓未独立复测，不新增 verified。
+最新本地agentic/optimization_report仍保留A3基础优化实验：8卡16rank、BF16，起始eager到GE/GMM/SuperKernel。报告并非当前npugraph+PA+MTP配置的测量记录，不能将其架构/开关描述直接迁移到当前部署。
 
 ## Result
 
-| 来源阶段 | Decode(ms/token) |
+| 报告阶段 | Decode ms/token |
 | --- | --- |
 | 初始eager | 293 |
 | SuperKernel阶段 | 30.8 |
-| 最终重编译，2026-04-28 | 28.44 |
+| 最终重编译 | 28.44 |
 
-最终记录写range27.4–29.4、32tokens。源给9.5×/10.3×阶段比值，原始逐轮记录未提供，不能当作同一次重测的两个可互换结果。
+报告最终区间27.4–29.4、32tokens；基线Prefill2070ms/batch4，最终1452ms/batch16，不能直接相除归因加速。来源安装说明和阶段实际软件不同，缺完整build、原始逐轮样本与方差。
 
-Prefill基线2070ms（batch4）和最终1452ms（batch16）不可直接相除得出速度提升。版本前提也不同：README列CANN9.0.0，报告SuperKernel限制取8.5.0，不擅合并。
+## 当前差异与限制
 
+当前A3 ci_a3/hy3_rank16_bf16_mtp.yaml为npugraph_ex、next_n1、batch4、输入400/输出128，SP与多流关闭；模型已是packed PA和FIA v2、独立MTP。报告中的连续BSH/FA v1及MTP跳过属于其基础实验描述，已不代表当前实现。本卡保留的数值仅为当前文档内可核对的来源实验，不作为新配置性能保证。
 
-## Limitations 与验证
-
-原文以正常文本解释质量，未给充分任务精度；sigmoid/bias语义差异须另验。保留阶段值与环境分歧，不将30.8/28.44合并为一个当前保证。
-
-复现与回退入口：[模型部署与验收流程](../../guides/models/hy3_preview_deployment.md)。性能与输出质量分别验收；来源自报不构成本仓复现。
+报告声称文本正常并讨论router bias语义差异，不能证明目标任务精度或运算等价。本次未执行硬件、未新增verified；当前部署先按[指南](../../guides/models/hy3_preview_deployment.md)重新测接受率、有效token时延、质量与内存，不把MTP整步时间当每个输出token时间。
 
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/optimization_report.md)
-- [固定来源 2](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/README.md)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/README.md)（primary）
+- [modeling_hy_v3.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modeling_hy_v3.py)（implementation）
+- [common.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modules/common.py)（implementation）
+- [hy3_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hy3/hy3_optimization.md)（supporting）
+- [optimization_report.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/agentic/optimization_report.md)（supporting）
+- [hy3_rank16_bf16_mtp.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_a3/hy3_rank16_bf16_mtp.yaml)（example）
+- [hy3_rank4_mxfp4_mtp.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_950/hy3_rank4_mxfp4_mtp.yaml)（example）

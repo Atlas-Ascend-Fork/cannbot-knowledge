@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: MindSpeed-MM 激活显存优化（Chunk-MBS 微批切块 + 异步激活 Offload）
-description: MindSpeed-MM FSDP2 后端的两个互补激活显存优化。异步激活 Offload（enable_activation_offload）以 torch saved_tensors_hooks（async_save_on_cpu 的 _pack_to_cpu/_unpack_from_cpu）把前向保存的 layer 入口 hidden_states 在独立 swap_stream 上 D2H 换出 Host pinned 内存、反向 prefetch 预取 H2D 换回；SwapTensor 拷完才滞后一个 block 做 storage().resize_(0) 释放显存，custom_check_fn 只放行入口激活，末层不换出。Chunk-MBS（enable_chunk_mbs）在一次 FSDP Unshard 后沿 batch_dim 把单 micro-batch 切成 ceil(full/chunk_mbs) 个微块串行前反向再 torch.cat 拼回，把动态激活峰值压到单微块量级；核心收益是允许 micro_batch_size=GBS、grad_acc=1，每次更新每个 block 只 Unshard 一次，省掉梯度累积的重复 AllGather，Qwen3.5 35B 整网约 5% 提速。二者建立在 recompute 之上，pre_fully_shard_apply 固定包装顺序 recompute→offload→chunk_mbs（chunk_mbs 最外层先切片）。长序列换出 self-attn 激活端到端 20%+，FSDP2 短序列腾显存增大 MBS 端到端 60%+。关键术语：saved_tensors_hooks、SwapTensor、OffloadManager、prefetch、batch_dim、chunk_arg_indexs。
+description: MindSpeed-MM FSDP2 后端的两个互补激活显存优化。异步激活 Offload（enable_activation_offload）以 torch saved_tensors_hooks（async_save_on_cpu 的 _pack_to_cpu/_unpack_from_cpu）把前向保存的 layer 入口 hidden_states 在独立 swap_stream 上 D2H 换出 Host pinned 内存、反向 prefetch 预取 H2D 换回；SwapTensor 拷完才滞后一个 block 做 storage().resize_(0) 释放显存，custom_check_fn 只放行入口激活，末层不换出。Chunk-MBS（enable_chunk_mbs）在一次 FSDP Unshard 后沿 batch_dim 把单 micro-batch 切成 ceil(full/chunk_mbs) 个微块依次前向再 torch.cat 拼回，反向由自动微分另行执行，把动态激活峰值压到单微块量级；核心收益是允许 micro_batch_size=GBS、grad_acc=1，每次更新每个 block 只 Unshard 一次，省掉梯度累积的重复 AllGather，Qwen3.5 35B 整网约 5% 提速。二者建立在 recompute 之上，pre_fully_shard_apply 固定包装顺序 recompute→offload→chunk_mbs（chunk_mbs 最外层先切片）。长序列换出 self-attn 激活端到端 20%+，FSDP2 短序列腾显存增大 MBS 端到端 60%+。关键术语：saved_tensors_hooks、SwapTensor、OffloadManager、prefetch、batch_dim、chunk_arg_indexs。
 tags:
 - task.optimization
 - topic.multimodal
@@ -9,12 +9,12 @@ tags:
 - topic.data_pipeline
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/README.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/chunkmbs.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/optimization/chunkmbs.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - agnostic
 ---
@@ -23,7 +23,7 @@ platforms:
 
 ## Summary
 
-[mindspeed-mm](../frameworks/mindspeed_mm.md) 的 FSDP2 训练后端为多模态长序列场景提供两个互补的激活显存优化：**异步激活 Offload**（`enable_activation_offload`）用 PyTorch `saved_tensors_hooks` 把前向保存的 layer 入口激活在独立 copy 流上异步换出 Host pinned 内存、反向时按需预取换回，把激活从 device 峰值里搬走；**Chunk-MBS**（`enable_chunk_mbs`）在一次 FSDP Unshard 之后把单个 micro-batch 沿 batch 维切成多个微块串行前反向，使动态激活峰值被压到「单个微块」量级。二者建立在重计算之上：开了 Chunk-MBS 的 module 必须同时开 offload 与 recompute。Chunk-MBS 的核心收益不止省显存——它让 `micro_batch_size=GBS / grad_acc=1` 成为可能，于是每次参数更新只需对每个 block 做一次 Unshard，省掉梯度累积带来的重复 AllGather 通信，Qwen3.5 35B 实测整网约 5% 提速。三个特性的包装顺序由 `pre_fully_shard_apply` 严格固定为 recompute → offload → Chunk-MBS。
+[mindspeed-mm](../frameworks/mindspeed_mm.md) 的 FSDP2 训练后端为多模态长序列场景提供两个互补的激活显存优化：**异步激活 Offload**（`enable_activation_offload`）用 PyTorch `saved_tensors_hooks` 把前向保存的 layer 入口激活在独立 copy 流上异步换出 Host pinned 内存、反向时按需预取换回，把激活从 device 峰值里搬走；**Chunk-MBS**（`enable_chunk_mbs`）在一次 FSDP Unshard 之后把单个 micro-batch 沿 batch 维切成多个微块依次前向并拼接输出，反向再通过自动微分触发重计算和换回，以降低层内中间激活峰值。二者建立在重计算之上：开了 Chunk-MBS 的 module 必须同时开 offload 与 recompute。Chunk-MBS 的核心收益不止省显存——它让 `micro_batch_size=GBS/DP、grad_acc=1` 成为可能，于是每次参数更新只需对每个 block 做一次 Unshard，省掉梯度累积带来的重复 AllGather 通信，Qwen3.5 35B 实测整网约 5% 提速。三个特性的包装顺序由 `pre_fully_shard_apply` 严格固定为 recompute → offload → Chunk-MBS。
 
 ## 动机：长序列把激活推成显存瓶颈
 
@@ -106,7 +106,7 @@ YAML 侧 `enable_activation_offload: true` + `activation_offload_plan.apply_modu
 
 ## Chunk-MBS：单 micro-batch 沿 batch 维切块
 
-一次 FSDP2 Unshard 把整块 Block 参数聚齐后，Chunk-MBS 在 batch 维把当前层输入切成多个微块（micro-chunk）依次前反向，使整体激活峰值压到单个微块量级——动态显存与计算规模（GBS）的强绑定就此解耦。
+一次 FSDP2 Unshard 把整块 Block 参数聚齐后，Chunk-MBS 在 batch 维把当前层输入切成多个微块（micro-chunk）依次前向、再拼接输出；循环中不执行反向。后续自动微分结合 checkpoint 重计算与激活换回，降低层内中间激活峰值——动态显存与计算规模（GBS）的强绑定就此解耦。
 
 `chunk_mbs_forward` 装饰 module.forward：从首个待切入参在 `batch_dim` 上读出 `full_batch_size`，若不大于 `chunk_mbs` 直接原样跑，否则切成 `num_micros = ceil(full_batch_size / chunk_mbs)` 块，逐块切片入参、串行前向、收集后沿 batch 维 `torch.cat` 拼回：
 
@@ -127,7 +127,7 @@ return torch.cat(outputs, dim=batch_dim)   # 输出为 tuple/list 时逐元素 c
 
 ### 省通信才是大头
 
-GBS 不变时，常规做法设 `micro_batch_size=MBS`、`GRAD_ACC=GBS/MBS`，每个梯度累积步都要对每个 block 重做一次参数 Unshard，AllGather 通信被乘上 GRAD_ACC 倍。开 Chunk-MBS 后可改设 `micro_batch_size=GBS`、`GRAD_ACC=1`、`chunkmbs_plan.chunk_mbs=GBS/MBS`：每次更新参数只对每个 block 做一次 Unshard，切块在 Unshard 之内串行消化掉等效的梯度累积。省下的就是那部分重复 Unshard 通信——Qwen3.5 35B 实测整网约 5% 收益。
+GBS 不变时，常规做法设 `micro_batch_size=MBS`、`GRAD_ACC=GBS/(DP*MBS)`，每个梯度累积步都要对每个 block 重做一次参数 Unshard，AllGather 通信被乘上 GRAD_ACC 倍。开 Chunk-MBS 后可改设 `micro_batch_size=GBS/DP`、`GRAD_ACC=1`、`chunkmbs_plan.chunk_mbs=目标微块大小`（若要保持原 MBS，则填原 MBS）：每次更新参数只对每个 block 做一次 Unshard，切块前向在 Unshard 之内执行，之后由自动微分处理反向。例如 DP=1、GBS=32、原 MBS=4，应设置 chunk_mbs=4，切块数量为 ceil(32/4)=8。当前文档已区分全局 batch、DP 及切块大小；chunk_mbs 填微块大小，不是微块数量。省下的就是那部分重复 Unshard 通信——Qwen3.5 35B 实测整网约 5% 收益。
 
 ### 配置与适用
 
@@ -144,16 +144,16 @@ self.apply_chunk_mbs(model)                  # 3. chunk_mbs：最外层
 # mindspeed_mm/fsdp/features/apply_features.py · pre_fully_shard_apply
 ```
 
-Chunk-MBS 必须是最外层包装，保证 batch 切片在数据进入重计算与 offload 逻辑**之前**执行——即先切微块，每个微块再各自走 offload 与 recompute。由此 device 动态显存 = 单 block × 单微块的激活，叠加 offload 把这部分入口激活也搬去 Host，叠加 recompute 丢弃层内中间激活，三者把激活显存逐级压低，换来在有限显存下灵活增大计算规模（GBS）的余地。
+Chunk-MBS 必须是最外层包装，保证 batch 切片在数据进入重计算与 offload 逻辑**之前**执行——即先切微块，每个微块再各自走 offload 与 recompute。这使层内中间激活随微块大小降低；输出、入口和异步搬运缓冲仍有存储开销，不能将全部动态显存等同于单微块激活。叠加 offload 把这部分入口激活也搬去 Host，叠加 recompute 丢弃层内中间激活，三者把激活显存逐级压低，换来在有限显存下灵活增大计算规模（GBS）的余地。
+
+## 原生 YAML 与依赖检查
+
+recompute、enable_activation_offload、enable_chunk_mbs 及三个 plan 均置于顶层 YAML 的 `features` 段。示例 `examples/qwen3_5/qwen3_5_27B_config.yaml` 中 `enable_chunk_mbs` 默认 false，需要按目标模块显式开启。框架不强制校验 ChunkMBS 与重计算/offload 同开；未同时覆盖模块时，各微块的激活可能累计驻留，预期显存收益会消失。
 
 ## Evidence
 
-- [mindspeed-mm](https://gitcode.com/Ascend/MindSpeed-MM) — [`docs/zh/features/chunkmbs.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/chunkmbs.md)（背景挑战 / 细粒度激活切分与异步流水 / 与 recompute+offload 的依赖关系 / `GBS=MBS,GRAD_ACC=1` 省 Unshard 通信用法 / Qwen3.5 35B ~5% 实测）
-- [mindspeed-mm](https://gitcode.com/Ascend/MindSpeed-MM) — [`docs/zh/features/async_activation_offload.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/async_activation_offload.md)（D2H/H2D 异步多流 / prefetch 预取 / `custom_check_fn` 取舍准则 / 长序列 20%+、FSDP2 短序列 60%+ 效果）
-- 实现源 [`mindspeed_mm/fsdp/features/memory/async_offload.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/fsdp/features/memory/async_offload.py)（`async_save_on_cpu` 钩子、`SwapTensor.launch_d2h/wait_d2h_finished/launch_h2d`、`OffloadManager` 单例 + `swap_stream` + `prefetch_get`、`get_offload_modules`/`async_offload_modules`/`with_async_save_on_cpu` 的 `custom_check_fn`）
-- 实现源 [`mindspeed_mm/fsdp/features/communication/chunk_mbs.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/fsdp/features/communication/chunk_mbs.py)（`chunk_mbs_forward` 切块前反向 + `torch.cat` 拼接、`_slice_batch_recursive` 递归切片、`get_chunkmbs_modules`/`apply_chunkmbs_module` monkey-patch）
-- 装配源 [`mindspeed_mm/fsdp/features/apply_features.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/fsdp/features/apply_features.py)（`pre_fully_shard_apply` 固定 recompute→offload→chunk_mbs 顺序、各特性的开关与 plan 校验）
-- 配置源 [`mindspeed_mm/fsdp/params/feature_args.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/fsdp/params/feature_args.py)（`ChunkMbsPlanConfig`：`chunk_mbs`/`batch_dim`/`chunk_arg_indexs`/`chunk_kwarg_names`；`ActivationOffloadPlanConfig`、`enable_chunk_mbs`/`enable_activation_offload` 字段）
+- [README.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md)（primary）
+- [chunkmbs.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/optimization/chunkmbs.md)（supporting）
 
 ## Links
 

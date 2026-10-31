@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/72
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -69,5 +69,7 @@ bringup 早期的一类报错根因是**缺文件 / 文件不完整 / 环境残�
 
 ## Evidence
 
-- `维护者确认`（@2c45117）：`hunyuan_image_3` 未内置、须下载上游代码；config NoneType 由 checkpoint 拷贝不完整引起；清 `/root/atc_data/` 缓存；减 `num_hidden_layers` 到 ≥4 做功能验证。
-- 溯源下探：[cann-recipes-infer-issue-178-bug-report-models-hunyuan-image-3-0](https://gitcode.com/cann/cann-recipes-infer/issues/178)、[cann-recipes-infer-issue-54-bug-report-deepseek-v3-2-exp-w8a8c8-8p-16](https://gitcode.com/cann/cann-recipes-infer/issues/54)、[cann-recipes-infer-issue-31-question-set-env-sh-rm-rf](https://gitcode.com/cann/cann-recipes-infer/issues/31)、[cann-recipes-infer-issue-72-question-8-910c](https://gitcode.com/cann/cann-recipes-infer/issues/72)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/178)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/54)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/31)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/72)（evidence）

@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/54
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:54:12Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - a3
 ---
@@ -60,6 +60,4 @@ Get_Socket_Timeout(EI0006): Getting socket times out. Reason:
 
 ## Evidence
 
-- `多 rank 日志 + 维护者确认`：事件页给出 rank0（`HcclAllGather` / `EI0006`）、rank4、rank15（均 `EL0004`）多 rank 日志并存、报告者自查各卡 TLS / 网络正常；维护者答复即要求「检查所有 rank 日志里是否有其他报错」。「异步栈不准」为 HCCL 报文本身声明。
-- `diff 事实`（@2c45117）：`indexer.py:prefill_decode_ascendc`（含 `dist.all_gather_into_tensor`）与 `modeling_deepseek.py:mlaprolog_prefill` 的代码路径与栈一致。
-- 溯源下探：[cann-recipes-infer-issue-54-bug-report-deepseek-v3-2-exp-w8a8c8-8p-16](https://gitcode.com/cann/cann-recipes-infer/issues/54)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/54)（evidence）

@@ -19,7 +19,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/167
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -63,8 +63,8 @@ platforms:
 
 ## Evidence
 
-- `diff 事实`（@2c45117）：`mla_prolog` host tiling 硬编码 Hcq=1536 白名单；`lightning_indexer` 专化 N1=64。
-- `diff 事实`（@239c0c1）：`aclnnMoeGatingTopK` 旧版专家上限 256。
-- `diff 事实`（@d13c484）：ZECO CP GDN 核 `assert K==128`、BK=BV=128、无回退。
-- `diff 事实`（@f066b2a）：`LIInfoParser::GetAndCheckOptionalInput()` 在 PA_BSND 下强校验 block_table/actual_seq_lengths_key 非空、block_table int32。
-- 溯源下探：[cann-recipes-infer-issue-118-requirement-custom-npu-lightning-indexer-query-n](https://gitcode.com/cann/cann-recipes-infer/issues/118)、[cann-recipes-infer-issue-127-question-glm-5-mla-prolog-v3-hcq-1536-2048](https://gitcode.com/cann/cann-recipes-infer/issues/127)、[cann-recipes-infer-issue-71-bug-report-910b4-2-kimi-k2-thinking-warm-up-aclnnfusedinferattentionscor](https://gitcode.com/cann/cann-recipes-infer/issues/71)、[cann-recipes-infer-pr-359-support-context-parallel-execution-of-gateddeltanet-attention-in-qwen3-n](https://gitcode.com/cann/cann-recipes-infer/merge_requests/359)、[cann-recipes-infer-pr-167-fix-fix-li-log](https://gitcode.com/cann/cann-recipes-infer/merge_requests/167)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/118)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/127)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/71)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/359)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/167)（evidence）

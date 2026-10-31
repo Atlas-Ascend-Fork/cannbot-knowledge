@@ -1,115 +1,66 @@
 ---
 type: Concept
 title: Virtual Optimizer（优化器显存虚拟化）
-description: Virtual Optimizer（torchtitan-npu）：基于 Ascend NPU 原生虚拟内存映射卸载 AdamW 一二阶动量 exp_avg/exp_avg_sq——内存在 Host、地址可映射 Device 仍可参与多数 NPU 算子，'不改训练代码'省显存。核心 torch_npu.empty_with_swapped_memory 替代 torch.zeros_like 的 NPU 显存分配。派生自 MindSpeed VirtualOptimizer，要求 NPU 驱动 25.5.2+。配置 OptimizerConfig.virtual_optimizer(bool)/virtual_optimizer_size('all' 卸全部)。与 swap_optimizer 互斥。区别 swap-optimizer（三流水手动 H2D/D2H+resize_(0)）：virtual 是地址映射、对代码透明。V4 285B 续训实采 virtual_optimizer=true。 MindSpeed 原生 VirtualOptimizerFeature 用 torch_npu.empty_with_swapped_memory 把 AdamW 动量 exp_avg/exp_avg_sq 放 Host、按 PP stage 逐张量字节预算（--virtual-optimizer all/标量/list）映射 Device，与 fused_ema_adamw 互斥。
+description: 当前 TorchTitan virtual override 的 Host-backed moments、DTensor 空分片、fresh-load destinations 与同步 DCP writer 边界，并区分 MindSpeed 的按 PP stage 预算实现。
 tags:
 - task.optimization
 - topic.memory
 - topic.optimizer
 status: stable
 sources:
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/README.md
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/feature_guides/virtual_optimizer.md
   role: primary
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/virtual_optimizer.md
-  role: supporting
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/optimizer.py
+  role: implementation
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/extensions/torchtitan/components/checkpoint.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/virtual-optimizer.md
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/virtual_optimizer/virtual_adam.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/virtual_optimizer/adaptor.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/optimizer/virtual_optimizer.py
+  role: implementation
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:42Z'
 platforms:
-- agnostic
+- a3
 ---
 
-# Virtual Optimizer（优化器显存虚拟化）
+# Virtual Optimizer（Host-backed 优化器状态）
 
 ## Summary
 
-Virtual Optimizer 是 torchtitan-npu 提供的一套**基于 Ascend NPU 原生虚拟内存能力**的优化器显存优化方案。它把 AdamW 优化器的一阶/二阶动量（`exp_avg`、`exp_avg_sq`）实际存储在 **Host（CPU）内存**中，但其地址被映射到 Device，使得张量仍可参与大多数 NPU 算子计算——**在不修改任何训练代码的前提下**节省 NPU 显存占用。该实现派生自 MindSpeed 的 [VirtualOptimizer 特性](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/virtual-optimizer.md)。
+当前 TorchTitan NPU 通过 `torchtitan_npu.override.common.optimizer.virtual` 将 Adam/AdamW 的 moments 创建为实际位于 Host、可由 NPU 算子访问的 swapped-memory 张量。它节省常驻 HBM，与显式 H2D/D2H 的 [NovaSwap](swap_optimizer.md) 具有不同生命周期，两个 override 都替换 `OptimizersContainer.Config`，不能同开。
 
-与 [swap-optimizer](swap_optimizer.md)（手动三流 H2D/D2H 拷贝 + 切片 `resize_(0)` 的流水化 swap）不同，Virtual Optimizer 走的是**地址映射、代码透明**的路线：动量张量的内存物理上常驻 Host，但对训练代码而言其使用方式与普通 NPU 张量无异。
+## 当前配置
 
-> 需要 **NPU 驱动 25.5.2 及以上版本**（`torch_npu.empty_with_swapped_memory` 依赖）。
+将下面入口追加到模型原有的 `override.imports`，保留已有 attention、RoPE、RMSNorm 等替换：
 
-## 背景与动机
-
-在大集群训练中，增大 PP（流水线并行）会对前几个 stage 造成较大显存压力。同时观察到：在**梯度累积较大**的情况下，优化器一二阶动量的显存 swap 开销可忽略不计。因此可将优化器动量 swap 到 CPU 以节省整网显存。而当前分布式优化器逻辑复杂、与各类通信并行相互耦合，手写一套 swap 系统较为复杂——Virtual Optimizer 借助驱动级虚拟内存能力规避了这一复杂度。
-
-## 核心实现原理
-
-标准 `torch.optim.AdamW` 在 NPU 显存中直接分配动量状态：
-
-```python
-# torch.optim.AdamW（标准实现）：直接在 NPU 显存分配
-state['exp_avg']    = torch.zeros_like(p, memory_format=torch.preserve_format)
-state['exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+```text
+--override.imports torchtitan_npu.override.common.optimizer.virtual
+--checkpoint.enable
+--checkpoint.async-mode disabled
 ```
 
-Virtual Optimizer 用虚拟内存分配替代上述 NPU 显存分配——核心在 `VirtualAllocator._get_swap_memory`：
+不再设置 `optimizer.virtual_optimizer`、`virtual_optimizer_size`、`swap_optimizer_times`，也没有该容器的按 PP stage 容量列表。配置系统不会把旧字段自动转换成最新 override。
 
-```python
-# virtual_optimizer.py：实际内存在 Host，地址映射到 Device
-swap_tensor = torch_npu.empty_with_swapped_memory(p.size(), device=p.device)
-swap_tensor.swap_tensor = True
-swap_tensor.data.swap_tensor = True
-swap_tensor.zero_()
-```
+## 初始化与更新契约
 
-关键设计点（均来自 `torchtitan_npu/patches/optimizer/virtual_optimizer.py`）：
+容器给底层 Adam/AdamW 注册 step pre-hook，仅处理有梯度且 state 为空的参数，先创建普通 FP32 step scalar，再由 `_make_swap(p)` 分配 exp_avg/exp_avg_sq。DTensor 只取本 rank local shard 分配，再保留 mesh、placements、全局 shape/stride；本地空 shard 使用普通 empty_like，因为 swap allocator 不接受空张量。
 
-- **状态键**：`OPTIMIZER_STATE_KEYS = ["exp_avg", "exp_avg_sq", "max_exp_avg_sq"]`；`exp_avg`/`exp_avg_sq` 走 swap 分配，`max_exp_avg_sq`（amsgrad）仍用 `torch.zeros_like` 常驻 HBM。
-- **swap 标记**：被换出的张量打上 `swap_tensor=True` 属性；为保证 `copy_` / `cpu` / `clone` / `detach` 等张量方法能正确传播该标记，框架对这些方法做了 wrapper patch（见 `optimizer_selector.py` 的 `_apply_virtual_patch`）。
-- **DTensor 兼容**：分配出的 local tensor 通过 `wrap_like_param` 用 `DTensor.from_local` 还原成与参数同 `device_mesh`/`placements` 的 DTensor，保证与 FSDP/TP 等并行兼容。
-- **优雅降级**：若 `torch_npu` 不具备 `empty_with_swapped_memory`，或 swap 分配抛异常，则 `fallback` 回 `torch.zeros_like` 的标准 HBM 分配（不致训练失败）。
-- **step 改写**：通过 `virtual_optimizer_step` 替换 `Adam/AdamW.step`，复用 `torch._fused_adamw_` / `torch._fused_adam_` 融合 kernel 完成更新。
-- **checkpoint 处理（非透明，承重）**：`_apply_virtual_patch` 在替换 `step` 的同时一并改写 `state_dict` 与 `load_state_dict`。保存时 `patched_state_dict` 经 `_save_original_states` / `_process_state_tensor` 把 swap 动量 `.cpu().clone()` 搬回 CPU 普通张量（DTensor 则按原 `device_mesh`/`placements` 重建 `DTensorSpec`），存盘后再 `_restore_original_states` 还原内存中的 swap 状态；加载时 `_make_patched_load` 在原始 `load_state_dict` 之后调用 `virtual_optimizer_replace`，经 `virtual_allocator.create` 为每个动量重新分配 swap 内存，恢复「Host 常驻、Device 可寻址」。即 Virtual Optimizer 对 checkpoint 并非透明，需专门转换。
+最新代码还有 amsgrad 分支，将 max_exp_avg_sq 同样初始化为 swap-backed 张量；特性文档的“只包含两个 moments”描述未覆盖这一分支。这里只确认状态构造代码，不据此宣称 AMSGrad 已完成真机验证。
 
-## 配置选项
+已有 state 不被 pre-hook 覆盖。当前代码没有旧 VirtualAllocator 的容量预算与任意异常回退机制；只有明确的 zero-sized shard 普通分配分支。不能把 allocation 失败当成会自动回退 HBM。
 
-由 `torchtitan_npu.config.configs.OptimizerConfig` 的字段配置（在各模型 `config_registry.py` 中设置）：
+## Checkpoint 与已修复的 fresh-load 路径
 
-| 配置项 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `virtual_optimizer` | bool | `False` | 是否启用 Virtual Optimizer 以卸载动量显存。 |
-| `virtual_optimizer_size` | float / list[float] / str / None | `None` | 各 PP stage 申请的虚拟内存大小。`'all'` 表示 swap 掉全部一二阶动量；单个数值表示各 stage 统一大小；list 表示逐 stage 指定。 |
+`state_dict()` 会为尚无梯度、未初始化的参数补齐状态。`load_state_dict()` 先准备并保存 swap-backed destinations，再调用基础加载，把加载值 copy 到这些 destinations 并恢复引用。因此 fresh/existing/repeated load 都沿当前 destinations 逻辑，不再保留旧卡所述“首次 step 前加载会跳过 allocator”的缺陷结论。
 
-`virtual_optimizer_size` 的解析逻辑（`VirtualAllocator.get_swap_memory_sizes`）：`'all'` → 每个 PP stage `65.0` GB；标量 → 每 stage 该值；长度为 1 的 list → 广播到所有 stage；长度等于 `pp_stages` 的 list → 逐 stage；否则抛 `ValueError`。
+extension `CheckpointManager` 对同步 native DCP 保存使用 `FileSystemWriter(per_thread_copy_ahead=0)`，避开 swap storage 与 copy-ahead 的不兼容；不需要额外 checkpoint override。可另启 `--checkpoint.extensions.verify-hash-manifest`。
 
-> ⚠️ `virtual_optimizer` 与 `swap_optimizer` **互斥**：`NpuOptimizerDispatcher.dispatch_build` 在两者同时为 `True` 时抛 `ValueError("Cannot enable both virtual_optimizer and swap_optimizer at the same time.")`。
-
-### 配置示例
-
-```python
-from torchtitan_npu.config.configs import OptimizerConfig
-
-optimizer = OptimizerConfig(
-    name="AdamW",
-    lr=3e-4,
-    weight_decay=0.01,
-    virtual_optimizer=True,
-    virtual_optimizer_size="all",
-)
-```
-
-启动时也可通过命令行覆盖同名字段：
-
-```bash
-bash scripts/run_train.sh \
-  --optimizer.virtual_optimizer \
-  --optimizer.virtual_optimizer_size all
-```
-
-## 适用场景与对比
-
-**适用场景**：大集群 PP 训练中前序 stage 显存吃紧、且梯度累积较大（此时动量 swap 的拷贝开销可忽略）。透明无侵入，无需改训练代码。
-
-| 维度 | Virtual Optimizer | [swap-optimizer](swap_optimizer.md) |
-| --- | --- | --- |
-| 机制 | 驱动级虚拟内存地址映射（Host 常驻、Device 可寻址） | 手动三流 H2D/D2H 拷贝 + 切片 `resize_(0)` 流水化 |
-| 代码侵入 | 透明，无需改训练代码 | 改写 `step`，按 `swap_optimizer_times` 切片调度 |
-| 驱动依赖 | NPU 驱动 25.5.2+ | 无该特定驱动要求 |
-| 互斥 | 与 swap_optimizer 互斥 | 与 virtual_optimizer 互斥 |
-
-实践选型：现有 DeepSeek 实践均**未启用** Virtual Optimizer——[deepseek-v4-continue-pretrain](../../guides/recipes/deepseek_v4_continue_pretrain.md)（V4 285B 续训）与 DeepSeek-V3.2 预训练的主力 4k 配置都走互斥的 `swap_optimizer=true`（SwapOptimizer）路线；后者是同一分发器内面向「显存吃紧 + 梯度累积大」PP 场景的透明替代项。Virtual Optimizer 由 `NpuOptimizerDispatcher.dispatch_build` 在 virtual / swap / standard 三个分支间分发；而 [muon-optimizer](muon_optimizer.md) 走的是**独立路径**——经由 `MuonHybridOptimizersContainer.Config.build()`（校验 `name == "Muon"`）构建，**不经过 `NpuOptimizerDispatcher`**。`virtual_optimizer` 与 `swap_optimizer` 才是该分发器内的互斥选项。
-
-其思路与推理侧的 [kvcache-offload](../../../inference/concepts/techniques/kvcache_offload.md)（把 KV cache 卸载到 Host 内存换取显存）相通——都是用 Host 内存换 Device 显存，区别在于 Virtual Optimizer 依靠驱动虚拟内存映射做到对算子透明。
+该 writer 特化不覆盖 async、async-with-pinned-memory 或 HF 保存，它们继续委托上游。文档报告单 NPU 同步 save/load 与 load 后 step 验证，多卡、async/HF 尚未完成该特性的完整验证。本次仅复核源码，不能据此承诺拓扑、最低驱动版本或性能比例。
 
 ## MindSpeed 原生实现
 
@@ -127,7 +78,7 @@ torchtitan-npu 侧的 Virtual Optimizer 派生自 [mindspeed](../frameworks/mind
 
 ### 按 PP stage 的字节预算分配
 
-torchtitan 把 swap 大小当配置元数据，MindSpeed 则用 `VirtualAllocator` 把它实现成**逐张量消耗的字节预算**。`get_global_virtual_allocator` 惰性按 `(pp_rank, pp_world_size, args.virtual_optimizer)` 建一个全局 allocator 缓存到 `args` 上；`swap_size_this_pp_rank = get_swap_memory_size()[pp_rank] * 1024**3`（GB→字节）。`get_swap_memory_size` 的广播规则：长度为 1 → 广播到所有 stage；长度等于 `pp_stages` → 逐 stage；否则 `ValueError`；`None` → 全 0。
+MindSpeed 的 `VirtualAllocator` 读取真实 PP rank/size，将配置换算为该 stage 的字节预算，按张量分配扣减；这不是当前 TorchTitan override 的无容量字段配置方式。`get_global_virtual_allocator` 惰性按 `(pp_rank, pp_world_size, args.virtual_optimizer)` 建一个全局 allocator 缓存到 `args` 上；`swap_size_this_pp_rank = get_swap_memory_size()[pp_rank] * 1024**3`（GB→字节）。`get_swap_memory_size` 的广播规则：长度为 1 → 广播到所有 stage；长度等于 `pp_stages` → 逐 stage；否则 `ValueError`；`None` → 全 0。
 
 每个动量经 `create(p)` 分配，按预算余额二选一：
 
@@ -140,11 +91,11 @@ def create(self, p):
 # virtual_adam.py — VirtualAllocator.create
 ```
 
-`get_swap_memory` 调 `torch_npu.empty_with_swapped_memory(p.size(), device=p.device)`，给 tensor 及其 `.data` 都打 `swap_tensor=True`、`zero_()` 后把本张量字节数从预算扣除、累加到 `actually_swap_size`（MB，按 rank 打印汇总）。一旦该 stage 预算用尽、或 `empty_with_swapped_memory` 缺失、或分配抛异常，都**回退到 `torch.zeros_like` 的 HBM 分配**——即预算决定「换出多少动量」，超出部分仍留显存、不致训练失败。这正与 torchtitan 侧「`'all'`→65GB／标量逐 stage／list 逐 stage」语义同源。
+`get_swap_memory` 调 `torch_npu.empty_with_swapped_memory(p.size(), device=p.device)`，给 tensor 及其 `.data` 都打 `swap_tensor=True`、`zero_()` 后把本张量字节数从预算扣除、累加到 `actually_swap_size`（MB，按 rank 打印汇总）。一旦该 stage 预算用尽、或 `empty_with_swapped_memory` 缺失、或分配抛异常，都**回退到 `torch.zeros_like` 的 HBM 分配**——即预算决定换出多少动量，超出部分仍留显存。
 
 ### step 与更新算子
 
-被 patch 的 `AdamW.step`（同时打 `mindspeed.optimizer.adamw` 与 `mindspeed.core.optimizer.adamw` 两处）走 `virtual_optimizer_step` → `virtual_optimizer_step_impl`：标准 AdamW 主循环，唯一改动是状态初始化处 `state['exp_avg'], state['exp_avg_sq'] = self.virtual_allocator.init_exp(p)`（虚拟还是 HBM 由预算决定）；amsgrad 的 `max_exp_avg_sq` 仍 `torch.zeros_like(p)` 常驻 HBM。更新调 `mindspeed.optimizer.adamw.adamw` 函数式接口，内部最终落到 `torch._fused_adamw_` 融合 kernel——与 torchtitan 侧、[swap-optimizer](swap_optimizer.md) 三者的更新算子一致。
+被 patch 的 `AdamW.step`（同时打 `mindspeed.optimizer.adamw` 与 `mindspeed.core.optimizer.adamw` 两处）走 `virtual_optimizer_step` → `virtual_optimizer_step_impl`：标准 AdamW 主循环，唯一改动是状态初始化处 `state['exp_avg'], state['exp_avg_sq'] = self.virtual_allocator.init_exp(p)`（虚拟还是 HBM 由预算决定）；amsgrad 的 `max_exp_avg_sq` 仍 `torch.zeros_like(p)` 常驻 HBM。更新调 `mindspeed.optimizer.adamw.adamw` 函数式接口，内部最终落到 `torch._fused_adamw_` 融合 kernel。不同容器的更新调用与状态生命周期分别核对。
 
 ### checkpoint 适配
 
@@ -155,30 +106,22 @@ def create(self, p):
 
 ### 与多流 swap 的取舍
 
-MindSpeed 文档给出虚拟内存相对手动多流 swap（即 [swap-optimizer](swap_optimizer.md) 那条路线）的取舍：虚拟内存省掉两次 UB↔HBM 搬运、直接由算子自身流水（MTE2/MTE3/Vector）做指令级并行掩盖，免去多流引入的流同步与额外显存开销；代价是 Host 虚拟内存**无随路计算**，涉及随路计算的算子用不了。文档推荐配 `CPU_AFFINITY_CONF=1,lazy_bind:0` 粗粒度绑核，把任务绑到 NPU 对应 NUMA 核、规避跨 NUMA 访问。环境依赖 Driver 25.0.RC1 / CANN 8.1.RC1 / PTA（2025 Q2 商发）。
+MindSpeed 文档给出虚拟内存相对手动多流 swap（即 [swap-optimizer](swap_optimizer.md) 那条路线）的取舍：虚拟内存省掉两次 UB↔HBM 搬运、直接由算子自身流水（MTE2/MTE3/Vector）做指令级并行掩盖，免去多流引入的流同步与额外显存开销；代价是 Host 虚拟内存**无随路计算**，涉及随路计算的算子用不了。文档推荐配 `CPU_AFFINITY_CONF=1,lazy_bind:0` 粗粒度绑核，把任务绑到 NPU 对应 NUMA 核、规避跨 NUMA 访问。当前文档已不再声明该组最低版本；按实际环境确认 swapped-memory 能力及特性校验。
+
 
 ## Evidence
 
-- 特性文档：[`docs/feature_guides/virtual_optimizer.md`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/virtual_optimizer.md)
-- 实现：[`virtual_optimizer.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/patches/optimizer/virtual_optimizer.py)（`VirtualAllocator._get_swap_memory` / `virtual_optimizer_step_impl`）
-- 分发与 patch：[`optimizer_selector.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/patches/optimizer/optimizer_selector.py)（`NpuOptimizerDispatcher` 互斥校验、`_apply_virtual_patch`）
-- 配置字段：[`configs.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/config/configs.py)（`OptimizerConfig.virtual_optimizer` / `virtual_optimizer_size`）
-- 派生上游：MindSpeed VirtualOptimizer（`mindspeed/core/optimizer/virtual_optimizer/virtual_adam.py`）
-
-MindSpeed 原生实现（@1432cb0）：
-
-- 特性注册 / CLI / 校验：[`features_manager/optimizer/virtual_optimizer.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/optimizer/virtual_optimizer.py)（`VirtualOptimizerFeature`、`parse_list_for_virtual_optimizer` 的 `'all'`→65.0、`register_patches`、与 `fused_ema_adamw` 互斥）
-- 分配器与 step：[`core/optimizer/virtual_optimizer/virtual_adam.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/virtual_optimizer/virtual_adam.py)（`VirtualAllocator.create` / `get_swap_memory` / `get_swap_memory_size`、`virtual_optimizer_step_impl`、`virtual_optimizer_replace`）
-- patch 入口：[`core/optimizer/virtual_optimizer/adaptor.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/optimizer/virtual_optimizer/adaptor.py)（`virtual_optimizer_step`、`get_global_virtual_allocator`、`replace_swap_tensor_wrapper`）
-- 融合更新：[`mindspeed/optimizer/adamw.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/optimizer/adamw.py)（函数式 `adamw` → `torch._fused_adamw_`）
-- 官方文档：[`docs/zh/features/virtual-optimizer.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/virtual-optimizer.md)（背景、一行改造、虚拟内存 vs swap 取舍、绑核与环境依赖）
+- [virtual_optimizer.md](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/feature_guides/virtual_optimizer.md)（primary）
+- [optimizer.py](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/optimizer.py)（implementation）
+- [checkpoint.py](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/extensions/torchtitan/components/checkpoint.py)（implementation）
+- [virtual-optimizer.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/virtual-optimizer.md)（implementation）
+- [virtual_adam.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/virtual_optimizer/virtual_adam.py)（implementation）
+- [adaptor.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/optimizer/virtual_optimizer/adaptor.py)（implementation）
+- [virtual_optimizer.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/optimizer/virtual_optimizer.py)（implementation）
 
 ## Links
 
-- [swap-optimizer](swap_optimizer.md) — 互斥的另一条优化器显存卸载路线（手动流水化 swap）
-- [muon-optimizer](muon_optimizer.md) — 同在 `OptimizerConfig` 中配置的优化器选项
-- [torchtitan](../frameworks/torchtitan.md) — 本特性所在训练框架
-- [mindspeed](../frameworks/mindspeed.md) — VirtualOptimizer 的派生上游框架
-- [deepseek-v4-continue-pretrain](../../guides/recipes/deepseek_v4_continue_pretrain.md) — 与本特性互斥的 `swap_optimizer=true` 实践（其 4k 主配置未启用 Virtual Optimizer）
-- [kvcache-offload](../../../inference/concepts/techniques/kvcache_offload.md) — 推理侧同类「Host 内存换 Device 显存」思路
-- [optimizer-memory](optimizer_memory.md)（同属优化器显存优化族：reuse-fp32-param / 低精度优化器 / LayerZeRO）
+- [Swap Optimizer](swap_optimizer.md)
+- [Muon](muon_optimizer.md)
+- [DCP 与 HF 检查点](checkpoint_dcp_hf.md)
+- [TorchTitan NPU](../frameworks/torchtitan.md)

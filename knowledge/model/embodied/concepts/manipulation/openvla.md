@@ -9,12 +9,14 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/openvla/infer_with_om/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/openvla/infer_with_om/README.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/openvla/infer_with_om/convert_and_verify_onnx.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T12:59:25Z'
 platforms:
 - 310p
 ---
@@ -33,7 +35,7 @@ OpenVLA 是典型的 **视觉-语言-动作通用控制模型**：把视觉观�
 
 ## 输入 / 输出契约
 
-源 README 给出的 OM 离线接口契约（`B`=batch size，离线验证常为 1；`T`=文本 token 长度；`C`=图像通道；`A`=动作维度）：
+源 README 给出的模型级输入与生成流程契约，不能直接当作任一 OM 子图的接口（`B`=batch size，离线验证常为 1；`T`=文本 token 长度；`C`=图像通道；`A`=动作维度）：
 
 | 输入 | 含义 | dtype | shape | 备注 |
 | --- | --- | --- | --- | --- |
@@ -43,7 +45,12 @@ OpenVLA 是典型的 **视觉-语言-动作通用控制模型**：把视觉观�
 
 | 输出 | 含义 | dtype | shape | 备注 |
 | --- | --- | --- | --- | --- |
-| `actions` / `generated_ids` | 动作 token（离散动作序列 id） | `int64` | `[B, A]` | 后续用 `bin_centers` + `action_norm_stats` 反归一化得连续动作 |
+| `generated_ids` | 生成流程中的离散动作 token | `int64` | 按生成长度组织 | 宿主侧再按 bin_centers 与 action_norm_stats 解码/反归一化 |
+| `actions` | 最终连续控制量 | 浮点 | `[B, A]` | 由生成 token 后处理得到，不是语言 OM 的直接输出 |
+
+### 语言子图的实际导出边界
+
+固定 convert_and_verify_onnx.py 为 Prefill 导出的输入是 multimodal_attention_mask、position_ids、multimodal_embeddings；Decode 导出的输入是 input_ids、multimodal_attention_mask、position_ids 以及逐层 past_key/past_value。两段输出均为 logits 和逐层 present_key/present_value。视觉编码、embedding 组合、采样、缓存更新和动作反归一化由宿主流程协调，不能按上表的 observation 到 actions 契约直接调用单段 OM。
 
 ## 昇腾 310P OM 离线部署链路
 
@@ -68,4 +75,4 @@ OpenVLA 遵循本域共享的 **OM/ATC 离线静态图范式** [om-atc-offline](
 - 动作生成范式对照：[action-chunking](../modules/action_chunking.md)、[flow-matching-action-expert](../modules/flow_matching_action_expert.md)
 - 同为 310P OM 离线 / 310P 在线的操作类样例：[spirit-v1.5](spirit_v1_5.md)
 - 昇腾亲和算子改造的同源思想（torch 在线路线）：[isaac-gr00t](isaac_gr00t.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

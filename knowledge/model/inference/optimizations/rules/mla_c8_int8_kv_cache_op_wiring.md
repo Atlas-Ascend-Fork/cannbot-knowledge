@@ -1,7 +1,7 @@
 ---
 type: Optimization
-title: MLA / DSA 上 C8（int8 KV cache）的算子接线：打包布局 + prolog·SFA·FIA 走量化变体 + 单 scale 驱动
-description: MLA / DSA 上 C8（int8 KV cache）的算子接线：打包布局 + prolog·SFA·FIA 走量化变体 + 单 scale 驱动。要给 mla / dsa 结构上 C8（int8 KV cache）再省一半 KV 显存 / 搬运时。难点不在「把 cache dtype 改成 int8」，而在写 cache、mla-prolog、sparse-flash-attention / fused-infer-attention-score 三处要一致地插入同一套量化 / 反量化。踩错任一处，要么算子消费不了 int8 KV，要么对 None 调 .narrow 直接崩。C8 与线性投影的 A8W8 权重量化是两条正交量化轴，可独立开关。
+title: MLA / DSA C8：写入、打包与反量化须成对
+description: 以当前R1和V3.2-Exp实现说明C8的分离/打包布局、scale方向、packed FIA和现行量化SFA调用。
 tags:
 - task.optimization
 - topic.attention
@@ -9,65 +9,45 @@ tags:
 - topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/82
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/53
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/417
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek_r1/models/modeling_deepseek.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py
   role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T14:51:46Z'
 platforms:
-- '950'
+- a3
 ---
 
-# MLA / DSA 上 C8（int8 KV cache）的算子接线：打包布局 + prolog·SFA·FIA 走量化变体 + 单 scale 驱动
+# MLA / DSA C8：写入、打包与反量化须成对
 
-## 适用场景
+## R1：分离NoPE/RoPE
 
-要给 [mla](../../concepts/modules/mla.md) / [dsa](../../concepts/modules/dsa.md) 结构上 C8（int8 KV cache）再省一半 KV 显存 / 搬运时。难点不在「把 cache dtype 改成 int8」，而在写 cache、[mla-prolog](../../concepts/kernels/mla_prolog.md)、[sparse-flash-attention](../../concepts/kernels/sparse_flash_attention.md) / [fused-infer-attention-score](../../concepts/kernels/fused_infer_attention_score.md) 三处要**一致地**插入同一套量化 / 反量化。踩错任一处，要么算子消费不了 int8 KV，要么对 `None` 调 `.narrow` 直接崩。C8 与线性投影的 A8W8 权重量化是两条正交量化轴，可独立开关。
+当前R1以INT8保存NoPE latent，RoPE保持模型dtype。Prefill的npu_kv_rmsnorm_rope_cache_v2接c_kv_scale=ckv_scale倒数；Decode的npu_mla_prolog_v3同样接quant_scale_ckv=倒数，weight_quant_mode按线性A8选择2或0，KV量化mode为1；启用A8和C8时query_quant_mode为1。
 
-## 只量化 nope、rope 保 16 位；单 scale 双向驱动
+Decode FIA v2用ckv_scale原值反量化key/value，并传Q侧dequant scale、query_quant_mode=3；当前packed接口为TND_NTD，不能继续抄BSND旧代码。C8模型还检查enable_mla_prolog=True。线性量化与缓存量化要分别核对，不从标签推导全部投影都量化。
 
-- **只压缩 KV 潜向量（nope）量化，rope 分量保持模型 dtype**：MLA 只缓存低秩压缩潜向量 + rope 分量，nope cache 用 int8，rope cache 保持 bf16。
-- **同一个逐张量 `ckv_scale` 贯穿全程**：写 cache 端传其倒数（量化写入），反量化端传原值。写 cache 的 `npu_kv_rmsnorm_rope_cache` 收 `reciprocal(ckv_scale)`；已核实的 R1 `npu_mla_prolog_v3` 的 `quant_scale_ckv` 同样收 `ckv_scale_reci = reciprocal(ckv_scale)`，FIA 的 `dequant_scale_key/value` 收原值。v2 不由 v3 推导，须按目标固定实现单独核实。
-- **decode 注意力必须走 FIA v2**：C8 时 `query_quant_mode=3`、`dequant_scale_query` 带 q 侧 scale、`dequant_scale_key/value = ckv_scale`；非 C8 时全部 scale 传 `None`、`query_quant_mode=0`。FIA v1 无法消费 int8 KV（v2 同时覆盖 bf16 路径，v1 可整段被 v2 取代）。
+## V3.2-Exp：动态分块打包
 
-## 打包成单张 int8 buffer + rope_cache=None → None-guard（失败签名）
+Prefill/Decode均用npu_mla_prolog_v3。只量化q_b投影时weight_quant_mode=1，并向Indexer传pertoken_scale；缓存INT8时另设kv_cache_quant_mode=3、query_quant_mode=0、ckvkr_repo_mode=1、quant_scale_repo_mode=1、tile_size=128及k_nope_clip_alpha。
 
-当 KV 交给 SFA / MLA-Prolog 融合算子时，C8 下算子**不吃分离的 nope / rope 两张 cache**，要一张已把 nope、rope 与反量化 scale 拼好的 int8 buffer：
+NoPE buffer打包latent、RoPE和scale，末维示例512+64×2+16=656字节；独立RoPE只占位。非量化的(512+64)×2=1152字节到656约减少43.1%，不是完整KV一律减半，且未含Indexer Key与scale缓存。
 
-- 末维 = `kv_lora_rank + qk_rope_head_dim*2 + scale_段`（DeepSeek-V3.2-Exp 为 `512 + 64*2 + 4*4 = 656`，与 [gather-selection-kv-cache](../../concepts/kernels/gather_selection_kv_cache.md) 的 `MAX_KV_CACHE_DIM=656` 独立一致）。非 C8 时 nope / rope 分离、dtype = 模型 dtype。
-- **配对的独立 rope_cache 置 `None`** → 下游一切对 rope cache 做 `.narrow` / `.view` 的地方都必须加 None-guard（`v.narrow(...) if v is not None else None`），否则对 `None` 调 `.narrow` / `.view` 直接崩。CP prefill 镜像同理（`cp_tmp` 的 rope cache 也是 `None`）。
-- NZ 布局下 int8 KV 按 `factor=2` 打包（`k_nope` view 末维 = `KV_CACHE_NZ_DIM(16) * factor`，见 [weight-nz](../../concepts/techniques/weight_nz.md)）。
-- **Indexer key 反量化 scale 每 slot 一个标量**，scatter 目标末维必须为 1（`view(-1, 1)`，不是 `view(-1, head_dim)`）；按 head_dim 展平会错位。
+当前C8读端是torch_npu.npu_kv_quant_sparse_flash_attention，**旧npu_sparse_flash_attention_antiquant名称已不适用**。Q将q_nope/q_pe拼成contiguous张量，key/value_quant_mode=2、quant_scale_repo_mode=1、tile_size=128、rope_head_dim=64；scale随KV打包，不额外传key/value scale。非C8才分别传query_rope/key_rope。
 
-## SFA 切 antiquant 变体、query 打包
+Indexer Key量化是独立Per-Token-Head路径，scale每slot一个标量，scatter目标view(-1,1)。CP先恢复全序，再分别写全局临时计算cache与持久cache；不能继续按旧rope列表narrow和连续batch写法接线。详见[CP写入](mla_prolog_zigzag_cp_kv_write.md)。
 
-- C8 分支调 `npu_sparse_flash_attention_antiquant`（算子内反量化 int8 KV），非 C8 调 `npu_sparse_flash_attention`。
-- C8 下把 rope 分量 cat 进单一 contiguous query（`q = cat([q_nope, q_pe], -1).contiguous()`），用 `rope_head_dim` 告知算子 rope 段位置；`key/value_dequant_scale = None`（scale 随打包 KV 携带）。⚠️ 把 `query_rope` / `key_rope` 从两 path 共用基础入参里挪出、**只在非 C8 分支设**，否则会误传给 antiquant 变体。
+## 验收和边界
 
-## prefill 也必须迁到融合 MLA-Prolog（勿只改 decode）
+检查实际checkpoint quantization_config、模块dtype、所有scale方向、打包布局、slot_mapping与算子参数；覆盖Prefill/Decode、CP1/CP>1及量化开关。C8时PyPTO LI分派会回到量化AscendC LI，但PyPTO IndexerProlog仍有单独的INT8 Decode门控，不能把“PyPTO”整体一律禁用。
 
-常见误判是「C8 只需改 decode」。实则 **prefill 也写 KV cache**，而手工 prefill 路径（`npu_kv_rmsnorm_rope_cache_v2` + 手工 q 投影 / absorb + `npu_interleave_rope`）产出的是 bf16 KV cache，落不成 int8 C8 cache。要把路由从「只有 C8-decode 用 v3」放宽为「decode / prefill 一律走 `npu_mla_prolog_v3`」，prefill / decode 共用一份入参 dict 打通 int8 写路径。C8 还需给 v3 追加量化入参 + 一个 nope 量化 clip alpha（`k_nope_clip_alpha`）。
+来源模型README明确A3；不从旧算子版本讨论推导950支持或最低CANN版本。不同模型/内核mode数值不能互换，本次无NPU复测。
 
-## 其他低精度格式的接入
-
-Torch 无对应 dtype 时的通用带外传递见 [AscendC dtype 接口规则](ascendc_custom_op_out_of_band_dtype.md)；QSAS 的 `kv_quant_mode=10`、optional 解包与 `ACL_HIFLOAT8` 包装差异见 [QSAS HiFloat8 案例](../cases/torchless_lowprec_dtype_acl_override.md)。它们是独立接入路径，不属于本卡 MLA C8 主结论的已确认适用范围。
-
-## 参考实现及其约束
-
-参考 [deepseek-v3.2-exp](../../concepts/models/deepseek_v3_2_exp.md) / DeepSeek-R1 的 `DeepseekIndexerAttention`。量化 mode 数值、`MlaPrologV3` 各 `*_quant_mode` / `tile_size` 的必需取值属算子规格、后续可能变动，此处不定合约。版本前置：MLA C8-on-aclgraph 的 FIA v2 需 CANN 8.3.RC1.alpha003 起。相关约束：C8 KVCache 与 PyPTO 版 Lightning Indexer 当前互斥，见 [c8-kvcache-disables-pypto-lightning-indexer](../anti_patterns/c8_kvcache_disables_pypto_lightning_indexer.md)；量化选层原则见 [dsa-quant-layer-selection](dsa_quant_layer_selection.md)，MoE 权重进一步降位见 [moe-role-based-precision-allocation](moe_role_based_precision_allocation.md)。
 
 ## Evidence
 
-- `diff 事实`（@b88d340c272f）：`ckv_scale` / `npu_kv_rmsnorm_rope_cache(c_kv_scale=recip)` / `npu_mla_prolog_v2(quant_scale_ckv)` / `npu_fused_infer_attention_score_v2(query_quant_mode=3)` / `dtype_nope=int8` / NZ `factor=2` 逐处对上。
-- `diff 事实`（@3aad9baf029c）：打包末维公式、`rope_cache=None` + 下游 None-guard、indexer scale `view(-1,1)`、SFA 切 antiquant + cat query + scale=None、prefill/decode 统一路由到 v3、C8 追加 clip alpha。
-- `diff 事实`（@a34ce8e16efb）：QSAS 的 `make_wrapper` + `kv_quant_mode==10` 门控 + `ACL_HIFLOAT8` 经 `TensorWrapper` 带外传递 + `ConvertType` 读 `tensor_r.dtype`。
-- 版本前置 CANN 8.3.RC1.alpha003：README bump（diff）+ 维护者确认双证。
-- 溯源下探：
-  - [cann-recipes-infer-pr-82-feat-add-deepseek-r1-c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/82)
-  - [cann-recipes-infer-pr-53-feat-support-sfa-c8](https://gitcode.com/cann/cann-recipes-infer/merge_requests/53)
-  - [cann-recipes-infer-pr-417-feat-qsas-support-hif8-kv-quant](https://gitcode.com/cann/cann-recipes-infer/merge_requests/417)
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_r1/models/modeling_deepseek.py)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
+- [indexer.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/indexer.py)（implementation）

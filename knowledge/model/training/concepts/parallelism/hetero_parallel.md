@@ -8,12 +8,16 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/README.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/online_data_rearrange.md
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/memory/online_data_rearrange.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/utils/hetero_parallel.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/pretrain_vlm.py
+  role: implementation
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:39:13Z'
 platforms:
 - agnostic
 ---
@@ -31,7 +35,7 @@ platforms:
 - **模型异构**：不同编码器（vision/audio）与骨干（LLM）的计算量、参数规模不同，存算不均衡导致计算空泡，表现为 `LLM bound` 与 `encoder bound`。
 - **数据异构**：训练样本中文本/语音/视觉的 token 数差异大且随动态分辨率动态变化，使各编码器、骨干算力需求波动，产生 `intra-microbatch` 与 `inter-microbatch` 不均衡。
 
-针对模型异构，MindSpeed-MM 设计 hetero-parallel；针对数据异构，另有在线数据重排（[`docs/zh/features/online_data_rearrange.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/online_data_rearrange.md)）。两者正交、可叠加。
+针对模型异构，MindSpeed-MM 设计 hetero-parallel；针对数据异构，另有在线数据重排（[`docs/zh/features/online_data_rearrange.md`](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/memory/online_data_rearrange.md)）。两者正交、可叠加。
 
 ## 解耦各子模块的并行配置
 
@@ -90,7 +94,7 @@ flowchart TB
 子模块切换并行域后，激活张量的切分方式也随之改变，需要在编码器边界做数据重分发。`apply_hetero_parallel_hooks` 在 `image_encoder` / `audio_encoder` 上注册 forward pre/post hook：
 
 - **进入编码器前**（`image_encoder_forward_pre_hook`）：先 `change_parallel_state('text_decoder')` 在 LLM 的 DP 域上 `all_gather_dp_group` 把各 DP rank 的 `pixel_values` / `image_grid_thw` 聚齐，再切回 `image_encoder` 域，按每个 DP rank 的图像工作量（`image_grid_thw.prod`）`split_tensor_dp_group` 非均匀重切到编码器 DP 域。
-- **编码器算完后**（`image_encoder_forward_hook`）：在编码器 DP 域 `all_gather_dp_group` 聚合视觉 embedding，切回 `text_decoder` 域后按 LLM DP 世界大小重新均分。
+- **编码器算完后**（`image_encoder_forward_hook`）：在编码器 DP 域 `all_gather_dp_group` 聚合视觉 embedding，切回 text_decoder 域后将各编码器rank的真实长度all_lens按原LLM DP样本分组累计为chunk_seq_lens，再据此重切，token块可以不等长。
 
 `all_gather_dp_group` / `split_tensor_dp_group` 支持按 `chunk_seq_lens` 做变长切分并对短样本 `F.pad` 对齐再 `remove_padding`，使编码器侧的大 DP 与 LLM 侧的 TP/DP 之间的张量布局正确衔接。
 
@@ -103,7 +107,7 @@ flowchart TB
 - **编码器段**（首子模块）：`_IS_HETERO_PP_MOUDLE=False`，把全局 microbatch 数除以 `hetero_encoder_mbs_scale`（编码器用大 mbs），以 `forward_only` 跑前向，产出视觉/音频 embedding 与对应 batch 缓存。`forward_only_for_global = (not _IS_LAST_PIPELINE) or forward_only`——非末段子模块只前向。
 - **解码器段**（末子模块 `text_decoder`）：`_IS_HETERO_PP_MOUDLE=True`，用 `DecoderRerunDataIterator(current_batchs, output_tensors, mbs_scale)` 把上一段编码器输出按 `hetero_encoder_mbs_scale` 重新切成解码器粒度的多个 microbatch（视觉 token 数按 `image_grid_thw.prod // VIT_SCALE_FACTOR(=4)` 累计定位、音频按 `AUDIO_TOKEN_ID(=151646)` 计数定位），再以 `get_num_microbatches()` 跑完整前反向。
 
-底层 Megatron 调度被替换为两个 patch：`forward_backward_no_pipelining_patch`（PP=1，编码器这类无流水子模块走此路径）与 `forward_backward_pipelining_without_interleaving_patch`（1F1B，开了 PP 的 LLM 段走此路径）。前者在 `_HETERO_PIPELINE and not _IS_LAST_PIPELINE`（编码器等非末段子模块）时把编码器 `output_tensor` 与 `data_iterator.current_batch` 收集进返回值的 `output_tensors`/`current_batch` 供下一段使用；后者在 1F1B cooldown 于 rank0 收集 `input_tensor_grads`，其 `current_batch` 恒为空。`is_pipeline_last_stage` 被包成 `原判定 and _IS_LAST_PIPELINE`，保证只有「真正的末段子模块的末 stage」才计算 loss。各 PP stage 前向时（`recv_forward` 取到上游激活后、`forward_step` 之前），`set_decoder_input_tensor` 把上游 PP 传来的张量灌进 `text_decoder.set_input_tensor`。PP 流水的逐时刻 warmup/1F1B/cooldown 时间线见上游调度文件 [`hetero_pipeline_patches.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/patchs/hetero_pipeline_patches.py)。
+底层 Megatron 调度被替换为两个 patch：`forward_backward_no_pipelining_patch`（PP=1，编码器这类无流水子模块走此路径）与 `forward_backward_pipelining_without_interleaving_patch`（1F1B，开了 PP 的 LLM 段走此路径）。前者在 `_HETERO_PIPELINE and not _IS_LAST_PIPELINE`（编码器等非末段子模块）时把编码器 `output_tensor` 与 `data_iterator.current_batch` 收集进返回值的 `output_tensors`/`current_batch` 供下一段使用；后者在 1F1B cooldown 于 rank0 收集 `input_tensor_grads`，其 `current_batch` 恒为空。`is_pipeline_last_stage` 被包成 `原判定 and _IS_LAST_PIPELINE`，保证只有「真正的末段子模块的末 stage」才计算 loss。各 PP stage 前向时（`recv_forward` 取到上游激活后、`forward_step` 之前），`set_decoder_input_tensor` 把上游 PP 传来的张量灌进 `text_decoder.set_input_tensor`。PP 流水的逐时刻 warmup/1F1B/cooldown 时间线见上游调度文件 [`hetero_pipeline_patches.py`](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/patchs/hetero_pipeline_patches.py)。
 
 ## 配置面与推荐场景
 
@@ -113,12 +117,14 @@ flowchart TB
 |---|---|---|
 | `--hetero-parallel` | shell `GPT_ARGS` | 开关：对不同子模型应用不同并行策略（默认关） |
 | `--hetero-encoder-mbs-scale` | shell `GPT_ARGS` | 编码器 mbs = 解码器 mbs × 此值（默认 1） |
-| `tp` / `pp` / `cp` / `mbs` | `model.json` 的 `image_encoder.vision_encoder` / `audio_encoder` / `text_decoder` 段 | 各子模块独立并行度与 microbatch |
+| `tp` / `pp` / `cp` / `mbs` | `model.json` 的 `image_encoder` / `audio_encoder` / `text_decoder` 段 | 各子模块独立并行度与 microbatch；图像侧外层tp/pp/cp经hetero_align_config覆盖内部并生成完整并行字段 |
 
 两种推荐用法：
 
 - **异构 DP/TP/CP**：编码器规模小、静态显存小 → 开 DP/CP；LLM 大、静态开销大 → 开 DP/TP/CP。如 Qwen2.5-Omni 7B 短序列：ViT、Audio 用 `DP8`，LLM 用 `TP4 DP2` 性能最佳。
 - **异构 PP**：需开 PP（小 mbs 大 gas、LLM 参数量大）时，ViT/Audio 编码器用大 DP、LLM 开 PP，并令编码器 mbs ≈ LLM mbs 的 4~8 倍。
+
+编码器边界视觉/音频 hook 使用 all_gather_dp_group(..., remove_padding=True)；requires_grad=True 且需移除padding时直接抛NotImplementedError，因此这条已实现路径要求编码器输出不需要梯度，不能据此覆盖训练编码器参数的场景。
 
 适用范围：当前仅 Megatron 后端、`pretrain_vlm` 训练的模型；插件式 FSDP2 后端不支持。
 
@@ -144,16 +150,14 @@ flowchart TB
 
 ## 跨域复用
 
-异构并行同样覆盖 MindSpeed-MM 的 DiT 视频/图像生成路线（Sora 系骨干）——其 DiT 主干 + VAE 编解码与 cann-infer/cann-spatial 的 [dit](../../../inference/concepts/modules/dit.md)、[vae](../../../inference/concepts/modules/vae.md) 同源，动态 DP-CP 即落在 OpenSoraPlan（DiT 文生视频）这类变分辨率/变长序列生成训练上。DiT/VAE 的结构语义归属上述跨域页，异构并行与动态 DP-CP 则是它们在 MM 生成路线上的分布式分组策略。
+动态DP-CP适用于固定OpenSoraPlan1.3的DiT视频生成训练路线；hetero-parallel仍仅覆盖pretrain_vlm，不能由动态DP-CP的适配范围推定异构并行已覆盖DiT/VAE——其 DiT 主干 + VAE 编解码与 cann-infer/cann-spatial 的 [dit](../../../inference/concepts/modules/dit.md)、[vae](../../../inference/concepts/modules/vae.md) 同源，动态 DP-CP 即落在 OpenSoraPlan（DiT 文生视频）这类变分辨率/变长序列生成训练上。DiT/VAE 的结构语义归属上述跨域页，这里的生成路线分组策略仅指上述动态DP-CP，异构并行应按自身模型入口核对。
 
 ## Evidence
 
-源页：[mindspeed-mm](https://gitcode.com/Ascend/MindSpeed-MM)（钉定 ref `8e740b46cb82…`）。blob base `https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/`：
-
-- 方案与配置：[`docs/zh/features/hetero_parallel.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/hetero_parallel.md)（模型/数据异构、异构 DP/TP/CP 与异构 PP 两场景、Qwen2.5-Omni 7B `ViT/Audio DP8 + LLM TP4DP2`、使能方式、适用范围）、[`docs/zh/features/dynamic_dpcp.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/dynamic_dpcp.md)（并行组枚举 / 每轮 DP 优先选策略 / 切组广播缓存；`use_dynamic_dpcp`/`max_cp_size`/`max_seq_size`；OpenSoraPlan1.3）、[`docs/zh/features/unaligned_ulysses_cp.md`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/docs/zh/features/unaligned_ulysses_cp.md)（All2All Input/Output List 非均匀切分；`--context-parallel-algo ulysses_cp_algo`）。
-- parallel_state 解耦与切换：[`mindspeed_mm/utils/hetero_parallel.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/utils/hetero_parallel.py)（`_HeteroParallelModules`、`_ParallelStatesDict`、`initial_modules_mpu` + `pass_hetero_initial_arguments` 优先级、`change_parallel_state`、`initial_megatron_hetero_parallel_wrapper` patch `initialize_megatron`、`apply_hetero_parallel_hooks` + `image_encoder_forward_pre_hook`/`image_encoder_forward_hook`、`all_gather_dp_group`/`split_tensor_dp_group`）。
-- 异构 PP 调度：[`mindspeed_mm/patchs/hetero_pipeline_patches.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/patchs/hetero_pipeline_patches.py)（`get_forward_backward_func_wrapper`、`hetero_pipeline`、`PipelineMeta`、`DecoderRerunDataIterator`(`AUDIO_TOKEN_ID=151646`/`VIT_SCALE_FACTOR=4`)、mpu 标记 `_HETERO_PIPELINE`/`_IS_FIRST_PIPELINE`/`_IS_LAST_PIPELINE`/`_IS_HETERO_PP_MOUDLE`、`forward_backward_pipelining_without_interleaving_patch`/`forward_backward_no_pipelining_patch`、`is_pipeline_last_stage` 包装）。
-- 参数定义：[`mindspeed_mm/arguments.py`](https://gitcode.com/Ascend/MindSpeed-MM/blob/8e740b46cb8290be0addf060e3e063d0b0380aa6/mindspeed_mm/arguments.py)（`--hetero-parallel`、`--hetero-encoder-mbs-scale`）。
+- [README.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/README.md)（primary）
+- [online_data_rearrange.md](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/features/memory/online_data_rearrange.md)（supporting）
+- [hetero_parallel.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/mindspeed_mm/utils/hetero_parallel.py)（implementation）
+- [pretrain_vlm.py](../../../../../cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/pretrain_vlm.py)（implementation）
 
 ## Links
 

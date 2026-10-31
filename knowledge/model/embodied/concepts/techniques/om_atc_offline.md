@@ -8,16 +8,24 @@ tags:
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/docs/manipulation/pi0/infer_with_om/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/docs/manipulation/pi0/infer_with_om/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/pi05/infer_with_om/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/infer_with_om/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/docs/deployment_troubleshooting.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/docs/deployment_troubleshooting.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/infer_with_om/pi05_om_e2e.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/infer_with_om/convert_pi05_part1.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/infer_with_om/convert_pi05_part2.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/pi05/infer_with_om/lerobot_modified/lerobot_eval_om.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - 310p
 ---
@@ -61,7 +69,7 @@ Pi0/Pi0.5 不一次性导出完整图，而是拆成 **VLM（part1）** 与 **ac
 - 降低 ATC 转换内存开销——完整图含视觉编码器 + 前缀处理 + KV cache + 多步去噪，整体大，一次性转换易触发内存压力或编译失败。
 - 固定 VLM 输出的中间张量边界：VLM 段输出 `past_kv_tensor`、`prefix_pad_masks`，action expert 段把它们作为显式输入，利于单独验证两段精度。
 - part2（动作专家）需多次调用（Pi0 中 10 次去噪），单独成段避免把循环展开进一张大图。
-- VLM 导出阶段会落盘 `runtime_save/past_kv_tensor.pth`、`runtime_save/prefix_pad_masks.pth`，action expert 导出阶段读取它们复用一致的中间特征——两步须用相同 `--runtime-save-dir`。
+- VLM 导出阶段会落盘 `runtime_save/past_kv_tensor.pth`、`runtime_save/prefix_pad_masks.pth`，action expert 导出阶段读取它们复用一致的中间特征——Pi0 两步须用相同 --runtime-save-dir；Pi0.5 固定脚本直接读写相对 runtime_save/，必须在同一工作目录先导出 Part1 再 Part2。
 
 ACT 模型推理路径短（无多步去噪），整模型导出为单个 `act.om`。模型结构边界见 [flow-matching-action-expert](../modules/flow_matching_action_expert.md) 与 [action-chunking](../modules/action_chunking.md)。
 
@@ -76,7 +84,7 @@ OM 版本与在线 torch 推理优化版**目标不同**：torch 版优先用 `t
 | Attention | `npu_prompt_flash_attention` | 基础 `matmul + softmax + where(mask)` |
 | RMSNorm + 残差 | `npu_rms_norm` / `npu_add_rms_norm` | 普通 module 调用 + 显式残差 |
 
-退化的好处是逐段可对齐精度、便于定位 mask/shape/dtype 问题。dtype 约束很关键：图像与 state 在 VLM 用 `float32`，action expert 的 state/KV/time/noise 多用 `float16`，`lang_tokens` 用 `int64`，mask 用 bool；`cumsum` 前 mask 须转整型再转回 bool。
+退化的好处是逐段可对齐精度、便于定位 mask/shape/dtype 问题。dtype 约束很关键：图像与 state 在 VLM 用 `float32`，action expert 的 state/KV/time/noise 多用 `float16`，`lang_tokens` 用 `int64`；mask 须按子图核对，不能一律用 bool：Pi0.5 Part1 的 language/prefix padding mask 为 bool，而 prefix_att_2d_masks_4d 是 float32 加性掩码；`cumsum` 前 mask 须转整型再转回 bool。
 
 退化算子的关键写法（`docs/manipulation/pi0/infer_with_om/README.md` §3.2–3.4 原文）：
 
@@ -115,7 +123,7 @@ OM 版本与在线 torch 推理优化版**目标不同**：torch 版优先用 `t
 | 模块 | 平均耗时 (ms) |
 | --- | ---: |
 | PaliGemma（Part1，每次 1 调用） | 223.08 |
-| Gemma（Part2，每次 10 调用） | 15.58 |
+| Gemma（Part2，单次调用；10 次共约 155.8 ms） | 15.58 |
 | End-to-End（Part1 + 10×Part2 + KV 拷贝） | 410.2 |
 
 动作正确性（表 2，整体 OM vs PyTorch，非 Part1 专属）：对最终动作张量 `[1,50,7]` 比较，平均余弦相似度 0.999984、最小 0.999850、最大 1.000000、标准差 0.000029。
@@ -127,13 +135,13 @@ OM 版本与在线 torch 推理优化版**目标不同**：torch 版优先用 `t
 - **ATC 失败 / `acl.mdl.execute error 507011`**：未 `source set_env.sh`，或 `--soc_version` 与芯片不符，或复用旧 OM。换模型/分辨率/动作维度后必须重导 ONNX 重转 OM。
 - **`ModuleNotFoundError: acllite_*` / `import acl` 失败**：ACLLite 路径未入 `PYTHONPATH`，`export PYTHONPATH=/path/to/Ascend/ascend-toolkit/latest/thirdpart/python/:$PYTHONPATH`。
 - **输入 shape/dtype/顺序不匹配**：OM 输入顺序须与 ONNX `input order` 一致，各输入 dtype 与导出时一致（NPU/ATC 对 dtype 组合敏感）。
-- **归一化处理器丢失 / 动作维度截断**：OM 输出 action 落不回动作空间。ACT、Diffusion-Policy 走 `policy_preprocessor`/`policy_postprocessor`，缺失则用 `migrate_policy_normalization.py` 生成 `<dir>_migrated/`；Pi0/Pi0.5 走 `run_om_e2e.py --mean-path/--std-path`，并由 `_to_action_14` 把 32 维动作截断到目标自由度——**换机器人/动作维度时不应只依赖默认 `_to_action_14` 截断**，否则维度映射错位（§10）。
+- **归一化处理器丢失 / 动作维度截断**：OM 输出 action 落不回动作空间。ACT、Diffusion-Policy 走 `policy_preprocessor`/`policy_postprocessor`，缺失则用 `migrate_policy_normalization.py` 生成 `<dir>_migrated/`；Pi0 走 run_om_e2e.py --mean-path/--std-path 及 _to_action_14，换机器人须核对截断/映射。Pi0.5 则由 pi05_om_e2e.py 按 config.output_features["action"].shape[0] 截断；lerobot_eval_om.py 经 make_pre_post_processors 创建并调用动作 postprocessor。两条链路不能混用脚本或归一化接口（§10）。
 - **无头渲染缺 `libOSMesa.so.0`**：`MUJOCO_GL=osmesa` + 安装 `libosmesa6` / `mesa-libOSMesa`。
 - **HuggingFace gated model（paligemma）**：`HF_ENDPOINT=https://hf-mirror.com`，离线改本地路径。
 
 ## 分段导出 / 验证 / 推荐排查顺序
 
-Pi0/Pi0.5 OM 是**两段图**（VLM Part1 + action expert Part2）：VLM 导出产出 `runtime_save/{past_kv_tensor,prefix_pad_masks}.pth` 供 action expert 复用——分步运行须先 `convert_verify_onnx_vlm.py` 再 `convert_verify_onnx_action_expert.py`，**两步用同一 `--runtime-save-dir`**（§6）：
+下列命令专用于 Pi0。Pi0/Pi0.5 OM 都是**两段图**（VLM Part1 + action expert Part2）：VLM 导出产出 `runtime_save/{past_kv_tensor,prefix_pad_masks}.pth` 供 action expert 复用——分步运行须先 `convert_verify_onnx_vlm.py` 再 `convert_verify_onnx_action_expert.py`，**Pi0 两步用同一 --runtime-save-dir**（§6）；Pi0.5 则在相同工作目录依次运行 convert_pi05_part1.py、convert_pi05_part2.py，共用相对 runtime_save/，不接受该 Pi0 参数：
 
 ```bash
 ./run_pi0_export.sh --pretrained-policy-path /path/to/pi0_model --runtime-save-dir runtime_save
@@ -165,4 +173,4 @@ OM/ATC 离线静态图是「图固化离线执行」路线，torchair 整图编�
 - 模型结构：[flow-matching-action-expert](../modules/flow_matching_action_expert.md)、[action-chunking](../modules/action_chunking.md)
 - 应用模型：[pi0](../manipulation/pi0.md)、[pi05](../manipulation/pi05.md)、[act](../manipulation/act.md)
 - 跨域对照：[npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)、[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

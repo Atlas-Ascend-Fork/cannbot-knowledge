@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/93
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - a3
 ---
@@ -47,5 +47,4 @@ export HCCL_BUFFSIZE=<实际需要的大小>   # 单位 MB
 
 ## Evidence
 
-- `diff 事实`（@da13d66）：`models/kimi-k2-thinking/README.md` 附录 FAQ 记录该报错关键字与修法（含"所有 Rank 上该环境变量须保持一致"），为该 PR 新增、由维护者写入。未附具体所需 buffer 数值。
-- 溯源下探：[cann-recipes-infer-pr-93-feat-support-kimi-k2-thinking](https://gitcode.com/cann/cann-recipes-infer/merge_requests/93)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/93)（evidence）

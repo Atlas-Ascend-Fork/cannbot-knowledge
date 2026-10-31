@@ -14,8 +14,10 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/46
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/utils/convert_model.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:29:24Z'
 platforms:
 - agnostic
 ---
@@ -34,9 +36,9 @@ platforms:
 - **跳过谁**：[Sparse-Flash-Attention](../../concepts/modules/sparse_flash_attention.md)、[Lightning-Indexer](../../concepts/kernels/lightning_indexer.md)/IndexerProlog（名含 `indexer`）、`lm_head`、MoE 路由 `gate`——精度敏感 / 无 Linear 量化收益，量化易掉分。
 - **KVCache** 保持 16-bit（`kv_cache_scheme: null`）即 W8A8**C16** 基线档，与也量化 KVCache 到 int8 的 [W8A8C8](../../concepts/quantization/w8a8c8.md)/[W4A8C8](../../concepts/quantization/w4a8c8.md) 区分。
 
-**两处「跳过表」范围不同（易踩坑）**：转换期靠子串名匹配跳过（`quant_ignore_layers` 只含 `kv_b_proj`/`indexer`）；HF 加载期 `quantization_config.ignore` 清单更宽，另含每层 `mlp.gate`（`i>=3`）与 `lm_head`。复现该量化时别只照转换期跳过表——`mlp.gate`/`lm_head` 是靠 HF `ignore` 在加载期不反量化的，漏掉后者会误量化 gate/lm_head→掉精度。
+当前转换器与HF导出配置使用同一generate_ignore_item结果，逐层跳过indexer.wk、indexer.weights_proj、kv_b_proj、kv_a_proj_with_mqa、q_a_proj、MoE gate、MTP eh_proj/shared_head.head及lm_head；indexer.wq_b仍可量化。旧“转换期仅两项、加载期另有宽表”已不适用，按生成后的实际名单核对。
 
-**命名易混**：仓内 yaml 名 `*_w8a8.yaml`、字段 `A8W8`、flag `--is_quant_int8`、配置 `int8_quantization_config.json` 全叫「w8a8」，但完整名是 **W8A8C16**（C16=KVCache 未量化）。读到「w8a8」不要默认 KVCache 也被量化——看 `kv_cache_scheme` 是否 `null`。
+**命名易混**：仓内 yaml 名 `*_w8a8.yaml`、字段 `A8W8`、flag `--quant_type`、配置 `int8_quantization_config.json` 全叫「w8a8」，但完整名是 **W8A8C16**（C16=KVCache 未量化）。读到「w8a8」不要默认 KVCache 也被量化——看 `kv_cache_scheme` 是否 `null`。
 
 ## 规则 2：clip 是可选开关（默认关），W8A8 不要求开 clip
 
@@ -55,6 +57,7 @@ platforms:
 
 ## Evidence
 
-- diff 事实（@cc9e59db7a11）：`quant_ignore_layers=['kv_b_proj','indexer']`、`generate_ignore_item`（HF ignore 另写 gate/lm_head）、`int8_weight_quant`（qmax=127 per-channel 对称）、`int8_quantization_config.json` 的 `kv_cache_scheme: null`。溯源下探 [cann-recipes-infer-issue-1-rfc-deepseek-v3-2-exp-w8a8c16](https://gitcode.com/cann/cann-recipes-infer/issues/1)
-- diff 事实 + 维护者确认（@2c45117）：`--clip` store_true 默认 False、clip 分支仅追加缩放；维护者答「A8W8 权重转换可以不用开启 clip」。溯源下探 [cann-recipes-infer-issue-104-question-w8a8c8-clip-wo](https://gitcode.com/cann/cann-recipes-infer/issues/104)
-- diff 事实（@2743dda2fe5f，单文件 +2/-2）：收尾块加载分片由首个改为最后一个；「MTP 层落最后一个分片」基于 nextn-predict 为最高层号 + 分片按层序的推断。溯源下探 [cann-recipes-infer-pr-46-fix-fixed-mtp-quantization-bug](https://gitcode.com/cann/cann-recipes-infer/merge_requests/46)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/1)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/104)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/46)（evidence）
+- [convert_model.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/utils/convert_model.py)（implementation）

@@ -1,16 +1,16 @@
 ---
 type: Optimization
 title: DeepSeek-V3.2-Exp A3 时延、吞吐与容量的来源观测
-description: 集中固定来源的历史数据，保留平台、配置、指标与证据缺口，不作为通用性能承诺。
+description: 集中当前指南仍保留的性能/容量表，区分MTP3/perfect EPLB与实际部署配置，不作性能保证。
 tags:
 - task.testing
 - topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: primary
 created_at: '2026-10-21T09:56:22Z'
-updated_at: '2026-10-21T09:56:22Z'
+updated_at: '2026-10-29T15:02:18Z'
 platforms:
 - a3
 scope:
@@ -77,6 +77,10 @@ Atlas A3，Chips沿原表16/32/64，不用world_size代替。
 Offload容量图称固定64K时global batch1024→2048，固定batch128时长度256K→384K，前提仍为MTP3及perfect EPLB。容量提升不等于同一请求的时延下降。
 
 
+## 当前配置与来源表的区别
+
+当前量化GE样例next_n=3，非量化样例next_n=1，npugraph_ex量化样例next_n=0；性能表的MTP3/perfect EPLB不是所有样例的公共默认。模型/后端迁移不自动重测原表，必须保存实际配置、真实路由与计时窗口后再比较。
+
 ## Limitations 与验证
 
 质量表由[精度草稿](../../optimizations/benchmark_observations/benchmark_deepseek_v32_quant_accuracy.md)维护；本卡仅记录性能和容量。结果覆盖多个分支，不写混合量化OR条件，也不将来源摘要当作统一SLA。
@@ -86,4 +90,4 @@ Offload容量图称固定64K时global batch1024→2048，固定batch128时长度
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md)
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（primary）

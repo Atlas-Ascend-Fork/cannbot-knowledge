@@ -9,12 +9,12 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T10:36:46Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - a3
 ---
@@ -47,17 +47,18 @@ platforms:
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 多个模型部署中使用 DP 提升吞吐
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_r1_prefill_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md)（supporting）
 
 ## Known Deployments
 
 - **Qwen3-Next PD 混部**：`--enable-dp-attention --dp-size 8 --tp 16`，DP 通信域在 Attention 层独立。CP 场景下 DP 通信域被 [context-parallel](context_parallel.md) 复用，因此 CP 与 DP 互斥（README 约束 5）。
-- **DeepSeek-R1 Prefill / Decode**（[deepseek-r1](../models/deepseek_r1.md)）：主流部署走 **纯 DP MLA**（`attn_tp_size=1`），每卡部署完整 MLA 权重，KVCache 按本卡请求独占、无冗余。该策略在请求量大或 KVCache 占用高的场景下最大化吞吐，但短序列混合批次下存在计算负载不均、请求数不足时 TTFT 拉长的问题——此时改用 [sp-tp-sp](sp_tp_sp.md)。固定示例中的DP128/EP128是并行组规模，不能据此推导128物理卡。MLA-DP 切分下 prefill 通信几乎全部来自 MoE 阶段的 AlltoAll（dispatch/combine），故 MLA-DP + MoE-[expert-parallel](expert_parallel.md) 场景用 micro-batch 双流把计算与 AlltoAll 并行起来、以计算掩盖 dispatch/combine 通信耗时；来源测量见[R1 Prefill 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark.md)。
+- **DeepSeek-R1 Prefill / Decode**（[deepseek-r1](../models/deepseek_r1.md)）：主流部署走 **纯 DP MLA**（`attn_tp_size=1`），每卡部署完整 MLA 权重，KVCache 按本卡请求独占、无冗余。该策略在请求量大或 KVCache 占用高的场景下最大化吞吐，但短序列混合批次下存在计算负载不均、请求数不足时 TTFT 拉长的问题——此时改用 [sp-tp-sp](sp_tp_sp.md)。固定示例中的DP128/EP128是并行组规模，不能据此推导128物理卡。MLA-DP 切分下 prefill 通信几乎全部来自 MoE 阶段的 AlltoAll（dispatch/combine），故 MLA-DP + MoE-[expert-parallel](expert_parallel.md) 场景用 micro-batch 双流把计算与 AlltoAll 并行起来、以计算掩盖 dispatch/combine 通信耗时。该固定 MLA-DP + MoE-EP 策略要求使用默认 SDMA，不能开启 HCCL_OP_EXPANSION_MODE=AIV，否则通信与计算争抢资源、时延可能变长；还须确认切分前后计算/通信性能近似线性，且原计算未 host-bound；来源测量见[R1 Prefill 来源观测](../../optimizations/benchmark_observations/deepseek_r1_a3_prefill_source_benchmark.md)。
 
  DeepSeek-R1 Prefill MLA 纯 DP 切分原貌（请求按卡独立、KV-Cache 无冗余）：
 
- ![DeepSeek-R1 Attention DP 切分](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/figures/image_attention_dp.png)
- *来源：[`docs/models/deepseek-r1/figures/image_attention_dp.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/figures/image_attention_dp.png)（cann-recipes-infer @ 2f82d10）*
+ ![DeepSeek-R1 Attention DP 切分](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_attention_dp.png)
+ *来源：[`docs/models/deepseek-r1/figures/image_attention_dp.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/figures/image_attention_dp.png)（cann-recipes-infer @ 944d2d3）*
 
 ## Links
 
@@ -70,5 +71,5 @@ platforms:
 - [sp-tp-sp](sp_tp_sp.md)
 - [deepseek-v4](../models/deepseek_v4.md)（Decode Attention 用 DP，配合 MoE EP + LM_head TP）
 - [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（`attn_tp=1` → DP=8；full 层 N_kv=2 致 TP 上限 2，故全用 DP 最大化吞吐）
-- [hy3-preview](../models/hy3_preview.md)（16 die `attn_tp_size=4` → Attention DP 体现在 attn_tp 之外的部署面；框架派生 `attn_dp_size=world_size//(attn_tp_size·cp_size)`）
+- [hy3-preview](../models/hy3_preview.md)（16 die `attn_tp_size=4` → Attention DP 体现在 attn_tp 之外的部署面；当前Decode视图为 `attn_dp_size=world_size//attn_tp_size`，CP Prefill另用 `cp_prefill_dp_size=world_size//(attn_tp_size·cp_size)`）
 - [fsdp](../../../training/concepts/parallelism/fsdp.md)（跨域·训练：FSDP2 全分片数据并行（ZeRO-3 同源））

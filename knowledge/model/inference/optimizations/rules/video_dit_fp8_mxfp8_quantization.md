@@ -1,7 +1,7 @@
 ---
 type: Optimization
-title: 视频 DiT FP8 量化规则：per-block Attention 与 MXFP8 matmul
-description: Atlas 950 视频 DiT 量化的显存与带宽决策：per-block FP8 注意力限定纯 Ulysses（Ulysses-only），MXFP8 matmul 跳过 adaLN 敏感层；HunyuanVideo 历史收益不外推，接入与观测分开核对。
+title: 视频 DiT MXFP8 注意力与 Linear 量化决策
+description: 按当前MXFP8注意力和Linear双开关分别验收950视频DiT，核对TND/量化轴、纯Ulysses、选层与offload控制变量。
 tags:
 - task.debugging
 - topic.attention
@@ -9,18 +9,20 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/325
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/dfa1a889e6787d03c7c535e968c694a59114182f/module/fa_quant/fa_quant.py
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/dfa1a889e6787d03c7c535e968c694a59114182f/module/unified_sp/core.py
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/dfa1a889e6787d03c7c535e968c694a59114182f/models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py
-  role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/dfa1a889e6787d03c7c535e968c694a59114182f/models/hunyuan-video/hyvideo/inference.py
-  role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hunyuan-video/hunyuan_video_optimization.md
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/fa_quant/fa_quant.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/unified_sp/core.py
+  role: constraint
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/hyvideo/modules/mxfp8_a8w8.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/config/single_fp8.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/config/single.yaml
+  role: constraint
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:43:19Z'
+updated_at: '2026-10-29T12:28:04Z'
 platforms:
 - '950'
 scope:
@@ -33,39 +35,33 @@ scope:
       quantization:
       - fp8
 ---
-# 视频 DiT FP8 量化规则：per-block Attention 与 MXFP8 matmul
 
-## 适用场景
+# 视频 DiT MXFP8 注意力与 Linear 量化决策
 
-视频 / 图像 [dit](../../concepts/modules/dit.md) 推理里 attention 与 Linear（MLP / 投影）在 bf16 下占显存与带宽，想降本时。这里有Attention与matmul两条量化手段，应分别验收目标负载；HunyuanVideo的一组历史结果不规定所有模型的优先级。两者都需 [ascend-950](../../concepts/platforms/ascend_950.md)（Atlas 950）级 FP8 硬件（`Ascend910B` / `Ascend910_93` 抛 RuntimeError）。
+## 触发条件
 
-## 手段一 · per-block FP8 注意力
+当950上的视频DiT在BF16下受attention或Linear的显存/带宽限制时，分别评估动态MXFP8注意力和MXFP8 A8W8矩阵乘。当前HunyuanVideo两条路径采用独立开关，不预设跨模型的量化优先级。
 
-对显存带宽受限的视频 DiT 注意力，用 per-block 动态 [fp8-attention](../../concepts/quantization/fp8_attention.md)（E4M3）量化 Q/K/V，经 [fused-infer-attention-score](../../concepts/kernels/fused_infer_attention_score.md) v2 的 per-block 量化模式计算：
+## 注意力路径
 
-- Q 与 K/V 用差异化 block 粒度：**Q group=128、K/V group=256**（`npu_dynamic_block_quant`）。
-- 量化张量转 BNSD 后喂 FIA v2，`query/key/value_quant_mode=7`（per-block 动态量化）、per-block scale 随张量单独传入，输出回 bf16。BNSD layout 为 FIA v2 所需（docstring 披露）。
-- 固定实现按 cu_seqlens 的有效边界切分：有效图像 token 与有效文本 token 的联合段走 FP8，剩余文本 padding 段走普通 FIA，最后 cat；不是将图像和文本注意力各自独立计算。
+当前使用 `npu_dynamic_mx_quant` 与FIA v2：Q/K按hidden维分组，mode6；V沿展平序列轴分组，mode8；数据E4M3FN、scale E8M0，TND输入与累计序列长度配套。旧的固定128/256块粒度、BNSD mode7以及 `fa_perblock_fp8` 已不对应当前代码。
 
-**何时不适用（硬约束）**：FP8 FA **只支持纯 [ulysses](../../concepts/parallelism/ulysses.md) 序列并行**——`ring_world_size > 1` 时抛 `ValueError("supports only Ulysses Attention sequence parallel")`，与 [ring-attention](../../concepts/parallelism/ring_attention.md) 混合并行不可用。给用 Ring Attention 的模型上 FP8 FA 前须先确认并行模式为纯 Ulysses（视频 DiT 接 Ulysses 序列并行见 [video-dit-ulysses-sequence-parallel](video_dit_ulysses_sequence_parallel.md)）。
+使用 `fa_mxfp8=True` 时，UnifiedSPAttention拒绝Ring group size大于1，先确认单卡或纯Ulysses。当前attention封装为非稀疏模式，不自动承接任意causal/mask语义。详细接口见[MXFP8注意力](../../concepts/quantization/fp8_attention.md)。
 
-## 手段二 · MXFP8 A8W8 matmul（跳过 adaLN）
+## Linear路径
 
-对 DiT 的 `nn.Linear` 做 [mxfp8-a8w8](../../concepts/quantization/mxfp8_a8w8.md) A8W8 量化（权重 per-group 直转 FP8、激活 per-token 动态量化）：
+`dynamic_convert_mxfp8_linear` 只选择double_blocks/single_blocks内的Linear，跳过含mod的层与1D权重；这是源码选层策略，不是已经证明量化其他层必然损伤质量。
 
-- **量化范围规则（可迁移核心）**：只量化 `double_blocks` / `single_blocks` 内的 `nn.Linear`；**必须跳过含 `mod` 的调制层（adaLN modulation）与任何 1D 权重**——adaLN 对精度敏感，量化会伤质量。
-- 前向调用约定：激活 per-token 动态量化 + 预量化权重，`npu_quant_matmul` 用 E8M0（`float8_e8m0fnu`）缩放、权重量化组 `group_sizes=[1,1,32]`、权重 scale 以 `.permute(1,0,2)` 传入。
+权重预量化、激活前向动态量化后调用 `npu_quant_matmul`，使用E8M0 scale及 `group_sizes=[1,1,32]`。`params_to_keep` 当前未被读取，无bias Linear和权重恢复需要额外处理，见[Linear量化](../../concepts/quantization/mxfp8_a8w8.md)。
 
-## 优先级与验收
+## 配置与对照
 
-[950来源观测](../benchmark_observations/hunyuan_video_950_source_benchmark.md)保存两组结果，[接入案例](../cases/hunyuan_video_950_fp8_quantization.md)保存实现差异。在该来源配置中 FP8 Attention 收益较大；不能据此规定所有 DiT 的量化顺序。先分别对照 BF16 测量 Attention、matmul 和组合路径，再验收视频质量与端到端耗时。质量未通过或没有净收益时关闭对应量化项。
+当前配置入口为 `model_args.fa-mxfp8` 和 `model_args.mm-mxfp8`；随附 `config/single_fp8.yaml` 同时开启两者。其 `use-cpu-offload=false`，而 `single.yaml` 为true，因此直接比较这两个文件不能把全部差异归因于量化。
 
-## 参考实现及其约束
+保持权重、输入、seed、步数、并行与CPU/VAE offload一致，按“都关、仅attention、仅Linear、两者同开”分别记录误差、画质、峰值内存和端到端时间。当前入口拒绝910B/910_93；量化FA需CANN9.1+。质量或净收益不通过时重载原始权重并关闭对应量化项。
 
-参考 cann-recipes-infer 的 HunyuanVideo（`module/fa_quant/fa_quant.py` 的 `npu_fp8_attn` / `npu_group_quant`、`hyvideo/modules/mxfp8_a8w8.py` 的 `dynamic_convert_mxfp8_linear` / `mxfp8_linear_forward`、`inference.py` 硬件门控），[ascend-950](../../concepts/platforms/ascend_950.md)。group_size 128/256、`group_sizes=[1,1,32]`、E8M0、Ulysses-only、Atlas 950 门控为参考实现约束；「converter 当前产出 / 传入 X」不升为「算子只能吃 X」。
+## 相关入口
 
-## Evidence
-
-- `diff 事实`（@dfa1a889）：`fa_quant.py`（`npu_group_quant` group 128/256、`npu_fp8_attn` FIA v2 `quant_mode=7`、`ring_world_size>1` ValueError）、`mxfp8_a8w8.py`（跳过 `mod` / 1D 权重、`group_sizes=[1,1,32]` / E8M0）、`inference.py` Atlas 950 门控为读到的实际 merged diff。
-- `doc 披露`（@dfa1a889）：来源量化结果统一链接[950观测](../benchmark_observations/hunyuan_video_950_source_benchmark.md)，仓自报、无独立复测。
-- 溯源下探：[cann-recipes-infer-pr-325-feat-hunyuanvideo-support-fa-matmul-quant-and-uaa](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)
+- [950接入案例](../cases/hunyuan_video_950_fp8_quantization.md)
+- [来源观测](../benchmark_observations/hunyuan_video_950_source_benchmark.md)
+- [HunyuanVideo部署](../../guides/models/hunyuan_video_deployment.md)

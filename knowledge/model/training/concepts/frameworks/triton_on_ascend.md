@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Triton-on-Ascend（昇腾 Triton 算子后端）
-description: Triton-on-Ascend 让用 Triton DSL(@triton.jit + tl.load/store + tl.dot)写的融合算子经 triton_npu 后端落到昇腾 NPU(需 CANN>8.3),是与手写 AscendC、Tile 级 TileLang 并列的第三条算子通道,优势是几乎零改写复用开源 Triton 算子(GDN chunk 核移植自 flash-linear-attention)。MindSpeed 内两套 ops/triton:核心 mindspeed/ops/triton 承载 GDN/DeltaNet delta-rule chunk 内核族(solve_tril 求(I+A)^-1、chunk_delta_h 隐状态门控扫描、chunk_o、chunk_scaled_dot_kkt、wy_fast、cumsum、l2norm、sort_chunks),lite/ops/triton 承载 MHC 超连接(MHCPreOnlyTriton/MHCPostTriton + sinkhorn pre/post + pre/post_bmm)与 Sinkhorn 路由;另有实验态 Triton FlashAttention BNSD 与 bf16 indexer。NPU 映射要点:get_available_device 返回 'npu'、get_multiprocessor_count 取 num_vectorcore;chunk_fwd_o 固定 24 核 program 手动均分 chunk(持久化内核风格而非一 tile 一 program);get_autotune_config 暴露昇腾专属旋钮 multibuffer/enable_hivm_auto_cv_balance/tile_mix_vector_loop/tile_mix_cube_loop/no-l0c;make_block_ptr→UB DMA、tl.dot→Cube(fp32 累加)、TMA 关闭;triton.language.extra.cann.extension(tle.extract_slice)补昇腾原语;sinkhorn 反向两阶段确定性归约避 atomic。
+description: Triton-on-Ascend 让用 Triton DSL(@triton.jit + tl.load/store + tl.dot)写的融合算子经 triton_npu 后端落到昇腾 NPU(需 CANN>8.3),是与手写 AscendC、Tile 级 TileLang 并列的第三条算子通道,优势是复用并按 NPU 调度适配开源 Triton 算子(GDN chunk 核移植自 flash-linear-attention)。MindSpeed 内两套 ops/triton:核心 mindspeed/ops/triton 承载 GDN/DeltaNet delta-rule chunk 内核族(solve_tril 求(I+A)^-1、chunk_delta_h 隐状态门控扫描、chunk_o、chunk_scaled_dot_kkt、wy_fast、cumsum、l2norm、sort_chunks),lite/ops/triton 承载 MHC 超连接(MHCPreOnlyTriton/MHCPostTriton + sinkhorn pre/post + pre/post_bmm)与 Sinkhorn 路由;另有实验态 Triton FlashAttention BNSD 与 bf16 indexer。NPU 映射要点:get_available_device 返回 'npu'、get_multiprocessor_count 取 num_vectorcore;chunk_fwd_o 固定 24 核 program 手动均分 chunk(持久化内核风格而非一 tile 一 program);get_autotune_config 暴露昇腾专属旋钮 multibuffer/enable_hivm_auto_cv_balance/tile_mix_vector_loop/tile_mix_cube_loop/no-l0c;make_block_ptr→UB DMA、tl.dot→Cube(fp32 累加)、TMA 关闭;triton.language.extra.cann.extension(tle.extract_slice)补昇腾原语;sinkhorn 反向两阶段确定性归约避 atomic。
 tags:
 - task.implementation
 - topic.architecture
@@ -9,19 +9,27 @@ tags:
 - topic.attention
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/utils.py
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/solve_tril.py
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_o.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/lite/ops/triton/mhc/mhc_triton.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/examples/mcore/deepseek4_flash/pretrain_deepseek4_flash_4k_A3_ptd.sh
+  role: implementation
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/feature_guides/torch_compile.md
   role: supporting
 created_at: '2026-06-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:31:31Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # Triton-on-Ascend（昇腾 Triton 算子后端）
 
 ## Summary
+
+本页描述当前 MindSpeed 的昇腾 Triton 实现。DeepSeek4-Flash A3 样例显式开启 --use-triton-mhc 和 --use-fused-mhc，旧独立 --use-triton-sinkhorn 标志不再出现在该样例；旧 Qwen3-Next A3 启动脚本已移除。实现存在和某个入口使用它，不能推导所有实验核或全部 SoC 均已验证。
 
 Triton-on-Ascend 让用 **Triton DSL**（`@triton.jit` + `tl.load/store` + `tl.dot` 的 SPMD 内核语法）写的融合算子直接跑在昇腾 NPU 上：`triton_npu` 后端把 Triton kernel 多级降级到昇腾 Cube/Vector 指令，配合 `CANN>8.3` 运行时编译加载。它在 MindSpeed 里是与手写 [ascendc](../../../inference/concepts/frameworks/ascendc.md)、Tile 级 [tilelang](../../../inference/concepts/frameworks/tilelang.md) 并列的第三条算子开发通道——优势是几乎**零改写复用开源 Triton 算子**（GDN 线性注意力 chunk 核大量沿用 flash-linear-attention 上游实现，版权头保留 `Songlin Yang, Yu Zhang` + Huawei），代价是要靠后端把 GPU 取向的 grid/访存语义重映射到 NPU 的少核持久化执行模型。
 
@@ -87,28 +95,24 @@ flowchart LR
 | 维度 | Triton-on-Ascend | [tilelang](../../../inference/concepts/frameworks/tilelang.md) | [ascendc](../../../inference/concepts/frameworks/ascendc.md) |
 |---|---|---|---|
 | 抽象层 | SPMD kernel（program/tile） | Tile 级、调度与数据流解耦 | C++ 直接操作 Cube/Vector/Scalar |
-| 复用面 | 直接搬开源 Triton 算子（FLA 等） | 自写 Tile 原语，多级降级生成 AscendC | 全手写，性能上限最高 |
+| 复用面 | 直接搬开源 Triton 算子（FLA 等） | 自写 Tile 原语，多级降级生成 AscendC | 手工控制数据搬运、同步和底层指令 |
 | 调优 | NPU autotune 旋钮（cv-balance/multibuffer） | 原语注解 + 编译器调度 | 手工 Tiling / 双 Buffer / 多核 |
 | 在本栈定位 | GDN/MHC 训练正反向的 Triton 后端 | DSA indexer / sparse-attn 算子通道 | 性能关键融合算子（SAS/Compressor 等） |
 
-三者非互斥：MHC 链里 Triton 核与 `torch_npu` 算子混编，indexer 同时有 Triton 与 AscendC 两路实现，按算子成熟度与性能需求取舍。需要注意的是，[torchtitan](torchtitan.md) 训练入图时反而**屏蔽** Inductor 自动生成的 Triton（NPU 上质量差，走 `npu_bypass_triton_codegen`）；Triton-on-Ascend 指的是**人工编写、经 triton-npu 后端落地**的 Triton 融合算子，与「Inductor 自动 Triton」是两回事。
+三者可以混用：MHC 链串联 Triton 核与 torch_npu 算子，indexer 另有 AscendC 路径。当前 TorchTitan AutoFuse 使用 torch_npu 内置 AscendC Codegen，不再使用旧 entry.py 的 bypass 白名单或独立 inductor_npu_ext。这里的手写 Triton 核与 Inductor 自动生成路径分别有自己的入口和依赖。
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core @1432cb0
-  - [`mindspeed/ops/triton/solve_tril.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/solve_tril.py)（`solve_tril`/`merge_16x16_to_32x32_inverse_kernel`：$(I+A)^{-1}$、Schur 补块合并、`USE_TMA=False` 走 block_ptr）
-  - [`mindspeed/ops/triton/chunk_delta_h.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/chunk_delta_h.py)（`chunk_gated_delta_rule_fwd_h`/`bwd_dhu`：隐状态 chunk 扫描、`g`/`gk` 门控、K 沿 64 拆块、`get_autotune_config` 多缓冲键）
-  - [`mindspeed/ops/triton/chunk_o.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/chunk_o.py)（`chunk_fwd_o` 固定 24 核 `core_id`/`num_programs` 手动均分 chunk；`chunk_bwd_dqkwg`/`chunk_bwd_dv_local`）
-  - [`mindspeed/ops/triton/utils.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/ops/triton/utils.py)（`get_available_device`→`'npu'`、`get_multiprocessor_count`→`num_vectorcore`、`get_npu_properties`、`get_autotune_config` 的 `enable_hivm_auto_cv_balance`/`tile_mix_*`/`no-l0c` 旋钮、`input_guard`）
-  - [`mindspeed/lite/ops/triton/mhc/mhc_triton.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/lite/ops/triton/mhc/mhc_triton.py)（`MHCPreOnlyTriton`/`MHCPostTriton`：rms_norm→投影→`hc_pre_only_fwd`→pre/post bmm，Triton 与 `torch_npu` 混编）
-  - [`mindspeed/lite/ops/triton/mhc/sinkhorn_triton.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/lite/ops/triton/mhc/sinkhorn_triton.py)（`hc_pre_only_fwd/bwd`：`pre=sigmoid(mixes*scale+base)+eps`、反向两阶段确定性归约避 atomic）
-  - [`mindspeed/lite/ops/triton/mhc/post_bmm2.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/lite/ops/triton/mhc/post_bmm2.py)（`triton.language.extra.cann.extension as tle`、`tle.extract_slice` 逐列拆 $N\times N$ bmm）
-  - [`mindspeed/core/transformer/flash_attention/flash_attention/triton/triton_indexer_bf16.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/flash_attention/flash_attention/triton/triton_indexer_bf16.py) · [`triton_attention_bnsd.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/flash_attention/flash_attention/triton/triton_attention_bnsd.py)（`triton_npu` 实验态 FlashAttention/indexer，`CANN>8.3` 头注、BNSD 布局、`BLOCK_S/BLOCK_M` 整除约束）
+- [utils.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/utils.py)（primary）
+- [chunk_o.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/ops/triton/chunk_o.py)（implementation）
+- [mhc_triton.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/lite/ops/triton/mhc/mhc_triton.py)（implementation）
+- [pretrain_deepseek4_flash_4k_A3_ptd.sh](../../../../../cann-recipes-raw/mindspeed-llm/72b0cca64535371e0bbf178087b88448c392970b/examples/mcore/deepseek4_flash/pretrain_deepseek4_flash_4k_A3_ptd.sh)（implementation）
+- [torch_compile.md](../../../../../cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/feature_guides/torch_compile.md)（supporting）
 
 ## Links
 
 - [tilelang](../../../inference/concepts/frameworks/tilelang.md)（跨域：另一条昇腾 kernel DSL，Tile 级降级生成 AscendC）
-- [ascendc](../../../inference/concepts/frameworks/ascendc.md)（跨域：手写昇腾算子框架，性能上限最高的对照路径）
+- [ascendc](../../../inference/concepts/frameworks/ascendc.md)（跨域：手写昇腾算子框架，提供底层搬运、同步和指令控制的对照路径）
 - [gdn-chunk-kernels](../kernels/gdn_chunk_kernels.md)（本后端承载的 GDN delta-rule chunk 算子族算法）
 - [mhc-train](../kernels/mhc_train.md)（本后端承载的 MHC 超连接训练算子族）
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core @1432cb0（`ops/triton` 与 `lite/ops/triton` 算子源）
+- [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core （当前来源）（`ops/triton` 与 `lite/ops/triton` 算子源）

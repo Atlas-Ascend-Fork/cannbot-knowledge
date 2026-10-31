@@ -1,7 +1,7 @@
 ---
 type: Concept
-title: Hy3-preview
-description: Hy3-preview 的 GQA、Dense/MoE、共享专家、sigmoid 路由及 MTP 层结构。
+title: Hy3：GQA、共享专家与当前 PA/MTP 接入
+description: 正式Hy3的当前packed/PA、FP8 QKV融合、SP精确条件、共享专家多流和已接入MTP；纠正旧preview实现。
 tags:
 - task.design
 - topic.model_architecture
@@ -9,87 +9,62 @@ tags:
 - topic.mixture_of_experts
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/optimization_report.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modeling_hy_v3.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modules/common.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hy3/hy3_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/agentic/optimization_report.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_a3/hy3_rank16_bf16_mtp.yaml
+  role: example
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_950/hy3_rank4_mxfp4_mtp.yaml
+  role: example
 created_at: '2026-05-31T00:00:00Z'
-updated_at: '2026-10-21T10:02:02Z'
+updated_at: '2026-10-29T14:28:49Z'
 platforms:
 - a3
+- '950'
 ---
 
+# Hy3：GQA、共享专家与当前 PA/MTP 接入
 
+## 结构
 
+当前正式Hy3为295B总参、约21B激活，80层主干加1层MTP。首层Dense FFN，后79层MoE；hidden4096，64Q/8KV heads、head_dim128，192 routed experts/top8及1个shared expert，词表120832，最大上下文262144。QK Norm按head，路由为FP32 sigmoid/top-k并使用校正bias和缩放2.826。
 
-# Hy3-preview
+Dense intermediate13312、专家1536；与Qwen3-MoE区别是共享专家与sigmoid路由。当前路径models/hy3，旧preview路径不再使用；保留本卡Concept链接以兼容已有导航。
 
-## Summary
+## 当前 packed 与 Page cache
 
-Hy3-preview 为GQA与Dense/Sparse MoE结合的模型，295B总参、约21B激活参数。Layer0为Dense FFN，后续为192路由专家top-8与共享专家；QK Norm为per-head，router采用sigmoid及校正bias。
+主干使用packed [T,H]/1D position_ids，CacheEntry/get_cache_info接入FullAttention Page cache，要求slot_mapping/block_table。BF16走TND FIA v2与scatter_nd写入；旧连续BSH、FA v1的基础报告描述不再代表当前模型。
 
-Qwen3-MoE是机制参考但没有相同的shared expert与router语义；部署的量化、融合、MTP加载与回退需分别核对。平台配置、开关和验收步骤见[模型部署流程](../../guides/models/hy3_preview_deployment.md)，此处只保留模型机制。
+FP8 KV由权重quantization_config.kv_cache_scheme触发：QKV预处理融合QK Norm/RoPE/rotation/量化与写回；cache布局BnNBsD，另有FP32 k_scale_cache。此路径硬要求head_dim128、block_size128和匹配cann_ops_transformer算子；FIA为NTD_TND，Q/K quant_mode3、V mode2，不能套用视频MXFP8模式6/8。
 
-## Architecture And Serving Traits
+## 当前 SP、专家与多流
 
-```mermaid
-flowchart TD
- Emb[Embedding 120832×4096] --> L[Transformer Block ×80]
- L --> RN1[Pre-Attn RMSNorm<br/>npu_add_rms_norm]
- RN1 --> QKV[merged_qkv_proj<br/>QKV投影]
- QKV --> QKN[QK Norm<br/>npu_rms_norm 128 per-head]
- QKN --> RoPE[npu_apply_rotary_pos_emb<br/>layout=BSH]
- RoPE --> FA[npu_fused_infer_attention_score<br/>FA v1 BSH GQA]
- FA --> OP[o_proj]
- OP --> RN2[Post-Attn RMSNorm]
- RN2 --> FFN{Layer?}
- FFN -->|layer 0| Dense[Dense FFN<br/>4096→13312 SiLU]
- FFN -->|layers 1-79| MoE[Sigmoid Router top-8<br/>192 experts + Shared Expert ×1]
- Dense --> Out[Hidden']
- MoE --> Out
-```
+SP由custom_params.enable_sp显式开启，代码缺省False（README参数表写True，使用实际YAML/代码）。量化SP覆盖MXFP4/原生FP8的特定gmm模式；开启SP要求attn_dp_size=1，量化Decode每DP batch还须≥attn_tp且整除它。MX路径传动态MXFP8值与scale，原生FP8按目标Linear静态scale量化仅传值，不混同。
 
-- **80 层**：代码 `mlp_layer_types = ["dense"] + ["sparse"] * (num_hidden_layers-1)`（`first_k_dense_replace=1`）—— **layer 0 为 Dense FFN，layers 1-79 为 Sparse MoE**。
-- **GQA**：64 Q heads / 8 KV heads，head_dim=128；KVCache BSH 布局 `[B, S, N_kv·D]`，无 MLA / 无量化需求，QK Norm per-head 与 BSH 兼容。
-- **MoE**：192个路由专家、top-8，另有共享专家；专家intermediate=1536。固定部署的分片和GMM内存差异见模型Guide。
-- **关键参数**：Hidden 4096、词表 120,832、Dense FFN intermediate 13312、MoE expert intermediate 1536、最大上下文 262,144（256K）、RoPE theta 11,158,840。
+Prefill AG-RS路由要求EP>1、token确实在EP成员间分片、attn_tp==EP且top_k>EP，不是单有并行度相等。其他Prefill可走EP统一chunk数的DoubleRouting；空token返回空输出。纯EP Decode使用MC2，buffer按真实每rank请求及MTP宽度预算。
 
-### 特殊设计
+共享专家多流需enable_multi_streams且dense_tp=1，并核对SP/shared路径条件；A3当前配置关闭、950开启。源码用stream/event和record_stream维护生命周期，不能沿用旧“所有多流未落地”的结论。
 
-- **QK Norm**（`qk_norm=True`）：`HYV3Attention` 中 Q/K 在 RoPE 前各做 `npu_rms_norm(128)`（per-head）。
-- **Sigmoid Router**（`moe_router_use_sigmoid=True`，`HYV3TopKRouter`）：`npu_moe_gating_top_k(router_logits, k=8, bias=e_score_correction_bias, norm_type=1, routed_scaling_factor=2.826)`。
-  > ⚠️ **doc/impl 语义差异（源已标注）**：Hy3-preview 的 `e_score_correction_bias` 在 sigmoid **后**加（仅影响 top-k 选择），而 `npu_moe_gating_top_k` 的 bias 在 sigmoid **内**。报告 §5.1 称此语义差异未造成可见输出质量退化（`optimization_report.md:158`）。
-- **Shared Expert**（`num_shared_experts=1`）：每 MoE 层 1 个 shared expert，与路由专家并行，intermediate=1536。
+## 当前 MTP
 
-### KVCache + FA
+主模型跳过layer80仅是主干加载规则；HYV3ModelMTP独立加载该层及enorm/hnorm/eh_proj/final_layernorm，且不继承跳过规则。三份当前配置均next_n=1，不能再声称模型有MTP但部署没实现。主干返回hidden供draft使用，主/草稿cache索引分开，验证Decode保留next_n+1宽度。
 
-KVCache 静态化为连续缓存（BSH，`scatter_update_(axis=-2)`），非块式 Paged Attention（对照 [kv-cache-manager](../frameworks/kv_cache_manager.md)）。Attention 走 [fused-infer-attention-score](../kernels/fused_infer_attention_score.md) **FA v1**：decode `sparse_mode=0`（atten_mask=None）、prefill `sparse_mode=3`（causal），`input_layout="BSH"`，`scale=scale_fa`。GQA 场景无 MLA / 量化需求，故不适配 `npu_kv_rmsnorm_rope_cache` / `npu_mla_prolog_v3`（MLA 专用）。
+[部署指南](../../guides/models/hy3_preview_deployment.md)与[A3基础报告观测](../../optimizations/benchmark_observations/hy3_a3_source_benchmark.md)区分当前配置与来源测量；本次未执行模型。
 
-## 部署与证据入口
-
-- [模型部署与验收流程](../../guides/models/hy3_preview_deployment.md)：配置、开关、失效条件与回退入口。
-- [Hy3-preview A3 分阶段性能与批次口径观测](../../optimizations/benchmark_observations/hy3_a3_source_benchmark.md)：固定来源自报，未经本仓独立复测。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hy3_preview/optimization_report.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/optimization_report.md)（11 章：模型信息 / 基线 / 并行 / KVCache+FA / 融合算子 / 图模式 / 累计效果 / 功能·性能问题 / 遗留 / Skill 反馈）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hy3_preview/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/README.md)（概述 / 规模 / 关键特性 / `CANN 9.0.0`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hy3_preview/models/modeling_hy_v3.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/models/modeling_hy_v3.py)（`HYV3Attention` / `HYV3TopKRouter` / `HYV3Experts` / `HYV3MoE` / `HYV3Model` / `HYV3ForCausalLM`）+ [`configuration_hy_v3.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/models/configuration_hy_v3.py)（`first_k_dense_replace=1` / `qk_norm` / `moe_router_use_sigmoid` / `num_shared_experts=1` / `router_scaling_factor=2.826`）+ `models/hy3_preview/config/hy3_preview_rank16_4tp_16ep_gegraph_bf16.yaml`
-
-> 版本前提分歧（并记）：README 标 `CANN 9.0.0`（`requirements.txt` 仅 torch 2.8.0 / transformers 5.0.0，未列 CANN）；优化报告 §10.1/§11 的 SuperKernel >2-stream 限制实测于 `CANN 8.5.0`——两处版本不一致，不臆断。
-
-## Links
-
-- [qwen3-moe](qwen3_moe.md)
-- [atlas-a3](../platforms/atlas_a3.md)
-- [tensor-parallel](../parallelism/tensor_parallel.md)
-- [expert-parallel](../parallelism/expert_parallel.md)
-- [data-parallel](../parallelism/data_parallel.md)
-- [moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)
-- [superkernel](../techniques/superkernel.md)
-- [npu-graph-mode](../techniques/npu_graph_mode.md)
-- [fused-infer-attention-score](../kernels/fused_infer_attention_score.md)
-- [mtp-speculative-decoding](../techniques/mtp_speculative_decoding.md)
-- [inference-config](../techniques/inference_config.md)
-- [cann-executor](../frameworks/cann_executor.md)
-- [kv-cache-manager](../frameworks/kv_cache_manager.md)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/README.md)（primary）
+- [modeling_hy_v3.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modeling_hy_v3.py)（implementation）
+- [common.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/models/modules/common.py)（implementation）
+- [hy3_optimization.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/hy3/hy3_optimization.md)（supporting）
+- [optimization_report.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/agentic/optimization_report.md)（supporting）
+- [hy3_rank16_bf16_mtp.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_a3/hy3_rank16_bf16_mtp.yaml)（example）
+- [hy3_rank4_mxfp4_mtp.yaml](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hy3/config/ci_950/hy3_rank4_mxfp4_mtp.yaml)（example）

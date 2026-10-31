@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/325
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - agnostic
 ---
@@ -80,5 +80,5 @@ def _gather_size_by_comm(size, group):
 
 ## Evidence
 
-- `diff 事实`（@c695829cd2c0）：`_build_dummy_batch`（`request_id=-1` / `is_dummy=True`）、`run_step` 的 `if batch.is_dummy: return None`、`decode.py::has_work` 排除 CPU-only 队列的实现与其昇腾失败根因注释、`advance_queues_consensus` 的 Gloo MIN all-reduce 均为读到的实际代码。溯源下探：[cann-recipes-infer-pr-315-refactor-online-batch](https://gitcode.com/cann/cann-recipes-infer/merge_requests/315)
-- `diff 事实`（@dfa1a889）：`uaa.py#_gather_size_by_comm` 全文含「不缓存」NOTE、`core.py` 两处 all_to_all-anything 每步实时调用它（未缓存）；失败机制（参与方不匹配→挂死→watchdog 超时）为作者源码 NOTE 记录、属分布式集合通信通用原理。溯源下探：[cann-recipes-infer-pr-325-feat-hunyuanvideo-support-fa-matmul-quant-and-uaa](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/315)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)（evidence）

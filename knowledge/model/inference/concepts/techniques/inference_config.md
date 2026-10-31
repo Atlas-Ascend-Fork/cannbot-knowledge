@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: InferenceConfig（统一推理配置体系）
-description: InferenceConfig 是 CANN Executor 新推理链路的 dataclass 配置入口，聚合 Data、Model、Parallel、Scheduler、Disagg 五类配置并自动校验。关键推导为 attn_dp_size=world_size/(attn_tp_size×cp_size)、batch_size_per_dp_rank=batch_size/attn_dp_size；max_prefill_tokens 为 0 时由 input_truncated_len×batch_size_per_dp_rank 生成。DisaggConfig 由服务端构造，支持 NONE/PREFILL/DECODE 及 memfabric、mooncake 后端。该体系仅适用于 executor/offline/infer.py；legacy model_runner.py 仍使用 runner_settings、input_max_len 和 kvp_size，旧模型 YAML 不能按新字段解释。文档曾漏掉 cp_size，以代码公式为准。
+description: 说明当前六类推理配置、独立SpeculativeConfig，以及Decode attention DP与CP Prefill DP的不同公式和token预算，避免沿用旧runner字段。
 tags:
 - task.optimization
 - topic.mixture_of_experts
@@ -9,156 +9,106 @@ tags:
 - topic.speculative_decoding
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/common/inference_config_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/inference_config_guide.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/config/inference_config.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/online/server.py
+  role: implementation
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T12:31:15Z'
 platforms:
+- a2
+- a3
 - '950'
 ---
 
 # InferenceConfig（统一推理配置体系）
 
-## Summary
+## 当前配置入口
 
-`InferenceConfig` 是 [cann-executor](../frameworks/cann_executor.md) 的统一配置入口类，以结构化 `dataclass` 取代早期的 `runner_settings` 字典，提供类型检查、嵌套子配置与自动验证。绝大多数字段由 YAML 加载（`InferenceConfig.from_dict(yaml_dict, global_rank, local_rank)`），少数为**推导值**（不接受 YAML）或由启动入口构造。代码入口 `executor/core/config/inference_config.py`。
+`InferenceConfig.from_dict(yaml_dict, global_rank, local_rank, disagg_config=None)` 把YAML转换为结构化配置，并计算运行时推导值。当前包含Data、Model、Speculative、Parallel、Scheduler和Disagg六个分组；PD分离配置由服务端构造后传入，不是普通模型YAML的字段组。
 
-聚合五个子配置：
+模型应以当前README、统一launcher和注册项选择入口。`executor/model_runner.py` 仍存在，不代表所有保留过旧runner的模型当前仍走该路径；旧的 `runner_settings/input_max_len` 不能直接作为当前dataclass字段。
 
-| 子配置 | 来源 | 职责 |
-|--------|------|------|
-| `DataConfig` | YAML | 数据集 + 输入序列长度上限 |
-| `ModelConfig` | YAML | 模型路径、执行模式、MTP、量化外特性开关 |
-| `ParallelConfig` | YAML + 环境变量 + 推导 | TP/DP/EP/CP 并行规模与 rank 信息 |
-| `SchedulerConfig` | YAML + 推导 | batch 规模、token 预算、Paged Attention block 粒度 |
-| `DisaggConfig` | 启动入口构造（**YAML 不含**） | PD 分离运行时（见 [online-pd-inference](../frameworks/online_pd_inference.md)） |
+## 数据与模型
 
-## 字段语义（按子配置）
+`DataConfig` 包含dataset、dataset_path、input_truncated_len（默认256）、reuse_tokenizer以及temperature/top_p/top_k/seed。temperature默认0表示greedy；温度和top_k必须非负，top_p位于[0,1]。
 
-### DataConfig
+`ModelConfig` 使用model_name/model_path/output_path/dtype、with_ckpt、exe_mode和custom_params等字段：
 
-| 字段 | 默认 | 说明 |
-|------|------|------|
-| `dataset` | `"default"` | 数据集名称 |
-| `dataset_path` | `""` | 数据集路径；非 `default` 数据集必填 |
-| `input_truncated_len` | `256` | 最大输入序列长度，超长 prompt 被截断 |
+- dtype默认bfloat16，with_ckpt默认true；关闭加载用于dummy权重路径，不能当作模型质量验收。
+- exe_mode为eager/ge_graph/npugraph_ex；静态kernel只允许npugraph_ex。enable_dynamic_graph默认true，只对npugraph_ex有意义，GE下被忽略并产生提示。
+- enable_cache_compile、force_eplb、enable_profiler默认false，enable_weight_nz默认true；模型和平台仍可施加额外限制。
+- platform_version支持A2、A3、950；YAML显式值优先，否则探测设备名，探测失败警告并回落A3。配置回落不能代替真实产品识别。
 
-### ModelConfig
+## 投机推理配置
 
-| 字段 | 默认 | 说明 |
-|------|------|------|
-| `model_name` / `model_path` / `output_path` | `"model"` / `""` / `""` | 模型标识与权重 / 输出目录 |
-| `dtype` | `"bfloat16"` | 计算数据类型 |
-| `with_ckpt` | `True` | False 时用 `DummyModelLoader` 随机初始化 |
-| `next_n` | `0` | MTP 模块数量，>0 自动启用 [mtp-speculative-decoding](mtp_speculative_decoding.md) |
-| `platform_version` | `A3` | 平台枚举（`A3` / `950`），参与通信组物理签名 |
-| `exe_mode` | `"eager"` | `eager` / `ge_graph` / `npugraph_ex`，见 [npu-graph-mode](npu_graph_mode.md) |
-| `enable_static_kernel` | `False` | 仅 `npugraph_ex` 可启用（`_validate` 强制校验） |
-| `enable_cache_compile` | `False` | 缓存编译 |
-| `force_eplb` | `False` | MoE 强制专家负载均衡 |
-| `enable_profiler` | `False` | 性能分析桩 |
-| `enable_weight_nz` | `True` | [weight-nz](weight_nz.md) 权重 NZ 格式 |
-| `custom_params` | `{}` | 模型特有特性字典 |
+当前使用独立 `speculative_config`：
 
-### ParallelConfig
+| 字段 | 当前语义 |
+| --- | --- |
+| `num_speculative_tokens` | 非负，0关闭投机，正数为最大Draft宽度。 |
+| `method` | 开启时必须选择后端；mtp为模型原生MTP，其他方法由后端注册解析。文档提供mtp/dspark示例，实际支持范围还需核对模型注册。 |
+| `draft_model_path` | 空值复用主模型路径，否则使用独立Draft checkpoint。 |
+| `confidence_threshold` | 开启时限定[0,1]；DSpark的0关闭confidence截断，正值改变每请求参与校验的有效Draft前缀，不改变Verify固定输入宽度。 |
+| `draft_temperature` | None继承请求Target温度；非负值独立选择Proposal分布q，Target仍使用请求自己的p做拒绝采样。 |
+| `markov_lmhead_tp_size` | 当前配置保留的Markov lmhead TP宽度，默认1并要求正整数；具体后端另行验证支持范围。 |
 
-YAML 直配的 TP 维度 + 推导出的 DP/EP 维度，rank 信息从环境变量注入：
+```yaml
+speculative_config:
+  num_speculative_tokens: 5
+  method: dspark
+  confidence_threshold: 0.0
+  draft_temperature:
+```
 
-| 字段 | 来源 | 说明 |
-|------|------|------|
-| `world_size` | YAML | 总进程数 |
-| `global_rank` / `local_rank` | 环境变量（**不支持 YAML**） | 由启动脚本注入 |
-| `attn_tp_size` / `embed_tp_size` / `moe_tp_size` / `lmhead_tp_size` / `dense_tp_size` / `o_proj_tp_size` | YAML | 各层 TP 并行数（默认 1） |
-| `cp_size` | YAML | context 并行度，见 [context-parallel](../parallelism/context_parallel.md) |
-| `attn_dp_size` | **推导** | `world_size // (attn_tp_size * cp_size)` |
-| `embed_dp_size` | **推导** | `world_size // embed_tp_size` |
-| `moe_ep_size` | **推导** | `world_size // moe_tp_size`，见 [expert-parallel](../parallelism/expert_parallel.md) |
+`model_config.next_n` 仍是兼容字段，但读取时提示废弃。没有新配置时，正数next_n映射为原生mtp；同时提供新配置且两者宽度不同则报错。归一化后的宽度回填到model_config供兼容代码使用。Draft宽度与Paged Attention的block_size不是同一参数，Verify通常需要K+1输入。
 
-> **文档与实现差异**：字段说明文档 §2.3（见 Evidence `inference_config_guide.md`）将 `attn_dp_size` 推导式写为 `world_size // attn_tp_size`；而 `inference_config.py:210-213` 实际为 `world_size // (attn_tp_size * cp_size)`（即把 attention 通信组按 TP×CP 计成一组后再分 DP）。以代码实现为准；`cp_size == 1` 时两式等价。
+## 并行视图：Decode DP 与 CP Prefill DP 分开
 
-`_validate` 要求 `world_size` 能被各 `*_tp_size`、`cp_size` 及 `attn_tp_size*cp_size` 整除；`validate_model_config` 进一步校验 `num_experts % moe_ep_size == 0`、`num_attention_heads % attn_tp_size == 0`。
+rank由启动入口传入；YAML提供world_size与各TP、CP及offline_prefill_dp_group_size。推导值不接受YAML直接覆盖：
 
-### SchedulerConfig
+| 变量 | 当前公式 |
+| --- | --- |
+| `attn_dp_size` | `world_size // attn_tp_size` |
+| `cp_prefill_dp_size` | `world_size // (attn_tp_size * cp_size)` |
+| `embed_dp_size` | `world_size // embed_tp_size` |
+| `moe_ep_size` | `world_size // moe_tp_size` |
+| `batch_size_per_dp_rank` | `batch_size // attn_dp_size`，AFD有单独视图调整 |
 
-| 字段 | 默认 | 说明 |
-|------|------|------|
-| `batch_size` | `1` | 全局总 batch size |
-| `max_new_tokens` | `32` | 单请求最大生成 token 数 |
-| `max_prefill_tokens` | `0` | 单次 prefill batch 的 packed prompt token 预算；为 0 时框架按 `input_truncated_len * batch_size_per_dp_rank` 推导 |
-| `mem_fraction_static` | `0.85` | 推理阶段静态占用的设备内存比例，影响 [kv-cache-manager](../frameworks/kv_cache_manager.md) 在线 block 预算 |
-| `block_size` | `128` | 单个 Paged Attention KV block 容纳的 token 数 |
-| `num_reserved_decode_tokens` | `64` | 仅 PD decode 端：每在途请求保留的 KV token 数，由 `DecodePreallocQueue.pop_preallocated` 用于准入控制 |
-| `batch_size_per_dp_rank` | **推导** | `batch_size // attn_dp_size` |
+不能继续把CP乘进通用attn_dp_size。CP Prefill时多个CP rank共同处理同一请求批次，使用cp_prefill_dp_size；Decode与普通attention DP仍使用attn_dp_size。
 
-`max_prefill_tokens` 的 0→推导发生在 `InferenceConfig.from_dict`（先算出 `batch_size_per_dp_rank` 再据 `input_truncated_len` 推导），不在 `SchedulerConfig` 内部。
+当前实现只接受cp_size=1，或cp_size=world_size；启用CP时还要求attn_tp_size=1。各TP维度须整除world_size，offline_prefill_dp_group_size为正数并整除world_size；owner group大于1时还校验batch_size_per_dp_rank能被owner group整除。模型配置进一步核对专家数与注意力头数的切分条件。
 
-### DisaggConfig
+## 调度与预算
 
-PD 分离运行时配置，由 `executor/online/server.py` 启动时按 CLI 参数构造，**YAML 不含此节**；离线模式取默认值。
+| 字段 | 默认与约束 |
+| --- | --- |
+| `batch_size` | 全局batch，需与attention DP分组匹配。 |
+| `max_new_tokens` | 默认32。 |
+| `max_prefill_tokens` | 默认0，构造时按实际Prefill批次推导token预算。 |
+| `max_mm_encode_tokens` | 默认0；正值是全局MM Encode打包目标，不是严格单请求或显存上限。 |
+| `cp_mini_batch` | 默认-1，不额外限制CP Prefill请求数；当前V4 CP要求为1。 |
+| `mem_fraction_static` | 默认0.85，用于设备静态内存预算。 |
+| `block_size` | 默认128，每KV block的token容量。 |
+| `num_reserved_decode_tokens` | 默认64，PD Decode准入时为每条在途请求预留近期生成空间。 |
 
-| 字段 | 默认 | 说明 |
-|------|------|------|
-| `disaggregation_mode` | `"NONE"` | `NONE`（离线）/ `PREFILL` / `DECODE` |
-| `engine_backend` | `"memfabric"` | `Literal["memfabric","mooncake"]`；选择 KVTransferManager 构造的 TransferEngine 子类，mooncake 走 HIXL 后端，为 opt-in |
-| `bootstrap_host` / `bootstrap_port` | `"0.0.0.0"` / `18800` | Bootstrap server 地址 |
-| `store_url` / `is_store_creator_node` | `""` / `False` | memfabric 专用 config store（mooncake 后端忽略） |
-| `local_ip` | `""` | 本 rank 对外通告的联系地址 |
+max_prefill_tokens=0时，非CP用 `input_truncated_len * batch_size_per_dp_rank`；CP改用 `input_truncated_len * (batch_size // cp_prefill_dp_size)`，并在cp_mini_batch为正时先裁剪该Prefill请求数。不能继续把旧的非CP公式无条件用于CP。
 
-字段级语义详见 [online-pd-inference](../frameworks/online_pd_inference.md)。
+MM Encode目标按 `ceil_div(max_mm_encode_tokens, cp_prefill_dp_size)` 分给本地副本，FIFO整请求入批，队首请求可单独超出目标，因此还需按真实输入、KV和encoder内存验证峰值。
 
-## 配置体系并存说明
+## PD分离、日志与验收
 
-上述字段（`input_truncated_len`、移除 `kvp_size` / `packed_sequence`、`max_prefill_tokens` 等）**仅适用于新 `InferenceConfig` 体系**（`executor/offline/infer.py` + `OfflineInference`，即 [cann-executor](../frameworks/cann_executor.md)「部署模式分类」中的新执行器路径）。
+DisaggConfig由在线入口传入，区分NONE/PREFILL/DECODE，支持memfabric与mooncake；后者使用HIXL后端，具体设备端点与bootstrap约束见[在线PD](../frameworks/online_pd_inference.md)。
 
-**仓库当前并存两套配置体系**：
+主入口通过setup_logging统一日志，`CANN_RECIPES_LOG_LEVEL` 默认INFO。先检查最终打印配置、设备探测与分组，再用少量请求核对采样、Prefill打包、Decode准入与cache容量；逐项开启投机和图模式，不把配置解析成功视为模型与拓扑已经验证。本仓未运行NPU推理。
 
-- **新体系**：`InferenceConfig` dataclass（上述字段语义所属）。供 deepseek_r1 / qwen3_moe / qwen3_5 / gpt_oss / gemma4 等无自带 `infer.py` 的模型使用。
-- **legacy 体系**：`executor/model_runner.py:ModelRunner` + `runner_settings` dict，仍用字段 `input_max_len`（默认 `1024`，`data_config` 下）与 `kvp_size`。仍被 **deepseek-v3.2-exp / kimi-k2-thinking / longcat-flash** 在用（各自 `models/<name>/infer.py` + `runner_*.py:*Runner(ModelRunner)`）。
+## 相关入口
 
-因此那些 legacy 模型页 YAML 表里出现的 `input_max_len` 字段是正确的（legacy 路径如实使用），**不应"修正"为 `input_truncated_len`**。「演进注记」仅相对新体系的早期版本而言。
-
-## 演进注记（配置字段当前快照的来路）
-
-以下为新 `InferenceConfig` 体系当前字段相对其早期版本的演进，便于阅读旧 YAML / 旧文档时对齐，不影响上表的现状语义；legacy `ModelRunner` 路径不在此演进范围内：
-
-- `input_max_len` → `input_truncated_len`：语义相同（输入截断长度），但从 `SchedulerConfig` 迁入 `DataConfig`，默认值由 `1024` 改为 `256`。
-- 移除 `packed_sequence`：prefill 现统一走 packed sequence 布局（`Batch.input_ids` 始终为一维 `[TotalTokens]`，框架接口契约的唯一输入布局），不再提供该开关。
-- 移除 `ParallelConfig.kvp_size`（仅指**新 `ParallelConfig`**）：2026-05 从 refactored `ParallelConfig` 移除 `kvp_size` 开关，并删除 longcat 的 kvp YAML 配置（`longcat_flash_densetp8_ep{16,32}_kvp8_gegraph_w8a8.yaml`）与文档/图（commit/MR 溯源见 Evidence）。
-  > ⚠️ 矛盾标记（2026-05，跨页）：legacy `executor/model_runner.py` 路径与 longcat `modeling_longcat_flash.py` 代码**仍引用 `kvp_size`**（`runner_settings.get("parallel_config").get("kvp_size", 1)`）。[kvp](../parallelism/kvp.md) 页的 KVP 配置示例对应回退前状态——两页就 `kvp_size` 是否仍可用存在表述张力（KVP 部署已于 2026-05 回退，详见 [kvp](../parallelism/kvp.md) 与 [longcat-flash](../models/longcat_flash.md)）；现状为 refactored `ParallelConfig` 已移除该 YAML 开关。
-- 新增 `max_prefill_tokens` / `mem_fraction_static` / `block_size`（SchedulerConfig）、`num_reserved_decode_tokens`（PD decode 准入）。
-- 新增统一日志：环境变量 `CANN_RECIPES_LOG_LEVEL`（默认 `INFO`），由 `executor/utils/logging_config.py::setup_logging()` 在主入口统一配置，库代码用 `logging.getLogger(__name__)`、禁用 `logging.basicConfig`。
-
-## Evidence
-
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`executor/core/config/inference_config.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/core/config/inference_config.py)（五子配置 dataclass 定义、`from_dict` 推导逻辑、`_validate`；`attn_dp_size` 含 `cp_size`、`input_truncated_len∈DataConfig` 默认 256、`engine_backend` Literal 默认 memfabric、`num_reserved_decode_tokens=64`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/common/inference_config_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/inference_config_guide.md)（字段说明文档；其 `attn_dp_size` 推导式与代码实现存在偏差，实际行为以代码实现为准）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/common/new_model_checklist.md §1`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/new_model_checklist.md)（新模型 YAML 必填字段：model_name/model_path/exe_mode、input_truncated_len、batch_size/max_new_tokens/max_prefill_tokens、world_size + 各 tp_size）
-- 演进溯源：commit `b085e02`（!501 revert kvp）、`0296d00`（!388）、`f0b0fde`（!386）page-attention/packed sequence；config-guide 字段更新随 refactor !458 / docs !446。
-
-## Links
-
-- [cann-executor](../frameworks/cann_executor.md)
-- [online-pd-inference](../frameworks/online_pd_inference.md)
-- [kv-cache-manager](../frameworks/kv_cache_manager.md)
-- [qwen-dense](../models/qwen_dense.md)（`input_truncated_len: 4096` + `parallel_config` 部署样例）
-- [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（`custom_params.moe_ep_decode_mode` + `attn_tp_size=1`/`embed_tp_size=8`/`lmhead_tp_size=8`/`dense_tp_size=1` 部署样例）
-- [hy3-preview](../models/hy3_preview.md)（`custom_params.enable_superkernel`/`enable_multi_streams`/`enable_online_split_weight` + `attn_tp_size=dense_tp_size=embed_tp_size=lmhead_tp_size=4`/`moe_tp_size=1` 部署样例）
-- [npu-graph-mode](npu_graph_mode.md)
-- [mtp-speculative-decoding](mtp_speculative_decoding.md)
-- [weight-nz](weight_nz.md)
-- [expert-parallel](../parallelism/expert_parallel.md)
-- [context-parallel](../parallelism/context_parallel.md)
-- [kvp](../parallelism/kvp.md)
-- [ascend-950](../platforms/ascend_950.md)（`platform_version: "950"` 平台枚举 / `is_ascend_950()` 分支）
-- [hixl](hixl.md)（PD KV 传输 HIXL 后端：`engine_backend="mooncake"` 走 HIXL 路径）
-
-## Notes
-
-- **ambiguity**：`platform_version` 取值 `A3` / `950`；`950`（[ascend-950](../platforms/ascend_950.md)）相关行为在配置文档中未展开，仅出现在通信组物理签名与 `is_ascend_950()` 判断中（如 weightNZ 关闭等代际差异见平台页）。
-- **gap**：`enable_cache_compile`（缓存编译）的具体落盘 / 命中机制不在配置文档范围。
-
-## 已知冲突
-
-- [kvp](../parallelism/kvp.md)
+- [Executor](../frameworks/cann_executor.md)
+- [KV管理](../frameworks/kv_cache_manager.md)
+- [投机推理](mtp_speculative_decoding.md)
+- [长序列CP](../parallelism/context_parallel.md)
+- [图模式](npu_graph_mode.md)
+- [MM统一拉起](../frameworks/mm_inference_launch.md)

@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/472
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -55,6 +55,5 @@ platforms:
 
 ## Evidence
 
-- `diff 事实`（@6cb4995）：分片 VocabParallelEmbedding 的 padding_idx 转本地下标、非持有分片传 None。
-- `diff 事实`（@c0be938）：MTP 层索引 = `config.num_hidden_layers` 动态剥层，非硬编码 43。
-- 溯源下探：[cann-recipes-infer-pr-472-fix-shard-vocabparallelembedding-weight-at-init](https://gitcode.com/cann/cann-recipes-infer/merge_requests/472)、[cann-recipes-infer-pr-377-fix-fix-mtp-weight-load](https://gitcode.com/cann/cann-recipes-infer/merge_requests/377)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/377)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/472)（evidence）

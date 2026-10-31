@@ -7,12 +7,12 @@ tags:
 - topic.graph_execution
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/50e41b5b8220284f6721223e9f0d3471cd0b0944/models/qwen3-moe-sglang/patches/0009-feat-support-superkernel.diff
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/README.md
+  role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-moe/patches/0009-feat-support-superkernel.diff
   role: implementation
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/50e41b5b8220284f6721223e9f0d3471cd0b0944/models/qwen3-moe-sglang/README.md
-  role: constraint
 created_at: '2026-10-20T12:18:12Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T15:24:39Z'
 platforms:
 - a3
 scope:
@@ -37,7 +37,7 @@ scope:
 
 ## 条件与规则入口
 
-本案例补充[SuperKernel 决策](../rules/superkernel_decode_ge_graph_fusion_scope.md)，证据固定 `50e41b5b8220284f6721223e9f0d3471cd0b0944`，范围为 Qwen3-MoE / Atlas A3 / SGLang 的 Decode GE 实践。README 记录 SGLang 基底 `2aec8b6e1b588f025ad5e25e2682a44b41a6cdbd` 与一组 patch；本次未恢复基底或应用 patch，不将局部 diff 当作运行时验证。
+本案例补充[SuperKernel 决策](../rules/superkernel_decode_ge_graph_fusion_scope.md)，证据统一为当前选定推理仓提交，范围为 Qwen3-MoE / Atlas A3 / SGLang 的 Decode GE 实践。README 记录 SGLang 基底 `2aec8b6e1b588f025ad5e25e2682a44b41a6cdbd` 与一组 patch；本次未恢复基底或应用 patch，不将局部 diff 当作运行时验证。
 
 ## 分段与整层入口
 

@@ -9,19 +9,23 @@ tags:
 - topic.three_dimensional_reconstruction
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/spherical_harmonics_forward.cpp
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/spherical_harmonics_forward.cpp
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/algorithms/gaussian_splatting/rasterization/rasterizer.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/meta_gauss_render/ops/spherical_harmonics.py
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a2
 ---
 
 # SphericalHarmonics —— 3DGS 球谐系数→颜色 算子
 
-球谐（Spherical Harmonics, SH）着色是 3DGS 渲染流程的第一步：由相机到高斯球的视线方向 `dirs` 与每个高斯球的球谐系数 `coeffs` 计算出视角相关颜色，再送入投影与渲染。前向 host 定义为 [`SphericalHarmonicsForward`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/spherical_harmonics_forward.cpp)，反向为 [`SphericalHarmonicsBwd`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/spherical_harmonics_bwd.cpp)。被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联在投影之前。
+球谐（Spherical Harmonics, SH）着色是 3DGS 渲染流程的第一步：由相机到高斯球的视线方向 `dirs` 与每个高斯球的球谐系数 `coeffs` 计算出视角相关颜色，再送入投影与渲染。前向 host 定义为 [`SphericalHarmonicsForward`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/spherical_harmonics_forward.cpp)，反向为 [`SphericalHarmonicsBwd`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/spherical_harmonics_bwd.cpp)。被 [3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md) 串联在投影之前。
 
 ## 算子接口
 
@@ -41,9 +45,9 @@ SH 着色机制：按阶数 `degree` 计算 `(degree+1)^2` 个球谐基函数，
 
 ## 阶数约束与渲染流程位置
 
-Python 封装（[`ops/spherical_harmonics.py`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/ops/spherical_harmonics.py)）限制 SH 阶数 `degrees_to_use` 取值 **0~4**，否则抛 `ValueError`。
+Python 封装（[`ops/spherical_harmonics.py`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/meta_gauss_render/ops/spherical_harmonics.py)）限制 SH 阶数 `degrees_to_use` 取值 **0~4**，否则抛 `ValueError`。
 
-在 `rasterizer.py::_ascend_rasterization` 中：先由相机原点与高斯球均值算出归一化视线方向 `rays_d`，取 `k = (sh_degree+1)^2` 个系数，调用 `spherical_harmonics(sh_degree, rays_d.reshape(B,N,3), shs[...].reshape(B,N,k,3))` 得到颜色，再 `+0.5` 并 `clip(min=0)`。`config.py` 默认 `sh_degree=3`，并按 `sh_degree_interval=1000` 在训练中逐步启用更高阶。颜色随后送入 `projection_three_dims_gaussian_fused`（[projection-3dgs](projection_3dgs.md)），其反向 `FullyFusedProjectionBwd` 输出的 `v_colors` 即 SH 反向输入。
+在 `rasterizer.py::_ascend_rasterization` 中：先由相机原点与高斯球均值算出归一化视线方向 `rays_d`，取 `k = (sh_degree+1)^2` 个系数，调用 `spherical_harmonics(sh_degree, rays_d.reshape(B,N,3), shs[...].reshape(B,N,k,3))` 得到颜色，再 `+0.5` 并 `clip(min=0)`。`config.py` 默认 `sh_degree=3`，并按 `sh_degree_interval=1000` 在训练中逐步启用更高阶。颜色随后送入 `projection_three_dims_gaussian_fused`（[projection-3dgs](projection_3dgs.md)），其反向 `FullyFusedProjectionBwd` 输出的 `v_colors` 先经过 `(SH+0.5).clip(min=0)` 的链式求导：被截断的负值位置屏蔽梯度，再将 SH 输出的梯度传给 SH backward；不能直接原样传递投影返回的 v_colors。
 
 ## 相关页面
 

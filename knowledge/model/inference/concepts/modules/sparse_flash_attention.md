@@ -1,11 +1,7 @@
 ---
 type: Concept
 title: Sparse Flash Attention (SFA)
-description: Sparse Flash Attention 是 **DeepSeek Sparse Attention (DSA)** 的核心计算模块。在由
-  lightning-indexer 选出 TopK 个相关 KV token 之后，SFA 仅在这部分稀疏子集上执行注意力计算，将复杂度从 O(N²) 降到 O(N·TopK)，配合
-  Flash Attention 的块级 online softmax 思想。DeepSeek-V3.2-Exp 将其作为长序列推理的主力注意力算子，并在此基础上设计了
-  CP 并行、MLA Absorb 模式适配。 SFA 作为架构概念是 DSA 的一部分；具体算子实现（AscendC / PyPTO / TileLang）见
-  sparse-flash-attention。
+description: DSA 中选定 TopK 后的稀疏注意力，更新 packed 索引、C8 Query 拼接与返回值，保留 Absorb/CP 的模型边界。
 tags:
 - task.design
 - topic.model_architecture
@@ -13,12 +9,12 @@ tags:
 - topic.kv_cache
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
-  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-22T01:39:38Z'
+updated_at: '2026-10-29T15:22:24Z'
 platforms:
 - agnostic
 ---
@@ -34,7 +30,7 @@ SFA 作为架构概念是 DSA 的一部分；具体算子实现（AscendC / PyPT
 
 ### 计算表达
 
-给定 Query `Q`、完整 Key/Value `K, V`，以及稀疏索引张量 `index`（由 Lightning Indexer 产出，形状 `[B, Sq, 1, TopK]`）：
+给定 Query `Q`、完整 Key/Value `K, V`，以及稀疏索引张量 `index`（由 Lightning Indexer 产出，当前 packed 形状 `[T,1,TopK]`；教学 BSND 形态可写为 `[B,Sq,1,TopK]`）：
 
 $$
 \text{softmax}\left(\frac{Q \cdot \tilde{K}^T}{\sqrt{d_k}}\right) \cdot \tilde{V}
@@ -42,8 +38,8 @@ $$
 
 其中 $\tilde{K}, \tilde{V}$ 是依据 `index` 从完整 KV 中 Gather 出的稀疏子集。对每个 query token，仅与 TopK=2048 个 key token 做 Attention。
 
-![SFA 概念图](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/sparse-flash-attention.png)
-*来源：[`docs/models/deepseek-v3.2-exp/figures/sparse-flash-attention.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/sparse-flash-attention.png)（cann-recipes-infer @ 2f82d10）*
+![SFA 概念图](https://raw.gitcode.com/cann/cann-recipes-infer/raw/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/sparse-flash-attention.png)
+*来源：[`docs/models/deepseek-v3.2-exp/figures/sparse-flash-attention.png`](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/figures/sparse-flash-attention.png)（cann-recipes-infer @ 944d2d3）*
 
 ### 与 Full FA 的 Shape 对比（1 batch × 64K）
 
@@ -52,7 +48,7 @@ $$
 | Full Attention | `(batch, Sq, d, Sk)` 全 KV | `(batch, Sq, Sk, d)` 全 KV |
 | SFA | `(batch*Sq, G, d, TopK)` 稀疏 | `(batch*Sq, G, TopK, d)` 稀疏 |
 
-TopK=2048 vs Sk=64K → 计算量降 32×；但引入**离散访存**（非连续 KV Gather），单次访存量小、指令下发阻塞成为新的瓶颈（见 [sparse-flash-attention](../kernels/sparse_flash_attention.md) 的访存优化）。
+TopK=2048 vs Sk=64K → 计算量降 32×；但引入**离散访存**（非连续 KV Gather），来源 Atlas A3 AscendC 离散访存实现中，当单次搬运耗时低到小于指令下发耗时，可能出现指令下发阻塞；这不是所有 SFA 实现的固定瓶颈（见 [sparse-flash-attention](../kernels/sparse_flash_attention.md) 的访存优化）。
 
 ### MLA Absorb 模式
 
@@ -95,7 +91,7 @@ slc_fa_input_kwargs = {
 
 ### KV C8 量化 SFA（算 16 存 8）
 
-KVCache Int8 存储、BF16 计算。入口切换到 `npu_kv_quant_sparse_flash_attention`（`modeling_deepseek.py:L1402`），多出 `tile_size=128`、`rope_head_dim=64`、`key/value_quant_mode=2`、`quant_scale_repo_mode=1`。见 [w8a8c8](../quantization/w8a8c8.md)。
+KVCache Int8 存储、BF16 计算。入口切换到 `npu_kv_quant_sparse_flash_attention`（`modeling_deepseek.py:L1402`），Query 拼接 NoPE/RoPE；量化入口直接返回输出 Tensor，非量化返回三项，另传 `tile_size=128`、`rope_head_dim=64`、`key/value_quant_mode=2`、`quant_scale_repo_mode=1`。见 [w8a8c8](../quantization/w8a8c8.md)。
 
 ### Offload 路径变体
 
@@ -113,10 +109,8 @@ Prefill CP 场景下，因果注意力按 rank 切片会导致首 rank 轻、尾
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md)（DSA 概念、MLA Absorb 方案、MTP 对 SFA 的影响、CP 负载均衡）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_ascendc_operator_guide.md)（SFA 算子形式化表达）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（SFA block-level 算法流程）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v3.2-exp/models/modeling_deepseek.py:L1340-L1412`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/deepseek-v3.2-exp/models/modeling_deepseek.py#L1340-L1412)（`DeepseekIndexerAttention` 中 SFA 调用）
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（primary）
+- [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v3_2_exp/models/modeling_deepseek.py)（implementation）
 
 ## Links
 

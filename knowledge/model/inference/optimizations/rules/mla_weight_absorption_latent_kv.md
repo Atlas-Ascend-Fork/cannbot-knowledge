@@ -13,10 +13,14 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/348
   role: evidence
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/progress_tp.md
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T07:08:12Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - agnostic
 scope:
@@ -24,7 +28,8 @@ scope:
   any_of:
   - all_of:
       model_features:
-        all_of: [mla]
+        all_of:
+        - mla
 ---
 
 
@@ -33,18 +38,18 @@ scope:
 
 ## 适用场景
 
-在昇腾上做 [mla](../../concepts/modules/mla.md) 架构注意力，尤其是**稀疏 / 长序列、访存主导**的场景（KV 搬运是瓶颈、单卡 KV 显存吃紧）。两个 MLA 专属手段直接降访存 / 显存：权重吸收（absorb）把逐 head 的 GEMV 变成 GEMM 并砍掉 headnum 倍离散访存；latent-KV 缓存只存压缩低秩 latent、把 MHA 展开缓存的显存砍掉一半以上。
+在昇腾上做 [mla](../../concepts/modules/mla.md) 架构注意力，尤其是**稀疏 / 长序列、访存主导**的场景（KV 搬运是瓶颈、单卡 KV 显存吃紧）。两个 MLA 专属手段直接降访存 / 显存：权重吸收（absorb）把逐 head 的 GEMV 变成 GEMM 并砍掉 headnum 倍离散访存；latent-KV 缓存只存压缩低秩 latent，存储收益取决于展开 K/V 的每卡 head 数和维度。
 
 ## 优先走权重吸收（absorb）而非 Naive 逐 head
 
-- **Naive（MHA 计算模式）**：headnum 轴当 batch，计算时只能外抛为 for 循环；对应 BMM 的 M 轴为 1，属 GEMV，矩阵乘效率低，且有 headnum 倍的离散访存。
+- **Naive 的 Decode / 逐 query 稀疏方案**：headnum 轴当 batch，逐 query 的 BMM M 轴为 1，属 GEMV，矩阵乘效率低，且有 headnum 倍的离散访存。不能将其推广到全部 Naive：Naive + Sparse Mask Prefill 可沿 token 轴组成 GEMM，来源示例 M=64K。
 - **Absorb（GQA 计算模式）**：headnum 轴可转化为 matmul 的 m 轴，M=128 走 GEMM；相比 Naive 少 headnum 倍离散访存、gemv→gemm 对计算更友好。
-- 结论：考虑 matmul 计算效率与离散访存，MLA 架构**都建议走权重吸收变换**；在稀疏场景下 absorb 的访存量与计算效率都更优。
+- 结论：考虑 matmul 计算效率与离散访存，在已列的访存受限场景中优先评估权重吸收变换；在稀疏场景下 absorb 的访存量与计算效率都更优。
 - 边界：absorb 并非零代价——在稀疏 prefill 的对照中 absorb 相对 Naive+Sparse **计算量增加约 3 倍**，其优势建立在长序列 / 稀疏这类访存主导场景；纯计算主导、短序列需另行权衡。存在一个「chunk MHA vs 权重吸收 MLA」的临界点：稀疏化后选取的 kv token 数小于该临界点时走权重吸收，超过时 chunk MHA 可能更有竞争力（临界点数值未披露）。
 
 ## 稀疏 prefill 的三方案对照：选 Absorb + Sparse
 
-稀疏化后每个 q token 只与 TopK（= min(实际序列长度, 例 2048)）个 kv token 算 Attention，prefill MLA 计算流有三种候选，决定性因素是访存：
+本节倍数限定 DeepSeek-V3.2-Exp、1 batch、64K、128 heads、QK 192/V 128 维、latent 512+64 维和 TopK=2048；改变 shape/内核须重新推导。稀疏化后每个 q token 只与 TopK（= min(实际序列长度, 例 2048)）个 kv token 算 Attention，prefill MLA 计算流有三种候选，决定性因素是访存：
 
 - **方案一 Naive + Sparse Mask**：与全量 Attention 同计算量，拿不到稀疏收益，长序列性能不佳。
 - **方案二 Naive + Sparse Attention**：BMM 计算量相对全量减小（如 64K/2048=32 倍），但 BMM 的 M 轴为 1（GEMV 低效），且 HBM 访存量相较全量 Attention **激增约 2048 倍**（每 token 都要把 2048 个 kv 的 K/V 重新从 HBM 读进来），访存瓶颈严重。
@@ -56,11 +61,11 @@ scope:
 
 MHA 展开缓存显存大；MLA 只需缓存低秩 latent。每 token / 层只存 `kv_lora_rank + qk_rope_head_dim` 维压缩 latent（如 `512 + 64 = 576` 维），配合分页（paged）分块：
 
-- 注册两块 block-paged cache：`cache_nope`（dim=`kv_lora_rank`）与 `cache_rope`（dim=`qk_rope_head_dim`），`block_size=128`、`cache_mode=PA_NZ`；`pa_max_length = input_max_len + max_new_tokens` 且须为 block_size 整数倍。
+- 注册两块 block-paged cache：`cache_nope`（dim=`kv_lora_rank`）与 `cache_rope`（dim=`qk_rope_head_dim`），`block_size=128`、`cache_mode=PA_NZ`；缓存由统一ModelCacheInfo/CacheEntry声明及绑定，物理块数按实际总长取整，不能再按旧input_max_len公式手工分配。
 - **Prefill 走非 absorb**（`NTD_TND`）：写 cache 后用 absorb 权重把 latent 展开成 full K/V 喂 [fused-infer-attention-score](../../concepts/kernels/fused_infer_attention_score.md)；`actual_seq_lengths` 用**累积偏移**（B>1 时用 per-request 值会跨请求边界产垃圾 token）。
-- **Decode 走 absorb**（`BSND_NBSD`）：`q_nope @ kv_b_proj_w_k`，FIA 以 `key=value=cache_nope`、`key_rope=cache_rope` 计算，输出再 `@ kv_b_proj_w_v` 还原 `v_head_dim`。
+- **当前Lite Decode走absorb**（FIA v2 `TND_NTD`，输出为NTD）：`q_nope @ kv_b_proj_w_k`，FIA 以 nope/rope的PA_NZ缓存视图 计算，输出再 `@ kv_b_proj_w_v` 还原 `v_head_dim`。
 
-参考落地把每 token/层缓存从展开的 1280 维降到 576 维（约 −55%）、128 token 输出与基线逐字匹配（仓自报）。
+固定 LongCat-Flash-Lite 参考配置每卡 4 heads，展开缓存为 `4*(192+128)=1280` 元素，压缩为 `512+64=576` 元素（相同 dtype 下约 −55%）；该比例随每卡 head 数与并行配置变化。该配置、128 token 输出与基线逐字匹配（仓自报）。
 
 ## 参考实现及其约束（易踩点）
 
@@ -77,20 +82,8 @@ MHA 展开缓存显存大；MLA 只需缓存低秩 latent。每 token / 层只�
 
 ## Evidence
 
-- `doc 披露` + `维护者确认`（@2c45117）：MLA Naive vs Absorb 三张 BMM shape 表（方案二 M=1 / 方案三 M=128）、「MLA 架构建议走权重吸收」「稀疏场景 absorb 访存与计算效率都更优」、TopK=min(seq,2048)、MHA/GQA·GEMV/GEMM 映射。
-- `diff 事实`（@8fd8db72）：`cache_entries` 两块 dim=512/64、`init_absorb_weights` 拆分 + `.contiguous()`、prefill `NTD_TND` + 累积偏移 `actual_seq_lengths`、decode `BSND_NBSD` absorb、`mla_scale_kv_lora`、`pa_config`。576 维 / −55% / 1280 baseline 为仓自报。
-- 溯源下探：
-  - [cann-recipes-infer-issue-6-requirement-npu-deepseek-v3-2-exp-mla](https://gitcode.com/cann/cann-recipes-infer/issues/6)
-  - [cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)
-
-### V3.2-Exp固定示例的BMM形状
-
-以下是来源在1batch、64K、TopK2048下的模型计算形状分析，不是测得的耗时或通用阈值：
-
-| 方案 | BMM1 (Batch,M,K,N) | BMM2 (Batch,M,K,N) |
-| --- | --- | --- |
-| Naive + Mask | (128,64K,192,64K) | (128,64K,64K,128) |
-| Naive + Sparse | (64K×128,1,192,2048) | (64K×128,1,2048,128) |
-| Absorb + Sparse | (64K,128,576,2048) | (64K,128,2048,512) |
-
-不能将这些特定shape的2048倍/约3倍推导外推到所有TopK、head数与内核实现。
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/6)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)（evidence）
+- [deepseek_v3.2_exp_inference_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md)（supporting）
+- [progress_tp.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/progress_tp.md)（implementation）
+- [modeling_longcat_flash_lite.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py)（implementation）

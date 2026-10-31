@@ -1,19 +1,20 @@
 ---
 type: Concept
 title: GRPO / DAPO（组相对策略优化 RL 算法）
-description: GRPO（Group Relative Policy Optimization，组相对策略优化）去掉 PPO 的 critic（价值网络），对同一 prompt 采样一组 rollout，以组内相对奖励估计 advantage，省去独立 value model 的前反向与显存。数据流为 rollout → reward → advantage → 策略更新；on-policy 条件支持免计算 old_log_prob。DeepSeek-R1 671B 在 Atlas A3 128 卡上使用 veRL + MindSpeed + vLLM-Ascend 执行全共卡 GRPO。DAPO 在 GRPO 骨架上叠加解耦 clip 上下界、token-level 重要性采样与动态样本过滤。MindSpeed-RL 以继承 RayBaseTrainer 的 Ray 共卡 trainer（grpo/dapo/ppo_trainer_hybrid）实现 GRPO/DAPO/PPO，损失按 (stage,role) 注册 LossFuncFactory，compute_group_norm_advantage_return 计算组内 z-score；DAPO kl_loss≡0，PPO 使用 CriticWorker+GAE+apply_kl_penalty，DPO 委托 mindspeed_llm 离线 DPOTrainer。
+description: GRPO（Group Relative Policy Optimization，组相对策略优化）去掉 PPO 的 critic（价值网络），对同一 prompt 采样一组 rollout，以组内相对奖励估计 advantage，省去独立 value model 的前反向与显存。数据流为 rollout → reward → advantage → 策略更新；同批仅做一次参数更新时才支持免计算 old_log_prob。DeepSeek-R1 671B 在 Atlas A3 128 卡上使用 veRL + MindSpeed + vLLM-Ascend 执行全共卡 GRPO。DAPO 在 GRPO 骨架上叠加解耦 clip 上下界、token-level 重要性采样与动态样本过滤。MindSpeed-RL 以继承 RayBaseTrainer 的 Ray 共卡 trainer（grpo/dapo/ppo_trainer_hybrid）实现 GRPO/DAPO/PPO，损失按 (stage,role) 注册 LossFuncFactory，compute_group_norm_advantage_return 计算组内 z-score；DAPO kl_loss≡0，PPO 使用 CriticWorker+GAE+apply_kl_penalty，DPO 委托 mindspeed_llm 离线 DPOTrainer。
 tags:
 - task.optimization
 - topic.reinforcement_learning
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
+- a2
 - a3
 ---
 
@@ -23,7 +24,7 @@ platforms:
 
 GRPO（Group Relative Policy Optimization，组相对策略优化）是 DeepSeek-R1 RL 训练采用的核心策略梯度算法：它**去掉 PPO 的 critic（价值网络）**，改用「**同一 prompt 采样一组（group）rollout，用组内奖励的相对高低估计 advantage**」。少了独立 value model，省去其前反向与显存，特别契合 671B 级大模型的全共卡 RL 部署。其数据流为 **rollout → reward → advantage → 策略更新**，并具备 **on-policy** 性质。**DAPO**（GRPO 同族变体）在此骨架上叠加解耦 clip 上下界 / token-level 重要性采样 / 动态样本过滤等改动。GRPO 在 [deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md) 实践（[verl](../frameworks/verl.md) + MindSpeed + vLLM-Ascend，Atlas A3 128 卡）中的真实用法见下文。
 
-> 单/多控制器调度、D2D 数据直传与训推切换 reshard 属于 [veRL](../frameworks/verl.md) 和 [DeepSeek-R1 RL](../../guides/recipes/deepseek_r1_rl.md) 的系统实现；old_log_prob 免计算则依赖 GRPO 的 on-policy 条件，不能脱离算法语义单独启用。
+> 单/多控制器调度、D2D 数据直传与训推切换 reshard 属于 [veRL](../frameworks/verl.md) 和 [DeepSeek-R1 RL](../../guides/recipes/deepseek_r1_rl.md) 的系统实现；old_log_prob 免计算还依赖同一批仅做一次参数更新的条件，不能脱离算法语义单独启用。
 
 ## 在 RL 训练系统中的位置
 
@@ -33,8 +34,8 @@ DeepSeek-R1 的每一步 GRPO 训练拆成三个计算密集阶段：
 
 这正是 GRPO 数据流的工程落地：rollout 产出一组响应、ref 提供 KL 正则所需的 $\pi_{ref}$ 分布、update 用组内相对 advantage 更新策略。三阶段对 671B 模型都吃资源，故本实践对 actor / rollout / ref **三模型全共卡、分时复用**部署。整套 RL 优化分四个方面（模型间调度 / 训推切换 / 训练 / 推理）展开：
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image2.png" width="55%"></p>
-<p align="center"><sub>图：基于 verl 的 DeepSeek-R1 RL 训练四方面优化总览（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·verl 适配和优化实践总览）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image2.png" width="55%"></p>
+<p align="center"><sub>图：基于 verl 的 DeepSeek-R1 RL 训练四方面优化总览（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·verl 适配和优化实践总览）</sub></p>
 
 verl 框架本身「结合单控制器（控制流）与多控制器（计算流）优势，简化了 RL 算法（如 PPO、GRPO）实现」（源文档框架介绍表），GRPO 即作为其内置算法之一被本实践驱动。
 
@@ -58,8 +59,8 @@ GRPO **不训练 value 网络**：一组 $G$ 条响应的奖励 $\{r_i\}$ 直接
 
 用组内 advantage 做策略梯度更新。GRPO 目标函数（源文档 §5.2 配图，逐 token 形式）：
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image21.png" width="72%"></p>
-<p align="center"><sub>图：GRPO 目标函数——min(ratio·Â, clip(ratio,1±ε)·Â) − β·D_KL[π_θ‖π_ref]；on-policy 下重要性比 ratio 分子分母数值相等（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·old_log_prob 免计算）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/deepseek_figures/image21.png" width="72%"></p>
+<p align="center"><sub>图：GRPO 目标函数——min(ratio·Â, clip(ratio,1±ε)·Â) − β·D_KL[π_θ‖π_ref]；on-policy 下重要性比 ratio 分子分母数值相等（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·old_log_prob 免计算）</sub></p>
 
 目标对每个 prompt 的 $G$ 条响应、每条响应的每个 token 求平均，单 token 项由三部分组成：
 
@@ -70,11 +71,11 @@ advantage $\hat{A}_{i,t}$ 由上一步组内相对优势给出（同响应所有
 
 ## on-policy 性质：old_log_prob 与 log_prob 数值相等
 
-GRPO 是 **on-policy** 算法：每一步 update 用的就是产出这批 rollout 的同一份模型参数，没有跨步骤复用旧数据。由此源文档 §5.2 给出一个直接的工程优化——**old_log_prob 免计算**：
+仅在 rollout 后、对该批数据尚未更新参数时，当前策略与采样策略相同。若同批分多个 minibatch 或重复多个 epoch 更新，后续前向的参数已经变化，on-policy 标签本身不保证概率始终相同。源文档 §5.2 的 **old_log_prob 免计算** 适用于同批只做一次参数更新的配置：
 
 > 对于 GRPO 这类 on-policy 训练算法，其 old_log_prob 计算结果与 update_actor 前向计算所得的 log_prob 数值相同（因为训练模型参数一致），因此可直接使用 `log_prob.detach()` 替代 old_log_prob，从而省去一次训练模型前向计算的耗时。
 
-即图中 $\pi_{\theta_{old}}$ 与 $\pi_\theta$ 在 on-policy 下数值相等（图内红框标注「on-policy 中与分子数值相等」），重要性比 $\rho_{i,t}\equiv 1$，故 `old_log_prob` 无需单独前向，可由 update 阶段的 `log_prob.detach()` 直接得到。recipe 为 verl 补充了该特性：
+即图中 $\pi_{\theta_{old}}$ 与 $\pi_\theta$ 在上述单次参数更新条件下数值相等（图内红框标注「on-policy 中与分子数值相等」），重要性比 $\rho_{i,t}\equiv 1$，故 `old_log_prob` 无需单独前向，可由 update 阶段的 `log_prob.detach()` 直接得到。recipe 为 verl 补充了该特性：
 
 ```shell
 # 将 recompute_old_log_prob 置 False 即启用 old_log_prob 免计算（on-policy 专用）
@@ -90,7 +91,7 @@ DAPO（Decoupled Clip & Dynamic Sampling Policy Optimization）是 GRPO 的同�
 1. **解耦 clip 上下界（Clip-Higher）**：把对称裁剪拆成独立上下界 `clip_ratio_low=0.2` / `clip_ratio_high=0.28`——抬高上界给低概率 token 更多探索空间、抑制熵塌缩；另设 dual-clip 常数 `clip_ratio_c=10.0`。
 2. **token-level 重要性采样**：`rollout_is_threshold=2.0`（`rollout_is_threshold_lower=null`，无下界），在 token 粒度裁剪重要性比。
 3. **token-level PG Loss**：`loss_agg_mode="token-mean"`，按 token 而非按样本聚合策略梯度损失（长 response 不被样本级平均稀释）。
-4. **动态样本过滤**：`algorithm.filter_groups.enable=True`（`metric=acc`，`max_num_gen_batches=10`），去除组内 reward 全为 0 或全为 1 的「零梯度」样本组——这类组的组内相对 advantage 恒为 0、对更新无贡献；过滤后首个 step 需多做 batch 推理补足有效样本（235B 实测首 step 做 2 个 batch 推理）。
+4. **动态样本过滤**：`algorithm.filter_groups.enable=True`（`metric=acc`，`max_num_gen_batches=10`），按所选 acc 指标过滤组内无差异的样本组；只有最终奖励也完全相同时，组相对 advantage 才为0，不能由 acc 一致直接推出零优势；过滤后首个 step 需多做 batch 推理补足有效样本（235B 实测首 step 做 2 个 batch 推理）。
 
 DAPO 同时关闭 KL 惩罚项（`use_kl_loss=False`，对比 GRPO 脚本的 `use_kl_loss=True`）。以上均为 verl 的 `actor_rollout_ref.actor.*` / `algorithm.*` 配置项，不改 GRPO 的「组相对、去 critic」骨架即可切换。具体性能（235B DAPO 41.88 TPS/卡、32B DAPO 叠 SAM/npugraph_ex 首步 4562→3261）见 [qwen3-rl](../../guides/recipes/qwen3_rl.md)。
 
@@ -103,7 +104,7 @@ DAPO 与 GRPO 均为「组相对、on-policy」族，落到 verl 上都靠 [verl
 | value/critic 网络 | 需要独立 value model 算 GAE | **无 critic**，组内相对奖励直接估 advantage |
 | advantage 来源 | value model 前向 + GAE | 同 prompt 一组 $G$ 响应的奖励组内归一化 |
 | 系统开销 | 多一个模型的前反向 + 显存 | adv 阶段仅 ~0.2s（性能表），省 critic 资源 |
-| 重要性比 | 跨更新步可 off-policy 复用 | on-policy，$\rho\equiv1$，old_log_prob 可免算 |
+| 重要性比 | 跨更新步可 off-policy 复用 | 仅同批一次参数更新时概率数值相等、可免算；多 minibatch/epoch 仍需 old_log_prob |
 | 大模型适配 | critic 加剧 671B 共卡显存压力 | 全共卡 rollout/ref/update 三模型分时复用 |
 
 ## MindSpeed-RL 实现
@@ -130,7 +131,7 @@ GRPO 的 `fit` 把组采样数据流逐阶段下发 TransferDock：`generate_seq
 
 ### DAPO 动态采样过滤
 
-DAPO trainer 的 `dynamic_sampling` 落地「过滤零梯度组 + 动态补采」：`filter_groups_enable=true` 时，每生成一个 batch 先 `enter_infer_mode`，由 `DynamicSampling`（按 metric 剔除组内奖励全 0 或全 1 的样本组——其 group_norm 优势恒 0、对更新无贡献）统计 `num_prompt_in_batch = 有效条数 // n_samples_per_prompt`；不足 `filter_groups_train_batch_size` 且 `num_gen_batches < filter_groups_max_batches`（`-1` 表不限）时 `continue` 再采一个 batch，超出上限则 `raise ValueError('Generated too many')`，凑够后才 `exit_infer_mode` 进入训练。这与本页上方 verl 侧 `algorithm.filter_groups.enable` 的「首 step 多做 batch 推理补足有效样本」是同一机制。DAPO 另有超长惩罚（`overlong_buffer_enable` + `rollout_max_tokens` / `overlong_buffer` / `overlong_buffer_penalty_factor`）在奖励侧对接近/超出长度上限的响应做软惩罚，缓解长序列截断噪声。
+DAPO trainer 的 `dynamic_sampling` 落地「按指标过滤 + 动态补采」：`filter_groups_enable=true` 时，每生成一个 batch 先 `enter_infer_mode`，由 `DynamicSampling`（判断 metric_for_dapo 的组内标准差，剔除该指标无差异的组；RuleReward 分别提供 metric_for_dapo 和 rm_scores，长度惩罚仅叠加到最终奖励，所以指标一致也可能奖励不同、优势非零）统计 `num_prompt_in_batch = 有效条数 // n_samples_per_prompt`；不足 `filter_groups_train_batch_size` 且 `num_gen_batches < filter_groups_max_batches`（`-1` 表不限）时 `continue` 再采一个 batch，超出上限则 `raise ValueError('Generated too many')`，凑够后才 `exit_infer_mode` 进入训练。这与本页上方 verl 侧 `algorithm.filter_groups.enable` 的「首 step 多做 batch 推理补足有效样本」是同一机制。DAPO 另有超长惩罚（`overlong_buffer_enable` + `rollout_max_tokens` / `overlong_buffer` / `overlong_buffer_penalty_factor`）在奖励侧对接近/超出长度上限的响应做软惩罚，缓解长序列截断噪声。
 
 ### 与 verl 侧的对照
 
@@ -151,13 +152,8 @@ DPO 是四算法里的异类：`cli/train_dpo.py` 不挂 actor/rollout/reward/cr
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/deepseek_rl_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md)（§1.1 框架表「verl 简化 PPO/GRPO 实现」；§1.2.1 rollout/ref/update 三阶段全共卡；§1.3 + image2 四方面优化总览；§3.1.4 GRPO gen 输入不被 n_sample 放大；§3.2.4「只支持 GRPO on-policy」；§5.2 + image21 GRPO 目标函数与 old_log_prob 免计算）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/deepseek/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/deepseek/README.md)（DeepSeek-V3-671B / Atlas A3 128 卡 / GBS 512 / n_samples 16 / deepscaler 数据集 / 120 TPS 的 GRPO RL 后训练样例）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_rl/deepseek/verl_patches/scripts/internal/`](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_rl/deepseek/verl_patches/scripts/internal)（verl 训练启动子脚本：`recompute_old_log_prob`、`n_samples`、GBS 等 GRPO 配置项入口）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/models/loss/grpo_actor_loss_func.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/loss/grpo_actor_loss_func.py) / [`dapo_actor_loss_func.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/loss/dapo_actor_loss_func.py) / [`ppo_actor_loss_func.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/models/loss/ppo_actor_loss_func.py)（`_compute_*_policy_loss`：GRPO KL 进损失、DAPO 解耦 clip + token_level_loss + kl_loss≡0、PPO 对称 clip 无 KL；`old_log_prob=None → ratio≡1`）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/trainer/utils/compute_utils.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/trainer/utils/compute_utils.py)（`compute_group_norm_advantage_return` 组内 z-score 去 critic 优势；`compute_gae_advantage_return` PPO GAE；`apply_kl_penalty` 把 KL 折进 PPO reward）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`mindspeed_rl/trainer/grpo_trainer_hybrid.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/trainer/grpo_trainer_hybrid.py) / [`dapo_trainer_hybrid.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/trainer/dapo_trainer_hybrid.py) / [`ppo_trainer_hybrid.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/mindspeed_rl/trainer/ppo_trainer_hybrid.py)（`fit` 三阶段编排；`set_actor_log_prob_skip_flag` on-policy 免算；`dynamic_sampling` 过滤零梯度组 + 补采上限；PPO `CriticWorker`/`compute_values`/`update_critic`）
-- [mindspeed-rl](https://gitcode.com/Ascend/MindSpeed-RL) — [`cli/train_dpo.py`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/cli/train_dpo.py)（DPO 委托 `mindspeed_llm.tasks.posttrain.dpo.DPOTrainer`，`is_pairwise_dataset` 成对偏好、纯 Megatron 训练、无 rollout）+ [`docs/zh/algorithms/{grpo,dapo,ppo,dpo}.md`](https://gitcode.com/Ascend/MindSpeed-RL/blob/398fd9a5fa6358c50071db2d09919e414accea90/docs/zh/algorithms/dapo.md)（DAPO `clip_ratio_low/high`、`token_level_loss`、`filter_groups_*`、`overlong_buffer_*` 默认值与各算法端到端 tps）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [deepseek_rl_train_optimization.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/deepseek_rl_train_optimization.md)（supporting）
 
 ## Links
 
@@ -176,4 +172,4 @@ DPO 是四算法里的异类：`cli/train_dpo.py` 不挂 actor/rollout/reward/cr
 - [mindspeed-rl](../frameworks/mindspeed_rl.md)（MindSpeed-RL 框架实现 GRPO/DAPO/PPO/DPO）
 - [rule-reward-verifier](rule_reward_verifier.md)（GRPO/DAPO/PPO 的规则奖励打分器：数学题 boxed 答案匹配 ±1）
 - [transferdock-data-scheduling](transferdock_data_scheduling.md)（GRPO/DAPO 一轮迭代的数据面：各 Ray worker 经 GRPOTransferDock 取放样本）
-- [partial-rollout](partial_rollout.md)（长尾 rollout 暂停续跑，封顶单步 rollout 时长）
+- [partial-rollout](partial_rollout.md)（长尾 rollout 暂停续跑，限制同步单次生成新增 token 预算，不保证整轮耗时上界）

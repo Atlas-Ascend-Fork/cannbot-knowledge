@@ -7,12 +7,12 @@ tags:
 - topic.model_adaptation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_sft/qwen3/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_sft/qwen3/README.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:39:15Z'
 platforms:
 - a2
 - a3
@@ -22,7 +22,7 @@ platforms:
 
 ## Summary
 
-昇腾 SFT（监督微调）最小上手样例：用 [mindspeed](../../concepts/frameworks/mindspeed.md) 系的 **MindSpeed-LLM**（叠加 Megatron-LM `core_v0.12.1` 的 mcore 训练栈），对 **Qwen3-1.7B**（dense）在 **alpaca** 指令数据集上跑监督微调，**单卡即可**——硬件要求为「卡数：1张A3」。把昇腾上「HF 模型转 mcore → alpaca 数据转换 → SFT 训练 → mcore 转回 HF」的全链路压到一台机器、一张卡上跑通，是 dense 模型微调的入门梯子；同框架的大规模实践（DeepSeek-V3 HiF8/MXFP8 低精度预训练）见 [mindspeed](../../concepts/frameworks/mindspeed.md)。Qwen3 dense 本体作为推理模型见跨域页 [qwen-dense](../../../inference/concepts/models/qwen_dense.md)。
+昇腾 SFT（监督微调）最小上手样例：用 [mindspeed](../../concepts/frameworks/mindspeed.md) 系的 **MindSpeed-LLM**（叠加 Megatron-LM `core_v0.12.1` 的 mcore 训练栈），对 **Qwen3-1.7B**（dense）在 **alpaca** 指令数据集上跑监督微调，默认启动 **1 个 NPU 逻辑设备上的训练进程**。把昇腾上「HF 模型转 mcore → alpaca 数据转换 → SFT 训练 → mcore 转回 HF」的全链路压到一台机器的单个 NPU 逻辑设备上跑通，是 dense 模型微调的入门梯子；同框架的大规模实践（DeepSeek-V3 HiF8/MXFP8 低精度预训练）见 [mindspeed](../../concepts/frameworks/mindspeed.md)。Qwen3 dense 本体作为推理模型见跨域页 [qwen-dense](../../../inference/concepts/models/qwen_dense.md)。
 
 与 [qwen2.5-rl](qwen2_5_rl.md)（veRL 原生 FSDP+vLLM 的单卡 RL 入门）的关键差异：训练栈走 **MindSpeed-LLM + Megatron mcore**（Megatron 风格、需要 HF↔mcore 权重格式互转），阶段是 **SFT 而非 RL**，无 rollout / 奖励函数环节。
 
@@ -34,8 +34,8 @@ platforms:
 | 阶段 | SFT（监督微调，`--stage sft`） |
 | 框架 | MindSpeed-LLM（commit `6fe0df7`）+ Megatron-LM `core_v0.12.1`（mcore） |
 | 数据集 | alpaca（指令微调，`OmniData/alpaca`，AlpacaStyleInstructionHandler） |
-| 平台 / 卡数 | 单卡 A3（「卡数：1张A3」）；一站式平台镜像可选 A3 或 A2 |
-| 序列长度 | 4K（训练脚本 `tune_qwen3_4K_full_A3_ptd.sh`；数据预处理 `--seq-length` 默认 4096） |
+| 平台 / 卡数 | Atlas A3；脚本 `NPUS_PER_NODE=1`，表示 1 个 NPU 逻辑设备；一站式平台镜像另提供 A3/A2 选项 |
+| 序列长度 | 训练脚本配置 4K；数据预处理 `--seq-length` 缺省 None，不指定时不截断，二者分开设置 |
 
 ## 环境与数据准备
 
@@ -61,7 +61,7 @@ bash examples/mcore/qwen3_dense/tune_qwen3_4K_full_A3_ptd.sh
 bash examples/mcore/qwen3_dense/ckpt_convert_qwen3_mcore2hf.sh
 ```
 
-> 需按实际情况在以上脚本中修改 `ascend-toolkit` 路径。默认配置为 `source /usr/local/Ascend/ascend-toolkit/set_env.sh`；一站式平台（以 CANN 8.5.0 为例）需改为 `source /home/developer/Ascend/cann-8.5.0/set_env.sh`。
+> 固定脚本默认值分别为：data_convert 使用 `/usr/local/Ascend/cann/set_env.sh`，两份权重转换脚本使用 `/usr/local/Ascend/ascend-toolkit/set_env.sh`；训练脚本不包含 source 环境语句，需在父 shell 预先加载环境。请按实际安装位置调整；一站式平台示例为 `/home/developer/Ascend/cann-8.5.0/set_env.sh`，不能把某个转换脚本的默认路径推广到四步全部。
 
 四步中的两次权重转换是 Megatron mcore 栈的固有要求：`hf2mcore` 把 HF 权重切成训练用的 mcore 张量/流水线并行布局（`--target-tensor-parallel-size` / `--target-pipeline-parallel-size`），训练完再 `mcore2hf` 合回 HF 格式以便部署/推理。两次转换统一由 `convert_ckpt_v2.py` 经 `--load-model-type` / `--save-model-type` 切方向（`hf→mg` 与 `mg→hf`），其中 `mcore2hf` 还需 `--hf-cfg-dir` 指向原 HF 配置目录来回填 `config`。
 
@@ -69,12 +69,16 @@ SFT 训练由 `posttrain_gpt.py` 拉起（区别于 pretrain 入口）。关键�
 
 > SFT 训练脚本里的并行配置（TP/PP/CP）必须和 `hf2mcore` 模型转换时的并行参数**保持一致**，否则权重布局不匹配。
 
+## 容器映射与当前工作目录
+
+宿主机先进入 `llm_sft/qwen3` 构建镜像和容器，样例目录挂载为容器内 `/workspace/qwen3`。`build_docker.sh` 默认映射 `/dev/davinci0`～`/dev/davinci15`，表示可见的设备节点数，训练实际仍由 `NPUS_PER_NODE=1` 控制；部分设备环境须按实际节点修改映射，多设备训练还要同步进程与并行配置。
+
+复制依赖和脚本后进入 `MindSpeed-LLM`，后续数据集、权重转换和训练命令均以它为工作目录。一站式平台构建后额外安装 `pyarrow==21.0.0`，构建完成还需继续执行完整的数据准备和四步训练流程。Qwen3-1.7B 是稠密模型，不应从通用参数表推断需要开启 `--moe-grouped-gemm`；本样例未开启 CP。
+
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_sft/qwen3/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_sft/qwen3/README.md)（Qwen3-1.7B SFT 样例：硬件要求「1张A3」、Dockerfile 与一站式平台两条环境构建路径、alpaca/ModelScope 数据与权重准备、`data_convert`/`hf2mcore`/`tune`/`mcore2hf` 四步脚本、附录数据/转换/SFT 参数说明）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_sft/qwen3/Dockerfile.cann.mindspeed.qwen3`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_sft/qwen3/Dockerfile.cann.mindspeed.qwen3)（基础镜像 `cann:8.5.0-a3-openeuler24.03-py3.11`、torch 2.8.0/torch-npu 2.8.0.post2、MindSpeed master、MindSpeed-LLM `6fe0df7...` + Megatron-LM `core_v0.12.1`、transformers 5.1.0/datasets 2.16.0）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_sft/qwen3/build_docker.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_sft/qwen3/build_docker.sh) / [`build_project_platform.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_sft/qwen3/build_project_platform.sh)（容器拉起与一站式平台依赖构建脚本，`cp -r qwen3_dense MindSpeed-LLM/examples/mcore`）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_sft/qwen3/qwen3_dense/`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_sft/qwen3/qwen3_dense)（四步脚本 `data_convert_qwen3_instruction.sh` / `ckpt_convert_qwen3_hf2mcore.sh` / `tune_qwen3_4K_full_A3_ptd.sh` / `ckpt_convert_qwen3_mcore2hf.sh`）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_sft/qwen3/README.md)（supporting）
 
 ## Links
 

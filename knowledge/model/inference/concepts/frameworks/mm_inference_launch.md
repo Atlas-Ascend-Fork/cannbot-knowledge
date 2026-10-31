@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: MM Inference Launch（多模态生成模型统一推理拉起架构）
-description: 'MM Inference Launch 是 cann-recipes-infer 为 Wan2.2-I2V、HunyuanVideo、SANA-Video 和 HunyuanImage-3.0 提供的统一多模态推理启动层。各模型以 infer.sh 和场景 YAML 为入口，mm_function.sh 负责字段校验、环境合并、cache/sparse 参数生成，并选择 torchrun 或 accelerate，日志统一写入模型 res 目录。YAML 对必填键、未知键、端口/卡数类型以及 Dit-Cache 和 sparse 方法枚举做校验；环境优先级为 NPU 默认→YAML→MODEL_BASE 派生→HCCL→用户 export。HunyuanVideo 的块稀疏 Attention 可配单卡或 Ulysses，但不支持 Ring，且与 cache 互斥。该体系独立于 LLM 的 CANN Executor。'
+description: 当前四模型YAML启动链、校验/环境优先级、TLS预加载、启动器回退以及缓存/稀疏真实互斥。
 tags:
 - task.implementation
 - topic.architecture
@@ -9,10 +9,16 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/design/mm_inference_design.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/scripts/mm_function.sh
   role: primary
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/design/mm_inference_design.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/dit_cache/cache_method.py
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/sample_video.py
+  role: constraint
 created_at: '2026-05-31T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T14:15:06Z'
 platforms:
 - a3
 - '950'
@@ -70,9 +76,12 @@ YAML 是推理配置的唯一来源，顶层键白名单（`ALLOWED_TOP`）共 1
 
 - **`model_args` 透传规则**：字符串/数字 → `--key value`；列表 → `--key v1 v2`（`nargs="+"`）；布尔 `true` → `--key`（flag）；布尔 `false` → 忽略；加引号字符串 `"False"`/`"True"` → 按字面量透传（如 `sana-video` 的 `model.fp32_attention: "False"`）。`model_args` 非白名单，任意被 `argparse` 接收的参数（权重路径、量化开关、profiler 开关等）均可传入。
 - **`world_size` 映射**：`torchrun` 下 `--nproc_per_node`，`accelerate` 下 `--num_processes`；`master_port` 同理映射 `--master_port` / `--main_process_port`。
-- **env 优先级**（`mm_setup_env`，后者覆盖前者）：① NPU 默认值（`VAR:-default`，仅 shell 未设时生效：`PYTORCH_NPU_ALLOC_CONF`/`TASK_QUEUE_ENABLE=2`/`CPU_AFFINITY_CONF=1`/`TOKENIZERS_PARALLELISM=false`）→ ② YAML `env_vars`（无条件 export）→ ③ `MODEL_BASE` 从 `model_args.model-base` 自动派生（HunyuanVideo `hyvideo/constants.py` import 时把 `MODEL_BASE` freeze 进 VAE/Text-Encoder/Tokenizer 路径）→ ④ HCCL 硬编码（`HCCL_IF_IP`/`HCCL_IF_BASE_PORT=23456`/`HCCL_CONNECT_TIMEOUT=1200`/`HCCL_EXEC_TIMEOUT=1200`，覆盖 YAML 同名值）→ ⑤ `ASCEND_RT_VISIBLE_DEVICES` 等由用户手动 export。
+- **env 设置条件**（mm_setup_env）：NPU 默认值使用 VAR:-default，保留 shell 非空值；随后 YAML env_vars 无条件 export，可覆盖用户预先 export 的同名变量。MODEL_BASE 仅在此时为空才从 model_args.model-base 派生，已有非空值保留。最后 HCCL_IF_IP / HCCL_IF_BASE_PORT=23456 / HCCL_CONNECT_TIMEOUT=1200 / HCCL_EXEC_TIMEOUT=1200 由脚本设置，会覆盖 YAML 和 shell 同名值；ASCEND_RT_VISIBLE_DEVICES 等未被这些步骤写入的值才保留用户配置。不能把用户启动前 export 视为统一的最高优先级。
 
 ### 关键实现细节
+
+- 当前环境初始化新增aarch64 libGLdispatch的LD_PRELOAD处理，目标是避免CANN先加载时静态TLS耗尽；YAML env_vars随后仍可覆盖环境值。
+- torchrun不可用时，普通分发回退当前python的`-m torch.distributed.run`；accelerate优先当前解释器同目录可执行文件。
 
 - **PYTHONPATH 注入**：拉起子进程时以命令行前缀 `eval PYTHONPATH=${RECIPES_ROOT}:$PYTHONPATH torchrun/accelerate ...` 注入，仅作用于推理子进程，不污染当前 shell 与 CANN TBE 编译器解释器。
 - **Cache 参数名自动选择**（`mm_generate_cache_config`）：`model_name` 含 `hunyuan-video` → `--cache-config`（连字符），其他 → `--cache_config`（下划线）。
@@ -80,7 +89,7 @@ YAML 是推理配置的唯一来源，顶层键白名单（`ALLOWED_TOP`）共 1
 
 ## 作为配置段被透传的方法（细节见专页）
 
-- **Dit-Cache**：`dit_cache` 段是唯一配置源；`mm_generate_cache_config` 把 YAML 路径作为 `--cache-config`/`--cache_config` 传给入口脚本，由 `module/dit_cache/cache_method.py:load_cache_config()` 读取并与 `DEFAULT_CACHE_CONFIG` 合并构造 `CacheManager`。`method` 取 `NoCache`/`FBCache`/`TeaCache`/`TaylorSeer`，`params` 段只需写想覆盖的键。方法判据、默认值与 benchmark 见 [dit-cache](../techniques/dit_cache.md)。
+- **Dit-Cache**：统一YAML以`dit_cache`段配置，Python加载器仍兼容完整legacy JSON；`mm_generate_cache_config` 把 YAML 路径作为 `--cache-config`/`--cache_config` 传给入口脚本，由 `module/dit_cache/cache_method.py:load_cache_config()` 读取并与 `DEFAULT_CACHE_CONFIG` 合并构造 `CacheManager`。`method` 取 `NoCache`/`FBCache`/`TeaCache`/`TaylorSeer`，`params` 段只需写想覆盖的键。方法判据、默认值与 benchmark 见 [dit-cache](../techniques/dit_cache.md)。
 - **块稀疏 Attention（仅 HunyuanVideo）**：顶层 `sparse` 段与 `dit_cache` 并列；`mm_generate_sparse_config` 检测后拼 `--sparse-method <method> --sparse-attention-config <yaml>`，由 `module/blockwise_sparse/sparse_method.py:load_sparse_config_from_file` 读取。`method` 取 `no_sparse`/`TopK`/`SVG`，启用后会覆盖所有 Dit-Cache 的 block forward（二者互斥）。并行支持详见下文「块稀疏 Attention `sparse` 段语义」。算法细节见 [blockwise-sparse-attention](../modules/blockwise_sparse_attention.md)。
 - **序列并行 / CFG 并行**：多卡场景由 `model_args` 的 `ulysses-degree`/`ulysses_size`、`cfg_size`、`ring-degree`/`ring_size` 等控制（约束 `world_size = cfg_size * ulysses_size * ring_size`）。Ulysses 见 [ulysses](../parallelism/ulysses.md)，CFG 并行见 [cfg-parallel](../parallelism/cfg_parallel.md)。
 
@@ -109,7 +118,7 @@ YAML 是推理配置的唯一来源，顶层键白名单（`ALLOWED_TOP`）共 1
 
 ### Cache-config 校验契约（`_validate_config_keys`，设计文档 §8.3）
 
-合并后的缓存配置（YAML `dit_cache` 段 + `DEFAULT_CACHE_CONFIG`）必须包含以下 **6 个必备键**，缺任一键即立即退出并打印 `[ERROR]`（设计文档 §8.3）：
+合并后的缓存配置（YAML `dit_cache` 段 + `DEFAULT_CACHE_CONFIG`）必须包含以下 **6 个必备键**，缺任一键由 Python _validate_config_keys 抛出 ValueError，未捕获时导致进程失败；它本身不打印 [ERROR] 或直接 exit（区别于 Shell 启动校验）：
 
 1. `cache_forward`
 2. `enable_separate_cfg`
@@ -146,30 +155,29 @@ sparse:
 
 并行支持（更新自设计文档 §5.5）：
 
-- **支持单卡、Ulysses 多卡和 Ring Attention 多卡**。Ulysses sparse forward 内置 all-to-all 通信路径，并在 `ulysses_degree > 1` 时调用 `apply_head_reorder_for_load_balance` 做 head 级负载均衡；Ring sparse forward 支持 TopK/SVG，**Ring + TopK 额外支持 overlap 路径**（`config/sp8_sparse_overlap.yaml`，默认 TopK 可切 SVG），Ring + SVG overlap 暂复用普通 Ring + SVG 路径。
-- **与 Dit-Cache 互斥**：`sample_video.py` 先初始化 cache_manager 替换 block forward，再在 sparse 启用时把**所有** double/single block forward 替换为 sparse 版——sparse 会静默覆盖 FBCache/TeaCache/TaylorSeer 的 block forward。预置的 `single_sparse.yaml` / `sp8_sparse.yaml` / `sp8_sparse_overlap.yaml` 均固定 `dit_cache.method: NoCache`（§5.5 互斥说明列前两者，`sp8_sparse_overlap` 变体见 §6 配置表）。
+- **支持单卡、Ulysses 多卡和 Ring Attention 多卡**。Ulysses sparse forward 内置 all-to-all 通信路径，并在 `ulysses_degree > 1` 且predictor实现该方法时调用 `apply_head_reorder_for_load_balance` 做 head 级负载均衡；Ring sparse forward 支持 TopK/SVG，**Ring + TopK 额外支持 overlap 路径**（`config/sp8_sparse_overlap.yaml`，默认 TopK 可切 SVG），Ring + SVG overlap 暂复用普通 Ring + SVG 路径。
+- **与 Dit-Cache 互斥**：`sample_video.py` 先初始化 cache_manager 替换 block forward，再在 sparse 启用时把**所有** double/single block forward 替换为 sparse 版——当前入口显式拒绝非NoCache与非no_sparse同开，不能描述为静默覆盖。预置的 `single_sparse.yaml` / `sp8_sparse.yaml` / `sp8_sparse_overlap.yaml` 均固定 `dit_cache.method: NoCache`（§5.5 互斥说明列前两者，`sp8_sparse_overlap` 变体见 §6 配置表）。
 - **TopK 前置**：`TopK` 策略需先跑 `module/blockwise_sparse/offline_profiling/offline_profiling_hyvideo.py` 生成 sparsity 文件（规格须与 `video-size / video-length` 一致——单卡默认 `320*480*65`，多卡默认 `720*1280*129`）；`SVG` 无需离线 profiling。
 - **算子依赖**：运行前需依据 `blitz_sparse_attention` 算子文档编译对应算子库。
 
-> ⚠️ 矛盾标记：早期设计文档（@2c45117）记载块稀疏 Attention「**不支持 Ring**」（`sample_video.py` 在 `ring_degree>1` 抛 `ValueError`，2026-05-31 ingest）；最新设计文档（@46485be，2026-06-23）改为「**支持 Ring**，Ring + TopK 额外支持 overlap」，并新增 `config/sp8_sparse_overlap.yaml`。以最新版本为准，旧版结论保留于此供追溯。
 
-## 各模型 config 变体清单（对照 `models/*/config/` @2c45117，`sp8_sparse_overlap` 为 @46485be 新增）
+## 各模型当前配置清单
 
 | 模型 | config 变体 | 卡数 | 启动器 |
 |------|-------------|------|--------|
 | [wan2.2-i2v](../models/wan2_2_i2v.md) | `14b_single`（cache 注释切 NoCache/FBCache/TeaCache）/ `14b_cfg2_ulysses4`（CFG2×Ulysses4） | 1 / 8 | torchrun |
-| [hunyuan-video](../models/hunyuan_video.md) | `single`·`sp8`（cache 注释切 NoCache/FBCache/TeaCache/TaylorSeer）/ `single_fp8`（FP8 FA + MXFP8 matmul）/ `single_sparse`·`sp8_sparse`（块稀疏 SVG/TopK）/ `sp8_sparse_overlap`（@46485be 新增；Ring + 块稀疏 overlap，默认 TopK） | 1 / 8 | torchrun |
+| [hunyuan-video](../models/hunyuan_video.md) | `single`·`sp8`（cache 注释切 NoCache/FBCache/TeaCache/TaylorSeer）/ `single_fp8`（MXFP8 FA + MXFP8 matmul）/ `single_sparse`·`sp8_sparse`（块稀疏 SVG/TopK）/ `sp8_sparse_overlap`（Ring TopK overlap，SVG走普通路径） | 1 / 8 | torchrun |
 | [sana-video](../models/sana_video.md) | `2b_480p_single` / `_a4w4` / `_a8w8`（量化）/ `_platform`（平台模板，经 `infer_platform.sh` 直拉） | 1 | accelerate（`_platform` 除外：直 `python -u`） |
 | [hunyuan-image-3](../models/hunyuan_image_3.md) | `ep8_cfg`（Attn TP8 + MoE EP8 + CFG 并行 + VAE 并行） | 16 | torchrun |
 
-> Cache 方法在 HunyuanVideo / Wan2.2-I2V 的基线 YAML 内通过 `dit_cache.method` 切换并在注释列出可选值，**没有** 为每种 cache 方法单独派生 YAML；`single_fp8` 的 950PR 平台要求为 README/设计文档级说明，YAML 仅含 `fa-perblock-fp8`/`mm-mxfp8` 开关，无平台字段。
+> Cache 方法在 HunyuanVideo / Wan2.2-I2V 的基线 YAML 内通过 `dit_cache.method` 切换并在注释列出可选值，**没有** 为每种 cache 方法单独派生 YAML；`single_fp8` 的 950PR 平台要求为 README/设计文档级说明，YAML 仅含 `fa-mxfp8`/`mm-mxfp8` 开关，无平台字段。
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/design/mm_inference_design.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/design/mm_inference_design.md)（统一推理拉起设计文档，MR!356）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/design/mm_inference_design.md` §5.3 / §5.5 / §8.3](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/design/mm_inference_design.md)（@46485be：Dit-Cache 各方法默认值、`sparse` 段字段语义、`_validate_config_keys` 6 必备键校验契约；块稀疏 Attention 改为支持 Ring + overlap）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`executor/scripts/mm_function.sh`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/scripts/mm_function.sh)（拉起函数库：函数名/校验/env/透传规则）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/{hunyuan-video,wan2.2-i2v,sana-video,hunyuan-image-3.0}/{infer.sh,config/}`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hunyuan-video/infer.sh)（统一入口 + config 变体清单来源）
+- [mm_function.sh](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/scripts/mm_function.sh)（primary）
+- [mm_inference_design.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/design/mm_inference_design.md)（supporting）
+- [cache_method.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/module/dit_cache/cache_method.py)（implementation）
+- [sample_video.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-video/sample_video.py)（constraint）
 
 ## Links
 
@@ -188,7 +196,3 @@ sparse:
 - **doc/code nuance**：SANA-Video `2b_480p_single_platform` 的 YAML `launcher` 字段虽为 `accelerate`（与其余 sana 变体一致），但其入口 `infer_platform.sh` 只手动跑函数链子集（`mm_init_env`/`mm_check_launch`/`mm_parse_yaml`/`mm_setup_env`/`mm_generate_cache_config`/`mm_build_args`）后用 `python -u` 直拉（`infer_platform.sh:218`「python direct, no accelerate wrapper」、`:245`），**绕过 `mm_launch`/launcher 分发**——故该变体的 `launcher: accelerate` 字段惰性无效。设计文档 §6「python 直接拉起」为真实运行行为。
 - **gap**：本架构无端到端 benchmark；各模型性能数据见各自模型页（如 HunyuanVideo Atlas A3 e2e 7.81×）。
 - **scope**：覆盖范围为 4 个多模态生成模型的拉起与 YAML 配置；LLM 侧部署走 [cann-executor](cann_executor.md)，二者不共享拉起路径。
-
-## 已知冲突
-
-- 块稀疏 Attention Ring 支持：@2c45117 记载不支持 Ring；@46485be 改为支持 Ring（Ring+TopK 含 overlap）。以最新版本为准。

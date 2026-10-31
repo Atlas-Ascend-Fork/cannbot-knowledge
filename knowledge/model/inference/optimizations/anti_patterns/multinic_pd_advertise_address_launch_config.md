@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/315
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-22T10:39:39Z'
+updated_at: '2026-10-29T15:32:48Z'
 platforms:
 - agnostic
 ---
@@ -67,5 +67,4 @@ if not disagg_config.local_ip:
 
 ## Evidence
 
-- diff 事实（clone `@c695829cd2c0`，`executor/online/kv_transfer/transfer_manager.py::KVTransferManager._init_rank_socket` + `executor/core/config/inference_config.py::DisaggConfig`）：`bind_to_random_port("tcp://0.0.0.0")`、`local_ip` 缺失 `raise ValueError(...--ips[node_index]...)`、`DisaggConfig.local_ip` 字段及 docstring；代码内注释给出「多网卡歧义 + 沉默故障 vs 可观测故障」的为何。归因主语为本仓该实现取舍，非上游。
-  - 溯源下探：[cann-recipes-infer-pr-315-refactor-online-batch](https://gitcode.com/cann/cann-recipes-infer/merge_requests/315)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/315)（evidence）

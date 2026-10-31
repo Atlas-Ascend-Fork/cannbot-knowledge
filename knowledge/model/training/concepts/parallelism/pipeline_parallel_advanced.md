@@ -7,12 +7,24 @@ tags:
 - topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/README.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md
   role: primary
-- resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/virtual-pipeline-parallel.md
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/virtual-pipeline-parallel.md
   role: supporting
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/ripipe_schedules_feature.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/noop_layers.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/optimize_p2p_comm.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/optimize_send_recv_comm.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/pipeline_parallel/pipeline_model_parallel_layout/layout.py
+  role: implementation
+- resource: cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/arguments.py
+  role: implementation
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:41Z'
 platforms:
 - agnostic
 ---
@@ -65,16 +77,16 @@ VPP（Virtual Pipeline Parallelism）在不增加设备数的前提下，把每�
 
 ## Ripipe：流水内重计算调度
 
-Ripipe（`ripipe_schedules.py` 的 `forward_backward_ripipe_pipelining`，由 megatron interleaved 1F1B 调度改写而来）把**激活重计算嵌进 VPP 流水调度**，借 `PipelineCheckpointManager` 在 chunk 粒度上 `disable_recompute` / `enable_recompute` / `recompute_next`，提供两种互补模式（均需 PP>1 且开启 VPP interleaving，且 `align_grad_reduce=True`）：
+Ripipe（`ripipe_schedules.py` 的 `forward_backward_ripipe_pipelining`，由 megatron interleaved 1F1B 调度改写而来）把**激活重计算嵌进 VPP 流水调度**，借 `PipelineCheckpointManager` 在 chunk 粒度上 `disable_recompute` / `enable_recompute` / `recompute_next`，提供两种不能同时开启的模式（均需 PP>1 且开启 VPP interleaving，且 `align_grad_reduce=True`）：
 
-- **`--recompute-in-bubble`**（省内存）：用流水**气泡时间**做重计算换显存，性能基本不劣化。使能时框架强制 `recompute_granularity="full"`、`recompute_method="block"`，并令 `recompute_num_layers = --num-layers-per-virtual-pipeline-stage`（即每 chunk 全重计算）；要求 `overlap_p2p_comm=True`，且与 `swap_attention`、`optimize_send_recv_comm`、`ampipe`、`adaptive_memory_optimization`（自适应内存优化）互斥。
-- **`--recompute-in-advance`**（压气泡）：把重计算**提前**到 1F1B 稳态前段执行以缩短气泡、提升吞吐。要求 `--num-layers-per-virtual-pipeline-stage == 1`（否则自动关闭），`recompute_method` 不能为 `uniform`，且 `recompute_num_layers` 必须非 0；使能时置 `reduce_recompute_for_last_chunk=True`。
+- **`--recompute-in-bubble`**（省内存）：用流水**气泡时间**做重计算换显存，性能基本不劣化。使能时框架强制 `recompute_granularity="full"`、`recompute_method="block"`，并按enable_recompute_layers_per_pp_rank赋值：开启时recompute_num_layers=num_layers//pipeline_model_parallel_size，否则取num_layers_per_virtual_pipeline_stage；用户非零值须匹配该分支期望；要求 `overlap_p2p_comm=True`，且与 `swap_attention`、`optimize_send_recv_comm`、`ampipe`、`adaptive_memory_optimization`（自适应内存优化）互斥。
+- **`--recompute-in-advance`**（压气泡）：把重计算**提前**到 1F1B 稳态前段执行以缩短气泡、提升吞吐。要求 `--num-layers-per-virtual-pipeline-stage == 1`（否则自动关闭），`recompute_method` 不能为 `uniform`，且未开启adaptive_memory_optimization时recompute_num_layers不能为空或0；使能时置 `reduce_recompute_for_last_chunk=True`。
 
 两者本质都是「重计算 ⇄ 内存/气泡」的取舍：bubble 模式把重计算塞进空泡里几乎白嫖显存收益，advance 模式则用提前重计算抹平气泡换性能。与自适应选择重计算（adaptive recompute）互斥。
 
 ## Noop 空层做 stage 负载均衡
 
-`--noop-layers 5,11,...` 指定一组**全局层号**，这些位置不构建真实 decoder 层，而是 `NoopTransformerLayer`——其 `forward` 直接 `return hidden_states.clone(), context`，无参数、无计算、无通信，仅占一个层位。它把「逻辑层数」与「真实计算层数」解耦：当 PP 均匀切层会让某些 stage 因 embedding / loss / MTP 等额外计算而偏重时，在轻 stage 插 noop 层即可凑齐每 stage 层数、抹平 1F1B 的 stage 间负载差。校验要求每个 noop 索引落在 `[0, --num-layers)`；开启 Automated Pipeline 时 noop 层被自动清空（二者目标重叠）。Noop 与 Unaligned PP、自定义 PP Layout 互斥（都在解同一负载均衡问题，只能选一种表达）。
+`--noop-layers 5,11,...` 指定一组**全局层号**，这些位置不构建真实 decoder 层，而是 `NoopTransformerLayer`——其 `forward` 直接 `return hidden_states.clone(), context`，无参数、无计算、无通信，仅占一个层位。它把「逻辑层数」与「真实计算层数」解耦：当 PP 均匀切层会让某些 stage 因 embedding / loss / MTP 等额外计算而偏重时，在轻 stage 插 noop 层即可凑齐每 stage 层数、抹平 1F1B 的 stage 间负载差。校验要求每个 noop 索引落在 `[0, --num-layers)`；仅开启--automated-pipeline内存模块时noop层被自动清空，性能模块没有此清空逻辑（二者目标重叠）。Noop 与 Unaligned PP、自定义 PP Layout 互斥（都在解同一负载均衡问题，只能选一种表达）。
 
 ## 多参数流水（跨 stage 传多张量）
 
@@ -97,7 +109,7 @@ Ripipe（`ripipe_schedules.py` 的 `forward_backward_ripipe_pipelining`，由 me
 | 0 | `Ett` | `ttt` |
 | 1 | `tt` | `tmL` |
 
-decoder 总数 `2+2+3+1=8`、MTP 1、E/L 各一次。约束：stage 数须被 PP 整除；E 与 L 各且仅一次；decoder 数等于 `--num-layers`、`m` 数等于 `--mtp-num-layers` 且 decoder 必须在 MTP 之前。它与 `--num-layers-per-virtual-pipeline-stage` / `--num-virtual-stages-per-pipeline-rank`、`--pipeline-num-transformer-layers`、`--noop-layers`、`--schedules-method dualpipev` 均互斥，也暂不与 `--recompute-in-bubble` / `--recompute-in-advance` 同用。可与 `--moe-fb-overlap` 配合（layout-aware VPP 调度，按前/反向 chunk 实际层数做跨 microbatch 前反向掩盖，两侧层数不一致时先配对可重叠层再处理剩余层）。
+decoder 总数 `2+2+3+1=8`、MTP 1、E/L 各一次。约束：stage 数须被 PP 整除；E与L各且仅一次，且E必须是展开后的首个实际层、L为最后实际层；decoder 数等于 `--num-layers`、`m` 数等于 `--mtp-num-layers` 且decoder必须在MTP之前；全部MTP层须集中同一chunk，且该chunk为所在PP rank的最后一个VPP chunk。它与 `--num-layers-per-virtual-pipeline-stage` / `--num-virtual-stages-per-pipeline-rank`、`--pipeline-num-transformer-layers`、`--noop-layers`、`--schedules-method dualpipev` 均互斥，也暂不与 `--recompute-in-bubble` / `--recompute-in-advance` 同用。可与 `--moe-fb-overlap` 配合，但每个chunk都必须包含至少一个decoder层：空stage或仅E/m/L的chunk均不允许（layout-aware VPP 调度，按前/反向 chunk 实际层数做跨 microbatch 前反向掩盖，两侧层数不一致时先配对可重叠层再处理剩余层）。
 
 ## 非对齐 PP / VPP 切分
 
@@ -108,45 +120,38 @@ decoder 总数 `2+2+3+1=8`、MTP 1、E/L 各一次。约束：stage 数须被 PP
 `--automated-pipeline`（内存优化模块）与 `--automated-pipeline-perf`（性能优化模块）基于**在线 profiling + PP 建模搜索**自动定布局，二者不可同时使用，均要求 PP≥2：
 
 - **内存优化**：在「非均匀层切分 + 细粒度重计算」联合搜索空间里自动找最优排布——不均匀分层均衡各卡显存以优化 stage-0 瓶颈，并利用气泡时间做细粒度重计算进一步降峰值。文档报告 LLaMA2-7B / LLaMA-13B / LLaMA2-70B 等平均峰值内存 **-11.5%**、性能劣化 **<1%**。
-- **性能优化**：在峰值内存不超设备容量约束下，自动搜索动态 mbs 序列（小 mbs 加速预热/冷却、稳态用高效 mbs）与前反向调度序列，结合多流异步通信压缩稳态气泡，报告平均性能 **+7.6%**。
+- **性能优化**（--automated-pipeline-perf不能与非空num_layers_per_virtual_pipeline_stage同用）：在峰值内存不超设备容量约束下，自动搜索动态 mbs 序列（小 mbs 加速预热/冷却、稳态用高效 mbs）与前反向调度序列，结合多流异步通信压缩稳态气泡，报告平均性能 **+7.6%**。
 
-开启 Automated Pipeline 时会自动关闭 `--noop-layers`（其层分布由搜索接管）。
+仅--automated-pipeline内存模块自动清空noop_layers；--automated-pipeline-perf没有这个行为。
 
 ## P2P 通信重叠基础设施
 
-上述压气泡机制依赖把 stage 间 P2P 收发与计算重叠。两个底层开关：`optimize_p2p_comm` 把 `config.batch_p2p_comm` 置 False，改用非批量 P2P 算子以便与计算 overlap（即 `overlap_p2p_comm` 生效前提，PP≥2 时启用）；`--optimize-send-recv-comm` 则单独建一条 PP 通信流（`pp_new_stream` / `get_pipeline_parallel_group_for_new_stream`），用 `flexible_schedules` 的 `forward_comm_stream` / `backward_comm_stream` `wait_stream` 主流后异步收发，把 send/recv 掩盖到计算之下。`optimize-send-recv-comm` 与 Ripipe、以及「layout 推导出 VPP」的场景暂不兼容。
+上述压气泡机制依赖把 stage 间 P2P 收发与计算重叠。两个底层开关：`optimize_p2p_comm` 把 `config.batch_p2p_comm` 置 False，改用非批量 P2P 算子以便与计算 overlap（即 `overlap_p2p_comm` 生效前提，仅PP≥2且非交错PP时注册；num_layers_per_virtual_pipeline_stage须为空，并排除layout推导VPP的场景，不是VPP自身通信重叠开关）；`--optimize-send-recv-comm` 则单独建一条 PP 通信流（`pp_new_stream` / `get_pipeline_parallel_group_for_new_stream`），用 `flexible_schedules` 的 `forward_comm_stream` / `backward_comm_stream` `wait_stream` 主流后异步收发，把 send/recv 掩盖到计算之下。optimize-send-recv-comm同样只在num_layers_per_virtual_pipeline_stage为空的非交错PP注册，适配器返回without_interleaving调度；不能作为普通VPP开关，也与Ripipe及layout推导VPP不兼容。
 
 ## 能力组合与互斥
 
 | 机制 | 开关 | 主要解决 | 关键互斥 |
 | --- | --- | --- | --- |
 | VPP | `--num-layers-per-virtual-pipeline-stage` | 气泡 → `/v` | 是多数特性的底座 |
-| Ripipe-bubble | `--recompute-in-bubble` | 省显存 | swap-attention / optimize-send-recv / ampipe / 自适应重计算 / 自适应内存优化 |
-| Ripipe-advance | `--recompute-in-advance` | 压气泡 | optimize-send-recv / ampipe / 自适应重计算（不含 swap-attention）；要求 VPP 层数=1 |
+| Ripipe-bubble | `--recompute-in-bubble` | 省显存 | advance / swap-attention / optimize-send-recv / ampipe / 自适应重计算 / 自适应内存优化 |
+| Ripipe-advance | `--recompute-in-advance` | 压气泡 | bubble / optimize-send-recv / ampipe / 自适应重计算（不含swap-attention）；要求VPP层数=1，非自适应内存时重算层数非零 |
 | Noop 层 | `--noop-layers` | stage 负载均衡 | unaligned PP / PP layout；automated-pipeline 自动关 |
 | 多参数流水 | `--use-multiparameter-pipeline-model-parallel` | 跨 stage 多张量 | moe-fb-overlap / dualpipev |
 | 变长序列 | `--variable-seq-lengths` | 免 padding | 无 PP 特性硬互斥；MoE 限 alltoall dispatcher；非 MoE 时校验期临时置 False；常叠多参数 |
 | PP Layout | `--pipeline-model-parallel-layout` | E/t/m/L 排布 | VPP 层数参数 / unaligned / noop / dualpipev / ripipe |
 | Unaligned PP | `--pipeline-num-transformer-layers` | 各 stage 不等层 | noop-layers / num-layer-list |
-| Automated | `--automated-pipeline[-perf]` | 自动布局 | 内存/性能两模块互斥；自动关 noop |
+| Automated | `--automated-pipeline[-perf]` | 自动布局 | 内存/性能两模块互斥；仅内存模块清noop，性能模块与VPP层数配置互斥 |
 
 ## Evidence
 
-- [mindspeed](https://gitcode.com/ascend/MindSpeed) — 官方特性文档（pin `1432cb09`）：
-  - [`docs/zh/features/virtual-pipeline-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/virtual-pipeline-parallel.md) — VPP 原理、`--num-layers-per-virtual-pipeline-stage`、16 层 PP4 VPP2 示例、权重一致性 / verl mbridge 限制
-  - [`docs/zh/features/multi_parameter_pipeline.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/multi_parameter_pipeline.md) 与 [`multi_parameter_pipeline_and_variable_seq_lengths.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/multi_parameter_pipeline_and_variable_seq_lengths.md) — 多参数传递 + 变长序列、`pipeline_tensor_shapes` 修改注意、与 moe-fb-overlap/dualpipev 互斥
-  - [`docs/zh/features/unaligned-pipeline.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/unaligned-pipeline.md) — `--pipeline-num-transformer-layers` 二维数组、embedding/logits/MTP 负载场景
-  - [`docs/zh/features/pipeline-model-parallel-layout.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/pipeline-model-parallel-layout.md) — layout 字符串格式（E/t/m/L、`|`、`x*N`、`(pattern)*N`）、`Ett|tt|ttt|tmL` 示例、约束与 moe-fb-overlap 配合
-  - [`docs/zh/features/automated-pipeline.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/automated-pipeline.md) — `--automated-pipeline` 内存模块 -11.5% / `--automated-pipeline-perf` 性能模块 +7.6%
-  - [`docs/zh/features/pipeline-parallel.md`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/pipeline-parallel.md) — PP 基线、1F1B 预热/冷却
-- MindSpeed 源码（pin `1432cb09`）：
-  - [`mindspeed/core/pipeline_parallel/ripipe_schedules.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/ripipe_schedules.py)（`forward_backward_ripipe_pipelining` 由 interleaved 1F1B 改写、`PipelineCheckpointManager` 的 `recompute_next` / `disable_recompute`）；[`features_manager/pipeline_parallel/ripipe_schedules_feature.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/pipeline_parallel/ripipe_schedules_feature.py)（bubble/advance 两子特性的强制参数与互斥校验）
-  - [`mindspeed/core/pipeline_parallel/noop_layers/transformer.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/noop_layers/transformer.py) 与 [`mindspeed/core/transformer/transformer_block.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/transformer/transformer_block.py)（`NoopTransformerLayer.forward` 返回 `hidden_states.clone(), context`）；[`features_manager/pipeline_parallel/noop_layers.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/pipeline_parallel/noop_layers.py)（`--noop-layers` 索引校验、automated 时清空）
-  - [`mindspeed/core/pipeline_parallel/multi_parameter/communication.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/multi_parameter/communication.py)（`backward_step_impl` 对全部 requires_grad 输出回传梯度）；[`features_manager/pipeline_parallel/multi_parameter.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/pipeline_parallel/multi_parameter.py)（`pipeline_tensor_shapes` 缺省 `(seq/CP, mbs, hidden)`、收发原语 patch 列表、dualpipev 互斥）
-  - [`mindspeed/core/pipeline_parallel/variable_seq_length/communicate.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/variable_seq_length/communicate.py)（`communicate_shapes_impl` 先发 int64 shape，再按 `recv_*_shape` 建 buffer）；[`features_manager/pipeline_parallel/variable_seq_length.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/pipeline_parallel/variable_seq_length.py)（无 MoE 时关闭、patch `_communicate`/`_communicate_shapes`）
-  - [`mindspeed/core/pipeline_parallel/pipeline_model_parallel_layout/layout.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/pipeline_model_parallel_layout/layout.py)（`PipelineParallelLayerLayout`：`LayerType`、`parse_str_to_list`、VPP=stage/PP、`validate_layer_layout` 约束）
-  - [`mindspeed/core/pipeline_parallel/unaligned/unaligned_pipeline.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/unaligned/unaligned_pipeline.py)（`get_num_layers_to_build_unaligned` / `get_layer_offset_unaligned` 列优先前缀和）；[`features_manager/pipeline_parallel/unaligned_pineline_feature.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/features_manager/pipeline_parallel/unaligned_pineline_feature.py)（数组长度=PP、行长=VPP、与 noop/num-layer-list 互斥）
-  - [`mindspeed/core/pipeline_parallel/optimize_send_recv_comm/`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/optimize_send_recv_comm/adaptor.py) 与 [`optimize_p2p_comm/adaptor.py`](https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/mindspeed/core/pipeline_parallel/optimize_p2p_comm/adaptor.py)（独立 PP 通信流 / `batch_p2p_comm=False`）
+- [README.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/README.md)（primary）
+- [virtual-pipeline-parallel.md](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/docs/zh/features/virtual-pipeline-parallel.md)（supporting）
+- [ripipe_schedules_feature.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/ripipe_schedules_feature.py)（implementation）
+- [noop_layers.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/noop_layers.py)（implementation）
+- [optimize_p2p_comm.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/optimize_p2p_comm.py)（implementation）
+- [optimize_send_recv_comm.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/features_manager/pipeline_parallel/optimize_send_recv_comm.py)（implementation）
+- [layout.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/core/pipeline_parallel/pipeline_model_parallel_layout/layout.py)（implementation）
+- [arguments.py](../../../../../cann-recipes-raw/mindspeed/c5a72765f99fd8470362c7afdc2cdffe0ab5aea6/mindspeed/arguments.py)（implementation）
 
 ## Links
 

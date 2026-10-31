@@ -7,15 +7,15 @@ tags:
 - topic.performance.analysis
 status: draft
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/pypto/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_pypto_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto/README.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/pypto/docs/lightning_indexer.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto/docs/lightning_indexer.md
   role: supporting
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/ops/pypto/docs/deepseek_indexer_attention.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto/docs/deepseek_indexer_attention.md
   role: supporting
 created_at: '2026-10-22T01:42:26Z'
-updated_at: '2026-10-22T03:20:00Z'
+updated_at: '2026-10-29T14:38:30Z'
 platforms: []
 ---
 
@@ -31,7 +31,7 @@ LI 泳道调优说明为 4 batch、64K；DIA 首版 Gather 比例是另一组披
 
 ## Software
 
-固定 2f82d10467e6fe8dae81c97a2cdac78d733a6703 指南。逐测点 CANN、torch_npu 和编译 build 未完整披露。
+当前提交的 PyPTO 指南保留这些数据。逐测点 CANN、torch_npu 和编译 build 未完整披露。
 
 ## Baseline 与 Variant
 
@@ -71,8 +71,11 @@ V3.2-Exp PyPTO 指南另称首版 DIA 的离散 Gather 耗时占比超过 70%。
 
 ## Evidence
 
-- [固定来源](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_pypto_operator_guide.md)
+- [deepseek_v3.2_exp_pypto_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_pypto_operator_guide.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto/README.md)（supporting）
+- [lightning_indexer.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto/docs/lightning_indexer.md)（supporting）
+- [deepseek_indexer_attention.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/pypto/docs/deepseek_indexer_attention.md)（supporting）
 
 ## 本轮来源核对与剩余缺口
 
-同提交库 README 与 LI/DIA 接口支持表明确为 Atlas A3，现已补入来源；它们确认的是实现支持范围。LI 的 +10%/+17%/+27% 与 DIA 的 Gather>70% 尚缺实际执行卡型、完整命令和样本，不能由库支持表代替测量记录。按用户确认，直接绑定 A3 的 AscendC LI 与 HcPost 数据已迁入独立来源观测，原数字未丢失。
+同提交库 README 与 LI/DIA 接口支持表明确为 Atlas A3，现已补入来源；它们确认的是实现支持范围。LI 的 +10%/+17%/+27% 与 DIA 的 Gather>70% 尚缺实际执行卡型、完整命令和样本，不能由库支持表代替测量记录。直接绑定 A3 的 AscendC LI 与 HcPost 数据见独立来源观测。

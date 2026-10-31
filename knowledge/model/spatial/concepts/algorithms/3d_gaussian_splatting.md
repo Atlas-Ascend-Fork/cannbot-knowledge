@@ -8,12 +8,14 @@ tags:
 - topic.rendering
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/README.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/gaussian_splatting_precise_intersection_optimization.md
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/gaussian_splatting_precise_intersection_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/meta_gauss_render/csrc/GetRenderSchedule.cpp
+  role: implementation
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:40Z'
 platforms:
 - a2
 ---
@@ -24,16 +26,16 @@ platforms:
 
 ## 高斯球表示与渲染流程
 
-3DGS 用一组 3D 高斯椭球表示场景，每个高斯球带均值 `means`、四元数 `quats`、缩放 `scales`、不透明度 `opacities`、球谐系数（`sh0`/`shN`）。渲染（光栅化）流程在 [`rasterization/rasterizer.py`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/rasterization/rasterizer.py) 的 `_ascend_rasterization` 中实现，内部按顺序调用并串联各自研算子（导入自 [`meta_gauss_render`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/__init__.py)）：
+3DGS 用一组 3D 高斯椭球表示场景，每个高斯球带均值 `means`、四元数 `quats`、缩放 `scales`、不透明度 `opacities`、球谐系数（`sh0`/`shN`）。渲染（光栅化）流程在 [`rasterization/rasterizer.py`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/algorithms/gaussian_splatting/rasterization/rasterizer.py) 的 `_ascend_rasterization` 中实现，内部按顺序调用并串联各自研算子（导入自 [`meta_gauss_render`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/meta_gauss_render/__init__.py)）：
 
 1. **球谐着色** `spherical_harmonics(sh_degree, rays_d, shs)` —— 由视线方向 + 球谐系数算出每个高斯球颜色。见 [spherical-harmonics](../kernels/spherical_harmonics.md)。
 2. **投影 + 视锥剔除** `projection_three_dims_gaussian_fused(...)` —— 把 3D 高斯球的均值/协方差投影到 2D 平面（`means2d`/`conics`/`radius`/`covars2d`），并融合视锥剔除。投影见 [projection-3dgs](../kernels/projection_3dgs.md)，剔除（`GaussianFilter`）见 [gaussian-filter](../kernels/gaussian_filter.md)。
 3. **高斯球-像素块映射 + 排序** `flash_gaussian_build_mask(...)` 计算高斯球与 tile 的精确相交关系（Precise Intersection，见 [precise-intersection](../kernels/precise_intersection.md)），`get_render_schedule(...)` 给出负载均衡调度，`gaussian_sort(...)` 按 tile 排序高斯球。排序见 [gaussian-sort](../kernels/gaussian_sort.md)。
 4. **Alpha-blending 渲染** `calc_render(...)` —— 按 tile 累积颜色与深度，输出渲染图。见 [calc-render](../kernels/calc_render.md)。
 
-<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/figure/gs_algorithm.png" width="55%">
+<img src="https://raw.gitcode.com/cann/cann-recipes-spatial-intelligence/raw/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/figure/gs_algorithm.png" width="55%">
 
-<sub>传统 GS 高斯球-像素块映射原理（正切边界框）。来源：[precise_intersection 优化文档](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/gaussian_splatting_precise_intersection_optimization.md)。</sub>
+<sub>传统 GS 高斯球-像素块映射原理（正切边界框）。来源：[precise_intersection 优化文档](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/docs/algorithms/gaussian_splatting/gaussian_splatting_precise_intersection_optimization.md)。</sub>
 
 ## SIMD 架构适配总览
 
@@ -46,28 +48,28 @@ platforms:
 | 高斯负载均衡 | [calc-render](../kernels/calc_render.md) | 贪心「先重后轻、分给最轻」分配 tile 到 Vector 核 |
 | Precise Intersection 融合算子 | [precise-intersection](../kernels/precise_intersection.md) | 基于 FlashGS 的精确相交判断 + Vector-MTE 流水并行 |
 
-这些算子全部以 **AscendC** 自研实现（详见 [ascendc](../../../inference/concepts/frameworks/ascendc.md)，本项目用其实现 SIMD 架构下的可微渲染算子）。
+设备侧融合算子以 **AscendC** 自研实现；`get_render_schedule` 则在 host C++ 中用 `std::sort` 和 `std::priority_queue` 生成调度（详见 [ascendc](../../../inference/concepts/frameworks/ascendc.md)，本项目用其实现 SIMD 架构下的可微渲染算子）。
 
 ## 算子清单（host 定义）
 
-[`ops/ascendc/kernels/op_host/`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/) 下定义的自研算子：`SphericalHarmonicsForward`/`SphericalHarmonicsBwd`、`ProjectionThreeDimsGaussianForward`/`FullyFusedProjectionBwd`、`QuatScalesToCovars`、`GaussianFilter`、`FlashGaussianBuildMask`、`GaussianSort`、`CalcRenderFwdDoubleClipGsids`/`CalcRenderBwdVarClipGsids`。算子接口测试见 [`ops/ascendc/tests/`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/tests/)。
+[`ops/ascendc/kernels/op_host/`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/kernels/op_host/) 下定义的自研算子：`SphericalHarmonicsForward`/`SphericalHarmonicsBwd`、`ProjectionThreeDimsGaussianForward`/`FullyFusedProjectionBwd`、`QuatScalesToCovars`、`GaussianFilter`、`FlashGaussianBuildMask`、`GaussianSort`、`CalcRenderFwdDoubleClipGsids`/`CalcRenderBwdVarClipGsids`。算子接口测试见 [`ops/ascendc/tests/`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/tests/)。
 
 ## 训推配置与启动
 
 - 环境：CANN 8.2.RC1、`torch` 2.1.0 + `torch_npu` 2.1.0.post12、Python 3.8、单卡 Atlas A2。
-- 自研算子需先编译安装：`cd ops/ascendc && bash build.sh --python=3.8`，再 `pip install dist/*.whl`（[build.sh](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/build.sh)）。
-- 数据集：在 `algorithms/gaussian_splatting/` 下运行 [`datasets/download_dataset.py`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/datasets/download_dataset.py) 下载 mipnerf360 (`360_v2`) 到 `data/360_v2/`。
+- 自研算子需先编译安装：`cd ops/ascendc && bash build.sh --python=3.8`，再 `pip install dist/*.whl`（[build.sh](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/ops/ascendc/build.sh)）。
+- 数据集：在 `algorithms/gaussian_splatting/` 下运行 [`datasets/download_dataset.py`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/algorithms/gaussian_splatting/datasets/download_dataset.py) 下载 mipnerf360 (`360_v2`) 到 `data/360_v2/`。
 - 训练：`ASCEND_RT_VISIBLE_DEVICES=1 python train.py`；推理：`python train.py --ckpt path_to_ckpt.pt`；全场景：`bash train_all.sh`。
 
-关键配置（[`rasterization/config.py`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/rasterization/config.py)）：`tile_size=32`、`sh_degree=3`、`max_steps=30000`、`camera_model="pinhole"`、`near_plane=0.01`、`far_plane=1e10`、`batch_size=1`。
+关键配置（[`rasterization/config.py`](../../../../../cann-recipes-raw/cann-recipes-spatial-intelligence/0d955a020eed3ac1f274e5ab26f792b02b011728/algorithms/gaussian_splatting/rasterization/config.py)）：`tile_size=32`、`sh_degree=3`、`max_steps=30000`、`camera_model="pinhole"`、`near_plane=0.01`、`far_plane=1e10`、`batch_size=1`。
 
 ## Benchmark（汇总，详见各 kernel 页）
 
-均在含 13 万高斯球（过滤后约 6.8 万渲染高斯球）场景、训练 30000 iters 下测得（mipnerf360_v2，部分按 garden 场景）：
+各实验分别保留条件，不能共用 13 万高斯球的负载：
 
-- Alpha-blending 流水 + 剪枝：前向约 10%、反向约 30% 收益（`alpha` 阈值 0.004 时反向 18.71→13.11 ms）。
+- Alpha-blending 流水 + 剪枝（含 13 万高斯球、过滤后约 6.8 万、训练 30000 iters）：前向约 10%、反向约 30% 收益（`alpha` 阈值 0.004 时反向 18.71→13.11 ms）。
 - 负载均衡：前向、反向均约 23% 收益。
-- Precise Intersection 流水并行 15.2% + 计算优化 26.7% + 过滤优化 18.8%；相比传统 GS 算法渲染前向显著降低（如 100w 高斯/425 块：35.957→22.880 ms）。
+- Precise Intersection：流水/计算优化来自 garden；过滤优化采样覆盖 mipnerf360_v2 的20万至300万高斯球、425块，渲染对比另有7万至100万等规模。流水并行 15.2% + 计算优化 26.7% + 过滤优化 18.8%；相比传统 GS 算法渲染前向显著降低（如 100w 高斯/425 块：35.957→22.880 ms）。
 
 > 上游开源本体 3DGS（INRIA repo-sam）与 gsplat、FlashGS 算法见 [arXiv:2408.07967](https://arxiv.org/abs/2408.07967)；以上数据均来自 `cann-recipes-spatial-intelligence` 的昇腾实现。
 

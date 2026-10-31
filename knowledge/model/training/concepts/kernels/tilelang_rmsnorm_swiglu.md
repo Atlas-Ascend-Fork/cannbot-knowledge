@@ -1,18 +1,18 @@
 ---
 type: Concept
 title: TileLang RMSNorm / SwiGLU / SwiGLU-Grad（DeepSeek-V3.2 训练算子）
-description: TileLang-Ascend rms_norm/swiglu/swiglu_grad 训练算子（DeepSeek-V3.2）：rms_norm 平方累加→行 ReduceSum→+eps→rsqrt→归一化写回；swiglu Swish(x1)=x1·σ(x1)、y=Swish(x1)·x2，5 步 in-UB Swish 链（sub/exp/add/reciprocal/mul，无额外访存）；swiglu_grad Swish'(x1)=σ+x1·σ·(1-σ)、dx2=dy·Swish(x1)、dx1=dy·x2·Swish'(x1)。共享调度：(block_M,block_N) tiling、block_id=cid+i·NUM_CORES、VEC_NUM=2 dual-Vector-Unit 行切分、bf16/fp16→fp32 UB 计算→CAST_RINT 回写。是 npu_rms_norm converter 绑定算子的 TileLang 实现。
+description: TileLang-Ascend rms_norm/swiglu/swiglu_grad 训练算子（DeepSeek-V3.2）：rms_norm 平方累加→行 ReduceSum→除以N→+eps→rsqrt→归一化写回；swiglu Swish(x1)=x1·σ(x1)、y=Swish(x1)·x2，5 步 in-UB Swish 链（sub/exp/add/reciprocal/mul，无额外访存）；swiglu_grad Swish'(x1)=σ+x1·σ·(1-σ)、dx2=dy·Swish(x1)、dx1=dy·x2·Swish'(x1)。共享调度：(block_M,block_N) tiling、block_id=cid+i·NUM_CORES、VEC_NUM=2 dual-Vector-Unit 行切分、bf16/fp16→fp32 UB 计算→CAST_RINT 回写。是另一条 TileLang 实现；仅单位权重且 eps 等条件一致时与有权重 converter 等价。
 tags:
 - task.implementation
 - topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md
   role: supporting
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-10-29T15:24:41Z'
 platforms:
 - a2
 - a3
@@ -24,7 +24,7 @@ platforms:
 
 [tilelang](../../../inference/concepts/frameworks/tilelang.md)（TileLang-Ascend）实现的三个**逐元素 / 归一化类训练算子**：`rms_norm`、`swiglu`（前向）、`swiglu_grad`（反向），是 DeepSeek-V3.2-Exp TileLang 算子开发的 8 个训练算子之一批，训练上下文挂在 [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md)，由 `torchtitan-npu` 的 `tilelang_ops` 特性做算子替换。三者都是 Transformer FFN/归一化的核心承重算子：RMSNorm 替代 LayerNorm 仅用方差归一，SwiGLU 是 MoE/FFN 门控激活，SwiGLU-Grad 是其反向。
 
-`torchtitan-npu` 的**基础融合算子家族**走 `torch_npu.npu_rms_norm` device 算子绑定（见 [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)）；这里是用 **TileLang DSL 重写**同一计算语义的 Tile 级算子实现（前者是现成 op 绑定，后者是可读可改的 TileLang kernel 源码），两者算同一数学，落子路径不同——TileLang 实现的 RMSNorm 与 converter 的 `npu_rms_norm` 互为替代方案。
+`torchtitan-npu` 的**基础融合算子家族**走 `torch_npu.npu_rms_norm` device 算子绑定（见 [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)）；这里是用 **TileLang DSL 重写**归一化计算语义的 Tile 级算子实现（前者是现成 op 绑定，后者是可读可改的 TileLang kernel 源码），本页 TileLang 核为无权重 A/RMS(A)，converter 则传入可学习 self.weight。仅单位权重、eps和dtype等条件一致时语义等价；替换有权重 converter 必须补上逐元素权重乘法并验证输出/反向。
 
 编程模型 / 原语体系 / CodeGen / JIT 基础见 [tilelang](../../../inference/concepts/frameworks/tilelang.md)。
 
@@ -48,20 +48,20 @@ platforms:
 
 RMSNorm 舍弃 LayerNorm 的均值中心化，仅用方差归一：$\bar{a}_i = \dfrac{a_i}{\mathrm{RMS}(a)}$，其中 $\mathrm{RMS}(a) = \sqrt{\dfrac{1}{N}\sum_{j=1}^{N} a_j^2 + \epsilon}$。输入 `A:[M,N]`、输出 `B:[M,N]`。
 
-算法流（平方累加 → 行 ReduceSum → rsqrt(+eps) → 归一化写回）：
+算法流（平方累加 → 行 ReduceSum → 除以N → rsqrt(+eps) → 归一化写回）：
 
 ```mermaid
 flowchart TD
   L0["1. 精度对齐: a_ub / a_ub_cast / 中间buf 分配; 按 dtype 定 acc_dtype"] --> L1
   L1["2. 平方和累加: for by in serial(n_num)\nT.tile.mul(a_ub_cast, a_ub_cast, a_ub_cast)\nT.tile.add(sum_sq_acc, sum_sq_acc, a_ub_cast)"] --> L2
   L2["3. 规约: 行 ReduceSum -> sum_sq_row\n(每行所有列平方总和)"] --> L3
-  L3["4. 均方根倒数: sum_sq_row + eps -> rsqrt -> inv_rms_ub\n(每行缩放因子)"] --> L4
+  L3["4. 均方根倒数: sum_sq_row / N + eps -> rsqrt -> inv_rms_ub\n(每行缩放因子)"] --> L4
   L4["5. 归一化写回: 预广播 inv_rms_tile\na_ub_cast = a_ub_cast * inv_rms_tile\ncast 回 dtype 写回 B"]
 ```
 
 要点：
 - **平方和累加**按 `block_N` 遍历列维度，靠 `T.tile.mul` 自乘 + `T.tile.add` 累加到 `sum_sq_acc`（在 fp32 `a_ub_cast` 上做，保精度）。
-- **行规约 ReduceSum** 算每行所有列元素的平方总和存 `sum_sq_row`；累加 `eps` 防止后续开方 / 除法出现零值。
+- **行规约 ReduceSum** 算每行所有列元素的平方总和存 `sum_sq_row`；先除以列数 N 得均值，再累加 `eps` 防止后续开方 / 除法出现零值。
 - **`rsqrt`** 指令一步得到每行的均方根倒数 `inv_rms_ub`（即缩放因子），免去显式开方再取倒数。
 - **归一化** 预广播后再次遍历列维度读原始输入，向量化逐元素乘 `a_ub_cast = a_ub_cast * inv_rms_tile`，最后 cast 回原 `dtype` 写回。
 
@@ -111,12 +111,13 @@ flowchart TD
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/46485bef9bb6bf061e4c356942bfea395e75865a/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（rms_norm：平方和累加 → 行 ReduceSum → rsqrt(+eps) → 归一化；swiglu：Swish 五步 + 门控；swiglu_grad：Swish 导数 + dx1/dx2 公式与写回 offset；cann-recipes-infer master @46485be）；这批共 8 个训练算子，训练上下文为 cann-recipes-train 的 [`docs/llm_pretrain/deepseek-v32_pre_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v32_pre_train_optimization.md)（DeepSeek-V3.2 预训练优化），算子替换走 `torchtitan-npu` 的 `tilelang_ops` 特性。
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/README.md)（primary）
+- [deepseek_v3.2_exp_tilelang_operator_guide.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_tilelang_operator_guide.md)（supporting）
 
 ## Links
 
 - [tilelang](../../../inference/concepts/frameworks/tilelang.md)（TileLang-Ascend 框架：原语体系 / CodeGen / JIT / 双矢量与 cv 核映射）
-- [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)（`npu_rms_norm` converter——同语义 device 算子绑定，TileLang 实现为其替代方案）
+- [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)（`npu_rms_norm` converter——同语义 device 算子绑定，TileLang 无权重核仅在单位权重及eps等条件一致时等价，其他权重需补齐乘法）
 - [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md)（所属训练实践枢纽，DeepSeek-V3.2 预训练上下文）
 - [tilelang-rope](tilelang_rope.md)（同批 TileLang 训练算子，RoPE 旋转位置编码）
 - [tilelang-moe-token-permute](tilelang_moe_token_permute.md)（同批 TileLang 训练算子，MoE token permute；双矢量 `vid` 拆分同源）

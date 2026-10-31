@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/418
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T02:05:13Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -70,9 +70,9 @@ decode 逐步推理时出现**图重复编译（recompile）/ 编译缓存未命
 
 ## Evidence
 
-- diff 事实 + 维护者确认（@d23e91732136）：`dynamic=True,fullgraph=True` 编译下 decode 输入 `mark_static`、tuple 缓存两层迭代标记；「R1/K2/V3.2 不需要 mark static，需要的网络自 mark」为 review 确认。溯源下探 [cann-recipes-infer-pr-8-refactor-add-common-development](https://gitcode.com/cann/cann-recipes-infer/merge_requests/8)
-- diff 事实 + 维护者确认（@41af2991a3bd）：非连续切片 stride 变化触发重编译，追加 `.contiguous()` 固定 stride；"之前跑 CI 不开日志看不出来"为实现者确认。溯源下探 [cann-recipes-infer-pr-226-fix-cache-compile-print-time](https://gitcode.com/cann/cann-recipes-infer/merge_requests/226)
-- diff 事实 + 维护者确认（@2c45117）：warmup dummy `input_ids` 固定 `dtype=torch.long` 与正式推理一致、避免重编译；dtype 一致由作者答复确认。溯源下探 [cann-recipes-infer-pr-418-fix-fix-model-config-explanation-update-cann-version-and-fix-r1-multistr](https://gitcode.com/cann/cann-recipes-infer/merge_requests/418)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/8)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/226)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/418)（evidence）
 
 ## 最小排查与回退
 

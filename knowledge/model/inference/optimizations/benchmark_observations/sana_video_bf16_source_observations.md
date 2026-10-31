@@ -1,16 +1,16 @@
 ---
 type: Optimization
 title: Sana-Video 480p81f 来源时延（平台与精度待核验）
-description: 保留来源中 A2/A3 合并表的 480p81f 单步和采样时延；表内未绑定具体卡型或 quant_type，不将默认 BF16 配置当作测量精度证据。
+description: 当前README的480p81f来源结果与测量缺口；不将合并平台表、默认配置或混合位宽误作完整对照。
 tags:
 - task.testing
 - topic.performance.analysis
 status: draft
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md
   role: primary
 created_at: '2026-10-21T09:56:26Z'
-updated_at: '2026-10-22T03:20:00Z'
+updated_at: '2026-10-29T14:16:27Z'
 platforms: []
 ---
 
@@ -56,7 +56,7 @@ platforms: []
 
 ## Evidence
 
-- [固定来源 1](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md)
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/sana-video/README.md)（primary）
 
 ## 本轮来源核对与剩余缺口
 

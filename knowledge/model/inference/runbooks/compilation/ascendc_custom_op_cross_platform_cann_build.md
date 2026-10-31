@@ -24,8 +24,12 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/76
   role: evidence
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/ascendc/build.sh
+  role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/ascendc/cmake/scripts/check_version_compatible.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:33:02Z'
+updated_at: '2026-10-29T15:29:36Z'
 platforms:
 - a2
 - a3
@@ -68,7 +72,7 @@ bash build.sh -c ascend910b --disable-check-compatible   # 用不配套 CANN 包
 ```
 
 - `--disable-check-compatible`（含拼写别名 `--disable-check-compatiable`）把 `CHECK_COMPATIBLE=false`，跳过 CANN 配套性校验，属绕过手段——README 建议优先用配套镜像，用不配套 CANN 包属自担风险。
-- 硬件本就是 A3 / 950PR/DT 时无需指定 `-c`（默认即 `ascend910_93`）。
+- 默认ascend910_93只对应A3；950必须按当前算子README选择支持它的编译目标，不能将A3默认值当950目标。
 - correctness：编译后可用仓内自带算子测试脚本验证（如 `python3 test_npu_swiglu_clip_quant.py`）。
 - rollback：回 A2 配套 CANN 镜像/包、不加 `--disable-check-compatible`、按默认配套编译。
 
@@ -80,7 +84,7 @@ bash build.sh -c ascend910b --disable-check-compatible   # 用不配套 CANN 包
 
 ### 根因
 
-最新 CANN 版本包里已不再有 `version.info` 文件，而 `ops/ascendc/cmake/scripts/check_version_compatible.py` 的 `VersionChecker` 仍依赖读它做版本校验，在"文件缺失 / 取不到版本 / 版本不匹配"5 处都 `raise ValueError` 硬中断编译（含 `cann_sub_version != code_sub_version` 时的 `Please install version {code_sub_version} of the cann package.`）。
+最新 CANN 版本包里已不再有 `version.info` 文件，旧VersionChecker曾在文件缺失、取不到版本及不匹配处抛异常。当前五处均已改为logging.warning与return None，本段仅解释旧故障，遇到同一硬中断先确认是否仍在运行旧安装制品（含 `cann_sub_version != code_sub_version` 时的 `Please install version {code_sub_version} of the cann package.`）。
 
 ### 修法
 
@@ -139,24 +143,13 @@ CMake Error at cmake/config.cmake ... Check version compatibility failed.
 
 ## Evidence
 
-失败一（A3 算子跑 Atlas A2 → 加载期报错）：
-
-- **代码事实**（clone `@2c45117`）：`models/deepseek-v3.2-exp/README.md` 产品型号为 Atlas A3 系列；`ops/ascendc/README.md` FAQ 载明"ascendc 算子默认基于 A3 环境编译""A2 环境用 `bash build.sh -c ascend910b`"；`build.sh` 的 `-c|--compute-unit` 默认 `ascend910_93`，`--disable-check-compatible` 置 `CHECK_COMPATIBLE=false`。报错文本为用户复现原文。
-- **维护者确认**："910B3 是 Atlas A2，需使用 A2 的 CANN 包或镜像"。同一失败在另一事件从**编译目标**侧印证：`ops/ascendc/build.sh` 默认 `-c ascend910_93`（A3），A2 上直接跑默认构建的 `torch.ops.custom.npu_lightning_indexer` / `npu_sparse_flash_attention` 运行报错，维护者确认「A2 使用需编译时指定 `-c ascend910b`」（clone `@2c45117`：`CMakeLists.txt` 的 `ASCEND_COMPUTE_UNIT` 默认 `ascend910_93` + README FAQ「A2 环境如何编译执行 ascendc 算子」）。
-- 溯源下探：[cann-recipes-infer-issue-22-bug-report-readme-torchnpu](https://gitcode.com/cann/cann-recipes-infer/issues/22)、[cann-recipes-infer-issue-56-bug-report-torch-ops-custom-npu-lightning-indexer-torch-ops-custom-npu-s](https://gitcode.com/cann/cann-recipes-infer/issues/56)
-
-失败二（CANN 8.5+ 缺 version.info → 编译期硬中断）：
-
-- **代码事实**（clone `@44f99af789d0`）：单文件 `check_version_compatible.py` 改动（+12 −7），5 处 `raise ValueError` 逐处降级为 `logging.warning` + `return None`。
-- **维护者确认**：版本校验改成 warning 而不拦截，请先用该修复编包（报障侧 issue：CANN 8.3 能编过、8.5 编不过，`version.info` 已不存在）。
-- 溯源下探：[cann-recipes-infer-pr-268-fix-version-check](https://gitcode.com/cann/cann-recipes-infer/merge_requests/268)、[cann-recipes-infer-issue-122-bug-report-cann-recipes-infer-ops-ascendc](https://gitcode.com/cann/cann-recipes-infer/issues/122)
-
-失败三（version.info 钉内部 T-tag → 社区版子版本永不匹配）：
-
-- **代码事实**（clone `@2c45117`）：`build.sh` 的 `--disable-check-compatible` → `CHECK_COMPATIBLE=false`；`cmake/config.cmake` 的 `option(CHECK_COMPATIBLE ON)` + `if (CHECK_COMPATIBLE)` 门 + `message(FATAL_ERROR "Check version compatibility failed.")`；`check_version_compatible.py::_check_compatible` 取 `rsplit('.',1)[0]` 子版本比对；`ops/ascendc/version.info` = `Version=8.5.T4.0`（内部 T-tag）；README FAQ 收录 `--disable-check-compatible`。**维护者确认**：讨论区多名维护者以 `--disable-check-compatible` 为解法 + 建议镜像版本。报错行号/版本串按符号锚定、不复用旧行号。
-- 溯源下探：[cann-recipes-infer-issue-70-requirement-ops-cann](https://gitcode.com/cann/cann-recipes-infer/issues/70)、[cann-recipes-infer-issue-62-bug-report-x86-npu-cann8-3rc1](https://gitcode.com/cann/cann-recipes-infer/issues/62)、[cann-recipes-infer-issue-49-question-ops-ascendc-cann8-2](https://gitcode.com/cann/cann-recipes-infer/issues/49)
-
-非失败（910b/arm64 三条良性告警）：
-
-- **grep 事实**（clone `@2c45117`）：三条告警字符串（`Not found tiling so file` / `record_context_cpp` / 版本 `is invalid`）全库 grep 均不在本仓源码，确认由 CANN 工具链 / torch_npu / AscendC tiling 基础设施发出；`ops/ascendc/README.md` 库定位「Atlas A3 / 950PR/DT」与 `[ascend910b] Not found tiling so file` 的跨 soc 回退对上。**维护者确认**：告警自验证过程同样出现、不影响性能。精度佐证（100% / ~99.96%）为仓自报、无独立复测。
-- 溯源下探：[cann-recipes-infer-issue-76-question-example](https://gitcode.com/cann/cann-recipes-infer/issues/76)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/22)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/268)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/56)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/122)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/70)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/62)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/49)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/76)（evidence）
+- [build.sh](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/ascendc/build.sh)（implementation）
+- [check_version_compatible.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/ascendc/cmake/scripts/check_version_compatible.py)（implementation）

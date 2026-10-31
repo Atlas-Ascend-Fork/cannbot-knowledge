@@ -8,12 +8,12 @@ tags:
 - topic.attention
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/ascend_tla_deltanet/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_pretrain/ascend_tla_deltanet/README.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - a2
 ---
@@ -125,7 +125,7 @@ NLP（DeltaNet）下 CUDA 与 TLA（昇腾）两套实现在标准语言建模�
 | 2048 | Forward / Backward / **Total** | 55.13 / 246.47 / **302.72** | 81.07 / 134.30 / **215.56** | 0.68x / 1.84x / **1.40x** |
 | 4096 | Forward / Backward / **Total** | 109.47 / 744.56 / **855.82** | 161.68 / 267.61 / **429.58** | 0.68x / 2.78x / **1.99x** |
 
-关键结论：Triton 融合算子的增益集中在**反向**（4096 时 2.78x），且随序列变长加速越显著（Total 1.51x→1.99x）；但**前向**在长序列反而比 torch_npu 慢（2048/4096 仅 0.68x）——所以"Triton 高效算子"的收益主要来自 Backward 与整体，而非 Forward。
+关键结论：Triton 融合算子的增益集中在**反向**（4096 时 2.78x），已测点并非单调提升：Total 在512→1024时从1.51x降至1.29x，1024→4096区间上升到1.99x，4096时最高；但**前向**在长序列反而比 torch_npu 慢（2048/4096 仅 0.68x）——所以"Triton 高效算子"的收益主要来自 Backward 与整体，而非 Forward。
 
 算法与代码版权归上游 **Ascend-TLA** 项目及其许可证约束；使用本样例时请同时遵守上游仓库的 **License** 与引用要求。
 
@@ -134,16 +134,13 @@ NLP（DeltaNet）下 CUDA 与 TLA（昇腾）两套实现在标准语言建模�
 本样例的 DeltaNet 与推理侧 [gated-deltanet](../../../inference/concepts/modules/gated_deltanet.md) 同属 **DeltaNet / 线性注意力**谱系，均以 Delta Rule 递推状态更新为核心，沿序列做线性复杂度上下文聚合；二者参考的也是同一篇 Delta Rule 论文与 `fla-org/flash-linear-attention` 实现脉络。差异在于：
 
 - **侧重不同**：本样例是**训练侧**入门样例（GPT-2 风格 NLP 语言建模，Triton 算子，DeepSpeed 训练，`lm-eval` 评测）；推理侧 [gated-deltanet](../../../inference/concepts/modules/gated_deltanet.md) 是 [qwen3-next](../../../inference/concepts/models/qwen3_next.md) / Qwen3.5-MoE 的 **Gated DeltaNet** 推理模块。
-- **是否带门控**：本样例是**无门控的纯 Delta Rule**——`training/attentions/deltanet.py` 对 q/k 做 L2 单位范数后用 `beta`（clamp 1e-4~1-1e-4，写入强度）调 `chunk_delta_rule`，`torch/delta_net.py` 是分块 WY/T 矩阵递推的纯 Delta Rule 参考实现，全仓无 forget-gate / Conv1d / RMSNormGated（末端仅一个非 gated 的 RMSNorm）。推理侧 Gated DeltaNet 则显式叠加 forget gate、Causal Conv1d 与输出 RMSNorm+Gate（`conv_state` / `ssm_state` 状态缓存），并区分 Prefill ChunkGDN 与 Decode RecurrentGDN 两条融合路径——这一差异是确定的。
+- **是否带门控**：本样例是**无门控的纯 Delta Rule**——`training/attentions/deltanet.py` 对 q/k 做 L2 单位范数后用 `beta`（clamp 1e-4~1-1e-4，写入强度）调 `chunk_delta_rule`，`torch/delta_net.py` 是分块 WY/T 矩阵递推的纯 Delta Rule 参考实现，本样例 DeltaNet 训练调用链显式传 g=None，未启用独立 forget gate，末端用非 gated RMSNorm；公共 chunk_gated_delta_rule_fwd_h 仍接受 g/gk，并有 exp(g)/exp(gk) 衰减状态的分支，不能据此称全仓没有门控能力。推理侧 Gated DeltaNet 则显式叠加 forget gate、Causal Conv1d 与输出 RMSNorm+Gate（`conv_state` / `ssm_state` 状态缓存），并区分 Prefill ChunkGDN 与 Decode RecurrentGDN 两条融合路径——这一差异是确定的。
 - **算子载体不同**：本样例算子基于 **Triton** 在 NPU 上实现（`tla/ops/delta_rule`）；推理侧 GDN 走 PyPTO ChunkGDN / AscendC RecurrentGDN / torch_npu 原生算子等多条 NPU 融合路径。
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_pretrain/ascend_tla_deltanet/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/ascend_tla_deltanet/README.md)（概述 / 特性 / 相关模型与论文 / 环境与依赖 / 支持任务 / 目录结构 / democonfig 下载解压命令 / 快速开始 Notebook / 评测与验证 CUDA vs TLA 精度表 / 致谢与许可）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_pretrain/ascend_tla_deltanet/internal/quick_start/`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/ascend_tla_deltanet/internal/quick_start)（`00_overview.ipynb` / `01_operator_deltanet.ipynb` / `02_downstream_nlp.ipynb` 三个 Quick Start Notebook）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`llm_pretrain/ascend_tla_deltanet/internal/tla/nlp/tla-nlp-frame/training/`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/ascend_tla_deltanet/internal/tla/nlp/tla-nlp-frame/training)（训练脚本 `train.sh` / DeepSpeed 配置 / `democonfig` 占位目录）；`tla/ops/delta_rule/README.md`（torch_npu native vs Triton 算子性能对照表）；`training/attentions/deltanet.py` + `torch/delta_net.py`（无门控纯 Delta Rule 实现）
-- 上游 `Ascend-TLA` 仓（外部 URL `https://gitcode.com/SMULL_Group/Ascend-TLA.git`，完整环境搭建 CANN/PyTorch/Triton 组合、命令行与数据准备、License 以其为准）
-- 论文：`Parallelizing Linear Transformers with Delta Rule over Sequence Length`（NeurIPS 2024，`https://arxiv.org/abs/2406.06484`）；参考实现 `fla-org/flash-linear-attention` delta_net
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_pretrain/ascend_tla_deltanet/README.md)（supporting）
 
 ## Links
 

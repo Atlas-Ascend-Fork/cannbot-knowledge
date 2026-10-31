@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/356
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:29:20Z'
 platforms:
 - agnostic
 ---
@@ -63,6 +63,5 @@ platforms:
 
 ## Evidence
 
-- `diff 事实`（@30b4ed2）：MoE EP 按 `num_experts_per_tok` 取值、Gemma4 用 `top_k_experts` 别名需补暴露；gemma-4 offline 缺 chat_template、拷 `chat_template.jinja` 到权重目录。
-- `diff 事实`（@d7174ec）：`mm_build_args` 丢弃不加引号的布尔 false，须写 `"False"`/`"True"`。
-- 溯源下探：[cann-recipes-infer-pr-445-fix-longcat-flash-lite-gemma-4-readme-and-config-files](https://gitcode.com/cann/cann-recipes-infer/merge_requests/445)、[cann-recipes-infer-pr-356-refactor-unified-inference-script-for-multimodal-models](https://gitcode.com/cann/cann-recipes-infer/merge_requests/356)
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/445)（evidence）
+- [远程来源](https://gitcode.com/cann/cann-recipes-infer/merge_requests/356)（evidence）

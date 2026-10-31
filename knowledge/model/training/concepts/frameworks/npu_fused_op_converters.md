@@ -1,138 +1,90 @@
 ---
 type: Concept
-title: NPU 基础融合算子 ModelConverter 家族（torchtitan-npu）
-description: torchtitan-npu 基础融合算子 ModelConverter 家族（get_model_converter_config）：npu_gmm（npu_grouped_matmul 合并全专家同一 Linear，须配 npu_permute）/npu_permute（npu_moe_token_permute/unpermute MoE 重排）/npu_rms_norm（npu_rms_norm）/npu_rope（npu_rotary_mul），均绑 torch_npu 原生算子（非新 AscendC kernel）。benchmark：单 step −5.16%、RMSNorm −71.2%(138.7→39.9μs)、Permute −84.2%(803.9→127.3μs)、GMM −22.6%(3.1→2.4ms)。DSA/SMLA/mHC converter 见各专页。
+title: torchtitan-npu 融合算子与组件替换入口
+description: 以当前 override 与 ops 机制说明 RMSNorm、RoPE、MoE dispatch/SwiGLU、DSA/SMLA 和 mHC 的启用入口及配置、布局和反向边界。
 tags:
 - task.implementation
 - topic.architecture
 status: stable
 sources:
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/README.md
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/docs/feature_guides/fused_ops.md
   role: primary
-- resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/README.md
   role: supporting
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/rms_norm.py
+  role: implementation
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/rope.py
+  role: implementation
+- resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/override/common/token_dispatcher.py
+  role: implementation
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-10-29T15:24:41Z'
 platforms:
 - agnostic
 ---
 
-# NPU 基础融合算子 ModelConverter 家族
+# torchtitan-npu 融合算子与组件替换入口
 
-## Summary
+## 接入关系
 
-torchtitan-npu 在 `torchtitan_npu/converters/kernels/` 下定义了一组 torchtitan `ModelConverter`：模型训练任务启动时，它们根据用户配置，自动把模型中的原始模块替换为基于 **torch_npu 融合算子** 的亲和实现，从而让模型在 NPU 平台上高效运行。
+当前融合算子通过 `override.imports` 显式替换可配置组件，由 `ops/` 或已有 CANN/torch_npu 接口执行设备计算。完整覆盖组件时替换 Module；只覆盖局部计算时重写对应方法并保留其余上游逻辑。旧 `get_model_converter_config("npu_gmm")` / `npu_permute` / `npu_rope` 注册列表不再是当前启用方式。
 
-基础融合算子家族 `npu_gmm` / `npu_permute` / `npu_rms_norm` / `npu_rope` 把模型里的标准模块**绑定到现成的 `torch_npu` 算子**（而非新写 AscendC kernel）。模型特有的稀疏注意力 / MHC converter 各有页面：[slig](../kernels/slig.md) 的 DSA、[smla](../kernels/smla.md) 的 SMLA、[mhc-hcpre-hcpost](../../../inference/concepts/kernels/mhc_hcpre_hcpost.md) 的 mHC。
+`torch.library.custom_op` 是需要进入 `torch.compile` 时使用的 schema、Fake 和 Autograd 兼容封装，不会代替配置级组件选择，也不表示所有后端与形状都已支持。
 
-## 配置
+## 公共组件入口
 
-所有 NPU converter 通过 `ModelConvertersContainer.Config` 的 `converters` 列表启用，每个 converter 名先经 `get_model_converter_config()` 转成 Config 对象：
+以下条目均以 `torchtitan_npu.override.common.` 为前缀：
 
-```python
-from torchtitan.protocols.model_converter import ModelConvertersContainer
-from torchtitan_npu.converters import get_model_converter_config
+| 入口 | 被替换对象与作用 |
+| --- | --- |
+| `rms_norm.asc` | `RMSNorm.Config`，调用 `torch_npu.npu_rms_norm`。 |
+| `rope.workaround` | 精确匹配 `ComplexRoPE.Config`，用预展开 cos/sin 与 PyTorch 小算子计算。 |
+| `rope.asc_complex` | 精确匹配 ComplexRoPE，使用 interleave 模式的 `npu_rotary_mul`。 |
+| `rope.asc_cossin` | 匹配 CosSinRoPE，使用 half 模式的 `npu_rotary_mul`。 |
+| `rope.asc_partial` | 精确匹配 split-aware partial-RoPE 配置，调用 CANN 融合原地旋转。 |
+| `token_dispatcher.asc` | 在 AllToAllTokenDispatcher 的部分 dispatch/combine 逻辑中组合 permute、reroute 和 unpermute。 |
+| `token_dispatcher.asc_deepep` | 匹配 DeepEPTokenDispatcher，通过 `cann_ops_transformer.ElasticBuffer` 处理训练 dispatch/combine；当前要求 EP>1。 |
+| `swiglu_group.asc` | 在 routed experts 中融合 gate/up 后的 SwiGLU 与可选路由分数乘法。 |
+| `swiglu_group.asc_shared_experts` | 在 shared experts 的 FeedForward 中融合 SwiGLU。 |
 
-model_converters = ModelConvertersContainer.Config(
-    converters=[
-        get_model_converter_config("npu_dsa"),
-        get_model_converter_config("npu_rms_norm"),
-        get_model_converter_config("npu_permute"),
-        get_model_converter_config("npu_gmm"),
-    ],
-)
-```
+同一节点不能同时选择两个 RoPE variant。来源说明 `AscComplexRoPE` / `AscCosSinRoPE` 的同一 batch 各行需共享位置布局，不能据融合接口存在推导任意逐文档位置都受支持。
 
-每个 converter 模块用 `@register_model_converter("<name>")` 装饰一个 `ModelCustomConfig` 子类（内含 `model_converter` 类），`converters/__init__.py` 的 `_auto_search_conveter()` 在 import 时自动扫描 `kernels/` 与 `features/` 下所有模块完成注册；converter 的 `convert()` 遍历 `model.named_modules()`，对匹配类型的模块调 `replace_module_with_name(...)` 原地替换。注册/装配机制详见 [model-custom-converter](model_custom_converter.md)，整体框架见 [torchtitan](torchtitan.md)。
+### RMSNorm 与 RoPE 的当前实现
 
-## npu_gmm（Grouped MatMul）
+`AscRMSNorm.forward` 直接调用 `npu_rms_norm(x, weight, eps)[0]`。`elementwise_affine=False` 时使用非持久化单位 scale buffer；初始化 buffer 时会把它放到当前 NPU，避免 CPU offload 后输入在设备、scale 在 Host 的不一致。
 
-MoE 模块中每个专家执行结构相同的 FFN（如 Swiglu：输入经升维 `w1` → 激活 → 降维 `w2`）。`npu_gmm` 引入分组矩阵乘 **`npu_grouped_matmul`** 算子：接收 [npu_permute](#npu_permute) 输出的重排后 token 及对应专家索引，在一次调用中并行计算所有专家的同一线性层（如所有专家的 `w1`），把同类矩阵运算合并为一次算子调用以提升计算效率。
+RoPE variant 的缓存和旋转布局必须与目标组件匹配。`rope.asc_partial` 的 CANN 依赖在首次计算时惰性加载，不能因只导入模块成功就认为设备算子包齐全。
 
-> ⚠️ 使用 `npu_gmm` 时**必须同时开启 `npu_permute` 配合使用**——GMM 依赖 permute 产出的重排 token + 索引。
+### MoE 重排与专家计算
 
-- **converter 类**：`NpuGroupedExpertConverter`，匹配并替换 `GroupedExperts` 模块（`@register_model_converter("npu_gmm")`）；`GMMModelConfig` 还挂了 `state_dict_updater = GMMStateDictUpdater`（HF 权重的 `w13` 融合/拆分映射）。
+`token_dispatcher.asc` 在 AllToAll dispatcher 中做局部布局变换：`npu_moe_token_permute` 直接调用 torch_npu，unpermute 和 re-routing 在 `ops/ascendc/` 中提供编译、Fake 与 Autograd 包装。路由选择、通信、rank-major/local-expert-major 布局和最终恢复必须按 dispatcher 契约配套，不能把两次不同布局的 permute 视为同一次计算。
 
-## npu_permute
+SwiGLU override 只覆盖 FFN 的中间激活桥接，前后分组矩阵乘及 token dispatch 继续使用现有路径。routed 与 shared expert 是不同配置节点，因此可以分别选择实现；低精度转换也可能先安装兼容的专家配置，须核对最终类型而不是重复启用旧的 GMM converter 名称。
 
-MoE 前向中，为利用 [npu_gmm](#npu_gmmgrouped-matmul) 提升效率，token 需按 MoE Router 为每个 token 分配的专家以特定顺序**重排**（输出重排后 token 及其专家索引）；专家计算完成后再**恢复**回原始 token 顺序。`npu_permute` 把"重排/恢复"替换为基于 **`npu_moe_token_permute` / `npu_moe_token_unpermute`** 算子的实现：
+## 模型专属注意力与 mHC
 
-```python
-indices = selected_experts_indices.view(-1, top_k)           # router 分配 [T, K]
-routed_input, sorted_indices = torch_npu.npu_moe_token_permute(x, indices)
-...
-unpermuted = torch_npu.npu_moe_token_unpermute(routed_output, sorted_indices, None)
-```
+| 模型入口前缀 | 关键选择与边界 |
+| --- | --- |
+| `torchtitan_npu.override.deepseek_v3_2.` | `sparse_attn.asc` 接入 DSA，并把嵌套 indexer loss 配置派生为 Ascend 实现。 |
+| `torchtitan_npu.override.deepseek_v4.` | `sparse_attn.asc` 与 `lightning_indexer.asc` / `.pypto` 分别承担 attention 与 indexer；训练 indexer 需要匹配的 teacher/consumer 两侧。 |
+| `torchtitan_npu.override.deepseek_v4_1.` | `sparse_attn.asc` 与 `lightning_indexer.asc` 必须同时请求，配置阶段检查配对。 |
+| `torchtitan_npu.override.deepseek_v4.mhc.` | pre/post/head 按 AscendC、Triton、TileLang variant 选择，同一配置节点只能有一个 replacement。 |
 
-该 converter 除替换 MoE 模块前向外，还通过 `parallelize_plan_updater = NpuParallelizePlanUpdater` 把并行计划里的标准 `ExpertParallel` **替换为 `NpuExpertParallel`**——后者承接 EP 维度的 token dispatch / combine。
+TND metadata 由被替换的 attention backend 的 `Config.build_attention_metadata` 构建，每个 microbatch、每个几何一份，同几何层共享。当前没有独立 metadata override 入口；普通模型 metadata 与 vendor metadata 必须保持包装关系。CP 时需按 rank-local frames 重建后端记录，不能复用完整全局布局直接调用内核。
 
-- **两段语义不同的 permute**：(1) **router 后聚合**——`_npu_moe_forward` 用 `selected_experts_indices`（top-k 专家槽 `[T, K]`）做第一组 token/expert 重排；(2) **EP all-to-all 后的 local reroute**——`NpuExpertParallel._token_dispatch` 在 all-to-all 之后把 token 从 rank-major 布局重排为 local-expert-major，其 `indices` 由 `num_tokens_per_expert_group` 经 `arange(num_local_experts).repeat(ep_degree).repeat_interleave(...)` 构造，再调 `npu_moe_token_permute`。两者输入语义与布局目标不同，属并列的两步而非同一步。
-- **converter 类**：`NpuPermuteConverter`（`@register_model_converter("npu_permute")`，同时匹配 `MoE` 与 DeepSeek-V4 `MoE`）；恢复路径上 EP combine 走 `NPUMoeTokenUnpermute.apply`（autograd.Function），其 `forward` 实际调 **`torch_npu._npu_moe_token_unpermute_with_routing_map(...)`**，上面片段里裸的 `npu_moe_token_unpermute` 是 MoE 前向直接恢复时用的等价路径（示意）。
+V4/V4.1 的 teacher 边在 attention 反向与 Lightning Indexer 反向之间传递；只接入一侧或把其他含义的梯度写入该边会破坏训练语义。具体字段与后端限制见[SLIG](../kernels/slig.md)、[SMLA](../kernels/smla.md)、[SFAG](../kernels/sfag.md)。
 
-## npu_rms_norm
+## 验证与失效边界
 
-RMSNorm 通过每个样本平方均值的平方根稳定深层网络训练。`npu_rms_norm` 把模型中的 `RMSNorm` 替换为基于 **`npu_rms_norm`** 融合算子的实现——`NPURMSNorm.forward` 直接调算子并取第 0 个返回值：
+先核对 override 日志及最终配置类型，再逐级验证 kernel、组件与整网：schema/Fake/Autograd、前后向数值、输入和参数梯度、DTensor sharding、CP metadata 和 checkpoint。融合收益取决于调用占比、形状、通信与布局变换，不能把某次单算子加速直接作为整网收益。
 
-```python
-resolved_eps = self.eps if self.eps is not None else torch.finfo(x.dtype).eps
-return torch_npu.npu_rms_norm(x, self.weight, resolved_eps)[0]
-```
+当前训练实践文档保留的 DeepSeek-V3.2 来源测量见[预训练实践](../../guides/recipes/deepseek_v32_pretrain.md)，不把该测量概括为本页所有当前 variant 的收益。本仓未执行 NPU 训练或性能复测。
 
-`eps` 经 `_get_eps()` 从 `eps`/`variance_epsilon`/`epsilon` 三个属性名归一化；缺失时回退到输入 dtype 的机器 epsilon（对齐 `nn.RMSNorm` 默认行为）。
+## 相关入口
 
-- **converter 类**：`NpuRMSNormConverter`，匹配并替换 `torchtitan.models.common.rmsnorm.RMSNorm`（`@register_model_converter("npu_rms_norm")`）
-
-## npu_rope
-
-RoPE 把与 token 位置相关的旋转矩阵应用到 Attention 的 Query / Key 上，使相对位置信息自然进入 Q·K 乘积。实现上通常预生成各位置旋转角度，Attention 时即时旋转 Q/K。`npu_rope` 把该旋转变换替换为基于 **`npu_rotary_mul`** 融合算子的实现：
-
-```python
-xq_out = torch_npu.npu_rotary_mul(xq_f, cos, sin)
-xk_out = torch_npu.npu_rotary_mul(xk_f, cos, sin)
-# interleave 变体：npu_rotary_mul(x_f, cos, sin, rotary_mode="interleave")
-```
-
-> 注：`converters/__init__.py` 的 `_auto_search_conveter()` **优先 import `rope` 模块**——其 module-level patch 把 NPU-safe 的 `_reshape_for_broadcast_complex` 装到 `common.rope` 上，须先于其它（如 `npu_smla` 经 `deepseek_v32.model` 快照该符号的）kernel 落地。
-
-- **converter 类**：`NpuRoPEConverter`（`@register_model_converter("npu_rope")`）
-
-## Benchmark（融合算子收益）
-
-DeepSeek-V3.2 训练实测，启用上述基础融合算子相对原生实现的算子级 / 单 step 收益（亦见 [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md)）：
-
-| 范围 | 收益 | 耗时（前→后） |
-|------|------|----------------|
-| 完整模型单 step 计算 | **−5.16%** | — |
-| RMSNorm（`npu_rms_norm`） | **−71.2%** | 138.7 → 39.9 μs |
-| Permute（`npu_permute`） | **−84.2%** | 803.9 → 127.3 μs |
-| GMM（`npu_gmm`） | **−22.6%** | 3.1 → 2.4 ms |
-
-> 单算子收益（Permute/RMSNorm 各降 70–84%）远高于整模型单 step 的 −5.16%，因为这些算子只占整 step 的小部分；GMM 绝对耗时最大（ms 级），其 −22.6% 是单 step 收益的主要来源。
-
-## 关联融合 converter
-
-| Converter 名 | 面向 | 详见页面 |
-|--------------|------|----------|
-| `npu_dsa` | DeepSeek-V3.2 DSA（Lightning Indexer + Sparse Flash Attention） | [slig](../kernels/slig.md) |
-| `npu_smla` | DeepSeek-V4 Sparse Flash MLA | [smla](../kernels/smla.md) |
-| `npu_mhc_pre` / `npu_mhc_post` | DeepSeek-V4 MHC pre/post processing | [mhc-hcpre-hcpost](../../../inference/concepts/kernels/mhc_hcpre_hcpost.md) |
-
-## Evidence
-
-- [torchtitan-npu](https://gitcode.com/cann/torchtitan-npu) — [`docs/feature_guides/npu_fused_ops.md`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md)（融合算子适配总文档，converter 配置说明，不含收益指标）
-- 实现源（@8f128cd）：[`converters/kernels/gmm.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/gmm.py)（`npu_gmm`）、[`converters/kernels/permute.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/permute.py)（`npu_permute`）、[`converters/kernels/rms_norm.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/rms_norm.py)（`npu_rms_norm`）、[`converters/kernels/rope.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/rope.py)（`npu_rope`）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_pretrain/deepseek-v32_pre_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v32_pre_train_optimization.md)（Benchmark 收益指标出处）
-
-## Links
-
-- [torchtitan](torchtitan.md) — torchtitan-npu 框架总览（converter 家族、Inductor、Bypass Triton）
-- [model-custom-converter](model_custom_converter.md) — ModelConverter 注册 / 装配 / state-dict 更新机制
-- [slig](../kernels/slig.md) — `npu_dsa` 的 Lightning Indexer / Sparse Flash Attention 融合算子
-- [smla](../kernels/smla.md) — `npu_smla` Sparse Flash MLA converter
-- [mhc-hcpre-hcpost](../../../inference/concepts/kernels/mhc_hcpre_hcpost.md) — mHC HcPre / HcPost 融合算子
-- [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md)（基于本框架的 DeepSeek-V3.2 32K 预训练实践，Benchmark 数据所在 recipe）
-- [qwen3-sft-torchtitan](../../guides/recipes/qwen3_sft_torchtitan.md)（SFT 配置用 npu_rms_norm/rope/permute/gmm converter）
-- [tilelang-rope](../kernels/tilelang_rope.md)（npu_rope 绑定算子的底层 TileLang 训练实现）
-- [tilelang-moe-token-permute](../kernels/tilelang_moe_token_permute.md)（npu_permute 绑定的 npu_moe_token_permute/unpermute 的底层 TileLang 实现）
-- [tilelang-rmsnorm-swiglu](../kernels/tilelang_rmsnorm_swiglu.md)（npu_rms_norm 绑定算子的底层 TileLang 实现）
-- [megatron-bridge](megatron_bridge.md)（MindSpeed-Bridge 权重桥接的邻近概念）
+- [框架与启动](torchtitan.md)
+- [配置转换及 override 冲突](model_custom_converter.md)
+- [5D 并行](../parallelism/torchtitan_5d_parallel.md)
+- [mHC](../kernels/mhc_train.md)
+- [TileLang RoPE](../kernels/tilelang_rope.md)
+- [低精度训练](../quantization/hif8.md)

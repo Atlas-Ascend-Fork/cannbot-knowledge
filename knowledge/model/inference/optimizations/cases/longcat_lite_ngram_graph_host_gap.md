@@ -1,20 +1,20 @@
 ---
 type: Optimization
 title: LongCat-Lite A2/A3 入图案例：NgramEmbedding host gap 与精度边界
-description: 记录固定报告的 NgramEmbedding 图外时间和 GE 入图收益，区分 A2/A3 数据、稳态条件与 token 分歧；报告的语义等价判断不作为本次精度验收。
+description: 当前N-gram buffer/packed图适配和A2来源对照，撤下旧A3中间值并区分最终Prolog组合结果。
 tags:
 - task.optimization
 - topic.graph_execution
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/8fd8db72e333d38e15e54b8907a45da6134fa8fc/models/longcat_flash_lite/optimization_report.md
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/optimization_report_tp.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/8fd8db72e333d38e15e54b8907a45da6134fa8fc/models/longcat_flash_lite/README.md
-  role: constraint
-- resource: https://gitcode.com/cann/cann-recipes-infer/blob/8fd8db72e333d38e15e54b8907a45da6134fa8fc/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py
   role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/README.md
+  role: constraint
 created_at: '2026-10-20T12:16:14Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-10-29T13:59:24Z'
 platforms:
 - a2
 - a3
@@ -42,31 +42,27 @@ scope:
       - cann_executor
 ---
 
-# LongCat-Lite A2/A3 入图案例：NgramEmbedding host gap 与精度边界
+# LongCat-Lite N-gram 入图与 Host gap
 
-## 条件与规则入口
+## 条件与机制
 
-本案例补充[图模式决策](../rules/graph_mode_enable_decision_profiling.md)，证据固定 `8fd8db72e333d38e15e54b8907a45da6134fa8fc`。README 明确支持 Atlas A2/A3；本例讨论 LongCat-Flash-Lite、BF16、TP8、Decode GE 图路径，不能用来预测其他模型的收益。
+当前TP优化报告覆盖A2/A3、BF16、TP8、batch1，主案例输入1024/输出128。N-gram子模块包含大量小算子与子表通信，设备占比小不代表图外Host开销小。
 
-## 触发与实施差异
+实现以预分配ngram_context buffer、原地copy_和静态展开shift-right保持可捕获，并将Embedding纳入完整Decode图；packed Prefill另按段边界处理。当前buffer为persistent=False，在权重处理完成后按实际batch初始化，不能称为checkpoint持久状态。
 
-报告在设备 profile 中看到 NgramEmbedding 占比小于 5%，随后用同步分段计时报告图外 embedding 约 11.20 ms、已编译 Decode 约 7.06 ms。作者将多小算子、Python 下发与通信 launch 等列为原因；本次没有原始时间线，不把差值视为已经独立归因的纯下发开销。
+## 当前报告结果与边界
 
-报告描述将 Ngram 上下文改为 buffer、原地更新，把带 host 数据依赖的 shift-right 路径改写，并将 embedding 纳入编译范围。固定建模源码可见 `ngram_context` buffer、`init_ngram_cache`、`copy_` 及 eager/图路径不同的向量化实现；本次没有闭合整个执行器调用图或运行模型。
+TP报告的A2累计阶段表记录GE但N-gram在图外18.5ms，入图后7.14ms；同报告A3最终含MLA Prolog的结果为5.76ms。后者不是A3单独N-gram消融，不能和旧A3中间阶段数字拼成同一对照。
 
-## 来源报告的结果
+报告将图外约11ms的差值主要解释为Host小算子/通信下发；没有原始时间线时不能将差值完全归因于Python。BF16约20 token后分歧的作者解释也不等于精度验收。
 
-报告给出以下同阶段对比，均为来源自报：
+## 验证
 
-| 平台 | Ngram 在图外 | Ngram 入图后 | 指标 |
-|---|---:|---:|---|
-| A2 / 910B 32GB | 18.50 ms | 7.14 ms | Decode 平均每 token 时间 |
-| A3 / 910_93 64GB | 12.01 ms | 5.86 ms | Decode 平均每 token 时间 |
+按[图模式决策](../rules/graph_mode_enable_decision_profiling.md)分别测图外模块wall-clock、设备时间线和端到端Decode，固定软件、Prolog与并行，检查多请求N-gram上下文和token/任务精度。本次未运行模型。
 
-报告的主要工作负载为 TP8、BF16、batch=1、输入 1024、输出 128；文档说明稳态剔除 warmup，部分阶段记录三轮、该增量记录连续多次/两组值，未提供完整原始样本、方差或完整软件包版本。不能用后续 MLA-Prolog 优化后的数字替代本次对比，也不能将稳态 Prefill 当成冷启动耗时。
 
-## 精度与适用边界
+## Evidence
 
-报告承认阶段 3.5 前约 20 个 token 一致，之后出现 token 分歧，并将其解释为 BF16 累加顺序改变、语义等价。该解释是作者判断，不是本次精度验证；不能由 BF16 或“文本看起来合理”直接认定无回归。后续 A3 MLA-Prolog 阶段还另有分歧，不能与本次对比混用。
-
-复现时独立验收 logits/任务精度及业务允许误差，并比较 warmup 后的重复测量。若输出不满足要求，恢复对应版本原执行路径、配置与缓存后重测。本次未执行性能、精度或回退实验，也未新增 `verified`。
+- [optimization_report_tp.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/agentic/optimization_report_tp.md)（primary）
+- [modeling_longcat_flash_lite.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py)（implementation）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/README.md)（constraint）

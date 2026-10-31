@@ -8,12 +8,12 @@ tags:
 - topic.multimodal
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/spirit-v1.5/infer_with_torch/README.md
+- resource: cann-recipes-raw/cann-recipes-embodied-ai/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1/manipulation/spirit-v1.5/infer_with_torch/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-09-03T13:55:44Z'
+updated_at: '2026-10-29T15:24:38Z'
 platforms:
 - 310p
 ---
@@ -26,7 +26,7 @@ platforms:
 
 ## 部署形态：310P 在线 torch 推理
 
-与同域 [openvla](openvla.md) 的 OM 离线路线不同，Spirit-v1.5 走 **`infer_with_torch`**（torch 在线推理）路线，目标平台同为 [ascend-310p](../platforms/ascend_310p.md) 系列。CANN 版本要求 `8.3.RC1`，依赖 cann-toolkit 与 `Atlas-cann-kernels_310p` 二进制算子包。
+与同域 [openvla](openvla.md) 的 OM 离线路线不同，Spirit-v1.5 走 **`infer_with_torch`**（torch 在线推理）路线，目标平台同为 [ascend-310p](../platforms/ascend_310p.md) 系列。CANN 版本要求 `8.3.RC1`，依赖 cann-toolkit 与 `Ascend-cann-kernels_310p` 二进制算子包。
 
 ## 代码与权重准备
 
@@ -69,4 +69,4 @@ platforms:
 - 目标平台：[ascend-310p](../platforms/ascend_310p.md)
 - 动作生成范式参考：[action-chunking](../modules/action_chunking.md)
 - 同走 torch 在线 + 昇腾算子化路线（A3 推理）：[isaac-gr00t](isaac_gr00t.md)
-- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+- 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/21a5ed789ceb2a4b72277573f5ec5ec531b92ee1)

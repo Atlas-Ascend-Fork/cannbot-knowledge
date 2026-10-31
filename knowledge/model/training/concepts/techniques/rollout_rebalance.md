@@ -7,12 +7,14 @@ tags:
 - topic.reinforcement_learning
 status: stable
 sources:
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/README.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md
   role: primary
-- resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/patches/verl/features/rollout_optimize/rollout_rebalance.py
+  role: implementation
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-10-29T15:39:14Z'
 platforms:
 - a3
 ---
@@ -23,7 +25,7 @@ platforms:
 
 RLHF 的 rollout（数据生成）阶段面临典型的**「木桶效应」**：同一批 prompt 生成的 response 长度呈**长尾分布**，少数极长的生成任务远超普通任务耗时，拖慢整个 DP 组的同步进度；先完成短序列的卡只能空转等待，造成算力浪费。**Rollout Rebalance** 是 cann-recipes-train 在 [vllm-ascend](../frameworks/vllm_ascend.md) 推理引擎内实现的一套**序列级均衡调度引擎**：在每个推理 Step 前周期性感知全局 DP 组负载，当检测到组间负载不均满足条件时，主动把**单个请求（Sequence，含其 KVCache）**在 rank 间迁移、重排，配合 vLLM-Ascend 的**多档位编图**能力让全局尽快切换到更小 BatchSize 档位（更低 TPOT），从而提升进入长尾状态后的整体推理效率。
 
-Rollout Rebalance 由环境变量 `ROLLOUT_REBALANCE_ENABLE` + `RolloutRebalanceConfig` 控制：先做条件检测与调度策略生成，再做序列级数据搬迁与 KVCache 恢复，最后还原结果。它由 [verl](../frameworks/verl.md) 前端发起、跑在 [qwen3-rl](../../guides/recipes/qwen3_rl.md) 实践上，Qwen3-235B 64 卡 A3 单轮推理耗时降约 60%，与同样针对长尾的 [length-aware-resampler](length_aware_resampler.md) 互补。
+Rollout Rebalance 由环境变量 `ROLLOUT_REBALANCE_ENABLE` + `RolloutRebalanceConfig` 控制：先做条件检测与调度策略生成，再做序列级数据搬迁与 KVCache 恢复，最后还原结果。它由 [verl](../frameworks/verl.md) 前端发起、跑在 [qwen3-rl](../../guides/recipes/qwen3_rl.md) 实践上，Qwen3-235B 64 卡 A3 单轮推理约 10200→6100s，耗时下降约 40.2%（固定工作量吞吐提升约67.2%），与同样针对长尾的 [length-aware-resampler](length_aware_resampler.md) 互补。
 
 ## 为什么 rollout 长尾是负载均衡问题
 
@@ -31,8 +33,8 @@ rollout 长尾的本质是 RL 训练系统的负载均衡问题：
 
 > RLHF的Rollout阶段面临典型的"木桶效应"：由于输入Prompt所生成的响应（Response）长度存在长尾分布，少数极长的生成任务会拖慢整个DP组的进展。这使得处理短序列的节点在完成计算后不得不进入长时间的闲置等待，造成算力浪费。长尾问题优化的本质是RL训练系统的负载均衡，对此，我们针对单轮推理的同步场景，优化目标是提升进入长尾状态后的推理效率。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image15.png" width="55%"></p>
-<p align="center"><sub>图：rollout 长尾「木桶效应」——少数长序列任务拖慢整个 DP 组，短序列节点完成后空转等待（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image15.png" width="55%"></p>
+<p align="center"><sub>图：rollout 长尾「木桶效应」——少数长序列任务拖慢整个 DP 组，短序列节点完成后空转等待（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
 
 在 [grpo-dapo](grpo_dapo.md) 这类**单轮推理同步**（on-policy）场景下，整组必须等最慢的长尾序列推完才能进入下一轮，故优化目标不是缩短单条最长序列，而是**让全局尽快进入低档位高效状态**。
 
@@ -79,8 +81,8 @@ class RolloutRebalanceConfig:
 
 为什么把逻辑放在 vLLM 内层而非 verl 外层：verl 调用 vLLM 存在两个循环——**外层循环**按 Epoch 加载数据集，**内层循环**是 vLLM 接收单批请求后的推理循环；关键的「DP 组推理进度」信息**只能在内层循环精确感知**，故在每个推理 Step 前追加「负载均衡检查 + Rebalance 调度」环节。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image17.png" width="55%"></p>
-<p align="center"><sub>图：在 vLLM 内层推理循环每个 Step 前追加「负载均衡检查 + Rebalance 调度」，实现推理任务的实时动态均衡（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image17.png" width="55%"></p>
+<p align="center"><sub>图：在 vLLM 内层推理循环每个 Step 前追加「负载均衡检查 + Rebalance 调度」，实现推理任务的实时动态均衡（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
 
 ### 全局状态感知
 
@@ -90,7 +92,9 @@ class RolloutRebalanceConfig:
 def get_current_state(self):
     return dict(
         rank=self.rank,
-        req_ids=list(self.llm_engine.output_processor.request_states.keys()),
+        running=len(self.scheduler.running),
+        waiting=len(self.scheduler.waiting),
+        block_usage=self.scheduler.kv_cache_manager.block_pool.get_usage(),
     )
 
 def sync_group_states(self):
@@ -116,11 +120,11 @@ DP 组间状态同步开销 **< 2ms**；为平衡「调度及时性」与「性�
 `calc_balancing_tasks` 的具体决策规则落实上述三层目标，是该均衡算法的核心：
 
 - **目标档位选择**：`max_bs_next = min(当前最大档, graph_batch_sizes[0], scheduler.max_num_running_reqs)`，再从档位表逆序取满足 `avg_bs ≤ target_bs < max_bs_next` 的**最小档**（"够用的最小档"，`avg_bs` 为 DP 组各 rank `running+waiting` 的均值）。仅当该档**严格小于**当前最大档（`max_bs_next < max_bs_before`）时阶段二才迁移 Running 任务，否则不动。
-- **接收方资格与容量**：有 Waiting 积压的 rank 只作 donor 不作 receiver；**KVCache 占用率 `block_usage > 0.8` 的 rank 直接跳过**（自身濒临 OOM、不接收）；其余 rank 接收容量 `capacity = min(max_bs_next − running, int(running·(1−usage)/usage))`——按当前 KVCache 占用反推「还能再纳入多少请求而不爆显存」，与「填到目标档位还差多少」取小。
+- **接收方资格与容量**：有 Waiting 积压的 rank 只作 donor 不作 receiver；**KVCache 占用率 `block_usage > 0.8` 的 rank 直接跳过**（自身濒临 OOM、不接收）；其余 rank 先取 delta=max_bs_next−running，仅 delta>0 才可接收；usage>0 时 `capacity = min(delta, int(running·(1−usage)/usage))`，usage=0 时则直接 `capacity=delta`，避免对空闲接收方除零——按当前 KVCache 占用反推「还能再纳入多少请求而不爆显存」，与「填到目标档位还差多少」取小。
 - **流向均匀**：阶段二先把 receiver 按 `capacity` 降序遍历（`sorted(receivers, key=lambda r: r['capacity'], reverse=True)`，优先填满容量最大的接收方以减少点对点连接数），再把多个 donor 的盈余按 `donor_index = (donor_index+1) % len(donors)` 轮转分给各 receiver，从机制上落实「搬迁流向均匀、避免多对一」。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image16.png" width="55%"></p>
-<p align="center"><sub>图：verl 调用 vLLM 的外层（Epoch 数据集）/ 内层（单批请求推理）双循环——DP 组推理进度只能在内层循环精确感知（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image16.png" width="55%"></p>
+<p align="center"><sub>图：verl 调用 vLLM 的外层（Epoch 数据集）/ 内层（单批请求推理）双循环——DP 组推理进度只能在内层循环精确感知（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
 
 ### 序列请求的跨 Rank 发送/接收（含 KVCache）
 
@@ -156,12 +160,12 @@ KVCache 按 block 逐层 `dist.send` / `dist.recv` 搬迁；接收方利用 vLLM
 
 通过 OpenR1-Math-220K 答案长度作为推理输出长度、结合各 BS 档位 TPOT，预估「多档位编图」+「Rebalance」收益：单独开启多档位编图，BatchSize 档位要推到 **16K** 长度才开始下降；额外开启 Rebalance 后档位下降时机提前到 **6K**。综合：单独多档位编图 4%~8% 收益，结合 Rebalance 后整体可达 **15%~17%**（Rebalance 在多档位基础上额外贡献 9%~14%）。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image18.png" width="55%"></p>
-<p align="center"><sub>图：多档位编图 + Rebalance 的理论性能收益模拟——Rebalance 把 BatchSize 档位下降时机从 16K 提前到 6K（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image18.png" width="55%"></p>
+<p align="center"><sub>图：多档位编图 + Rebalance 的理论性能收益模拟——Rebalance 把 BatchSize 档位下降时机从 16K 提前到 6K（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
 
 ### 实测效果
 
-**主结果**：Atlas A3 集群 **64 卡**、Qwen3 235B、deepscaler、`train_batch_size=512` / `max_response_length=32768` / `rollout.n=16` / `TP=4` / `DP=32`，开启后单轮推理耗时从约 **10200s** 优化到约 **6100s**，**性能收益约 60%**。
+**主结果**：Atlas A3 集群 **64 卡**、Qwen3 235B、deepscaler、`train_batch_size=512` / `max_response_length=32768` / `rollout.n=16` / `TP=4` / `DP=32`，开启后单轮推理耗时从约 **10200s** 优化到约 **6100s**，**耗时下降约40.2%、固定工作量吞吐提升约67.2%**（来源文字称“性能收益约60%”，口径与近似数值需区分）。
 
 **实验 2**（128Die、Qwen3-235B、Deepscaler、TP4/DP32/EP128、多档位 256/128/64/32/16/8/4）：
 
@@ -173,8 +177,8 @@ KVCache 按 block 逐层 `dist.send` / `dist.recv` 搬迁；接收方利用 vLLM
 
 **实验 1**（早期穿刺，DeepSeekV3、256Die、OpenR1-Math-220K、TP2/DP128/EP256、多档位 64/32/16/8/4）：verl 默认 6482s → 多档位编图 2861s（+56%）→ 多档位 + Rebalance 2291s；与基线相比共 **64%** 提升，Rebalance 在多档位基础上额外贡献 **20%**。
 
-<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/qwen3_figures/image19.png" width="55%"></p>
-<p align="center"><sub>图：DeepSeekV3 / 256Die 穿刺实验——红线 verl 默认、橙线多档位编图、绿线多档位+Rebalance，绿橙曲线间面积即 Rebalance 额外收益（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
+<p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/figures/qwen3_figures/image19.png" width="55%"></p>
+<p align="center"><sub>图：DeepSeekV3 / 256Die 穿刺实验——红线 verl 默认、橙线多档位编图、绿线多档位+Rebalance，绿橙曲线间面积即 Rebalance 额外收益（<a href="https://gitcode.com/cann/cann-recipes-train/blob/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md">Qwen3-235B RL 优化文档（图源）</a>）</sub></p>
 
 > 收益强依赖数据集长尾分布：若数据本身或经 data balancing 已较均衡，Rebalance 额外收益会降低。Rebalance 同时支持「大 EP 部署的单实例内负载均衡」与「多实例场景的跨实例负载均衡」。
 
@@ -223,18 +227,17 @@ prompt 排布调整后，BS128 配置下推理长尾大幅改善、各 DP 域负
 
 ## Evidence
 
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/features/rollout_rebalance.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/features/rollout_rebalance.md)（§1 简介/木桶效应；§2.1 `init_rollout_rebalance` 初始化使能；§2.2 `RolloutRebalanceConfig` 配置项；§3 实现方案：前置依赖多档位编图、全局状态感知 `sync_group_states`、最大档位最小化算法 `calc_balancing_tasks`、跨 rank `all_to_all_v_tasks` + KVCache send/recv 与恢复；§4 使能效果 64 卡 A3 单轮推理 10200s→6100s ~60%、TPOT 200ms→60ms）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md`（§2.3.3 输入数据重排序 DataBalance + Seer 对比）](https://gitcode.com/cann/cann-recipes-train/blob/ece44cf36b1a980649a0ca9931d2695eb8e27e8f/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（Roofline 依据 / 首 DP 空闲时间占比诊断表 GBS256 BS24-64-128：50.84%/50.38%/64.84%；DataBalance 间隔排布把空闲占比压到 24.83%、端到端 -25%、BS 128→192→256 吞吐 92→132→160→186；Seer Mooncake 两级 KV 池 / Divided Rollout 8K chunk / Longest-First Scheduling 对比）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（§2.3.1 RL rollout 长尾负载不均场景优化：内外层双循环、关键设计点 1 周期检测 <2ms、关键设计点 2 两阶段调度、关键设计点 3 序列迁移 All2AllSingle + KVCache 点对点、关键设计点 4 无感知结果还原；理论模拟 15%~17%；实验 1 DSV3 256Die +64%/Rebalance 额外 20%、实验 2 Qwen3 128Die 10213→6102s +67%；与 Seer 论文长尾优化对比。注：实验 2 项目符号写 `TP=4/DP=32/EP=128`，紧随的结果表「模型切分」列却写 `TP4 PP4 CP4 EP32`，源内 EP 标注不一致，本页取项目符号侧 EP128）
-- 代码符号：`verl/workers/megatron_workers.py`、`patches/verl/features/rollout_optimize.py`、`config.py`、`rollout_rebalance.py`（`calc_balancing_tasks` / `all_to_all_v_tasks` / `send_kv_caches` / `load_received_tasks`）
+- [README.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/README.md)（primary）
+- [qwen3_235B_32k_longseq_rl_train_optimization.md](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md)（supporting）
+- [rollout_rebalance.py](../../../../../cann-recipes-raw/cann-recipes-train/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba/llm_rl/qwen3/verl-mindspeed/patches/verl/features/rollout_optimize/rollout_rebalance.py)（implementation）
 
 ## Links
 
 - [verl](../frameworks/verl.md)（RL 前端：Rollout Rebalance 由 verl 发起、patch 注入 `megatron_workers.py`，on-policy 单轮同步语义来源）
 - [vllm-ascend](../frameworks/vllm_ascend.md)（推理引擎 + 多档位编图（`torchair_graph_config` 的 `use_cached_graph`/`graph_batch_sizes`）能力的承载者，本特性的前置依赖）
-- [qwen3-rl](../../guides/recipes/qwen3_rl.md)（承载实践：Qwen3-235B 32K 长序列 GRPO，64 卡 A3，Rebalance 贡献单轮推理 -60%）
+- [qwen3-rl](../../guides/recipes/qwen3_rl.md)（承载实践：Qwen3-235B 32K 长序列 GRPO，64 卡 A3，多档位编图+Rebalance 相对基线单轮推理约10200→6100s，耗时下降40.2%）
 - [length-aware-resampler](length_aware_resampler.md)（同样针对 rollout 长尾的负载均衡技术，与推理时动态迁移互补）
 - [grpo-dapo](grpo_dapo.md)（本特性服务的 on-policy RL 算法：单轮推理同步场景才有「整组等长尾」问题）
-- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — Rollout Rebalance 特性 + Qwen3-235B 长序列 RL 优化实践
+- [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/532c60c5a3fd8ac84c207ab29be241a88b6eb6ba) — Rollout Rebalance 特性 + Qwen3-235B 长序列 RL 优化实践
 - [eplb](eplb.md)（同属负载均衡:EPLB 专家级 vs rollout 序列级）
 - [partial-rollout](partial_rollout.md)（互补的长尾处理：partial rollout 时间维截断续跑、本页空间维带 KV 搬迁重排）
