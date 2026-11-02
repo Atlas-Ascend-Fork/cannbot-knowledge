@@ -1,98 +1,76 @@
 ---
 type: Operator
-title: Block Sparse Attention Grad 模式
-description: 块稀疏注意力梯度的二值 block mask 语义、稀疏任务切分、反向计算链及 FP32 workspace 精度边界。
+title: Block Sparse Attention Grad：Arc35 官方语义与 CATLASS 优化实现
+description: 区分 Arc35 官方 bool block mask/workspace 路径与 CATLASS R5 int32 索引表/kernel 内清零/FP32 workspace + post 路径，并记录固定源码、36 例正确性与性能证据。
 tags:
 - task.design
+- task.optimization
 - topic.attention
+- topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md
-  role: primary
 - resource: https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/README.md
-  role: supporting
+  role: primary
 - resource: https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/block_sparse_attention_grad.cpp
-  role: supporting
+  role: implementation
 - resource: https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_host/arch35/block_sparse_attention_grad_tiling_arch35.cpp
-  role: supporting
+  role: implementation
 - resource: https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/block_sparse_attention_grad_arch35.h
-  role: supporting
+  role: implementation
 - resource: https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/addr_compute.h
-  role: supporting
+  role: implementation
 - resource: https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/cube_op_bsag_arch35.h
-  role: supporting
+  role: implementation
 - resource: https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/vec_op_bsag_arch35.h
-  role: supporting
+  role: implementation
 - resource: https://gitcode.com/cann/ops-transformer/blob/3f54e4334060281fad7b4b682393d22830928a33/attention/block_sparse_attention/README.md
   role: supporting
-- resource: https://gitcode.com/cann/ops-transformer/blob/90b41d6d8f2ce716275383a28f5dfb1d7c75ca1e/attention/bsa_select_block_mask/README.md
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/README.md
   role: supporting
-- resource: https://gitcode.com/cann/ops-transformer/blob/2b67400cf8284717cb38f1d4ecdc69df9191943f/attention/flash_attn/README.md
-  role: supporting
-created_at: '2026-09-23T00:00:00Z'
-updated_at: '2026-10-23T02:44:15Z'
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/code/op_kernel/bsag_kernel.cpp
+  role: implementation
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/code/op_host/bsag_e2e.cpp
+  role: implementation
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/code/test/workload.jsonl
+  role: evidence
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/reports/benchmark_final.json
+  role: evidence
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/reports/validation_summary.json
+  role: evidence
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/reports/bsag_latest_aclnn_comparison.json
+  role: evidence
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/docs/performance_report.md
+  role: evidence
+- resource: https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/docs/knowledge_hits.md
+  role: evidence
+created_at: '2026-10-26T00:00:00Z'
+updated_at: '2026-11-02T00:00:00Z'
 platforms:
 - '950'
 verified:
-- by: process:pr1109-source-audit
-  at: '2026-09-23T00:00:00Z'
+- by: bsag-catlass/e3c13c049616745a17d63ff1f5389ae33f449afa
+  at: '2026-11-02T07:32:25Z'
 ---
 
-# Block Sparse Attention Grad 模式
+# Block Sparse Attention Grad：Arc35 官方语义与 CATLASS 优化实现
+
+本卡消费两份不同的固定材料：`ops-transformer@adc5fd3` 的 Arc35 官方实现，以及
+`bsag-catlass@e3c13c0` 的 CATLASS R5 项目实现。后者是本卡的工程落地与证据来源，不作为
+官方 Arc35 语义的独立证明。两者共享反向公式，但稀疏输入 ABI、D 的承载方式、workspace
+布局和调度不同；**任何结论都必须先声明属于哪一份实现，不能跨实现拼接**。R3/R4 的 host
+预清零、正式输出直出方案已废弃，R5 固定为 kernel 内清零 + FP32 workspace + post。
+[^arc35-readme][^bsag-catlass-readme][^bsag-catlass-hits]
 
 ## 接口与概念
 
-块稀疏注意力用一个二值 block mask 决定哪些 `blockShapeX × blockShapeY` 的 Q/KV 块参与计算：
-mask 非零即选中该 KV 块，零则整块跳过。它不提供 token 级 attention mask 路径，稀疏粒度就是
-块粒度。[^bsag-guide][^bsa-guide]
-
-本 concept 是 PR1109 固定来源的结构化入口，只记录算法、分核、数据路径、流水和精度边界等设计
-输入。所有实现结论必须以本工程冻结的 contract、CPU 标杆和实际运行证据为准，本文不声称任何
-精度、性能或 sanitizer 验收已通过。
-
 ### 算子算法
 
-#### 稀疏掩码 ABI
-
-- mask 的逻辑 shape 为 `[B, Nq, ceil(maxSq / blockShapeX), ceil(maxSkv / blockShapeY)]`，
-  元素为 UINT8/BOOL 二值。[^bsa-guide]
-- 每个有效 mask 行至少含一个非零项；不得选择超过 actual KV length 的无效块；空选择非法。
-  [^bsa-guide][^bsag-guide]
-- Q head 到 KV head 的映射为 `kvHead = qHead / (Nq / Nkv)`，因此 `Nq % Nkv == 0`；同一 Q block
-  的不同 Q head 可以使用不同稀疏模式，任务不可沿 head 合并。[^bsa-guide][^bsag-guide]
-- 存在实现与文档的轴语义漂移：README 声明 mask shape 为 `[B, Nq, QBlocks, KVBlocks]`，而固定
-  源码的线性 offset 为 `kvBlock * QBlocks + qBlock`，等价于读取 `[B, Nq, KVBlocks, QBlocks]`。
-  全 1 或对称 mask 会掩盖该差异；非对称 pattern 在确认期望 ABI 前必须双向构造测试。
-  [^bsag-guide][^bsag-entry]
-
-#### 前向 BSA
-
-对每个 `(batch, qHead, qBlock)` 读取 mask 一行，非零项选中的 KV 块按索引顺序逻辑拼接为
-gathered-KV 序列，再计算：[^bsa-guide]
-
-```text
-S   = scaleValue * Q @ K^T          # K 为 gathered-KV
-P   = softmax(S, axis=gathered-KV)
-O   = P @ V
-LSE = log(sum_j exp(S_j))           # 可选，每有效 query 行
-```
-
-输出保持 Q 的 shape 与输入 dtype；越出有效长度的 padded query row 不参与计算。可选 LSE 是每
-个有效 query row 的 `log(sum(exp(S)))`。[^bsa-guide]
-
-BSA 前处理（select block mask）先做块级 mean pooling，再按 `score = scale * Qcmp @ Kcmp^T`
-逐 Q block 对 K blocks 做 softmax，最后全局选择 `round(sparsity * Xblocks * Yblocks)` 个最大值
-输出 INT8 二值 mask；部分压缩时每块均值分母取自 actual block length。[^select-guide]
-
-#### 反向 BSAG
-
-反向接收 `dO/Q/K/V/O/LSE` 与二值 block mask，重新计算被选稀疏块的 score 和概率，不保存完整
-前向概率。对一个有效 Q/KV tile，计算链为：[^bsag-guide][^bsag-pipeline][^bsag-vector]
+两份实现使用相同的块稀疏注意力反向计算链：[^arc35-readme][^bsa-forward]
 
 ```text
 D  = rowsum(dO * O)
-S  = Q @ K^T
-P  = exp(scale * S - LSE)
+S  = scale * (Q @ K^T)
+P  = exp(S - LSE)
 dP = dO @ V^T
 dS = P * (dP - D)
 dV = P^T @ dO
@@ -100,234 +78,367 @@ dQ = scale * (dS @ K)
 dK = scale * (dS^T @ Q)
 ```
 
-`D` 先对全部有效 query 行计算一次并写入 workspace；主循环随后对每个有效稀疏 tile 发起
-`QK`、`dO @ V^T`、`dV`、`dQ`、`dK` 共五次 MMAD。oracle 必须接收同一次前向产生的 O 和 LSE，
-并允许“P/dS 低精度化后再 MMAD”的舍入边界。[^bsag-guide][^bsag-cube]
+`D` 是逐 query 行的点积归约，不进入 MMAD；五次矩阵乘为 `S`、`dP`、`dV`、`dQ`、`dK`。
+`dV` 不乘 softmax scale，`dQ/dK` 乘 scale。P/dS 在进入后三次 MMAD 前窄化到输入 dtype，
+因此 oracle 必须允许该舍入边界。[^arc35-cube][^arc35-vector][^bsag-catlass-kernel]
 
-带 attention sink 的变体中，sink 是 logit 为 `sinks[h]`、value 恒为 0 的虚拟 key：它进入
-softmax 分母因而进入 LSE，但不进入 O；其梯度是逐 query head 的标量归约
-`dsinks[h] = -sum exp(sinks[h] - LSE) * D`。`sinks` 为 null 时 `dsinks` 必须精确为 0。
-[^sink-guide][^bsag-guide]
+### 两套稀疏输入 ABI
 
-### 分核策略与基本块切分
+| 项目 | Arc35 官方实现 | `bsag-catlass` 优化实现 |
+|---|---|---|
+| 输入名 | `blockSparseMaskOptional`（kernel 参数 `blockSparseMask`） | `block_indices` |
+| 表示 | 0/1 bool 块掩码 | int32 物理 KV block 索引表 |
+| 逻辑 shape | `[B, Nq, QBlocks, KVBlocks]` | `[B, mask_heads, QBlocksMax, K_sel]`；3D 形式可省略 head 维。 |
+| head 共享 | 由 `Nq` 维显式表达 | `mask_heads` 为 1 或 `Nq`；为 1 时全部 query head 共享。 |
+| 负值 | 不适用 | `-1` 或越界值作为 padding 忽略。 |
+| 重复项 | 不适用 | 同值重复只计算一次。 |
+| 顺序 | 按 KV block 轴遍历 | 保留索引输入顺序，不排序。 |
 
-反向路径的固定分核约定如下，前向与 select-mask 也采用同类的“块级任务”思想：[^bsag-tiling]
-[^bsag-scheduler][^bsag-vector]
+官方 README 声明掩码轴序为 `[B, Nq, QBlocks, KVBlocks]`，但固定 kernel 的线性 offset 是
+`kvBlock * QBlocks + qBlock`，按行主序等价于读取 `[B, Nq, KVBlocks, QBlocks]`。非对称 mask
+会暴露该差异；在官方轴序未确认前，必须双向构造测试，全部为 1 或对称 mask 不能证明实现正确。
+[^arc35-readme][^arc35-addr]
 
-- host 选择所有可用 AIC，设置 `baseM = min(blockShapeX, 128)`、
-  `baseN = min(blockShapeY, 128)`、`singleM = align_up(2048, baseM)`；在 blockShape 为 64 倍数
-  的约束下 `singleM` 实际为 2048。尾部 M/N 取真实长度，计算尺寸再向 16 对齐。
-- 设备侧按 `S1 -> S2 -> query-head -> batch` 遍历，S1 先以 `singleM` 分组，S2 以 `baseN` 前进。
-- 对 `(b, qHead, singleM-group, kv-base-tile)`，先扫描该组是否含至少一个有效 sparse block；
-  非空组按有效组序号对 AIC 数取模分配。获得该组的 AIC 再以 `baseM` 遍历 S1，仅生成 mask 有效
-  的 tile。每个 AIC 对应的两个 AIV 复现完全相同的任务序列，并分别处理 tile 的上、下半行。
-- 同一 `singleM`/KV tile 内，第一个有效 Q tile 把 K/V 搬入 L1，此后有效 Q tile 复用 K/V；
-  `dK/dV` 在专用 FP32 L0C 中跨这些 Q tile 累加，到组内最后一个有效 tile 才写 GM workspace；
-  `dQ` 每个 tile 直接写 workspace。因此 `singleM` 同时是任务所有权和 K/V 复用边界，不能只按
-  MMAD tile 数理解分核。
-- 主计算量近似为 `MMAD FLOPs ~= 10 * D * sum_{t in V}(M_t * N_t)`，其中 `V` 为 mask 有效且经
-  `baseM/baseN` 展开的实际 tile 集；并行组数等于非空 `(b, qHead, singleM-group, kv-base-tile)`
-  的个数。
-- 固定成本与稀疏率弱相关：全量清零 `dQ/dK/dV` FP32 workspace、全量读取 `dO/O` 计算 `D`、
-  全量读取三个梯度 workspace 做 scale/cast/回写，以及每个 AIC/AIV 从头扫描 mask 重建任务序列。
-- task 分配按非空 `singleM` group 轮转、不按组内有效 base tile 数加权，mask 分布偏斜时可能产生
-  尾核不均衡；改变任务粒度会同时改变 K/V 复用和 dK/dV 的 L0 累加边界。
+`bsag-catlass` 的索引表不能当作官方 bool mask 的直接替代。转换只能按行执行：对每个
+`(b, head, q_block)`，按 KV block 递增顺序收集 bool mask 中非零的位置，得到该行的物理 block
+索引表；不能把 bool 数值直接当索引使用。[^bsag-catlass-kernel]
 
-select-mask 前处理使用 mixed AIC 1:AIV 2：K pooling 在有效 AIV 上均分，Q pooling 在同一 AIC
-对应的两个 AIV 间二分；一个 batch/head 的 score 完成后所有 AIV 协作 Radix TopK。[^select-guide]
+### varlen 边界语义
 
-### 数据路径与存储层级
+| 项目 | Arc35 官方 / vendor 路径 | `bsag-catlass` 内部 ABI |
+|---|---|---|
+| 输入名 | `actual_seq_lengths` / `actual_seq_lengths_kv` | `cu_seqlens_q` / `cu_seqlens_k` |
+| 长度 | `B` | `B + 1` |
+| 起点 | 无前导 0 | 必须为 0 |
+| 示例 | 两段 8191、4097：`[8191, 12288]` | `[0, 8191, 12288]` |
 
-反向主路径的数据流与存储层级：[^bsag-pipeline][^bsag-cube][^bsag-vector]
+官方 kernel 把第 0 项直接作为第一段累计终点，后续项做差分；传入 `[0, ...]` 会把第一段解释成
+长度 0，并使后续段整体错位。项目内部使用标准前缀边界，但调用 vendor 基线时必须去掉前导 0：
+`cu_seqlens[1:]`，不能把 `cu_seqlens` 原样传给 `actual_seq_lengths`。[^arc35-pipeline]
+[^bsag-catlass-host]
+
+### 前向输入契约
+
+`O` 与 `LSE` 必须来自同一次前向、同一 `scale`、同一选择表；`LSE` 为 FP32，`O` 为 FP16/BF16。
+当前冻结 contract 不支持 causal、attention sink、滑窗、非零 token mask 或 deterministic 模式；
+固定实现没有额外的 LSE NaN/Inf 前置过滤，有限性属于调用方输入约束。[^arc35-readme][^bsa-forward]
+
+## 分核策略与基本块切分
+
+### 官方 Arc35 路径
+
+Arc35 host tiling 读取设备 AIC 核数 `GetCoreNumAic()`，直接写入 tiling 并调用
+`SetBlockDim(cubeCoreNum)`；Arc35 固定源码中没有 22/26/28 核分支。不得把优化项目的核数策略
+反推为官方行为。[^arc35-tiling]
+
+官方路径的 `D` 由 `SendVecSftgFront`/`SoftmaxGradFront` 写入 `sftg_workspace`；`dQ/dK/dV`
+也分别进入 FP32 workspace，最后由 `SendVecPost` 统一 scale/cast 回正式输出。这里确实存在
+D、dQ、dK、dV 的 workspace，不应写成“D 内联、dQ 直出”。R5 虽然同样使用 dQ/dK/dV 的
+FP32 workspace + post，但 D 在 UB 内联计算、清零位于主 kernel 开头，不能与官方的 D/sftg
+workspace 和五 flag 流水混写。[^arc35-pipeline][^arc35-vector]
+
+### CATLASS 优化路径
+
+`bsag-catlass` 采用 per-head-owner：一个任务拥有一个 `(b, h, q_block)`，按 grid-stride 轮转。
+固定 layout 下：
 
 ```text
-dO/O GM -> AIV UB SoftmaxGradFront -> D FP32 GM workspace
-block mask GM -> 每个 AIC/AIV 的地址模块 -> 有效 (M,N) task
-Q/K GM -> AIC L1/L0A/L0B -> QK FP32 L0C -> S FP32 UB ping/pong
-dO/V GM -> AIC L1/L0A/L0B -> dP FP32 L0C -> dP FP32 UB ping/pong
-S/LSE/D/dP UB -> AIV P,dS FP32 -> cast FP16/BF16 NZ -> L1 ping/pong
-P/dO L1 -> AIC dV FP32 L0C -> FP32 GM workspace
-dS/K L1 -> AIC dQ FP32 L0C -> FP32 GM workspace
-dS/Q L1 -> AIC dK FP32 L0C -> FP32 GM workspace
-三个 FP32 workspace -> AIV UB scale/cast -> dQ/dK/dV GM
+qBlocks         = ceil(q_len / 128)
+tasks_per_batch = q_heads * qBlocks
+total_q_tasks   = batch * tasks_per_batch
+task            = (b, h, q_block)
 ```
 
-用户 workspace 依次放 `D`、`dQ`、`dK`、`dV`，全部 FP32；固定 layout 的元素数为
-`D: B*Nq*Sq*8`、`dQ: B*Nq*Sq*D`、`dK/dV: B*Nkv*Sk*D`，TND 用 total token 数替换 `B*S`。
-这里的 8 是 `SoftmaxGradFront` 每 query 行输出的重复槽位，不是 head dim。[^bsag-tiling]
-[^bsag-vector]
+varlen 下按每个 batch 的 `ceil(q_len_b/128)` 展开任务；选择表行号仍按全局
+`qBlocksMax = ceil(max_seqlen_q/128)` 计算。每个 task 只处理一个 q block，内部按过滤后的
+索引表顺序遍历 KV block。[^bsag-catlass-kernel]
 
-顶层固定申请 247 KiB UB 和 512 KiB L1。`baseM=baseN=128` 时，UB 中四个半 M 的 FP32 `S/dP`
-ping-pong 占 128 KiB、P/dS 低精度临时区占 32 KiB、LSE/D 行缓冲占 8 KiB；L1 中 P/dS 四块占
-128 KiB、Q/K/V/dO 八块占 256 KiB。Cube 另申请 64 KiB L0A、64 KiB L0B、256 KiB L0C，后者分成
-S/dP ping-pong 与 dK/dV 专用累加区。[^bsag-pipeline][^bsag-cube][^bsag-vector]
+核数策略为本项目的固定实测选择：
 
-源码中 V 的 L1 tensor 按 `baseN*D` 取得，但 offset 两次按 `baseM*D` 前移：`baseM < baseN` 时
-相邻 V/dO 缓冲会静态重叠，`baseM > baseN` 时留下空洞。这是固定提交可见的 offset 风险，不是
-实测故障结论；任何非对称 block shape 都必须先做地址范围与数值专项验证。[^bsag-cube]
+```text
+max_q <= 2048:  varlen ? 26 : 22
+max_q >  2048:  28
+blockDim       = max(1, min(coreLimit, task_count))
+```
 
-前向 BSA 的存储路径按 gathered 顺序搬运：QK 与 PV 都通过 block 索引把 gathered tile 区间映射
-回原始 KV block，跨 block 边界时拆成多段 GM→L1 搬运，既不把完整 gathered K/V 落入 workspace，
-也不物化完整稠密 score；Q 只预载一次，QK/PV 的 L1/L0 基本模板为 `128 x 128 x 128`，实际
-M/N/K 由当前 Q/KV 尾 tile 收缩。[^bsa-guide]
+核数是 host 启动参数，不是 kernel 常量。该策略只在 `bsag-catlass` 的冻结 workload 上验证；
+官方 Arc35 使用设备 AIC 核数。[^bsag-catlass-host]
 
-### 流水排布、同步关系与数值精度
+### 固定块与索引处理
 
-反向流水按 task ping-pong：AIV 先并行清零三个梯度 workspace，再计算全量 `D = rowsum(dO*O)`；
-经 `PipeBarrier`、`SyncAll` 后用 phase flag 释放等待中的 AIC。主循环中 AIC 产生当前 task 的 QK
-和 `dO @ V^T` 结果并通过 flag 通知两个 AIV；AIV 各处理一半 M，生成 P/dS 到 L1，再通知 AIC；
-AIC 滞后一项消费上一 task 的 P/dS，依次发射 dV、dQ、dK。末尾 AIC 排空 MM345 并再次用 phase
-flag 通知 AIV，AIV 全核同步后执行最终 post。[^bsag-pipeline]
+`q_block = kv_block = head_dim = 128`。选择表在 task 内构建紧凑缓存，上限 64 项；超出时回退
+标量扫描。过滤规则是：忽略负值和越界索引、折叠重复值、保留首次出现顺序。该实现不会自动
+排序，也不会把 bool mask 解释为索引表。[^bsag-catlass-kernel]
 
-设计实现候选时必须显式给出下面四类映射，并以固定来源逐项核对：
+## 数据路径与存储层级
 
-- **任务映射**：`(b, qHead, singleM-group, kv-base-tile)` → AIC/AIV，两个 AIV 的上下半行分工；
-- **存储生命周期**：GM / workspace / L1 / L0A / L0B / L0C / UB 的分配、复用与释放点，尤其
-  K/V 复用边界和 dK/dV 的 L0C 累加区间；
-- **同步协议**：阶段 flag（phase flag 释放 AIC、QK/dP 生产通知、P/dS 生产通知）与 task/KV
-  ping-pong 是否成组变化；
-- **精度边界**：见下。
+### 官方 Arc35 数据路径
 
-数值精度边界：[^bsag-cube][^bsag-vector]
+```text
+prologue : O/dO -> SoftmaxGradFront -> sftg_workspace(D)
+           dq/dk/dv FP32 workspace -> 0
+task     : QK、dP、P/dS、dV、dQ、dK 走 Cube/AIV 流水
+post     : FP32 dq/dk/dv workspace -> scale/cast -> 正式输出
+```
 
-- Q/K/V/dO/O 输入为 FP16 或 BF16；QK 与 dP 的 MMAD 累加和 Fixpipe 输出为 FP32。
-- P 由 FP32 score、FP32 scale 和 FP32 LSE 重算，dS 也在 FP32 中形成，但 P/dS 在进入后三次
-  MMAD 前会以 RINT cast 成输入 dtype。
-- dQ/dK/dV 以 FP32 MMAD 累加并原子加到 FP32 workspace；post 对 dQ/dK 乘 softmax scale、对三者
-  RINT cast 成输入 dtype，dV 不乘 scale。
-- dQ/dK/dV 的 workspace 写回显式启用 FP32 atomic add，host 同时拒绝 deterministic 模式。不同
-  运行的低位变化属于实现允许的现象，但数值偏差仍必须落在已定义容差内，不能用“非确定性”掩盖
-  系统性错误。
+官方主 kernel 使用 5 个跨核 flag：`FLAG_C1_V1`、`FLAG_C2_V2`、`FLAG_V1_C3`、
+`FLAG_V2_C45`、`FLAG_CUBE_POST`；D 准备完成后和 post 前各一次 `SyncAll`。这是官方结构，
+不是优化项目的 22/26/28 核结构。[^arc35-pipeline]
 
-前向/select-mask 的精度边界类似：Q/K 输入保留 FP16/BF16；pool 输出供 Cube 使用，QK 与 softmax
-max/sum 为 FP32；归一化 score cast FP16 后参与 Radix 排序，最终只回写 UINT8/INT8 mask。
-[^select-guide][^bsa-guide]
+### CATLASS 优化路径数据流
+
+```text
+host start : 分配 dqWs/dkWs/dvWs；启动 main，再在同一 stream 启动 post；不 memset
+main start : AIV 清零 dqWs/dkWs/dvWs -> PipeBarrier<PIPE_ALL> -> SyncAll<false>
+task start : Q/dO GM -> L1；LSE GM -> UB；O GM -> UB
+             D[row] = dot(dO[row], O[row]) -> UB
+KV loop    : K/V GM -> L1 -> L0A/L0B
+             QK MMAD -> L0C -> UB(S)
+             dO @ V^T MMAD -> L0C -> UB(dP)
+             AIV: P = exp(scale*S - LSE), dS = P*(dP - D)
+             P/dS -> L1，AIC 直接消费
+             dV = P^T @ dO -> L0C -> FP32 atomic -> dvWs
+             dQ += dS @ K -> L0C owner accumulator
+             dK = dS^T @ Q -> L0C -> FP32 atomic -> dkWs
+task end   : dQ L0C -> FP32 dqWs
+post       : dqWs/dkWs/dvWs -> dQ/dK *= scale, dV *= 1.0 -> CAST_RINT -> dQ/dK/dV GM
+```
+
+R5 固定 `kUsePostKernel=true`：`BsagMainKernel` 的 AIV 在每次 launch 开头清零三段 FP32
+workspace，随后 `SyncAll<false>()` 才进入 AIC/AIV 主流水；dQ 在 owner L0C 内跨 selected
+block 累加后写 `dqWs`，dK/dV 以 FP32 atomic 写 `dkWs/dvWs`。`BsagPostKernel` 固定 56 个
+AIV block，按 dQ、dK、dV 顺序执行 scale、`CAST_RINT` 和正式输出回写。host 只分配 workspace
+并启动两个 kernel，不执行 `aclrtMemsetAsync`；D 仍在 UB 内联，不落 workspace。R3/R4 的直出
+方案虽然更快，但依赖 host 预清零正式输出，ABI 责任错误，已回退，不能作为 R5 实现。
+[^bsag-catlass-host][^bsag-catlass-kernel]
+
+### Stage 划分与片上容量
+
+优化路径的主要 Stage 为：
+
+| Stage | owner | 输入 | 输出 | 边界 |
+|---|---|---|---|---|
+| S0 workspace 清零 | AIV | — | dqWs/dkWs/dvWs | `PipeBarrier<PIPE_ALL>` 后 `SyncAll<false>` |
+| S1 QK | AIC | Q、K | FP32 S | S 经 L0C→UB 交给 AIV |
+| S2 dP | AIC | dO、V | FP32 dP | 与 S1 同一 selected block |
+| S3 P/dS | AIV | S、dP、LSE、D | 低精度 P、dS | 写 L1，不回读 GM |
+| S4 梯度 MMAD | AIC | P、dS、Q、dO、K | dV/dQ/dK | dQ 留 owner L0C；dK/dV FP32 atomic 到 workspace |
+| S5 dQ 回写 | AIC | owner L0C | dqWs | task 末一次完成 |
+| S6 Post | AIV x 56 | FP32 dqWs/dkWs/dvWs | dQ/dK/dV GM | dQ/dK 乘 scale、dV 乘 1.0，统一 `CAST_RINT` |
+
+按 `bsag_kernel.cpp` 的 `Layout` 常量重新计算，128 块、FP16/BF16 的片上预留为：
+
+| 层级 | buffer | 大小 |
+|---|---|---:|
+| L1 | Q、dO | 各 32 KiB |
+| L1 | K[2]、V[2] | 各 2 x 32 KiB |
+| L1 | P^T[2]、dS[2] | 各 2 x 32 KiB |
+| L0C | S、dP、dQ、dKV scratch | 各 64 KiB |
+| UB | S[2]、dP[2] | 各 2 x 32 KiB |
+| UB | P16[2]、dS16[2] | 各 2 x 16 KiB |
+| UB | O16/dO16 staging + D/LSE 行与广播 + tail | 32 + 8.5 + 0.5 KiB |
+
+总计 L1 320 KiB、L0C 256 KiB、UB 233 KiB（`kUbSize = 238592 B`）；K/V/P/dS 都是物理
+ping-pong。O32/dO32 在 prologue 期间复用 P16/dS16 区域，不能把该复用再计入总量。该表只描述
+`bsag-catlass`，不是官方 Arc35 的资源承诺。清零阶段的全零 tile 复用 UB 起始的 64 KiB
+（S ping-pong 区），进入 task 流水后交回 S 使用，不增加静态预留。[^bsag-catlass-kernel]
+
+## 流水排布、同步关系与数值精度
+
+### 滞后一拍
+
+优化路径采用 MM12/MM345 滞后一拍：
+
+```text
+MM12(current)  = { S(current), dP(current) }      -> UB
+MM345(previous)= { dV, dQ, dK }                   -> L0C / FP32 workspace
+```
+
+第 `selected_count` 次是 flush 迭代：不产生新的 MM12，只排空上一轮的 MM345。dQ 在 task 内
+跨 selected block 累加，task 末一次写入 `dqWs`；dK/dV 在每块完成后追加到对应 FP32
+workspace。[^bsag-catlass-kernel]
+
+### 同步
+
+优化路径使用 `SYNC_MODE=4`，跨核基础 flag 为 `kFlagS`、`kFlagDp`、`kFlagDs`、`kFlagAck`、
+`kFlagFree`、`kFlagStride`，分别保护 S、dP、P/dS、AIC 归还、slot free 和双 sub-core 偏移；
+其余数据搬运由本地 `HardEvent` 配对。主 kernel 在 AIV 清零 workspace 后使用一次
+`PipeBarrier<PIPE_ALL>()` + `SyncAll<false>()`，任务流水本身不依赖 host 预清零；Post 与 Main
+在同一 stream 上顺序执行。[^bsag-catlass-kernel][^bsag-catlass-host]
+
+### 数值边界
+
+- Q/K/V/dO/O 为 FP16/BF16；QK、dP、dQ、dK、dV 的 MMAD 累加为 FP32。
+- D 在 FP32 中计算；P 由 FP32 S、FP32 scale、FP32 LSE 重算；dS 在 FP32 中形成后窄化。
+- 优化路径的 dK/dV 对 FP32 workspace 做 atomic add，跨 task 的累加非确定性会保留到 Post
+  的 `CAST_RINT` 之前；dQ 由 owner 独占，不需要 atomic。
+- dQ/dK 在 Post 出口乘 `scale`，dV 乘 1.0；三者都在 Post 统一 `CAST_RINT` 回写。
+  [^arc35-readme][^bsag-catlass-kernel]
+
+### 正确性与性能证据
+
+以下数据来自固定提交 `e3c13c0`（R5）发布的 36 例冻结 workload，不是 Arc35 源码字面结论，
+也不是本次独立复测；frontmatter 的 `verified` 事件记录该固定提交发布方的验证结果
+（`bsag-catlass/e3c13c0...`），不代表本知识仓重跑。[^bsag-catlass-workload]
+[^bsag-catlass-benchmark][^bsag-catlass-validation][^bsag-catlass-report]
+
+**正确性**
+
+| 指标 | 结果 |
+|---|---|
+| 用例 | 36/36 PASS |
+| 输出 tensor | 108/108 `matched_ratio=1.0`，全部有限 |
+| FP16 最大绝对误差 | 0.000488 |
+| BF16 最大绝对误差 | 0.001953 |
+| 容差 | FP16 atol/rtol=0.005/0.01，cap=0.1；BF16 atol/rtol=0.02/0.01，cap=1.0 |
+
+**性能**：候选为 `BsagMainKernel + BsagPostKernel`，两段 device `Task Duration` 相加；
+测量为 Ascend950PR、CANN 9.2.0-beta.2、`msprof op_summary`、warmup=1、repeat=20、逐例 p50。
+host API 时间不计入。旧基线为
+`torch_npu.npu_block_sparse_attention_backward` 的 Transpose + BlockSparseAttentionGrad
+调用链；最新基线为 `ops-transformer@6c8c5f19` 的 aclnn 实现。旧基线与候选在 device 6
+采集；最新 aclnn 在 device 7、候选在 device 6 采集，均为独占测量。
+
+| 基线 | 达到 1.0x | 最小 | p50 | 几何平均 | 算术平均 |
+|---|---:|---:|---:|---:|---:|
+| 旧 `torch_npu` | 36/36 | 1.042x | 1.273x | 1.504x | 1.624x |
+| 最新 aclnn | 14/36 | 0.834x | 0.987x | 1.004x | 1.012x |
+
+最新 aclnn 未达 1.0x 的 22 例覆盖 8K/16K 的 fixed/tail/varlen 和 k8/k50；1K 的 12 例全部
+达到 1.0x，8K varlen k50 的 2 例也通过。不能用旧基线 36/36 替代最新 aclnn 的 14/36。
+逐例输入、耗时和结果见固定 workload 与报告。性能门禁为逐例
+`vendor / candidate >= 1.0x`。R5 恢复 workspace + Post 后，大 shape 的 dQ/dK/dV 回写成本
+高于 R3/R4 直出实验：8K fixed k50 由 R4 约 1900 us 增至 2093.1 us，8K TND k50 由约
+2514.6 us 增至 2851.7 us。这是恢复 ABI 责任后的口径变化；R3/R4 的直出耗时不能作为最终性能。
+[^bsag-catlass-benchmark][^bsag-catlass-aclnn]
 
 ## 用法
 
-先通过 compact query 定位本 concept，再完整读取；不得把知识内容当作当前工程已验收的证据。
-
-设计新算子时按以下顺序消费本 concept：
-
-1. 固定 mask 轴语义（Q/KV 轴、layout、是否 K-major bitmap）与无效块、空行的处理约定。
-2. 由 blockShape、head dim、dtype 和 layout 决定 tiling key / 模板实例，再推导 `baseM/baseN`、
-   `singleM`、尾块 16 对齐和 K/V 复用边界。
-3. 按“数据路径与存储层级”核算 UB/L1/L0/workspace 上限与地址偏移，任何非对称 block shape 必须
-   做地址重叠专项检查。
-4. 按“流水排布”建立 stage/slot/flag/event 表，并单独核对启动、稳态、skip 路径和排空。
-5. 按“验证方法”建立正确性矩阵，再谈性能候选。
+1. 先冻结实现层：选择官方 Arc35 bool mask，还是 `bsag-catlass` int32 索引表；两套 ABI 不能混用。
+2. 官方路径冻结 `blockSparseMask` 的轴序、`actual_seq_lengths` 的无前导 0 规则，并采用
+   `GetCoreNumAic()`、D/sftg workspace、dq/dk/dv FP32 workspace + post。
+3. 项目路径冻结索引表 shape、`mask_heads`、`K_sel` 和 `[B+1]` 前缀边界；需要 bool mask 时先
+   完成逐行“非零位置 -> 物理 block 索引”的转换。
+4. 若调用 vendor 基线，使用 `cu_seqlens[1:]` 作为 `actual_seq_lengths`，不要传前导 0。
+5. 采用 `bsag-catlass` 路径时，必须实现 R5 的“AIV 在主 kernel 内清零 dqWs/dkWs/dvWs +
+   dQ 写 dqWs + dK/dV FP32 atomic + 独立 post scale/cast 回写”；host 不得承担 memset，
+   也不要采用 R3/R4 host 预清零直出正式输出的方案。D 仍在 UB 内联。
+6. 性能判断使用固定 workload 和固定基线；先报告正确性，再报告逐例性能，并分别列出旧基线与
+   最新 aclnn 结果。
 
 ## 代码模式
 
-以下为与语言无关的伪代码骨架，用于表达算法与数据流，不绑定具体编程模型。
+以下伪代码只表达 `bsag-catlass` 最终测量路径：
 
 ```text
-for each (b, qHead, singleM_group, kv_base_tile):
-    if group has no valid sparse block: continue
-    for each q_tile in group (baseM rows):
-        if mask(b, qHead, q_tile, kv_base_tile) == 0: continue
-        load K/V to L1 if first valid q_tile in group
-        S  = mmad(Q_tile, K^T)            # FP32 accumulate
-        P  = exp(scale * S - LSE)         # FP32 -> cast input dtype
-        dP = mmad(dO_tile, V^T)           # FP32 accumulate
-        dS = P * (dP - D)                 # FP32 -> cast input dtype
-        dV_acc += mmad(P^T, dO_tile)      # FP32 L0C accumulate
-        dQ_acc  = mmad(dS, K)             # FP32 L0C
-        dK_acc += mmad(dS^T, Q_tile)      # FP32 L0C
-        atomic_add(dQ_workspace, dQ_acc)
-    atomic_add(dK_workspace, dK_acc)
-    atomic_add(dV_workspace, dV_acc)
-// post
-dQ = cast(scale * dQ_workspace); dK = cast(scale * dK_workspace); dV = cast(dV_workspace)
+host:
+    alloc(dqWs, dkWs, dvWs)
+    launch main; launch post
+
+main:
+    AIV: zero(dqWs, dkWs, dvWs); PipeBarrier; SyncAll
+
+    for task in grid_stride(total_q_tasks, block_num):
+        (b, h, qb) = decode_task(task)
+        selected = filter_negative_out_of_range_and_dedupe(block_indices, mask_row), keep order
+
+        load Q, dO, LSE
+        for row in q_rows:
+            D[row] = dot(dO[row], O[row])
+
+        dQ_acc = 0
+        for idx in 0..selected_count:       # last idx is flush
+            if idx < selected_count:
+                kvb = selected[idx]
+                S   = MMAD(Q, K[kvb]^T)     # FP32 L0C
+                dP  = MMAD(dO, V[kvb]^T)    # FP32 L0C
+                P   = exp(scale*S - LSE)
+                dS  = P * (dP - D)
+                dV  = MMAD(P^T, dO)         # FP32 L0C
+                atomic_add_fp32(dvWs[kvb], dV)
+                dK  = MMAD(dS^T, Q)         # FP32 L0C
+                atomic_add_fp32(dkWs[kvb], dK)
+                dQ_acc += MMAD(dS, K[kvb])  # owner L0C
+
+        write_fp32(dqWs, dQ_acc)            # L0C -> workspace
+
+post:
+    dQ_out = cast_rint(scale * dqWs)
+    dK_out = cast_rint(scale * dkWs)
+    dV_out = cast_rint(1.0 * dvWs)
 ```
 
-C++ 形式实现时，矩阵乘应落到 Cube MMAD 数据路径（GM→L1→L0A/L0B→FP32 L0C），softmax 重算、
-P/dS 生成、scale/cast 和 workspace 归约应由 Vector 侧承担；标量代码只处理地址、索引、循环控制
-和 tail 条件，不得用逐元素标量循环代替 QK/PV 主计算。[^bsag-cube][^bsag-vector][^bsa-guide]
+五次矩阵乘必须落到 CATLASS Cube MMAD 数据路径；workspace 清零、D、P/dS、atomic 和 Post
+scale/cast 的 staging 由 Vector/MTE 承担。标量代码只处理索引、循环和尾块。
+[^bsag-catlass-kernel]
 
 ## 约束
 
-- 固定来源只覆盖 `__CCE_AICORE__ == 310`、DAV_3510 注册的 Ascend 950 Arc35 路径，不能外推到
-  其他架构；本 concept 的 `architectures` 因此只声明 `ascend950`。[^bsag-entry][^bsag-tiling]
-- Arc35 host tiling 只接受 FP16/BF16、`headDim = 128`、blockShapeX/Y 为 64 的倍数，且 Q/K/V 的
-  batch、序列长度和 head dim 相同；Q heads 必须等于 `qGroup * kvHeads`。[^bsag-guide][^bsag-tiling]
-- Q/KV layout 必须相同且只允许 BSND、BNSD、TND；TND 必须提供两组 actual-seqlen，非 TND 忽略。
-  attention mask、非零 mask type、滑窗 pre/next token 均不在当前路径内，确定性模式也不支持。
-  [^bsag-guide][^bsag-tiling]
-- TND kernel 把 actual-seqlen 数组解释为累计结束位置：第 0 项直接作为长度，后续长度为
-  `x[i] - x[i-1]`，前一累计值又直接用于 GM 基址。这与 README “每个 batch 实际长度数组”的文字
-  存在漂移；调用和 reference 必须使用累计边界，直至源码或文档统一。[^bsag-guide][^bsag-entry]
-- workspace 的 sparse index/count（前向）与 `D/dQ/dK/dV`（反向）大小和偏移必须与 host tiling
-  完全一致；修改压缩表示时必须同步更新消费者和 workspace 计算。[^bsag-tiling][^bsa-guide]
-- workspace 大小使用 64-bit 元素数，但 AIV 的均分结构和循环入口使用 32-bit
-  `data_size/start_idx/len`；接近或超过 `2^32` 元素的梯度区必须做 host 上界检查和专项验证。
-  [^bsag-tiling][^bsag-vector]
-- 每个有效 `(B, qHead, qBlock)` 必须至少选择一个有效 KV block；索引需按递增 KV block 顺序压缩，
-  否则 gathered 尾长和逻辑拼接顺序会失配。[^bsa-guide][^bsag-scheduler]
-- 不得把知识内容中的候选优化写成已验证收益；每条优化必须先在完整正确性矩阵下通过再进入
-  benchmark。[^bsag-guide]
+- 官方 Arc35 与 `bsag-catlass` 的输入 ABI、workspace、核数和同步结论不能混写；引用时写明实现与提交。
+- Arc35 固定源码支持 BSND/BNSD/TND；`bsag-catlass` 的冻结路径只覆盖 BNSD/TND。[^arc35-entry]
+- 输入为 FP16/BF16，`head_dim=128`，`block_shape=[128,128]`，`Nq % Nkv == 0`。
+- 项目路径的实现接受 `mask_heads` 为 1 或 `Nq`，但项目 API 契约与 36 例冻结证据只覆盖
+  `mask_heads=1`；索引表允许负 padding、重复和非升序，过滤后保留输入顺序。
+- 项目路径的 `cu_seqlens_q/k` 为 `[B+1]`、非降、首项 0、末项等于 packed token 数；vendor 基线
+  使用去掉首项的累计值。
+- R5 的 dK/dV atomic 目标是 FP32 workspace，Post 之后才写正式输出；不设置 `deterministic`
+  模式，低位非确定性不视为该路径错误。
+- R5 必须由主 kernel 内 AIV 清零 workspace，并由独立 Post 完成 scale/cast；host memset 或
+  R3/R4 直出正式输出都不属于 R5 实现。
+- 性能数字只适用于 `bsag-catlass@e3c13c0` 的 36 例、Ascend950PR、CANN 9.2.0-beta.2 实测范围。
 
 ## 失败表现
 
-- 非对称 sparse pattern 像沿 block 对角线转置：优先核对 README shape 与 `IsValidBlock` 的
-  KV-major 线性读取漂移。[^bsag-guide][^bsag-entry]
-- TND 第二个 batch 起整体错位：actual-seqlen 传成逐 batch 长度而非累计结束位置。
-  [^bsag-guide][^bsag-entry]
-- `blockShapeX != blockShapeY` 时出现局部随机误差或旧 tile：优先检查 V/dO L1 buffer 的
-  `baseM/baseN` offset 重叠，再检查尾部 16 对齐。[^bsag-cube]
-- dV 正确但 dQ/dK 成比例偏差：post 的 softmax scale 缩放遗漏、重复或位置改变。
-  [^bsag-vector]
-- 只有 GQA/MQA 的 dK/dV 错：检查 `qHead/qGroup` 的 KV-head 映射和跨 query-head 的 FP32 atomic
-  累加。[^bsag-guide][^bsag-scheduler]
-- 高稀疏 workload 加速不随有效块数下降：先看全量 workspace zero/post、dO/O 前处理和每核重复
-  mask 扫描占比，而不是直接归因 MMAD。[^bsag-pipeline][^bsag-vector]
-- 偶发挂起或读取上一 task：核对 phase flag、QK/dP 生产 flag、P/dS 生产 flag，以及 task
-  ping-pong 与 KV ping-pong 是否成组变化。[^bsag-pipeline]
-- 某个 mask row 全零时越界或得到随机输出：`sparseCount == 0` 后仍读取最后一个索引。
-  [^bsa-guide]
-- 非连续稀疏块结果像连续 KV：QK/PV 的 gathered offset 到原 block index 映射错误。
-  [^bsa-guide]
-- 多 KV tile 时概率和不为 1、O 随 tile 顺序改变：running max/sum 或旧 O rescale 漏更新。
-  [^bsa-guide]
-- 超大 tensor 仅尾段未初始化或回写缺失：检查 64-bit workspace size 到 32-bit AIV 均分字段的
-  截断。[^bsag-tiling][^bsag-vector]
+- 把官方 bool mask 当作物理 block 索引：数字 0 在 bool mask 中表示“不选”，在索引表中表示“选第 0 块”。
+- 沿用官方 `[B, Nq, QBlocks, KVBlocks]` 轴序读取固定 kernel：非对称 mask 会整块错位；全 1 或对称 mask 会掩盖。
+- 给官方/vendor 传入带前导 0 的 `actual_seq_lengths`：第一段被解释为长度 0，后续每段整体错位。
+- 每行索引表有负值或重复时结果异常：先检查过滤/折叠逻辑，不能直接按槽位计算。
+- dK/dV 只有最后一个 KV block 的结果：缺少 FP32 atomic，或主 kernel 的 workspace 清零阶段没有执行。
+- dQ 只保留最后一个 selected block：owner L0C 没有在 task 内累加，或首块没有正确初始化。
+- dQ/dK 成比例偏大/偏小：scale 作用位置错；dV 不应乘 scale。
+- 空选择结果非 0 或重复 launch 被上一轮污染：主 kernel 清零/`SyncAll` 缺失，或 Post 未按
+  R5 读取清零后的 workspace。
+- D 整行偏差：dO/O 行对齐或 LSE 行映射错；D 是逐行点积，不应引入 `dO@O^T` MMAD。
+- varlen 第二个 batch 起错位：项目任务前缀应使用每 batch 的 local q block 数，索引表行号仍使用全局 `qBlocksMax`。
+- 小 shape 或 k50 大 shape 性能不足：先核对核数、kernel 内清零、FP32 atomic、Post 和基线版本，
+  再调整 TileShape。
 
 ## 验证方法
 
-先记录 tiling key，确认实际命中的 dtype/layout 组合与预期一致，再用 CPU/FP32 oracle 按有效
-sparse tile 计算算法公式。反向 oracle 必须接收同一次前向产生的 O 和 LSE；除最终 dQ/dK/dV 外，
-至少抽查 `D`、重算 P、dS，才能区分前向中间量、SoftmaxGrad 和后三次 MMAD 的误差。[^bsag-guide]
-[^bsag-cube]
+先用 CPU/FP32 oracle 按有效 sparse tile 计算 `D`、P、dS，再比较 `dQ/dK/dV`。真实链路测试必须
+使用同一次前向产生的 O/LSE；只给合成 O/LSE 时验证的是给定输入的反向契约。[^arc35-readme]
 
 正确性矩阵至少覆盖：
 
-- dtype × layout：FP16/BF16 × BSND/BNSD/TND（前向另含 mask 前处理的 TND/BNSD）；
-- head 结构：MHA、GQA、MQA，含 `q_heads != kv_heads`；
-- mask：全 1、单 block、多个连续块、多个非连续块、只选最后一个尾块、每行不同 pattern、
-  QBlocks 与 KVBlocks 不相等；
-- shape：`64x64`、`128x128`，以及专门暴露 L1 offset 的 `64x128`、`128x64`；对齐/非对齐 S 尾块、
-  TND 多 batch 累计边界、零长度 batch、Q/KV 每 batch 长度不同但总 token 数满足 host 约束；
-- 输出：O、可选 LSE、padded row 不被写入/保持约定值；全零 mask row 应在 host/reference 阶段
-  拒绝；
-- 变形关系：mask 全一等价同精度边界的 dense attention；对未选 KV token 修改 K/V 不改变输出；
-  保持索引顺序时拆分/合并连续 selected run 不改变结果。
+- 官方 bool mask：非对称轴序、全选、单块、空行、不同 `Nq/Nkv`，并验证 README 与 kernel 轴序是否有漂移。
+- 项目索引表：负 padding、越界值、重复、非升序、空选择行、`mask_heads=1` 与 `mask_heads=Nq`。
+- ABI 转换：官方 bool mask 逐行非零位置转项目索引表；调用 vendor 时再把索引表展开为同 shape
+  的 bool mask；项目 `[B+1]` 边界转 vendor 无前导 0 累计值。
+- dtype x layout：FP16/BF16 x BNSD/TND；覆盖 1K/8K/16K、尾块和 varlen 多 batch。
+- 输出：padded row 不写；空选择行由 kernel 清零 + Post 保持 0；dK/dV 跨 task 的 FP32 atomic
+  累加完整；同一进程重复 launch 不残留上一轮结果。
 
-反向还需覆盖重复运行的容差分布、deterministic=true 的 host 拒绝，以及接近 32-bit 元素边界的
-静态上界检查。固定提交的硬件测试源码只有一个 FP16/BNSD/MHA、`128x128` 序列、`64x64` block、
-全 1 mask 的 launch smoke，O/LSE 被置零且不与 golden 比较，不能作为数值正确性证据；它会同时
-隐藏 mask 转置和非对称 L1 offset 风险。[^bsag-guide][^bsag-tiling]
+性能验收使用固定 36 例（24 定长，其中 12 fixed + 12 tail；另 12 varlen），同设备、同 shape、
+同 dtype/layout、同稀疏模式，
+取每例 p50，并以对应基线逐例判定 `vendor / candidate >= 1.0x`。候选耗时为
+`BsagMainKernel + BsagPostKernel` 的 device `Task Duration` 之和，包含 kernel 内清零和 Post，
+不含 host API 时间。旧 `torch_npu` 与最新 aclnn 必须分开报告，不能用一套基线的通过数替代
+另一套。[^bsag-catlass-benchmark][^bsag-catlass-aclnn]
 
-性能验证必须使用相同设备、频率状态、shape、dtype、layout、mask pattern 和预热/采样策略比较，
-同时记录端到端 kernel 时间与各流水活跃度；未 profile 的机制只能保留为候选，不能写成“已提速”。
-[^bsag-guide][^bsag-cube]
-
-[^bsag-guide]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的反向公式、输入布局、mask ABI、dtype 与公开约束。
-[^bsag-entry]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的 AICORE 310 条件、mixed-core 属性、`1000..1005` 模板分发与 TND 累计长度语义。
-[^bsag-tiling]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的 Arc35 capability、base tile、core 数、workspace 大小/布局与 tiling key。
-[^bsag-pipeline]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的前处理、主 ping-pong 流水、跨核 flag、全核同步和 post 阶段。
-[^bsag-scheduler]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的稀疏扫描、`singleM` 分组、轮转分核、KV 复用与任务运行时信息。
-[^bsag-cube]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的 L1/L0 分区、五次 MMAD、跨 Q tile 累加和 FP32 atomic 写回。
-[^bsag-vector]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的 workspace 清零、SoftmaxGradFront、P/dS、缩放 cast 与 AIV 均分。
-[^bsa-guide]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的前向 BSA 数学语义、gathered-KV、mask shape、dtype 与接口约束。
-[^select-guide]: <https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/block-sparse-attention-grad/block-sparse-patterns.md> 固定提交中的 select block mask 池化、QK、两遍 Online Softmax、Radix TopK 与 mask 回写。
-[^sink-guide]: 固定提交 flash-attention 前向文档中 sink 进入 softmax 分母并参与 max 的定义。
+[^arc35-readme]: <https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/README.md> Arc35 Block Sparse Attention Grad README：公式、bool block mask、dtype/layout 与 TND 输入说明。
+[^arc35-entry]: <https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/block_sparse_attention_grad.cpp> Arc35 kernel entry：模板分发与执行路径。
+[^arc35-tiling]: <https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_host/arch35/block_sparse_attention_grad_tiling_arch35.cpp> Arc35 host tiling：`GetCoreNumAic()`、`SetBlockDim()`、workspace 与输入检查。
+[^arc35-pipeline]: <https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/block_sparse_attention_grad_arch35.h> Arc35 AIC/AIV 流水：D/sftg、五个跨核 flag、两次 SyncAll 与 post。
+[^arc35-addr]: <https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/addr_compute.h> Arc35 稀疏任务生成：bool mask 读取与线性 offset。
+[^arc35-cube]: <https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/cube_op_bsag_arch35.h> Arc35 Cube：五次 MMAD 与 L1/L0 数据路径。
+[^arc35-vector]: <https://gitcode.com/cann/ops-transformer/blob/adc5fd30003da4c73bc478cf42c6f031b491b973/attention/block_sparse_attention_grad/op_kernel/arc35/vec_op_bsag_arch35.h> Arc35 Vector：D/sftg、P/dS、workspace 清零与 scale/cast。
+[^bsa-forward]: <https://gitcode.com/cann/ops-transformer/blob/3f54e4334060281fad7b4b682393d22830928a33/attention/block_sparse_attention/README.md> Block Sparse Attention 前向 README：O/LSE 定义与 gathered-KV 语义。
+[^bsag-catlass-readme]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/README.md> CATLASS R5 项目总览、最终结果、复现入口与源码校验值。
+[^bsag-catlass-kernel]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/code/op_kernel/bsag_kernel.cpp> CATLASS R5 kernel：索引过滤、D 内联、AIV workspace 清零、dQ 写 FP32 workspace、dK/dV FP32 atomic、流水与 `Layout` 常量。
+[^bsag-catlass-host]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/code/op_host/bsag_e2e.cpp> CATLASS host：22/26/28 核、`kUsePostKernel=true`、56-block Post、host 不 memset 与 TND 边界构造。
+[^bsag-catlass-workload]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/code/test/workload.jsonl> 36 例冻结 workload：shape、dtype、稀疏模式与容差。
+[^bsag-catlass-benchmark]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/reports/benchmark_final.json> R5 旧 `torch_npu` 基线逐例 p50 与 36/36 汇总。
+[^bsag-catlass-validation]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/reports/validation_summary.json> R5 36 例正确性、108 个输出与误差汇总。
+[^bsag-catlass-aclnn]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/reports/bsag_latest_aclnn_comparison.json> 最新 aclnn 基线的逐例对比与 14/36 汇总。
+[^bsag-catlass-report]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/docs/performance_report.md> R5 最终性能与 R0-R5 迭代报告：kernel 清零、FP32 workspace + Post 的验收口径。
+[^bsag-catlass-hits]: <https://gitcode.com/jiay0u/bsag-catlass/blob/e3c13c049616745a17d63ff1f5389ae33f449afa/docs/knowledge_hits.md> CATLASS 项目的知识库命中记录：固定知识库版本、BSAG 卡读取与采用位置。

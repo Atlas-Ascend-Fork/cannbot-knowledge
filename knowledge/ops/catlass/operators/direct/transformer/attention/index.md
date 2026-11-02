@@ -1,6 +1,6 @@
 # CATLASS C++ 注意力算子
 
-- [Block Sparse Attention Grad 模式](block_sparse_attention_grad_block_sparse_patterns.md)：块稀疏注意力梯度的二值 block mask 语义、稀疏任务切分、反向计算链及 FP32 workspace 精度边界。
+- [Block Sparse Attention Grad：Arc35 官方语义与 CATLASS 优化实现](block_sparse_attention_grad_block_sparse_patterns.md)：区分官方 bool block mask/FP32 workspace 路径与 CATLASS R5 int32 索引表/kernel 内清零/FP32 workspace + post 路径，并记录固定源码和 36 例正确性与性能证据。
 - [FA dense 前向 A2/A3 实现模式](flash_attention_flash_attention_infer_patterns.md)：dense flash attention 前向（QK^T→online softmax→PV，MHA/GQA/fused attention）的 BNSD 接口契约、AIC/AIV 分核、online softmax 状态递推、workspace 与同步协议、PAGED/尾块/mask 处理、aclnnFlashAttentionScore 精度标杆、性能 gate 口径与 FA0-FA13 检查表。
 - [FA 变体族 A2/A3 手搓配方精要](flash_attention_fa_variants_patterns.md)：FA 变体（FA-Paged 标准/GQA/Causal、fa-sink、fa-varlen TND、fa-q8、FFA 双 KV、MLA latent 压缩分页）的手搓配方精要：算法差异、分核组织（S1 单遍/s1s2 双层/flash-decoding）、契约转换、关键修复、死锁前提与验收口径。
 - [FA-SageAttention Ascend 950 量化注意力实现模式](flash_attention_fa_sageattention_patterns.md)：SageAttention（K 平滑 + INT8 QK + online softmax + FP16 PV）在 dav-3510 上的双 kernel 架构、量化路径与 comp 补偿代数、CrossCore mode4 协议、8 条不变量 I1-I8、精度取证方法与平台坑排障路由。
