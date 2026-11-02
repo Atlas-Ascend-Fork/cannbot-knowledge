@@ -137,3 +137,10 @@ bash check.sh
 - [精炼规约(预案)](governance/specs/refinery.md)：去中心知识精炼分支、独立成品目录与周期回灌的预案;未启用,获准并通过验收前不改变现行治理。
 
 本仓采用 [CANN Open Software License Agreement 2.0](LICENSE)。
+
+## 🤝联系我们
+
+欢迎交流知识库的使用、知识贡献和改进建议。
+
+- **问题反馈**：通过 GitCode [Issues](https://gitcode.com/cann/cannbot-knowledge/issues) 提交问题或建议。
+- **加入交流群**：访问 [联系我们](https://gitcode.com/cann/cannbot-knowledge/discussions/1)，获取最新微信入群二维码。
