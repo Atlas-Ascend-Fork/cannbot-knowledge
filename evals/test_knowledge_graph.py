@@ -23,6 +23,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = REPOSITORY_ROOT / ".agents/skills/knowledge-ingest"
 GRAPH_SCRIPT = SKILL_ROOT / "scripts/knowledge_graph.py"
 INGEST_SCRIPT = SKILL_ROOT / "scripts/knowledge_ingest.py"
+LINT_SCRIPT = REPOSITORY_ROOT / ".agents/skills/knowledge-lint/scripts/knowledge_lint.py"
 API = "ops/ascendc/apis/interface"
 OPERATOR = "ops/ascendc/operators/direct/cv/objdetect/implementation"
 UNLINKED = "ops/ascendc/apis/similar"
@@ -62,6 +63,67 @@ class KnowledgeGraphTests(unittest.TestCase):
 
     def run_graph(self, *arguments: str) -> subprocess.CompletedProcess[str]:
         return self.run_script(GRAPH_SCRIPT, *arguments)
+
+    def test_sync_indexes_recognizes_inline_link_title(self) -> None:
+        index = self.root / "knowledge/ops/ascendc/apis/index.md"
+        original = index.read_text(encoding="utf-8")
+        self.assertIn("(interface.md)", original)
+        index.write_text(
+            original.replace("(interface.md)", '(interface.md "API title")', 1),
+            encoding="utf-8",
+        )
+
+        result = self.run_script(INGEST_SCRIPT, "sync-indexes")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        synchronized = index.read_text(encoding="utf-8")
+        self.assertEqual(1, synchronized.count("](interface.md"), synchronized)
+
+        result = self.run_script(INGEST_SCRIPT, "sync-indexes", "--check")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("stale 0", result.stdout)
+
+        result = self.run_script(LINT_SCRIPT, "--strict-navigation", "--json")
+        findings = json.loads(result.stdout)["findings"]
+        self.assertNotIn("index.duplicate", {finding["code"] for finding in findings})
+
+    def test_sync_indexes_ignores_links_in_navigation_summaries(self) -> None:
+        index = self.root / "knowledge/ops/ascendc/apis/index.md"
+        original = index.read_text(encoding="utf-8")
+        for link in (
+            "[接口](interface.md)",
+            '[接口](interface.md "API title")',
+            "[接口：概述](interface.md)",
+            '[接口](interface.md "标题：API")',
+            '[接口：概述](interface.md "标题：API")',
+        ):
+            with self.subTest(link=link):
+                index.write_text(
+                    original.replace(
+                        "- [SharedContract](interface.md)：",
+                        f"- {link}：参见[官方文档](https://example.com)",
+                        1,
+                    ),
+                    encoding="utf-8",
+                )
+
+                for _ in range(2):
+                    result = self.run_script(INGEST_SCRIPT, "sync-indexes")
+                    self.assertEqual(
+                        0, result.returncode, result.stdout + result.stderr
+                    )
+
+                synchronized = index.read_text(encoding="utf-8")
+                self.assertEqual(1, synchronized.count("](interface.md"), synchronized)
+                result = self.run_script(INGEST_SCRIPT, "sync-indexes", "--check")
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertIn("stale 0", result.stdout)
+
+                result = self.run_script(LINT_SCRIPT, "--strict-navigation", "--json")
+                findings = json.loads(result.stdout)["findings"]
+                self.assertNotIn(
+                    "index.duplicate", {finding["code"] for finding in findings}
+                )
+                index.write_text(original, encoding="utf-8")
 
     def append(self, doc_id: str, body: str) -> None:
         path = self.root / "knowledge" / f"{doc_id}.md"

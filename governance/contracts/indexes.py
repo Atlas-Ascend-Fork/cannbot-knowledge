@@ -20,7 +20,7 @@ from .knowledge import markdown_targets, split_frontmatter
 
 
 DIRECT_ENTRY_RE = re.compile(
-    r"^- \[(?:\\.|[^]\\])+\]\(([^)#]+)(?:#[^)]*)?\)(?:：.*)?$"
+    r"^(- \[(?:\\.|[^]\\])+\]\((?:[^)#]+)(?:#[^)]*)?\))(?:：.*)?$"
 )
 REFERENCE_ENTRY_RE = re.compile(
     r"^- \[((?:\\.|[^]\\])+)\]\[((?:\\.|[^]\\])*)\](?:：.*)?$"
@@ -148,14 +148,15 @@ def desired_entries(directory: Path) -> list[tuple[str, str]]:
 
 
 def direct_entry_target(line: str, reference_definitions: str = "") -> str | None:
-    match = DIRECT_ENTRY_RE.fullmatch(line)
-    target = match.group(1) if match is not None else None
-    if target is None and REFERENCE_ENTRY_RE.fullmatch(line):
+    targets: list[tuple[str, bool]] = []
+    direct_match = DIRECT_ENTRY_RE.fullmatch(line)
+    if direct_match is not None:
+        targets = markdown_targets(direct_match.group(1))
+    elif REFERENCE_ENTRY_RE.fullmatch(line):
         targets = markdown_targets(line + "\n" + reference_definitions)
-        if len(targets) == 1 and not targets[0][1]:
-            target = targets[0][0].split("#", 1)[0]
-    if target is None:
+    if len(targets) != 1 or targets[0][1]:
         return None
+    target = targets[0][0].split("#", 1)[0]
     path = Path(target)
     if (
         len(path.parts) == 1
