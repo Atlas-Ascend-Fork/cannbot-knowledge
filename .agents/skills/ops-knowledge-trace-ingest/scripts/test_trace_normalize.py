@@ -44,6 +44,107 @@ def _normalize_text(text: str) -> dict:
 
 
 class TraceNormalizeRegressionTest(unittest.TestCase):
+    def test_markdown_body_session_header_does_not_switch_sessions(self) -> None:
+        text = (
+            "# Session Transcript: ses_parent\n"
+            "## Turn 1 — 2026-09-29T00:00:00Z\n"
+            "### User\n"
+            "Please explain this Markdown example:\n"
+            "# Session Transcript: ses_example_h1\n"
+            "## Session Transcript: ses_example_h2\n"
+            "### Session Transcript: ses_example\n"
+            "#### Session Transcript: ses_example_h4\n"
+            "##### Session Transcript: ses_example_h5\n"
+            "###### Session Transcript: ses_example_h6\n"
+            "```markdown\n"
+            "### Session Transcript: ses_example_fenced\n"
+            "```\n"
+            "This belongs to the user message.\n"
+            "### Assistant\n"
+            "The parent session answer quotes another header:\n"
+            "### Session Transcript: ses_answer_example\n"
+            "This remains assistant content.\n"
+            "## Turn 2\n"
+            "### User\n"
+            "Follow-up question.\n"
+            "### Assistant\n"
+            "Follow-up answer.\n"
+        )
+        collector = tn.SourceCollector()
+        collector.blobs = [("session.md", text.encode("utf-8"))]
+        collector.warnings = []
+        records = tn.parse_records(collector.blobs, collector.warnings)
+        selected, _, events, failures = tn.normalize_source(collector, records, "auto")
+
+        self.assertEqual("markdown_transcript", selected)
+        self.assertEqual([], failures)
+        messages = [
+            (event["session_id"], event["actor"], event["content"].get("text"))
+            for event in events
+            if event["event_type"] in {"user_message", "assistant_message"}
+        ]
+        self.assertEqual(
+            [
+                (
+                    "ses_parent",
+                    "user",
+                    "Please explain this Markdown example:\n"
+                    "# Session Transcript: ses_example_h1\n"
+                    "## Session Transcript: ses_example_h2\n"
+                    "### Session Transcript: ses_example\n"
+                    "#### Session Transcript: ses_example_h4\n"
+                    "##### Session Transcript: ses_example_h5\n"
+                    "###### Session Transcript: ses_example_h6\n"
+                    "```markdown\n"
+                    "### Session Transcript: ses_example_fenced\n"
+                    "```\n"
+                    "This belongs to the user message.",
+                ),
+                (
+                    "ses_parent",
+                    "assistant",
+                    "The parent session answer quotes another header:\n"
+                    "### Session Transcript: ses_answer_example\n"
+                    "This remains assistant content.",
+                ),
+                ("ses_parent", "user", "Follow-up question."),
+                ("ses_parent", "assistant", "Follow-up answer."),
+            ],
+            messages,
+        )
+
+    def test_markdown_subagent_session_header_still_switches_sessions(self) -> None:
+        text = (
+            "# Session Transcript: ses_parent\n"
+            "## Turn 1\n"
+            "### User\nparent question\n"
+            "### Assistant\nparent answer\n"
+            "## Subagent Sessions of ses_parent (1)\n"
+            "### ses_child (agent_type: worker)\n"
+            "### Session Transcript: ses_child\n"
+            "#### Turn 1\n"
+            "##### User\nchild question\n"
+            "##### Assistant\nchild answer\n"
+        )
+        collector = tn.SourceCollector()
+        collector.blobs = [("session.md", text.encode("utf-8"))]
+        collector.warnings = []
+        records = tn.parse_records(collector.blobs, collector.warnings)
+        selected, _, events, failures = tn.normalize_source(collector, records, "auto")
+
+        self.assertEqual("markdown_transcript", selected)
+        self.assertEqual([], failures)
+        messages = [
+            (event["session_id"], event["actor"], event["content"].get("text"))
+            for event in events
+            if event["event_type"] in {"user_message", "assistant_message"}
+        ]
+        self.assertIn(("ses_parent", "user", "parent question"), messages)
+        self.assertIn(("ses_parent", "assistant", "parent answer\n"
+                       "## Subagent Sessions of ses_parent (1)"), messages)
+        self.assertIn(("ses_child", "user", "child question"), messages)
+        self.assertIn(("ses_child", "assistant", "child answer"), messages)
+
     def test_plain_text_input_is_not_silently_dropped(self) -> None:
         result = _normalize_text(
             "这是一段普通对话文本\n没有 JSON 结构\n也没有 trace 语义\n"

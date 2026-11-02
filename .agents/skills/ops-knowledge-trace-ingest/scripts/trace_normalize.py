@@ -917,7 +917,7 @@ def _adapt_markdown_text(text: str, source: str, raw_sha256: str) -> tuple[list[
             cur_section = None
             continue
         m_ses = MD_SES_TRANSCRIPT.search(stripped)
-        if m_ses:
+        if m_ses and cur_section is None:
             # "### Session Transcript: <id>" inside a subagent block; also the head line
             sid = m_ses.group(1)
             if sid not in started:
