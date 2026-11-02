@@ -1,0 +1,3 @@
+# moe fused small batch
+
+- [【已撤回】A 的有效搬运行高 ~191 行 —— 反解模型只拟合了它被标定的那一个 bs，源码也不支持该机制](mmad_not_padding_does_not_imply_mte1_not_moving_padded_rows.md)：arch35 (Ascend 950DT) 融合 MegaMoe A8W4：本卡原主张「MTE1 把 A 按 ~191 行搬入，而 MMAD 只算 ~9 行」，现【撤回】。三条独立理由：① 源码里 mL1Size 是每专家实际行数，同一个 mSize 相隔十六行同时喂给 copy_l1_to_l0a 与 MMAD 的 params.m，21× 分歧在该处不可表达；② 该模型在 bs=32 标定，固定后预测各 bs 的 aic_mte1 恒为 697.7 µs，而实测为 450.4/697.7/1133.9，且外推到 bs=512 需要 ~470 行 > tileM=256，被本卡自己的「行高 > 256 即不可能」判据否掉；③ MTE1 在本路径有四个消费者（A/scaleA/B/scaleB），原预算只记了两个。仍然成立的是：实测 aic_mte1 显著超出 A+B 的朴素字节预测，且缺口随 m 增大（bs 1/32/512 为 50.6/283.6/505.6 µs）—— 存在一个随 m 增长而超出 A 字节的项，但它不是固定的 191 行补齐。

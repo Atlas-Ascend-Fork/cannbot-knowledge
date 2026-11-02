@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/toolchain/msprof_agent_guide.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-19T18:01:00Z"
+updated_at: "2026-10-21T04:09:57Z"
 platforms: ["950"]
 ---
 # msprof Agent 使用指南
@@ -136,9 +136,9 @@ msprof 的 `--aiv-metrics` 参数控制采集内容，不同 group 不能同时�
 
 **推荐流程**:
 1. 先用默认 PipeUtilization 跑一次
-2. 如果 vec_ratio ≈ 1.0 且性能仍差 → 跑 Memory 检查带宽
-3. 如果 scalar_ratio 高 → 间接寻址/控制流瓶颈（GetValue GM 标量读）
-4. 如果 mte3_ratio 高 → SetAtomicAdd 写瓶颈（Batch 14-6 确认）
+2. 如果 vec_ratio ≈ 1.0 且性能仍差 → 将 Vector 相关工作列为候选；按问题选择 Memory 或指令级证据，不能由该 ratio 宣称已无优化空间
+3. 如果 scalar_ratio 高 → 检查控制路径、寻址与相关等待；不能仅由 ratio 归因 GetValue 或某条指令
+4. 如果 mte3_ratio 高 → 检查实际写路径及重叠；只有另有源码/指令或对照证据时才归因 atomicAdd，不能直接迁移历史案例结论
 5. **如果需要区分"读缓存 vs 写缓存"** → 跑 L2Cache（Batch 14-6 关键手段）
 
 **L2Cache metrics 提取**（Batch 14-6 验证的方法）:
@@ -223,10 +223,10 @@ Step 4: 提取 L2 读/写 hit/miss 数据
 Step 5: 综合诊断 → 输出结构化假设
 
 关键发现模板:
-  "Kernel X 的 mte3_ratio=0.88 证明瓶颈在 MTE3 原子写。
-   L2 写 miss=8298 说明原子写导致 L2 thrashing。
-   对比 Kernel Y 的 mte3_ratio=0.35 和 L2 写 miss=0。
-   结论: X 的原子写模式在 A5 上比 Y 的直接写慢 N 倍。"
+  "Kernel X 的 mte3_ratio=0.88，先检查当前源码是否真的使用原子写。
+   结合 L2 写 miss 与 Kernel Y 的指标提出可证伪假设；
+   若没有指令/受控对照，不把相关性写成 thrashing 或唯一根因。
+   速度差另由相同未插桩 consumer 测量，不由 ratio 推算。"
 ```
 
 ## 9. msprof 运行命令模板（更新 2026-04-02）
@@ -263,10 +263,10 @@ $MSPROF --output=/tmp/msprof_detail --application='./benchmark' --aic-metrics=Pi
 
 | 现象 | 指标 | 含义 | 优化方向 |
 |------|------|------|---------|
-| vec_ratio ≈ 1.0, 性能差 | PipeUtilization | 计算已满，瓶颈在算法 | 减少计算量（如排序消除 atomicAdd） |
-| scalar_ratio > 0.2 | PipeUtilization | 间接寻址/控制流开销大 | 常驻核心分发（P-P22）、减少分支 |
-| mte2_ratio > 0.5 | PipeUtilization | DMA 搬运占主导 | 数据复用（UB 缓存）、减少搬运次数 |
-| HBM bandwidth < 10% | Memory | 带宽未饱和 | 不是带宽瓶颈，看其他指标 |
+| vec_ratio ≈ 1.0, 性能差 | PipeUtilization | Vector 相关活动候选，尚非优化极限证明 | 核对工作域、重叠和指令；再验证改动 |
+| scalar_ratio > 0.2 | PipeUtilization | 控制/寻址相关候选，阈值非通用定因规则 | 结合当前源码与对照定位 |
+| mte2_ratio > 0.5 | PipeUtilization | 搬运/等待相关候选，可能与其他 pipe 重叠 | 核对字节账与时间域后再评价复用 |
+| HBM bandwidth < 10% | Memory | 先校准聚合口径、核数与窗口 | 不能单独排除局部带宽或延迟限制 |
 | HBM bandwidth > 80% | Memory | 带宽饱和 | 减少数据量、提高计算密度 |
 
 ## 10. 项目中的实际使用记录
@@ -274,7 +274,7 @@ $MSPROF --output=/tmp/msprof_detail --application='./benchmark' --aic-metrics=Pi
 | 场景 | 采集命令 | 关键发现 | 指导的优化 |
 |------|---------|---------|-----------|
 | Pooling A baseline | `--aiv-metrics=PipeUtilization` | bwd vec_ratio=1.0, atomicAdd 15.9 cycles | sorted-edge 寄存器累加 (-81%) |
-| Pooling D BRE=dim | 同上 | fwd vec_ratio=1.0（已到极限） | 确认 fwd 无进一步优化空间 |
+| Pooling D BRE=dim | 同上 | 历史 fwd vec_ratio=1.0 | 旧记录曾据此判定极限；该推断撤回，单个 ratio 不能证明无优化空间 |
 | Pooling nblk sweep | nblk=56 vs 448 | bwd -28%, fwd +14% | 排序后不需要超订 |
 | SG forward xlarge | 同上 | vec_ratio=0.69, scalar_ratio=0.31 | 常驻核心分发 (E8-2, 1.86x) |
 | SG backward xlarge | 同上 | vec_ratio=0.989 | compute-bound, persistent 无效 |
@@ -282,3 +282,26 @@ $MSPROF --output=/tmp/msprof_detail --application='./benchmark' --aic-metrics=Pi
 ## 更新 (2026-09-19)
 
 私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）`okf/runbooks/operator-optimization/` 下 MSPROF_AGENT_GUIDE.md 的 9 张节选卡经逐张核读为本文对应小节的忠实摘录（同 lesson、无内容增量），不单独建卡，锚点对照：tool_selection_system_vs_operator → §0；layered_reading_context_safe → §1-§3 分层读取；metrics_group_selection → §4；op_summary_metric_extraction → §4 / Level 2（op_summary 列号与动态表头）；optimization_workflow_loop → §5；run_command_template → §6 与 §9（2026-04-02 更新）；a5_container_limitations → §7 已知限制（A5 容器）；researcher_agent_deep_analysis → §8 aog-researcher 深度分析；bottleneck_lookup_table → §9 瓶颈判断速查表。
+
+
+## 11. 从调用身份关联任务，再解释时间
+
+### 适用范围与关联步骤
+
+本节处理 arch35 上框架 Node 与公开 ACL 直接启动两种路径。先固定源码、主/辅助 DSO 的实际映射与 hash、PID、输入/布局、warm/目标调用和输出摘要。工具主程序与 `op` 子工具的版本分别记录；主程序只打印 Usage 时，其语义版本仍未知，不能用子工具版本替代。
+
+1. 用同一线程内的主机调用边界定位实际 `aclrtLaunchKernelWithHostArgs`，同时检查外层 Node。分别保留 Node 与嵌套 ACL 的 `connection_id`；二者可能不同，不能预设某个键总是正确。
+2. 沿当前原始 JSON 中实际存在的连接关系查设备任务：有 Node 时验证 Node/ACL 哪个键对应设备任务；无 Node 时，只有直接 ACL 键能唯一关联当前任务，才接受该路径。flow 起点缺失应记录，但不自动否定另一个已核实的直接关联；也不能推广成忽略 flow 的规则。
+3. 在同一 collection/device/rank 或进程语境内，用具名 Stream ID、Task ID、任务开始与时长交叉核对导出 CSV，保留重复/未关联项，不靠 kernel 名相近或最近时间猜配。单次调用可能产生多个任务，必须先核实任务集合的基数，不能强制“一次 forward 一个 kernel”。必要字段缺失或关系歧义时报告 UNKNOWN。
+4. 若采用 flow ID，则核对 Host flow 起点、Device flow 终点与实际任务的 ID/stream/start。没有 MSTX 时，可在源码明确串行且每次 end Event 已同步的条件下，用成对的设备 Event-record 顺序关联多任务集合；说明这是顺序配对，不冒称已完成 Event handle→Task ID 的直接关联。
+5. 主机区间仅用于选择主机 API；时钟偏移未校准时，不用其绝对值裁剪设备任务。设备区间用十进制定点/精确十进制计算并集、跨度与间隙，避免 epoch 时间转低精度浮点后丢失微秒。任务并集、host span、Event 和 PMU 各自报告，不相加替代整算子 wall time。
+
+### 输出与因果边界
+
+PMU 的 VEC/MAC/MTE/scalar 活动可重叠；ratio 是待检验假设的线索，不是唯一指令根因、MFU、独占 wall share 或硬件极限。前面的速查表只用于选择下一项观测。单例 profile 不替代正式固定分母 P/Q；profiled Event 与历史未插桩 Event 的差异也不是同窗口开销对照。
+
+公开归档中的直接 ACL 反例有 8 次返回、8 个任务关联，但仅发出 2 份目标输出摘要；不能写成 8 份输出校验。另一个多任务反例每次候选调用有三个工作任务：首 warmup 摘要与历史不同，其余三次候选和四次参考分别与各自历史摘要相同（候选与参考摘要不同），且未做新鲜 CPU64；不能赋予本次 profile 精度 PASS，原因仍未知。商业原生二进制与所读 CANN 源码分支的对应、跨窗口收益和冷黑盒结果均须单独验证。
+
+归档还保留了两项过期 freeze 描述：实际 app 有独立 pre-GO hash 绑定，另一个 claim-control 文件的 pre-GO hash 未绑定。载荷运输 hash 全对不等于所有描述一致；应区分当前实际映射/调用证据与描述缺口。原 guard launcher 的真实返回值也不能补造当时未记录的 guard PID/startticks。具名 WHITE_BOX 源码研究按 caller authority 与复用来源记录；灰盒/冷验证 recipe 的源码访问约束继续按其原契约执行。
+
+资料：直接 ACL 归档与多任务／勘误归档（内部归档，社区不可访问）。这些是范围明确的实验来源，非全部工具版本的行为保证。

@@ -7,8 +7,10 @@ status: stable
 sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/ol-170-software-mxfp8-dequant-vec-pipe.md
     role: primary
+  - resource: https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf
+    role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-10-20T04:40:45Z"
 platforms: ["950"]
 ---
 
@@ -32,10 +34,13 @@ do **software dequant in the vector pipe** before the reduction:
 2. Reinterpret the data uint8 buffer as `fp8_e4m3fn_t` (zero-cost view cast) and call
    `Cast<float, fp8_e4m3fn_t>(dst_fp32, src_fp8, RoundMode::CAST_NONE, D)` — the native AscendC
    dequant of the E4M3 mantissa to fp32 (V351-supported fp8 types per OL-145).
-3. Per 32-element block, decode the E8M0 byte to an fp32 scale (`scale = 2^(byte - 127)`) and
-   broadcast-multiply the block via `Muls(xF32[b*32], xF32[b*32], scale, BLOCK_SIZE)`. The E8M0 →
-   fp32 conversion is a single bit-shift:
-   `uint32_t bits = uint32_t(byte) << 23; float scale = *reinterpret_cast<float*>(&bits);`.
+3. Per 32-element block, decode the E8M0 byte and broadcast-multiply the block via
+   `Muls(xF32[b*32], xF32[b*32], scale, BLOCK_SIZE)`. For bytes `0..254`,
+   `scale = 2^(byte - 127)`; byte `255` denotes NaN, not infinity. A direct fp32 exponent-field
+   construction `uint32_t(byte) << 23` is correct only for bytes `1..254`: byte `0` needs
+   fp32 bits `0x00400000` (the subnormal `2^-127`), while byte `255` needs a NaN encoding
+   (for example `0x7fc00000`). Use the guarded decoder and exhaustive CPU check in
+   [CAND-PP96](../runbooks/runtime/e8m0_shared_exponent_to_fp32_union_bit_reinterpret.md).
 4. From here the kernel sees standard fp32 — apply the normal reduction tree (OL-115 / P-P45) and
    affine math.
 
@@ -52,7 +57,7 @@ Cast(xF32, xDataFp8, RoundMode::CAST_NONE, norm_size_);
 PipeBarrier<PIPE_V>();
 for (int32_t b = 0; b < n_blocks_; b++) {
     uint8_t sb = scalesLocal.GetValue(b);
-    float scale = E8m0_byte_to_scale(sb);   // = 2^(sb - 127) via uint32<<23 reinterpret
+    float scale = E8m0_byte_to_scale(sb);   // guarded: 0 -> 2^-127; 255 -> NaN
     Muls(xF32[b * 32], xF32[b * 32], scale, 32);
 }
 PipeBarrier<PIPE_V>();
@@ -62,3 +67,11 @@ PipeBarrier<PIPE_V>();
 and never crosses row boundaries — this gives the op batch-invariance by construction. The scales
 tile must be padded to a 32-byte multiple for `DataCopy` alignment (allocate
 `n_blocks_padded = align_up(n_blocks, ...)`).
+
+**E8M0 correction boundary**: OCP MX v1.0 (September 2023), §5.4.1 Table 7, printed p.14,
+defines bias 127, finite exponent range `-127..127`, no zero or infinity, and `0xff` as NaN.
+This agrees with the finite range in the existing [builtin data types table](../apis/simd_api/basic_api/data_structures/builtin_data_types.md)
+and the route-specific [MXFP4 NaN byte case](../runbooks/precision/mx_fp4_nan_device_e8m0_0xff_fp4_0x0.md).
+The endpoint correction is an IEEE fp32 representation check; it adds no device measurement of
+subnormal handling, FTZ, NaN propagation, or the corrected helper's cost. Historical LayerNorm
+results do not establish that either endpoint was exercised.

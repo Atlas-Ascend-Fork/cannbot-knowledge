@@ -480,3 +480,8 @@
 - [V351 AIV `WholeReduceMax<float>` silently truncates per-repeat when `mask > 64` — split into chunked-reduce + scalar combine](v351_aiv_wholereducemax_fp32_mask_cap_truncation_001.md)：V351 AIV `WholeReduceMax<float>` silently truncates per-repeat when `mask > 64` — split into chunked-reduce + scalar combine
 
 - [Reg 矢量接口硬件精度与软仿精度差异](reg_vector_hardware_vs_soft_simulation_precision.md)：Reg 矢量计算接口的硬件指令路径与软仿（编译器或多指令拼接）路径在 denormal、ulp、bf16 中间位宽与舍入、归约顺序及乘累加结构上可能有不同精度标准；给出按目标实现核对的步骤和路径变化后重验的边界，仅适用 Ascend 950PR&950DT。
+
+- [950DT 上 CPU 强制 FFN 基准的设备参考移植与舍入验证](cpu_forced_ffn_device_reference_typed_arithmetic_requalification.md)：CANN 9.2、Torch 2.10 的 CPU 强制 FFN 不能直接提供 A5 Event 基线；设备移植须单独验证求和次序、中间 dtype 与激活舍入，并披露与候选共用实现的边界。
+- [nearest 网格采样在半整数判定前保留仿射坐标残差](grid_sample_nearest_affine_residual_before_rne.md)：FP32 反归一化会把半整数附近的坐标提前舍到中点；用高低位保留加法与乘法残差，再按两部分决定 nearest RNE 索引，限定 nearest/zeros 和已验证的有限坐标域。
+- [SwiGLU 行量化的 scale 通过而 INT8 差一位时保留完整舍入决策](grouped_swiglu_exact_int8_compensated_row_quantization.md)：在有界 INT8 点积、FP32 scale 和精确 INT8 合同下，补偿反量化、SiLU、整行 maxabs 与归一化并携带低位到 RNE；沿 CANN per-token 分支保留 INT32 tile 交接与严格计算钩子，区分结构迁移、精度验证和性能归因。
+- [补偿归一化链中正 subnormal 的缩放平方根恢复](positive_subnormal_compensated_sqrt_scaling_950dt.md)：950DT/CANN9.2 的显式 FP32 返回 GDN 修复中，补偿链在有限gold处产生NaN；以整数重构很小正数并在Newton修正前做2的幂缩放恢复本版全量精度，不宣称硬件FTZ因果。

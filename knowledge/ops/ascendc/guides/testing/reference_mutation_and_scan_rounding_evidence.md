@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/cann/cannbot-skills/blob/502e3ed33f1440aa01bdc5a5bd396e4bf539c9ea/plugins-community/tilelang2ascendc-ops-generator/skills/tilelang2ascend-translator/references/AscendCVerification.md
   role: primary
 created_at: '2026-09-11T04:38:57Z'
-updated_at: '2026-09-11T04:38:57Z'
+updated_at: "2026-10-29T21:23:05Z"
 platforms: []
 ---
 
@@ -26,3 +26,7 @@ platforms: []
 FP16逐步舍入与FP32累加末尾转FP16可能不同，应由明确合同或要复现的固定参考定义。来源L≤512选FP16、L>512选FP32并借大值rtol通过是特定经验，不能作为通用算法切换或精度依据。CAST_NONE不是通用向零截断，实际舍入依赖源/目的dtype和平台重载，CAST_TRUNC与CAST_ROUND/RINT应分别核对。BF16输出不能直接继承只针对FP16转换的建议。
 
 构建成功、包import成功及torch.ops存在分别是不同证据；最终仍需实际调用、所有输出、有效shape和未被污染的独立参考。统一评测脚本入口和Skill步骤不迁入为知识库操作流程。
+
+## 相关：显式版本化的设备参考
+
+[CPU 强制 FFN 的设备参考移植与舍入验证](../../runbooks/precision/cpu_forced_ffn_device_reference_typed_arithmetic_requalification.md)保留了原基准，并为改变放置的参考单独做语义控制；与本卡的全局 monkey-patch 污染不同，共用候选算术模板的血缘仍须披露。

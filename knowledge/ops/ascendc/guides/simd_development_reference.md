@@ -1,15 +1,16 @@
 ---
 type: Guide
 title: "AscendC SIMD Development Reference"
-description: "AscendC SIMD 开发参考，主张 arch35/A5 上多算子计算链默认走 Regbase MicroAPI 而非 Membase LocalTensor（后者每步 UB 往返加 PipeBarrier，实测拖累可达数十倍）；另含量化 kernel 常用 SIMD API 与 MXFP4 范式。"
+description: "AscendC SIMD 开发参考，主张 arch35/A5 上多算子计算链默认走 Reg 类 API（Regbase）而非 Membase LocalTensor（后者每步 UB 往返加 PipeBarrier，实测拖累可达数十倍）；另含量化 kernel 常用 SIMD API 与 MXFP4 范式。"
 tags: [task.implementation, task.optimization, topic.programming_model.execution_model.simd, topic.compute.quantization]
 status: stable
 sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/handbook/simd_development_reference.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-04T23:59:25Z"
+updated_at: "2026-10-13T18:10:00Z"
 platforms: [a3, "950"]
+aliases: ["RegBased 寄存器架构", Membase, "UB 往返", "寄存器链"]
 ---
 
 # AscendC SIMD Development Reference
@@ -32,7 +33,7 @@ LocalTensor calls.
   that intermediate from UB. Each op-to-op handoff is a redundant UB store + reload, **plus a
   `PipeBarrier<PIPE_V>` per dependent step**. For an N-op compute chain this is ~N redundant UB
   round-trips and N barriers — pure overhead that scales with chain length.
-- **Regbase** (MicroAPI): load UB→`RegTensor` ONCE at the head of the chain, keep the WHOLE compute
+- **Regbase**（对外形态为 Reg 类 API）: load UB→`RegTensor` ONCE at the head of the chain, keep the WHOLE compute
   chain in registers (`Mul`/`Add`/... operate register→register), store back to UB ONCE at the tail.
   The intermediate round-trips and their per-step barriers disappear.
 
@@ -346,3 +347,15 @@ Key production code references:
 - **Official AscendC docs**: https://www.hiascend.com (JS-rendered)
 
 相关：[SIMT vs SIMD Decision Framework](../concepts/simt_vs_simd_decision.md)（SIMT/SIMD 选型决策框架，MXFP4 案例与本卡 §3 互证）。
+
+## 11. 补充：950PR/arch35 Regbase 在产证据与 §7/§9 冲突对照（2026-10-12，scan）
+
+**本节范围**：只补充一条已绑定的在产证据，用于 **§0、§7、§9** 三处之间的现状对照。**本节不修改 §0/§7/§9 的任何原文**，也**不替原卡重新定义其术语**（包括 §9 表中 `needs verification` 一栏的含义）。本节只陈述该证据实际覆盖到哪里。
+
+**11.1 证据** — 算子 `QuantFlashAttnGrad`（MXFP8 FA 反向，在产）；源文件 `op_kernel/arch35/quant_flash_attn_grad_block_vec_mxfp8.h`（**全部集中在这一个文件**）；`__simd_vf__` **13 处**；`AscendC::Reg::` **644 处 / 529 行**，**31 个**不同符号；（构建声明：CANN 9.2.0 `asc_opc --soc_version=Ascend950PR_9599` 两臂 rc=0 由 scan 报告，**原始日志未定位**，按未绑定构建声明记账）运行于 **950DT（arch35）** 在产；head `bf4b80a8…`。
+
+**11.2 覆盖到哪里** — **覆盖**：Regbase/MicroAPI 写法在 **950PR/arch35 目标上可编译**，且有一个在产算子确实以此实现其向量计算链，方向与 §0 一致。**不覆盖**：① **不证明 13 个 VF 全部被执行**（源码计数+构建通过 ≠ 运行时覆盖，不同 shape/分支只执行其中一部分）；② **不证明 §9 表其他任何一行**（`vand`/`vcmax`/`vbrcb`/`vconv_f322f32a` 未触及）；③ **不解释 `needs verification` 的含义**；④ **不涉及 A3 列**。
+
+**补充观察**（绑定在产头 `bf4b80a8`，scan 复核更正）：`QFAG_SQUARE_MX`（4 处守卫/0 define）与 `QFAG_P_SLAB_MAJOR`（9 处守卫/0 define）在在产内核里**只有 `#if defined(...)` 守卫、没有任何 `#define`**——"源码里存在"与"默认生效"是两回事。（初版另列的两个宏已撤：`QFAG_MX_NONSAT` 在产树中不存在、`QFAG_EXP_CHAIN_VF` 默认启用——原作者误在滞后分支取证。）
+
+**11.3 仍然未决（本节不解决）** — ① **§7 与 §9 互相冲突**：§7 建议 950PR 作者「高阶不支持时回退到 `vabs`/`vand`」，§9 记 `vand`/`vbor` 在 A5 **❌ target feature unsupported** 且「A3 低阶 intrinsic 在 950PR 不会编译」——**两条不能同时执行**。解决它需要一次 950PR 上对 `vabs`/`vand` 的**实际编译输出**，目前不存在，故留 open item；在取得之前，§7 的回退建议不应被当作与 §9 一致。② **§9 MicroAPI 行的 A3/A5 两列取值本节未核**——该行 A3 列标注 `(arch35)`，而列头为 A3 (910C)（arch22），疑似两列标注错位，但本节没有支持改写的证据，对该行应如何改写**不作主张**。

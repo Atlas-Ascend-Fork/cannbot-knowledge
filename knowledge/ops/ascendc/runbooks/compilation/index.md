@@ -985,3 +985,6 @@
 - [Ascend C API 废弃接口的发现、替换与重验流程](deprecated_interface_detection_and_replacement.md)：迁移 Ascend C API 时结合废弃声明告警、接口级清单与基础 API 命名变更表定位调用点；按旧重载、产品范围和目标签名选择替代。同步复合接口替换需重新核对 asc_sync 的全流水语义，并分别验证编译、依赖顺序、数值和性能。
 
 - [2201→3510 架构迁移检查清单](arch_migration_2201_to_3510_checklist.md)：把 2201 上跑通的 Ascend C 算子迁到 3510（Ascend 950PR&950DT）时的逐项检查清单：API 兼容策略分层、编译入口与编译选项、被删除的基础 API 通路、L0A 分形与 UB/对齐、Subnormal 精度行为、高阶 API 算子族差异、同步与缓存约束；每项给出「怎么判断」与「不合规怎么改」。
+
+- [opp/scene.info 不可读致包路径渲染为空、零 SO 加载](opp_scene_info_unreadable_blocks_so_load.md)：共享 CANN 安装里 <opp>/scene.info 权限为 0440 root:root（root 只读）时，容器内非 root 消费者的 GetCurEnvPackageOsAndCpuType 失败，算子包路径渲染成 lib/// 并零 SO 加载；修复是在绝对包根路径上只读 bind 一份字节相同的 scene.info，而不是放进 ASCEND_OPP_PATH 指向的 overlay。自建 opp overlay 会把 GE 翻到旧版路径结构（plugin_manager.cc:644）产生重复层级，是已被证伪的修法。
+- [kernel 配置放错一层致内置同名算子静默顶替候选](vendor_kernel_config_misplaced_builtin_silently_wins.md)：自定义 vendor 的 kernel 清单对（binary_info_config.json + <op_lower>.json）必须位于 op_impl/ai_core/tbe/kernel/config/<soc>/；放到 op_impl/ai_core/tbe/config/<soc>/（该目录只承载 aic-<soc>-ops-info.json）时 ParseDynamicKernelConfig 记 is invalid or does not exist, continue next priority，SelectBin 回落到 SDK 内置同名算子。内置实现正确时全程无错误码、rc=0、输出可信且可能与自建产物逐字节相同，判别的第一信号是 SelectBin 命名的 .o 路径；但 SelectBin 只证明选择阶段命名了哪个对象，要归属设备执行还需同次调用/tiling key 的加载与发射对应。

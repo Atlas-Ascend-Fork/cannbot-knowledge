@@ -176,3 +176,7 @@
 - [索引 Gather 的独立 load 展开与标量尾部](independent_index_load_mlp.md)：把索引、数据和输出分组展开，显式保留地址独立性与短尾回退；展开宽度是候选参数，不能从源码断言硬件重叠或提速。
 - [完整工作集驻留 UB 前核对分配账与流式回退](resident_working_set_and_streaming_fallback.md)：从固定 GroupNorm 源码整理驻留工作集、dtype 条件暂存和流式分支参数区的完整静态账目，明确驻留条件与超预算停止边界。
 - [短向量链先固定数值与存储合同，再消除重复工作](semantic_vector_pass_reduction.md)：用普通 Sigmoid 的原位短链和常驻 ones 展示可审阅的中间存储与重复初始化模式；不把实数恒等式、源码 pass 数或整算子成绩当作单机制收益。
+
+- [Cube B 暂存布局：配对验证 ND 随路转换与 AIV 预分形](cube_b_nd_staging_paired_validation.md)：Ascend950DT、CANN 9.2 的 MLA decode fp32 B 操作数中，比较 GM 暂存 plain ND 加 GMToL1 ND2NZ 与 AIV 预写 NZ；保留八轮配对观测、二进制身份修正和精度波动边界，不外推收益。
+
+- [注意力在线累加的矢量成本与固定参考最大值](attention_vector_cost_fixed_frame_950dt.md)：在Ascend950DT注意力内核中以成本探针定位逐tile输出重缩放，并记录固定参考最大值的有界替代、回退门和两条实测失败路线；保留跨时段与未复现边界。

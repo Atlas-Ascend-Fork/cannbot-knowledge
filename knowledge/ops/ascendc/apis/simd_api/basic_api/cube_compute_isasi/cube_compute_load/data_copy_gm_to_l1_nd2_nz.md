@@ -221,3 +221,7 @@ nd2nzA1Params.dstNzNStride = 1;
 nd2nzA1Params.dstNzMatrixStride = 0;
 AscendC::DataCopy(a1Local, aGM, nd2nzA1Params);
 ```
+
+## 配套 API 与常见组合
+
+- [Cube B 暂存布局的配对验证](../../../../../runbooks/performance/cube_b_nd_staging_paired_validation.md)——比较暂存布局时保留实际二进制、精度与配对计时边界。

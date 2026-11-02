@@ -7,8 +7,10 @@ status: stable
 sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/field-notes/precision/ol-144-a5-narrow-float-datatype-family-fp8-hifloat8-fp4x2.md
     role: primary
+  - resource: https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf
+    role: primary
 created_at: "2026-08-30T16:00:00Z"
-updated_at: "2026-08-30T16:00:00Z"
+updated_at: "2026-10-20T04:44:29Z"
 platforms: [a3, "950"]
 aliases: ["OL-144"]
 ---
@@ -33,17 +35,20 @@ aliases: ["OL-144"]
 
 | Type | C++ name | Bits | Use |
 |---|---|---:|---|
-| FP8 E4M3FN (Finite, No-NaN representation per OFP8) | `fp8_e4m3fn_t` | 8 | Standard FP8 path (training-grade) |
+| FP8 E4M3FN (finite values and NaN; no infinity) | `fp8_e4m3fn_t` | 8 | Standard FP8 path (training-grade) |
 | FP8 E5M2 | `fp8_e5m2_t` | 8 | Standard FP8 path (wider range, less precision) |
 | HiFloat8 | `hifloat8_t` | 8 | Ascend-specific FP8 variant (e8m0-style range) |
 | FP4x2 E1M2 | `fp4x2_e1m2_t` | 4+4 packed | mxfp4 path (pair of fp4 in one byte) |
 | FP4x2 E2M1 | `fp4x2_e2m1_t` | 4+4 packed | mxfp4 path (different bit allocation) |
 | Scale factor | `fp8_e8m0_t` | 8 (e8m0 exponent-only) | MicroScaling shared-scale matrix |
 
+The E4M3FN row follows OCP MX v1.0 §5.3.1 Table 2, printed p.11: NaN encodings are
+`0x7f` and `0xff`, while infinity has no encoding.
+
 **Why this matters**:
 - **All five are A5-new types** — V220 (A3) has none of them. There is NO direct port path from A3 for kernels using these; they must be authored fresh.
 - **FP4 types are PACKED** — two fp4 values in one byte. Reg-based Cast intrinsics take a `_v2/_v3/_v4` index argument selecting which of 4 sub-positions to write within a VL.
-- **fp8_e8m0_t is exponent-only** — used as the per-tile scale factor in MicroScaling format (see OL-145). Range 2⁰ to 2²⁵⁴.
+- **fp8_e8m0_t is exponent-only** — used as the per-tile scale factor in MicroScaling format (see OL-145). Its finite range is **2⁻¹²⁷ to 2¹²⁷**, with bias 127: raw bytes `0..254` decode as `2^(byte-127)`, and `0xff` is NaN; there is no E8M0 zero or infinity. This corrects the former unbiased range `2⁰..2²⁵⁴`, following OCP MX v1.0 (September 2023), §5.4.1 Table 7, printed p.14, and the existing [builtin data types table](../../apis/simd_api/basic_api/data_structures/builtin_data_types.md). The existing [MXFP4 NaN case](mx_fp4_nan_device_e8m0_0xff_fp4_0x0.md) records `0xff` for its specific device route. For software conversion to fp32, byte `0` needs the subnormal bits `0x00400000` and byte `255` needs NaN; see [CAND-PP96](../runtime/e8m0_shared_exponent_to_fp32_union_bit_reinterpret.md). These representation facts do not establish device subnormal/FTZ behavior.
 
 **A5 Cast intrinsics** (reg-based vector, all live in `AscendC::MicroAPI`):
 
@@ -58,7 +63,7 @@ aliases: ["OL-144"]
 | `fp4x2_e1m2_t` → `bfloat16_t` | `asc_e1m2x22bfloat16` | Unpack to bf16 |
 | `fp4x2_e2m1_t` → `bfloat16_t` | `asc_e2m1x22bfloat16` | Unpack to bf16 |
 
-**High-level MicroAPI Cast wrapper** (preferred over raw `asc_*` intrinsics for production code):
+**对外 Reg 类 API 的高层 Cast 包装**（生产代码应优先于裸 `asc_*` intrinsic 使用；下文 `AscendC::MicroAPI` 为其实际命名空间）：
 
 ```cpp
 // FP32 → FP8 E5M2 (SAT mode — quantization, prevents overflow)
