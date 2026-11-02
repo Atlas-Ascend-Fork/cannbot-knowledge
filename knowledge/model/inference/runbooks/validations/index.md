@@ -5,3 +5,5 @@
 - [MTP / 投机解码 decode 计时采集口径：累加每步全部 draft 前向、每 decode 步记一条完整耗时、分「每步」与「每 token」两指标](mtp_decode_timing_collection_granularity.md)：MTP / 投机解码 decode 计时采集口径：累加每步全部 draft 前向、每 decode 步记一条完整耗时、分「每步」与「每 token」两指标。给开启 MTP（多 token 预测 / 投机解码）的 decode 采集时延统计时，日志里的 decode 时延数值失真——无报错、无异常，只是数不对：单步耗时被系统性低估、按记录数算的平均和 IQR 离群过滤口径被打乱、拿到一个含义模糊的 "average inference time cost" 分不清是每步还是每 token。
 - [多卡 MTP 推理打点计时抖动 —— 计时前 dist.barrier 对齐各 rank](multicard_mtp_timing_barrier.md)：多卡 MTP 推理打点计时抖动 —— 计时前 dist.barrier 对齐各 rank。多卡 MTP（multi-token prediction / 投机解码）推理做打点计时时，测得耗时与实际执行性能有偏差、抖动异常——main/MTP 小模型的计时不可信。做多卡 MTP 性能回归/profiling 时若数字飘忽，先怀疑这里。
 - [配了 enable_profiler 却拿不到 prefill profile：长输入超 moe_chunk_max_len 时被静默门控关闭](prefill_profiler_gated_off_long_input.md)：配了 enable_profiler 却拿不到 prefill profile：长输入超 moe_chunk_max_len 时被静默门控关闭。配置了 enable_profiler=True，却在 RES_PATH/prof/prefill 下拿不到 prefill 段 profile——而 prof/decode 正常有。不报错、不告警，profiling 静默缺失。
+
+- [跳过 Prefill 的 Decode 能跑通：只能验证执行与性能，不能验收生成精度](kimi_k3_decode_stub_accuracy_boundary.md)：区分 Kimi K3 的 skip_prefill 和历史 PD prefill stub，检查 cache 是否真实填充；全零 cache、占位 token 与强制均衡实验均需和真实请求验收分开。

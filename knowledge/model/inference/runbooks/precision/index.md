@@ -23,4 +23,11 @@
 - [NPU fused_topk 默认先归一化再按 routed_scaling_factor 缩放：保留 norm_topk_prob=True 会二次归一化破坏路由缩放语义](moe_router_norm_topk_prob_fused_topk_npu.md)：NPU fused_topk 默认先归一化再按 routed_scaling_factor 缩放：保留 norm_topk_prob=True 会二次归一化破坏路由缩放语义。把一个带 routed_scaling_factor（对路由专家结果缩放）的 MoE 用 NPU 融合 topk（fused_topk_npu()）适配到昇腾上，若沿用上层默认 norm_topk_prob=True，路由专家的缩放语义被破坏——routed_scaling_factor 被再归一化一遍（renorm），MoE 输出不对。
 - [zigzag-CP 下短序列全部落入单段（last_rank==0）→ 滑动窗口 last-window 元数据负索引回卷静默取错](zigzag_cp_short_seq_single_segment_window.md)：zigzag-CP 下短序列全部落入单段（last_rank==0）→ 滑动窗口 last-window 元数据负索引回卷静默取错。滑动窗口注意力 + zigzag-cp prefill，喂短序列时结果异常，但不报错、不崩溃——是静默 correctness bug：短序列 case 的 win_kv / last_win（最后 window_size 个有效 token 构成的窗口）内容或 position_ids 错误，滑窗看进了不该看的 token。 长序列同一路径正常；症状只在序列短到有效 KV 全部落进单个 CP 段时出现。
 
+- [Kimi K3 投影融合后量化 ignore 失效：按 checkpoint 的未融合名称匹配](fused_projection_quant_ignore.md)：排查 gate_up_proj、qkv_proj 与 checkpoint 的 gate/up、q/k/v 命名映射，保留分层 ignore 语义；来源后续把修复收敛到 K3 构造侧。
+- [Kimi K3 长稳 NaN 定位：图内设备计数、图外汇总与全 rank 一致退出](graph_replay_nonfinite_boundary_probe.md)：在 npugraph_ex Decode 中用持久设备计数记录非有限边界，图外统一汇总；Prefill 保持 eager，GE 不支持此图诊断开关，目标 NPU 长稳仍待验收。
+- [KDA CP Prefill 卷积异常：临时 cache 的真实请求不得占用保留零槽](kda_cp_conv_reserved_null_slot.md)：实验分支修复把临时卷积 cache 扩一行并从非零槽分配请求，附 CPU 索引回归；零槽语义属于该 causal_conv1d 接口，不外推到其他状态缓存。
+- [LatentMoE 投影误用量化方案：只在 Linear 显式匹配动态 MXFP8 时启用](latent_projection_mxfp8_scheme_gate.md)：按 Kimi K3 Linear 的动态 group-32 W8/A8 MXFP8 条件选择 latent down/up 投影；明确权重、激活与 ignore 门控，并区分 MXFP8、浮点与不匹配配置。
+- [MegaMoE 权重 scale 对接：uint8 E8M0 编码应重解释为浮点 scale 视图](megamoe_mxfp8_scale_reinterpretation.md)：固定分支修复在 MegaMoE 调用前为两组专家 scale 建立 E8M0 view，保留原始字节与存储；缺少实机修后结果，不能把数值 cast 当作兼容修复。
+- [MoE NaN 探针误报：只扫描 Dispatch 与 GMM 的有效专家行](moe_nan_probe_valid_rows.md)：仅按已确认的 packed 专家行裁剪探针，区分专家有效行与 Combine 有效请求行；复现按 shape 套用专家行数导致的漏报，并给出显式边界检查与 CPU 回归。
+- [NaN 诊断先报 DT_FLOAT8_E8M0：记录 scale 未检查，避免误判模型异常](nan_probe_e8m0_unsupported_comparison.md)：区分 aclnnEqScalar 不支持 E8M0 的诊断失败与模型 NaN；固定实验跳过不支持的 scale 检查并披露覆盖缺口，不以 eager 或数值 cast 假装解决。
 - [MXFP8 SwiGLU 后 MatMul 全 NaN：检查奇数 scale 的补齐字节](swiglu_mxfp8_scale_padding_nan.md)：在 950 MXFP8 融合量化路径中，区分有效 E8M0 scale 与偶数成对存储；未初始化补齐字节可能污染后续 QMM/GMM。

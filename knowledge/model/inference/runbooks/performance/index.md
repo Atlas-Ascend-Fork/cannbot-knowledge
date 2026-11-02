@@ -11,4 +11,10 @@
 - [MoE 优化/并行在 decode 静默不生效的四类根因：硬编码 False / yaml 键名不匹配 / 漏切间接层 / 误挂 is_prefill](moe_optimization_silently_disabled_decode.md)：MoE 优化/并行在 decode 静默不生效的四类根因：硬编码 False / yaml 键名不匹配 / 漏切间接层 / 误挂 is_prefill。配置里明明开了某项优化（superkernel / 多流 / 新量化分支 / 张量并行），运行时却看不到预期的 overlap / 加速 / 切分，而且不报错、不告警。尤其常发生在 decode 路径。遇到「配了却像没生效」，优先按下面四类根因逐一核查开关到建模侧的真实传播链，而不是先怀疑功能本身。
 - [推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过](warmup_silent_slow_and_dummy_cache.md)：推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过。在昇腾上拉起大模型推理，正式服务前会先跑一次 warmup（用 dummy 输入跑一遍真实 prefill 前向，触发算子编译 / cache 分配 / 图捕获）。这一步有两个反复出现的坑： 看似卡死：war…
 
+- [Kimi K3 EP 权重加载缓慢：在 safetensors 读取前过滤远端专家](moe_ep_weight_filter_before_materialization.md)：检查专家权重是否在 get_tensor 后才被跳过；按当前 EP rank 的专家区间提前过滤，保留非专家权重并用实际读取键集合验收。
+
+- [Kimi K3 融合后常驻显存增加：检查 MLA 与 MegaKDA 是否重复保存 NZ 权重](mla_megakda_duplicate_weight_storage.md)：在 BF16 MLA Prolog 或 MegaKDA 接入后核对加载顺序与重复格式转换；分别检查 Prolog buffer 与对应 Linear、MegaKDA NZ root 与 Prefill 转置视图的存储共享，保留不同分片权重。
+- [开启 NaN 探针后长 Prefill 内存上涨：分块扫描，避免整张量 FP32 副本](nan_probe_prefill_scan_peak_memory.md)：保留普通浮点 dtype，沿第一维分块扫描，仅对当前块的 E4M3 activation 转换；原始 E8M0 scale 仍跳过检查并披露覆盖缺口，分块目标不是模型总峰值上限。
+
+- [FlashKDA Prefill 小算子与 padding 冗余：核对 packed TND 和分块状态交接](flash_kda_packed_tnd_prefill.md)：仅在启用 FlashKDA 且 lower_bound 非空时，将逐请求 BSND 路线改为 packed TND；保留请求边界、FP32 state 与 SP 去补齐契约，其他配置继续使用参考实现。
 - [MTP/DSpark 开启 Profiling 后 Decode 平均时延失真或显示零](post_profile_decode_latency.md)：在 MTP/DSpark 的统计分支中检查计时窗口、接受长度与实际输出数是否对齐，使用 post-profile 统计并在空窗口时回退完整 Decode 数据。

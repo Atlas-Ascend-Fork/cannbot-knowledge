@@ -53,4 +53,7 @@
 - [昇腾部署镜像的组件版本对齐（torch_npu / 驱动 HDK / CANN 包）与过渡态规避](ascend_deployment_image_version_alignment.md)：昇腾部署镜像的组件版本对齐（torch_npu / 驱动 HDK / CANN 包）与过渡态规避。cann-recipes-infer 的昇腾部署镜像把 torch_npu、驱动/HDK、CANN 包的版本成套 pin 死。不要把其中任一组件当作可自由升级的旋钮：单独换一个而与镜像不匹配，会在 bringup 期直接失败。做部署/调优时，先把组件版本对齐到目标 recipe/镜像 pin 的版本，再动优化。下面是三条已踩过的对齐关系与过渡态规避。
 - [稀疏/反量化 Attention 走非 Page-Attention 路径时 Q 与 KV 必须同布局（不一致 → host tiling GRAPH_FAILED）](sfaa_nonpa_qkv_layout_constraint.md)：稀疏/反量化 Attention 走非 Page-Attention 路径时 Q 与 KV 必须同布局（不一致 → host tiling GRAPH_FAILED）。给稀疏/反量化 attention 算子配置非 Page-Attention 路径（连续 BSND 或变长 TND 的 KV，而非分页 PA_BSND）时，图编译/tiling 阶段直接挂掉、host tiling 返回 ge::GRAPH_FAILED，还没进 kernel。典型触发是 Q 与 KV 布局不一致——例如 layoutQ=BSND 配 layoutKV=TND，或 layoutQ=TND 配 layoutKV=BSND。这不是运行时精度问题，是 host 校验阶段的硬约束。
 
+- [MegaKDA ReplaySSM 权重 ABI 排查：NZ 视图不能替代原始 allocation root](megakda_replayssm_nz_allocation_roots.md)：核对 ReplaySSM 的原始方向、shape、BF16 和 FRACTAL_NZ root，复用加载阶段的权重所有者；重复转置和 format_cast 不构成 root 契约证明。
+- [MLA 长度 shape 正确仍需排查：owner 切片的 storage_offset 与 ND 存储容量](mla_metadata_exact_nd_storage.md)：从连续视图仍持有全 batch 存储的情况出发，核对长度张量的 stride、offset、storage 字节数及 metadata/attention 输入一致性；修复效果待目标 NPU 验证。
+- [DSpark 捕获报 aclrtMemcpy 107030：把 Attention metadata 的 Host 构造移到图外](npugraph_attention_metadata_host_copy.md)：在 DSpark GQA 的图外 prepare_decode_inputs 中准备长度张量与 Attention metadata，再传给 forward_spec_decode；固定容量属性并以张量携带动态长度，目标 NPU 验收仍待完成。
 - [Prefill CP 下 DSpark 草稿状态行序错位或越界](dspark_prefill_cp_state_rows.md)：DSpark 整批 proposal 保持集合通信形状一致，结束后按 output_request_indices 选状态行，写回按 output_idx 索引。
