@@ -2,6 +2,7 @@
 
 Ascend C 算子开发的稳定概念、编程模型与决策框架。
 
+- [SIMD 核内自动同步与手动同步的决策边界](simd_auto_manual_synchronization.md)：区分硬件、TPipe-TQue 与编译器的同步覆盖，按架构、流水依赖和接口约束决定何时手动补齐，并通过日志验证。
 - [Roofline Model for Ascend950PR (A5)](roofline_model.md)：Ascend950PR roofline 模型：VEC 峰值 fp16 约 56 TFLOPS、实测 CUBE 峰值 fp16 约 373 TFLOPS、HBM 1.5 TB/s；matmul 须按 CUBE 峰值定天花板。
 - [SIMT vs SIMD Decision Framework](simt_vs_simd_decision.md)：SIMT 与 SIMD 选型决策框架：原子加/散写/间接寻址/group-local 计算选 SIMT，连续读加向量计算、批量搬运选 SIMD；含精度约束与四个实测案例。
 - [PROBE REPORT — Q5 Sort/Reduce instruction cycles](sort_reduce_instruction_cycles.md)：950PR 实测：WholeReduceMax/BlockReduceMax 64×fp32 ≈100 cyc/call，MrgSort 成本随输出对数线性（≈0.55 cyc/pair + ~42 cyc 启动），宜单次长队列调用。
