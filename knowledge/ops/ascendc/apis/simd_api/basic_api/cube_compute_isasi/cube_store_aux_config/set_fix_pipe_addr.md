@@ -11,9 +11,9 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_aux_config/SetFixPipeAddr.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-10-20T07:46:54Z'
+updated_at: '2026-11-03T03:31:27Z'
 platforms:
-- a2
+- 310b
 ---
 
 # SetFixPipeAddr<a name="ZH-CN_TOPIC_0000002090402209"></a>

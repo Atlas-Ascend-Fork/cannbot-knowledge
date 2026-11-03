@@ -8,16 +8,16 @@ tags:
 - "topic.compilation"
 status: stable
 sources:
-- resource: cann-docs-raw/asc-devkit/docs/zh/guide/technical_appendix/cpp_standard_support/overview.md
+- resource: https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/docs/zh/guide/technical_appendix/cpp_standard_support/overview.md
   role: primary
-- resource: cann-docs-raw/asc-devkit/docs/zh/guide/technical_appendix/cpp_standard_support/cpp_language_restrictions/general_restrictions.md
+- resource: https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/docs/zh/guide/technical_appendix/cpp_standard_support/cpp_language_restrictions/general_restrictions.md
   role: primary
-- resource: cann-docs-raw/asc-devkit/docs/zh/guide/technical_appendix/cpp_standard_support/cpp_language_feature/lambda_expressions.md
+- resource: https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/docs/zh/guide/technical_appendix/cpp_standard_support/cpp_language_feature/lambda_expressions.md
   role: supporting
-- resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md
+- resource: https://gitcode.com/cann/asc-devkit/blob/e680c34c09ba6919b3cebd2b7ec027f4ff6f0f22/docs/zh/guide/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md
   role: constraint
 created_at: '2026-10-23T02:00:00Z'
-updated_at: '2026-10-23T08:55:34Z'
+updated_at: '2026-11-03T03:31:27Z'
 platforms:
 - agnostic
 ---

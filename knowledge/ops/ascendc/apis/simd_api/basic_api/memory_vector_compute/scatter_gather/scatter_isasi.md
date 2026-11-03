@@ -11,11 +11,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/scatter_gather/Scatter_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-20T07:46:54Z'
+updated_at: '2026-11-03T03:31:27Z'
 platforms:
 - '950'
-- a2
 - 310p
+- 310b
 source_headers:
 - include/basic_api/kernel_operator_vec_scatter_intf.h
 ---
