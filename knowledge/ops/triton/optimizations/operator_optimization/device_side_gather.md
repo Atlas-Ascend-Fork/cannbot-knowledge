@@ -7,8 +7,12 @@ status: stable
 sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Indexing_Ops/gather.md
   role: primary
+- resource: https://gitcode.com/cann/cannbot-skills/pull/1209
+  role: supporting
+- resource: https://gitcode.com/cann/cannbot-skills/blob/9b3769d9a26804e77e631fb3783741349c2cb2d9/ops/triton-latency-optimizer/references/operators/sparse-flash-attention-optimization.md
+  role: evidence
 created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-28T09:04:33Z'
 platforms: [a2, a3]
 ---
 
@@ -334,3 +338,11 @@ _gather_kernel[gather_grid](...)
 - 仅当 gather 数据量适中、workspace 可缓存时净收益为正；小范围 gather 直接走原 kernel。
 
 ---
+
+## SFA 场景的选型反例
+
+Ascend910B3 的随机索引 SFA 历史实验中，内核内暂存可编译，scratch 驻留 L2；拆成 gather kernel 与全局 workspace 后，两个测例的完整核时劣化 27%～49%。这提示评估拆分时须计入 workspace 读写、kernel 串行及原有重叠损失，不能只比较 compute kernel。
+
+该反例不证明其他 gather 算子在工作集可驻留 L2 时一定不应拆分。重复读取、数据复用、footprint 和缓存共同影响收益，候选路线仍须做同输入的完整路径 A/B；缓存分配空间不等于缓存的数据可跨调用复用。
+
+不同工具链下的编译差异、容量口径与实测范围见 [SFA 优化卡](sparse_flash_attention_optimization.md)。

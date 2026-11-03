@@ -7,8 +7,12 @@ status: stable
 sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Memory_Pointer_Ops/tl.load.md
   role: primary
+- resource: https://gitcode.com/cann/cannbot-skills/pull/1209
+  role: supporting
+- resource: https://gitcode.com/cann/cannbot-skills/blob/9b3769d9a26804e77e631fb3783741349c2cb2d9/ops/triton-latency-optimizer/references/operators/sparse-flash-attention-optimization.md
+  role: evidence
 created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-28T09:04:33Z'
 platforms: [a2, a3]
 ---
 
@@ -100,6 +104,12 @@ val = tl.load(src_ptr + index, mask=mask)  # 直接从global中离散访问取�
 		start_offset=(0, 0)
 	)
 ```
+
+### 随机读取结果用于矩阵乘时的 SFA 经验
+
+Ascend910B3 的 SFA 历史实现记录了 gather 结果直接参与 `tl.dot` 时的错值、编译失败或额外开销。该实现采用 `gather → 连续 buffer → 仿射 load → dot` 绕行；buffer 可为内核内暂存，也可由独立 gather kernel 写入 workspace。
+
+这是特定实现与工具链的规避记录，不表示所有 gather→dot 都有缺陷，也不按单 pass 或多 pass 直接决定路线。编译性、正确性与完整时延需在目标环境确认；适用范围和反例见 [SFA 优化卡](sparse_flash_attention_optimization.md)，拆分方案见 [Device-side Gather 连续化](device_side_gather.md)。
 
 ### 随机写优化方法
 

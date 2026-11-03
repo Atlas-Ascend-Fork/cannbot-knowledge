@@ -9,8 +9,12 @@ sources:
   role: primary
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/06-fused-attention.py
   role: example
+- resource: https://gitcode.com/cann/cannbot-skills/pull/1209
+  role: supporting
+- resource: https://gitcode.com/cann/cannbot-skills/blob/9b3769d9a26804e77e631fb3783741349c2cb2d9/ops/triton-latency-optimizer/references/operators/sparse-flash-attention-optimization.md
+  role: evidence
 created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-28T09:04:33Z'
 platforms: [a2, '950']
 ---
 
@@ -25,7 +29,7 @@ platforms: [a2, '950']
 > 三者形态不同（有/无投影 GEMM、固定/可变 mask、不同精度契约、不同编译器版本），
 > **独立收敛到同一瓶颈结论**——这是本文可外推的根据。
 > ⚠️ 三者之间存在 **3 条直接冲突的结论**，判别前置条件见 template 卡的「跨算子结论冲突的统一判据」。
-> 设计期与编码期的对应约束见 `@../../../../plugins-official/triton-op-generator/template/flash_attention.md`。
+> 设计期与编码期的对应约束见 [flash_attention_constraints.md](../../guides/constraints/flash_attention_constraints.md)。
 
 ---
 
@@ -353,6 +357,8 @@ else:
 - **失效**：fp32 输入**不要开**——没有 buffer 可省，且 fp32 的判据阈值最紧，22 位没有余量。
 - ⚠️ 注意区分两个实验：**直接降精度**（`p` → 输入 dtype，~11 bit）实测 27/50 越阈 ✗；**二段拆分**（~22 bit）✅。前者的结论不能用来否定后者，反之亦然。
 
+SFA 在 Ascend950PR 上的历史实验未观察到 hi+lo 的精度改善，并记录约 2.7% 的降速；这只是该实现的反例，不能据 SoC 关闭其它输入的精度补偿。是否采用仍以目标输入的精度契约和完整验证为准，见 [SFA 优化卡](sparse_flash_attention_optimization.md)。
+
 ### 2.12 其它小项
 
 | 改法 | 结果 | 备注 |
@@ -501,11 +507,13 @@ else:
 性能优化**不得**以放宽精度判据为代价：正式结论一律走 `verify.py`，不改阈值、不用 `--verify_not_required`。
 
 - `tl.dot` dtype 契约、低精度四条逐位契约、1-ulp 匹配率诊断法：见
-  `@../../../triton-precision-debug/references/attention-lowprec-contract.md`
+  [attention-lowprec-contract.md](../../guides/tooling/precision_attention_lowprec_contract.md)
 - **掩码用有限极小值**（`-3.0e38` / `-1e30`）**不用 `-inf`**：`-inf` 会在整行被掩时产生 `exp(-inf-(-inf))=NaN`，并逼着 `tl.maximum` 保留 NaN 处理（与 §2.8 冲突）。
 - **判据推论**：若失败集合**严格与 dtype 相关**（如"全部且仅仅是 fp16/bf16 case"），基本可直接判为**算术路径不匹配**，不用去搜 tiling。
 - ⚠️ **精度契约会倒逼结构**：当参考要求"先用最终的 `l` 归一化再舍入"时，online softmax 只能拿到滚动的 m/l ⇒ 必须多趟。最终形态：单块（`S ≤ BLOCK_KV`）一趟、多块两趟。
   **不要试图用"减小 BLOCK_Q 换单趟"**：总迭代数 = `ceil(S/BQ)·ceil(S/BKV)·趟数`，BQ 减半使第一项翻倍、趟数 2→1，**正好抵消**。已算账否决。
+
+SFA 还记录了出于性能目的采用两遍 softmax 的实验：staged 子集的配对测量改善 23.2%，完整 61 case 的比值为 0.9447。删除 softmax 的消融差距不是等价算法的收益；两遍方案还需计入重复 QK 和读取成本，并满足原精度契约。具体条件与失败记录见 [SFA 优化卡](sparse_flash_attention_optimization.md)。
 
 ---
 
@@ -695,6 +703,5 @@ total_avg_us = sum(operator_avg_times.values())
 | `cv-fusion-pingpong.md` | ⚠️ **冲突**：它把 `al.scope` + ping-pong 列为唯一出路，实测在 910B2 + CANN 8.5.1 上崩编译器（§3.5）。投入前先做门槛测试 |
 | [`../../ops/flash_attention_migration.md`](../../guides/migration/flash_attention_migration.md) | ⚠️ **逐条复核结果**：Diff 2（grid 收缩）= 基础写法非优化项，+0.5%；Diff 4（block pointer）未单独复现收益；Diff 6（exp2）**✗ 无收益**，（scale+mask 合并 FMA）**✗ 编译失败**；Diff 7（指令重排）三算子 0/+1.9%/+6.4%，**不可预期**；Diff 8（`propagate_nan`）**是性能开关不是正确性项，且必须分档**；Diff 9（7 个编译参数）**✗ 全在噪声内** |
 | `06-scalar-degradation-avoidance.md` | ⚠️ 其"整数比较降级"现象在本类算子上**成立**，但据此做的优化**结论不成立**（§3.2）——现象 ≠ 可优化 |
-| `template/flash_attention.md` | 设计期（Layer 1/2）与编码期（Layer 3）的对应约束 |
-| `triton-precision-debug/references/attention-lowprec-contract.md` | 精度闸门与低精度逐位契约 |
-
+| [flash_attention_constraints.md](../../guides/constraints/flash_attention_constraints.md) | 设计期（Layer 1/2）与编码期（Layer 3）的对应约束 |
+| [attention-lowprec-contract.md](../../guides/tooling/precision_attention_lowprec_contract.md) | 精度闸门与低精度逐位契约 |

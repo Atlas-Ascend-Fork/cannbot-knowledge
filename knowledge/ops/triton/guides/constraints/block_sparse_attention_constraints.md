@@ -12,8 +12,12 @@ sources:
   role: example
 - resource: https://gitcode.com/cann/cannbot-skills/blob/f5004b2c00eae3d62ec95992fd2d488fa8f7b4fe/plugins-official/triton-op-generator/template/block_sparse_attention.md
   role: primary
+- resource: https://gitcode.com/cann/cannbot-skills/pull/1209
+  role: supporting
+- resource: https://gitcode.com/cann/cannbot-skills/blob/9b3769d9a26804e77e631fb3783741349c2cb2d9/ops/triton-latency-optimizer/references/operators/sparse-flash-attention-optimization.md
+  role: evidence
 created_at: '2026-08-20T00:00:00Z'
-updated_at: '2026-10-27T10:09:29Z'
+updated_at: '2026-10-28T09:04:33Z'
 platforms: [a2, a3, '950']
 ---
 
@@ -254,6 +258,14 @@ q = tl.load(q_ptr + t * (Hq*D) + hqs[:, None]*D + offs_d[None, :], mask=gvalid[:
 ### L1.9 kernel 内不能读非 constexpr 的模块级全局变量
 
 `NEG = -3.0e38` 要写成 `NEG: tl.constexpr = -3.0e38`，否则报 `Cannot access global variable ... from within @jit'ed function`。
+
+---
+
+### L1.10 随机稀疏索引的暂存路线须在目标环境验证
+
+当 `sparse_indices` 已作为输入给定、KV 由全部 Q 头共享且按 token 随机 gather 时，暂存路线需结合输入、工作集和目标工具链验证；不能仅凭 SoC 名称、layout 或重复读取次数选路。本条不适用于页内连续、可直接仿射读取的形态。
+
+历史实现、选型反例及验证要求按需读取 [SFA 优化卡](../../optimizations/operator_optimization/sparse_flash_attention_optimization.md)。历史结果不构成其他输入或工具链的硬性限制。
 
 ---
 

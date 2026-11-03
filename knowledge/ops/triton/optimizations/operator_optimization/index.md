@@ -54,6 +54,7 @@
 
 - [`OPT-48` Grouped MatMul（MoE 专家分组矩阵乘）Tile 合并优化经验](grouped_matmul_tile_merge.md)：grouped matmul + activation + quant 融合算子在 Triton-Ascend 上的 expert 对齐 tile、dot M 维合并、UB 上限锁死与二阶段归约约束。
 - [`OPT-49` Attention / MLA 类算子优化点库（Triton-Ascend）](mla_paged_attention_optimization.md)：MLA 类算子在 Triton-Ascend 上的瓶颈判别、仿射 store 修复、KV 共享与 split-KV、P_SPLIT 精度补偿。
+- [`OPT-50` 稀疏 Flash Attention 跨架构优化](sparse_flash_attention_optimization.md)：随机索引 SFA 的暂存候选、选型反例及精度和编译边界。
 
 ---
 
