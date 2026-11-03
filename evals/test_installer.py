@@ -45,6 +45,9 @@ class InstallerTests(unittest.TestCase):
         api = root / ".agents/skills/ascendc-api-knowledge-query"
         api.mkdir()
         (api / "SKILL.md").write_text("fixture\n", encoding="utf-8")
+        mcp = root / "mcp-server"
+        mcp.mkdir()
+        (mcp / "server.py").write_text("fixture\n", encoding="utf-8")
         (root / "get_resources.sh").write_text(
             "#!/usr/bin/env bash\necho 'resource fixture restored'\n", encoding="utf-8"
         )
@@ -813,6 +816,256 @@ class InstallerTests(unittest.TestCase):
             prompt = (project / "AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("### 贡献者附加流程", prompt)
             self.assertEqual(prompt.count("<!-- cannbot-knowledge:start -->"), 1)
+
+    def test_with_mcp_writes_project_mcp_json(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            self.create_repository_fixture(root)
+            knowledge_root = str(root.resolve())
+            plain = base / "plain"
+            configured = base / "configured"
+            plain.mkdir()
+            configured.mkdir()
+            baseline = subprocess.run(
+                [
+                    "bash",
+                    str(root / "install.sh"),
+                    "codex",
+                    str(plain),
+                    "consumer",
+                    "--skip-resources",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, baseline.returncode, baseline.stderr)
+            installed = subprocess.run(
+                [
+                    "bash",
+                    str(root / "install.sh"),
+                    "codex",
+                    str(configured),
+                    "consumer",
+                    "--with-mcp",
+                    "--skip-resources",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, installed.returncode, installed.stderr)
+
+            config_path = configured / ".mcp.json"
+            self.assertTrue(config_path.is_file())
+            expected_entry = {
+                "command": "uv",
+                "args": [
+                    "--directory",
+                    f"{knowledge_root}/mcp-server",
+                    "run",
+                    "server.py",
+                ],
+                "env": {"CANNBOT_KNOWLEDGE_ROOT": knowledge_root},
+            }
+            expected_config = {"mcpServers": {"cannbot-knowledge": expected_entry}}
+            self.assertEqual(
+                json.dumps(expected_config, indent=2) + "\n",
+                config_path.read_text(encoding="utf-8"),
+            )
+            self.assertEqual(
+                expected_entry,
+                json.loads(config_path.read_text(encoding="utf-8"))["mcpServers"][
+                    "cannbot-knowledge"
+                ],
+            )
+
+            self.assertIn(str(config_path), installed.stdout)
+            self.assertIn("Claude Desktop", installed.stdout)
+            self.assertIn("Cursor", installed.stdout)
+            self.assertIn("http://<host>:8090/mcp", installed.stdout)
+            self.assertIn('"Authorization": "Bearer <token>"', installed.stdout)
+            self.assertNotIn("mcpServers", baseline.stdout)
+
+            def snapshot(project: Path) -> dict[str, tuple[str, bytes | str]]:
+                entries: dict[str, tuple[str, bytes | str]] = {}
+                for path in sorted(project.rglob("*")):
+                    relative = str(path.relative_to(project))
+                    if path.is_symlink():
+                        entries[relative] = ("symlink", os.readlink(path))
+                    elif path.is_file():
+                        entries[relative] = ("file", path.read_bytes())
+                return entries
+
+            baseline_snapshot = snapshot(plain)
+            configured_snapshot = snapshot(configured)
+            self.assertNotIn(".mcp.json", baseline_snapshot)
+            self.assertIn(".mcp.json", configured_snapshot)
+            del configured_snapshot[".mcp.json"]
+            self.assertEqual(baseline_snapshot, configured_snapshot)
+            self.assertIn(".cannbot/knowledge.env", baseline_snapshot)
+            self.assertIn(".agents/skills/knowledge-query", baseline_snapshot)
+
+    def test_with_mcp_persists_platform_when_configured(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            installed = self.run_installer(
+                project, "codex", "consumer", "--with-mcp", "--platform", "a2"
+            )
+            self.assertEqual(0, installed.returncode, installed.stderr)
+            entry = json.loads((project / ".mcp.json").read_text(encoding="utf-8"))[
+                "mcpServers"
+            ]["cannbot-knowledge"]
+            self.assertIn("CANNBOT_KNOWLEDGE_ROOT", entry["env"])
+            self.assertEqual("a2", entry["env"]["CANNBOT_KNOWLEDGE_PLATFORM"])
+            # the printed client samples mirror the written env block
+            self.assertIn('"CANNBOT_KNOWLEDGE_PLATFORM": "a2"', installed.stdout)
+
+    def test_with_mcp_reinstall_without_platform_keeps_saved_platform(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            installed = self.run_installer(
+                project, "codex", "consumer", "--with-mcp", "--platform", "a2"
+            )
+            self.assertEqual(0, installed.returncode, installed.stderr)
+            knowledge_env = project / ".cannbot/knowledge.env"
+            first_entry = json.loads((project / ".mcp.json").read_text(encoding="utf-8"))[
+                "mcpServers"
+            ]["cannbot-knowledge"]
+            self.assertEqual("a2", first_entry["env"]["CANNBOT_KNOWLEDGE_PLATFORM"])
+            saved_env = knowledge_env.read_bytes()
+
+            reinstalled = self.run_installer(project, "codex", "consumer", "--with-mcp")
+            self.assertEqual(0, reinstalled.returncode, reinstalled.stderr)
+            second_entry = json.loads((project / ".mcp.json").read_text(encoding="utf-8"))[
+                "mcpServers"
+            ]["cannbot-knowledge"]
+            self.assertEqual("a2", second_entry["env"]["CANNBOT_KNOWLEDGE_PLATFORM"])
+            # the persisted knowledge.env semantics are unchanged: reinstalling
+            # without --platform keeps the saved platform line verbatim
+            self.assertEqual(saved_env, knowledge_env.read_bytes())
+            # the printed client samples mirror the effective platform
+            self.assertIn('"CANNBOT_KNOWLEDGE_PLATFORM": "a2"', reinstalled.stdout)
+
+    def test_with_mcp_omits_platform_when_unconfigured(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            installed = self.run_installer(project, "codex", "consumer", "--with-mcp")
+            self.assertEqual(0, installed.returncode, installed.stderr)
+            entry = json.loads((project / ".mcp.json").read_text(encoding="utf-8"))[
+                "mcpServers"
+            ]["cannbot-knowledge"]
+            self.assertNotIn("CANNBOT_KNOWLEDGE_PLATFORM", entry["env"])
+            self.assertNotIn("CANNBOT_KNOWLEDGE_PLATFORM", installed.stdout)
+
+    def test_with_mcp_merges_existing_mcp_json(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            self.create_repository_fixture(root)
+            knowledge_root = str(root.resolve())
+            project = base / "project"
+            project.mkdir()
+            (project / ".mcp.json").write_text(
+                json.dumps(
+                    {"mcpServers": {"other-server": {"command": "echo"}}},
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            command = [
+                "bash",
+                str(root / "install.sh"),
+                "codex",
+                str(project),
+                "consumer",
+                "--with-mcp",
+                "--skip-resources",
+            ]
+            installed = subprocess.run(
+                command, check=False, capture_output=True, text=True
+            )
+            self.assertEqual(0, installed.returncode, installed.stderr)
+            config_path = project / ".mcp.json"
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                {"command": "echo"}, config["mcpServers"]["other-server"]
+            )
+            self.assertEqual(
+                {
+                    "command": "uv",
+                    "args": [
+                        "--directory",
+                        f"{knowledge_root}/mcp-server",
+                        "run",
+                        "server.py",
+                    ],
+                    "env": {"CANNBOT_KNOWLEDGE_ROOT": knowledge_root},
+                },
+                config["mcpServers"]["cannbot-knowledge"],
+            )
+            merged = config_path.read_bytes()
+            again = subprocess.run(
+                command, check=False, capture_output=True, text=True
+            )
+            self.assertEqual(0, again.returncode, again.stderr)
+            self.assertEqual(merged, config_path.read_bytes())
+
+    def test_default_installation_does_not_touch_mcp_config(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            result = self.run_installer(project, "codex", "consumer")
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertFalse((project / ".mcp.json").exists())
+            self.assertNotIn("mcpServers", result.stdout)
+            self.assertNotIn("Claude Desktop", result.stdout)
+            self.assertNotIn("http://<host>:8090/mcp", result.stdout)
+
+            combined = self.run_installer(
+                project, "codex", "consumer", "--with-mcp", "--prompt-action", "uninstall"
+            )
+            self.assertEqual(2, combined.returncode)
+            self.assertIn(
+                "--with-mcp cannot be combined with --prompt-action", combined.stderr
+            )
+            self.assertFalse((project / ".mcp.json").exists())
+
+            bogus = self.run_installer(project, "codex", "consumer", "--with-mcp=bogus")
+            self.assertEqual(2, bogus.returncode)
+            self.assertIn("unknown with-mcp value: bogus", bogus.stderr)
+            self.assertFalse((project / ".mcp.json").exists())
+
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repo"
+            self.create_repository_fixture(root)
+            (root / "mcp-server/server.py").unlink()
+            project = base / "project"
+            project.mkdir()
+            missing = subprocess.run(
+                [
+                    "bash",
+                    str(root / "install.sh"),
+                    "codex",
+                    str(project),
+                    "consumer",
+                    "--with-mcp",
+                    "--skip-resources",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(2, missing.returncode)
+            self.assertIn(
+                "MCP server not found in knowledge root: "
+                f"{root.resolve()}/mcp-server/server.py",
+                missing.stderr,
+            )
+            self.assertFalse((project / ".mcp.json").exists())
+            self.assertEqual([], list(project.iterdir()))
 
 
 if __name__ == "__main__":

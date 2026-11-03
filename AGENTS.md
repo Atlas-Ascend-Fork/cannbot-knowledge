@@ -7,6 +7,7 @@
 - `knowledge/` 是唯一知识正文根，也是唯一 OKF Bundle root。不要在其他目录保存 CANN、DSL、API、算子、调试或优化事实，也不要在知识树内创建嵌套 Bundle。
 - `knowledge/` 中除 `index.md` 外的 Markdown 都是 OKF Concept document；Frontmatter `type` 是其 OKF 类型。目录中的 `concepts/`、`apis/`、`runbooks/` 等名称是路径 Profile，两者不能混用。
 - `.agents/skills/`、`governance/`、`evals/`、`logs/` 和可重建的 `artifacts/` 是生产、消费与治理设施，`docs/` 与 `recipes/` 是说明和实践文档；它们都不属于 OKF Bundle。
+- `mcp-server/` 是检索契约的 MCP 适配层：只读工具面（discover/search/read_card），search/discover 经 subprocess 透传既有 CLI 契约，read_card 只在 `knowledge/` Bundle 根内代读。服务器面对知识仓严格只读（不写 receipt、artifacts 或任何仓内路径，调用日志只落仓外），索引 stale/缺失时 fail-closed 拒答，不自动重建。
 - `docs/` 只解释设计原则和使用方式，`recipes/` 只提供场景化最佳实践。不要在两者中保存 CANN、DSL、API、算子、调试或优化事实，也不要把 Recipe 写成新的强制规则。
 - 只修改当前任务需要的文件。开始前检查工作区，保留用户已有修改；不要顺手格式化或重写无关内容。
 - 根目录 Shell、`governance/` 与 `evals/` 中的非空 Python/YAML 文件必须保留仓库标准的 CANN 2.0 版权许可头；带 shebang 的文件先写 shebang 再写许可头。根 `LICENSE` 必须保持官方 CANN 2.0 原文，包括原文中的空白；不要用通用格式化器改写。根 `OAT.xml` 是开源扫描策略和 CANN 2.0 matcher 的机器事实源，修改许可范围或模板时同步更新扫描回归。

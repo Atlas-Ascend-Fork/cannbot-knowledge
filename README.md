@@ -90,6 +90,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 | `governance/specs/` | 对治理规则的完整文字说明 |
 | `governance/contracts/` | Ingest、Query、Lint 和图谱共同使用的校验实现 |
 | `.agents/skills/` | 三项基础 Skill、Ascend C API 专用消费流程、仓内 trace producer 与两项源码级 Operator producer 的规范源 |
+| `mcp-server/` | 检索契约的 MCP 适配层：discover/search/read_card 三只读工具，stdio 与 HTTP 双传输（严格只读） |
 | `docs/` | 知识库设计原则、安装与使用指南 |
 | `recipes/` | 面向具体任务的知识库最佳实践 |
 | `evals/` | 检索、治理、文档和安装回归 |
@@ -103,7 +104,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 
 ## 安装与使用
 
-安装和使用方法见[安装与使用指南](docs/installation_and_usage.md)。
+安装和使用方法见[安装与使用指南](docs/installation_and_usage.md)；把知识库接入 MCP 客户端（Claude Desktop、Cursor 等）的说明见 [mcp-server](mcp-server/README.md)，工具参数与接入配置见 [TOOLS.md](mcp-server/TOOLS.md)与 [MCP_CONFIG.md](mcp-server/MCP_CONFIG.md)，接入故障排查见 [TROUBLESHOOTING.md](mcp-server/TROUBLESHOOTING.md)；Docker 一键部署见 [DOCKER.md](mcp-server/docker/DOCKER.md)。
 
 设计取舍见[设计原则](docs/design_principles.md)；常见任务见[形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)、[查询 API](recipes/api_search.md)和[使用知识库进行算子开发](recipes/operator_development.md)。
 

@@ -70,6 +70,12 @@ Options:
                   Only remove or refresh the managed project instructions. Reinstall
                   reuses the mode recorded by the previous installation unless a
                   mode is explicitly provided.
+  --with-mcp <true|false>
+                  Also write a project-level .mcp.json that starts the knowledge
+                  repository MCP server (stdio via uv) and print equivalent
+                  Claude Desktop, Cursor and remote HTTP configuration
+                  snippets. Defaults to false; cannot be combined with
+                  --prompt-action.
   --help          Show this help message.
 
 Standalone execution clones the repository or fast-forwards an existing managed
@@ -431,6 +437,141 @@ PY
   mv "$tmp" "$target"
 }
 
+effective_mcp_platform() {
+  if [[ -n "$knowledge_platform_input" ]]; then
+    printf '%s\n' "$knowledge_platform_input"
+    return 0
+  fi
+  "$PYTHON_BIN" - "$knowledge_env" <<'PY'
+import shlex
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.is_file():
+    raise SystemExit(0)
+for raw in path.read_text(encoding="utf-8").splitlines():
+    try:
+        tokens = shlex.split(raw, comments=True, posix=True)
+    except ValueError:
+        continue
+    if tokens and tokens[0] == "export":
+        tokens = tokens[1:]
+    for token in tokens:
+        if token.startswith("CANNBOT_KNOWLEDGE_PLATFORM="):
+            value = token.split("=", 1)[1]
+            if value:
+                print(value)
+            raise SystemExit(0)
+raise SystemExit(0)
+PY
+}
+
+write_mcp_config() {
+  local target="$1"
+  local platform
+  platform="$(effective_mcp_platform)"
+  "$PYTHON_BIN" - "$target" "$KNOWLEDGE_ROOT" "$platform" <<'PY'
+import json
+import os
+import stat
+import sys
+import tempfile
+from pathlib import Path
+
+target = Path(sys.argv[1])
+knowledge_root = sys.argv[2]
+platform = sys.argv[3].strip() if len(sys.argv) > 3 else ""
+entry = {
+    "command": "uv",
+    "args": ["--directory", f"{knowledge_root}/mcp-server", "run", "server.py"],
+    "env": {"CANNBOT_KNOWLEDGE_ROOT": knowledge_root},
+}
+# uv --directory starts the server with cwd=mcp-server, so the CLI's
+# upward .cannbot/knowledge.env discovery never reaches the user project;
+# mirror the persisted platform field here when one was configured.
+if platform:
+    entry["env"]["CANNBOT_KNOWLEDGE_PLATFORM"] = platform
+if target.exists():
+    try:
+        config = json.loads(target.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"error: cannot parse existing MCP config {target}: {exc}", file=sys.stderr)
+        raise SystemExit(2)
+    if not isinstance(config, dict):
+        print(f"error: existing MCP config is not a JSON object: {target}", file=sys.stderr)
+        raise SystemExit(2)
+    if not isinstance(config.get("mcpServers"), dict):
+        print(f"error: existing MCP config must contain a mcpServers object: {target}", file=sys.stderr)
+        raise SystemExit(2)
+    config["mcpServers"]["cannbot-knowledge"] = entry
+else:
+    config = {"mcpServers": {"cannbot-knowledge": entry}}
+payload = (json.dumps(config, indent=2) + "\n").encode("utf-8")
+mode = stat.S_IMODE(target.stat().st_mode) if target.exists() else 0o644
+target.parent.mkdir(parents=True, exist_ok=True)
+descriptor, temporary = tempfile.mkstemp(prefix=target.name + ".", dir=target.parent)
+try:
+    with os.fdopen(descriptor, "wb") as stream:
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.chmod(temporary, mode)
+    os.replace(temporary, target)
+finally:
+    try:
+        Path(temporary).unlink()
+    except FileNotFoundError:
+        pass
+PY
+}
+
+print_mcp_client_config() {
+  local target="$1"
+  local platform
+  platform="$(effective_mcp_platform)"
+  local env_line="{\"CANNBOT_KNOWLEDGE_ROOT\": \"$KNOWLEDGE_ROOT\"}"
+  if [[ -n "$platform" ]]; then
+    env_line="{\"CANNBOT_KNOWLEDGE_ROOT\": \"$KNOWLEDGE_ROOT\", \"CANNBOT_KNOWLEDGE_PLATFORM\": \"$platform\"}"
+  fi
+  cat <<EOF
+MCP client configuration:
+  Wrote $target (Claude Code project-level MCP config).
+
+Claude Desktop (add to claude_desktop_config.json):
+{
+  "mcpServers": {
+    "cannbot-knowledge": {
+      "command": "uv",
+      "args": ["--directory", "$KNOWLEDGE_ROOT/mcp-server", "run", "server.py"],
+      "env": $env_line
+    }
+  }
+}
+
+Cursor (add to .cursor/mcp.json):
+{
+  "mcpServers": {
+    "cannbot-knowledge": {
+      "command": "uv",
+      "args": ["--directory", "$KNOWLEDGE_ROOT/mcp-server", "run", "server.py"],
+      "env": $env_line
+    }
+  }
+}
+
+Remote HTTP access (shared deployment, example endpoint http://<host>:8090/mcp):
+{
+  "mcpServers": {
+    "cannbot-knowledge": {
+      "url": "http://<host>:8090/mcp",
+      "headers": {"Authorization": "Bearer <token>"}
+    }
+  }
+}
+EOF
+}
+
 installed_profile() {
   local target="$1"
   local canonical_root="$2"
@@ -677,6 +818,7 @@ shift 2
 profile="consumer"
 profile_explicit="false"
 prompt_action=""
+with_mcp="false"
 skip_resources="false"
 knowledge_platform_input="${CANNBOT_KNOWLEDGE_PLATFORM:-}"
 knowledge_platform_explicit="false"
@@ -750,6 +892,18 @@ while [[ "$#" -gt 0 ]]; do
       prompt_action="${1#--prompt-action=}"
       shift
       ;;
+    --with-mcp)
+      with_mcp="true"
+      shift
+      ;;
+    --with-mcp=*)
+      with_mcp="${1#--with-mcp=}"
+      case "$with_mcp" in
+        true|false) ;;
+        *) fail "unknown with-mcp value: $with_mcp" ;;
+      esac
+      shift
+      ;;
     --help|-h)
       show_help
       exit 0
@@ -809,9 +963,13 @@ case "$prompt_action" in
   ""|uninstall|reinstall) ;;
   *) fail "unknown prompt action: $prompt_action" ;;
 esac
+if [[ "$with_mcp" == "true" && -n "$prompt_action" ]]; then
+  fail "--with-mcp cannot be combined with --prompt-action"
+fi
 
 canonical_root="$project_path/.agents/skills"
 knowledge_env="$project_path/.cannbot/knowledge.env"
+mcp_config="$project_path/.mcp.json"
 all_adapter_roots=(
   "$project_path/.claude/skills"
   "$project_path/.opencode/skills"
@@ -889,6 +1047,10 @@ fi
 
 resolve_knowledge_root \
   "$knowledge_root_input" "$knowledge_root_explicit" "$skip_repository_update"
+if [[ "$with_mcp" == "true" ]]; then
+  [[ -f "$KNOWLEDGE_ROOT/mcp-server/server.py" ]] || \
+    fail "MCP server not found in knowledge root: $KNOWLEDGE_ROOT/mcp-server/server.py"
+fi
 check_runtime
 preflight_destination "$knowledge_env"
 [[ -d "$KNOWLEDGE_ROOT/knowledge" ]] || fail "invalid knowledge root: $KNOWLEDGE_ROOT"
@@ -968,6 +1130,13 @@ for prompt_index in "${!managed_prompt_files[@]}"; do
   fi
 done
 
+if [[ "$with_mcp" == "true" ]]; then
+  if [[ -L "$mcp_config" || ( -e "$mcp_config" && ! -f "$mcp_config" ) ]]; then
+    fail "refusing to overwrite non-regular config path: $mcp_config"
+  fi
+  write_mcp_config "$mcp_config"
+fi
+
 echo "Installed cannbot-knowledge $VERSION"
 echo "  agent:          $agent"
 echo "  mode:           $profile"
@@ -976,3 +1145,10 @@ echo "  canonical root: $canonical_root"
 echo "  knowledge root: $KNOWLEDGE_ROOT"
 echo "  project config: $knowledge_env"
 echo "For direct shell access, run: source $knowledge_env"
+
+if [[ "$with_mcp" == "true" ]]; then
+  print_mcp_client_config "$mcp_config"
+  if ! command -v uv >/dev/null 2>&1; then
+    echo "note: uv was not found on PATH; the generated MCP config requires uv (https://docs.astral.sh/uv/)"
+  fi
+fi

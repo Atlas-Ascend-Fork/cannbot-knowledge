@@ -12,3 +12,8 @@ cann-docs-raw/
 /cann-runtime-raw/
 /cann-recipes-raw/
 local-tools/
+.scratch/
+.claude/worktrees/
+mcp-server/None/
+mcp-server/docker/tokens.env
+mcp-server/docker/.env

@@ -183,6 +183,16 @@ bash install.sh claude /path/to/project consumer --platform a2
 
 `ops-knowledge-trace-ingest` 只用于知识仓内的 trace → Runbook 生产，不安装到业务项目。贡献流程见[贡献知识](../recipes/contribute_knowledge.md)，正式要求见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 
+### 接入 MCP 客户端
+
+需要让 Claude Code、Claude Desktop、Cursor 等 MCP 客户端直接检索知识库时，在安装命令中追加 `--with-mcp`：
+
+```bash
+bash install.sh claude /path/to/project consumer --with-mcp
+```
+
+安装器会在目标项目写入 `.mcp.json`，其中 `cannbot-knowledge` 条目通过 `uv` 以 stdio 方式启动知识仓 `mcp-server/` 内的服务器；安装完成后还会打印 Claude Desktop、Cursor 与远程 HTTP 端点的等价配置片段，供粘贴到对应客户端。该选项默认关闭，不携带时安装行为与产物不变，也可用 `--with-mcp=false` 显式关闭；它与 `--prompt-action` 互斥。知识仓中不存在 `mcp-server/server.py` 时安装器报错停止。生成的配置依赖 [uv](https://docs.astral.sh/uv/)，PATH 上找不到 `uv` 时安装器在结尾输出提示。
+
 ### 自定义位置、仓库与分支
 
 指定托管知识仓位置：
