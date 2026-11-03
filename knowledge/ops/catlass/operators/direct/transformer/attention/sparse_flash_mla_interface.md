@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/sparse-flash-mla/interface.md
   role: primary
 created_at: '2026-10-23T02:44:15Z'
-updated_at: '2026-10-23T02:44:15Z'
+updated_at: '2026-11-03T02:37:18Z'
 platforms:
 - a2
 - a3
@@ -666,7 +666,7 @@ metadata 就绪后主算子才能消费；每次长度/模式/调度输入改变
 
 一般SWA还须提供定向覆盖：两种PA及非恒等页表、真实页stride padding；BSND实际batch stride、TND实际token stride；TND多batch且Q/KV的seqused分别小于存储长度；128窗口边界、Q/KV长度不等、Lq>Lkv无效前缀；零有效长度batch和整批零工作；非默认scale、非零sink、LSE开关和轴序。TND有效长度/stride和零行修正能力单独标记，不冒称旧kernel已通过。分别从两个入口验证CSA/HCA、N2>1、非幂次N1、错误dtype/长度/页表及域外stride的拒绝；metadata先失败不能代替main拒绝证据。cmp辅助槽另测合法非空不改变SWA输出；正式main验证缺失/空sink拒绝，诊断无sink扩展结果单列。
 
-精度遵守用户双标杆和既定容差；性能同输入、同计时边界逐例测量，默认最低比值0.8（手写基线耗时 / 生成实现耗时），每条达标，不能用平均数遮蔽慢例。通过指定子集后仍逐项报告一般域已验证与未验证维度，不能宣称三模式全功能。
+精度遵守用户双标杆和既定容差；性能采集、统计与验收遵循05阶段统一规则，按本轮任务冻结的性能目标逐例报告，不能用跨case汇总遮蔽慢例。通过指定子集后仍逐项报告一般域已验证与未验证维度，不能宣称三模式全功能。
 
 本页已经给出隔离生成所需的窗口、数值路径、布局地址、实际边界和修正要求。验收以本轮冻结的公开契约、golden和真实运行结果为准；不要求生成者读取外部手写源码，不以接口漏检或未验证设备分支扩张支持声明。
 

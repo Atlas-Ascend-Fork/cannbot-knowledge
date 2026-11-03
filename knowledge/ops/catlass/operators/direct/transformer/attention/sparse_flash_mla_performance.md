@@ -1,7 +1,7 @@
 ---
 type: Operator
-title: SWA 分块优化与性能验收
-description: 一般 SWA 和连续 prefill 的布局、复用、分核与流水优化，以及5+5采样和逐例性能证据校验。
+title: SWA 分块优化与性能证据
+description: 一般 SWA 和连续 prefill 的布局、复用、分核与流水优化，以及通用验收所需的性能证据边界。
 tags:
 - task.design
 - topic.attention
@@ -9,14 +9,18 @@ status: draft
 sources:
 - resource: https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/sparse-flash-mla/performance.md
   role: primary
+- resource: https://gitcode.com/cann/cannbot-skills/blob/9ae3298c0c026e9616c3dbc36569de43f040c4f1/ops/catlass-cpp-test/SKILL.md
+  role: supporting
+- resource: https://gitcode.com/cann/cannbot-skills/blob/9ae3298c0c026e9616c3dbc36569de43f040c4f1/ops/catlass-cpp-test/references/performance_validation.md
+  role: supporting
 created_at: '2026-10-23T02:44:15Z'
-updated_at: '2026-10-23T02:44:15Z'
+updated_at: '2026-11-03T03:13:50Z'
 platforms:
 - a2
 - a3
 ---
 
-# SWA 分块优化与性能验收
+# SWA 分块优化与性能证据
 
 <!--
 Copyright (c) 2026 Huawei Technologies Co., Ltd.
@@ -33,7 +37,7 @@ See LICENSE in the root of the software repository for the full text of the Lice
 
 - [一般 SWA 分支与性能](#strategy)
 - [连续短窗口 prefill 推导](#prefill)
-- [性能证据的解析与逐例判断](#acceptance)
+- [性能证据与通用验收衔接](#acceptance)
 
 ## 接口与概念
 
@@ -79,12 +83,17 @@ CATLASS的标准Pingpong BlockMmad提供布局、TileCopy、TileMmad与K轴分�
 
 <a id="acceptance--用法"></a>
 
-### 性能证据的解析与逐例判断
+### 性能证据与通用验收衔接
 
-性能报告评价是对既有采样证据的离线核对，不启动设备，也不能仅凭 JSON 宣称已检查原始 profiler。
-生成工程可按本节实现自己的报告读取/校验入口。输入是调用者给出的基线、显式选定的 case_id、
-相应用例文件以及可选的本轮候选报告；输出写新路径，不能覆盖任何输入。
-未给候选只返回门槛与 `REFERENCE_ONLY`，不得返回候选 PASS。
+本文所称“05 阶段”指已安装的 `catlass-cpp-test` Skill。阶段流程与完成条件见其 `SKILL.md`；
+性能采集、统计、报告及优化迭代规则见同一 Skill 下的 `references/performance_validation.md`。
+规则来源快照：[阶段入口](https://gitcode.com/cann/cannbot-skills/blob/9ae3298c0c026e9616c3dbc36569de43f040c4f1/ops/catlass-cpp-test/SKILL.md)、
+[性能验收与优化](https://gitcode.com/cann/cannbot-skills/blob/9ae3298c0c026e9616c3dbc36569de43f040c4f1/ops/catlass-cpp-test/references/performance_validation.md)。
+这些固定提交链接用于审阅和追溯，实际执行读取本轮已安装版本。
+
+性能目标按本轮任务在设计阶段确认，性能采集、统计、报告、优化迭代及停止条件由 05 阶段统一维护。
+本页只补充 SWA 的用例身份、完整调用范围和证据边界，不提供独立性能评价器或默认门槛。
+离线核对既有报告不能代替真实设备采集，也不能仅凭 JSON 宣称已检查原始 profiler。
 
 ## 代码模式
 
@@ -146,7 +155,7 @@ PV的 `Kvalid` 取实际窗口并集宽度，物理对齐值仅用于相应布�
 
 历史单因素诊断显示：PV 先把有效 K 向上对齐，再用多行零步长 GM→L1 ND2NZ 补零，可能让 MTE2 明显退化；只扩大零源容量不能消除该问题。将零源改为正行距连续有限区域，或直接让组件执行有效 K，在当时的诊断输入上都避免了主要退化。这个结论用于提示 API 选择和 profiler 定位，不是新任务的性能基线，也不证明其它长度、dtype、布局或 SDK 版本具有相同比例收益。
 
-对新的生成工程，先用调用者提供的用例和基线冻结输入与计时范围，再做保持数学一致的单因素对照：记录有效 K、执行 K、补零方式、真实 GM 读取范围、精度、MTE2/MAC/Vector profile 和完整设备时间。PMU 管线指标可重叠，不能相加；诊断直调结果不能替代正式 ATK 和主核验收。未见组合按[尾块验证矩阵](sparse_flash_mla_validation.md#pipeline-validation--pv-tail-validation)验证。
+对新的生成工程，先按本轮任务冻结输入、性能目标与计时范围，再做保持数学一致的单因素对照：记录有效 K、执行 K、补零方式、真实 GM 读取范围、精度、MTE2/MAC/Vector profile 和完整设备时间。PMU 管线指标可重叠，不能相加；诊断直调结果不能替代正式 ATK 和主核验收。未见组合按[尾块验证矩阵](sparse_flash_mla_validation.md#pipeline-validation--pv-tail-validation)验证。
 
 <a id="strategy--分核策略与基本块切分"></a>
 ### 分核策略与基本块切分
@@ -196,7 +205,7 @@ query行分工与KV装载分工独立。例如两个AIV按`[floor(Nactual*part/2
 
 正式与直调路径共用数学源码但结果不同，先核对进入S0的参数值及其恢复方式。按[对象表示、别名和对齐要求](sparse_flash_mla_development.md#engineering--tiling与控制结构的对象表示别名和对齐)检查tiling/control生产端与消费端的大小、偏移、位表示及实际访问类型，特别是混合32/64位整数与浮点成员的结构。优化编译可能使不合法的类型访问表现不同；不能仅凭更换复制写法后少量场景通过，就断言编译器存在缺陷或全部错误根因已证实。
 
-比较时固定数学核、编译选项、控制值、输入和设备条件，只改变参数恢复边界，并保留失败与修正候选各自的构建身份。用单核/多核、整块/部分块和连续多任务区分参数解释、分核与尾处理；覆盖控制值变化及跨shape复用。具名参数dump可辅助核对各字段，但诊断会影响代码布局和时序，结果必须回到无trace正常包复验，之后仍需完整精度与5+5性能验收。合法字节复制可能被编译器合并为更宽的装载，不按源码循环次数推断慢或快；也不将全局屏障、降低优化级别或特殊别名编译flag设为默认修复。
+比较时固定数学核、编译选项、控制值、输入和设备条件，只改变参数恢复边界，并保留失败与修正候选各自的构建身份。用单核/多核、整块/部分块和连续多任务区分参数解释、分核与尾处理；覆盖控制值变化及跨shape复用。具名参数dump可辅助核对各字段，但诊断会影响代码布局和时序，结果必须回到无trace正常包复验，之后仍需完整精度和05阶段性能验收。合法字节复制可能被编译器合并为更宽的装载，不按源码循环次数推断慢或快；也不将全局屏障、降低优化级别或特殊别名编译flag设为默认修复。
 
 <a id="prefill--代码模式"></a>
 
@@ -355,54 +364,27 @@ metadata建议包含magic/version、实际使用核数、任务数、形状/窗�
 
 <a id="acceptance--代码模式"></a>
 
-### 性能证据的解析与逐例判断
+### 性能证据与通用验收衔接
 
 <a id="acceptance--报告结构和采样语义"></a>
 ### 报告结构和采样语义
 
-| 字段 | 约束 |
-| --- | --- |
-| task / scope / units | performance_device / formal_main_kernel / us；直调诊断保持 direct_c_abi，不能自动升级 |
-| 基线 schema_version | 整数1 |
-| 新 collection | warmup=5、sample_count=5、last_samples=5、statistic=mean_all_5 |
-| 历史基线 collection | warmup=20、sample_count=50、last_samples=30、statistic=mean_last_30；仅基线允许 |
-| cases | 非空对象数组，每行 id 是唯一非负整数，bool 不能当整数 |
-| case 采样字段 | sample_count/last_samples 必须与顶层 collection 一致；重复出现的 task/scope/units/collection 不得矛盾 |
-| validated_cases | 若给出，必须等于 cases 的实际条数 |
-| 时长 | 有限、严格正的数值，排除 bool、字符串、NaN、Inf、零和负数 |
-| 基线身份 | 每例 case_spec_sha256 是64位十六进制，最低速度比为有限正数 |
+报告格式、样本数量和统计量使用 05 阶段的统一要求。每例证据绑定实际候选、正式入口、完整
+`smla_case_spec`、输入和原始 profiler；不能只凭相同 case_id 认定同一计算，也不能把直调诊断升级为正式结果。
+核对所选 ID 非空、无重复、无缺例；若按规范化 spec 计算哈希，须同时保留原始用例和核对依据。
+设备耗时必须是有限正数；零工作没有设备记录时保留空样本和 null，不伪造零耗时。
 
-候选保存5条独立正式 `samples_us`，不含预热，也不舍弃其中任何一条。
-基线要求 device_us 和 raw_mean_us；候选至少提供 device_us/mean_us 等均值摘要。
-同一行若同时提供 device_us、raw_mean_us、mean_us 或历史 last30_mean_us，均值必须一致，
-核对容差为 `rel_tol=1e-8,abs_tol=1e-6`；5样本协议禁止出现 last30_mean_us。
-有原始样本时从样本重新计算均值并核对摘要，验收使用重算值，不能借摘要舍入容差把超限值变成通过。
-只有冻结的旧50/30基线允许没有内嵌 samples_us，此时明确 `baseline_raw_samples_checked=false`。
-候选缺原始5条样本不可采用这一兼容规则。
-
-JSON 读取应拒绝重复对象键。输入报告和原始用例都记录文件 SHA256；规范化完整 spec 的哈希采用
-UTF-8、键排序、紧凑分隔符、保留 Unicode、禁止非有限值。ATK 用例从唯一的
-`inputs[name=smla_case_spec].range_values` 解码，支持该字段是字符串或对象；直接 manifest 支持对象行。
-外层 id 若存在必须等于内层 case_id。显式所选 ID 非空、无重复，基线/候选/用例都不得缺任何一条。
-
-没有 schema_version 的历史基线还需原 case JSON 才能建立当前 ID 与完整 spec 的映射。
-先检查 task、validated_cases、唯一 ID、每例50/30、两个摘要一致，再形成带身份哈希的规范化基线，
-保留历史 collection，最低速度比缺省采用本任务约定0.8。这个关联不是对历史实际运行输入的独立证明。
-已有规范化基线若同时给出用例文件，须复核哈希；候选给出哈希时须与基线一致，缺失则标记
-`NOT_AUTOMATICALLY_VERIFIED`，另外核验输入身份，不能把同 ID 当同输入的充分条件。
+手写实现等外部性能数据仅在本轮任务需要时作为参考，不是必需输入，也不决定默认性能目标。
+需要相对比较时核对两侧输入、设备条件、完整调用范围和采样统计口径；不可比的历史数据只作背景，
+不把历史均值与本轮中位数直接计算加速比，也不把历史统计值自动当作本轮验收门槛。
 
 <a id="acceptance--逐例判断和失败语义"></a>
 ### 逐例判断和失败语义
 
-对每条选中 case 计算 `limit_us=baseline_us/minimum_speedup`、`speedup=baseline_us/candidate_us`，
-候选重算均值 `<=limit_us` 才通过，边界相等通过。最低速度比从冻结基线取值，只有显式用户目标才覆盖。
-所有选中 case 分别通过才可报告性能子集 PASS，未选中候选 ID 单独列出，不计入本次覆盖。
-硬门槛只决定是否允许结束性能验收，精度、同步和交付验收仍独立；更高性能仍可继续优化。
-
-结果至少保留输入文件与哈希、所选 ID、两侧 collection、baseline/candidate duration、limit、speedup、
-原始样本是否核对、输入身份状态及计时边界证据。离线汇总未重读 raw CSV、未观察预热隔离或实际张量时，
-不得把报告声明写成实测核验。建议状态/退出语义：PASS 与 REFERENCE_ONLY 为0、性能 FAIL 为1、
-缺字段/缺例/数值非法/口径冲突或写文件失败为 INVALID/2；REFERENCE_ONLY 始终不赋予通过资格。
+按 05 阶段统一规则，将各目标 case 的实测结果与本轮设计冻结的目标对照；优化候选选择、
+未达标处置及完成状态均由工作流判断。本页不另设最低速度比、退出码或停止条件。
+保留未达标、缺例、无效采样和未运行项，不用跨 case 汇总掩盖失败。
+离线汇总未重读原始 profiler、未核验预热隔离或实际输入时，不得把报告声明写成实测核验。
 
 ## 约束
 
@@ -425,7 +407,7 @@ metadata 的任务划分、窗口起点和地址推导凡依赖本次 KV 有效�
 
 数学/接口只SWA并不意味着只一个shape。选中性能子集的batch、seq、head、dtype都不得成为数据常量；metadata负责从本次输入派生任务。保持完整API并显式拒绝未实现的CSA/HCA，不代调已安装手写metadata或主核。正式接口与诊断C ABI共用本轮数学与metadata，不出现各自不同的隐藏实现。
 
-默认逐case速度比不低于手写0.8即可满足普通生成任务的性能最低门槛；优化研究的用户指定轮数仍完整执行。[验收口径](sparse_flash_mla_validation.md#coverage--性能验收与停止条件)改为5次预热、5次正式采样并取全部5次均值。这里列出的tile和分支在真实设备测试前仅是候选，不把某个样例结果当作其它head/dtype的性能保证。
+[性能验收](sparse_flash_mla_validation.md#coverage--性能验收与停止条件)遵循 05 阶段统一规则和本轮设计冻结的目标。这里列出的 tile 和分支在真实设备测试前仅是候选，不把某个样例结果当作其它 head/dtype 的性能保证。
 
 <a id="prefill--约束"></a>
 
@@ -532,8 +514,8 @@ UB按存活区间而非变量名分配。单AIV的score需R*N*4=49152B，归约�
 
 <a id="acceptance--验证方法"></a>
 
-### 性能证据的解析与逐例判断
+### 性能证据与通用验收衔接
 
-验收前实际检查原始 trace 的主核归属、5条样本和每次完整计算的组成。新增 pack、清零、归并等必需设备核
-必须纳入与手写完整数学计算可比的边界，metadata、控制传输和端到端另记。不能仅修改报告 scope
+验收前实际检查原始 trace 的主核归属、05 阶段要求的正式样本和每次完整计算的组成。新增 pack、清零、归并等必需设备核
+必须纳入本轮声明的完整调用范围，metadata、控制传输和端到端另记。不能仅修改报告 scope
 把不同计时范围变成可比。零工作没有 kernel 记录时用 null 和 NO_DEVICE_KERNEL_RECORDS，不伪造0µs。

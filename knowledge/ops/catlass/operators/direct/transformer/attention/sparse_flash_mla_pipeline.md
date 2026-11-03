@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/sparse-flash-mla/pipeline.md
   role: primary
 created_at: '2026-10-23T02:44:15Z'
-updated_at: '2026-10-23T02:44:15Z'
+updated_at: '2026-11-03T02:37:18Z'
 platforms:
 - a2
 - a3
@@ -115,7 +115,7 @@ M<=128 的整体任务分配给一个 AIC、配对两个 AIV。若 Mphys128，�
 
 ### 参考模型的使用边界：参考模型与工程自建验证
 
-- [性能评价器](sparse_flash_mla_performance.md#acceptance)：读取冻结基线与本轮正式设备样本，按所选case逐例判断。
+- [性能证据核对](sparse_flash_mla_performance.md#acceptance)：核对本轮正式设备样本及完整计时范围，按05阶段统一规则和本轮任务冻结的性能目标逐例验收。
 - [用例读取](sparse_flash_mla_validation.md#case-recipes)、[整套诊断](sparse_flash_mla_validation.md#diagnostics)、[三actor参考模型](sparse_flash_mla_pipeline.md#model)：使用前核对参数及接口边界，不能替代原ATK。
 - [构建工具准备](sparse_flash_mla_development.md#sdk-build)：用于已声明的隔离构建流程。
 - [三actor参考模型](sparse_flash_mla_pipeline.md#model)：构造方法与适用范围如下。
@@ -148,7 +148,7 @@ M<=128 的整体任务分配给一个 AIC、配对两个 AIV。若 Mphys128，�
 1. 先按参考程序实现并运行 self-test，保存命令、模型 SHA、完整 JSON 和实际探索范围，确认理解基准协议。
 2. 在自己的工程按**最终源码**建立 actor 程序。把每个动作对应到真实函数、PIPE 和完成事件；记录与参考程序的逐项差异。若任务描述符、pack、通知位置或槽数变化，扩展相应状态与检查。
 3. 若声称验证异步重叠，将 issue/complete 分开建模并显式保留尚未完成的 reader/writer，而非将函数返回当完成。不能仅把参考模型报告改名为“实际算子模型”。
-4. 模型之后仍执行 HardEvent 与地址生命周期审查、零行/尾部/多槽回绕、A/B/A/B、原 ATK、最终完整 5+5 设备验收，见[流水验收](sparse_flash_mla_validation.md#pipeline-validation)。
+4. 模型之后仍执行 HardEvent 与地址生命周期审查、零行/尾部/多槽回绕、A/B/A/B、原 ATK，以及05阶段要求的完整性能验收，见[流水验收](sparse_flash_mla_validation.md#pipeline-validation)。
 
 每份 JSON 固定标明 `reference_model_only=true`、`verifies_generated_operator=false`、`verifies_cpp_sdk_or_async_dma=false`、`hardware_verified=false`、`automatic_pipeline_acceptance=false`。只运行未修改参考模型时，最终报告中“实际实现模型”仍须写 NOT_RUN；协议参考检查通过不能替代算子流水通过。
 
@@ -211,7 +211,7 @@ U(i) = core_base + U_offset + (i%2)*SU
 core_stride = aligned(2*SX + 2*SP + 2*SU + optional_regions)
 ```
 
-各 region 分别按其 DMA/typed layout 要求对齐，偏移用 64 位字节值，typed Tensor 索引再转换为元素数。workspace 总量按**实际分配核数**计算，必须覆盖 launch 核数；不按所有 work 保存一份中间量。M128/N256 时 X/P/U 双槽合计 896 KiB/core，另计行状态、描述符和可选 pack。GM 中转是 A2 的正常路径，优化目标是有限生命周期和重叠，不是宣称所有中间结果都不落 GM。
+各 region 分别按其 DMA/typed layout 要求对齐，偏移用 64 位字节值，typed Tensor 索引再转换为元素数。workspace 总量按**实际分配核数**计算，必须覆盖 launch 核数；不按所有 work 保存一份中间量。M128/N256 时 X/P/U 双槽合计 896 KiB/core，另计行状态、描述符和可选 pack。GM（用户 workspace）中转是 A2 的正常路径，优化目标是有限生命周期和重叠，不是宣称所有中间结果都不落 GM。
 
 每槽 writer/reader：X=AIC→两 AIV；P=两 AIV→AIC；U=AIC→两 AIV。最终 O/LSE 写入业务地址，与循环 GM 区分开。UB 能否复用要看核内 MTE2/V/MTE3 完成，CrossCore 本身只建立相应跨核边，不能包办 UB 依赖。
 
@@ -759,7 +759,7 @@ AIC 循环后消费 j=max(0,L−2)..L−1 的剩余 free。首两次 U 使用不
 - 普通 SWA阶段是否实际实现以函数体、调用图、缓冲/事件与设备证据判断；不凭文件名、API名称、注释或构造了两个Tensor判断。
 - 所有资源按所选编译变体真实峰值重算；不把L1、L0、UB容量互相挪用，不拿A5路径代替A2。
 - 使用CATLASS矩阵/拷贝tile组件组合SWA block是合法专用实现；不能用逐元素手写矩阵乘绕过组件。资源优化不得改变冻结的低精度P舍入点。
-- 以上结构是设计输入。没有本轮完整ATK及5+5性能不能标verified或声称0.8x。
+- 以上结构是设计输入。没有本轮完整ATK及05阶段要求的性能证据，不能标verified或宣称达到本轮任务冻结的性能目标。
 
 <a id="model--约束"></a>
 
@@ -807,7 +807,7 @@ AIC 循环后消费 j=max(0,L−2)..L−1 的剩余 free。首两次 U 使用不
 
 可以按[参考模型配方及使用边界](sparse_flash_mla_pipeline.md#model-usage)在生成工程内建模。本节模型仅检查参考序列；必须另列最终源码与模型的对应和差异。参考模型PASS不代表实际生成代码已实现该协议。
 
-随后依次跑单 work、跨槽回绕、ragged 尾块、A/B/A/B、调用者选定的原 ATK 用例、最终 release 的完整 5+5 profiler。只有真实最终代码及测量满足才宣告本协议已工程落地。具体产物和父级验收见[流水验收](sparse_flash_mla_validation.md#pipeline-validation)。
+随后依次跑单 work、跨槽回绕、ragged 尾块、A/B/A/B、调用者选定的原 ATK 用例，并用最终 release 按05阶段统一规则采集完整性能证据。只有真实最终代码及测量满足才宣告本协议已工程落地。具体产物和父级验收见[流水验收](sparse_flash_mla_validation.md#pipeline-validation)。
 
 [^protocol-sdk-sync]: 本知识包只保守记录 mode2 的 0–9 编号语义；具体 SDK 的编号限制、Wait 重载和参与者行为仍须核对目标版本。
 [^catlass-sync]: 历史 CATLASS `CrossCoreFlag` 封装将 flag ID 交给 AscendC `CrossCoreSetFlag<MODE, PIPE>` 和 `CrossCoreWaitFlag`；`CrossCoreFlagWithReverse<REVERSE_DEPTH>` 在正向 set/wait 累计到阈值时由消费者反向 set、生产者反向 wait，避免单向连续 set 过多（历史阈值 15）。本页协议是 SWA 所需的握手约束，不能把历史 wrapper 当作目标 SDK 的可编译签名；须核对当前版本的 mode、PIPE、ID 范围、反向 flag 和参与者行为。
@@ -831,4 +831,4 @@ AIC 循环后消费 j=max(0,L−2)..L−1 的剩余 free。首两次 U 使用不
 `verifies_cpp_sdk_or_async_dma=false`、`hardware_verified=false`、`automatic_pipeline_acceptance=false`。
 单配置 FAIL 或 INCONCLUSIVE 不返回成功；负对照命令失败属于预期证据，应保留报告。
 自检成功要求正常配置通过且每个负对照检测到对应问题，而不是要求全部变体都 PASS。
-之后仍进行最终源码事件映射、地址生命周期、零行/尾部/多次回绕、ABAB、原 ATK 和完整5+5设备验收。
+之后仍进行最终源码事件映射、地址生命周期、零行/尾部/多次回绕、ABAB、原 ATK 和05阶段要求的完整性能验收。

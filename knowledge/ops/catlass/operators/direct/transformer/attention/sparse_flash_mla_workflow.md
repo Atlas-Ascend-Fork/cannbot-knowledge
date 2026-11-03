@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/sparse-flash-mla/workflow.md
   role: primary
 created_at: '2026-10-23T02:44:15Z'
-updated_at: '2026-10-23T02:44:15Z'
+updated_at: '2026-11-03T03:13:50Z'
 platforms:
 - a2
 - a3
@@ -33,7 +33,7 @@ platforms:
 
 SparseFlashMLA 主算子与独立 metadata 均使用 `catlass-op-generator` 的 interface → reference → design → implementation → validation 工作流。根据已确认的数学语义选择 `algorithm_family=sparse_flash_mla`，在 `operators/<name>/docs/workflow.json` 保存状态；架构按当前知识限定为 `atlas_a2_a3`。通用技术由 `guides/` 和 `apis/` 提供，家族特化知识在 `operators/direct/transformer/attention/` 中使用 `sparse_flash_mla_` 前缀。
 
-调用者提供实际数学标杆、ATK 适配、用例和可比性能基线时，记录各文件的路径、SHA256、适用模式、目标架构和采样口径。知识不能代替冻结的 contract、CPU 标杆和实测证据。
+调用者提供实际数学标杆、ATK 适配和用例，按本轮任务确认性能目标；如提供外部性能参考，记录其来源、输入身份、目标架构、计时范围和统计方式。知识不能代替冻结的 contract、CPU 标杆和实测证据。
 
 ## 用法
 
@@ -41,13 +41,13 @@ SparseFlashMLA 主算子与独立 metadata 均使用 `catlass-op-generator` 的 
 
 ```bash
 python scripts/record_knowledge.py initialize --project-root "{workspace_dir}"
-python scripts/record_knowledge.py query --project-root "{workspace_dir}" --type operators --family sparse_flash_mla --compact
+python scripts/record_knowledge.py query --project-root "{workspace_dir}" --type operators --family sparse_flash_mla --arch atlas_a2_a3 --compact
 python scripts/record_knowledge.py get --project-root "{workspace_dir}" --path operators/direct/transformer/attention/sparse_flash_mla_computation.md
 ```
 
-`query` 返回当前家族全部卡片和各卡 `status`，包括 draft；设计阶段按任务需要读取 `computation`、`interface`、`metadata`、`development`、`validation`，普通 SWA 还读取 `pipeline` 和 `performance`。通用设计指南为 `guides/solution_design_reference.md`、`guides/stage_design_rules.md` 与 `guides/kernel_stage_sync_patterns.md`。恢复既有工程时重新校验 workflow marker 和所用知识提交版本。[^routing-knowledge]
+`query` 返回当前家族全部卡片和各卡 `status`，包括 draft；设计阶段按任务需要读取 `computation`、`interface`、`metadata`、`development`、`validation`，普通 SWA 还读取 `pipeline` 和 `performance`。五阶段执行规则由对应的 CATLASS C++ Skill 负责；本知识仓只提供 `target_architecture` 对应的 `guides/stage_design_atlas_a2_a3.md` 或 `guides/stage_design_ascend950.md` 芯片规则集及本家族 Operator 卡。恢复既有工程时重新校验 workflow marker 和所用知识提交版本。[^routing-knowledge]
 
-工作流的 **stage** 是开发状态；设计中的 **kernel Stage** 是设备计算/同步阶段。跨会话以 `workflow.json` 保存状态，问题恢复使用 validator 支持的 `issue_type/resume_from/validation_scope` 组合。[^routing-stages]
+工作流的 **stage** 是开发状态；设计中的 **kernel Stage** 是设备计算/同步阶段。跨会话以 `workflow.json` 保存状态；`stage` 表示当前路由位置，`issue_type` 只表示定向精度调试或性能优化模式。[^routing-stages]
 
 <a id="entry"></a>
 
@@ -57,7 +57,7 @@ python scripts/record_knowledge.py get --project-root "{workspace_dir}" --path o
 
 本家族包含 SparseFlashMla 主算子与独立的 SparseFlashMlaMetadata。先从用户给定的数学标杆、公开接口和目标架构确认模式，再进入本仓库 `catlass-op-generator/AGENTS.md` 的 interface → reference → design → implementation → validation 五阶段。当前迁移的硬件工程知识针对 Ascend 910B / AtlasA2（`CATLASS_ARCH=2201`）；其他架构需另行核对组件和资源。
 
-调用者提供数学标杆、正式 ATK 脚本、用例文件和可比的手写性能基线；本知识包不固定这些文件的位置、内容或 case ID。开始前记录各文件的路径、SHA256、适用模式、目标架构和采样口径，核对标杆与 ATK 的输入/输出及比较器语义，再冻结本次验证范围。要求性能目标时，基线必须覆盖同一输入和计时边界；未提供可比基线时只报告候选实测值，不宣称达到相对性能目标。输入要求见[材料边界](sparse_flash_mla_workflow.md#materials)。不以手写算子源码为生成输入。
+调用者提供数学标杆、正式 ATK 脚本和用例文件；本知识包不固定这些文件的位置、内容或 case ID。开始前记录各文件的路径、SHA256、适用模式和目标架构，核对标杆与 ATK 的输入/输出及比较器语义，再冻结本次验证范围。性能目标按本轮任务在设计阶段确认，采样、统计、优化迭代和停止条件遵循 05 阶段；手写性能数据仅在任务需要时作为外部参考，不是本家族的必需输入。输入要求见[材料边界](sparse_flash_mla_workflow.md#materials)。不以手写算子源码为生成输入。
 
 主算子及 metadata 的 ACLNN 声明已直接写入[接口知识](sparse_flash_mla_interface.md#api--5-aclnn-两段式-c-接口)；CATLASS 调用范围与同步封装的 SWA 约束写入[实现门槛](sparse_flash_mla_development.md#implementation)和[握手协议](sparse_flash_mla_pipeline.md#protocol)。专用目录不另提供可 include 的参考头文件或 SDK 源码快照；构建时仍以目标 SDK 的实际头文件和导出符号为准。
 
@@ -83,7 +83,7 @@ python scripts/record_knowledge.py get --project-root "{workspace_dir}" --path o
 - [定向精度、诊断 ABI 与原 ATK 边界](sparse_flash_mla_validation.md#suite)
 - [连续短窗口 prefill 性能推导](sparse_flash_mla_performance.md#prefill)
 
-用例、诊断、性能评价、状态模型与构建准备均以知识配方提供，按需在本轮工程内实现。性能评价读取调用者给出的基线、用例和本轮候选采样；诊断读取调用者给出的标杆与用例。这些检查不能代替原 ATK 或正式接口验收。用户只指定普通 SWA 时，不要求实现压缩和索引模式；metadata 仍必须由本轮工程独立实现并被主核消费。
+用例、诊断、状态模型与构建准备均以知识配方提供，按需在本轮工程内实现。性能证据核对补充本家族的用例身份和完整调用范围，验收执行 05 阶段统一规则；诊断读取调用者给出的标杆与用例。这些检查不能代替原 ATK 或正式接口验收。用户只指定普通 SWA 时，不要求实现压缩和索引模式；metadata 仍必须由本轮工程独立实现并被主核消费。
 
 [双槽握手参考模型](sparse_flash_mla_pipeline.md#model-usage)可辅助理解三actor启动、稳态与排空。它只验证参考程序，不能自动验证生成者源码或NPU流水；实际实现仍须按源码映射模型并完成设备验收。
 
@@ -102,9 +102,9 @@ python scripts/record_knowledge.py get --project-root "{workspace_dir}" --path o
 | 数学标杆 | 入口、模式、输入量化、输出及 LSE 轴序 | 冻结本轮数学语义和 CPU 参考 |
 | 正式 ATK 脚本 | 与标杆和用例的接线、比较器及原始阈值 | 正式精度验收；诊断脚本不能代替 |
 | 用例文件 | schema、真实 `case_id`、dtype/布局/shape 和选中范围 | 覆盖本轮普通 SWA 输入；不能按数组位置冒充 ID |
-| 手写性能基线 | case 身份、设备架构、主核计时边界、单位和采样统计 | 逐例计算速度比；不重跑已提供的基线 |
+| 外部性能参考（可选） | case 身份、设备架构、完整调用范围、单位和采样统计 | 仅在任务需要时辅助目标确认或同口径比较，不替代优化迭代 baseline |
 
-若任一输入缺失，继续不依赖该输入的工作，并把对应验收标为 NOT_RUN；不要从固定机器路径、旧工程或本包历史数据补齐。性能基线缺失或不可比时，不能宣布相对性能 PASS。参考脚本只能作为本轮输入读取，不作为 skill 的永久资源。
+若必需输入缺失，继续不依赖该输入的工作，并把对应验收标为 NOT_RUN；不要从固定机器路径、旧工程或本包历史数据补齐。外部性能参考缺失不阻止按已确认的绝对耗时目标验收；任务明确要求相对性能时，缺少可比参考不能宣布该目标达标。参考脚本只能作为本轮输入读取，不作为 skill 的永久资源。
 
 本包只保留[接口调用约束](sparse_flash_mla_workflow.md#materials--接口参考)。ACLNN 声明已经内嵌在[接口知识](sparse_flash_mla_interface.md#api--5-aclnn-两段式-c-接口)，CATLASS 组件使用边界由专用知识补充；目标机器的 CANN/CATLASS 头文件、库和编译器仍须在构建时校验 ABI。
 
@@ -160,8 +160,8 @@ python scripts/record_knowledge.py get --project-root "{workspace_dir}" --path o
 | [动态诊断 ABI 与完整输出](sparse_flash_mla_validation.md#suite) | 普通 SWA validation | 原 ATK、完整 O/LSE、动态输入、诊断 ABI、同轮缓存、性能与构建身份 |
 | [动态工程与正式部署](sparse_flash_mla_development.md#engineering)、[双槽跨任务握手](sparse_flash_mla_pipeline.md#protocol)、[流水源码与设备验收](sparse_flash_mla_validation.md#pipeline-validation) | 设计、实现、正式交付和验收 | 统一承载两种 launcher、workspace 所有权、AICPU 真实执行链、握手与设备边界；所有 shape 按运行时参数重算 |
 | [工程诊断运行器](sparse_flash_mla_validation.md#diagnostics) | 独立诊断 | direct C ABI、输入/输出/metadata、ABAB 与设备采样；不能自动填为正式 ATK PASS |
-| [性能证据评价步骤](sparse_flash_mla_performance.md#acceptance) | 性能验收汇总 | 读取冻结基线和本轮候选证据；不生成候选的设备通过证据 |
-| 调用者提供的性能基线 | 性能验收 | 与所选用例逐例配对；缺失或不可比时不报告相对性能 PASS |
+| [性能证据核对](sparse_flash_mla_performance.md#acceptance) | 05 阶段性能验收 | 补充用例身份、完整调用范围和正式入口证据，不另设验收流程 |
+| 调用者提供的外部性能参考（可选） | 任务要求相对性能比较时 | 核对输入和统计口径；缺失或不可比时不报告该相对目标达标 |
 
 <a id="materials--接口参考"></a>
 
@@ -243,8 +243,8 @@ metadata 的输入属性必须与主算子一致；当长度、TopK、mask、页
 1. 验证 `workflow.json` 的 family、workflow ID、架构、契约和阶段。接口/golden 改变时回到对应阶段，设计假设改变回 design；性能失败不新增 optimize 阶段。
 2. 在目标环境真实调用本轮 metadata 与 main，确认完整输出、当前输入/长度/页表、候选构建身份；原 ATK 使用原测试和阈值，O/LSE 按契约全面检查。
 3. 明确选中调用者给出的真实 `case_id`。诊断与性能评价都必须显式选择真实 case_id；不传选择集合或全部用例选项时拒绝运行。保留完整合法域所需的补充边界验证，不以某一子集代替所有功能。
-4. 候选每例 **5 次预热 + 5 次正式采样，全部 5 条取均值**。计入完整 main 调用需要的 device tasks；metadata 生成时间另记。通过正式入口采集，并保留 profile 原始行和候选身份；direct C ABI 采样仍标为诊断。
-5. 按冻结手写基线逐例比较：`speedup = baseline_us / candidate_us >= 0.8`，即候选均值 `<= baseline_us / 0.8`。不重跑手写基线，不用跨 case 平均值掩盖失败。
+4. 性能采集和统计遵循 [05 阶段的统一性能验收口径](sparse_flash_mla_performance.md#acceptance)。计入完整 main 调用需要的 device tasks；metadata 生成时间另记。通过正式入口采集，并保留 profile 原始行和候选身份；direct C ABI 采样仍标为诊断。
+5. 按 05 阶段统一规则对照本轮设计冻结的性能目标验收、选择优化候选并判断是否继续；本家族不另设默认性能门槛或停止条件。不用跨 case 汇总掩盖未达标用例。
 6. 单例运行 60 秒无返回按工作流记录 timeout、Stage、TilingKey、blockDim，并清理再恢复；未完成和未运行的门禁如实保留。只有 full 功能、精度和要求的性能证据齐全才 complete。
 
 [^routing-routing]: catlass-op-generator 的统一五阶段入口与 interface 初始化脚本。

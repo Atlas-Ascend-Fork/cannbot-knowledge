@@ -460,8 +460,8 @@ dK/dV 会被多个 query block 累加，workspace 出口用 fp32 atomic，direct
 
 ### 性能
 
-性能口径固定为 `FagMainKernel + FagPostKernel` 的 msprof `Task Duration`；剔除首个 warm-up，
-取至少 4 个正式样本的中位数。vendor 比较对象是 `torch_npu.npu_fusion_attention_grad` 的 device
+性能范围固定为 `FagMainKernel + FagPostKernel` 的 msprof `Task Duration`；采集和统计遵循 05
+阶段统一性能验收口径。vendor 比较对象是 `torch_npu.npu_fusion_attention_grad` 的 device
 kernel，不使用 host wall time。
 
 参考实现观测（Ascend 950PR、CANN 9.2.0-beta.2、`CATLASS_ARCH=3510`，仅用于校准，不是普遍承诺）：

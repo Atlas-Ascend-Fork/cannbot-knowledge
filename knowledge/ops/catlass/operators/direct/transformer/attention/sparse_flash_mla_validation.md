@@ -1,7 +1,7 @@
 ---
 type: Operator
 title: SparseFlashMLA 用例构造与完整验证
-description: 基础矩阵、负例、动态诊断 ABI、输入与标杆准备、ABAB、流水、sanitizer、原 ATK 和性能门禁。
+description: 基础矩阵、负例、动态诊断 ABI、输入与标杆准备、ABAB、流水、sanitizer、原 ATK 和通用性能验收的证据边界。
 tags:
 - task.design
 - topic.attention
@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/sparse-flash-mla/validation.md
   role: primary
 created_at: '2026-10-23T02:44:15Z'
-updated_at: '2026-10-23T02:44:15Z'
+updated_at: '2026-11-03T03:13:50Z'
 platforms:
 - a2
 - a3
@@ -71,7 +71,7 @@ See LICENSE in the root of the software repository for the full text of the Lice
 
 ### 功能覆盖与正式验收
 
-普通SWA补充执行[流水与结构验收](sparse_flash_mla_validation.md#pipeline-validation)，并读取[完整握手协议](sparse_flash_mla_pipeline.md#protocol)和[片上结构](sparse_flash_mla_pipeline.md#structure)核对最终实现。该检查属于当前validation，不能新建优化阶段。原ATK数值通过不能替代跨任务流水与逐例0.8x性能验收。
+普通SWA补充执行[流水与结构验收](sparse_flash_mla_validation.md#pipeline-validation)，并读取[完整握手协议](sparse_flash_mla_pipeline.md#protocol)和[片上结构](sparse_flash_mla_pipeline.md#structure)核对最终实现。该检查属于当前validation，不能新建优化阶段。原ATK数值通过不能替代跨任务流水检查和 05 阶段性能验收。
 
 按[用例生成与覆盖审计配方](sparse_flash_mla_validation.md#case-recipes)在生成工程中构造逻辑manifest，**不是可直接传给ATK的json**。生成工程须实现adapter：按清单分配张量、布局转换、产生页表和索引、调用两个新算子及用户标杆。ATK适配时将case存入其实际schema，并核对筛选的是数组位置还是case_id，禁止空集合显示PASS。
 
@@ -87,7 +87,7 @@ See LICENSE in the root of the software repository for the full text of the Lice
 
 生成者在冻结公开契约后读取本页，以相同 descriptor 连接 main 和可独立调用的 metadata。运行器按[动态诊断实现步骤](sparse_flash_mla_validation.md#diagnostics)在生成工程中实现；本知识包不附带脚本。只运行本页的直调不能宣布完整正式接口通过。
 
-脚本在`result.json.execution_stage`持久化设备分配、plan、metadata、主核提交、同步及比较进度。超时后先读最后检查点：`submit_main`尚不能证明提交返回，`synchronize_main`表示提交已成功返回而同步未完成。CPU标杆完成也不能证明设备核已经启动；旧工具版本未逐阶段保存时，需用限时进度/调用栈诊断补证。诊断重跑只针对当前失败case，设置有强制终止后备的时间上限，保留后续case为`NOT_RUN`。进度写盘位于精度流程及profiling开始之前，不放进被测launch回调或5次采样循环。
+脚本在`result.json.execution_stage`持久化设备分配、plan、metadata、主核提交、同步及比较进度。超时后先读最后检查点：`submit_main`尚不能证明提交返回，`synchronize_main`表示提交已成功返回而同步未完成。CPU标杆完成也不能证明设备核已经启动；旧工具版本未逐阶段保存时，需用限时进度/调用栈诊断补证。诊断重跑只针对当前失败case，设置有强制终止后备的时间上限，保留后续case为`NOT_RUN`。进度写盘位于精度流程及profiling开始之前，不放进被测launch回调或性能采样循环。
 
 <a id="pipeline-validation--用法"></a>
 
@@ -377,7 +377,7 @@ Q/P保留属于重要优化检查项，未实现要明确记录和分析，不�
 - **覆盖与地址**：K片半开区间不重叠、不漏元素，合计恰为 `Kvalid`；首K清零一次、末K只有一次。改变K余数不改变P的物理行距、KV原生stride或U整行步长；PA包含非identity/重复页及窗口末端落在页尾的情况。
 - **padding与复用**：在合法分配的诊断scratch中预填NaN/哨兵，改变有效长度后复用同一L1/GM槽；确认选定copy/LoadData消除了所有会参与计算的无效值，并核对有效输入、相邻输出未变。仅在GM输出预填NaN不能证明L1/L0尾块已初始化；调试插桩的状态按实际运行范围单列。
 - **数值与同步**：支持的FP16/BF16均覆盖P舍入、PV累加和完整O/LSE；保留非零非均匀sink。尾片也正确完成L1/L0事件，P跨D复用不被其它K片覆盖；MMAD的K切分不新增softmax分片。
-- **性能归因**：非对齐尾块若大幅慢于邻近对齐长度，检查是否多了零步长ND2NZ补零；用同机同输入单因素实验及MTE2/MMAD计数区分搬运与计算。保持既定5+5口径，不将历史单例、PMU时长或简化ABI结果提升为正式全套PASS。实现中不得出现为验证集某个K/head/case ID单独绕过通用公式的分支。
+- **性能归因**：非对齐尾块若大幅慢于邻近对齐长度，检查是否多了零步长ND2NZ补零；用同机同输入单因素实验及MTE2/MMAD计数区分搬运与计算。采样和统计遵循 05 阶段统一口径，不将历史单例、PMU时长或简化ABI结果提升为正式全套PASS。实现中不得出现为验证集某个K/head/case ID单独绕过通用公式的分支。
 
 诊断前把“参考入口、输入量化、舍入路径、输出后处理、比较器”写成一行记录。若调用者提供的ATK含`independent_reference(low_precision=True)`低标杆，须核对其低精度累加和输出floor处理；它可能不同于调用者提供的完整given-golden数值路径。不能把`given-golden`的严格逐元素诊断阈值套到ATK低标杆上，再据误差改kernel去拟合floor。原ATK使用其原高/低双标杆与原比较器；严格诊断使用本轮声明的given-golden和预先固定的容差。若先前混用了二者，保留失败记录、核对输入字节与参考路径，再使用正确组合重测；这不构成放宽阈值，也不能跳过原ATK门禁。数值缓存同时绑定实际参考函数和这些选项，不能只用case_id/dtype作缓存键。
 
@@ -579,13 +579,13 @@ O/LSE用NaN预填并同步，再真实launch、同步、比较全输出，检查
 要求两次A逐位相同、两次B逐位相同；非全零工作时A/B输入与输出应有区别，全零工作允许相同全零输出。
 CPU标杆运行前后也核验输入未变；失败停止该case的性能采集，并保留失败状态。
 
-精度通过后，5次不采集预热，进入profiler执行5次完整调用再同步；进度写盘、CPU参考和哈希准备放在采样外。
-每个必需kernel组件使用唯一可区分的真实名字匹配；每个组件恰好5条记录，同一row不能匹配多个组件。
+精度通过后，按 05 阶段统一规则预热、采集和统计完整调用；进度写盘、CPU参考和哈希准备放在采样外。
+每个必需kernel组件使用唯一可区分的真实名字匹配；按实际执行序列核对每次调用的组件记录，同一row不能匹配多个组件。
 CSV必须能唯一识别Name/Op Name/Kernel Name与微秒Duration列，所有duration有限且严格正。
-若存在未计入的必需设备任务则拒绝汇总。按调用次序或trace调用身份将各组件配对后求和，得到5个完整时长，
-全部参与均值，同时保存median/min/max、逐组件样本、原始CSV及哈希和规范化样本CSV。
+若存在未计入的必需设备任务则拒绝汇总。按调用次序或trace调用身份将各组件配对后汇总完整时长，
+保留 05 阶段要求的正式样本、统计值和波动，以及逐组件样本、原始CSV及哈希。
 
-若全零工作没有kernel记录，报告NO_DEVICE_KERNEL_RECORDS、样本为空、均值null，
+若全零工作没有kernel记录，报告NO_DEVICE_KERNEL_RECORDS、样本为空、耗时统计为null，
 不推断零延迟；若有清零/DMA等任务则保留实际开销。采样后再次比较完整O/LSE、最终输入和metadata，
 要求输出仍与最后一次B精度结果一致，不能只在profiling前通过。
 
@@ -610,11 +610,11 @@ CSV必须能唯一识别Name/Op Name/Kernel Name与微秒Duration列，所有dur
 <a id="pipeline-validation--性能必须用最终完整调用"></a>
 #### 性能必须用最终完整调用
 
-每例5次未采样预热，再5次正式设备profiler采样，**全部5次取均值**。每次main实际需要的pack、清零、归并等device task全部计入；独立metadata另列其已有约定口径。冻结手写基线只读，不重跑。`baseline_us/candidate_us>=0.8`逐例判定，即`candidate_us<=baseline_us/0.8`。[^pipeline-validation-swa-validation]
+性能采集、统计和验收遵循 05 阶段统一规则及本轮设计冻结的目标。每次 main 实际需要的 pack、清零、归并等 device task 全部计入；独立 metadata 按本轮声明的调用范围分项记录。[^pipeline-validation-swa-validation]
 
 ACL Event包住多次launch得到的区间可能含提交/阶段等待，不能伪装成与手写单kernel profiler相同口径；原始CSV缺失或只筛了最快组件就保持性能NOT_ACCEPTED。若正式入口与诊断直调并存，标记实际计时路径并核对二进制身份，不能将direct-only结果写成formal通过。
 
-不要为了看起来通过而改变输入、缩小有效范围、读取已有输出、改golden/ATK阈值、剔除慢样本或调整baseline。性能未达标时继续当前轮自修复；报告每次实质性改动及失败原因，不能只给最新成功编译日志。
+不要为了看起来通过而改变输入、缩小有效范围、读取已有输出、改golden/ATK阈值、剔除慢样本或篡改对照数据。性能未达标时按 05 阶段进入流水分析和候选选择；报告每次实质性改动及失败原因，不能只给最新成功编译日志。
 
 ## 失败表现
 
@@ -640,7 +640,7 @@ PASS要求发生预期参数拒绝并命中约定类别/参数；接受 `Invalid
 
 - design里仍写“先串行，后续融合”，而最终源码只有四个独立计算kernel：结构未完成。
 - 文档写M16，最终使用M128；写双AIV，源码没有part；写Q只装一次，实际每N块重装：先按最终代码重写文档并重新验收。
-- 精度全过但0.8x未过：保留精度PASS，性能FAIL；审查缺失机制和profiler，不能降级成完成。
+- 精度全过但性能目标未达：保留精度PASS和性能未达标记录，按 05 阶段分析及选择候选，不能降级成完成。
 - 有握手但末尾挂起：核对外层ready/free和内部HardEvent分别的初始及最终计数，不靠增加无条件Wait试错。
 - 生成者需要父级口头解释才能继续：作为专用知识缺口记录，修订文档后由下一位空上下文生成者重新验证。
 
@@ -661,47 +661,38 @@ PASS要求发生预期参数拒绝并命中约定类别/参数；接受 `Invalid
 按[执行记录对账](sparse_flash_mla_validation.md#case-recipes)核对 manifest 与最终 JSONL 的全部 ID、build_id、两个输出槽、metadata 和分支证据。
 此检查拒绝空报告、缺例、重复ID、失败、不同build_id及缺少两个输出/metadata的记录。它是完整性检查，仍需审查日志、Stage记录、重复/sanitizer及性能结果。
 
-性能选每模式/布局/dtype的decode和prefill、中长KV、G1和较大G、batch1和batch>1。固定输入/设备/频率/stream及统计范围；当前采样口径为5次未采集预热、5次正式采集，取全部5次均值，不自行增加次数。主数学核、metadata、控制拷贝与可选FD归并从同组完整调用trace分项统计，额外数学工作必须纳入主核可比边界。用户要求复测时使用新输出目录并保留前次结果，不覆盖失败或挑选较快样本。缓存metadata只用于调度输入完全相同且明确声明的对照，不替代完整成对调用验收。
+性能选每模式/布局/dtype的decode和prefill、中长KV、G1和较大G、batch1和batch>1。固定输入/设备/频率/stream及完整调用范围；采样和统计遵循 05 阶段统一口径。主数学核、metadata、控制拷贝与可选FD归并从同组完整调用trace分项统计，额外数学工作必须纳入主核可比边界。用户要求复测时使用新输出目录并保留前次结果，不覆盖失败或挑选较快样本。缓存metadata只用于调度输入完全相同且明确声明的对照，不替代完整成对调用验收。
 
-先确认profiler本轮确实产生数据，按实际kernel名和调用序号筛掉预热/其他算子；保留逐次device时长，汇总中位数/分位数与波动、逐case时间变化和分桶几何平均加速比。不能把host异步launch耗时、空结果或只计PV的时间当算子性能。性能目标在03阶段固定；无可比基线时报告测量值，不能写“性能合理/已达标”。低于本页最低性能门槛时，定位到gather、Cube有效利用率、等待、慢核或额外归并后继续迭代；已达到最低门槛且其余验收通过时允许结束，更高性能仍作为优化方向。
+先确认profiler本轮确实产生数据，按实际kernel名和调用序号筛掉预热/其他算子；保留逐次device时长和05阶段要求的统一统计值、波动及逐case时间变化。不能把host异步launch耗时、空结果或只计PV的时间当算子性能。性能目标按本轮任务在03阶段确认，验收与优化执行05阶段规则。分析时重点核对gather、Cube有效利用率、等待、慢核和额外归并，不用知识页中的历史结果替代本轮证据。
 
 [^coverage-development-contract]: [待覆盖的Stage和分支](sparse_flash_mla_development.md#stages)。
 
 <a id="coverage--性能验收与停止条件"></a>
 ### 性能验收与停止条件
 
-优化方向是尽快生成尽可能高性能的正确实现；默认允许结束的最低性能与优化期望分开记录。首次实现仍采用已知有效的分块、资源寿命和流水，不以降低门槛为理由先生成简易串行版本。
+性能目标按本轮任务在03阶段确认。采样、统计、报告、优化迭代和停止条件均执行[05阶段统一规则](sparse_flash_mla_performance.md#acceptance)，
+本家族不另设默认性能门槛或完成条件。性能未达标时按工作流进行流水分析和候选选择；
+没有可执行候选时保留未达标状态、瓶颈与剩余差距，不能标记为complete。
 
-对调用者提供的可比手写基线所覆盖的同一用例，本任务最低速度比为 **0.8×**；其他任务以调用时冻结的目标为准：
+手写实现等外部性能数据仅在任务需要时提供，不是本家族的必需材料，也不替代优化迭代baseline。
+外部参考的输入、设备条件、完整调用范围和统计口径须可比；不可比的历史数据仅作背景，不能用于宣称达标。
+按[性能证据核对](sparse_flash_mla_performance.md#acceptance)补充本家族的case身份、正式入口与完整任务证据，
+结果写入05阶段要求的验证记录，不另设专用报告schema、评价CLI或退出状态。
 
-`speedup_i = handwritten_device_us_i / generated_device_us_i >= 0.8`
-
-等价于 `generated_device_us_i <= handwritten_device_us_i / 0.8`，即允许耗时达到手写的1.25倍，边界相等通过。逐条应用于本次声明范围，不能用全套平均值掩盖不达标用例，也不能把某个固定样例的绝对耗时阈值用于其他case。精度、功能、同步、接口和本次范围内每条性能都通过后，普通生成任务可归档结束；更高性能继续作为优化方向，不要求为追平历史最好结果无限迭代。只有低于最低速度比，或用户另有更严格的硬目标时，才因性能不达而必须继续。用户指定的研究任务、迭代轮数和优化目标仍按该任务执行，不能用0.8×提前截断。
-
-手写基线由调用者提供，不能从 skill 的历史文件或固定服务器路径补齐。先核对选中 case 的完整 spec、目标架构、输入、单位、统计方式和计时边界；本轮已知历史报告采用预热20次、记录50次、取最后30次均值，统计的是正式调用中的完整 `SparseFlashMla` 主核 device duration，不含metadata、host、H2D、其他辅助核或整链时间。新候选采用5次预热、5次正式采集，全部5次取均值；不把它标成历史50/30口径。输入、设备架构和计时边界保持对应，以手写基线/候选均值计算速度比，并显式记录两者采样配置。若需对波动进一步确认，另建结果目录复测，不能只挑最快样本。必须先核对真实profile中的主核归属、完整执行阶段及report/raw均值，不能把host时间、单个PV片段或端到端时间填入该字段。
-
-按[性能证据解析](sparse_flash_mla_performance.md#acceptance)计算本次case门槛，无需运行设备：
-
-提供冻结基线、原始用例文件和完整的目标 ID 集合；按[证据规则](sparse_flash_mla_performance.md#acceptance)仅计算逐例 limit_us，状态为 REFERENCE_ONLY。
-正式采集并核对profile后，候选结果采用 `validated_performance.json` 的格式：顶层 `task=performance_device`，显式 `collection={warmup:5,sample_count:5,last_samples:5,statistic:"mean_all_5"}`，`cases`中每项包含 `id,device_us,raw_mean_us,samples_us`，五条原始样本与两处均值一致。历史50/30报告只能按原采样说明解析，不能伪装新五条采样。生成工程可以更换算子名，但须在汇总前识别本轮完整主核；若实现含必需的归并/补偿设备核，不能只取其中一段冒充完整计算时间，须另冻结与手写完整计算可比的范围。可写 `scope=formal_main_kernel` 明确口径。评价所需的全部case须用重复的 `--case-id` 指定，例如单case：
-
-提供冻结基线、原始用例文件和完整的目标 ID 集合；再提供本轮正式候选报告，按[证据规则](sparse_flash_mla_performance.md#acceptance)保存逐例 performance-acceptance.json。
-工程的性能评价步骤逐条计算速度比，未达返回1，缺case/异常数值/口径不符返回2；仅查询基线输出 `REFERENCE_ONLY`，不表示新算子已通过。`--baseline`必须显式给出；调用者提供的原始历史报告还须给出 `--case-json`，脚本才可按完整 `smla_case_spec` 为选中 ID 生成身份哈希。已有带哈希的规范化基线可直接读取，若同时传用例会复核身份。`--min-speedup`用于用户明确更改最低门槛。候选提供 `case_spec_sha256` 时脚本核对用例身份；未提供则必须由接口契约和原case人工核对，结果不会冒称已自动核验。不能只凭同一个id认定同一计算。
-
-诊断和正式调用均采用5次预热、5次采样。简化descriptor直调结果只用于其已声明范围，不能替代已冻结公开接口的精度与性能门禁。公开交付层按[接口路由](sparse_flash_mla_interface.md#api--用法)决定，见[三种调用层的验收映射](sparse_flash_mla_validation.md#pipeline-validation--用法)：要求ACLNN包互通时，必须以真实ACLNN主核和AICPU metadata完成对应门禁；只要求原ATK的完整PyTorch调用时，验证两个完整schema及本轮独立metadata/native CATLASS链，不另行强制新增ACLNN包。不能在同一次已冻结候选失败后偷换交付层来消除失败，也不能把未执行的层标为PASS。诊断不内置固定的65µs绝对上限；只有用户明确给出可比直调硬目标时才增加对应检查。metadata、辅助核、设备任务总和和端到端仍分别报告，其时间不与主核速度比混算；没有另设硬目标时不派生额外停止门槛。新shape或基线外case先建立对应可比基线，不借用别的case的数值。
+诊断和正式调用均遵循05阶段的统一采集与统计口径。简化descriptor直调结果只用于其已声明范围，不能替代已冻结公开接口的精度与性能门禁。公开交付层按[接口路由](sparse_flash_mla_interface.md#api--用法)决定，见[三种调用层的验收映射](sparse_flash_mla_validation.md#pipeline-validation--用法)：要求ACLNN包互通时，必须以真实ACLNN主核和AICPU metadata完成对应门禁；只要求原ATK的完整PyTorch调用时，验证两个完整schema及本轮独立metadata/native CATLASS链，不另行强制新增ACLNN包。不能在同一次已冻结候选失败后偷换交付层来消除失败，也不能把未执行的层标为PASS。诊断不内置固定的绝对耗时上限；只有用户明确给出可比直调硬目标时才增加对应检查。metadata、辅助核、设备任务总和和端到端仍按本轮声明的范围分别报告，必要辅助核必须纳入完整调用耗时。新shape按本轮任务确认目标，不借用别的case的数值。
 
 <a id="suite--验证方法"></a>
 
 ### 动态诊断 ABI 与完整输出
 
 按[动态诊断步骤](sparse_flash_mla_validation.md#diagnostics)在生成工程中实现运行器，显式传入本轮 golden、case JSON、目标 ID 或全部用例、主库、独立 metadata 库、设备、round ID、新输出目录和完整主核选择器。需要只查精度时显式关闭 profiling；未运行的正式门禁保持 NOT_RUN。
-Selection is explicit: repeat `--case-id` for the caller's target IDs or pass `--all-cases`; missing/duplicate IDs are rejected. `--main-kernel` identifies a real profiler kernel name substring. Repeat it only when multiple mandatory device kernels comprise one complete invocation; every named component must occur exactly 5 times. Warm up 5 launches, profile 5, report the mean of all 5 complete-invocation device durations. Keep raw `kernel_details.csv`, a copied raw CSV, normalized samples CSV, SHA256, mean/median/range, all component samples and other device rows. Metadata host planning and its H2D wall time are separate diagnostics.
+Selection is explicit: repeat `--case-id` for the caller's target IDs or pass `--all-cases`; missing/duplicate IDs are rejected. `--main-kernel` identifies a real profiler kernel name substring. Repeat it only when multiple mandatory device kernels comprise one complete invocation; every named component must match the 05阶段的完整调用范围。保留原始profiler文件、逐次device时长、统一统计值、SHA256、所有组件样本和其他device rows。Metadata host planning and its H2D wall time are separate diagnostics。
 
-所有device task必须计入；若CSV存在未被选择器覆盖的任务则停止汇总，避免只挑主核而遗漏pack/清零/归并核。性能采集固定5次未采样预热、5次正式采样，全部5条参与均值，不再丢弃正式样本。每次A/B/A/B同步后、下一次输入覆盖前，检查设备Q/KV/sinks及metadata字节未改变。metadata输出以两种不同哨兵预填再生成，验证保留位也被确定性写出。
+所有device task必须计入；若CSV存在未被选择器覆盖的任务则停止汇总，避免只挑主核而遗漏pack/清零/归并核。性能采集和统计遵循05阶段统一口径，不得丢弃正式样本或挑选更快结果。每次A/B/A/B同步后、下一次输入覆盖前，检查设备Q/KV/sinks及metadata字节未改变。metadata输出以两种不同哨兵预填再生成，验证保留位也被确定性写出。
 
 输入由此诊断工具按选中 case 的结构和确定性种子生成，随后调用未改动标杆的完整数学；它只对自己的有效元素负责。是否与调用者 ATK 的输入分布及重采样逻辑一致，须读取本轮脚本并核对，不能凭历史样本假定。padding 空洞初始化值不属于逻辑输入；设备侧保持原 stride。
 
-These measurements are labeled `direct_c_abi`, never `formal_main_kernel`. Sampling parity with the baseline does not make direct metrics formal. Original ATK precision, registered formal entry execution and formal 0.8 performance acceptance remain NOT_RUN and require separate real runs; this script never writes a formal accepted performance candidate. A direct precision pass plus a measured direct profile is only `DIRECT_DIAGNOSTICS_PASS`.
+These measurements are labeled `direct_c_abi`, never `formal_main_kernel`. Matching sampling methods does not make direct metrics formal. Original ATK precision, registered formal entry execution and Stage 05 performance acceptance remain NOT_RUN and require separate real runs; this script never writes a formal accepted performance candidate. A direct precision pass plus a measured direct profile is only `DIRECT_DIAGNOSTICS_PASS`.
 
 Local tests and `--describe-abi` / `--inspect-cases` use only Python's standard library. Torch, NumPy and torch_npu are imported only when numerical/device execution is requested.
 
@@ -716,7 +707,7 @@ Local tests and `--describe-abi` / `--inspect-cases` use only Python's standard 
 
 按case保存CPU准备完成、每次精度launch同步/比较完成和整组性能采集完成的检查点，记录命令、输入/参考来源、候选身份与原始证据哈希。超时保留当时的失败/未完成报告及后续NOT_RUN，从实际未完成的case/步骤继续；恢复后不能把部分ABAB当成四次全部完成。仅当候选、输入及检查策略均未变化且完成证据可核验时，汇总可引用同一候选已通过的case；生成新的汇总文件，保留来源，不覆盖旧失败。若现有脚本无恢复接口，应先实现和核验明确的恢复入口，不能改写报告伪造完成。CPU阶段超时且没有设备提交记录时，先检查准备/标杆阶段，不据此判断NPU挂起。
 
-性能从最终候选已通过完整精度的原始完整输入采集，每例仍只执行一组5次未采集metadata→main预热和5次正式完整调用，全部5条参与均值，采集后复核完整输出和输入未变。检查点写盘、缓存校验和参考准备放在采样循环之外。候选未变且原始trace完整时，修正selector、序列化或报告排版只离线重解析原样本，不新增采样、丢弃样本或挑更快结果；不足5条的中断组保留未完成，不能与其他组拼接成通过。正式与直调结果继续分别标记，CPU缓存复用不改变原始全输出验收、正式接口或5+5要求。
+性能从最终候选已通过完整精度的原始完整输入采集，采集和统计遵循05阶段统一口径，采集后复核完整输出和输入未变。检查点写盘、缓存校验和参考准备放在采样循环之外。候选未变且原始trace完整时，修正selector、序列化或报告排版只离线重解析原样本，不新增采样、丢弃样本或挑更快结果。正式与直调结果继续分别标记，CPU缓存复用不改变原始全输出验收或正式接口。
 
 分配与初始化是两个独立步骤。`allocate_strided` 或 `empty/as_strided` 只提供形状和步长正确的设备存储，不会复制 CPU 输入。复用精度脚本的 allocation helper 时，须显式逐 tensor `copy_`，包括长度、页表和 sink；等待生产者完成，在第一次预热前核对设备有效元素字节与已通过输入完全一致。CPU 输入的哈希相同不能证明设备缓冲区已初始化。把这一核验放在采样循环外，采后再查完整输出、metadata 和输入未变。若采后发现输入未初始化，该组保留为无效尝试并排除性能验收；修正后首次用正确输入采集有必要，不能把错误输入的时间当作该 case 的有效样本或归咎于计算 kernel。
 
@@ -739,7 +730,7 @@ Local tests and `--describe-abi` / `--inspect-cases` use only Python's standard 
 
 ### 流水源码与设备验收
 
-最终报告必须给出：读取skill版本/哈希、工程路径、实际source/build/install manifest、原ATK逐例结果、5条设备样本及均值/基线/比例、流水与结构表、仍未解决问题和NOT_RUN范围。父级先核验候选身份与源码结构，再核验原始运行证据；计数或schema检查只是辅助，不得自动判定语义通过。
+最终报告按05阶段模板记录正式样本、统一统计值、优化迭代baseline和本轮目标，并保留读取skill版本/哈希、实际source/build/install manifest、原ATK逐例结果、流水与结构表、仍未解决问题和NOT_RUN范围。父级先核验候选身份与源码结构，再核验原始运行证据；计数或schema检查只是辅助，不得自动判定语义通过。
 
 [^pipeline-validation-pipeline-spec]: [普通SWA握手与排空协议](sparse_flash_mla_pipeline.md#protocol)。
 [^pipeline-validation-structure-spec]: [普通SWA片上结构与Vector行块流水](sparse_flash_mla_pipeline.md#structure)。
@@ -770,5 +761,5 @@ Local tests and `--describe-abi` / `--inspect-cases` use only Python's standard 
 
 独立诊断通过为DIRECT_ACCURACY_PASS或DIRECT_DIAGNOSTICS_PASS；失败可细分
 PRECISION_OR_LIFECYCLE_FAIL、POST_PROFILE_FAIL或ERROR。尚未运行的case保留NOT_RUN，异常保留traceback
-与最后execution_stage，不能把CPU准备阻塞当NPU死锁。正式原ATK、完整main/metadata接口和0.8性能门禁
+与最后execution_stage，不能把CPU准备阻塞当NPU死锁。正式原ATK、完整main/metadata接口和05阶段性能门禁
 在未执行前均保持NOT_RUN；独立阈值、C ABI计时和脚本退出0不赋予这些正式门禁通过资格。

@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/johan_lee/cannbot-skills_1023/blob/e45d70d8b1aa1a111086ba146791298258803520/plugins-official/catlass-op-generator/catlass-cpp-generator/knowledge/operator/sparse-flash-mla/development.md
   role: primary
 created_at: '2026-10-23T02:44:15Z'
-updated_at: '2026-10-23T02:44:15Z'
+updated_at: '2026-11-03T02:37:18Z'
 platforms:
 - a2
 - a3
@@ -401,9 +401,9 @@ late free 只阻塞确实会覆写的资源，不能用无关全局等待使流�
 <a id="implementation--分核策略与基本块切分"></a>
 ### 分核策略与基本块切分
 
-对固定的一个 query-head 微任务，若把整个 `[128,512]` 低精度 KV 窗口每次从输入读到 GM pack，单是输入读加 pack 写就至少 `2*128*512*2=262144` 字节；QK 和 PV 从 pack 再读至少增加同量流量。以 H64、T8192、每次只处理16个 head 为例，`8192*4=32768` 个微任务，仅 pack 的读写就达 8 GiB，尚未计入 QK/PV。这种设计在开始编码前就必须重新分组和复用，再按调用者提供的同输入基线计算实际时延门槛。算账时用实际有效窗口和布局，不把上界当成实测。
+对固定的一个 query-head 微任务，若把整个 `[128,512]` 低精度 KV 窗口每次从输入读到 GM pack，单是输入读加 pack 写就至少 `2*128*512*2=262144` 字节；QK 和 PV 从 pack 再读至少增加同量流量。以 H64、T8192、每次只处理16个 head 为例，`8192*4=32768` 个微任务，仅 pack 的读写就达 8 GiB，尚未计入 QK/PV。这种设计在开始编码前就必须重新分组和复用，并核对本轮任务冻结的性能目标。算账时用实际有效窗口和布局，不把上界当成实测。
 
-把 QK、softmax、PV、输出拆成四次全网格设备 launch，并为每个 work 常驻 score/P/delta，只适合给一个小输入定位正确性。以 H64/T2、4096 work 的设计样本估算，若每个 work 的 FP32 score 为128 KiB、P 为64 KiB、FP32 delta 为256 KiB，光三段中间件就约1.75 GiB，加行状态约1.754 GiB（约1.88 GB）；它们还要跨核写回/读回。开始长 prefill 验收前，必须改为同一 work 的 QK→AIV softmax→PV→AIV 输出流水、按 core 复用有界槽，并核实 ready/free 事件与最后消费者排空。短 decode 也不能让四次 launch 和逐行 scalar GM `GetValue/SetValue`、逐行 Exp/Ln 事件成为最终路径；具体时延上限由调用者提供的对应基线计算。AscendC 标量 `expf/logf` 在当前设备编译中不能作为可移植假设；用向量 math 时按行组批量处理，并显式检查 UB/事件占用与分母未 cast、P 已 cast 的顺序。诊断版本和性能候选要分别标识，不能把能编译的串行版本当作达标设计。
+把 QK、softmax、PV、输出拆成四次全网格设备 launch，并为每个 work 常驻 score/P/delta，只适合给一个小输入定位正确性。以 H64/T2、4096 work 的设计样本估算，若每个 work 的 FP32 score 为128 KiB、P 为64 KiB、FP32 delta 为256 KiB，光三段中间件就约1.75 GiB，加行状态约1.754 GiB（约1.88 GB）；它们还要跨核写回/读回。开始长 prefill 验收前，必须改为同一 work 的 QK→AIV softmax→PV→AIV 输出流水、按 core 复用有界槽，并核实 ready/free 事件与最后消费者排空。短 decode 也不能让四次 launch 和逐行 scalar GM `GetValue/SetValue`、逐行 Exp/Ln 事件成为最终路径；具体时延上限以本轮任务冻结的性能目标为准。AscendC 标量 `expf/logf` 在当前设备编译中不能作为可移植假设；用向量 math 时按行组批量处理，并显式检查 UB/事件占用与分母未 cast、P 已 cast 的顺序。诊断版本和性能候选要分别标识，不能把能编译的串行版本当作达标设计。
 
 <a id="implementation--数据路径与存储层级"></a>
 ### 数据路径与存储层级
@@ -526,7 +526,7 @@ phase1拒绝后不提交phase2，所有已拥有的描述符按各自API释放�
 
 - 新工程分支应形成“完整域 = 通用路径域 ∪ 优化路径域”，并证明各优先级和覆盖；优化路径只是策略选择，不是公开合法性判断。
 - 通用路径与优化路径使用同一有效长度、layout address 和数学契约。正式与诊断包装复用本轮规划和计算逻辑。
-- 按当前五阶段工作流保持两章 `docs/design.md` 的完整 Stage/资源/同步证据及 validator 原始结果；额外推导可放 `docs/design.full.md`。模板填空、文件存在和脚本返回0不能代替容量、地址与同步评审。
+- 按当前五阶段工作流保持六章 `docs/design.md` 的公式、逐 Stage 空间、workspace 和同步证据及 validator 原始结果；额外推导可放 `docs/design.full.md`。模板填空、文件存在和脚本返回0不能代替容量、地址与同步评审。
 - 本页不提供源代码模板或固定 tile 最优结论。提炼机制可以，向隔离生成阶段提供完整手写或上一轮工程不可以。
 - 静态源缺口不改变用户 golden；修正后的新能力需要独立证据。源码 host 接受但设备未验证的组合不得报告数值 PASS。
 
@@ -592,7 +592,7 @@ sanitizer执行命令使用目标Python解释器的绝对路径。在工程中�
 
 - 每个编译期 tile 先核对 L1/L0/UB 峰值、Q/KV/P 的真实 stride、所有尾块地址、AIC 与两 AIV 的事件生命周期；通用检查步骤见工作流知识。
 - 不按 case ID 写多份 kernel，不用已安装手写主核或 metadata 代调。参数变化只从本次输入和本轮 metadata 推导。
-- 性能报告必须保留实际候选包身份、原 ATK 精度结果及每例 5 次预热后 5 个完整设备采样；冻结手写基线只读，不重新运行。
+- 性能报告必须保留实际候选包身份、原 ATK 精度结果及 05 阶段要求的完整设备采样；按本轮任务冻结的性能目标验收。
 
 ## 失败表现
 
@@ -616,7 +616,7 @@ u = sum(exp(m_i-m)*u_i)
 O = u/l
 ```
 
-另一合法方案是只在一个partial注入sink，两种方案不可混用。split改变低精度P舍入，需按冻结精度策略比较。不同CTA间不能使用仅核内HardEvent假装全局完成；选择独立归并kernel、或已验证的跨核完成协议，避免同一launch内忙等引发调度死锁。性能计入归并kernel、partial搬运和metadata；收益不足时保留FA-only并报告split候选没有收益；是否达标由[当前最低性能门槛](sparse_flash_mla_validation.md#coverage--性能验收与停止条件)判断，不能仅因未超过手写或未采用split就判定失败。
+另一合法方案是只在一个partial注入sink，两种方案不可混用。split改变低精度P舍入，需按冻结精度策略比较。不同CTA间不能使用仅核内HardEvent假装全局完成；选择独立归并kernel、或已验证的跨核完成协议，避免同一launch内忙等引发调度死锁。性能计入归并kernel、partial搬运和metadata；收益不足时保留FA-only并报告split候选没有收益；是否达标按05阶段统一规则和本轮任务冻结的性能目标判断，见[性能验收](sparse_flash_mla_validation.md#coverage--性能验收与停止条件)，不能仅因未采用split就判定失败。
 
 <a id="engineering--失败表现"></a>
 
@@ -719,7 +719,7 @@ CMake 安装可能删除或改写 host 共享库的 RPATH/RUNPATH。因此构建
 
 ### 实现起点与工作量检查
 
-用调用者提供的原 JSON 按真实 case_id 选择目标用例，分别核对长 prefill、短 decode、ragged 与 PA 路径的覆盖和真实执行；先完成正式接口的精度，再用本目录 `performance.md#acceptance` 对 5+5 记录和调用者提供的可比基线逐例判定。此页的任务与流量推导属于设计筛选，不替代任何设备样本。
+用调用者提供的原 JSON 按真实 case_id 选择目标用例，分别核对长 prefill、短 decode、ragged 与 PA 路径的覆盖和真实执行；先完成正式接口的精度，再按05阶段统一性能规则采集和统计，对照本轮任务冻结的目标逐例验收，并核对[性能证据](sparse_flash_mla_performance.md#acceptance)。此页的任务与流量推导属于设计筛选，不替代任何设备样本。
 
 [^implementation-swa-pipeline]: [SWA QK/PV 与片上流水结构](sparse_flash_mla_pipeline.md#structure)。
 [^implementation-swa-sync]: [SWA 跨任务握手协议](sparse_flash_mla_pipeline.md#protocol)。

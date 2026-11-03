@@ -6,12 +6,12 @@
 - [FA-SageAttention Ascend 950 量化注意力实现模式](flash_attention_fa_sageattention_patterns.md)：SageAttention（K 平滑 + INT8 QK + online softmax + FP16 PV）在 dav-3510 上的双 kernel 架构、量化路径与 comp 补偿代数、CrossCore mode4 协议、8 条不变量 I1-I8、精度取证方法与平台坑排障路由。
 - [FAG dense 反向 Ascend 950 实现模式](flash_attention_grad_flash_attention_grad_patterns.md)：dense flash attention backward 的 ABI、反向公式、Tile 级 C++ 组装、五次 MMAD 数据链、L0C/UB/L1 预算、raw-NZ 存序、FagPostKernel、同步协议、失败表现与验收矩阵。
 - [Linear Attention 矩阵逆模式](linear_attention_matrix_inverse_patterns.md)：单位下三角矩阵块化求逆及 Vector/Cube Stage。
-- [SWA 分块优化与性能验收](sparse_flash_mla_performance.md)：一般 SWA 和连续 prefill 的布局、复用、分核与流水优化，以及5+5采样和逐例性能证据校验。
+- [SWA 分块优化与性能证据](sparse_flash_mla_performance.md)：一般 SWA 和连续 prefill 的布局、复用、分核与流水优化，以及通用验收所需的性能证据边界。
 - [SWA 流水协议、片上结构与状态模型](sparse_flash_mla_pipeline.md)：跨任务双槽、三 actor 握手、QK/PV 片上资源、尾块和模型验证边界。
 - [SparseFlashMLA 五阶段工作流与调用材料](sparse_flash_mla_workflow.md)：数学分类、知识检索、五阶段产物、调用输入和成对交付边界。
 - [SparseFlashMLA 分阶段开发与工程集成](sparse_flash_mla_development.md)：计算阶段、动态调度、组件约束、公开主核与 metadata 接线、SDK 工具准备和正式部署。
 - [SparseFlashMLA 完整接口与一般 SWA 契约](sparse_flash_mla_interface.md)：主算子和 metadata 的完整 Python/ACLNN 接口，以及一般 SWA 的布局、stride、有效长度、sink 和 LSE。
-- [SparseFlashMLA 用例构造与完整验证](sparse_flash_mla_validation.md)：基础矩阵、负例、动态诊断 ABI、输入与标杆准备、ABAB、流水、sanitizer、原 ATK 和性能门禁。
+- [SparseFlashMLA 用例构造与完整验证](sparse_flash_mla_validation.md)：基础矩阵、负例、动态诊断 ABI、输入与标杆准备、ABAB、流水、sanitizer、原 ATK 和通用性能验收的证据边界。
 - [SparseFlashMla 配套 metadata 算子与调度协议](sparse_flash_mla_metadata.md)：SparseFlashMla 配套 metadata 算子与调度协议；适用于共享 KV 的窗口、连续压缩与稀疏压缩三模式。
 - [block_sparse_attention Arch22 CATLASS 组件映射](sparse_attention_catlass_components.md)：按稀疏映射、实际模板能力、资源和数值契约选择 QK/PV 与非 GEMM 组件。
 - [block_sparse_attention Arch22 Golden 与验证](sparse_attention_golden_and_validation.md)：冻结实际输入、参考实现和比较器，覆盖布局、压缩索引、数值模式与 O/LSE。

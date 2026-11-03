@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cannbot-skills/blob/4950cbd7c45e0d44cb8ec52598edf53cdc7f16ca/ops/catlass-linear-attention-workflow/references/matrix-inverse-patterns.md
   role: supporting
 created_at: '2026-09-18T00:00:00Z'
-updated_at: '2026-10-23T02:44:15Z'
+updated_at: '2026-10-26T17:17:23Z'
 platforms:
 - a2
 - a3
@@ -37,7 +37,7 @@ verified:
 
 ### 数据路径与存储层级
 
-GM、workspace、L1、UB、L0 的地址、生命周期和复用要求以原始正文为设计输入。
+GM（API 输入）、GM（API 输出）、GM（用户 workspace）、L1、UB、L0 的地址、生命周期和复用要求以原始正文为设计输入。
 
 ### 流水排布、同步关系与数值精度
 
@@ -57,7 +57,7 @@ Stage、slot、CrossCore/HardEvent、累加和转换规则以原始正文为准�
 
 ## 失败表现
 
-若设计、代码或测试与原始约束不一致，按五阶段 workflow 的 issue_type/resume_from 矩阵恢复。
+若设计、代码或测试与原始约束不一致，返回五阶段 workflow 对应的 `stage`。
 
 ## 验证方法
 
@@ -72,7 +72,7 @@ Stage、slot、CrossCore/HardEvent、累加和转换规则以原始正文为准�
 ### 架构适用性
 
 矩阵分块公式、FP32 累加、Stage 依赖和精度检查点是 A2/A3 与 A5 共享的算法知识。实现路径按
-`target_architecture` 分支：A2/A3 使用 `2201/Arch::AtlasA2`、MemBase 和 GM 中转；
+`target_architecture` 分支：A2/A3 使用 `2201/Arch::AtlasA2`、MemBase 和 GM（用户 workspace）中转；
 A5 使用 `3510/Arch::Ascend950`，可在组件支持时选择 RegBase/VF、Fixpipe 直达 AIV UB 或
 AIV UB 直达 AIC L1，也可使用 GM 基线。[^catlass-arch-separation]
 

@@ -822,7 +822,7 @@ O:   BSND [B,Sq,H,D] → BNSD [B,H,Sq,D]
 #### 4. 性能归档
 
 ##### 度量口径（device time，不是 wall time）
-- **device kernel 时间**用 cannbot `ops-profiling`（msprof）的 `task_time(us)`，**取 min of N**
+- **device kernel 时间**用 cannbot `ops-profiling`（msprof）的 `task_time(us)`；采集和统计遵循 05 阶段统一性能验收口径
 - 对比标杆：`npu_fusion_attention` 的 `FlashAttentionScore` kernel（同 msprof 口径）
 - **不要用 host 侧 wall-clock**比 kernel 性能（含 launch/sync/布局转换开销）
 
@@ -2179,7 +2179,7 @@ CrossCoreFlag 编排（flag 注册为成员：`qkReady=1, softmaxReady=2, pvRead
   MTE1_MTE2(EVENT0~7)×8`，出口对应 WaitFlag 逐一配平；漏一个或顺序错 → 流水死锁。
 - 数值精度：softmax 状态 `m/l` 与行归约保持 fp32；`S` fp32 送 softmax，`P` 转 fp16 送下一次 MMAD。
 
-性能计时口径：device kernel 时间用 msprof `task_time(us)` 取 min of N，**不要用 host wall-clock**
+性能计时口径：device kernel 时间用 msprof `task_time(us)`，采集和统计遵循 05 阶段统一性能验收口径，**不要用 host wall-clock**
 （含 launch/sync/布局转换开销）；对比标杆 `FlashAttentionScore` kernel 同口径。小 shape（Sq≤256）
 直调无框架调度开销通常占优，大 shape（Sq≥1024）aclnn 优化更激进，Sq=512 基本持平——报告须写明
 对比对象与口径。[^fa-dev-patterns]
@@ -2476,7 +2476,8 @@ case（曾一次暴露 S-slot 核间地址撞车、host tiling 缺 `cu += qSeq[b
 - **launch wall 定义**：单次 launch 的 wall = 该次 launch 内 compute 任务的 `max(end) − min(start)`。
   对一次 launch 含多任务的 kernel（AIC/AIV 双流任务），按任务间 gap 聚类（gap 阈值 8 μs：launch 内
   任务紧叠/紧接，launch 之间 gap 超过阈值）把任务聚类成 launch，再取每个聚类的 wall。
-- **取值**：丢弃 warmup 后，取活跃的末 `repeats` 次 launch 中 wall 的最小值（抗争用噪声的 min 口径）。
+- **取值**：采样次数、统计量和完整调用范围遵循 05 阶段统一性能验收口径；本节只定义
+  compute task 的过滤与 launch wall 聚类方式。
 
 **ops-profiling SKILL.md !992 增量原文（高频问答速查 + 阅读纪律，+17 行）**：[^fa-profiling-faq]
 
