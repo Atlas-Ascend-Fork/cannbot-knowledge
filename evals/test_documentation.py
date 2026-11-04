@@ -561,6 +561,7 @@ class DocumentationContractTests(unittest.TestCase):
             "knowledge-query",
             "knowledge-lint",
             "ascendc-api-knowledge-query",
+            "runtime-api-knowledge-query",
             "ops-knowledge-trace-ingest",
             "ops-knowledge-vv-ingest",
             "ops-knowledge-cv-ingest",

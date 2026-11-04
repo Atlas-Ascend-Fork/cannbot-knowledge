@@ -7,6 +7,8 @@ description: 检索 cannbot-knowledge 中受治理的 CANN、算子、图、模�
 
 以当前问题为中心完成“确认目标平台 → 脚本返回候选路径、title、description → Agent 选卡阅读全文 → Agent 决定是否继续阅读相关内容或 include → 回答”。脚本只负责召回，选卡、阅读深度和证据采用由 Agent 决定。
 
+Runtime API 推荐先按下节进入专用 Skill；下述普通 Query 路径继续要求目标平台。
+
 ## 1. 定位任务与检索边界
 
 - 明确一个要回答的判断（decision），保留目标实体、准确 API 名或首发错误信号。复杂任务拆分判断，不把实现、调试和性能问题塞入一条 query。
@@ -27,6 +29,11 @@ description: 检索 cannbot-knowledge 中受治理的 CANN、算子、图、模�
 按需选一个主要侧面：[算子实现](modes/operator-implementation/MODE.md)、[API 选择](modes/api-selection/MODE.md)、[故障诊断](modes/failure-diagnosis/MODE.md)、[性能优化](modes/performance-optimization/MODE.md)、[技术问答](modes/operator-qa/MODE.md)。模式是内部参考，不是需要逐个执行的 Skill。
 
 Ascend C API 契约与选型使用同装的 [ascendc-api-knowledge-query](../ascendc-api-knowledge-query/SKILL.md)，复用本 Skill 的平台、索引与审计，并补充重载区分和本地 `source_headers` 读取。已经从该流程进入 Query 时直接执行底层查询，不再回跳；其他技术的 API 使用通用 API 模式。
+
+CANN Runtime API 选型、比较与 CUDA Runtime/Driver 替代使用同装的
+[runtime-api-knowledge-query](../runtime-api-knowledge-query/SKILL.md)。它复用本 Skill，
+在平台缺失或无法解析且无项目缺省平台时，可直接启用仅限 Runtime 的候选扩展；
+准确接口名的目标平台查询成功但核验后仍无定义时，还可按专用 Skill 独立跨平台复查收录与支持范围。从该流程进入后不再回跳。
 
 ## 3. 构造能召回的查询
 
@@ -71,6 +78,8 @@ python3 <skill-dir>/scripts/knowledge_query.py search \
 不同本地路径的基准和缺失处理见 [CLI](references/cli.md)。普通读卡不要求 SDK 存在；只有依赖源码才能回答的部分才需要继续定位源码，不为一个已被正文充分回答的问题扫描整个 SDK。
 
 ## 5. 零命中、补搜与停止
+
+以下为普通 Query 规则；Runtime 准确接口名的跨平台诊断复查由专用 Skill 约束，不扩展到其他领域。
 
 - 先区分错误与零命中：退出码 `2` 是参数/索引/输入错误，应处理明确原因或报告阻塞；退出码 `0` 且无结果才是有效零命中。
 - **精确 API 名在目标平台 stable 查询零命中时**，立即独立补搜未定位 draft：保留 API 名与 domain/technology，使用 `--type apis --match literal --include-unlocated --status draft`，不带 platform。它只提供平台待核验线索，不能混入原平台结果、共用 receipt 或代替最初的平台识别。

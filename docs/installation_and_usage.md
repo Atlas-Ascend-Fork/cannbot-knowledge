@@ -110,9 +110,10 @@ Skill 通过符号链接复用同一知识仓及其相邻依赖，安装器不�
 | 已知准确路径，答案只依赖一张确定的知识卡 | 把路径提供给 Agent，直接阅读全文 |
 | 不知道卡片路径，或结论需要多张知识卡综合 | `knowledge-query` |
 | Ascend C API 的契约、选型、相关卡片或本地头文件 | `ascendc-api-knowledge-query`，复用通用检索的索引和平台规则 |
+| CANN Runtime API 选型、比较或 CUDA API 替代 | `runtime-api-knowledge-query`，共用 Query；平台缺失或无法解析且无项目缺省时，直接检索 Runtime 全平台候选 |
 | 新增、更新或检查知识 | 使用 `contributor` 模式，参照[贡献知识](../recipes/contribute_knowledge.md) |
 
-查询时提供具体问题、目标技术和目标硬件平台；也可以在安装时用 `--platform <id>` 把项目缺省平台写入 `.cannbot/knowledge.env`，让普通 Query 在省略 `--platform` 时使用该值。任务目标与缺省值不一致时显式传入目标平台；涉及版本差异或本机实现时，再提供 CANN 版本与组件包位置。平台或技术范围不明确时先补充信息。
+通用 Query 查询时提供具体问题、目标技术和目标硬件平台；也可以在安装时用 `--platform <id>` 把项目缺省平台写入 `.cannbot/knowledge.env`，让普通 Query 在省略 `--platform` 时使用该值。任务目标与缺省值不一致时显式传入目标平台；涉及版本差异或本机实现时，再提供 CANN 版本与组件包位置。平台或技术范围不明确时先补充信息。
 
 各入口都应依据选中卡片的完整正文作答，并核对平台、版本、生命周期和来源。标题、摘要或来源链接本身不构成已核验证据；详细方法见[形成可追溯回答](../recipes/answer_with_evidence.md)，检索与补证细节由对应 Skill 维护。
 
@@ -163,8 +164,8 @@ ACLNN 查询和完整算子实现分析使用 `knowledge-query`。更多场景�
 
 | 需求 | 模式 | 安装内容 |
 |---|---|---|
-| 查询知识、回答技术问题 | `consumer`（默认） | `knowledge-query`、`ascendc-api-knowledge-query` |
-| 新增或修改知识 | `contributor` | 上述两项，以及 `knowledge-ingest`、`knowledge-lint`、`ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` |
+| 查询知识、回答技术问题 | `consumer`（默认） | `knowledge-query`、`ascendc-api-knowledge-query`、`runtime-api-knowledge-query` |
+| 新增或修改知识 | `contributor` | 上述三项，以及 `knowledge-ingest`、`knowledge-lint`、`ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` |
 
 ```bash
 bash install.sh claude /path/to/project contributor

@@ -139,8 +139,15 @@ def validate_filters(registries: dict[str, object], args: argparse.Namespace) ->
         raise ValueError("--include-unlocated cannot be combined with --platform")
     if args.include_unlocated and args.status not in {"draft", "all"}:
         raise ValueError("--include-unlocated requires --status draft or all")
+    all_platforms = getattr(args, "all_platforms", False)
+    if all_platforms and args.domain != "runtime":
+        raise ValueError("--all-platforms requires --domain runtime")
+    if all_platforms and args.platform:
+        raise ValueError("--all-platforms cannot override an explicit or project default platform")
+    if all_platforms and args.include_unlocated:
+        raise ValueError("--all-platforms cannot be combined with --include-unlocated")
     platform_identification = args.technology == "platforms"
-    if not args.platform and not args.include_unlocated and not platform_identification:
+    if not args.platform and not args.include_unlocated and not platform_identification and not all_platforms:
         raise ValueError(
             "platform is required; determine a target platform, use the platforms scope "
             "for identification, or explicitly request draft --include-unlocated cards"
@@ -204,6 +211,14 @@ def matches(
         platforms = set(metadata.get("platforms") or [])
         if "agnostic" not in platforms and not set(args.platform).issubset(platforms):
             return False
+    elif (
+        getattr(args, "all_platforms", False)
+        and card.profile != "glossaries"
+        and not metadata.get("platforms")
+    ):
+        # Runtime explicitly opts into the union of registered platform candidates.
+        # Empty-platform drafts remain exclusive to --include-unlocated.
+        return False
     if args.source_technology and metadata.get("source_technology") != args.source_technology:
         return False
     if args.target_technology and metadata.get("target_technology") != args.target_technology:
@@ -283,6 +298,8 @@ def request_payload(args: argparse.Namespace, mapped_task: str | None) -> dict[s
     }
     if getattr(args, "scope", None) is not None:
         filters["scope"] = args.scope
+    if getattr(args, "all_platforms", False):
+        filters["all_platforms"] = True
     return {
         "query": args.query,
         "decision": args.decision,
@@ -314,6 +331,12 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
         "scope" not in request or "scope" not in filters or request["scope"] != filters["scope"]
     ):
         raise ValueError("receipt request.scope must equal request.filters.scope")
+    if ("all_platforms" in request or "all_platforms" in filters) and (
+        not isinstance(request.get("all_platforms"), bool)
+        or not isinstance(filters.get("all_platforms"), bool)
+        or request["all_platforms"] != filters["all_platforms"]
+    ):
+        raise ValueError("receipt request.all_platforms must equal the boolean request.filters.all_platforms")
 
     query = request.get("query")
     if not isinstance(query, str) or not query.strip():
@@ -362,6 +385,7 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
         task=filters["task"],
         tag=list(filters["tags"]),
         platform=list(filters["platforms"]),
+        all_platforms=filters.get("all_platforms", False),
         include_unlocated=filters["include_unlocated"],
         include_shared=filters["include_shared"],
         source_technology=filters["source_technology"],
@@ -610,6 +634,10 @@ def build_parser() -> argparse.ArgumentParser:
     search_cmd.add_argument("--task")
     search_cmd.add_argument("--tag", action="append", default=[])
     search_cmd.add_argument("--platform", action="append", default=[])
+    search_cmd.add_argument(
+        "--all-platforms", action="store_true",
+        help="Runtime-only candidate search; requires --domain runtime and no explicit or project default platform",
+    )
     search_cmd.add_argument("--include-unlocated", action="store_true")
     search_cmd.add_argument("--include-shared", action="store_true")
     search_cmd.add_argument("--source-technology")

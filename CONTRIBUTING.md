@@ -314,7 +314,7 @@ Scope A/B 的人工标注可用 [评审输入校验器](evals/scope_review.py) �
 
 ### 5.4 实现、验证并提交 PR
 
-当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读专用消费流程 `ascendc-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。VV 用于全部可达 Device 节点均不含 Cube/AIC 或 MIX_CV 的算子，CV 用于至少存在一个可达 Cube/AIC 或 MIX_CV 节点的算子；两者都由任务决定入口，并按现有 call-mode 落库。仅 Host/Tiling 内部入口目前没有对应分类，须先报告缺口，不能套用 ACLNN 或 Direct Invoke 路径；完整边界见 [Knowledge Skills](governance/specs/skills.md)。新增其他 Skill 需要先证明现有职责无法合理承载，并完成架构和发布评审。
+当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读专用消费流程 `ascendc-api-knowledge-query` 与 `runtime-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。VV 用于全部可达 Device 节点均不含 Cube/AIC 或 MIX_CV 的算子，CV 用于至少存在一个可达 Cube/AIC 或 MIX_CV 节点的算子；两者都由任务决定入口，并按现有 call-mode 落库。仅 Host/Tiling 内部入口目前没有对应分类，须先报告缺口，不能套用 ACLNN 或 Direct Invoke 路径；完整边界见 [Knowledge Skills](governance/specs/skills.md)。新增其他 Skill 需要先证明现有职责无法合理承载，并完成架构和发布评审。
 
 本仓 Skill 的规范源位于 `.agents/skills/`，其中维护完整的 `SKILL.md`、`references/`、`scripts/` 及其他运行所需资源。治理、安装、检索与 CI 回归集中于 `evals/`；Ingest 使用全库确定性命令和仓库级回归，trace producer 保留专用脚本回归。规范源不包含 `agents/openai.yaml` 等单一客户端元数据。
 

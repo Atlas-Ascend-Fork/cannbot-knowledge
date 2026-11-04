@@ -29,6 +29,7 @@ ALL_INSTALLABLE_SKILLS=(
   knowledge-query
   knowledge-lint
   ascendc-api-knowledge-query
+  runtime-api-knowledge-query
   ops-knowledge-vv-ingest
   ops-knowledge-cv-ingest
 )
@@ -44,8 +45,8 @@ Usage:
     <project-path> [consumer|contributor] [options]
 
 Installation modes:
-  consumer       Install knowledge-query and ascendc-api-knowledge-query (default).
-  contributor    Install the three base skills, ascendc-api-knowledge-query and both operator ingest skills.
+  consumer       Install knowledge-query and both API query skills (default).
+  contributor    Install the three base skills, both API query skills and both operator ingest skills.
                  The repository-internal trace ingest skill is not installed.
 
 Options:
@@ -620,10 +621,11 @@ EOF
     "$knowledge_root"
   cat <<'EOF'
 | Ascend C API 的契约、选型、相关知识或本地头文件 | `.agents/skills/ascendc-api-knowledge-query/SKILL.md` |
+| CANN Runtime API 推荐、比较或 CUDA Runtime/Driver 替代 | `.agents/skills/runtime-api-knowledge-query/SKILL.md` |
 | 未知卡片路径、需要多卡综合，或涉及算子实现、调试、优化、测试与跨技术问题 | `.agents/skills/knowledge-query/SKILL.md` |
 
 直接读卡不需要先运行检索；必须读取完整 Frontmatter 和正文，并核对平台、版本、状态与来源。如果
-该卡不足以回答问题，再按新增的证据缺口进入对应 Skill。两个检索入口共用 Query 的索引和平台规则，
+该卡不足以回答问题，再按新增的证据缺口进入对应 Skill。三个检索入口共用 Query 的索引和平台规则，
 不需要重复启动。缺少入口时由项目安装流程补齐，不扫描知识树替代 Skill。
 
 ### 使用边界
@@ -1004,8 +1006,8 @@ if [[ "$prompt_action" == "reinstall" && "$profile_explicit" == "false" ]]; then
   profile="$(installed_profile "$knowledge_env" "$canonical_root")"
 fi
 case "$profile" in
-  consumer) skills=(knowledge-query ascendc-api-knowledge-query) ;;
-  contributor) skills=(knowledge-ingest knowledge-query knowledge-lint ascendc-api-knowledge-query ops-knowledge-vv-ingest ops-knowledge-cv-ingest) ;;
+  consumer) skills=(knowledge-query ascendc-api-knowledge-query runtime-api-knowledge-query) ;;
+  contributor) skills=(knowledge-ingest knowledge-query knowledge-lint ascendc-api-knowledge-query runtime-api-knowledge-query ops-knowledge-vv-ingest ops-knowledge-cv-ingest) ;;
   *) fail "unknown installation mode: $profile" ;;
 esac
 

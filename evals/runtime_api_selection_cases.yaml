@@ -1,0 +1,205 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+# Runtime API 同族选型检索回归：12 道按能力描述提问的选型题，固定 top5。
+# 每题的 expected 是人工指定的目标接口（接口层对照题包含两版）。它只检验目标接口能否进入候选窗口，
+# 不检验 Agent 的排除推理、回答结构或技术正确性，也不构成 A/B 质量结论。
+# 同族兄弟接口出现在候选窗口中是设计预期：Skill 要拿到同族全集再按接口层、时序等轴排除，
+# 因此这里不把兄弟接口写进 excluded。excluded 只用于机器过滤断言，例如接口层标签必须生效。
+# query 使用 Skill 规定的“实体 + 一个约束”短查询，不是用户原始自然语言提问；
+# 更换问法会改变召回，分数不能跨问法比较。
+# 本文件由 check.sh 单独运行，不并入主用例集 quality-gate 的 recall/MRR 分母。
+# 期望依据各卡 description 与 index.md 的差异化摘要人工标注，未做独立复核。
+
+cases:
+- id: runtime_select_event_reset
+  description: 复用 Event 需复位，排除仅建立跨流依赖的等待接口。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: Event 复位 复用
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/event_management/aclrt_reset_event
+- id: runtime_select_event_elapsed_time
+  description: 两个记录点之间的耗时用计时接口，而非时间戳查询。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: Event 记录点 耗时 毫秒
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/event_management/aclrt_event_elapsed_time
+- id: runtime_select_event_query_status
+  description: 非阻塞轮询记录点状态，排除阻塞同步与废弃查询接口。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: 非阻塞 查询 Event 任务 完成
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/event_management/aclrt_query_event_status
+- id: runtime_select_memcpy_batch_failindex
+  description: 批量复制需要失败下标时选带 failIndex 的同步批量接口。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: 批量 内存复制 失败 下标
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/memory_management/aclrt_memcpy_batch
+- id: runtime_select_malloc_align32
+  description: 32 字节对齐分配区别于默认 64 字节对齐的 aclrtMalloc。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: Device 内存 分配 32 字节对齐
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/memory_management/aclrt_malloc_align32
+- id: runtime_select_free_with_dev_sync
+  description: 释放并隐式 Device 同步，区别于不做同步的 aclrtFree。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: 释放 Device 内存 隐式 Device 同步
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/memory_management/aclrt_free_with_dev_sync
+- id: runtime_select_memcpy2d_sync
+  description: 按 pitch 同步复制二维区域，区别于下发到 Stream 的异步版本。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: 二维 矩阵 pitch 同步 复制
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/memory_management/aclrt_memcpy2d
+- id: runtime_select_memcpy_from_symbol_layers
+  description: 按符号取回 Device 变量；未指定语言时 C 与 C++ 两版都应召回。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: aclrtMemcpyFromSymbol
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: literal
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/memory_management/aclrt_memcpy_from_symbol
+  - runtime/apis/cpp_extension_apis/aclrt_memcpy_from_symbol
+- id: runtime_select_memcpy_from_symbol_c_api
+  description: 指定 C 接口层时只取公开 C 卡，排除同名 C++ 扩展封装。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: aclrtMemcpyFromSymbol
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: literal
+    k: 5
+    platform: a2
+    tag: topic.implementation.api_layer.c_api
+  expected:
+  - runtime/apis/memory_management/aclrt_memcpy_from_symbol
+  excluded:
+  - runtime/apis/cpp_extension_apis/aclrt_memcpy_from_symbol
+- id: runtime_select_event_avail_num
+  description: 查询可用 Event 数量属于 Event 管理，不是 Device 能力查询。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: 查询 可用 Event 数量
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/event_management/aclrt_get_event_avail_num
+- id: runtime_select_stream_wait_event_timeout
+  description: 带超时的 Event 等待，区别于无超时参数的基础等待接口。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: Stream 等待 Event 超时
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/event_management/aclrt_stream_wait_event_with_timeout
+- id: runtime_select_mem_flush
+  description: Cache 写回并置无效用 Flush，区别于只置无效的 Invalidate。
+  source:
+    kind: manual
+    part_id: runtime_selection_20261103
+  query: DDR Cache 写回 置为无效
+  filters:
+    domain: runtime
+    type: apis
+    status: draft
+    match: text
+    k: 5
+    platform: a2
+  expected:
+  - runtime/apis/memory_management/aclrt_mem_flush

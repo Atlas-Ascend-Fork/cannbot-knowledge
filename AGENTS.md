@@ -82,7 +82,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 ## 修改 Skill
 
-- 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读 Ascend C API 专用消费流程 `ascendc-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
+- 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读专用消费流程 `ascendc-api-knowledge-query` 与 `runtime-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
 - `.agents/skills/` 是本仓 Skill 的规范源。Skill 的实现、说明、参考资料和测试都在本仓维护与验证。
 - 项目安装通过本仓安装器链接到完整 checkout，保持 Skill、相邻依赖和 `governance/contracts/` 同版本可用；配置知识根不等于支持独立复制 Skill 目录。
 - 治理、安装、检索与 CI 回归集中于 `evals/`；Ingest 通过全库确定性命令和仓库级回归验证，trace producer 保留其专用脚本回归。按需图谱与 CI 共用 Ingest 的同一链接构图实现。
@@ -92,6 +92,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 - Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。Ingest 按需构图只读取现有链接，不回写知识正文。
 - `consumer` 和 `contributor` 是安装模式，不是路径 Profile、OKF `type` 或知识分类。
 - `ascendc-api-knowledge-query` 与 `knowledge-query` 一起安装，复用同一索引、平台识别和审计契约；API 头文件线索以已确认的 AscendC 包根解析，不能按知识仓根拼接或跨版本猜测。相关链接只帮助按需补齐证据，不要求遍历全部邻接卡片。
+- `runtime-api-knowledge-query` 与 Query 同装，复用检索与审计，只读消费 Runtime API；具体推荐流程与证据规则由该 Skill 维护，同族选型召回与接口层过滤由 `evals/runtime_api_selection_cases.yaml` 在统一门禁中回归。
 - 修改 Skill 时同步更新其 `SKILL.md`、`references/`、确定性实现和测试。规范源保持 Agent 平台中立，不在 Skill 内保存 `agents/openai.yaml` 等单一客户端元数据；客户端适配由本仓安装器在 Skill 外处理。
 
 ## 日志

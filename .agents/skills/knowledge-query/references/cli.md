@@ -29,6 +29,7 @@ Query 只读索引；索引构建通过统一 Contract 拒绝重复 YAML key 等
 | 卡片正文中的本地 Markdown / 源码链接 | 普通相对路径以当前卡目录解析；前导 `/` 的知识链接以 Bundle 根解析；`#锚点` 指向当前卡。源码仍须满足登记的固定提交来源规则 |
 | Frontmatter `sources[].resource` 的本地路径 | 知识仓根；按 Registry 核对归档或仓库、commit，不相对当前工程解析 |
 | Ascend C API 的 `source_headers` | CANN 包内对应的 Ascend C 组件根目录；值已带 `include/`。Agent 决定需要查看时再拼接绝对路径并读取 |
+| Runtime API 的 `source_headers` | 已确认的 Runtime 源码或对应组件根；固定源码布局与实际安装包 include 布局须分别核验，不能套用 Ascend C 根 |
 
 选中卡片后阅读全文，再决定是否查看其相关内容或 include。知识库链接是有效入口，不需要另跑链接检查；`index.md` 只是导航，Agent 可继续沿其中的链接选卡。链接有效不等于内容适用于当前问题，仍需结合平台、生命周期和版本判断。
 
@@ -115,6 +116,36 @@ Scope 条件绑定到请求指纹和 receipt，重放使用同一契约；旧 re
 每个命中包含 rank、score、Concept ID、绝对 `local_path`、正文行数、OKF type、Profile、trust tier、范围、生命周期、卡片 SHA-256 及最多两个 source。顶层 `results` 是规范字段，`hits` 是迁移兼容别名。退出码 `0` 包括零命中；非法过滤、索引陈旧、知识根不可用或 receipt 已存在时退出码为 `2`。失败时同一结构化 error JSON 同时写入 stdout 和 stderr，便于管道消费方发现参数或索引错误。
 
 `count` 仅表示本次返回的结果数，受 limit 限制；CLI 不返回全量匹配数。达到 limit 且目标定义仍未出现时，可扩大 k 或按问题细化，不能把前 k 项说成全部 API/全部调用者。
+
+### Runtime 全平台候选扩展
+
+`runtime-api-knowledge-query` 可显式使用 `--domain runtime --all-platforms`。
+普通 Query 不带该选项时仍要求显式或项目缺省平台；其他领域不能使用该选项。
+同一请求中，它与显式/项目缺省平台、`--include-unlocated` 均互斥。
+Runtime Skill 在平台缺失或无法唯一解析为登记值、且没有项目缺省平台时，可在首次 API 查询直接使用该选项，
+不要求先执行一次失败查询。未解析的产品描述保留为待确认信息，不作为 `--platform` 参数。
+预先核对缺省平台时，先查看进程环境的 `CANNBOT_KNOWLEDGE_PLATFORM`；无值时再只读查看从当前目录向上
+找到的最近 `.cannbot/knowledge.env` 中同名值；不执行配置文件。配置非法或不可读时报告错误，不静默忽略。
+
+Runtime Skill 还可在准确接口名的目标平台查询成功、核验候选后仍未找到准确接口定义时，
+独立去掉 `--platform`、改用 `--all-platforms` 复查一次，保持其他过滤条件。
+空结果、仅前缀接口或正文提及均可能触发；返回已达 k 时先扩大 k 或细化再判断，stable 与 draft 一致。
+已找到准确定义或查询报错时不触发。它只诊断接口收录与声明支持范围，
+不改变原目标平台，也不把跨平台命中作为目标可用或“不支持”的充分证据。
+若已有项目缺省值，删除参数仍会自动补入平台：仅此诊断子进程不继承
+`CANNBOT_KNOWLEDGE_PLATFORM`，工作目录及其父目录均无 `.cannbot/knowledge.env` 配置文件，
+用绝对脚本路径及 `--knowledge-root <同一绝对知识根>` 固定原知识与索引。不得修改配置文件、
+父进程或全局环境；原配置非法、不可读等错误不能通过此上下文绕过。审计文件使用独立绝对路径。
+随后如需未定位草稿，另发 `--include-unlocated --status draft` 查询，
+不带 `--all-platforms` 或 `--platform`，不得把两种补搜合并成一个请求。
+
+该模式召回支持任一登记平台的 Runtime 候选并集，保留原排序和其他过滤条件；
+不包含空平台草稿。多个显式平台仍为 AND，默认 stable 不变。
+请求及其 `filters` 同时记录 `all_platforms: true`，并纳入请求指纹和重放；
+普通请求不新增该字段，历史有平台 receipt 保持兼容。
+全平台候选请求的 `platforms` 为 `[]`，结果仍保留各卡的实际支持范围；
+它不能证明用户芯片适用，也不能生成要求明确目标平台的 ready。
+确认目标后，按该平台重新查询并保存新的 receipt。
 
 ## 审计工具
 

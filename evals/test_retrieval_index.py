@@ -1323,5 +1323,182 @@ class RetrievalAuditTests(unittest.TestCase):
         self.assertIn("receipt.replay", {item["code"] for item in payload["errors"]})
 
 
+class RuntimeQueryTests(unittest.TestCase):
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.work = Path(temporary.name)
+        self.root = self.work / "repository"
+        make_root(self.root)
+        api_root = self.root / "knowledge/runtime/apis"
+        api_root.mkdir(parents=True)
+        fixtures = (
+            ("a2_only", "[a2]", "stable"), ("a3_only", "[a3]", "stable"),
+            ("common", "[a2, a3]", "stable"), ("neutral", "[agnostic]", "stable"),
+            ("located_draft", "[a2]", "draft"), ("unlocated", "[]", "draft"),
+        )
+        for name, platforms, status in fixtures:
+            (api_root / f"{name}.md").write_text(
+                SYNTHETIC_CARD.replace("platforms: [a2]", f"platforms: {platforms}")
+                .replace("status: stable", f"status: {status}"), encoding="utf-8",
+            )
+        built = run_index(self.root, "build")
+        self.assertEqual(0, built.returncode, built.stderr)
+        self.environment = dict(os.environ)
+        self.environment.pop("CANNBOT_KNOWLEDGE_PLATFORM", None)
+        self.environment.pop("CANNBOT_KNOWLEDGE_ROOT", None)
+
+    def query(
+        self, *arguments: str, query_text: str = "Synthetic API",
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(QUERY), "--knowledge-root", str(self.root), "search",
+             "--query", query_text, "--match", "literal", "-k", "20", *arguments],
+            cwd=self.root, env=self.environment, check=False, text=True, capture_output=True,
+        )
+
+    def test_runtime_exact_api_is_recalled_beyond_platform_prefix_hits(self) -> None:
+        api = "acltdtCreateChannel"
+        prefix_api = "acltdtCreateChannelWithCapacity"
+        api_root = self.root / "knowledge/runtime/apis"
+        # Synthetic cards pin the retrieval case, not Agent definition verification.
+        for status in ("stable", "draft"):
+            with self.subTest(status=status):
+                for name, title, platforms in (
+                    ("exact_channel", api, '["910"]'),
+                    ("prefix_channel", prefix_api, "[a2]"),
+                ):
+                    (api_root / f"{name}.md").write_text(
+                        SYNTHETIC_CARD.replace("Synthetic API contract", title)
+                        .replace("platforms: [a2]", f"platforms: {platforms}")
+                        .replace("status: stable", f"status: {status}"),
+                        encoding="utf-8",
+                    )
+                built = run_index(self.root, "build")
+                self.assertEqual(0, built.returncode, built.stderr)
+                for arguments, expected in (
+                    (["--platform", "a2"], [prefix_api]),
+                    (["--all-platforms"], [api, prefix_api]),
+                    (["--platform", "910"], [api]),
+                ):
+                    with self.subTest(arguments=arguments):
+                        result = self.query(
+                            "--domain", "runtime", "--type", "apis", "--status", status,
+                            *arguments, query_text=api,
+                        )
+                        self.assertEqual(0, result.returncode, result.stderr)
+                        payload = json.loads(result.stdout)
+                        self.assertEqual(expected, [hit["title"] for hit in payload["results"]])
+
+    def test_runtime_all_platforms_is_explicit_and_preserves_filters(self) -> None:
+        stable = {"a2_only", "a3_only", "common", "neutral"}
+        for arguments, expected in (
+            (["--all-platforms"], stable),
+            (["--all-platforms", "--status", "draft"], {"located_draft"}),
+            (["--all-platforms", "--status", "all"], stable | {"located_draft"}),
+            (["--platform", "a2"], {"a2_only", "common", "neutral"}),
+            (["--platform", "a2", "--platform", "a3"], {"common", "neutral"}),
+            (["--include-unlocated", "--status", "draft"], {"unlocated"}),
+        ):
+            with self.subTest(arguments=arguments):
+                result = self.query("--domain", "runtime", *arguments)
+                self.assertEqual(0, result.returncode, result.stderr)
+                payload = json.loads(result.stdout)
+                self.assertEqual(expected, {Path(hit["path"]).stem for hit in payload["results"]})
+                self.assertTrue(all(hit["domain"] == "runtime" for hit in payload["results"]))
+                if "--all-platforms" in arguments:
+                    self.assertEqual([], payload["request"]["platforms"])
+                    self.assertIs(True, payload["request"]["all_platforms"])
+                    self.assertIs(True, payload["filters"]["all_platforms"])
+                else:
+                    self.assertNotIn("all_platforms", payload["request"])
+                    self.assertNotIn("all_platforms", payload["filters"])
+        for arguments, message in (
+            ([], "platform is required"),
+            (["--domain", "runtime"], "platform is required"),
+            (["--domain", "ops"], "platform is required"),
+            (["--all-platforms"], "requires --domain runtime"),
+            (["--domain", "ops", "--all-platforms"], "requires --domain runtime"),
+            (["--domain", "model", "--all-platforms"], "requires --domain runtime"),
+            (["--domain", "runtime", "--all-platforms", "--platform", "a2"], "cannot override"),
+            (["--domain", "runtime", "--all-platforms", "--include-unlocated", "--status", "draft"],
+             "cannot be combined with --include-unlocated"),
+        ):
+            with self.subTest(arguments=arguments):
+                result = self.query(*arguments)
+                self.assertEqual(2, result.returncode, result.stdout)
+                self.assertIn(message, json.loads(result.stdout)["error"]["message"])
+
+    def test_runtime_option_preserves_project_defaults_and_index_failures(self) -> None:
+        config = self.root / ".cannbot/knowledge.env"
+        config.parent.mkdir()
+        config.write_text("export CANNBOT_KNOWLEDGE_PLATFORM=a2\n", encoding="utf-8")
+        for arguments, expected in (
+            ([], {"a2_only", "common", "neutral"}),
+            (["--platform", "a3"], {"a3_only", "common", "neutral"}),
+        ):
+            with self.subTest(arguments=arguments):
+                result = self.query("--domain", "runtime", *arguments)
+                self.assertEqual(0, result.returncode, result.stderr)
+                payload = json.loads(result.stdout)
+                self.assertEqual(expected, {Path(hit["path"]).stem for hit in payload["results"]})
+                self.assertNotIn("all_platforms", payload["request"])
+        blocked = self.query("--domain", "runtime", "--all-platforms")
+        self.assertEqual(2, blocked.returncode)
+        self.assertIn("cannot override", json.loads(blocked.stdout)["error"]["message"])
+        config.unlink()
+        card = self.root / "knowledge/runtime/apis/a2_only.md"
+        card.write_text(card.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+        stale = self.query("--domain", "runtime", "--all-platforms")
+        self.assertEqual(2, stale.returncode)
+        self.assertIn("changed after index build", json.loads(stale.stdout)["error"]["message"])
+        (self.root / "artifacts/indexes/knowledge.sqlite3").unlink()
+        missing = self.query("--domain", "runtime", "--all-platforms")
+        self.assertEqual(2, missing.returncode)
+        self.assertIn("index", json.loads(missing.stdout)["error"]["message"].lower())
+
+    def test_runtime_receipt_binds_opt_in_and_cannot_certify_platform_ready(self) -> None:
+        receipt_path = self.work / "search.json"
+        result = self.query("--domain", "runtime", "--all-platforms",
+                            "--decision", "api-contract", "--receipt", str(receipt_path))
+        self.assertEqual(0, result.returncode, result.stderr)
+        receipt_text = receipt_path.read_text(encoding="utf-8")
+        receipt = json.loads(receipt_text)
+        state_path = self.work / "state.json"
+        RetrievalAuditTests.write_state(state_path, receipt_path, receipt, platform="a2")
+        checked = RetrievalAuditTests.validate_state(self.root, state_path)
+        self.assertEqual(1, checked.returncode, checked.stderr)
+        payload = json.loads(checked.stdout)
+        self.assertFalse(payload["ready"])
+        self.assertEqual({"receipt.platform"}, {item["code"] for item in payload["errors"]})
+        self.assertEqual(receipt_text, receipt_path.read_text(encoding="utf-8"))
+        for change, expected_error in (
+            ("missing", "receipt.replay"), ("mismatch", "receipt.request_shape"),
+            ("non_boolean", "receipt.request_shape"), ("other_domain", "receipt.replay"),
+        ):
+            with self.subTest(change=change):
+                altered = json.loads(receipt_text)
+                request = altered["request"]
+                if change == "missing":
+                    del request["all_platforms"]
+                    del request["filters"]["all_platforms"]
+                elif change == "mismatch":
+                    request["filters"]["all_platforms"] = False
+                elif change == "non_boolean":
+                    request["all_platforms"] = request["filters"]["all_platforms"] = 1
+                else:
+                    request["domain"] = request["filters"]["domain"] = "ops"
+                request_hash = hashlib.sha256(json.dumps(
+                    request, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+                ).encode("utf-8")).hexdigest()
+                altered["request_sha256"] = altered["result"]["request_sha256"] = request_hash
+                altered["result"]["request"] = request
+                altered["result"]["filters"] = request["filters"]
+                receipt_path.write_text(json.dumps(altered), encoding="utf-8")
+                rejected = RetrievalAuditTests.validate_state(self.root, state_path)
+                self.assertEqual(1, rejected.returncode)
+                self.assertIn(expected_error, {item["code"] for item in json.loads(rejected.stdout)["errors"]})
+
+
 if __name__ == "__main__":
     unittest.main()

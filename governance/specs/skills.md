@@ -1,6 +1,6 @@
 # Knowledge Skills
 
-本仓维护 `knowledge-query`、`knowledge-ingest`、`knowledge-lint` 三项基础 Skill，Ascend C API 专用消费流程 `ascendc-api-knowledge-query`，仓内专用的 `ops-knowledge-trace-ingest`，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
+本仓维护 `knowledge-query`、`knowledge-ingest`、`knowledge-lint` 三项基础 Skill，Ascend C API 专用消费流程 `ascendc-api-knowledge-query` 与 Runtime API 推荐流程 `runtime-api-knowledge-query`，仓内专用的 `ops-knowledge-trace-ingest`，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
 
 具体执行接口只在各 Skill 自身的 `SKILL.md` 和 `references/` 中维护，本页只定义仓库级行为与协作边界。
 
@@ -12,6 +12,7 @@
 |---|---|---|---|
 | `knowledge-query` | 技术问题、decision、目标平台和可选范围条件 | 实际覆盖、候选 OKF Concept 或 search/ready/outcome receipt | 只读；只在调用方指定路径创建新审计产物 |
 | `ascendc-api-knowledge-query` | Ascend C API 问题、硬件平台和按需提供的本地 CANN 包路径 | 经平台过滤和全文核验的 API 结论、相关卡片及头文件证据/缺口 | 只读；检索和审计委托 Query |
+| `runtime-api-knowledge-query` | Runtime API 需求、目标产品及已知版本条件，或 CUDA 替代问题 | 有证据边界的候选接口、差异、配套调用和缺口 | 只读；复用 Query，不自动迁移工程 |
 | `knowledge-ingest` | 固定来源、变化类型、目标路径、待表达结论和当前知识语料 | 路由决策、候选 Concept、Git 来源账本；按需生成且由 Git 忽略的链接图谱和 API 引用建议 | 可以创建候选卡；图谱和引用建议只读正文，产物不提交、不发布 |
 | `knowledge-lint` | 单卡、完整知识仓或问题材料 | 分级确定性 Finding 报告或可复现 Issue 草稿 | 只读 |
 | `ops-knowledge-trace-ingest` | 本仓可读的算子开发 trace、日志或已归一化事件流 | 经证据门禁、独立审查、Lint 和检索验证的 Ascend C Runbook | 只在本知识仓使用；只写经审查卡、导航和日志 |
@@ -70,6 +71,26 @@ Query 当前不按 CANN 版本执行结构化过滤。非 Runbook 卡片可记�
 
 交付前，消费 Agent 以已读证据复核拟采用的技术判断，区分原文支持的约束和额外推断，并处理跨来源冲突。复核不增加写入权限、自动委派或全库重读要求；最终答复与“已完成阅读”是分别需要核验的结果。
 
+## Runtime API 专用消费
+
+`runtime-api-knowledge-query` 与 Query 同装，复用检索、平台识别、索引和审计，
+面向 Runtime API 选型、比较及已有映射支持的 CUDA 候选替代。
+输出经全文核对的候选接口、适用范围、差异与证据缺口。明确或项目缺省平台仍按 Query 过滤；
+平台缺失或无法解析且无项目缺省平台时，该专用流程直接使用仅限 Runtime 的全平台候选扩展，
+不以前一次查询失败为前提；未解析的产品信息和适用性缺口须保留。通用 Query 保留缺平台拒绝。
+准确接口名在目标平台查询成功、核验候选后仍未找到定义时，可独立跨平台复查；前缀接口或正文提及
+不算准确定义，stable 与 draft 一致。输出区分未收录、支持待确认和来源明确不支持；
+保留原目标，列出声明支持范围，并提供目标平台替代路径或说明证据缺口。诊断上下文不修改项目配置，
+不改变其他领域的过滤；全平台复查与未定位草稿补搜独立，不能混为同一请求。
+候选并集不证明用户芯片适用，其 receipt 不能生成要求明确目标平台的 ready；
+确认目标后须按平台重查。草稿不构成生产或兼容保证。本流程只读，不自动联网、迁移工程或编译运行。
+具体检索、来源核对和回答结构见 [Runtime API 查询 Skill](../../.agents/skills/runtime-api-knowledge-query/SKILL.md)。
+
+同族选型的确定性检索回归位于 `evals/runtime_api_selection_cases.yaml`，由统一门禁运行：
+它断言每道能力提问的正确接口进入候选窗口，并断言接口层标签过滤生效。同族兄弟接口
+出现在候选中属于设计预期，不计为失败；该用例集只检验召回与过滤契约，不评价 Agent 的
+排除推理、回答结构或技术正确性，也不并入通用检索质量阈值的分母。
+
 ## Ingest
 
 Ingest 是通用摄入路由入口；目标已明确的源码级算子任务也可直接使用对应 VV/CV producer，仓内 trace 支持按其 Skill 直接触发。通常把可核验材料蒸馏成候选 Concept；Registry 文档归档中的官方 API/Guide 按声明执行导航页过滤、冗余章节省略和其余正文保留。各入口都遵守对应 producer 的证据和写入边界，由外层贡献流程完成导航、日志及验证。
@@ -119,8 +140,8 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 
 ## 共同约束
 
-- 七项 Skill 共同遵守 `governance/schemas/` 和 `governance/contracts/`，不复制或放宽字段、路径和注册值。
-- 七项 Skill 的规范合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`templates/`、`scripts/` 等资源组成。其中六项可由安装器链接到业务项目，trace producer 保持仓内运行。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
+- 八项 Skill 共同遵守 `governance/schemas/` 和 `governance/contracts/`，不复制或放宽字段、路径和注册值。
+- 八项 Skill 的规范合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`templates/`、`scripts/` 等资源组成。其中七项可由安装器链接到业务项目，trace producer 保持仓内运行。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
 - Query 和 Lint 不修改知识正文或治理规则，只按调用方要求生成本地产物；Ingest 不自动 commit、push、合并或发布。
 - CANN、DSL、API、算子、调试和优化事实进入 `knowledge/`，不埋在 Skill 指令中。
 - 官方 reference 来源盘点与通用摄入路由属于 Ingest，仓内开发 trace 动态摄入属于 trace producer，源码级完整算子生产属于 VV/CV，Issue 材料整理属于 Lint。其他专用 producer 需要单独完成架构和发布评审。
@@ -129,8 +150,8 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 
 | 安装模式 | Skill | 场景 |
 |---|---|---|
-| `consumer` | `knowledge-query`、`ascendc-api-knowledge-query` | 只读查阅和技术问答 |
-| `contributor` | 六项可安装 Skill（三项基础 + ascendc-api-knowledge-query + VV/CV） | 贡献知识、治理规则或 Skill；不包含仓内 trace producer |
+| `consumer` | `knowledge-query`、`ascendc-api-knowledge-query`、`runtime-api-knowledge-query` | 只读查阅和技术问答 |
+| `contributor` | 七项可安装 Skill（三项基础 + 两项 API 专用查询 + VV/CV） | 贡献知识、治理规则或 Skill；不包含仓内 trace producer |
 
 统一入口 `install.sh` 在远程执行时自动克隆或仅快进更新托管知识仓，并在更新前确认当前分支与请求分支一致；从已有本地 checkout 执行时则直接复用，不自动切换或更新分支。显式离线安装可以跳过仓库更新和资源恢复，也不校验远端 origin。
 
@@ -138,6 +159,6 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 
 规范源依赖同一 checkout 的 Contract 与相邻 Skill；完整安装通过符号链接保留这些依赖，单独复制 Skill 目录并设置知识根不构成受支持的安装方式。知识根配置只选择数据位置，不补齐脚本依赖，也不复制 `knowledge/` 正文。除通过所选 Python 的 `pip` 安装声明的运行依赖外，安装器不修改 shell 启动文件或其他用户全局配置。
 
-项目提示词只维护领域任务的触发、入口路由和消费边界：用户已经提供唯一知识卡路径且问题只依赖该卡时可直接阅读全文；路径未知、需要多卡综合或出现新的证据缺口时进入 Query，Ascend C API 则进入同装的专用查询 Skill。具体平台识别、补搜、阅读、来源核对及审计规则由对应 Skill 维护，不在安装器中复制第二套检索工作流。
+项目提示词只维护领域任务的触发、入口路由和消费边界：用户已经提供唯一知识卡路径且问题只依赖该卡时可直接阅读全文；路径未知、需要多卡综合或出现新的证据缺口时进入 Query，Ascend C API 与 Runtime API 推荐则进入各自同装的专用查询 Skill。具体平台识别、补搜、阅读、来源核对及审计规则由对应 Skill 维护，不在安装器中复制第二套检索工作流。
 
 知识正文、机器规则、Contract 和 Skill 规范源都以本仓 Git commit 标识。

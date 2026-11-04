@@ -40,12 +40,13 @@ CANN 领域知识库面向 [CANN](https://hiascend.com/software/cann) 社区，�
           CANNBot 读取正文并核对来源
 ```
 
-本仓维护七项 Skill：六项可安装到业务项目，`ops-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
+本仓维护八项 Skill：七项可安装到业务项目，`ops-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
 
 | Skill | 作用 | 是否修改知识仓 |
 |---|---|---|
 | `knowledge-query` | 查看实际知识覆盖，检索知识卡，并可保存不可覆盖的审计 receipt | 除指定 receipt 外只读 |
 | `ascendc-api-knowledge-query` | 复用 Query 按硬件平台检索 Ascend C API，阅读全文并按需追踪相关卡片和本地 CANN 头文件 | 否 |
+| `runtime-api-knowledge-query` | 复用 Query 推荐和比较 CANN Runtime API，核验 CUDA 候选替代、差异与证据边界 | 否 |
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级和通用建卡，支持按需链接图谱 | 创建候选卡；构图只读正文，产物始终由 Git 忽略 |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
 | `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、导航、Lint 和检索门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
@@ -89,7 +90,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 | `governance/schemas/` | 机器可读的字段、路径 Profile 和受控值规则 |
 | `governance/specs/` | 对治理规则的完整文字说明 |
 | `governance/contracts/` | Ingest、Query、Lint 和图谱共同使用的校验实现 |
-| `.agents/skills/` | 三项基础 Skill、Ascend C API 专用消费流程、仓内 trace producer 与两项源码级 Operator producer 的规范源 |
+| `.agents/skills/` | 三项基础 Skill、Ascend C/Runtime API 专用消费流程、仓内 trace producer 与两项源码级 Operator producer 的规范源 |
 | `mcp-server/` | 检索契约的 MCP 适配层：discover/search/read_card 三只读工具，stdio 与 HTTP 双传输（严格只读） |
 | `docs/` | 知识库设计原则、安装与使用指南 |
 | `recipes/` | 面向具体任务的知识库最佳实践 |

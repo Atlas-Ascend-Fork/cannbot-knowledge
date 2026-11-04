@@ -29,7 +29,7 @@ cannbot-knowledge 把工程经验整理成可查询、可追溯、可长期维�
 
 ## 3. 先确认范围，再使用结论
 
-同一个 API 或实现方法，在不同 DSL、平台或版本上可能有不同表现。因此，查询知识时必须先确认：
+同一个 API 或实现方法，在不同 DSL、平台或版本上可能有不同表现。因此，采用知识结论时必须核对：
 
 - 属于哪个领域；
 - 使用哪种技术或作用范围；
@@ -76,6 +76,7 @@ Query 会先按平台和技术范围过滤，再返回最相关的知识卡。�
 |---|---|
 | `knowledge-query` | 查看覆盖情况、搜索知识卡 |
 | `ascendc-api-knowledge-query` | 复用 Query 按平台查询 API，阅读全文并按需核验相关卡和本地头文件 |
+| `runtime-api-knowledge-query` | 复用 Query 推荐 Runtime API，区分原生契约、CUDA 映射候选与目标产品/版本证据 |
 | `knowledge-ingest` | 根据来源创建候选知识卡 |
 | `knowledge-lint` | 检查知识卡、导航、链接和日志 |
 | `ops-knowledge-trace-ingest` | 从算子开发 trace 生产 Runbook，只在本知识仓使用 |

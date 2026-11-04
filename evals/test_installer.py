@@ -45,6 +45,9 @@ class InstallerTests(unittest.TestCase):
         api = root / ".agents/skills/ascendc-api-knowledge-query"
         api.mkdir()
         (api / "SKILL.md").write_text("fixture\n", encoding="utf-8")
+        runtime_api = root / ".agents/skills/runtime-api-knowledge-query"
+        runtime_api.mkdir()
+        (runtime_api / "SKILL.md").write_text("fixture\n", encoding="utf-8")
         mcp = root / "mcp-server"
         mcp.mkdir()
         (mcp / "server.py").write_text("fixture\n", encoding="utf-8")
@@ -223,6 +226,7 @@ class InstallerTests(unittest.TestCase):
                     "knowledge-ingest",
                     "knowledge-query",
                     "ascendc-api-knowledge-query",
+                    "runtime-api-knowledge-query",
                     "knowledge-lint",
                     "ops-knowledge-vv-ingest",
                     "ops-knowledge-cv-ingest",
@@ -306,9 +310,9 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             prompt = (project / "AGENTS.md").read_text(encoding="utf-8")
             routes = re.findall(r"`(\.agents/skills/[^`]+/SKILL\.md)`", prompt)
-            self.assertEqual(2, len(routes))
+            self.assertEqual(3, len(routes))
             self.assertEqual(
-                {"knowledge-query", "ascendc-api-knowledge-query"},
+                {"knowledge-query", "ascendc-api-knowledge-query", "runtime-api-knowledge-query"},
                 {Path(route).parent.name for route in routes},
             )
             for route in routes:
@@ -317,7 +321,7 @@ class InstallerTests(unittest.TestCase):
                     self.assertTrue(installed_source.is_file())
                     self.assertEqual((ROOT / route).resolve(), installed_source.resolve())
             self.assertEqual(
-                {"knowledge-query", "ascendc-api-knowledge-query"},
+                {"knowledge-query", "ascendc-api-knowledge-query", "runtime-api-knowledge-query"},
                 {path.name for path in (project / ".agents/skills").iterdir()},
             )
 
@@ -330,7 +334,7 @@ class InstallerTests(unittest.TestCase):
 
             downgraded = self.run_installer(project, "codex", "consumer")
             self.assertEqual(0, downgraded.returncode, downgraded.stderr)
-            expected = {"knowledge-query", "ascendc-api-knowledge-query"}
+            expected = {"knowledge-query", "ascendc-api-knowledge-query", "runtime-api-knowledge-query"}
             self.assertEqual(expected, {path.name for path in (project / ".agents/skills").iterdir()})
             self.assertEqual(expected, {path.name for path in (project / ".claude/skills").iterdir()})
             self.assertEqual(expected, {path.name for path in (project / ".opencode/skills").iterdir()})
@@ -489,7 +493,7 @@ class InstallerTests(unittest.TestCase):
                 if agent == "trae":
                     prompt_text = prompt_path.read_text(encoding="utf-8")
                     self.assertTrue(prompt_text.startswith("---\nalwaysApply: true\n---\n"))
-                for skill in ("knowledge-query", "ascendc-api-knowledge-query"):
+                for skill in ("knowledge-query", "ascendc-api-knowledge-query", "runtime-api-knowledge-query"):
                     canonical = project / ".agents/skills" / skill
                     self.assertTrue(canonical.is_symlink())
                     self.assertEqual(canonical.resolve(), ROOT / ".agents/skills" / skill)
