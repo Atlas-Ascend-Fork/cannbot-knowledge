@@ -30,7 +30,7 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 | Markdown 链接 | Link | 支持相对路径，以及形如 `/ops/...` 的 Bundle 根绝对路径 |
 | `index.md` | Index file | 用于逐层浏览，不参与知识搜索 |
 
-例如 `knowledge/ops/ascendc/apis/datacopypad_gm_to_ub.md` 的 Concept ID 是 `ops/ascendc/apis/datacopypad_gm_to_ub`。
+例如 `knowledge/ops/ascendc/runbooks/compilation/datacopypad_gm_to_ub_requires_pad_params.md` 的 Concept ID 是 `ops/ascendc/runbooks/compilation/datacopypad_gm_to_ub_requires_pad_params`。
 
 Concept 间的本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；索引也只能导航 Bundle 内文件。知识卡可额外链接 Registry 登记的固定提交本地源码文件（可带 `#L行号`），这类链接只是来源导航，不是 Concept Link，也不生成源码节点或图谱边。
 
