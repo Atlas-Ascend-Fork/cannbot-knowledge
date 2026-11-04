@@ -12,3 +12,5 @@
 - [Unlock](unlock.md)：当前流水的前序指令执行完成后，根据MutexID释放对应Mutex，需与Lock接口严格成对使用。
 
 - [TQueSync](t_que_sync.md)：头文件路径为："basic_api/kernel_operator_block_sync_intf.h"。
+
+- [HardEvent](hard_event.md)：HardEvent 是核内 SetFlag/WaitFlag 使用的事件类型枚举，每个取值表达一条源流水到目标流水的依赖方向，另含 AIC 专用 HardEventAic 与 AIV 专用 HardEventAiv。

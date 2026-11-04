@@ -1,13 +1,17 @@
 ---
 type: "Runbook"
-title: kernel 无 libc 数学函数需自实现
+title: "kernel 无设备侧 libc：数学函数与宿主宏需自实现"
 description: "AscendC kernel 编译环境（tikcpp/ccec）不提供标准库数学函数，floorf/rintf/fminf/fmaxf 报 \"use of undeclared identifier\"；需在 kernel 头文件自实现 static __aicore__ inline 标量版本（floor/fmin/fmax/round-half-to-even），并替换全部调用点。R2：经 host 头文件链声明的 floor() 则报 call to __host__ function from __aicore__ function——向量路径 Cast 的 RoundMode::CAST_FLOOR 是设备指令支持的取整模式、不受影响。R3：INFINITY 宏同样是未声明标识符，half ±inf 须按位模式构造（+inf=0x7C00，-inf=0xFC00，quiet NaN=0x7E00）。"
 tags: [task.debugging, topic.compilation, topic.compute.elementwise.math_function]
 status: stable
-sources: []
+sources:
+  - resource: https://gitcode.com/cann/asc-devkit/blob/8746f7ced6cef47e3fd7abd64c0eb827e28e2b56/docs/zh/guide/technical_appendix/cpp_standard_support/cpp_language_restrictions/general_restrictions.md
+    role: constraint
+  - resource: https://gitcode.com/cann/asc-devkit/blob/8746f7ced6cef47e3fd7abd64c0eb827e28e2b56/docs/zh/api/SIMD-API/basic_api/tool_interface/NumericLimits_utils/Infinity.md
+    role: supporting
 created_at: '2026-09-16T11:20:30Z'
-updated_at: '2026-09-16T11:20:30Z'
-platforms: ["950"]
+updated_at: '2026-10-28T10:01:10Z'
+platforms: ["310p", "950"]
 ---
 
 # kernel 无 libc 数学函数需自实现
@@ -27,14 +31,25 @@ op_kernel/arch35/bench_no_harness_grid_sampler_3d.h:232:31: error: use of undecl
 
 - 工程形态：AscendC kernel 开发（op_kernel/*.h/*.cpp，标量路径中的取整/钳位/取模计算）。
 - API 路径：kernel 内标量数学——无 AscendC 官方标量 floor/rint API 的场景；编译环境为 tikcpp/ccec（CANN 9.1.0）。
-- 验证过的平台与 CANN 版本：ascend950 kernel 编译通过并生成二进制（CANN 9.1.0）——与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准。
-- 适用粒度：platform_wide（编译环境行为，与算子无关）。
+- 验证过的平台与 CANN 版本：Ascend310P3（dav-m200 / DAV_2002）+ CANN 9.1.0（`exp2f` 未声明 → `__builtin_exp2f` 链接失败 → 自实现 `KExp2` 通过精度）；ascend950/arch35 内核编译（CANN 9.1.0）——与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准。
+- 适用粒度：platform_wide（编译环境行为，与算子无关）；本卡按同一根因的三种报错文本（未声明 / `__host__` 拒绝 / 宿主宏未声明）分派处置，各自验证平台见 `## 同一根因的三种报错形态`。
 - 路线优先级：recommended_fastpath。
 - 明确不适用 / 未验证场景：向量化的 Floor/Round 等 AscendC 向量 API（本卡为标量路径）；`__floorf` 等编译器内置路径（存在提示但未采用未验证）；其他 CANN 版本。
 
 ## 根因
 
 AscendC kernel 侧编译环境（tikcpp/ccec）不提供标准库 `math.h` 的 `floorf/fminf/fmaxf/rintf` 声明，kernel 代码中直接调用这些函数即编译失败；标量数学需开发者自行实现。
+
+
+### 310P/CANN 9.1.0 补充（exp2f 未声明 + `__builtin_exp2f` 编过链不过）
+
+同一类问题在 Ascend310P3（dav-m200）+ CANN 9.1.0 上以 `exp2f` 的形态再次出现，并且多出一层"前端放行、链接失败"的陷阱：
+
+- 直接写 `exp2f(x)`：`error: use of undeclared identifier 'exp2f'`——与 `floorf`/`fminf`/`fmaxf` 同因（kernel 侧没有 libc 数学声明）。
+- 改写 `__builtin_exp2f(x)`：**编译通过**，但 kernel 链接阶段报未定义符号（该内建在 m200 后端没有对应实现）。这是本卡要补的第二种失败形态：**"编过"不等于"链得过"**，必须确认最终的 kernel `.o` / `.so` 是否真正生成。
+- 最终按本卡同一路线自实现 `KExp2`：把 `x` 拆成整数部分 `e = floor(x)` 与小数部分 `f = x - e`，小数域用 6 项 Taylor 展开 2^f，再用 IEEE754 指数位拼装（`reinterpret_cast<uint32_t>` 后加 `e << 23`）；对 `e < -126` 的下溢区显式返回 0，避免负指数位移的未定义行为。
+
+结论：`exp2f` 属于同一"kernel 无标准数学库"家族；`__builtin_*` 前缀不是规避手段，只是把报错从编译期推迟到链接期。
 
 ## 解决配方
 
@@ -144,6 +159,11 @@ reflection 取模（ComputeReflection 内，修复后形态）：
 - 修复前：`error: use of undeclared identifier 'floorf'; did you mean '__floorf'?`（两处重复报错）（来源平台：ascend950 kernel 编译 / CANN 9.1.0；证据等级：tool_observed）。
 - 修复后：同一构建中 floorf/rintf/fminf/fmaxf 错误全部消失，kernel 编译推进到下一独立问题（DataCopyPad 签名）；最终 `binary` target 100% 构建成功，生成两个 ascend950 kernel `.o`（来源平台：ascend950；证据等级：tool_observed）。
 
+
+- 310P/CANN 9.1.0 下直接调用 `exp2f`：kernel 编译报 `error: use of undeclared identifier 'exp2f'`（来源平台：310P；证据等级：tool_observed）。
+- 改写 `__builtin_exp2f` 后编译阶段通过，但 kernel 链接报未定义符号、产物未生成（来源平台：310P；证据等级：tool_observed）。
+- 自实现 `KExp2`（6 项 Taylor + 指数位拼装 + 下溢分支）后 kernel 构建成功，算子对 CPU golden 的精度用例通过（来源平台：310P；证据等级：tool_observed）。
+
 ## 失效边界
 
 - `ScalarFloor`/`ScalarRint` 基于 int32 截断：坐标超出 int32 范围时行为未定义；超大 D/H/W（>2^31）场景需换实现。
@@ -154,16 +174,36 @@ reflection 取模（ComputeReflection 内，修复后形态）：
 **未决项**：
 
 - CANN 是否提供官方标量数学头（tikcpp 内搜 math.h 无命中，未深挖官方推荐做法）——接续点：查 tikcfw/asc 头文件中是否有 scalar math 工具。
+
+- `KExp2` 只覆盖 f32 标量输入；bf16/fp16 输入需先归一为 f32 再调用。
+- 大正指数（`e` 接近 128）时的溢出行为未单独验证；极端定义域建议加显式饱和分支。
+- `__builtin_*` 系列在其它后端是否可链接未验证；本卡只证明 310P/CANN 9.1.0 上不行。
+- `exp2` 的精度只在算子层面用 golden 验证，未做逐点 ULP 统计。
+
 ## 坏实践
 
 - 在 kernel 里直接 `#include <cmath>` 或调用标准数学函数——环境没有这些声明。
 - 用 `__floorf` 等编译器内置符号——无声明头、可移植性差。
 
+
+- 看到 `__builtin_exp2f` 编译通过就认为可用，不检查 kernel 产物是否生成、不跑端到端——把链接期错误留到运行期。
+- 自实现指数函数时不做下溢/溢出分支，直接用负指数位移。
+- 把 `exp2f` 的未声明误当成缺 include，反复调整头文件顺序。
+
 ## 误诊
 
-无。
+旧轨迹无成条误诊记录；310P 轨迹新增两条：
 
-## 后续增量（2026-09-17，并行策展批：R2——floor() 已声明但被 __host__ 属性拒绝；R3——INFINITY 宏不可用与 half 极值位模式）
+- 误诊：`exp2f` 报未声明时，先怀疑少了 `<cmath>` / `math.h` 包含（agent_reported）。真实原因是 kernel 编译环境根本不提供该声明，加 include 无效。
+- 误诊：`__builtin_exp2f` 编译通过后，把随后出现的加载失败归因于驱动或环境（agent_reported）；实际是 kernel 没链接出来。
+
+## 同一根因的三种报错形态
+
+本卡是**同一根因**（设备侧 kernel 编译单元没有 libc/STL，既无标量数学声明，也不暴露宿主宏）的家族卡，不是三个独立根因的聚合。三种形态按报错文本分派处置：
+
+- R1「未声明标识符」：`floorf/rintf/fminf/fmaxf/exp2f` 等直接报 undeclared → 在 kernel 头文件自实现标量版本并替换调用点（见 `## 解决配方`）。
+- R2「有声明但被 `__host__` 拒绝」：`floor` 经 glibc 声明链进入 kernel TU，报 `call to __host__ function from __aicore__ function` → 批量取整改走向量 `Cast` 的 `RoundMode::CAST_FLOOR`，标量路径自实现或整型截断。
+- R3「宿主宏未声明」：`INFINITY`/`NAN`/`HUGE_VAL` 报 undeclared → 按 IEEE 754 位模式构造（half：+inf=0x7C00，-inf=0xFC00，quiet NaN=0x7E00）。
 
 ### R2：floor() 的第二种错误形态（独立 trace，Ascend950PR/arch35，TBE 编译链）
 

@@ -9,8 +9,12 @@ status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_data_structure_register/TilingData_struct_register.md
   role: primary
+- resource: https://gitcode.com/cann/asc-devkit/blob/016ba4a159eda090c4d60a1cdcd1ccca2a36cb0a/docs/zh/api/Utils-API/Tiling_data_structure_register/TilingData_struct_register.md
+  role: primary
+- resource: https://gitcode.com/cann/asc-devkit/blob/016ba4a159eda090c4d60a1cdcd1ccca2a36cb0a/include/adv_api/hccl/hccl_tilingdata.h
+  role: header
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: "2026-10-31T09:21:53Z"
 platforms: []
 ---
 
@@ -122,6 +126,25 @@ platforms: []
     END_TILING_DATA_DEF; 
     REGISTER_TILING_DATA_CLASS(Add_1, AddStructSample1) 
     ```
+
+## 源码侧证据（固定 commit）
+
+在 commit `016ba4a159eda090c4d60a1cdcd1ccca2a36cb0a` 的 asc-devkit 中，`REGISTER_TILING_DATA_CLASS` 同样**没有宏定义本体**（`include/` 中 4 个头文件有使用点），展开形态以上文「函数原型」为准。源码侧可核对注册对的参数形态与中间结构体命名惯例：
+
+```cpp
+// include/adv_api/hccl/hccl_tilingdata.h:49-57
+BEGIN_TILING_DATA_DEF(Mc2InitTiling)
+TILING_DATA_FIELD_DEF_ARR(uint8_t, 64, reserved);
+END_TILING_DATA_DEF; // 64 bytes
+REGISTER_TILING_DATA_CLASS(Mc2InitTilingOpApi, Mc2InitTiling)
+
+BEGIN_TILING_DATA_DEF(Mc2CcTiling)
+TILING_DATA_FIELD_DEF_ARR(uint8_t, 512, reserved);
+END_TILING_DATA_DEF; // 512 bytes
+REGISTER_TILING_DATA_CLASS(Mc2CcTilingOpApi, Mc2CcTiling)
+```
+
+头文件内部的中间结构体注册统一使用“结构体名 + `OpApi`”后缀（如 `Mc2InitTilingOpApi`），与上文文档调用示例中的“结构体名 + `Op`”写法是同一惯例的不同命名后缀：两者都由结构体名派生出一个“虚拟算子名”作为第一个参数。
 
 ## 配套 API 与常见组合
 

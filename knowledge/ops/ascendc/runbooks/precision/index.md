@@ -485,3 +485,17 @@
 - [nearest 网格采样在半整数判定前保留仿射坐标残差](grid_sample_nearest_affine_residual_before_rne.md)：FP32 反归一化会把半整数附近的坐标提前舍到中点；用高低位保留加法与乘法残差，再按两部分决定 nearest RNE 索引，限定 nearest/zeros 和已验证的有限坐标域。
 - [SwiGLU 行量化的 scale 通过而 INT8 差一位时保留完整舍入决策](grouped_swiglu_exact_int8_compensated_row_quantization.md)：在有界 INT8 点积、FP32 scale 和精确 INT8 合同下，补偿反量化、SiLU、整行 maxabs 与归一化并携带低位到 RNE；沿 CANN per-token 分支保留 INT32 tile 交接与严格计算钩子，区分结构迁移、精度验证和性能归因。
 - [补偿归一化链中正 subnormal 的缩放平方根恢复](positive_subnormal_compensated_sqrt_scaling_950dt.md)：950DT/CANN9.2 的显式 FP32 返回 GDN 修复中，补偿链在有限gold处产生NaN；以整数重构很小正数并在Newton修正前做2的幂缩放恢复本版全量精度，不宣称硬件FTZ因果。
+- [K 维分半时 W 的两半要各出一块 l0c，不能累加进同一块](cmatrix_accumulate_only_along_contracted_dim.md)：对 w = A @ kq（kq 的列按 K 分半）连续两次 Mmad 且 cmatrixInitVal=false，会把两半加进同一 n 块。
+- [Compare 源只收 half/float；Duplicate 不收 int8](compare_source_dtype_whitelist_on_dav_m200.md)：310P 上想把掩码压成 int8/int16 省带宽，连续撞 Duplicate 与 Compare 的 dtype 白名单；最终只能落 half。附各 API 的实际白名单与三处编译陷阱。
+- [DataCopyParams blockLen 单位是 32B 块](datacopyparams_blocklen_is_32b_blocks.md)：行宽按块数而非元素数计；把 f32 行写成 4 块只落了半行，后 32 列恒零且跨重复调用自固化，看起来像“存储只写了一半”。
+- [常量三角矩阵必须整块构建，只写主对角会退化成单位阵](identity_buffer_is_not_lower_triangular_mask.md)：用 Duplicate(0) 加逐点 SetValue 构建下三角常量矩阵时只写了主对角，实际得到单位阵；改用逐行 Select 从全 1 张量裁剪。
+- [int16 位级 RNE 链在 L==0 时下溢回绕，误加 1 个 bf16 ULP](int16_rne_chain_underflow_false_carry.md)：f32→bf16 的 int16 位型舍入链里 t1=L+0x8000，L==0 时 t1=-32768，再减 1 下溢回绕成 +32767，符号判定误判为进位，确定性丢 25/16.7M 元素；t1 先 Maxs 钳底 -2 即修复。
+- [S 累加跨 tile 残留 - 每 tile 清零 L0C](l0c_accumulator_needs_cmatrix_init_on_first_k_step.md)：Cube 累加器在 fixpipe 读出后仍保留旧值；靠“读出清零”做跨 kt 累加会把上一 tile 结果抄进新结果，改为每个 kt 首个 Mmad 都清零起步。
+- [掩码分块装载漏乘列宽：只有 query 梯度错](mask_row_base_offset_missing_column_stride.md)：掩码按 [unit][row][tile][col] 落 GM，跨行装载基址写成 base+kt 而不是 base+kt*列宽，表现为仅 query 梯度坏、key/value 梯度逐位精确；判据是同一坏法在三种互斥编码假设下都不变。
+- [打包块布局的 \[64,64\] 块不能用整块线性拷贝接续 GM](packed_block_layout_is_not_row_major_equivalent.md)：四个 [64,64] 块打包在 UB 里并不是 [128,128] 的行主序；初态载入与末态写回都必须逐块（逐行）拷贝。
+- [行广播别用逐行 Adds 或 srcStride=0](row_broadcast_host_materialize_adds_column_constant.md)：逐行 Adds 只产出列同值矩阵；DataCopy 的 srcStride=0 是块间无间隔（源连续推进），向量 srcRepStride=0 的复读机制文档与既有内核注释矛盾、未上板复核——两类 stride=0 都不能当广播原语，行同值矩阵在本轨迹形态下用 host 物化。
+- [SetValue 写的掩码是字节粒度，Select 按 bit 消费](setvalue_built_mask_not_consumed_by_select.md)：SetValue 逐元素写 int8 掩码时每元素占 1 字节，而 Select 的 selMask 每元素只取 1 bit；行内 Select 只读行首 count/8 字节，于是每 8 个元素共用同一字节的位，表现为块级零化对、元素级漏掩。改用 Compare 产出位打包掩码。
+- [广播 tile 写入量超缓冲容量 4 倍覆盖相邻张量](ub_borrowed_phase_buffer_write_overrun.md)：把 128 元素的带参照 ρ 广播成 [4,32,128] f32 tile 时，写进了只有 4096 元素的复用缓冲（需 16384），4 倍越界覆盖相邻张量；改为专用物理尺寸的 rhoPad。
+- [TBuf 切片越界 2KB 污染相邻 S 镜像行块](ub_shared_tbuf_slice_capacity_undercount.md)：多个逻辑张量用切片共用一个大 TBuf 时，容量按元素总数手算写错 4×128 元素，尾切片越界 2KB 写进相邻 TBuf 的首 8 行，表现为该区出现 1.25~1.45 的伪浮点。
+- [向量算子 calCount 是平铺元素数，短操作数切片被越读](vector_calcount_flat_count_short_operand_overread.md)：AscendC 向量 API 的 calCount 是对基址的平铺元素计数，128 元素的 LocalTensor 切片配 cnt=2048 会静默越读相邻 UB；判别方法=逐参数核对 cnt 与物理长度。
+- [整块 Select 的掩码必须连续位打包](whole_tile_select_mask_granularity_m200.md)：Select 的 selMask 是位打包的（每元素 1 bit）；逐行 Compare 的结果按 64B 行距摆放时，整块 Select 会连续读 count/8 字节并跨过行间隔，读到陈旧位而错位。掩码连续打包时，整块 Select 在 310P 上 count 512~4096 实测全对。

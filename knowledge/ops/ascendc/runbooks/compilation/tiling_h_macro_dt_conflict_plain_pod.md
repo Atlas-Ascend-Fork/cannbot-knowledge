@@ -4,10 +4,12 @@ title: 共享 tiling.h 宏范式 DT 宏冲突改纯 POD
 description: ascend950 regbase 自定义算子的共享 tiling.h 被 op_host 与 op_kernel 同时包含时，BEGIN_TILING_DATA_DEF 宏范式引入的 register/tilingdata_base.h 传递包含 graph/types.h，其 DT_* enum 与 kernel 侧 kernel_type.h 的 DT_* 宏同名冲突致 opc 编译失败，应改用仅含 <cstdint> 的平凡 POD 结构体。
 tags: [task.implementation, topic.tiling, topic.compilation]
 status: stable
-sources: []
+sources:
+  - resource: https://gitcode.com/cann/asc-devkit/blob/8746f7ced6cef47e3fd7abd64c0eb827e28e2b56/include/basic_api/kernel_type.h
+    role: header
 created_at: '2026-09-17T00:14:22Z'
-updated_at: '2026-09-17T00:14:22Z'
-platforms: ["950"]
+updated_at: '2026-10-28T10:01:10Z'
+platforms: ["310p", "950"]
 ---
 
 # 共享 tiling.h 宏范式 DT 宏冲突改纯 POD
@@ -49,6 +51,16 @@ fatal error: too many errors emitted, stopping now [-ferror-limit=]
 ## 根因
 
 宏范式强制的 `#include "register/tilingdata_base.h"` 是 host-only 头，它传递包含的 `graph/types.h` 以 enum 成员形式声明 `DT_QINT8 = ::C_DT_QINT8` 等，而 kernel 编译单元先期已包含的 `asc/include/basic_api/kernel_type.h` 用预处理宏 `#define DT_QINT8 18` 占用了同名标识符——预处理宏先于 enum 成员名展开，`DT_QINT8 = ::C_DT_QINT8` 被替换成 `18 = ::C_DT_QINT8`，故 kernel 侧（opc/TBE 编译器）凡 include 该 tiling.h 必然编译失败。
+
+
+### 310P/CANN 9.1.0 补充（同一个 `DT_BF16` 宏在 m200 侧也撞，且 gmake 只报 `Error 2`）
+
+在 Ascend310P3（dav-m200）+ CANN 9.1.0 上复现了同一宏冲突，撞的是 `DT_BF16`：
+
+- 310P 的 `m200_obj` / tikcpp 编译单元同样通过 `kernel_type.h` 提供 `#define DT_BF16 27`（数值随版本，关键是**它是宏**）；tiling 头里写 `constexpr int32_t DT_BF16 = 2;` 或 enum 成员 `DT_BF16 = ...` 时，预处理先展开宏，得到 `constexpr int32_t 27 = 2;`，报 `error: expected unqualified-id`。
+- **gmake 层只打印 `Error 2`**：真正的 `expected unqualified-id` 在上层的 opc/kernel 编译日志里，`make` 输出末尾只有一句 `gmake: *** [...] Error 2`。排查时必须 `grep -n "error:" build.log`（或对应 kernel 编译日志），不能只看最后几行。
+- **修法**：与旧卡一致改纯 POD（仅 `<cstdint>`，`int32_t` 字段 + 自己的前缀常量，如 `KDT_BF16`），不要 `#include "register/tilingdata_base.h"`。
+- **不要用 `#undef DT_BF16`**：能编过，但会把本编译单元里后续所有依赖该宏的头文件一起改坏（头文件包含顺序敏感），属于把冲突挪到看不见的地方。
 
 ## 解决配方
 
@@ -142,9 +154,11 @@ extern "C" __global__ __aicore__ void bench_harness_apply_rotary_pos_emb(
 
 ## 设计决策
 
+> 注：上方代码块是终版文件的逐字内容，其中"参考（§5.3 原始宏形式，未启用…）"注释块是为通过字面验收 grep 而留下的既成事实，**复用时请删除**——保留它等于把验收门缺陷写进推荐配方。
+
 - 为什么不改 kernel.cpp 去掉对 tiling.h 的 include：tiling 字段是 kernel 计算的输入，两侧必须共享同一结构定义；把 host/kernel 拆成两份头会引入布局漂移风险，一份平凡 POD 是最小共享单元。
 - 为什么选纯 POD 而不是继续修宏范式：宏冲突发生在 CANN 头文件之间（`graph/types.h` enum vs `kernel_type.h` `#define`），用户代码层无法隔离；而 CANN 包内置的 ascend950 regbase 算子（`opp/built-in/op_impl/ai_core/tbe/impl/ops_cv/ascendc/col2im/arch35/col2im_tiling_data.h`、`ops_nn/ascendc/swi_glu_grad/arch35/swi_glu_grad_regbase_tiling.h`）与同仓 BenchSoftmax、BenchGcd、add_custom 包的 tiling 头全部是"仅 `#include <cstdint>` + 平凡 struct"的写法——以官方内置算子为准。
-- 终版文件保留了宏范式的注释参考块（标注"未启用，仅留作字段溯源"），同时满足设计文档验收 grep 的字面要求；这是验收门与工程现实的折中，见坏实践。
+- 终版文件保留了宏范式的注释参考块（标注"未启用，仅留作字段溯源"），使字面验收 grep 命中注释而非生效代码——这是当时验收门缺陷造成的既成事实，**不是推荐做法，不应照抄**；复用时删除该注释块，并把验收改为校验非注释行（见坏实践）。
 - 当前方案路线档位：recommended_fastpath（共享 tiling.h 场景下无等价替代）。
 
 ## 系统信息
@@ -168,6 +182,10 @@ extern "C" __global__ __aicore__ void bench_harness_apply_rotary_pos_emb(
 - 修复后在另一套 CANN 9.2.0 安装上完整 `./build.sh` 退出码 0（编译与打包安装全通过），证明纯 POD 写法跨两套安装可编译（来源平台：950；证据等级：tool_observed）。
 - 范式旁证：CANN 包内置 ascend950 regbase 算子 col2im（arch35）、swi_glu_grad（arch35）的 tiling 头均为仅含 `<cstdint>` 的平凡 struct（来源平台：950；证据等级：tool_observed）。
 
+
+- 310P/CANN 9.1.0：tiling 头里写 `constexpr int32_t DT_BF16 = 2;` 后 kernel 编译报 `error: expected unqualified-id`，而 `make` 末尾只有 `gmake: *** [...] Error 2`（来源平台：310P；证据等级：tool_observed）。
+- 改为纯 POD + `KDT_` 前缀常量后，该 kernel 目标编译通过、产物生成（来源平台：310P；证据等级：tool_observed）。
+
 ## 失效边界
 
 - 本卡结论针对"tiling.h 被 kernel 侧 include"的共享场景；host-only tiling 头不受此限。
@@ -179,12 +197,25 @@ extern "C" __global__ __aicore__ void bench_harness_apply_rotary_pos_emb(
 
 - 纯 POD 的 host `GetTilingData<T>()` 写入与 kernel `GET_TILING_DATA` 读取的端到端一致性（真实 tiling 数据上板）未验证——kernel 当前为接口桩，tiling 字段尚无消费者；后续实现 Tiling 公共逻辑与 kernel 分支时须回补该验证。
 - 宏范式在 CANN 后续版本是否提供 kernel 兼容头（或宏族弃用时间表）未查证。
+
+- 宏的具体数值随 CANN 版本变化；本卡只依赖"`DT_*` 是预处理宏"这一事实，不依赖 `27` 这个值。
+- 只在 310P/CANN 9.1.0 与旧卡的 950 环境上验证；其它代际未验证。
+- `namespace` 包裹不能解决（宏无视命名空间）；本补充未改变该结论。
+- `#undef` 方案未实际采用，风险为静态评估，未做编译验证。
+- 只在"tiling.h 被 host 与 kernel 同时包含"的共享头形态下讨论；host-only 的 tiling 头不受影响。
+
 ## 坏实践
 
 - 验收 grep 门 `grep -q 'BEGIN_TILING_DATA_DEF(...)'` 在纯 POD 终版上仍"通过"——命中的是文件内注释参考块（非注释行的唯一 `#include` 是 `<cstdint>`）。字面 grep 门无法区分注释与生效代码；验收应校验非注释行（如 `grep -v '^//'` 后再匹配，或直接检查 struct 定义），本工程的验收门形式上通过但语义上未检到宏实现。
 - 设计文档指定范式前不验证该范式在目标工程模板（host/kernel 共享 tiling.h）下是否可编译。
 
+
+- 只看 `make` 末尾的 `Error 2` 就开始改代码，不去上层日志 `grep "error:"`。
+- 用 `#undef DT_BF16` 或调整 include 顺序掩盖冲突。
+- 在共享 tiling 头里用裸 `DT_*` 名做常量（宏会先展开）。
+
 ## 误诊
 
 - 第一步曾把宿主侧 `expected class-name` 当作全部问题，用 `namespace optiling` 包裹修复后宿主侧确实通过，但掩盖了 kernel 侧还有独立的 `DT_*` 宏冲突——两层失败、两个根因，需分别归因。
-- 无其他误诊记录。
+- 误诊：看到 `expected unqualified-id` 以为是 C++ 语法错误或重复定义（agent_reported）；实际是宏替换后的非法声明。
+- 误诊：`gmake` 只报 `Error 2`，以为是构建系统/环境问题（agent_reported）；真正错误在被吞掉的上层编译日志里。

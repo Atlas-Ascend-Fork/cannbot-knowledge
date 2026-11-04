@@ -9,8 +9,12 @@ status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_data_structure_register/TilingData_struct_definition.md
   role: primary
+- resource: https://gitcode.com/cann/asc-devkit/blob/016ba4a159eda090c4d60a1cdcd1ccca2a36cb0a/docs/zh/api/Utils-API/Tiling_data_structure_register/TilingData_struct_definition.md
+  role: primary
+- resource: https://gitcode.com/cann/asc-devkit/blob/016ba4a159eda090c4d60a1cdcd1ccca2a36cb0a/include/adv_api/conv_backprop/conv3d_bp_filter_tilingdata.h
+  role: header
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-10-10T04:14:14Z'
+updated_at: "2026-10-31T09:21:53Z"
 platforms: []
 ---
 
@@ -225,6 +229,28 @@ static void TilingAddInit(AddCustomTilingData *tiling, uint32_t numBlocks)
   useNumBlocks = tiling->mm.get_mmVar();           // 获取嵌套结构体通用数据类型变量mmVar
   arrPoint = tiling->mm.get_mmArr();              // 获取嵌套结构体通用数据类型数组mmArr
 }
+```
+
+## 源码侧证据（固定 commit）
+
+在 commit `016ba4a159eda090c4d60a1cdcd1ccca2a36cb0a` 的 asc-devkit 中，`BEGIN_TILING_DATA_DEF`、`END_TILING_DATA_DEF` 与 `TILING_DATA_FIELD_DEF*` 系列**没有宏定义本体**：`include/` 与 `impl/` 下只有使用点（`include/` 中 17 个头文件、`impl/` 0 个），宏的展开形态只存在于上文「函数原型」。因此本卡的参数定义以文档为准，源码侧可核对的是调用写法与参数形态：
+
+```cpp
+// include/adv_api/conv_backprop/conv3d_bp_filter_tilingdata.h:78-80
+BEGIN_TILING_DATA_DEF(Conv3DBpFilterParams)
+TILING_DATA_FIELD_DEF(uint32_t, totalL1Size);
+END_TILING_DATA_DEF;
+```
+
+嵌套结构体字段（`TILING_DATA_FIELD_DEF_STRUCT`）的写法：
+
+```cpp
+// include/adv_api/conv_backprop/conv3d_bp_filter_tilingdata.h:92-96
+BEGIN_TILING_DATA_DEF(Conv3DBackpropFilterTilingData)
+TILING_DATA_FIELD_DEF_STRUCT(Conv3DBpFilterParams, params);
+TILING_DATA_FIELD_DEF_STRUCT(TConv3DBpFilterTiling, dwTiling);
+TILING_DATA_FIELD_DEF_STRUCT(TConv3DBpFilterBasicBlockTiling, basicBlockTiling);
+END_TILING_DATA_DEF;
 ```
 
 ## 配套 API 与常见组合

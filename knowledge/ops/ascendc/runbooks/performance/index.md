@@ -180,3 +180,15 @@
 - [Cube B 暂存布局：配对验证 ND 随路转换与 AIV 预分形](cube_b_nd_staging_paired_validation.md)：Ascend950DT、CANN 9.2 的 MLA decode fp32 B 操作数中，比较 GM 暂存 plain ND 加 GMToL1 ND2NZ 与 AIV 预写 NZ；保留八轮配对观测、二进制身份修正和精度波动边界，不外推收益。
 
 - [注意力在线累加的矢量成本与固定参考最大值](attention_vector_cost_fixed_frame_950dt.md)：在Ascend950DT注意力内核中以成本探针定位逐tile输出重缩放，并记录固定参考最大值的有界替代、回退门和两条实测失败路线；保留跨时段与未复现边界。
+- [bf16 转换落 AI_CPU：改 AI core 位级 cvt](bf16_cast_aicpu_dispatch_to_aicore_cvt.md)：310P 上 torch_npu 的 bf16 转换派发到 AI_CPU（Cast10），每次固定开销约主 kernel 单次的一成；改用 AI core 位级 cvt kernel 并批处理对齐尾部即可消除，尾段偏移须按源/目的元素字节数分侧计算。
+- [Cube 操作数 GM 中转按半片粒度使 MTE2 成首瓶颈](cube_operand_gm_relay_packing_granularity.md)：核内算出的 cube 操作数按“每操作数半片”各自往返 GM，MTE2 占掉 kernel 三成时间；把带因子打包成单张交错 tile、单次线性推 + 单次 Nd2Nz 读，kernel 自身加速约 2.15x。
+- [热循环 GetValue 触发形态硬门 - 零偏移表 Gather 广播](hot_loop_getvalue_zero_offset_gather_broadcast.md)：逐 token 用 GetValue 取门控标量做 Muls 命中形态硬门；改为全零偏移表 Gather 生成同值向量再 Mul，热循环零标量读，时延约为改造前的 0.93x。
+- [输出暂存 + host gather 改为核内 2D 散射直存](kernel_2d_scatter_store_replaces_host_gather.md)：kernel 先把每块结果整块写进暂存区、再由 host 按索引重排，需要数十 MB 索引 H2D 与逐元素 gather；让 MTE3 直接按目标行主序散射写出，整条辅助链消失。
+- [kernel 直写最终布局出口，免 host 逆排与 cast](kernel_writes_final_layout_avoid_host_rearrange.md)：出口若按 [B,HV,tile,*] 出中间布局再由 host 逆排、contiguous、按 dtype cast，会付大量 GM 往返；把最终布局下推到 kernel 行基址直写，host 只留窄片视图。
+- [310P 长 T 递推 kernel 慢在搬运：msprof 判别法](long_t_recurrence_gm_roundtrip_and_full_barrier_cost.md)：长 T 串行 chunk 递推 kernel 切到 msprof kernel 级口径后远慢于参考实现；用 op_summary 逐 kernel Task Duration 占比判定搬运/同步 bound，而不是继续调数学。
+- [msprof 资源占比定位逐行 V 调用主导而非搬运瓶颈](msprof_pipe_ratio_bound_classification.md)：op_summary 的 vec/scalar/mac/mte 占比是可重叠的流水 cycle 份额，只作排查线索（先查向量/标量调用组织与等待，再看搬运），判瓶颈须回源码与成对对照；本例据此选“批量化+因子折进操作数”。
+- [多操作数装载合并成一次全屏障](multi_operand_load_batch_single_barrier.md)：visit 内 3-4 张 B 操作数改为两相批装载，每次 visit 只留一次 MTE2_MTE1+PIPE_ALL；官方口径几何平均由 0.88 升到 1.08，逐例 −9% ~ −58%。
+- [前缀和立方化到 Ltri@bcast：思路可行，强门控下漂移已回退](prefix_sum_two_mmad_ltri_split_banned.md)：逐行 Duplicate+Add 前缀和可降为常驻 Ltri 的两次 Mmad；本会话实测该变体在强门控用例上 gk 漂移，最终回退到向量前缀和。
+- [用独立探针算子验证 m200 上的 K16 立方几何](standalone_probe_kernel_cube_geometry.md)：在改主 kernel 之前，用 torch.ops 探针逐模式验证 [64,16] B 槽 Nd2Nz + k=16 Mmad 是否可用，避免在形状假设上返工。
+- [向量指令按行发散改为行块化，仅限等长逐元素链](vector_row_loop_block_batching_equal_length.md)：每行 5 条向量指令、64 行下来一段因子构建要 320 次调用；把 64 行合成 2×32 行块可降到 10 次，但只在“所有操作数等长、无标量参照”的纯逐元素链上安全。
+- [负结果：m200 的向量转置不能替代立方转置取操作数](whole_block_transpose_stays_on_cube.md)：Transpose 只吃连续 16×16 tile、v4dtrans 输出交错、BinaryRepeatParams 行广播被忽略——整块 [64,64] 转置仍应交给立方。
