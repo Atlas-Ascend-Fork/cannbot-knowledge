@@ -2,6 +2,7 @@
 
 CANN Runtime 主机侧 API 知识卡：接口语义、内部行为边界、错误场景与调用约束。
 
+- [API 映射](mappings/index.md)：CUDA Runtime/Driver 到 CANN 的候选接口、适配条件、兼容层差异与未映射范围。
 - [Device 管理](device_management/index.md)：Device 指定、信息查询、P2P 访问、资源限制与 Reset 相关接口（16 API）。
 - [Context 管理](context_management/index.md)：Context 创建、销毁、切换与查询接口（9 API）。
 - [Stream 管理](stream_management/index.md)：Stream 创建、销毁、同步、属性与异常处理接口（29 API）。

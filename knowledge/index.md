@@ -11,4 +11,4 @@ okf_version: "0.2"
 - [算子知识](ops/index.md)：按 DSL 隔离的算子知识入口。
 - [图知识](graph/index.md)：图领域知识入口。
 - [模型知识](model/index.md)：共 507 张知识卡，分布在 4 个子目录（embodied、inference、spatial 等）。
-- [Runtime 知识](runtime/index.md)：CANN Runtime 领域知识入口。
+- [Runtime 知识](runtime/index.md)：CANN Runtime API 及 CUDA 到 CANN 候选接口映射的知识入口。
