@@ -15,6 +15,9 @@ domains:
   contrib:
     description: 社区贡献的工程知识
     direct_types: []
+  tools:
+    description: CANN 工具的使用契约、产物结构与结论边界
+    direct_types: [concepts]
   ops:
     description: 算子语义、设计、实现、调试与优化
     direct_types: []

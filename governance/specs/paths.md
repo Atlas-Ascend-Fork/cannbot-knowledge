@@ -26,6 +26,7 @@ route 是 technology 或 scope 的统称。当前允许的组合如下：
 |---|---|---|
 | `common` | `platforms`, `toolchains`, `observability` | `glossaries` |
 | `contrib` | `ascendc` | 无 |
+| `tools` | 无 | `concepts` |
 | `ops` | `ascendc`, `catlass`, `catlass-dsl`, `triton`, `tilelang`, `pypto`, `shared` | 无 |
 | `graph` | `torch_compile`, `ge`, `shared` | 无 |
 | `model` | `inference`, `training`, `spatial`, `embodied` | 无 |
@@ -109,6 +110,7 @@ knowledge/ops/ascendc/guides/programming_guide/kernel_call.md
 knowledge/ops/triton/runbooks/compilation/missing_symbol.md
 knowledge/ops/shared/interoperability/triton_to_ascendc_tiling.md
 knowledge/runtime/runbooks/runtime/device_reset.md
+knowledge/tools/concepts/npu_check_usage.md
 ```
 
 非法路径：
@@ -117,6 +119,7 @@ knowledge/runtime/runbooks/runtime/device_reset.md
 knowledge/ops/apis/data_copy.md                     # 缺少 technology/scope
 knowledge/common/platforms/chip.md                  # 缺少路径 Profile
 knowledge/ops/ascendc/patterns/double_buffer.md     # 未注册 Profile
+knowledge/tools/npu_check_usage.md                 # tools 域只允许 concepts 直辖
 knowledge/ops/ascendc/runbooks/timeout.md           # 缺少 area
 knowledge/ops/ascendc/glossaries/source/api.md       # Glossary 不允许附加 section
 knowledge/graph/ascendc/concepts/kernel.md           # route 不属于 graph
