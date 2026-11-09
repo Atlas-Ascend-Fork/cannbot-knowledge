@@ -57,3 +57,18 @@
 - [MLA 长度 shape 正确仍需排查：owner 切片的 storage_offset 与 ND 存储容量](mla_metadata_exact_nd_storage.md)：从连续视图仍持有全 batch 存储的情况出发，核对长度张量的 stride、offset、storage 字节数及 metadata/attention 输入一致性；修复效果待目标 NPU 验证。
 - [DSpark 捕获报 aclrtMemcpy 107030：把 Attention metadata 的 Host 构造移到图外](npugraph_attention_metadata_host_copy.md)：在 DSpark GQA 的图外 prepare_decode_inputs 中准备长度张量与 Attention metadata，再传给 forward_spec_decode；固定容量属性并以张量携带动态长度，目标 NPU 验收仍待完成。
 - [Prefill CP 下 DSpark 草稿状态行序错位或越界](dspark_prefill_cp_state_rows.md)：DSpark 整批 proposal 保持集合通信形状一致，结束后按 output_request_indices 选状态行，写回按 output_idx 索引。
+
+- [vLLM Ascend Balance：调度副本漂移与测试 skip 的证据边界](vllm_ascend_balance_scheduler_version_drift.md)：在 release pin 升级后静态对照 BalanceScheduler 与 Scheduler，识别缺失的新参数/字段以及漂移测试 skip 不能证明兼容的情况。
+- [vLLM Ascend Balance：波次边界 sample_tokens 超时与 gather 缺席](vllm_ascend_balance_wave_collective_timeout.md)：在 DP balance 开启后以逐 rank 的 EngineCore 调用序列排查 sample_tokens 超时，区分 collective 参与缺失和 worker 计算问题。
+- [vLLM Ascend 批次不变性（batch-invariant）安装：completed但算子仍不可用](vllm_ascend_batch_invariant_install_false_success.md)：核对 build_batch_invariant_ops.sh 的 batch-invariant Python 环境、包版本与SoC/架构，分开验收run包、扩展wheel和运行注册；解释失败后仍可completed的路径。
+- [vLLM Ascend 启动报设备类型不匹配：校验安装包构建目标与运行时 SoC](vllm_ascend_build_runtime_device_mismatch.md)：定位 Current device type 与 installed version device type 不一致的初始化失败，区分构建元数据、运行时 SoC 和未知设备，给出匹配安装包的处置与验收。
+- [vLLM Ascend CaMem 映射/回调失败：VA、physical handle与GIL边界](vllm_ascend_camem_mapping_callback_failure.md)：按 camem_allocator.cpp 的 my_malloc、my_free、python_create_and_map、python_unmap_and_release 定位映射/释放失败，区分回调账本、VA预留、physical handle、Python状态与原始CANN错误。
+- [vLLM Ascend DSpark 加载失败：同 checkpoint 量化继承与 PP 隔离](vllm_ascend_dspark_draft_quant_loading.md)：排查草稿缺weight_offset、weight_scale、scale_bias等量化参数，区分同checkpoint草稿和独立草稿，核对MRv2配置重建、分区屏蔽、双模块绑定与异常恢复。
+- [vLLM Ascend ECCPU 初始化失败或mmap残留：能力探针、注册与关闭顺序](vllm_ascend_eccpu_pinned_mmap_lifecycle.md)：按 AscendECCPUWorker、supports_eccpu_offload 与 CANN编译探针排查pinned mmap/batch DMA拒绝，区分正常shutdown保留、构造失败cleanup和通用copy fallback。
+- [vLLM Ascend 首请求失败：假就绪与 Dynamo interpolate、contiguous 排查](vllm_ascend_first_request_false_ready.md)：排查服务假就绪与首请求失败，按 Dynamo interpolate 与 contiguous 错误、processor skip_tensor_conversion、MLA 和图捕获栈分层，验证同一文本或图文请求，区分 dummy 与真实权重证据。
+- [vLLM Ascend KPool空工作量：CANN哨兵、图重放与索引打包](vllm_ascend_kpool_empty_work_graph_contract.md)：排查KPool短分片或全padding时的CANN索引越界，按空查询与空池区分分支，保留图重放哨兵、原始位置索引及物理页stride。
+- [vLLM Ascend 旧执行计时配方排查：ProfileExecuteDuration 与孤立中文PO](vllm_ascend_legacy_profile_execute_duration.md)：遇到 VLLM_ASCEND_MODEL_EXECUTE_TIME_OBSERVE、capture_async 或 pop_captured_sync 旧配方时，区分孤立PO、版本化符号模板与当前实现，选择Profiler或框架链路采集并保留异步计时边界。
+- [vLLM Ascend MS Service Metric 指标缺失或旧值：recorder与EPLB热度口径](vllm_ascend_ms_metric_missing_or_stale.md)：围绕 safe_recording、register_metrics、latest_expert_hotness 排查无指标、旧值和异常imbalance，区分原函数失败、EP组rank0、策略提案与实际迁移收益。
+- [vLLM Ascend RFork 失败排障：注册内存保留、lease回报与seed退役](vllm_ascend_rfork_retained_memory_cleanup.md)：按 RForkTransferBackend、RForkSession 的注册与退役合同排查 fallback 拒绝、内存保留和 seed 不可发现，区分 READY、DEFERRED、SERVING、未决 lease、owner 与降频重试。
+- [Runtime Guard 配置不生效或 dump 连续触发：启动覆盖、热加载与水位控制](vllm_ascend_runtime_guard_controls.md)：按固定 runtime_config 契约排查启动JSON覆盖、热加载、配额和manual_dump水位，复核中文 runtime_config.po 字段差异、各DP有效值与D2H产物。
+- [vLLM Ascend 稀疏 Offload：共享层缓冲复用等待与丢失 ACK](vllm_ascend_sparse_buffer_ack_wait.md)：区分 Memcache save、远端读完成、请求终态和热缓冲 H2D，排查共享物理槽被过早复用或无限等待的机制。

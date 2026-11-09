@@ -4,3 +4,5 @@
 - [指南](guides/index.md)：共 35 张知识卡，分布在 5 个子目录（bringup、deployment、integration 等）。
 - [优化](optimizations/index.md)：共 156 张知识卡，分布在 4 个子目录（anti_patterns、benchmark_observations、cases 等）。
 - [故障手册](runbooks/index.md)：共 100 张知识卡，分布在 5 个子目录（compilation、performance、precision 等）。
+
+- [模型推理算子](operators/index.md)：共 1 张知识卡，分布在 1 个子目录（aclnn）。

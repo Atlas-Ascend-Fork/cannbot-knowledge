@@ -139,6 +139,27 @@ class RetrievalPreflightTests(unittest.TestCase):
         import json
         self.assertEqual(scoped["scope"], json.loads(arguments[arguments.index("--scope-json") + 1]))
 
+    def test_option_like_queries_round_trip_through_preflight_and_real_cli(self):
+        import importlib.util
+        from evals.run_retrieval import QUERY
+
+        spec = importlib.util.spec_from_file_location("preflight_query_arguments", QUERY)
+        query_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(query_module)
+        for text in ("--prefiller-ports", "-k", "--query=other", "不存在的查询"):
+            with self.subTest(query=text):
+                case = self.case("unknown", query=text)
+                case["filters"].update(match="literal", k=5)
+                parsed = query_module.build_parser().parse_args(query_arguments(case))
+                self.assertEqual(text, parsed.query)
+                self.assertEqual(["a3"], parsed.platform)
+                self.assertEqual(5, parsed.limit)
+                self.assertEqual("ready", self.check(case)["status"])
+                case.update(expected=[], expected_count=0)
+                from contextlib import redirect_stdout
+                with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                    self.assertEqual(0, run_cases({"cases": [case]}, {"repository": self.root}))
+
     def test_preflight_is_read_only_and_does_not_build_missing_index(self):
         files = [p for p in self.root.rglob("*") if p.is_file()]
         before = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}

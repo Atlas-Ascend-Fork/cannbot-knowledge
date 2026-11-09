@@ -7,3 +7,10 @@
 - [配了 enable_profiler 却拿不到 prefill profile：长输入超 moe_chunk_max_len 时被静默门控关闭](prefill_profiler_gated_off_long_input.md)：配了 enable_profiler 却拿不到 prefill profile：长输入超 moe_chunk_max_len 时被静默门控关闭。配置了 enable_profiler=True，却在 RES_PATH/prof/prefill 下拿不到 prefill 段 profile——而 prof/decode 正常有。不报错、不告警，profiling 静默缺失。
 
 - [跳过 Prefill 的 Decode 能跑通：只能验证执行与性能，不能验收生成精度](kimi_k3_decode_stub_accuracy_boundary.md)：区分 Kimi K3 的 skip_prefill 和历史 PD prefill stub，检查 cache 是否真实填充；全零 cache、占位 token 与强制均衡实验均需和真实请求验收分开。
+
+- [vLLM Ascend pytest 退出 0 仍回归：pass_fail JSON 与判据漏检](vllm_ascend_benchmark_verdict_contract.md)：追踪 nightly benchmark 的 accuracy、performance、spec_decode 和 pass_fail JSON，核对投机接受率的 Prometheus draft 计数器增量与逐位置阈值；检查 pytest 退出0、缺失结果、zip截断、二分消费者和报告标签，避免误报通过。 补多节点task_passed、无顶层pass_fail及报告身份/覆盖限制。
+- [vLLM Ascend 文档构建成功仍缺证据：中文转换与生成脚本](vllm_ascend_document_rendering_evidence.md)：核对163公开页面、固定源码/PO/宏及RTD部署身份，说明已解释排版缺陷、停止维护通知、英文回退与实际运行证据边界。
+- [vLLM Ascend Profiler 控制成功却无目标trace：生命周期、步数与配置差异](vllm_ascend_profiler_false_success.md)：沿 TorchNPUProfilerWrapper 与 vLLM WorkerProfiler 核对惰性创建、启动停止warning、active/running状态、Worker step时点、首次trace名和未接入的schedule字段，避免把控制返回当作采集完成。 补充请求级profiling签名预检、delay/max覆盖与REST/RPC会话占用，区分Worker结构检查、控制返回和实际trace。
+- [vLLM Ascend KV dump 不完整：arm、D2H、后台保存与缓存归因](vllm_ascend_runtime_guard_dump_incomplete.md)：追踪 DumpKvAction、KvCacheReader 和 _run_kv_dumps，排查有dumped日志却缺.pt、配额退款、manual水位与分片错层，核对block_ids、布局、K/V部件和异步保存。
+- [vLLM Ascend 斜杠命令：重跑、取消与回退的执行证据](vllm_ascend_slash_action_evidence.md)：斜杠取证区分PR命令鉴权、SHA选择、API受理和真实结果，定位重跑fallback、取消范围、回补撤销与日志归档缺证据。
+- [vLLM Ascend 结构化输出验收：schema、流式拼接与错误后恢复](vllm_ascend_structured_output_acceptance.md)：按 assert_structured_output、EMPLOYEE_SCHEMA 与接口fixture检验JSON Schema、regex、choice、grammar，核对32请求8线程、流式最终文本和400/422后续请求；区分测试定义与实际质量。

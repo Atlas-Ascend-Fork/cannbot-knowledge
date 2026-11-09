@@ -31,3 +31,17 @@
 - [MoE NaN 探针误报：只扫描 Dispatch 与 GMM 的有效专家行](moe_nan_probe_valid_rows.md)：仅按已确认的 packed 专家行裁剪探针，区分专家有效行与 Combine 有效请求行；复现按 shape 套用专家行数导致的漏报，并给出显式边界检查与 CPU 回归。
 - [NaN 诊断先报 DT_FLOAT8_E8M0：记录 scale 未检查，避免误判模型异常](nan_probe_e8m0_unsupported_comparison.md)：区分 aclnnEqScalar 不支持 E8M0 的诊断失败与模型 NaN；固定实验跳过不支持的 scale 检查并披露覆盖缺口，不以 eager 或数值 cast 假装解决。
 - [MXFP8 SwiGLU 后 MatMul 全 NaN：检查奇数 scale 的补齐字节](swiglu_mxfp8_scale_padding_nan.md)：在 950 MXFP8 融合量化路径中，区分有效 E8M0 scale 与偶数成对存储；未初始化补齐字节可能污染后续 QMM/GMM。
+
+- [vLLM Ascend GDN310P场景诊断：填充、接受长度与生产前提](vllm_ascend_310p_gdn_padding_readiness.md)：依据九个CPU场景诊断310P GDN状态或填充错位，核对PAD与NULL、accepted分层、容量和输出归属，区分参考测试与生产算子条件。
+- [vLLM Ascend DSpark 状态诊断：query宽度、有效KV长度与缓存组](vllm_ascend_dspark_query_kv_length_mismatch.md)：当DSpark拒绝采样后读到未写KV或满图padding错位时，区分K/K+1、实际draft长度和target上界，并按真实层到cache-group映射构建slot与图参数。
+- [vLLM Ascend DSpark 精度诊断：d2t 偏移、词表轴与概率导出](vllm_ascend_dspark_vocab_probability_space.md)：排查缩表DSpark的token越界、接受率异常或概率维度错配，区分MRv1 greedy回退与MRv2目标词表scatter，核对Markov反馈、独立head和top-k提案分布。
+- [vLLM Ascend GDN元数据验证：图回放场景与缓冲区诊断](vllm_ascend_gdn_graph_metadata_lifecycle.md)：依据CPU测试场景定位GDN图回放在batch收缩、无草稿或idle后的状态错位，核对FIA填充、请求与token容量、持久引用和Host清理归属，保留实机验证边界。
+- [vLLM Ascend GDN卷积权重诊断：注册、重载回调与状态观察](vllm_ascend_gdn_registered_conv_reload.md)：依据六个CPU测试场景诊断GDN packed卷积参数未刷新，核对LoRA base注册、meta占位、后处理重打包、地址和值及connector状态，保留真实加载边界。
+- [vLLM Ascend GLM RecoverSSM：图填充行、接受状态与稳定缓冲区诊断](vllm_ascend_glm_recoverssm_graph_metadata.md)：当GLM RecoverSSM在满图、混合prefill/decode或batch收缩后状态错位时，核对实际请求裁剪、持久buffer尾部清理和commit视图，区分占位接受数与采样结果。
+- [vLLM Ascend ModelSlim KV：recipe存在但未启用或scale被错误映射](vllm_ascend_modelslim_kv_recipe_selection.md)：区分FAKQuant、Indexer、INT8 C8和MXFP8 KV的使能与层选择，按当前引擎配置排查recipe误激活、遗留scale和错误Attention类。
+- [vLLM Ascend msprobe 精度定位：dump 配置、调度步与图模式采集](vllm_ascend_msprobe_dump_contract.md)：核对 PrecisionDebugger 与 AclGraphDumper 的配置、start/stop/step、真实调度和 dummy 路径，按 rank、输入及采样点对齐数值差异，防止把无 dump 或局部采集误判为精度通过。 PrecisionDebugger.start 的 scheduled_tokens 是调度采集的具体参数入口。
+- [vLLM Ascend MTP LM-head 归属：缺失权重、共享与 PP 嵌入](vllm_ascend_mtp_head_ownership.md)：排查MTP加载成功但logits或接受率异常，按真实loaded_weights、has_own_lm_head与Runner共享分支区分独立头、目标头和PP末阶段的本地embedding。
+- [vLLM Ascend MTP 精度：logits、递归隐状态与最终 RMSNorm](vllm_ascend_mtp_hidden_state_contract.md)：区分deepseek_mtp.py、Kimi K3、GLM5-Next的二元返回与V4原始HC Tensor，沿MRv1/MRv2核对logits折叠、归一化和feedback，避免错误状态交换与多层轮转推断。
+- [vLLM Ascend 双向Attention异常：causal标记与default mask分开核对](vllm_ascend_noncausal_mask_contract.md)：在Pooling/encoder新模型适配中排查非因果Attention仍被上三角mask遮挡，区分标准FIA、310P显式mask与具体dtype表示。
+- [vLLM Ascend 量化scale分片：MX组相位、预分片与block尾部](vllm_ascend_quant_scale_tp_sharding.md)：在TP后出现scale形状错误或静默精度偏差时，分别排查MX边界组、重复切片和把block scale误当bit packing的截断。
+- [vLLM Ascend logits_finite 告警归因：异步gate、NaN/Inf分类与请求行映射](vllm_ascend_runtime_guard_logits_attribution.md)：按 LogitsFiniteDetector 的预采样gate、延迟队列、finite_kind和_row_to_req解释告警，核对grammar修改、索引缺失的行号回退和丢弃路径，避免把未告警或ill_type=4直接解释成数值已通过或原始NaN。

@@ -11,3 +11,13 @@
 - [TorchAir](torchair.md)：当前 TorchAir GE 后端与独立 npugraph_ex 接口、模型特定组合限制、Decode 路由和性能归因边界。
 
 - [在线 PD 分离：控制面、缓存传输与阶段协商](online_pd_inference.md)：在线 PD 分离推理机制：A3 等平台的多机实例、DP 请求分发与 EP 模型前向，Prefill/Decode 控制面协商、逐 CacheEntry 的 KV 传输、投机元数据及资源释放。
+
+- [vLLM Ascend 插件架构：平台、通用注册与多进程初始化](vllm_ascend.md)：解释平台与通用插件注册、Worker与EngineCore补丁的进程安装、VLLM_VERSION版本门控及判断缓存；按真实符号、依赖和初始化时机核对。 对照旧指南核对惰性 ModelRegistry、debug 覆盖和 KV dtype 检查。 补充孤儿 getting_started.po 的插件定位和旧导航边界。 明确旧 Getting Started 的孤儿译文、同路径英文缺失与导航身份。
+- [vLLM Ascend ACLGraph：捕获桶、参数更新与重放时序](vllm_ascend_aclgraph_replay_lifecycle.md)：按ACLGraph中英文设计核对wrapper与上游dispatch分工、当前流/更新流顺序和full attention参数刷新，区分地址、指标与正确重放。
+- [vLLM Ascend Cohere 音频处理：CPU Mel、长度与处理缓存](vllm_ascend_cohere_audio_processor.md)：按固定原生代码核对 CohereASRFeatureExtractor、FilterbankFeatures 的采样率/形状、dither、精度、逻辑帧与占位token；CPU输入契约不扩展NPU支持。
+- [vLLM Ascend CP：虚拟块、请求布局与分片 Attention 合并](vllm_ascend_cp_cache_mapping.md)：依据CP中文设计与原图，解释0 or 1当前写入与历史缓存的区别，区分sparse和request块表范围，核对交织rank、indexer复制与LSE合并。
+- [vLLM Ascend 硬件能力契约：HardwareProfile、950DT 与 950PR 产品边界](vllm_ascend_hardware_profiles.md)：说明A2、A3、310P、950的身份、实现族与策略，区分安装表950DT产品声明和950PR待核对边界，沿构建目标、SoC与实际消费者验证能力。 补充孤儿 310p.po 的 DUO、Atlas 200I Pro、event-id 图数量与显式 mask 二次方内存边界。 说明 310P 的 max_model_len、FP16 mask 到 FRACTAL_NZ 的 OOM，2×L² 元素存储与 NZ 转换、512MiB、2GiB、8GiB 原始预算；Eco-Tech W8A8SC 的 8B、14B、32B，DUO 的 triton、triton-ascend 旧卸载，Atlas200IPro 的 root/host page cache 与 HBM，以及 #7394 的 Qwen3.5、Qwen3.6 预览边界。
+- [vLLM Ascend 输入元数据：请求索引、位置、块表与 slot mapping](vllm_ascend_input_attention_metadata.md)：按中英文输入示例区分每请求数量与token总数、词表ID/扁平索引/物理块和KV slot，用两轮chunked prefill校验元数据量纲，保留padding与专用路径边界。
+- [vLLM Suffix proposer：CPU后缀缓存、变长草稿与Ascend接线](vllm_ascend_suffix_proposer_contract.md)：核对v0.32 SuffixDecodingProposer的Arctic缓存、请求身份、CPU token输入、长度边界和stop_request，区分固定名义K与逐请求变长输出，再检查Ascend工厂和Runner传参。
+- [vLLM 模型状态协议：ModelState、专有元数据与采样扩展](vllm_model_state_protocol.md)：沿 ModelState、ModelSpecificAttnMetadata 和 DefaultModelState 区分抽象入口、请求状态、任务列表、自定义采样器与 bonus token，核对 prompt/MM 嵌入的有效行、填充视图及 Ascend 扩展边界。
+- [vLLM 多模态输入归一化（Multimodal Input Norm）：参数工厂与后端分派](vllm_multimodal_input_norm_contract.md)：解释 FusedMMInputNorm 的 rescale/mean/std 折叠、processor 配置回退、容差恒等判断、视觉 dtype 转换及 CUDA/XPU/OOT 分派，区分框架数学合同与具体后端执行和性能证据。

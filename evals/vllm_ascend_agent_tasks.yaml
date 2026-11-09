@@ -1,0 +1,143 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+schema_version: 1
+purpose: 只读知识消费的独立任务验收；评估适配与优化决策，不代表全部硬件或模型已验证。
+frozen_at_utc: "2026-11-03T09:37:43Z"
+scenario_policy: 所有输入中的观察和数值都是题设，不是本仓或本次 Agent 的硬件实验结果。
+consumer_protocol:
+  access:
+  - 每个独立 consumer 只接收本协议和分配的 case；不得读取评分材料、其他 consumer 的答案或历史验收产物。
+  - 先阅读仓库 AGENTS.md 与 .agents/skills/knowledge-query/SKILL.md；只读当前知识库和 Query，不修改知识、索引、治理、测试或上游源码。
+  - 不联网获取新资料，不安装依赖，不导入或执行上游实现，不启动服务、外部存储、NPU、评测或压测。本次交付为有证据的决策与后续验证计划。
+  retrieval:
+  - 实际执行 discover 和针对当前判断的 Query search；自行组织查询，不预先提供目标卡、查询词、排名、k 或答案。每次 search 用 --receipt 写入调用方指定实验目录的全新路径，保留实际命令、退出码和原始结果。
+  - A2、A3、310P、950DT 分别按知识仓平台注册身份查询；多目标分开核对。仅使用明确条件，不凭推测构造 Scope，不把 Scope 缺字段当作不支持。
+  - 需要 draft 或空平台证据时按 Query 的合法补搜方式单独取证，保留平台和版本待确认边界；召回、stable 或注册名均不等于模型可用或收益已验证。
+  - 对最终引用的每张卡完整读取 Frontmatter 和正文，分页或截断须补齐；按需沿链接补证。最终 evidence 使用仓库相对路径和实际行号，不以搜索摘要充当证据。
+  - Query 缺失、损坏或 stale 时停止，记录错误并报告基础设施阻塞；不得重建索引，也不得用全库文本扫描替代实际 Query。
+  reasoning:
+  - 区分题设、知识事实、工程推断、待执行验证和未知；不能把计划写成已运行结果。
+  - case 给出的 Ascend revision 是技术判断基线；实际 Native commit、CANN、TorchNPU、权重或外部包未提供时保留未知并说明确认办法，不把卡片参考版本冒充实际部署版本。
+  - 交付能执行的最小步骤、比较口径、停止或回退条件；来源不足时缩小结论，禁止编造硬件支持、性能、精度或恢复成功。
+  output:
+    format: 每个 case 输出一个 JSON 对象，不在 JSON 外添加结论；独立保存实际工具轨迹供评审。
+    required_keys:
+    - case_id
+    - decision
+    - version_hardware
+    - evidence
+    - steps
+    - stop_conditions
+    - unknowns
+    field_contract:
+      case_id: 与输入 id 相同的字符串。
+      decision: 直接回答业务决策的字符串；计算表、组合裁决或阶段状态可在此用清晰文本表达。
+      version_hardware: 对象，区分题设 Ascend revision、实际 Native revision、目标硬件、参考版本及未确认软件或权重身份。
+      evidence: '数组，每项为 {path, line_start, line_end, claim}；claim 说明该段实际支持的判断，行号从 1 开始且包含两端。'
+      steps: 字符串数组；包含实际 Query 与完整读卡记录的摘要，再列有顺序的后续行动与预期观察。工具轨迹保留完整原始输出。
+      stop_conditions: 字符串数组；列出使结论停止、实验不可比或需要回退的具体触发条件。
+      unknowns: 字符串数组；未知必须说明影响与下一项所需证据，无未知时才可为空。
+cases:
+- id: agent_task_01
+  business_goal: 为 Qwen4 实验 decoder 的压缩选择适配评审提供边界判断，避免长上下文与多请求的静默错位。
+  inputs:
+    ascend_revision: 3164adc8fe75892fbf7f99f524bb72fddf1e6efd
+    target_hardware: A3；实验实现的具体产品支持尚未确认。
+    native_revision: 未提供，禁止执行模型或算子。
+    scenario: 压缩比例为 4；position 表示所属 request 的零基逻辑 token 位置。以下数值是离线元数据边界探针，实际请求合法性尚未核验；业务要求消除组边界少选、长请求选择预算和跨 request 长度污染。
+    samples:
+    - {position: 2, request_seq_len: 16}
+    - {position: 3, request_seq_len: 16}
+    - {position: 4, request_seq_len: 16}
+    - {position: 6, request_seq_len: 16}
+    - {position: 7, request_seq_len: 16}
+    - {position: 8, request_seq_len: 16}
+    - {position: 7, request_seq_len: 4}
+    - {position: 6, request_seq_len: 6}
+    - {position: 4095, request_seq_len: 4096}
+  deliverables:
+  - 逐样本给出选择链各阶段应核对的完整组数量、可写组预算与 residual token 索引；区分算术结果与实际输入准入，解释 request 长度限制。
+  - 提出 CPU 可复核的算术边界检查和后续设备正确性证据；不能将算术检查写成 NPU 数值通过。
+- id: agent_task_02
+  business_goal: 设计可信的 FlashComm 关闭对照，判断一次 MoE 性能实验是否真的比较了开关两态。
+  inputs:
+    ascend_revisions:
+    - ceac1a2bdff3139ca8fbd1a60b3a9befd68cadf2
+    - 3164adc8fe75892fbf7f99f524bb72fddf1e6efd
+    target_hardware: A2，DP1、TP8、EP 开启；功能在实际产品上的验证记录未提供。
+    native_revision: 未提供。
+    scenario: 两个版本的关闭组均设置 additional_config.enable_flashcomm1=false，但所有 worker 继承 VLLM_ASCEND_ENABLE_FLASHCOMM1=' TRUE '。旧版本另外设置 enable_dsa_cp=true，新版本草案也包含同名字段。另有一组 JSON 为 true、env 为 '0'。
+  deliverables:
+  - 分版本判断这些配置是否足以构成关闭组，给出可审核的关闭和开启对照输入、实际生效证据与迁移处理。
+  - 说明 DP1、TP/EP、有效 token 布局和融合设置如何影响对照资格；保留不能由当前来源证明的平台或收益结论。
+- id: agent_task_03
+  business_goal: 为一个尚未注册的新 dense decoder 制定 A2 与 310P 的适配交付计划，支持后续逐阶段验收。
+  inputs:
+    ascend_revision: ceac1a2bdff3139ca8fbd1a60b3a9befd68cadf2
+    target_hardware: A2 与 Atlas 300I DUO（310P），分别评估。
+    native_revision: 业务只称 v0.32，实际 commit 未提供。
+    model: 新的 decoder-only 架构，标准 causal attention、RoPE、无专家、无递归状态、无多模态；checkpoint/config/weight index 尚未交付。
+    scenario: 当前只保存 architecture 注册名与 dummy 构造通过记录。模型实现来自含 get_input_embeddings 与旧 Attention 导入的模板，尚无逐层 prefix 审核；业务同时要求两类硬件达到 128k、batch16，并希望启用图。
+  deliverables:
+  - 判定当前完成到哪个阶段；分别列出两类硬件的模型协议、注册进程、权重、Attention/KV、Worker/Runner 和容量确认步骤。
+  - 给出 dummy、真实权重首请求、功能/精度及性能各阶段的证据与停止条件；对 EP、MTP、图等项区分不适用、缺 checkpoint、未验证和明确限制。
+- id: agent_task_04
+  business_goal: 在上线排期前裁决 Qwen4 实验服务的长上下文与缓存节省方案，避免把可配置项拼成未经支持的组合。
+  inputs:
+    ascend_revision: 3164adc8fe75892fbf7f99f524bb72fddf1e6efd
+    target_hardware: A3，具体 SKU、CANN GBSA 包和 Native commit 尚未提供。
+    scenario: 目标配置同时包含 PCP2、DCP2、主 Attention KV INT8；评审材料只有后端通用量化枚举中的 INT8 条目。prefill 有一个从 23000 延伸到 25000 token 的 chunk，随后继续一个 chunk；另有 decode query_len=1。
+  deliverables:
+  - 分别裁决三个配置及其组合，说明能否据通用枚举宣布本模型支持；给出能继续验证的最小候选与保留未知。
+  - 判断两个 prefill chunk 与 decode 请求的派发应如何核对，说明 phase 判断依据，列出混合 batch、缓存和数值验证要求。
+- id: agent_task_05
+  business_goal: 为 950DT 上一次 MoE decode TPOT 回退制定可比较、可归因的最小实验，决定是否保留候选优化。
+  inputs:
+    ascend_revision: ceac1a2bdff3139ca8fbd1a60b3a9befd68cadf2
+    target_hardware: 950DT，8 卡，DP1、TP8、EP 开启。
+    native_revision: 未提供；模型/checkpoint、CANN 与 TorchNPU 的准确身份待确认。
+    baseline: 题设基线 TPOT 54ms，并发16、输入8k/输出512、关闭图和 FlashComm。
+    candidate: 题设候选 TPOT 62ms，并发32、输入8k/输出1024，同时打开图和 FlashComm；只有均值，未保留失败请求、冷暖状态或实际 Runner。
+    constraint: 当前没有 NPU 执行权限，只交付实验计划和可否归因的判断；后续预算优先验证业务尾延迟与质量。
+  deliverables:
+  - 判断现有两个数字能证明什么；给出有顺序的对照矩阵、固定条件、重复/运行顺序及保留的原始指标。
+  - 说明如何区分服务排队/host、计算和通信的线索，如何用实际执行路径验证优化落地，以及何时关闭采集后再测或回退。
+- id: agent_task_06
+  business_goal: 评审 ModelSlim W4A8 dense Linear 的共享输入优化，在接受内存优化前排除跨投影污染和 bias 数值错误。
+  inputs:
+    ascend_revision: 3164adc8fe75892fbf7f99f524bb72fddf1e6efd
+    target_hardware: A2 作为拟验证目标；实验分支具体硬件和 CANN 支持未确认。
+    native_revision: 未提供。
+    checkpoint: 题设为 ModelSlim per-channel 对称 INT4，动态逐 token INT8，weight_offset 全零；另有真实非零模型 bias。
+    scenario: 两个投影共享同一个二维 PreparedLinearInput；候选优化后第二投影输出随调用顺序变化，含真实非零 bias 的样本还出现额外偏差。局部输出 N=80、K=128，格式与 scale 处理记录缺失；row parallel 的 TP 候选为 4 和 32。
+  deliverables:
+  - 给出共享输入、两类 bias、格式与 TP 候选应遵守的协议，解释哪些观察需要继续定位，以及必须保留的权重/scale/storage 契约。
+  - 提出空输入、多个 consumer、图多轮和 row/column parallel 的验证计划；用独立数值对照区分量化补偿与真实 bias，保留未运行的设备结论。
+- id: agent_task_07
+  business_goal: 审核新模型发布验收是否闭合，避免将服务可响应、pytest 成功或报告标签当作精度和性能达标。
+  inputs:
+    ascend_revision: ceac1a2bdff3139ca8fbd1a60b3a9befd68cadf2
+    target_hardware: A2；报告硬件标签来自 CI runner 名，实际设备日志未提供。
+    native_revision: 未提供。
+    scenario: 在线 API 200 且返回非空；pytest exit0。多节点 JSON 只有 nested task fail、没有顶层 pass_fail；另一次工具 verdict 为 PASS。报告 vllm_ascend_version 写 main，tokenizer_path 指向旧目录，未保存 revision；模型报告目录被两次 TP/量化实验共用。精度材料只有 limit=10 的汇总分和一个从未实际执行的比较配置。
+  deliverables:
+  - 逐项裁决这些信号足以证明什么，解释工具 PASS 与业务通过之间尚缺的证据，并给出本次可作出的发布判断。
+  - 列出身份、tokenizer/模板、数据/答案处理、有效参数、case 完整性、原始结果与报告隔离的最小补证步骤；区分模型 lm-eval 与 nightly benchmark 判据。
+- id: agent_task_08
+  business_goal: 为混合 Attention/递归状态 decoder 的外部缓存恢复建立可审核证据，判断能否从当前观测宣布恢复成功。
+  inputs:
+    ascend_revision: ceac1a2bdff3139ca8fbd1a60b3a9befd68cadf2
+    target_hardware: A2；实际 Native manager、外部存储包与 SDK 版本未提供。
+    topology: 同 TP 的单实例，多个 cache group、不同块长，含 FullAttention 与 Mamba-like 状态；外部后端拟选 Mooncake block-key 逐层路径。
+    scenario: 日志称两个组分别 hit512 与 hit384，服务输出与冷缓存相同，层 event 已置位；留存对象标识只有旧 token-hash key。尚无 request/group/family 到真实 copy、commit、失败与取消记录的关联；同一物理缓冲被多个逻辑层引用。
+  deliverables:
+  - 裁决能否宣布完整恢复、如何决定可共同恢复的前缀、哪些状态或布局还需确认，说明当前三类观察对恢复结论的证明强度。
+  - 给出对象身份、组/层地址、发布、加载、共享槽复用及取消/重试的证据链和故障用例，说明性能比较的前置条件与停止/回退点。

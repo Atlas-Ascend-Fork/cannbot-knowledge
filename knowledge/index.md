@@ -8,6 +8,7 @@ okf_version: "0.2"
 
 - [公共知识](common/index.md)：跨领域公共知识入口。
 - [社区贡献](contrib/index.md)：社区贡献的工程知识入口。
+- [工具知识](tools/index.md)：CANN 工具的使用契约、产物结构与结论边界入口。
 - [算子知识](ops/index.md)：按 DSL 隔离的算子知识入口。
 - [图知识](graph/index.md)：图领域知识入口。
 - [模型知识](model/index.md)：共 507 张知识卡，分布在 4 个子目录（embodied、inference、spatial 等）。

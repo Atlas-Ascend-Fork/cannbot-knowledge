@@ -127,3 +127,6 @@
 - [MLA 访存 / 显存优化：Decode 权重吸收（absorb）与 latent-KV，稀疏 Prefill 的计算访存取舍](mla_weight_absorption_latent_kv.md)：面向 MLA Decode 低时延或 KV 显存压力的选型入口：权重吸收把逐 head GEMV 转为 GEMM，latent-KV 保留压缩缓存；稀疏 Prefill 需另外权衡计算与访存。收益依赖具体 shape 和内核，来源分析值不等于独立实测。
 
 - [Kimi K3：投机验证后按接受长度提交 ReplaySSM 状态](kimi_k3_replayssm_state_commit.md)：在 950 Kimi K3 Decode/DSpark 路径中，以 checkpoint 与 replay 数据替代逐候选完整状态快照，并保留明确的开关、形状及回退条件。
+
+- [vLLM Ascend Runner 选择规则：V2 默认、功能回退与环境覆盖](vllm_ascend_model_runner_selection.md)：按环境覆盖、功能排除表和Worker选择实际Runner，区分V1 PP异步允许列表与async_scheduling默认关闭、V2验证patch和各进程安装时序；回退不代替模型/硬件性能验收。
+- [vLLM Ascend 原生 FP8：block scale、950 重组与浮点回退预算](vllm_ascend_native_fp8_execution.md)：对原生 block-wise FP8 权重按硬件和层形态选择 MXFP8 重组或模型 dtype 展开，检查 scale 配对、归约维整除和 MLA 吸收层，避免按磁盘位宽估算显存。

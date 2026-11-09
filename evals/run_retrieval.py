@@ -40,7 +40,8 @@ CASES = ROOT / "evals/retrieval_cases.yaml"
 
 def query_arguments(case: dict) -> list[str]:
     """Use identical query arguments for preflight and the actual execution."""
-    arguments = ["search", "--query", str(case["query"]), "--json"]
+    # Bind the value so option-like text remains query data for argparse.
+    arguments = ["search", f"--query={case['query']}", "--json"]
     filters = case.get("filters", {})
     if not isinstance(filters, dict) or any(not isinstance(key, str) for key in filters):
         raise ValueError("case.filters must be an object with string keys")
