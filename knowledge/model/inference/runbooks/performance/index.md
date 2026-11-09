@@ -19,4 +19,6 @@
 - [FlashKDA Prefill 小算子与 padding 冗余：核对 packed TND 和分块状态交接](flash_kda_packed_tnd_prefill.md)：仅在启用 FlashKDA 且 lower_bound 非空时，将逐请求 BSND 路线改为 packed TND；保留请求边界、FP32 state 与 SP 去补齐契约，其他配置继续使用参考实现。
 - [MTP/DSpark 开启 Profiling 后 Decode 平均时延失真或显示零](post_profile_decode_latency.md)：在 MTP/DSpark 的统计分支中检查计时窗口、接受长度与实际输出数是否对齐，使用 post-profile 统计并在空窗口时回退完整 Decode 数据。
 
+- [Attention元数据复用：限定step与请求布局](deepseek_v41_attention_step_metadata_reuse_boundaries.md)：Attention元数据仅可在相同step、请求行序和完整依赖布局内复用；按实际metadata builder/backend核对失效条件，recipes键名及事件不作框架通用协议。
+- [参考Attention显存膨胀：检查物化张量与原位复用](deepseek_v41_sparse_attention_reference_temporary_memory.md)：参考张量路径显存不足时，按真实物化与存活期定位峰值；原位复用需有限输入和无旧值依赖，历史三处补丁不证明当前融合内核收益。
 - [vLLM Ascend CPP 校准排障：无计时、拟合失败与停采判据](vllm_ascend_cpp_calibration_timing_missing.md)：沿 _record_execution_timing 核对 startup ready、execution_time_ms、history_fitted/with_history_ready 和 disable_profiling_timing，区分样本缺失、停止拟合与真正可用的时延模型。

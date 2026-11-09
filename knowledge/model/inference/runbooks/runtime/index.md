@@ -58,6 +58,24 @@
 - [DSpark 捕获报 aclrtMemcpy 107030：把 Attention metadata 的 Host 构造移到图外](npugraph_attention_metadata_host_copy.md)：在 DSpark GQA 的图外 prepare_decode_inputs 中准备长度张量与 Attention metadata，再传给 forward_spec_decode；固定容量属性并以张量携带动态长度，目标 NPU 验收仍待完成。
 - [Prefill CP 下 DSpark 草稿状态行序错位或越界](dspark_prefill_cp_state_rows.md)：DSpark 整批 proposal 保持集合通信形状一致，结束后按 output_request_indices 选状态行，写回按 output_idx 索引。
 
+- [持久中间状态缓存错行：核对请求、位置与物理槽](deepseek_v41_compressor_ring_state_request_mapping.md)：跨步中间状态异常时，分别核对请求所有权、逻辑位置、物理槽和释放时机；单块RingCache与slot公式仅适用于本文recipes方案。
+- [recipes专用：CP到DSpark的请求尾窗交接](deepseek_v41_cp_dspark_tail_handoff.md)：recipes CANN Executor参考实现专用：仅在所列CP分段、DSpark worker与配置guard下，按请求交接token/hidden尾窗和完整提示词绝对位置。
+- [recipes专用：预填充实例的原权重释放策略](deepseek_v41_deepgemm_prefill_weight_release_lifecycle.md)：recipes/CANN Executor专用：静态PREFILL实例在转换后释放原权重；PREFILL/NONE不是batch阶段，不能据此指导vLLM按当前prefill/decode释放参数。
+- [recipes专用：DSpark专家配置字段映射](deepseek_v41_dspark_expert_config_alias.md)：仅适用于 recipes/CANN Executor 的 DSpark 字段适配：核对草稿专家 top-k 别名、缺键优先级及 MoE helper/框架计数两处读取差异。
+- [recipes专用：主模型与草稿的专家通信域隔离](deepseek_v41_dspark_independent_ep_domains.md)：仅适用于 recipes/CANN Executor 的 DSpark MC2/MegaMoE 隔离策略：核对禁止物理复用、实际通信对象及按模型角色选择的消费者。
+- [权重键名不匹配：核对参数对象与实际加载覆盖](deepseek_v41_dspark_weight_namespace.md)：checkpoint 键名不匹配时，沿自身模型的参数 identity、weight loader 分派与实际加载覆盖核对；DSpark 替换表和 required 清单仅是 recipes 案例。
+- [量化嵌入表Host卸载：保持查表行与scale配对](deepseek_v41_engram_mxfp8_host_offload_scale_fetch.md)：接口条件：查表式Host卸载须让全局行号、量化值、scale和异步完成配套；ElasticBuffer是本文Engram接口，并非普通CPU权重卸载。
+- [异步预计算提前读取：让消费流等待对应结果](deepseek_v41_engram_precompute_ready_event_dependency.md)：可迁移机制：预计算按结果身份建立生产完成到消费的依赖，并另查生命周期；ready、ev5与GE helper仅为本文recipes实例。
+- [recipes专用：Engram预计算结果的后端协议](deepseek_v41_engram_prefill_tilelang_tuple_contract.md)：recipes/CANN Executor专用：Engram的native三元组与TileLang Prefill二元组须按同一适配分支生产消费；并非TileLang或vLLM标准协议。
+- [融合Indexer前处理：核对输入阶段与权重布局](deepseek_v41_indexer_prologue_rope_weight_abi.md)：融合Indexer接口诊断：先确认输入所处阶段、RoPE与量化scale合同，再按实际后端匹配权重方向和物理格式；NZ仅适用于本文Ascend接口。
+- [量化Indexer缓存错读：区分独立scale与合并记录](deepseek_v41_indexer_qli_qsli_cache_layout_contract.md)：Indexer接口诊断：仅匹配本文QLI/QSLI及K writer时使用split/combined规则；须联合验证scale编码、候选单位、实际slot分支与生产消费版本。
+- [recipes专用：低时延TP的Q-B与MLA/LI配对](deepseek_v41_low_latency_tp_layout.md)：仅适用于 recipes/CANN Executor 的 low_latency_tp 路径：按实际 Q-B consumer、MLA/LI 配对及 O/sink 分片核对配置和布局。
+- [recipes专用：草稿Markov头的独立TP配置](deepseek_v41_markov_lmhead_independent_tp.md)：仅适用于 recipes/CANN Executor 的 DSpark Markov 头：分别核对 embedding、词表修正头与主 LM head 的 TP、token 行及重组通信。
+- [recipes专用：shared分支与GMM1的事件排程](deepseek_v41_moe_shared_gmm1_event_order.md)：recipes/CANN Executor专用：核对low_latency_tp的shared分段流水、GMM1资源等待与Finalize数据依赖，非其他框架通用事件图。
+- [MoE分组表切换：路由与两次矩乘须采用同一语义](deepseek_v41_moe_tp_sparse_grouplist_contract.md)：接口条件：专家行段表示须由路由、两次专家矩乘与激活共同遵守；type2 的编号/计数仅指本文 recipes 算子 ABI。
+- [recipes专用：抓图预检开关的类型与模式](deepseek_v41_npugraph_capture_validation_guard.md)：仅适用于 recipes/CANN Executor 的 unsafe_skip_npugraph_capture_validation：核对真实 bool 与 npugraph_ex 传参边界，保持默认预检。
+- [TP投影token数不等：通信前补齐并保留有效行](deepseek_v41_oproj_prefill_equal_tokens.md)：TP投影采用等分collective且各rank token数不同时，先达成统一通信长度并保留有效行映射；变长split或其他通信协议按自身合同处理。
+- [量化KV缓存读写错配：按字节布局核对接口](deepseek_v41_window_quant_cache_storage_view_contract.md)：量化KV接口诊断：仅当writer/reader的dtype、MX组、BF16 scale与行字节布局匹配时采用本文规则；其他缓存格式先核对自身合同。
 - [vLLM Ascend Balance：调度副本漂移与测试 skip 的证据边界](vllm_ascend_balance_scheduler_version_drift.md)：在 release pin 升级后静态对照 BalanceScheduler 与 Scheduler，识别缺失的新参数/字段以及漂移测试 skip 不能证明兼容的情况。
 - [vLLM Ascend Balance：波次边界 sample_tokens 超时与 gather 缺席](vllm_ascend_balance_wave_collective_timeout.md)：在 DP balance 开启后以逐 rank 的 EngineCore 调用序列排查 sample_tokens 超时，区分 collective 参与缺失和 worker 计算问题。
 - [vLLM Ascend 批次不变性（batch-invariant）安装：completed但算子仍不可用](vllm_ascend_batch_invariant_install_false_success.md)：核对 build_batch_invariant_ops.sh 的 batch-invariant Python 环境、包版本与SoC/架构，分开验收run包、扩展wheel和运行注册；解释失败后仍可completed的路径。

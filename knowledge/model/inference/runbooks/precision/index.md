@@ -32,6 +32,13 @@
 - [NaN 诊断先报 DT_FLOAT8_E8M0：记录 scale 未检查，避免误判模型异常](nan_probe_e8m0_unsupported_comparison.md)：区分 aclnnEqScalar 不支持 E8M0 的诊断失败与模型 NaN；固定实验跳过不支持的 scale 检查并披露覆盖缺口，不以 eager 或数值 cast 假装解决。
 - [MXFP8 SwiGLU 后 MatMul 全 NaN：检查奇数 scale 的补齐字节](swiglu_mxfp8_scale_padding_nan.md)：在 950 MXFP8 融合量化路径中，区分有效 E8M0 scale 与偶数成对存储；未初始化补齐字节可能污染后续 QMM/GMM。
 
+- [MoE后端scale打包：区分字节表示与消费协议](deepseek_v41_deepgemm_e8m0_pair_pack_contract.md)：接口条件：先核对目标MoE后端的scale ABI；相邻E8M0字节成对int16打包仅是本文recipes Ascend包装层约定，并非所有DeepGEMM标准。
+- [历史哈希跨边界：隔离请求并遵守图像截断语义](deepseek_v41_engram_prefix_request_image_padding.md)：可迁移机制：packed历史按请求隔离、有效长度与存储步长分开；图像截断、engram_pad_id与token_map仅依本文Engram模型语义成立。
+- [融合MoE重复相加：确认shared输出贡献归属](deepseek_v41_megamoe_shared_once_contract.md)：可迁移机制：按返回值合同确定routed与shared的唯一合并出口；整批忽略chunk、dummy整行丢弃仅为本文MegaMoE接口条件。
+- [非均匀TP权重加载：用累计偏移对应逻辑通道](deepseek_v41_moe_mx_nonuniform_tp_weight_offsets.md)：可迁移机制：非均匀分片用前缀和确定逻辑区间，再按权重与scale的实际存储轴换算；128对齐仅为本文MX实现条件。
+- [FP8块scale转换：按目标行组布局逐字节展开](deepseek_v41_mxfp8_scale_row_expansion.md)：仅在数据字节编码不变且目标把 32×32 块 scale 改为每行 1×32 组时，按输出行逐字节展开；文件筛选与键名规则仅是 recipes 转换器条件。
+- [量化排除列表失效：核对读取点与权重所有者](deepseek_v41_quant_ignore_source_layers.md)：量化排除规则未生效时，沿自身框架的配置读取链和参数所有权核对；源层列表、嵌套处理与组格式仅是 recipes 转换器对照。
+- [稀疏Attention无效候选：安全索引与归一化屏蔽](deepseek_v41_sparse_attention_invalid_candidate_mask.md)：候选含无效槽时，分别验证地址安全、softmax参与资格与Value贡献；可迁移的是不变量，-1及sink公式仅属历史参考接口。
 - [vLLM Ascend GDN310P场景诊断：填充、接受长度与生产前提](vllm_ascend_310p_gdn_padding_readiness.md)：依据九个CPU场景诊断310P GDN状态或填充错位，核对PAD与NULL、accepted分层、容量和输出归属，区分参考测试与生产算子条件。
 - [vLLM Ascend DSpark 状态诊断：query宽度、有效KV长度与缓存组](vllm_ascend_dspark_query_kv_length_mismatch.md)：当DSpark拒绝采样后读到未写KV或满图padding错位时，区分K/K+1、实际draft长度和target上界，并按真实层到cache-group映射构建slot与图参数。
 - [vLLM Ascend DSpark 精度诊断：d2t 偏移、词表轴与概率导出](vllm_ascend_dspark_vocab_probability_space.md)：排查缩表DSpark的token越界、接受率异常或概率维度错配，区分MRv1 greedy回退与MRv2目标词表scatter，核对Markov反馈、独立head和top-k提案分布。
