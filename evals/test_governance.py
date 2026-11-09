@@ -95,6 +95,7 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/graph/ge/apis/graph_api.md": ("graph", "ge"),
             "knowledge/ops/ascendc/apis/basic_api/data_copy/example.md": ("ops", "ascendc"),
             "knowledge/ops/ascendc/guides/programming_guide/example.md": ("ops", "ascendc"),
+            "knowledge/ops/ascendc/debugging/aicore/ez9999_routing.md": ("ops", "ascendc"),
             "knowledge/ops/ascendc/operators/aclnn/nn/activation/gelu.md": ("ops", "ascendc"),
             "knowledge/ops/ascendc/operators/direct/transformer/gmm/grouped_matmul.md": ("ops", "ascendc"),
             "knowledge/model/inference/concepts/serving.md": ("model", "inference"),
@@ -120,6 +121,7 @@ class RouteContractTests(unittest.TestCase):
             "apis": "API",
             "examples": "Example",
             "guides": "Guide",
+            "debugging": "Guide",
             "operators": "Operator",
             "optimizations": "Optimization",
             "runbooks": "Runbook",
@@ -299,6 +301,8 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/contrib/triton/apis/unregistered_route.md",
             "knowledge/model/shared/concepts/cross_scope.md",
             "knowledge/ops/ascendc/runbooks/timeout.md",
+            "knowledge/ops/ascendc/guides/debugging/aicore/two_profiles.md",
+            "knowledge/tools/debugging/npu_check.md",
         )
         for value in cases:
             with self.subTest(path=value), self.assertRaises(ValueError):
@@ -311,6 +315,7 @@ class RouteContractTests(unittest.TestCase):
         expected = {
             "knowledge/common",
             "knowledge/contrib",
+            "knowledge/tools",
             "knowledge/graph",
             "knowledge/model",
             "knowledge/model/inference",
@@ -452,6 +457,23 @@ class RouteContractTests(unittest.TestCase):
         metadata["type"] = "Concept"
         issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
         self.assertIn("frontmatter.type", {issue.code for issue in issues})
+
+    def test_debugging_profile_uses_guide_fields_and_rejects_other_types(self) -> None:
+        relative = Path("knowledge/ops/ascendc/debugging/aicore/ez9999_routing.md")
+        guide_metadata = dict(SYNTHETIC_API_METADATA)
+        guide_metadata["tags"] = ["task.debugging", "topic.implementation.error_handling"]
+        guide_metadata["type"] = "Guide"
+        guide_metadata["cann_versions"] = ["9.1.0"]
+        guide_metadata["aliases"] = ["EZ9999", "aicore error"]
+        self.assertEqual(
+            [], self.contract.validate_card(relative, guide_metadata, "# EZ9999\n")
+        )
+        for wrong_type in ("Concept", "Runbook"):
+            with self.subTest(type=wrong_type):
+                metadata = dict(guide_metadata)
+                metadata["type"] = wrong_type
+                issues = self.contract.validate_card(relative, metadata, "# EZ9999\n")
+                self.assertIn("frontmatter.type", {issue.code for issue in issues})
 
     def test_profile_is_the_only_top_level_required_source(self) -> None:
         self.assertNotIn("required", self.contract.schema)

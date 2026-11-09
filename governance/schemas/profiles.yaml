@@ -35,6 +35,10 @@ profiles:
     okf_type: Guide
     required: [platforms]
     optional: [cann_versions, aliases, verified, replaced_by, scope]
+  debugging:
+    okf_type: Guide
+    required: [platforms]
+    optional: [cann_versions, aliases, verified, replaced_by, scope]
   operators:
     okf_type: Operator
     required: [platforms]

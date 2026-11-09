@@ -19,7 +19,14 @@ from ..knowledge import Contract, Issue, PathInfo
 
 
 ID_RE = re.compile(r"^[a-z0-9_]+$")
-FREELY_NESTED_PROFILES = {"apis", "concepts", "examples", "guides", "optimizations"}
+FREELY_NESTED_PROFILES = {
+    "apis",
+    "concepts",
+    "debugging",
+    "examples",
+    "guides",
+    "optimizations",
+}
 
 
 def validate_topic_sections(contract: Contract, domain, route, profile, sections) -> None:

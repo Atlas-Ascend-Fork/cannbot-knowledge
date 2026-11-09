@@ -48,6 +48,7 @@ Registry 允许某种组合，只表示工具能够识别它，不表示仓库�
 | `apis/` | 接口签名、语义、约束和适用范围 | 完整算子实现 |
 | `examples/` | 能说明输入、输出和验证方式的最小样例 | 缺少上下文的代码片段 |
 | `guides/` | 围绕一个开发任务组织的原理、步骤、约束和验证入口 | 单个 API 参数表或按症状处置的 Runbook |
+| `debugging/` | 按问题域组织的调试总纲：分诊流程、判定纪律与诊断方法 | 单个 API 参数表或未形成操作闭环的背景说明 |
 | `operators/` | 完整算子的语义、设计、Tiling、Kernel 和工程职责 | 跨算子的通用原理 |
 | `optimizations/` | 可复用的优化方法、触发条件、收益来源和失效边界 | 未归因的单次性能数据 |
 | `runbooks/` | 按症状或任务组织的诊断、验证和处置步骤 | 只有背景概念、没有操作闭环的说明 |
@@ -58,13 +59,15 @@ Registry 允许某种组合，只表示工具能够识别它，不表示仓库�
 
 不单设 `patterns/`：原理进入 `concepts/`，完整算子进入 `operators/`，性能方法进入 `optimizations/`，处置步骤进入 `runbooks/`。版本差异由适用范围和生命周期表达，不建立 `migrations/` Profile。
 
+`debugging/` 不重复 `guides/` 的职责：Guide 围绕“怎么做开发任务”组织步骤与原理，debugging 围绕“出了什么问题、按什么证据分诊”组织问题域总纲（分诊流程、判定纪律、首错固定等），两者都以 Runbook 承载单点症状的处置闭环、互链不复制。选择独立 Profile 而非 `guides/debugging/` 主题 section 的原因：调试总纲与存量 guides（官方参考集镜像，数百张）在检索意图、`--type` 过滤和索引浏览上都是不同入口；独立 Profile 让 Query 的 Profile 过滤可直达调试域，也避免官方 guides 镜像树与调试知识在导航上混层。注册后 `guides/debugging/` 因路径出现两个 Profile 分段被 Contract 拒绝，本仓当前无该路径存量卡，无迁移成本；Query 的 `--type guides` 不再覆盖（也不曾覆盖按症状分流意图的查询）调试总纲，不带 Profile 过滤的普通检索行为不变。
+
 模型推理允许同一主题有多个知识视图，但同一条可复用规则只维护一份规范正文：Concept 负责定义与机制，Optimization 负责触发条件与决策，Guide 串联完整任务。Case 补充特定条件下的改动与证据，不能重新维护通用规则；反模式形成完整诊断、修复和验证闭环时由 Runbook 承载。新增和实质更新前先按 Query/Ingest 工作流查重，旧卡的归并与路径迁移先形成逐卡清单再处理。Prefill/Decode 等场景用 Scope 表达，不据此增加一套阶段目录。
 
 `model/inference` 的 Guide 按任务组织为 `bringup`、`deployment`、`integration`、`models`、`optimization`；Optimization 按职责组织为 `rules`、`cases`、`anti_patterns`、`benchmark_observations`，这些仍共享原有 Profile。Registry 的 `paths.forbidden_sections` 声明哪些 domain/route/Profile 已停用某个 section；Contract 对卡片和索引采用同一规则。目前模型推理的 Guide 与 Optimization 均不再接受 `experience` 层，其他领域不继承这一限制。
 
 ## Profile 附加层级
 
-`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可以按真实主题增加任意深度的小写 `snake_case` section，用来保持大型官方参考集可浏览。section 只是导航，不是新的 domain、route 或 Profile，也不进入 Frontmatter；每一级都必须有完整的 `index.md`。禁止使用来源批次、日期或发布版本作为 section。
+`concepts`、`apis`、`examples`、`guides`、`debugging` 和 `optimizations` 可以按真实主题增加任意深度的小写 `snake_case` section，用来保持大型官方参考集可浏览。section 只是导航，不是新的 domain、route 或 Profile，也不进入 Frontmatter；每一级都必须有完整的 `index.md`。禁止使用来源批次、日期或发布版本作为 section。
 
 Operator 和 Runbook 的附加层级仍是受控值：
 
@@ -111,6 +114,7 @@ knowledge/ops/triton/runbooks/compilation/missing_symbol.md
 knowledge/ops/shared/interoperability/triton_to_ascendc_tiling.md
 knowledge/runtime/runbooks/runtime/device_reset.md
 knowledge/tools/concepts/npu_check_usage.md
+knowledge/ops/ascendc/debugging/aicore/ez9999_routing.md
 ```
 
 非法路径：
@@ -123,4 +127,5 @@ knowledge/tools/npu_check_usage.md                 # tools 域只允许 concepts
 knowledge/ops/ascendc/runbooks/timeout.md           # 缺少 area
 knowledge/ops/ascendc/glossaries/source/api.md       # Glossary 不允许附加 section
 knowledge/graph/ascendc/concepts/kernel.md           # route 不属于 graph
+knowledge/ops/ascendc/guides/debugging/aicore/x.md  # 路径出现两个 Profile 分段
 ```

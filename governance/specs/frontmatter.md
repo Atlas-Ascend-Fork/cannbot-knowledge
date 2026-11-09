@@ -45,6 +45,7 @@ platforms: []
 | `apis` | `API` | `platforms` | `cann_versions`, `source_headers`, `aliases`, `verified`, `replaced_by` |
 | `examples` | `Example` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
+| `debugging` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by`, `scope` |
 | `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by`, `scope` |
@@ -52,6 +53,8 @@ platforms: []
 | `glossaries` | `Glossary` | 无 | `aliases`, `verified`, `replaced_by` |
 
 新增字段必须先有稳定语义和实际消费者，再同时修改 Schema、Profile、Contract、文档和回归；不能为单张卡增加临时字段。
+
+`debugging` 与 `guides` 的字段组合完全相同，两者的差异只在路径职责（见 [知识路径](paths.md)）：`guides/` 围绕开发任务组织原理与步骤，`debugging/` 按问题域组织分诊流程与判定纪律。注册 `debugging` 后，路径中不允许再出现 `guides/debugging/` 这类双 Profile 组合（Contract 要求整条路径恰好一个 Profile 分段）。Query 的 `--type` 按路径 Profile 过滤：`--type guides` 不返回 `debugging/` 卡，检索调试总纲应使用 `--type debugging`；不带 `--type` 的普通检索不受影响。
 
 ## 场景适用条件（`scope`）
 

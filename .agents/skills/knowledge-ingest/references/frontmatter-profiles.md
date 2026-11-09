@@ -12,6 +12,7 @@
 | `apis` | `API` | `platforms` | `cann_versions`, `source_headers`, `aliases`, `verified`, `replaced_by` |
 | `examples` | `Example` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
+| `debugging` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by`, `scope` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by`, `scope` |
 | `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by`, `scope` |
@@ -41,7 +42,8 @@ Actor 使用 `human:<id>`、`process:<id>` 或 `<producer>/<version>`。不得�
 - 路径满足 domain-route 矩阵；Concept ID 相对 `knowledge/`，不带该前缀和 `.md`。
 - Concept 与索引导航只能指向同一 `knowledge/` Bundle；知识卡还可引用 Registry 登记的 `kind: git` 固定提交源码文件作为本地来源链接，不形成图谱节点。`sources[].resource` 相对于知识仓根，正文链接相对于当前卡目录。
 - `interoperability` 只能位于同领域 `shared`，并声明不同的 source/target technology。
-- `concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可以增加小写 `snake_case` 主题 section。
+- `concepts`、`apis`、`examples`、`guides`、`debugging` 和 `optimizations` 可以增加小写 `snake_case` 主题 section。
+- `debugging` 与 `guides` 字段组合相同、`type` 均为 `Guide`，差异只在路径职责：`debugging/` 按问题域组织分诊流程，`guides/` 围绕开发任务组织步骤。检索时 Query 按 Profile 过滤（`--` 前缀的 type 参数见该 Skill 文档），调试总纲用 Profile 值 debugging 过滤。
 - 已停用 section 由 Registry 的 `paths.forbidden_sections` 按 domain/route/Profile 声明，卡片和索引共用检查；模型推理的 Guide 与 Optimization 不再使用 `experience` 层。具体职责与当前任务目录见治理路径 Spec。
 - operator 使用 `operators/<call-mode>/<family>/<category>/<operator>.md`；`call-mode` 当前为 `aclnn` 或 `direct`。
 - runbook 使用 `runbooks/<area>/<runbook>.md`。
