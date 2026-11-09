@@ -1,0 +1,66 @@
+---
+type: Runbook
+title: ToyServe 适配器初始化验证：PASS 字样不能替代退出码与 traceback 判断
+description: 合成评测轨迹（SYNTHETIC）中的 ToyServe 后端适配器记录：initialize() 返回 ToyDevice() 后初始化验证仍失败，输出同时含 PASS initialization 与 RuntimeError traceback，退出码 1。合成对象，不构成真实平台指引。
+tags:
+- task.testing
+- topic.model_serving
+status: draft
+sources: []
+created_at: '2026-11-06T09:45:00Z'
+updated_at: '2026-11-06T09:45:00Z'
+platforms: []
+---
+
+# ToyServe 适配器初始化验证：PASS 字样不能替代退出码与 traceback 判断
+
+## 适用场景
+
+本卡来自合成评测轨迹（SYNTHETIC，非技术指引）；ToyServe、ToyNPU 为合成对象，结论只在轨迹证据范围内成立，不构成对任何真实框架或硬件的技术指引。任务背景：ToyServe 后端适配器（config backend=toy_npu）打补丁后验证模型初始化是否通过。轨迹未给出 ToyServe / ToyNPU 版本信息，平台范围未知。
+
+## 触发与观测
+
+适配器补丁后运行初始化验证，验证未通过。
+
+ToyServe 后端适配器将 initialize() 由 return None 改为 return ToyDevice()（config backend=toy_npu）后，模型初始化仍未通过：check.py 退出码 1，输出同时包含 PASS initialization 与 Traceback: RuntimeError model did not initialize。
+
+## 探针与操作
+
+尝试单元（轨迹原文，逐字）：
+
+```
+adapter.py BEFORE
+def initialize():
+    return None
+AFTER
+def initialize():
+    return ToyDevice()
+config: backend=toy_npu
+```
+
+实际执行命令：`python check.py`。
+
+失败路线明确不可采用：将 initialize() 返回值由 None 改为 ToyDevice() 没有让模型初始化通过；把输出中的 PASS 字样当作修复成功的判据同样不可采用。
+
+## 机制与判别
+
+该轨迹中工具生命周期为 completed 且输出含 PASS initialization 字样，但非零退出码与 traceback 表明初始化失败；PASS 字样或 completed 状态不能单独作为修复成功的验证信号，'It says PASS, assume fixed.' 是与客观信号相矛盾的 Agent 判断。
+
+可区分的判读分支：退出码非零且存在 traceback 时，无论输出是否含 PASS 字样、工具生命周期是否 completed，均按失败处理；只有退出码为 0 且无截断、无错误输出的验证才可作为通过信号。本轨迹只观测到前一种分支。
+
+## 验证信号
+
+工具原始输出（逐字）：
+
+```
+PASS initialization
+Traceback: RuntimeError model did not initialize
+```
+
+（event_type=error，退出码 1，输出未截断；合成轨迹内的设备级功能验证，结果为失败。）
+
+## 适用与失效边界
+
+- 本卡只记录该尝试未修复初始化及验证信号的判读规则；不解释 ToyServe 初始化失败的根本原因（轨迹未定位）。
+- 判读规则基于本轨迹的输出形态（PASS 字样与非零退出码并存）；其他校验脚本的 PASS 语义需按各自实现核对。
+- 来源为合成评测轨迹（SYNTHETIC），不构成真实平台技术指引。

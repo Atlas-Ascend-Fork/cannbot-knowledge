@@ -1,0 +1,76 @@
+---
+type: Runbook
+title: 合成评测样例：ToyServe 后端选择配置不匹配导致启动失败
+description: 合成评测轨迹（SYNTHETIC evaluator fixture）中的 ToyServe 到 ToyNPU 适配样例：config 的 backend 键选为 cpu 而模型在 toy_npu，ModelRunner.start() 抛 RuntimeError device mismatch；把 backend 改为 toy_npu 后启动与一次推理通过。结论仅在本合成轨迹内成立。
+tags:
+- task.debugging
+- topic.model_serving
+status: draft
+sources: []
+created_at: '2026-11-06T09:34:22Z'
+updated_at: '2026-11-06T09:34:22Z'
+platforms: []
+---
+
+# 合成评测样例：ToyServe 后端选择配置不匹配导致启动失败
+
+本卡来自合成评测记录（SYNTHETIC evaluator fixture, not technical guidance），不构成真实框架事实；状态为 draft，待独立审查，未发布。知识形态：repair_recipe。
+
+## 适用场景
+
+ToyServe 推理框架向 ToyNPU 后端适配（合成评测场景）。轨迹未给出框架版本、硬件型号与精度配置；结论仅限本轨迹观测，不外推真实框架或真实平台。
+
+## 触发与观测
+
+模型启动时后端选择失败，`ModelRunner.start()` 抛出（逐字）：
+
+```text
+ModelRunner.start(): RuntimeError device mismatch: model on toy_npu, backend cpu
+```
+
+## 探针与操作
+
+后端选择实现（逐字）：
+
+```python
+def select_backend(config):
+    return backends[config["backend"]]
+```
+
+修改单元（逐字）：
+
+```json
+BEFORE config.json
+{"backend":"cpu","batch":2}
+AFTER config.json
+{"backend":"toy_npu","batch":2}
+```
+
+验证脚本行为（逐字）：
+
+```text
+check.py constructs ModelRunner(config), calls start(), then generate([1,2]); asserts output.shape == (2, 4).
+```
+
+验证命令为 `python check.py`。
+
+## 机制与判别
+
+在 ToyServe 推理框架向 ToyNPU 后端适配时，ModelRunner.start() 抛出 RuntimeError device mismatch: model on toy_npu, backend cpu，机制是 select_backend 仅按 config 的 backend 键查表选择后端，模型所在设备与该选择不一致。
+
+把 config.json 的 backend 由 cpu 改为 toy_npu（batch=2 保持不变）后，check.py 观测到 ToyServe startup passed; one inference passed; shape=(2,4); device=toy_npu，即启动与一次推理在 ToyNPU 后端通过。
+
+批内 trace g 与 trace a 属同一来源家族且逐字重复，仅计一次复现。
+
+## 验证信号
+
+- 工具观测（tool_result）：`ToyServe startup passed; one inference passed; shape=(2,4); device=toy_npu`（单次观测）。
+- 验证层次：device_functional（启动 + 一次推理 + shape 断言；未做端到端或性能验证）。
+- 原始 bash 元数据（exit code、truncated 标志）未进入规范化事件文本，验证信号以 tool_result 正文为准。
+
+## 适用与失效边界
+
+- 仅覆盖后端键与模型设备不一致这一失败形态；不涉及算子实现、精度或性能问题。
+- 单次观测、单一合成配置（batch=2）；同家族重复副本不构成独立复现。
+- 若模型本身不在 toy_npu 或后端注册表不含 toy_npu，本修复路径不适用；修改配置无效时应回到后端注册与设备放置的排查。
+- 合成评测样例，全部结论仅在本合成轨迹内成立。

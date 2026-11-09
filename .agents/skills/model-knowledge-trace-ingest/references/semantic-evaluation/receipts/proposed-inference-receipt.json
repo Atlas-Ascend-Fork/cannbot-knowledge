@@ -1,0 +1,115 @@
+{
+  "schema_version": "model.trace-review.v1",
+  "subject": {
+    "schema_version": "model.trace-review-subject.v1",
+    "ledger_sha256": "e78a7a6f325a5009315bb0e466652c7db4719ceba0d3a5ac512ad39db1597967",
+    "reconstruction_sha256": "47bf66ea406b2b13244545a65f3406cba574d9cebc25b4beed6cbd1b67355a8b",
+    "cards": [
+      {
+        "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+        "sha256": "9b85914426dc0c77dfb8bce326edaf6ff7f72c95dce47bd3a1dcefb61d137c2f",
+        "claim_ids": [
+          "a-claim-1",
+          "a-claim-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      },
+      {
+        "path": "validations/toyserve_adapter_initialize_verification.md",
+        "sha256": "604d0a82f021effabff847ab244dd3401991c6c721ad66ae4ae6a3acd296a1cb",
+        "claim_ids": [
+          "e-claim-1",
+          "e-claim-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      }
+    ],
+    "curation_contract": "model.trace-curation.v1",
+    "required_checks": [
+      "body",
+      "comparisons",
+      "contradictions",
+      "description",
+      "scope",
+      "source_authority",
+      "title",
+      "validation_scope"
+    ],
+    "subject_sha256": "7b935ef4e46e55d902b82df5d5bb44a6c857d3874abaee9af2caea3cfa507f53"
+  },
+  "verdict": "PASS",
+  "summary": "独立复核 proposed 臂 inference 路线的 2 张 staged 卡（a-c1 repair_recipe、e-c1 negative_result）。本臂规范化事件与 packet 忠实保留了 raw 工具元数据（经与 raw input 比对：a/g exit 0 未截断、e exit 1 未截断），a-claim-2 的『退出码 0、输出未截断』与 e-claim-1 的『退出码 1』均有实际锚点；claim 与 mechanism_artifacts 在源事件与卡正文逐字出现；evidence_roles 满足各自形态；a/g 同 family byte 相同副本 reproduce_count=1；Agent 的 'It says PASS, assume fixed.' 被正确判定为与客观信号矛盾；trace d 无可比基线未生成性能结论；validations 为 Registry 登记的 runbook 分区，目标路径合法；卡片 draft、未发布。工具复现 frozen subject 一致，validate_model_evidence 复跑通过（2/2）。两条 minor clarity 发现不改变知识含义。",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "clarity",
+      "card": "validations/toyserve_adapter_initialize_verification.md",
+      "issue": "『机制与判别』中的判读分支规则（『只有退出码为 0 且无截断、无错误输出的验证才可作为通过信号』）比已映射的 e-claim-2（只覆盖失败侧：PASS/completed 不能单独作为通过信号）更强；通过分支在本轨迹未观测，卡内已声明『本轨迹只观测到前一种分支』。该规则与证据合同的阅读纪律一致，属方法性表述而非新增经验事实，故记 clarity minor；但严格意义上它未进入 claim mapping。",
+      "location": "staged 卡『机制与判别』末段",
+      "suggestion": "在后续修订中把该判读规则纳入 claim 集并锚定，或收窄为『本轨迹中 PASS 字样与非零退出码并存，按失败处理』。"
+    },
+    {
+      "severity": "minor",
+      "category": "clarity",
+      "card": "(reconstruction, trace d)",
+      "issue": "inference 重建中 trace d 的 environment 声明 model/precision『未给出』，与其自身 facts（run A/B 均记录 model=tiny、dtype=bf16）不一致；观测事实本身记录正确，无下游消费者。",
+      "location": "curate/inference/reconstruction.json，trace d 的 environment",
+      "suggestion": "将 environment.model 改为 tiny、precision 改为 bf16（与 facts 一致），或注明 environment 仅描述会话级未知信息。"
+    }
+  ],
+  "coverage": [
+    {
+      "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+      "claim_ids": [
+        "a-claim-1",
+        "a-claim-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": []
+    },
+    {
+      "path": "validations/toyserve_adapter_initialize_verification.md",
+      "claim_ids": [
+        "e-claim-1",
+        "e-claim-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": []
+    }
+  ],
+  "reviewer": "opencode-review-7dd024588c32400a8881198925acba87",
+  "attestation": "agent-runtime-message",
+  "reviewed_at": "2026-11-06T09:54:13Z"
+}

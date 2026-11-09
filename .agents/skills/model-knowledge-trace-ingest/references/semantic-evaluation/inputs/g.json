@@ -1,0 +1,42 @@
+[
+  {
+    "role": "user",
+    "content": "SYNTHETIC evaluator fixture, not technical guidance. Adapt ToyServe inference framework to a ToyNPU backend; diagnose backend selection failing during model startup."
+  },
+  {
+    "role": "tool",
+    "content": "ToyServe/model_runner.py\ndef select_backend(config):\n    return backends[config[\"backend\"]]\nconfig={\"backend\":\"cpu\"}\nModelRunner.start(): RuntimeError device mismatch: model on toy_npu, backend cpu"
+  },
+  {
+    "role": "assistant",
+    "content": "Change the configuration, then check startup and one inference."
+  },
+  {
+    "role": "tool",
+    "content": "BEFORE config.json\n{\"backend\":\"cpu\",\"batch\":2}\nAFTER config.json\n{\"backend\":\"toy_npu\",\"batch\":2}\ncheck.py constructs ModelRunner(config), calls start(), then generate([1,2]); asserts output.shape == (2, 4)."
+  },
+  {
+    "info": {
+      "sessionID": "toy",
+      "role": "assistant"
+    },
+    "parts": [
+      {
+        "type": "tool",
+        "tool": "bash",
+        "callID": "call",
+        "state": {
+          "status": "completed",
+          "input": {
+            "command": "python check.py"
+          },
+          "output": "ToyServe startup passed; one inference passed; shape=(2,4); device=toy_npu",
+          "metadata": {
+            "exit": 0,
+            "truncated": false
+          }
+        }
+      }
+    ]
+  }
+]

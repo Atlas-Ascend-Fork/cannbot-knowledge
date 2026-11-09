@@ -1,0 +1,64 @@
+{
+  "schema_version": "model.trace-review.v1",
+  "subject": {
+    "schema_version": "model.trace-review-subject.v1",
+    "ledger_sha256": "ed58271aab292e3e57ce98445fee43bfcf1e601e8ad163aeeec5ec6c79e94caf",
+    "reconstruction_sha256": "301ddf54a013e2f4b00a3fe62be16a4522ea469f1f4dfa9b8a377d90aa633c92",
+    "cards": [
+      {
+        "path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+        "sha256": "f27a54a9347550f68c4e11f75d4b15868ec07a9134f51af488043eb58d614e1f",
+        "claim_ids": [
+          "c-claim-1",
+          "c-claim-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      }
+    ],
+    "curation_contract": "model.trace-curation.v1",
+    "required_checks": [
+      "body",
+      "comparisons",
+      "contradictions",
+      "description",
+      "scope",
+      "source_authority",
+      "title",
+      "validation_scope"
+    ],
+    "subject_sha256": "4925a5b53fc27e3eef4d6f42f4df5e840d3dc86cd8c7edb18c67430b371154c8"
+  },
+  "verdict": "PASS",
+  "summary": "独立复核修订版 training 路线的 1 张 staged 卡（c-c1 negative_result）及其账本/重建，全部从 raw input 与规范化事件原文建立判断，未沿用作者摘要。逐项核对：c-claim-1/2 的 claim 文本与两个 mechanism_artifacts 在 trace c 规范化事件与卡正文逐字出现，锚点全部解析到实际事件（seq 2/4/5），attempt/failure/boundary 角色齐备，artifact_indexes [0,1] 覆盖全部完整机制单元。初始 proposed-training receipt 的两条 evidence 发现已正确落实：(1) 重建 trace f 的 environment.parallelism 改回『未给出（本来源仅记录 offload 配置，无并行度记录）』，cp=2 仅保留在 trace c 的本来源配置记录（facts 锚定 event 2），无跨来源条件复制；(2) 卡『触发与观测』不再把 60s 前置配置写成观测——用户叙述显式标注为 training timeout（未限定超时类型、非工具观测），timeout_s: 60 标注为仅 BEFORE 配置记录、本轨迹无 60s 上限下的运行观测，唯一实际观测为提高后的 300s collective timeout 逐字输出（event 4，event_type=error，退出码 1，输出未截断）。配置值与运行观测的区分在 description、适用场景、机制与判别（『本次运行观测到的超时发生在提高后的上限处』替代原『再次触发』）与 scope_evidence 中全部一致；根因未定位、不区分『仍需更久』与『永远不会完成』、不与 offload/cp=2 建立因果，均与 c-claim-2 闭合；执行的验证命令 check.py 与轨迹记录的训练命令 train.py 的区别如实披露；标题/描述与正文同等核验，无超出证据的收益或因果断言。dedup.read_paths 已改为自仓库根可解析的 knowledge/ 前缀路径且该卡在本 checkout 存在（存在性复核通过），查重查询与阅读对象未变。trace f 维持 deferred/missing_evidence：源端截断不可恢复，'All steps likely passed.' 为无客观信号支持的 Agent 推测，未被采信，三个训练步完成情况未下任何结论；trace b 维持 out_of_scope（孤立算子赛题微基准，无模型/框架集成）。脱敏与自包含检查通过：无私有账号、工作目录、会话 ID、取证路径泄漏；卡为 draft、sources: []、platforms: []，正文保留 SYNTHETIC 标签与轨迹边界声明。未发现新的语义问题，无 finding。",
+  "findings": [],
+  "coverage": [
+    {
+      "path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+      "claim_ids": [
+        "c-claim-1",
+        "c-claim-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": []
+    }
+  ],
+  "reviewer": "opencode-review-ffa98e6ab92049bf83f3bc3a946a833d",
+  "attestation": "agent-runtime-message",
+  "reviewed_at": "2026-11-06T10:38:11Z"
+}

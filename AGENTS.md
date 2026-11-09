@@ -82,8 +82,10 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 ## 修改 Skill
 
-- 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读专用消费流程 `ascendc-api-knowledge-query` 与 `runtime-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
+- 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读专用消费流程 `ascendc-api-knowledge-query` 与 `runtime-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest` 与 `model-knowledge-trace-ingest`（分别生产算子与模型 Runbook），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
 - `.agents/skills/` 是本仓 Skill 的规范源。Skill 的实现、说明、参考资料和测试都在本仓维护与验证。
+- `model-knowledge-trace-ingest` 接收来自各类 Agent 的一批本地运行轨迹，先归一化为统一事件，再以多轨迹窗口挖掘模型及框架知识、跨来源归并和策展。归一化、证据与审查绑定工具在本 Skill 内维护；未知结构保留原文，可用声明式字段映射接入。全量远端获取、筛选和客户端调度属于外层，不逐轨迹派子任务。
+- 模型轨迹的存储包与阅读视图分开：开发事件保持连续正文，系统消息与 reasoning 可显式单列为未审阅上下文；错误和未知事件仍保留。产物可按调用方指定以文件包返回，按固定合同展开落盘与校验，不自动修正来源编号或改写知识文本；传输成功不授予语义覆盖或发布批准。
 - 项目安装通过本仓安装器链接到完整 checkout，保持 Skill、相邻依赖和 `governance/contracts/` 同版本可用；配置知识根不等于支持独立复制 Skill 目录。
 - 治理、安装、检索与 CI 回归集中于 `evals/`；Ingest 通过全库确定性命令和仓库级回归验证，trace producer 保留其专用脚本回归。按需图谱与 CI 共用 Ingest 的同一链接构图实现。
 - 官方文档归档持续更新，不校验归档或内容树 SHA-256；完成标记记录来源 URL 与准备时间，刷新来源不自动更新知识卡。Git 源码继续固定到登记的 40 位 commit。

@@ -1,0 +1,142 @@
+[
+  {
+    "path": "SKILL.md",
+    "sha256": "db70701b017c910546363e656a9e9703a8bfd56020b4d0a877904481e0a586cb"
+  },
+  {
+    "path": "references/batch-processing.md",
+    "sha256": "b2fc4f29d6b57501988eeedc8ba405646344495955889e7fe8c352c9473ca33e"
+  },
+  {
+    "path": "references/curation.md",
+    "sha256": "bd85c6dc8dc587acd4eedca3f77769cccdf7f2269a2c9867f97d86adc623808f"
+  },
+  {
+    "path": "references/data-processing.md",
+    "sha256": "2865610ab856d2ab199ce7fcb7909f34e410d31a44c9d01de47412426ee70a31"
+  },
+  {
+    "path": "references/file-bundle.md",
+    "sha256": "70c94c3d6bf933a64205faddcba5c4cfeb9ef2d8a13b6ea1d922b0358f7be8ca"
+  },
+  {
+    "path": "references/mining.md",
+    "sha256": "e93b1aaf4937695bfaa54f7b80e6ff56cf2159304deda43f5861eeb7c390e617"
+  },
+  {
+    "path": "references/privacy.md",
+    "sha256": "df701ad76b1a0f8ca079c909b605154f60af564f0a69fcef353e6d08583bd5f3"
+  },
+  {
+    "path": "references/reviewer.md",
+    "sha256": "04a2d657c5c8b14cd57963ee1ea45d0eab4971f3f53b0a71264dd805ebf1a25b"
+  },
+  {
+    "path": "references/runbooks-contract.md",
+    "sha256": "32823be068ba9b408fe37e7083a6d61d124beb470e74eb060660971c904937b1"
+  },
+  {
+    "path": "references/scope-policy.md",
+    "sha256": "187343881c072e520e2705b6b5325f1f778754519f81c85685167bf0aba3bda5"
+  },
+  {
+    "path": "references/validation.md",
+    "sha256": "7cc416544f2a241e56f4b582c79ae7947fab29e3e559ec5a800b4fc80e18f775"
+  },
+  {
+    "path": "scripts/audit_publication.py",
+    "sha256": "c63185506440774b50f4a807fb149a7bd58a8f60e9e723faab9523db2c655c58"
+  },
+  {
+    "path": "scripts/batch_exchange.py",
+    "sha256": "1914b13b33ab7ac9df2c8d2e7f7decbd7cb33efc1f631f461692ad86ccb20fe5"
+  },
+  {
+    "path": "scripts/curate_candidates.py",
+    "sha256": "3980f70e801d84958030b6ce89135384a08caef855ddeab002455acfe68532f6"
+  },
+  {
+    "path": "scripts/evidence_bundle.py",
+    "sha256": "654fff1683dc708948bc895246a186383ea66e75e00e9e49e1a28949f0301fc6"
+  },
+  {
+    "path": "scripts/mining_sources.py",
+    "sha256": "fff696ced48e92eb3ac0d9e24f8d884c2c0dceec53ec55b8442c5354f820caf8"
+  },
+  {
+    "path": "scripts/model_trace_common.py",
+    "sha256": "224c1cae0f1c1cc400d015a1a08607adb5edbfe2a0b99ba125cce3bd26942c96"
+  },
+  {
+    "path": "scripts/normalize_trace.py",
+    "sha256": "0cd55a278a6d7c5d4741dc8830954d752d0ff5c1248e2f0adae28a2fddcc632a"
+  },
+  {
+    "path": "scripts/read_trace.py",
+    "sha256": "98cd155d2411c60136edea39d06a7ae9fc70b4fc30387c48cb0c67d50d7860db"
+  },
+  {
+    "path": "scripts/review_cards.py",
+    "sha256": "4d33f5192ee6b655f1e9627aacf74df830532e0b7abd7d3bdd096e7cd2774846"
+  },
+  {
+    "path": "scripts/synthetic_ab.py",
+    "sha256": "c28805a3f78bbba250899a16cf68c4ce17a1b490b92fc52c3d7d89c0f5a8e864"
+  },
+  {
+    "path": "scripts/test_batch_exchange.py",
+    "sha256": "f74d03de4690748c32f78d7e3e6b1009b516b15200aaf2c976beb8d79153cd2c"
+  },
+  {
+    "path": "scripts/test_curation.py",
+    "sha256": "4ac3d0f74682f368acf6df87742fc766b5e74b9e7c9c464b5b79ba4843a4fe40"
+  },
+  {
+    "path": "scripts/test_evidence_bundle.py",
+    "sha256": "68f6ed89a9c0c0cd229d6a2646907c2e314908d2be0d045b09cf017fc703df4b"
+  },
+  {
+    "path": "scripts/test_mining_sources.py",
+    "sha256": "482b9f964c1bc27269b0c618b7186322f70b4e90139d905b2e3587647eff4325"
+  },
+  {
+    "path": "scripts/test_model_trace.py",
+    "sha256": "22c58724258b1e732e01bce40f34e0490a72bc3e8eb3bbd6c9495e9297b155b3"
+  },
+  {
+    "path": "scripts/test_normalize_trace.py",
+    "sha256": "f0abae2ba86049883f95d75a5825d817a6dc9a6a9b5a9d0e53a9a648b66f5138"
+  },
+  {
+    "path": "scripts/test_offline_skill.py",
+    "sha256": "29cff0a0b48d8ae75c698f4399c40d96bb3ae424d7434c08594ea08c5f83d211"
+  },
+  {
+    "path": "scripts/test_review_cards.py",
+    "sha256": "8999c0714627dd0fb816999cea023b8dfd1e06bc63cf0f924624b946c31aca47"
+  },
+  {
+    "path": "scripts/test_review_regressions.py",
+    "sha256": "b6caee11d51ea5d0b78c088e86d78b69614b3657b1bd9caf66ffc47a50d14490"
+  },
+  {
+    "path": "scripts/test_trace_batch.py",
+    "sha256": "749d9145d649aece212c0112a2f6b95913f2e238fd57071895bb896dcee7ec3b"
+  },
+  {
+    "path": "scripts/trace_adapters.py",
+    "sha256": "3a5a06986e4bc5986964c8e7b487d70fa32b2d763da6d903dae3b48ed0adee54"
+  },
+  {
+    "path": "scripts/trace_batch.py",
+    "sha256": "8d8ad4dc72348e69acd6e51cda15769d94e61036204ee38cdc054f0ffe94019d"
+  },
+  {
+    "path": "scripts/trace_privacy.py",
+    "sha256": "ba144a2ca0f82ce531a040f59f8652eb5065ad5af5904e5e7f5e95ecae6cc7ab"
+  },
+  {
+    "path": "scripts/validate_model_evidence.py",
+    "sha256": "dca69f61846c7541b964aafc49baffb7e97cc2096844c4870560b9ba2ce73838"
+  }
+]

@@ -1,0 +1,126 @@
+[
+  {
+    "path": "SKILL.md",
+    "sha256": "1380d537defb6389907b953fa5b282db8e8272f91344b5a239562bfcd2c7c6d6"
+  },
+  {
+    "path": "references/batch-processing.md",
+    "sha256": "b2fc4f29d6b57501988eeedc8ba405646344495955889e7fe8c352c9473ca33e"
+  },
+  {
+    "path": "references/curation.md",
+    "sha256": "53e9b3bd07e8f8e480682094827d727bd016cc8f307ea5054423ba346c56a4f6"
+  },
+  {
+    "path": "references/data-processing.md",
+    "sha256": "76ef3b2bb01ac53b4d3a563c24fa5e398a03ceee37aa6e35d9a9f2957f273cf9"
+  },
+  {
+    "path": "references/file-bundle.md",
+    "sha256": "70c94c3d6bf933a64205faddcba5c4cfeb9ef2d8a13b6ea1d922b0358f7be8ca"
+  },
+  {
+    "path": "references/mining.md",
+    "sha256": "29cb50805bdc7f2a6abf1af329ca72188564dadebcbd1aea7cb39809c40be77d"
+  },
+  {
+    "path": "references/reviewer.md",
+    "sha256": "8eda3293d4fd91273380f167fcfb2b51c7e8d00a41211bcc72836ff8e8c9ebaf"
+  },
+  {
+    "path": "references/runbooks-contract.md",
+    "sha256": "32823be068ba9b408fe37e7083a6d61d124beb470e74eb060660971c904937b1"
+  },
+  {
+    "path": "references/scope-policy.md",
+    "sha256": "0fbf9ca3b0822745ddaa7c5989982c67b3dea8c779769cd68bc3526b50037f1e"
+  },
+  {
+    "path": "references/validation.md",
+    "sha256": "7cc416544f2a241e56f4b582c79ae7947fab29e3e559ec5a800b4fc80e18f775"
+  },
+  {
+    "path": "scripts/batch_exchange.py",
+    "sha256": "657fc9593ee3c3772350da80ec653e884138379c2449f935c17bca909acd5404"
+  },
+  {
+    "path": "scripts/curate_candidates.py",
+    "sha256": "3980f70e801d84958030b6ce89135384a08caef855ddeab002455acfe68532f6"
+  },
+  {
+    "path": "scripts/evidence_bundle.py",
+    "sha256": "654fff1683dc708948bc895246a186383ea66e75e00e9e49e1a28949f0301fc6"
+  },
+  {
+    "path": "scripts/mining_sources.py",
+    "sha256": "fff696ced48e92eb3ac0d9e24f8d884c2c0dceec53ec55b8442c5354f820caf8"
+  },
+  {
+    "path": "scripts/model_trace_common.py",
+    "sha256": "52b80c9d7747969336a418cd0444655030d915ef6d2268ca359270a3a12a8e98"
+  },
+  {
+    "path": "scripts/normalize_trace.py",
+    "sha256": "9934207b35c261e0d1244f67239cb22679df9cd94dcca0aaf9d734d69fd80b5f"
+  },
+  {
+    "path": "scripts/read_trace.py",
+    "sha256": "df3ba8568f933e2e32b80bc826f2ff5b4f3baf3cbbb290128e4fcadd81233e49"
+  },
+  {
+    "path": "scripts/review_cards.py",
+    "sha256": "a825b2dcc52b3105605f2758f868ba30865e0a45b3624b1a7eec0c721d7f50b7"
+  },
+  {
+    "path": "scripts/synthetic_ab.py",
+    "sha256": "c28805a3f78bbba250899a16cf68c4ce17a1b490b92fc52c3d7d89c0f5a8e864"
+  },
+  {
+    "path": "scripts/test_batch_exchange.py",
+    "sha256": "f74d03de4690748c32f78d7e3e6b1009b516b15200aaf2c976beb8d79153cd2c"
+  },
+  {
+    "path": "scripts/test_curation.py",
+    "sha256": "b30e69a204099bc94eb6b4246825abe626f70f27b0197dba247100da4ae3898a"
+  },
+  {
+    "path": "scripts/test_evidence_bundle.py",
+    "sha256": "68f6ed89a9c0c0cd229d6a2646907c2e314908d2be0d045b09cf017fc703df4b"
+  },
+  {
+    "path": "scripts/test_mining_sources.py",
+    "sha256": "482b9f964c1bc27269b0c618b7186322f70b4e90139d905b2e3587647eff4325"
+  },
+  {
+    "path": "scripts/test_model_trace.py",
+    "sha256": "22c58724258b1e732e01bce40f34e0490a72bc3e8eb3bbd6c9495e9297b155b3"
+  },
+  {
+    "path": "scripts/test_normalize_trace.py",
+    "sha256": "f0abae2ba86049883f95d75a5825d817a6dc9a6a9b5a9d0e53a9a648b66f5138"
+  },
+  {
+    "path": "scripts/test_offline_skill.py",
+    "sha256": "29cff0a0b48d8ae75c698f4399c40d96bb3ae424d7434c08594ea08c5f83d211"
+  },
+  {
+    "path": "scripts/test_review_cards.py",
+    "sha256": "8999c0714627dd0fb816999cea023b8dfd1e06bc63cf0f924624b946c31aca47"
+  },
+  {
+    "path": "scripts/test_trace_batch.py",
+    "sha256": "749d9145d649aece212c0112a2f6b95913f2e238fd57071895bb896dcee7ec3b"
+  },
+  {
+    "path": "scripts/trace_adapters.py",
+    "sha256": "19211fb339d74768ce42a22100c80bafd93d5618a587a8a680ba027f4c587264"
+  },
+  {
+    "path": "scripts/trace_batch.py",
+    "sha256": "ded54d81918bce29b2712e8a11136541aa4805a1b728c9b0080bed5739a895a8"
+  },
+  {
+    "path": "scripts/validate_model_evidence.py",
+    "sha256": "cc7ad5426e20db9ef6c06e90095eeed398474536bad2a538d49c1f094c7191e3"
+  }
+]

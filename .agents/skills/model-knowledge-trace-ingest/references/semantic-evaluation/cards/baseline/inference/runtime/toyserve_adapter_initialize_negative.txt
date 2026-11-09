@@ -1,0 +1,65 @@
+---
+type: Runbook
+title: 合成评测样例：ToyServe 适配器 initialize 补丁未修复模型初始化
+description: '合成评测轨迹（SYNTHETIC evaluator fixture）中的失败路线样例：ToyServe 后端适配器把 initialize() 由 return None 改为 return ToyDevice() 后，验证输出仍出现 Traceback: RuntimeError model did not initialize，补丁未修复初始化；输出首行的 PASS initialization 不构成修复验证。结论仅在本合成轨迹内成立。'
+tags:
+- task.debugging
+- topic.model_serving
+status: draft
+sources: []
+created_at: '2026-11-06T09:34:22Z'
+updated_at: '2026-11-06T09:34:22Z'
+platforms: []
+---
+
+# 合成评测样例：ToyServe 适配器 initialize 补丁未修复模型初始化
+
+本卡来自合成评测记录（SYNTHETIC evaluator fixture, not technical guidance），不构成真实框架事实；状态为 draft，待独立审查，未发布。知识形态：negative_result。
+
+## 适用场景
+
+ToyServe 推理框架后端适配（backend=toy_npu）下的模型初始化验证（合成评测场景）。轨迹未给出框架版本与硬件信息；结论仅限本轨迹观测。
+
+## 触发与观测
+
+验证脚本执行后，同一份工具输出同时包含通过标记与运行时错误（逐字）：
+
+```text
+PASS initialization
+Traceback: RuntimeError model did not initialize
+```
+
+## 探针与操作
+
+补丁修改单元（逐字）：
+
+```python
+adapter.py BEFORE
+def initialize():
+    return None
+AFTER
+def initialize():
+    return ToyDevice()
+config: backend=toy_npu
+```
+
+验证命令为 `python check.py`。
+
+## 机制与判别
+
+在 ToyServe 后端适配中，把 adapter.py 的 initialize() 由 return None 改为 return ToyDevice()（config backend=toy_npu）后，验证输出仍出现 Traceback: RuntimeError model did not initialize，补丁未修复模型初始化。
+
+同一输出以 PASS initialization 开头并不能构成修复验证，本轨迹中 Agent 的 assume fixed 判断与 RuntimeError 观测冲突，未被采纳为验证信号。
+
+## 验证信号
+
+- 工具观测（tool_result）：同一输出同时包含 `PASS initialization` 与 `Traceback: RuntimeError model did not initialize`（单次观测）。
+- 验证层次：device_functional（功能检查已执行且失败；无端到端或性能验证）。
+- 原始 bash 元数据（exit code）未进入规范化事件文本，失败信号以 tool_result 正文中的 Traceback 为准。
+
+## 适用与失效边界
+
+- 失败路线：在本轨迹中该补丁方向未修复初始化，未诊断根因前不应重复采用或宣称已修复。
+- 初始化失败的真实根因未知；本卡不解释失败原因，也不提供替代修复。
+- 输出中的 PASS 行与后续 Traceback 并存时，以 Traceback 与进程结果为准，不能用 PASS 行充当成功证据。
+- 合成评测样例，全部结论仅在本合成轨迹内成立。

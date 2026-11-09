@@ -1,0 +1,91 @@
+{
+  "schema_version": "model.trace-review.v1",
+  "subject": {
+    "schema_version": "model.trace-review-subject.v1",
+    "ledger_sha256": "31ffd688945393d5aefa9b6fc71894a373ee7a8a301714d4984fc16e3b56d604",
+    "reconstruction_sha256": "25c31929b6b8c0dc21f92b1073a34650a4465e07ca29d792581425427bc430a3",
+    "cards": [
+      {
+        "path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+        "sha256": "ab78fac1de876980bd9c5324c54eb64255f765615463e7fe62269320b6fa6ee3",
+        "claim_ids": [
+          "c-claim-1",
+          "c-claim-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      }
+    ],
+    "curation_contract": "model.trace-curation.v1",
+    "required_checks": [
+      "body",
+      "comparisons",
+      "contradictions",
+      "description",
+      "scope",
+      "source_authority",
+      "title",
+      "validation_scope"
+    ],
+    "subject_sha256": "9fdd4a9f6ce34bad41677aa1c92123dfc7a8e59a335ffe04faa3789480b65650"
+  },
+  "verdict": "NEEDS_REVISION",
+  "summary": "独立复核 proposed 臂 training 路线的 1 张 staged 卡（c-c1 negative_result）及其重建。卡的核心负结果（timeout_s 60→300 未消除 collective timeout、退出码 1、根因未定位、不外推因果）本身锚定正确，claim 与 artifacts 逐字可溯；但发现两处 evidence 类保真缺陷：(1) 重建中 trace f 的 environment.parallelism 写为『cp=2（轨迹记录）』，而 trace f 全文不存在 cp=2（该值属 trace c），属把 A 轨迹的配置记到 B 轨迹头上；(2) staged 卡『触发与观测』首句『CPU-offload + CP=2 训练在超时上限 60s 下出现 collective timeout』把未观测事件写成观测：轨迹中不存在 60s 上限下超时的工具观测（仅有 BEFORE 配置 timeout_s: 60），用户叙述只说 training timeout（未说 collective），实际观测到的 collective timeout 在 300s（event 4）；该句也未进入 claim mapping。按合同，evidence 类 finding 无论 severity 均须 NEEDS_REVISION。修订后需重新冻结 subject 并重审。",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "evidence",
+      "card": "(reconstruction, trace f)",
+      "issue": "training 重建中 trace f 的 environment.parallelism 为『cp=2（轨迹记录）』，但 trace f 的 5 个事件（用户消息、offload false→true 配置、check.py 调用、截断输出、Agent 推测）均无 cp=2；cp=2 只出现在 trace c。把 c 的并行配置记为 f 的轨迹记录，是对哈希绑定重建中来源事实的错误归属。",
+      "location": "curate/training/reconstruction.json，trace f，environment.parallelism",
+      "suggestion": "删除该字段或改为『未给出』；修订后重算 reconstruction/ledger hash 并重新冻结 subject。"
+    },
+    {
+      "severity": "minor",
+      "category": "evidence",
+      "card": "runtime/toytrain_offload_cp2_collective_timeout.md",
+      "issue": "『触发与观测』首句把任务前提写成观测到的触发：『CPU-offload + CP=2 训练在超时上限 60s 下出现 collective timeout』。轨迹内唯一被工具观测到的超时是提高后的 300s（event 4，退出码 1）；60s 只作为 BEFORE 配置值出现，从未有 60s 下的运行观测，用户叙述亦仅称 training timeout（未限定 collective）。该句同时未进入 claim mapping（c-claim-1 只断言该配置下出现 collective timeout，锚定 event 2/4）。",
+      "location": "staged 卡『触发与观测』首句（同一表述亦来自 mine/DRAFT-runtime-2.md）",
+      "suggestion": "改写为任务前提表述（如『任务背景：用户报告该配置下训练超时（用户叙述），前置配置 timeout_s: 60；本轨迹实际观测到的超时见下』），仅保留 300s 超时的逐字观测，或将其移入『机制与判别』并显式标注为用户叙述。"
+    },
+    {
+      "severity": "minor",
+      "category": "clarity",
+      "card": "runtime/toytrain_offload_cp2_collective_timeout.md",
+      "issue": "ledger dedup.read_paths 记录的 'model/inference/runbooks/runtime/collective_participation_per_rank_consistency.md' 自仓库根不可解析（实际位于 knowledge/model/inference/...），查重阅读记录的路径书写不一致。",
+      "location": "curate/training/ledger.json，dedup.read_paths",
+      "suggestion": "统一为自仓库根可解析的 knowledge/ 前缀路径。"
+    }
+  ],
+  "coverage": [
+    {
+      "path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+      "claim_ids": [
+        "c-claim-1",
+        "c-claim-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": [
+        "『触发与观测』首句『CPU-offload + CP=2 训练在超时上限 60s 下出现 collective timeout。』——未进入 claim mapping，且轨迹内无对应的工具观测锚点（60s 下无运行观测；用户叙述未限定 collective）"
+      ]
+    }
+  ],
+  "reviewer": "opencode-review-7dd024588c32400a8881198925acba87",
+  "attestation": "agent-runtime-message",
+  "reviewed_at": "2026-11-06T09:54:13Z"
+}

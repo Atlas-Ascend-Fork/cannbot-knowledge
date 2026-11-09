@@ -1,0 +1,66 @@
+---
+type: Runbook
+title: ToyServe 后端选择 device mismatch：config 指向 cpu 而模型在 toy_npu
+description: 合成评测轨迹（SYNTHETIC）中的 ToyServe 框架适配记录：startup 报 RuntimeError device mismatch 时，将 config.json 的 backend 由 cpu 改为 toy_npu，并用 check.py 同时验证 startup 与一次推理。合成对象，不构成真实平台指引。
+tags:
+- task.debugging
+- topic.model_serving
+status: draft
+sources: []
+created_at: '2026-11-06T09:45:00Z'
+updated_at: '2026-11-06T09:45:00Z'
+platforms: []
+---
+
+# ToyServe 后端选择 device mismatch：config 指向 cpu 而模型在 toy_npu
+
+## 适用场景
+
+本卡来自合成评测轨迹（SYNTHETIC evaluator fixture，非技术指引）；ToyServe、ToyNPU 为合成对象，结论只在轨迹证据范围内成立，不构成对任何真实框架或硬件的技术指引。任务背景：将 ToyServe 推理框架适配到 ToyNPU 后端，定位模型启动阶段的 backend selection 失败。轨迹未给出 ToyServe / ToyNPU 的版本信息，平台范围未知。
+
+## 触发与观测
+
+模型位于 toy_npu 而后端配置为 cpu 时，模型启动即失败。
+
+ToyServe 后端选择失败：config 为 backend=cpu 而模型位于 toy_npu 时，ModelRunner.start() 抛出 RuntimeError device mismatch: model on toy_npu, backend cpu。
+
+## 探针与操作
+
+后端选择机制与故障观测（轨迹原文，逐字）：
+
+```
+ToyServe/model_runner.py
+def select_backend(config):
+    return backends[config["backend"]]
+config={"backend":"cpu"}
+ModelRunner.start(): RuntimeError device mismatch: model on toy_npu, backend cpu
+```
+
+修改单元与验证方式（轨迹原文，逐字）：
+
+```
+BEFORE config.json
+{"backend":"cpu","batch":2}
+AFTER config.json
+{"backend":"toy_npu","batch":2}
+check.py constructs ModelRunner(config), calls start(), then generate([1,2]); asserts output.shape == (2, 4).
+```
+
+实际执行命令：`python check.py`。
+
+## 机制与判别
+
+后端由 `select_backend(config)` 按 `config["backend"]` 从后端注册表选取；config 指向 cpu 而模型在 toy_npu，`ModelRunner.start()` 即抛出设备不匹配错误。将 config.json 的 `backend` 由 `cpu` 改为 `toy_npu`（batch 保持 2）使后端与模型设备对齐；本轨迹内该修改闭合了启动失败，无其他混杂修改。未验证的推断：无（本卡不超出轨迹观测）。
+
+## 验证信号
+
+将 config.json 的 backend 由 cpu 改为 toy_npu（batch 保持 2）后，ToyServe startup 与一次 generate([1,2]) 推理通过，输出 shape 断言 (2,4) 通过，device=toy_npu，check.py 退出码 0、输出未截断。
+
+工具原始输出（逐字）：`ToyServe startup passed; one inference passed; shape=(2,4); device=toy_npu`（退出码 0，未截断；合成轨迹内的设备级功能验证）。
+
+## 适用与失效边界
+
+- 仅验证 startup 与一次 batch=2 的推理（shape 断言 (2,4)）；未覆盖吞吐/性能、长稳运行、其他 batch 或并发条件。
+- 未给出 ToyServe / ToyNPU 版本；版本变化后行为未验证。
+- 该修复仅针对「config 后端与模型设备不一致」这一失败形态；其他 device mismatch 成因未涉及。
+- 来源为合成评测轨迹（SYNTHETIC evaluator fixture），不构成真实平台技术指引。

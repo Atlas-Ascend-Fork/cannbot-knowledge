@@ -1,0 +1,117 @@
+{
+  "schema_version": "model.trace-review.v1",
+  "subject": {
+    "schema_version": "model.trace-review-subject.v1",
+    "ledger_sha256": "35be14f21d1db84653cb7f05edae69f769272c8af514882c48fb87280db33e01",
+    "reconstruction_sha256": "662dd48bb71c0b8e5d31962dc8277b50953a7791a14caa67ef64251c45dac69c",
+    "cards": [
+      {
+        "path": "runtime/toyserve_adapter_initialize_negative.md",
+        "sha256": "f3d02c84f2628ea19560c5f41b7aac1577c7f3caa445c41047585d54bc7af3bb",
+        "claim_ids": [
+          "claim-e-1",
+          "claim-e-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      },
+      {
+        "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+        "sha256": "3d6db8b7fc29bb86b5a41196312e3964bb23534534284198e6519e92e04b3592",
+        "claim_ids": [
+          "claim-a-1",
+          "claim-a-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1,
+          2
+        ]
+      }
+    ],
+    "curation_contract": "model.trace-curation.v1",
+    "required_checks": [
+      "body",
+      "comparisons",
+      "contradictions",
+      "description",
+      "scope",
+      "source_authority",
+      "title",
+      "validation_scope"
+    ],
+    "subject_sha256": "37071c80f9da83a3f36e8d0d0b337087c0f9f02fe794cf73ace16c35b5aecb59"
+  },
+  "verdict": "PASS",
+  "summary": "独立复核 baseline 臂 inference 路线的 2 张 staged 卡（trace-a-c1 repair_recipe、trace-e-c1 negative_result）。逐条核对：两条 claim 文本与 mechanism_artifacts 均在规范化事件与卡片正文中逐字出现，锚点全部解析到实际事件；evidence_roles 满足各自 knowledge_form 的必要角色；scope_evidence 锚定真实框架任务（ToyServe→ToyNPU 适配）；a/g 为同 family 逐字重复副本（原始文件 byte 相同），reproduce_count=1 未虚增复现；trace d 的两次计时观测无可比基线（batch/input 不同且 fast_mode 混杂），两臂一致未生成任何 performance_comparison；Agent 的 assume fixed 叙述被正确拒绝，未从 PASS 字样推导成功；卡片为 draft、sources: []、未发布，符合轨迹 Runbook 约定。工具复现 frozen subject 与磁盘一致，validate_model_evidence 复跑通过（2/2）。两条 minor clarity 发现不改变知识含义，按合同可留在 PASS。",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "clarity",
+      "card": "runtime/toyserve_adapter_initialize_negative.md, runtime/toyserve_backend_selection_device_mismatch.md",
+      "issue": "本臂规范化事件流未携带原始工具 outcome 元数据（raw 源中 a/g 为 exit 0 且未截断、e 为 exit 1；normalized_trace.jsonl 与 packet 中均丢失，c/e 的 error 事件类型被降级为 tool_result）。两卡已在『验证信号』与 reconstruction unknowns 中如实披露该缺口，且没有任何结论依赖丢失的元数据，属诚实披露的管线限制而非语义错误。",
+      "location": ".build/semantic-evaluation/normalized/{a,e,g}/normalized_trace.jsonl；两卡『验证信号』节",
+      "suggestion": "无需修订本批卡。后续升级归一化以保留 exit/truncated 元数据（proposed 臂快照已实现），避免依赖正文推断进程结果。"
+    },
+    {
+      "severity": "minor",
+      "category": "clarity",
+      "card": "runtime/toyserve_adapter_initialize_negative.md",
+      "issue": "边界条款『以 Traceback 与进程结果为准』提及『进程结果』，但本臂规范化事件中不存在退出码（作者已披露），该措辞可能让读者误以为轨迹中观测到了进程退出码。",
+      "location": "staged 卡『适用与失效边界』第 4 条",
+      "suggestion": "改为『以 Traceback 文本为准（本臂规范化事件未含退出码）』或删除『进程结果』表述。"
+    }
+  ],
+  "coverage": [
+    {
+      "path": "runtime/toyserve_adapter_initialize_negative.md",
+      "claim_ids": [
+        "claim-e-1",
+        "claim-e-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": []
+    },
+    {
+      "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+      "claim_ids": [
+        "claim-a-1",
+        "claim-a-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1,
+        2
+      ],
+      "unmapped_assertions": []
+    }
+  ],
+  "reviewer": "opencode-review-7dd024588c32400a8881198925acba87",
+  "attestation": "agent-runtime-message",
+  "reviewed_at": "2026-11-06T09:54:13Z"
+}

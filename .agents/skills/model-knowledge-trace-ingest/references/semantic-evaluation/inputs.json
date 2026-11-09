@@ -1,0 +1,47 @@
+{
+  "synthetic_only": true,
+  "traces": [
+    {
+      "trace_id": "a",
+      "file": "inputs/a.json",
+      "sha256": "cae9e0c2bb218ed57ac51301abaf205718ee16f1c078ad5f8df98ef6ce59b32c",
+      "source_family": "duplicate-a"
+    },
+    {
+      "trace_id": "b",
+      "file": "inputs/b.json",
+      "sha256": "c8f582d52bdaebd370aa5a16cf8248038926d60435f8270b038066af0b00102a",
+      "source_family": "b"
+    },
+    {
+      "trace_id": "c",
+      "file": "inputs/c.json",
+      "sha256": "0a475680c06e41b7c871f066310000d87bae338856a8e0023670b43c7c6c31d9",
+      "source_family": "c"
+    },
+    {
+      "trace_id": "d",
+      "file": "inputs/d.json",
+      "sha256": "422529a14ba065f1d98992aacdbe99433af3ea464d67d27bb04bc361a83a463a",
+      "source_family": "d"
+    },
+    {
+      "trace_id": "e",
+      "file": "inputs/e.json",
+      "sha256": "cb351a4234b2c47d9646d1a26c625113f62b296e26a529b24b6f2dce834dc7c0",
+      "source_family": "e"
+    },
+    {
+      "trace_id": "f",
+      "file": "inputs/f.json",
+      "sha256": "fe453acc693e1b179321cc98eb25922857bc7d9b68561001fa66c4328d8a66dc",
+      "source_family": "f"
+    },
+    {
+      "trace_id": "g",
+      "file": "inputs/g.json",
+      "sha256": "cae9e0c2bb218ed57ac51301abaf205718ee16f1c078ad5f8df98ef6ce59b32c",
+      "source_family": "duplicate-a"
+    }
+  ]
+}

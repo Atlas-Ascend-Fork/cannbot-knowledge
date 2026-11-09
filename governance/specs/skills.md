@@ -1,6 +1,6 @@
 # Knowledge Skills
 
-本仓维护 `knowledge-query`、`knowledge-ingest`、`knowledge-lint` 三项基础 Skill，Ascend C API 专用消费流程 `ascendc-api-knowledge-query` 与 Runtime API 推荐流程 `runtime-api-knowledge-query`，仓内专用的 `ops-knowledge-trace-ingest`，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
+本仓维护 `knowledge-query`、`knowledge-ingest`、`knowledge-lint` 三项基础 Skill，Ascend C API 专用消费流程 `ascendc-api-knowledge-query` 与 Runtime API 推荐流程 `runtime-api-knowledge-query`，仓内专用的 `ops-knowledge-trace-ingest` 与 `model-knowledge-trace-ingest`，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
 
 具体执行接口只在各 Skill 自身的 `SKILL.md` 和 `references/` 中维护，本页只定义仓库级行为与协作边界。
 
@@ -16,6 +16,7 @@
 | `knowledge-ingest` | 固定来源、变化类型、目标路径、待表达结论和当前知识语料 | 路由决策、候选 Concept、Git 来源账本；按需生成且由 Git 忽略的链接图谱和 API 引用建议 | 可以创建候选卡；图谱和引用建议只读正文，产物不提交、不发布 |
 | `knowledge-lint` | 单卡、完整知识仓或问题材料 | 分级确定性 Finding 报告或可复现 Issue 草稿 | 只读 |
 | `ops-knowledge-trace-ingest` | 本仓可读的算子开发 trace、日志或已归一化事件流 | 经证据门禁、独立审查、Lint 和检索验证的 Ascend C Runbook | 只在本知识仓使用；只写经审查卡、导航和日志 |
+| `model-knowledge-trace-ingest` | 各类 Agent 的本地运行轨迹、消息导出或统一事件流 | 先归一化，再批量提取模型优化、框架适配及相关环境调试知识，经归并、策展和独立审查形成模型 Runbook | 只在本知识仓使用；本地解析与校验独立维护，远端筛选和客户端调度在外层，Skill 只写经审查卡、导航和日志 |
 | `ops-knowledge-vv-ingest` | 固定版本源码、唯一逻辑算子、入口、平台和独占目标文件 | 不含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 | 只写任务指定的最终卡 |
 | `ops-knowledge-cv-ingest` | 固定版本源码、唯一逻辑算子、入口、平台和独占目标文件 | 含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 | 只写任务指定的最终卡 |
 
@@ -140,8 +141,8 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 
 ## 共同约束
 
-- 八项 Skill 共同遵守 `governance/schemas/` 和 `governance/contracts/`，不复制或放宽字段、路径和注册值。
-- 八项 Skill 的规范合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`templates/`、`scripts/` 等资源组成。其中七项可由安装器链接到业务项目，trace producer 保持仓内运行。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
+- 九项 Skill 共同遵守 `governance/schemas/` 和 `governance/contracts/`，不复制或放宽字段、路径和注册值。
+- 九项 Skill 的规范合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`templates/`、`scripts/` 等资源组成。其中七项可由安装器链接到业务项目，两项 trace producer 保持仓内运行。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
 - Query 和 Lint 不修改知识正文或治理规则，只按调用方要求生成本地产物；Ingest 不自动 commit、push、合并或发布。
 - CANN、DSL、API、算子、调试和优化事实进入 `knowledge/`，不埋在 Skill 指令中。
 - 官方 reference 来源盘点与通用摄入路由属于 Ingest，仓内开发 trace 动态摄入属于 trace producer，源码级完整算子生产属于 VV/CV，Issue 材料整理属于 Lint。其他专用 producer 需要单独完成架构和发布评审。

@@ -40,7 +40,7 @@ CANN 领域知识库面向 [CANN](https://hiascend.com/software/cann) 社区，�
           CANNBot 读取正文并核对来源
 ```
 
-本仓维护八项 Skill：七项可安装到业务项目，`ops-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
+本仓维护九项 Skill：七项可安装到业务项目，`ops-knowledge-trace-ingest` 与 `model-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
 
 | Skill | 作用 | 是否修改知识仓 |
 |---|---|---|
@@ -50,6 +50,7 @@ CANN 领域知识库面向 [CANN](https://hiascend.com/software/cann) 社区，�
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级和通用建卡，支持按需链接图谱 | 创建候选卡；构图只读正文，产物始终由 Git 忽略 |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
 | `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、导航、Lint 和检索门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
+| `model-knowledge-trace-ingest` | 将各类 Agent 运行轨迹归一化，批量挖掘模型优化、训练/推理框架及其环境调试知识，归并为 Runbook | 仓内使用；外层负责远端筛选与客户端调度，只写经审查的模型卡、导航和日志 |
 | `ops-knowledge-vv-ingest` | 从固定版本源码提取不含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 | `ops-knowledge-cv-ingest` | 从固定版本源码提取含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 

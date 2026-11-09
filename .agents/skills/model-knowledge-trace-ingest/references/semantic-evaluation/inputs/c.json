@@ -1,0 +1,38 @@
+[
+  {
+    "role": "user",
+    "content": "SYNTHETIC ToyTrain framework CPU-offload + CP=2 training timeout. Test whether raising timeout resolves it."
+  },
+  {
+    "role": "tool",
+    "content": "train.yaml BEFORE\ncp: 2\noffload: true\ntimeout_s: 60\nAFTER\ncp: 2\noffload: true\ntimeout_s: 300\nrun: python train.py --config train.yaml --steps 3"
+  },
+  {
+    "info": {
+      "sessionID": "toy",
+      "role": "assistant"
+    },
+    "parts": [
+      {
+        "type": "tool",
+        "tool": "bash",
+        "callID": "call",
+        "state": {
+          "status": "completed",
+          "input": {
+            "command": "python check.py"
+          },
+          "output": "training step 1: collective timeout at 300s; exit before step 2",
+          "metadata": {
+            "exit": 1,
+            "truncated": false
+          }
+        }
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": "The longer timeout did not repair this attempt. No successful training observed."
+  }
+]

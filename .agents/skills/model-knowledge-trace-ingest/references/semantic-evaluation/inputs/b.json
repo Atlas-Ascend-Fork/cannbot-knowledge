@@ -1,0 +1,10 @@
+[
+  {
+    "role": "user",
+    "content": "SYNTHETIC isolated operator contest. Background: LLM inference needs fast kernels. Optimize standalone add_tile kernel; only run op_bench.py with random tensors, no model or framework integration."
+  },
+  {
+    "role": "tool",
+    "content": "def add_tile(x,y):\n    return x+y\n# after: vectorize independent elements\noperator benchmark: 8 us -> 5 us; exact match. No model run."
+  }
+]

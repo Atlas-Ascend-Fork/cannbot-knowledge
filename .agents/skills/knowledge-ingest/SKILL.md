@@ -5,7 +5,7 @@ description: 将 cannbot-knowledge 摄入请求统一路由，把官方文档归
 
 # Knowledge Ingest
 
-本 Skill 是通用摄入路由入口。先判断变化类型和来源类型，再执行已接入 producer；任务已明确时也可直接调用对应的 VV/CV producer，或按 `ops-knowledge-trace-ingest` 的手动触发词在本知识仓启动 trace producer。通用路由和直接调用都遵守对应 producer 的证据、写入边界与外层收尾门禁。
+本 Skill 是通用摄入路由入口。先判断变化类型和来源类型，再执行已接入 producer；任务已明确时也可直接调用对应的 VV/CV producer，或在本知识仓直接使用 `ops-knowledge-trace-ingest` / `model-knowledge-trace-ingest` 生产算子或模型 Runbook。通用路由和直接调用都遵守对应 producer 的证据、写入边界与外层收尾门禁。
 
 ## 路由
 
@@ -13,7 +13,7 @@ description: 将 cannbot-knowledge 摄入请求统一路由，把官方文档归
 2. 判断 producer：
    - 官方文档、技术 reference、固定版本源码说明：执行[官方 Reference 摄入](references/official-reference-ingest.md)。
    - 已经蒸馏好的人工材料或单张候选：使用本 Skill 的 `create` 流程。
-   - 算子开发 trace、会话日志或已归一化事件流：在本知识仓路由到 [`ops-knowledge-trace-ingest`](../ops-knowledge-trace-ingest/SKILL.md)；业务项目的 contributor 安装不携带该仓内 producer，此时记录 `defer` 并说明需在独立知识仓执行。
+   - 开发 trace、会话日志或已归一化事件流：算子开发在本知识仓路由到 [`ops-knowledge-trace-ingest`](../ops-knowledge-trace-ingest/SKILL.md)，各类 Agent 轨迹中的模型及推理/训练框架与其环境调试调优知识，路由到 [`model-knowledge-trace-ingest`](../model-knowledge-trace-ingest/SKILL.md) 先归一化再批量处理；全量筛选和客户端调度不在模型 Skill 内。业务项目的 contributor 安装不携带这些仓内 producer，此时记录 `defer` 并说明需在独立知识仓执行。
    - 源码级完整算子知识：冻结逻辑算子、固定 commit、入口、平台和目标卡；至少一个 Host/launcher 可达 Device 节点含 Cube/AIC 或 MIX_CV 时使用 [`ops-knowledge-cv-ingest`](../ops-knowledge-cv-ingest/SKILL.md)，全部可达节点均不含上述类型时使用 [`ops-knowledge-vv-ingest`](../ops-knowledge-vv-ingest/SKILL.md)。这两项 producer 已接入，只提取源码知识，不执行编译或真机测试。
    - 尚无专用 producer 的完整样例分析、Issue/PR 证据编译：记录 `defer` 原因；已有人工蒸馏材料仍可走通用候选流程。实际算子编译与性能验证属于算子工程任务，不用知识摄入成功代替。
 3. 所有 producer 共同遵守[质量与证据约束](references/quality-constraints.md)和[路径 Profile](references/frontmatter-profiles.md)。

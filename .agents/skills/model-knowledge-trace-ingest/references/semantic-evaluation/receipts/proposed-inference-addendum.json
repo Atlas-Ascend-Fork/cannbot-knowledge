@@ -1,0 +1,117 @@
+{
+  "schema_version": "model.trace-review.v1",
+  "subject": {
+    "schema_version": "model.trace-review-subject.v1",
+    "ledger_sha256": "e78a7a6f325a5009315bb0e466652c7db4719ceba0d3a5ac512ad39db1597967",
+    "reconstruction_sha256": "47bf66ea406b2b13244545a65f3406cba574d9cebc25b4beed6cbd1b67355a8b",
+    "cards": [
+      {
+        "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+        "sha256": "9b85914426dc0c77dfb8bce326edaf6ff7f72c95dce47bd3a1dcefb61d137c2f",
+        "claim_ids": [
+          "a-claim-1",
+          "a-claim-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      },
+      {
+        "path": "validations/toyserve_adapter_initialize_verification.md",
+        "sha256": "604d0a82f021effabff847ab244dd3401991c6c721ad66ae4ae6a3acd296a1cb",
+        "claim_ids": [
+          "e-claim-1",
+          "e-claim-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      }
+    ],
+    "curation_contract": "model.trace-curation.v1",
+    "required_checks": [
+      "body",
+      "comparisons",
+      "contradictions",
+      "description",
+      "scope",
+      "source_authority",
+      "title",
+      "validation_scope"
+    ],
+    "subject_sha256": "7b935ef4e46e55d902b82df5d5bb44a6c857d3874abaee9af2caea3cfa507f53"
+  },
+  "verdict": "NEEDS_REVISION",
+  "summary": "对初始 proposed-inference receipt（verdict=PASS）的分类更正 addendum，绑定其 ORIGINAL 冻结 subject（subject_sha256 7b935ef4…）。按现行 reviewer.md 复核该 receipt 的两条 clarity minor 发现：发现一（e 卡『机制与判别』末段的通过侧判读分支规则）是未进入 claim mapping 的通过侧判据——e-claim-2 仅覆盖失败侧，通过侧在本轨迹无观测锚点，初始 receipt 自己承认『严格意义上它未进入 claim mapping』却将 coverage.unmapped_assertions 留空并给出 PASS；按现行政策，超出 claim 的通过标准或判读分支必须列入 unmapped_assertions，且验证规则越界属 validation 类，不能以『方法性表述』降级为 clarity minor 放行。发现二（初始 inference 重建中 trace d 的 environment.model/precision『未给出』与其自身同来源 facts 记录的 model=tiny、dtype=bf16 冲突）是哈希绑定重建内的来源事实冲突，属 evidence 类，不能以『无下游消费者』降级为 clarity minor。两类 category 无论 severity 均须 NEEDS_REVISION，且 unmapped_assertions 非空本身即阻断 PASS；因此该 ORIGINAL subject 的正确裁定应为 NEEDS_REVISION，而非 PASS。本 addendum 仅更正初始 receipt 的分类与裁定记录：初始 receipt 与全部初始快照保持不可变、原样保留；相应内容缺陷已在修订版中改正，并已在新的冻结 subject（subject_sha256 8060dc05…）上独立重审，见 revision-inference-receipt.json。",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "validation",
+      "card": "validations/toyserve_adapter_initialize_verification.md",
+      "issue": "重新分类自初始 receipt 的 clarity minor（原 category=clarity）：原卡（sha256 604d0a82…）『机制与判别』末段的判读分支规则『只有退出码为 0 且无截断、无错误输出的验证才可作为通过信号』是超出已映射 claim 的通过侧判据——e-claim-2 只断言失败侧（非零退出码与 traceback 表明失败；PASS 字样/completed 不能单独作为通过信号），通过侧判据在本轨迹无任何观测锚点，且该规则未进入 claim mapping。按现行 reviewer.md，正文超出 claim 的通过标准或判读分支必须列入 coverage.unmapped_assertions，验证规则越界属 validation 类 finding，无论 severity 均须 NEEDS_REVISION，不能以『与证据合同阅读纪律一致、属方法性表述』为由按 clarity minor 放行。",
+      "location": "初始 staged 卡 validations/toyserve_adapter_initialize_verification.md（subject 内 sha256 604d0a82…）『机制与判别』末段",
+      "suggestion": "内容缺陷已在修订版改正（判读分支收窄为仅失败侧：退出码非零且存在 traceback 时按失败处理，并显式拒绝在无通过侧观测时设定通过判据）；本条仅更正初始 receipt 的分类与裁定记录，原 receipt 保持不变。"
+    },
+    {
+      "severity": "minor",
+      "category": "evidence",
+      "card": "(reconstruction, trace d)",
+      "issue": "重新分类自初始 receipt 的 clarity minor（原 category=clarity）：初始 inference 重建（reconstruction_sha256 47bf66ea…）中 trace d 的 environment 声明 model/precision 为『未给出』，与其自身同来源 facts（run A/B 工具观测均记录 model=tiny、dtype=bf16）冲突，属哈希绑定重建内的来源事实冲突。按现行 reviewer.md，重建事实冲突属 evidence 类 finding，无论 severity 均须 NEEDS_REVISION，不能以『观测事实本身记录正确、无下游消费者』为由降级为 clarity minor。",
+      "location": "初始 curate/inference/reconstruction.json（subject 内 reconstruction_sha256 47bf66ea…），trace d 的 environment.model/environment.precision",
+      "suggestion": "内容缺陷已在修订版改正（environment.model/precision 取 trace d 本来源 event 2 的工具观测 tiny/bf16 并注明来源，无跨来源移植）；本条仅更正初始 receipt 的分类与裁定记录，原 receipt 保持不变。"
+    }
+  ],
+  "coverage": [
+    {
+      "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+      "claim_ids": [
+        "a-claim-1",
+        "a-claim-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": []
+    },
+    {
+      "path": "validations/toyserve_adapter_initialize_verification.md",
+      "claim_ids": [
+        "e-claim-1",
+        "e-claim-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": [
+        "『机制与判别』末段『只有退出码为 0 且无截断、无错误输出的验证才可作为通过信号』——通过侧判据超出 e-claim-2 的失败侧语义，本轨迹无通过侧验证的观测锚点，未进入 claim mapping（初始 receipt 的发现一已承认该规则未映射，但将本列表留空并给出 PASS；按现行政策该断言应列于此并阻断）"
+      ]
+    }
+  ],
+  "reviewer": "opencode-review-ffa98e6ab92049bf83f3bc3a946a833d",
+  "attestation": "agent-runtime-message",
+  "reviewed_at": "2026-11-06T10:38:11Z"
+}

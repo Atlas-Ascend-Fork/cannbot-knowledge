@@ -1,0 +1,1763 @@
+{
+  "schema_version": "model.trace-semantic-evaluation.v1",
+  "synthetic_only": true,
+  "evaluation_complete": true,
+  "baseline_commit": "c6248c95593537b12395b4e7be2486920cdf727c",
+  "input_manifest_sha256": "dda19688768e0c41b0e043a75a6bccc6ff742a02b1aeca2599134eeebed92e10",
+  "runtime": {
+    "baseline": {
+      "requested_model": "cannbot/glm-5.3",
+      "model_steps": 64,
+      "tool_events": 100,
+      "reported_tokens": {
+        "input": 721503,
+        "output": 23816,
+        "reasoning": 48304,
+        "cache_read": 6073984,
+        "cache_write": 0
+      },
+      "conservative_field_sum": 6867607,
+      "journal_sha256": "21447fecac3980226dc57ef7f367a025783e8784cf3bf2c4966a09a73990410a",
+      "finished": true
+    },
+    "proposed": {
+      "requested_model": "cannbot/glm-5.3",
+      "model_steps": 59,
+      "tool_events": 83,
+      "reported_tokens": {
+        "input": 135476,
+        "output": 25000,
+        "reasoning": 28531,
+        "cache_read": 4583616,
+        "cache_write": 0
+      },
+      "conservative_field_sum": 4772623,
+      "journal_sha256": "a032314dcea730d0a118641dee33d1b62deefac77e9929a945784fa06db988d9",
+      "finished": true
+    },
+    "initial_review": {
+      "requested_model": "cannbot/glm-5.3",
+      "model_steps": 50,
+      "tool_events": 75,
+      "reported_tokens": {
+        "input": 754963,
+        "output": 14589,
+        "reasoning": 30330,
+        "cache_read": 5236800,
+        "cache_write": 0
+      },
+      "conservative_field_sum": 6036682,
+      "journal_sha256": "2d8464c7902cf458b4bce4dcaa4855a99b898835f4fc3e9790550602722a0db9",
+      "finished": true
+    },
+    "revision": {
+      "requested_model": "cannbot/glm-5.3",
+      "model_steps": 60,
+      "tool_events": 84,
+      "reported_tokens": {
+        "input": 611139,
+        "output": 15648,
+        "reasoning": 39341,
+        "cache_read": 5206400,
+        "cache_write": 0
+      },
+      "conservative_field_sum": 5872528,
+      "journal_sha256": "87ff4cdcd28689f84b38530e5c7786b853482f870d7c456fac69b031dd854d2e",
+      "finished": true
+    },
+    "final_review": {
+      "requested_model": "cannbot/glm-5.3",
+      "model_steps": 24,
+      "tool_events": 30,
+      "reported_tokens": {
+        "input": 469852,
+        "output": 8193,
+        "reasoning": 32367,
+        "cache_read": 1162624,
+        "cache_write": 0
+      },
+      "conservative_field_sum": 1673036,
+      "journal_sha256": "5666deba1509e3174347054dc4c99ec70aa1a9c2dd3e4b49f81fb730656aefe2",
+      "finished": true
+    }
+  },
+  "arms": {
+    "baseline": {
+      "normalized_sources": [
+        {
+          "trace_id": "a",
+          "source_family": "duplicate-a",
+          "raw_source_sha256": "4914129f7a637538620a6c62bcf2b1e48992d10807390b73a07697c7e30c67ff",
+          "normalized_trace_sha256": "6a1283c117aa6643bab472d78b12cae36db790e57c72de989b38bf4615b358c6"
+        },
+        {
+          "trace_id": "b",
+          "source_family": "b",
+          "raw_source_sha256": "b24a5e9e5ebb9d6b84b7d1ed73fcb55f8d96128b00e3dcb81c233e722ab4067d",
+          "normalized_trace_sha256": "362243d988462c067146b84e2ffd2b97882504938cbcdb5bca2ddc00a5fcec38"
+        },
+        {
+          "trace_id": "c",
+          "source_family": "c",
+          "raw_source_sha256": "94c488292a6d7323c0b82e57172497684fb4a6ceab43f782d4b11bb8620b7901",
+          "normalized_trace_sha256": "a564d6a8d2376e0d7648d6b1d2c2ed75813a0071644f06bbf1e265b6f7ae5f0c"
+        },
+        {
+          "trace_id": "d",
+          "source_family": "d",
+          "raw_source_sha256": "f5dc09cdb5ac35add913adb1b3482cb6133282d66071fee4986416b67f281eee",
+          "normalized_trace_sha256": "21631fa8c1b88423d17035f0b82c64c74becb85a5c9733e679d2dbc49c7727f0"
+        },
+        {
+          "trace_id": "e",
+          "source_family": "e",
+          "raw_source_sha256": "482235fd11f30c1245f7b375dd232eb67edfcdc6efcf9339888954f3871a31a4",
+          "normalized_trace_sha256": "93f6327dbdebc7c44e17fd36af32afa1887e8b73f9cf7fc1880232e66a674936"
+        },
+        {
+          "trace_id": "f",
+          "source_family": "f",
+          "raw_source_sha256": "96e29bf46200bf7aea0068257a2076064e9e703e0d73c89cd2ae0eb3229390f7",
+          "normalized_trace_sha256": "610cfe7f7e41c3d5f7b04f76f986b2e56df329fa52a0f9de4fef019c9816345a"
+        },
+        {
+          "trace_id": "g",
+          "source_family": "duplicate-a",
+          "raw_source_sha256": "4298841fdc590b4e12ce1a5e022762653f60e5bf0745afd91874d1f70300b79b",
+          "normalized_trace_sha256": "78dce08334d7d4e818b3e379e364557958a3bd454c9e4f6fe2dc9481c0ca4356"
+        }
+      ],
+      "dispositions": [
+        {
+          "trace_id": "a",
+          "disposition": "mined",
+          "candidate_ids": [
+            "trace-a-c1"
+          ],
+          "reason": "启动期后端选择配置修复候选（repair_recipe）；与 g 同 family 合并为同一候选"
+        },
+        {
+          "trace_id": "b",
+          "disposition": "out_of_scope",
+          "candidate_ids": [],
+          "reason": "孤立算子竞赛微基准：仅 op_bench.py 随机张量、无模型或框架集成；背景提及 LLM inference 不构成任务证据，按 scope-policy 不外推为模型知识"
+        },
+        {
+          "trace_id": "c",
+          "disposition": "mined",
+          "candidate_ids": [
+            "trace-c-c1"
+          ],
+          "reason": "提高 timeout_s 未修复集合通信超时的失败路线候选（negative_result）"
+        },
+        {
+          "trace_id": "d",
+          "disposition": "no_knowledge",
+          "candidate_ids": [],
+          "reason": "两次计时观测的 batch/input 不同且 fast_mode 同时变化，无可比基线；无失败事件、探针或非显然机制，不能形成性能或诊断结论"
+        },
+        {
+          "trace_id": "e",
+          "disposition": "mined",
+          "candidate_ids": [
+            "trace-e-c1"
+          ],
+          "reason": "适配器 initialize 补丁未修复初始化的失败路线候选（negative_result）；Agent 的 assume fixed 判断与客观观测冲突，未采纳"
+        },
+        {
+          "trace_id": "f",
+          "disposition": "deferred",
+          "candidate_ids": [],
+          "deferred_stage": "missing_evidence",
+          "reason": "工具输出源端截断（... remaining output omitted），仅观测到 initialization PASS 与 step 1 started，三步训练目标无法验证，暂缓结论"
+        },
+        {
+          "trace_id": "g",
+          "disposition": "mined",
+          "candidate_ids": [
+            "trace-a-c1"
+          ],
+          "reason": "与 a 同 source_family duplicate-a 且逐字重复，并入同一候选，不增加复现次数"
+        }
+      ],
+      "candidates": [
+        {
+          "candidate_id": "trace-a-c1",
+          "route": "inference",
+          "knowledge_form": "repair_recipe",
+          "claims": [
+            {
+              "id": "claim-a-1",
+              "text": "在 ToyServe 推理框架向 ToyNPU 后端适配时，ModelRunner.start() 抛出 RuntimeError device mismatch: model on toy_npu, backend cpu，机制是 select_backend 仅按 config 的 backend 键查表选择后端，模型所在设备与该选择不一致",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "id": "claim-a-2",
+              "text": "把 config.json 的 backend 由 cpu 改为 toy_npu（batch=2 保持不变）后，check.py 观测到 ToyServe startup passed; one inference passed; shape=(2,4); device=toy_npu，即启动与一次推理在 ToyNPU 后端通过",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 6
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 6
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 2
+              }
+            ],
+            "before": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "after": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "validation": [
+              {
+                "source": 0,
+                "sequence": 6
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "claim-a-1"
+              ],
+              "text": "def select_backend(config):\n    return backends[config[\"backend\"]]",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "claim-a-2"
+              ],
+              "text": "BEFORE config.json\n{\"backend\":\"cpu\",\"batch\":2}\nAFTER config.json\n{\"backend\":\"toy_npu\",\"batch\":2}",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "claim-a-2"
+              ],
+              "text": "check.py constructs ModelRunner(config), calls start(), then generate([1,2]); asserts output.shape == (2, 4).",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "a",
+            "g"
+          ]
+        },
+        {
+          "candidate_id": "trace-c-c1",
+          "route": "training",
+          "knowledge_form": "negative_result",
+          "claims": [
+            {
+              "id": "claim-c-1",
+              "text": "在 ToyTrain 框架 cp=2、offload=true 的训练配置下，把 train.yaml 的 timeout_s 从 60 提高到 300 后，第一步训练仍在 300 秒处发生 collective timeout，进程在进入 step 2 前退出，未观察到成功训练",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                },
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            },
+            {
+              "id": "claim-c-2",
+              "text": "该失败结论只覆盖本次 CPU-offload 开启且 CP=2 的三步训练尝试；延长超时未能修复此尝试，不构成对其他超时原因或配置有效的判断",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 1
+                },
+                {
+                  "source": 0,
+                  "sequence": 2
+                },
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "attempt": [
+              {
+                "source": 0,
+                "sequence": 2
+              }
+            ],
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "boundary": [
+              {
+                "source": 0,
+                "sequence": 1
+              },
+              {
+                "source": 0,
+                "sequence": 2
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "claim-c-1",
+                "claim-c-2"
+              ],
+              "text": "train.yaml BEFORE\ncp: 2\noffload: true\ntimeout_s: 60\nAFTER\ncp: 2\noffload: true\ntimeout_s: 300\nrun: python train.py --config train.yaml --steps 3",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "claim-c-1"
+              ],
+              "text": "training step 1: collective timeout at 300s; exit before step 2",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "c"
+          ]
+        },
+        {
+          "candidate_id": "trace-e-c1",
+          "route": "inference",
+          "knowledge_form": "negative_result",
+          "claims": [
+            {
+              "id": "claim-e-1",
+              "text": "在 ToyServe 后端适配中，把 adapter.py 的 initialize() 由 return None 改为 return ToyDevice()（config backend=toy_npu）后，验证输出仍出现 Traceback: RuntimeError model did not initialize，补丁未修复模型初始化",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                },
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            },
+            {
+              "id": "claim-e-2",
+              "text": "同一输出以 PASS initialization 开头并不能构成修复验证，本轨迹中 Agent 的 assume fixed 判断与 RuntimeError 观测冲突，未被采纳为验证信号",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 5
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "attempt": [
+              {
+                "source": 0,
+                "sequence": 2
+              }
+            ],
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "boundary": [
+              {
+                "source": 0,
+                "sequence": 1
+              },
+              {
+                "source": 0,
+                "sequence": 2
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "claim-e-1"
+              ],
+              "text": "adapter.py BEFORE\ndef initialize():\n    return None\nAFTER\ndef initialize():\n    return ToyDevice()\nconfig: backend=toy_npu",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "claim-e-1",
+                "claim-e-2"
+              ],
+              "text": "PASS initialization\nTraceback: RuntimeError model did not initialize",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "e"
+          ]
+        }
+      ],
+      "curation": [
+        {
+          "candidate_id": "trace-a-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "runtime/toyserve_backend_selection_device_mismatch.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "a",
+            "g"
+          ]
+        },
+        {
+          "candidate_id": "trace-e-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "runtime/toyserve_adapter_initialize_negative.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "e"
+          ]
+        },
+        {
+          "candidate_id": "trace-c-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "runtime/toytrain_collective_timeout_raise_negative.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "c"
+          ]
+        }
+      ],
+      "cards": [
+        {
+          "route": "inference",
+          "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+          "candidate_id": "trace-a-c1",
+          "sha256": "3d6db8b7fc29bb86b5a41196312e3964bb23534534284198e6519e92e04b3592",
+          "file": "cards/baseline/inference/runtime/toyserve_backend_selection_device_mismatch.txt",
+          "knowledge_written": false
+        },
+        {
+          "route": "inference",
+          "path": "runtime/toyserve_adapter_initialize_negative.md",
+          "candidate_id": "trace-e-c1",
+          "sha256": "f3d02c84f2628ea19560c5f41b7aac1577c7f3caa445c41047585d54bc7af3bb",
+          "file": "cards/baseline/inference/runtime/toyserve_adapter_initialize_negative.txt",
+          "knowledge_written": false
+        },
+        {
+          "route": "training",
+          "path": "runtime/toytrain_collective_timeout_raise_negative.md",
+          "candidate_id": "trace-c-c1",
+          "sha256": "30f08d0ec663906bec8d0931a028b39f3b25a3e9aa27da3c3f2a5b8d9e5baf29",
+          "file": "cards/baseline/training/runtime/toytrain_collective_timeout_raise_negative.txt",
+          "knowledge_written": false
+        }
+      ],
+      "validation": [
+        {
+          "route": "inference",
+          "report": {
+            "ok": true,
+            "accepted": 2,
+            "total": 2,
+            "route": "inference"
+          },
+          "sha256": "13655737732eb34aaf2367e3605a0e864fc78b698d4b53386101e1ea12ada0d0"
+        },
+        {
+          "route": "training",
+          "report": {
+            "ok": true,
+            "accepted": 1,
+            "total": 1,
+            "route": "training"
+          },
+          "sha256": "8d20fb3990fb226d323f705231ccafeb7c50b0a262dee4525947ce3b21da0a1a"
+        }
+      ],
+      "reviews": [
+        {
+          "file": "receipts/baseline-inference-receipt.json",
+          "sha256": "aef4308867f2a7a4e3daf3408c1e651aca3e8881ab80abf58de2b7e716339451",
+          "subject_sha256": "37071c80f9da83a3f36e8d0d0b337087c0f9f02fe794cf73ace16c35b5aecb59",
+          "verdict": "PASS",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "clarity",
+              "card": "runtime/toyserve_adapter_initialize_negative.md, runtime/toyserve_backend_selection_device_mismatch.md",
+              "issue": "本臂规范化事件流未携带原始工具 outcome 元数据（raw 源中 a/g 为 exit 0 且未截断、e 为 exit 1；normalized_trace.jsonl 与 packet 中均丢失，c/e 的 error 事件类型被降级为 tool_result）。两卡已在『验证信号』与 reconstruction unknowns 中如实披露该缺口，且没有任何结论依赖丢失的元数据，属诚实披露的管线限制而非语义错误。",
+              "location": ".build/semantic-evaluation/normalized/{a,e,g}/normalized_trace.jsonl；两卡『验证信号』节",
+              "suggestion": "无需修订本批卡。后续升级归一化以保留 exit/truncated 元数据（proposed 臂快照已实现），避免依赖正文推断进程结果。"
+            },
+            {
+              "severity": "minor",
+              "category": "clarity",
+              "card": "runtime/toyserve_adapter_initialize_negative.md",
+              "issue": "边界条款『以 Traceback 与进程结果为准』提及『进程结果』，但本臂规范化事件中不存在退出码（作者已披露），该措辞可能让读者误以为轨迹中观测到了进程退出码。",
+              "location": "staged 卡『适用与失效边界』第 4 条",
+              "suggestion": "改为『以 Traceback 文本为准（本臂规范化事件未含退出码）』或删除『进程结果』表述。"
+            }
+          ]
+        },
+        {
+          "file": "receipts/baseline-training-receipt.json",
+          "sha256": "62773c6ef76ada2aff50cca69f5894c8a5819dad79453f2f3690de6e69c794e7",
+          "subject_sha256": "ee69551d44b788a94b7d3f313b8bf4637cde86b78488102f67b49aa4a9572133",
+          "verdict": "PASS",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "clarity",
+              "card": "runtime/toytrain_collective_timeout_raise_negative.md",
+              "issue": "本臂规范化事件流未携带原始工具 outcome 元数据（raw 源中该次训练运行为 exit 1），失败信号以 tool_result 正文为准；卡片与 reconstruction unknowns 已如实披露，无结论依赖丢失元数据。",
+              "location": ".build/semantic-evaluation/normalized/c/normalized_trace.jsonl；卡『验证信号』节",
+              "suggestion": "无需修订本批卡；后续升级归一化保留退出码后可把『退出码 1』写入失败信号。"
+            }
+          ]
+        }
+      ]
+    },
+    "proposed": {
+      "normalized_sources": [
+        {
+          "trace_id": "a",
+          "source_family": "duplicate-a",
+          "raw_source_sha256": "4914129f7a637538620a6c62bcf2b1e48992d10807390b73a07697c7e30c67ff",
+          "normalized_trace_sha256": "035def6f948e1df408c7d5ca0bde4c110bd6d5b4ee0162145a036d0496fe41fb"
+        },
+        {
+          "trace_id": "b",
+          "source_family": "b",
+          "raw_source_sha256": "b24a5e9e5ebb9d6b84b7d1ed73fcb55f8d96128b00e3dcb81c233e722ab4067d",
+          "normalized_trace_sha256": "2199015807c435eb0ab35fab56e0c3246612b66600945c8c52b112983242a145"
+        },
+        {
+          "trace_id": "c",
+          "source_family": "c",
+          "raw_source_sha256": "94c488292a6d7323c0b82e57172497684fb4a6ceab43f782d4b11bb8620b7901",
+          "normalized_trace_sha256": "c7041f45c8582febbe2cfcac33912836dbd057ba2f73a605526182d210da364e"
+        },
+        {
+          "trace_id": "d",
+          "source_family": "d",
+          "raw_source_sha256": "f5dc09cdb5ac35add913adb1b3482cb6133282d66071fee4986416b67f281eee",
+          "normalized_trace_sha256": "01110e20285d763620d0ea3d6d0addf9c51d0f522d3d41c20cce62b352879850"
+        },
+        {
+          "trace_id": "e",
+          "source_family": "e",
+          "raw_source_sha256": "482235fd11f30c1245f7b375dd232eb67edfcdc6efcf9339888954f3871a31a4",
+          "normalized_trace_sha256": "85ad9f133da0c4e155e566d8887fdac7256898eac53b9af1a96a48af5866a080"
+        },
+        {
+          "trace_id": "f",
+          "source_family": "f",
+          "raw_source_sha256": "96e29bf46200bf7aea0068257a2076064e9e703e0d73c89cd2ae0eb3229390f7",
+          "normalized_trace_sha256": "9d1423488dd4e0a86711305f170e195430fd7a8e0364d75ca2f1c05910a8a30c"
+        },
+        {
+          "trace_id": "g",
+          "source_family": "duplicate-a",
+          "raw_source_sha256": "4298841fdc590b4e12ce1a5e022762653f60e5bf0745afd91874d1f70300b79b",
+          "normalized_trace_sha256": "781bb490a21c36d0f29f9d94c1501862a66f57c54ebc0c8d725d46cb6c3dfb6c"
+        }
+      ],
+      "dispositions": [
+        {
+          "trace_id": "a",
+          "disposition": "mined",
+          "candidate_ids": [
+            "a-c1"
+          ],
+          "routes": [
+            "inference"
+          ],
+          "reason": "范围内（推理框架迁移适配与调试）；failure + 完整 before/after 配置单元 + 修后客观验证（exit 0、未截断、startup+一次推理+shape 断言）闭合为 repair_recipe 候选。"
+        },
+        {
+          "trace_id": "b",
+          "disposition": "out_of_scope",
+          "candidate_ids": [],
+          "reason": "孤立算子赛题微基准：仅 op_bench.py + 随机张量，明确无模型或框架集成；背景提及 LLM 不构成任务关系，按范围策略从本 Model 批次排除，不转写其他领域。"
+        },
+        {
+          "trace_id": "c",
+          "disposition": "mined",
+          "candidate_ids": [
+            "c-c1"
+          ],
+          "routes": [
+            "training"
+          ],
+          "reason": "范围内（训练框架 offload/并行调试）；timeout_s 60→300 的完整尝试与客观失败（exit 1，step 1 collective timeout at 300s）构成 negative_result 候选。"
+        },
+        {
+          "trace_id": "d",
+          "disposition": "no_knowledge",
+          "candidate_ids": [],
+          "reason": "两次 ToyServe 延迟观测的 batch/input 不同且 fast_mode 同时改变，无可比基线；无失败、无修复机制、无可执行探针，不构成可复用模型知识，也不改写为通用观测卡；两次观测已记入 inference 重建的 facts/limitations。"
+        },
+        {
+          "trace_id": "e",
+          "disposition": "mined",
+          "candidate_ids": [
+            "e-c1"
+          ],
+          "routes": [
+            "inference"
+          ],
+          "reason": "范围内（推理框架适配验证）；initialize() None→ToyDevice() 尝试后 check.py exit 1，PASS 字样与 traceback 并存，构成 negative_result 候选（PASS 字样/completed 不能替代退出码判断）。"
+        },
+        {
+          "trace_id": "f",
+          "disposition": "deferred",
+          "candidate_ids": [],
+          "deferred_stage": "missing_evidence",
+          "reason": "offload false→true 后 check.py exit 0 但工具输出源端截断：仅能确认 initialization PASS 与 step 1 started，三个训练步的完成情况不可观测；初始化级部分验证不足以构成非显然可复用规则，需未截断复跑后再挖掘。"
+        },
+        {
+          "trace_id": "g",
+          "disposition": "mined",
+          "candidate_ids": [
+            "a-c1"
+          ],
+          "routes": [
+            "inference"
+          ],
+          "reason": "与 trace a 同 source_family（duplicate-a）的内容一致重复副本；并入同一候选 a-c1 的来源列表，不增加复现次数（reproduce_count=1）。"
+        }
+      ],
+      "candidates": [
+        {
+          "candidate_id": "a-c1",
+          "route": "inference",
+          "knowledge_form": "repair_recipe",
+          "claims": [
+            {
+              "id": "a-claim-1",
+              "text": "ToyServe 后端选择失败：config 为 backend=cpu 而模型位于 toy_npu 时，ModelRunner.start() 抛出 RuntimeError device mismatch: model on toy_npu, backend cpu。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "id": "a-claim-2",
+              "text": "将 config.json 的 backend 由 cpu 改为 toy_npu（batch 保持 2）后，ToyServe startup 与一次 generate([1,2]) 推理通过，输出 shape 断言 (2,4) 通过，device=toy_npu，check.py 退出码 0、输出未截断。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 5
+                },
+                {
+                  "source": 0,
+                  "sequence": 6
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 6
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 2
+              }
+            ],
+            "before": [
+              {
+                "source": 0,
+                "sequence": 2
+              },
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "after": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "validation": [
+              {
+                "source": 0,
+                "sequence": 6
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "a-claim-1"
+              ],
+              "text": "ToyServe/model_runner.py\ndef select_backend(config):\n    return backends[config[\"backend\"]]\nconfig={\"backend\":\"cpu\"}\nModelRunner.start(): RuntimeError device mismatch: model on toy_npu, backend cpu",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "a-claim-2"
+              ],
+              "text": "BEFORE config.json\n{\"backend\":\"cpu\",\"batch\":2}\nAFTER config.json\n{\"backend\":\"toy_npu\",\"batch\":2}\ncheck.py constructs ModelRunner(config), calls start(), then generate([1,2]); asserts output.shape == (2, 4).",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "a",
+            "g"
+          ]
+        },
+        {
+          "candidate_id": "c-c1",
+          "route": "training",
+          "knowledge_form": "negative_result",
+          "claims": [
+            {
+              "id": "c-claim-1",
+              "text": "ToyTrain 在 cp=2 且 offload=true 的训练配置下出现 collective timeout；将 timeout_s 由 60 提高到 300 后，训练第 1 步仍在 300s 处发生 collective timeout 并在 step 2 前退出（check.py 退出码 1），提高超时上限本身没有消除该失败。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                },
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            },
+            {
+              "id": "c-claim-2",
+              "text": "本轨迹未观察到任何成功训练步骤，也未定位 collective timeout 的根因；该结果只说明在此配置下提高 timeout_s 不是充分修复，不能外推为该超时必然与 offload 或 cp=2 因果相关。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 5
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "attempt": [
+              {
+                "source": 0,
+                "sequence": 2
+              },
+              {
+                "source": 0,
+                "sequence": 3
+              }
+            ],
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "boundary": [
+              {
+                "source": 0,
+                "sequence": 4
+              },
+              {
+                "source": 0,
+                "sequence": 5
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "c-claim-1"
+              ],
+              "text": "train.yaml BEFORE\ncp: 2\noffload: true\ntimeout_s: 60\nAFTER\ncp: 2\noffload: true\ntimeout_s: 300\nrun: python train.py --config train.yaml --steps 3",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "c-claim-2"
+              ],
+              "text": "training step 1: collective timeout at 300s; exit before step 2",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "c"
+          ]
+        },
+        {
+          "candidate_id": "e-c1",
+          "route": "inference",
+          "knowledge_form": "negative_result",
+          "claims": [
+            {
+              "id": "e-claim-1",
+              "text": "ToyServe 后端适配器将 initialize() 由 return None 改为 return ToyDevice()（config backend=toy_npu）后，模型初始化仍未通过：check.py 退出码 1，输出同时包含 PASS initialization 与 Traceback: RuntimeError model did not initialize。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                },
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            },
+            {
+              "id": "e-claim-2",
+              "text": "该轨迹中工具生命周期为 completed 且输出含 PASS initialization 字样，但非零退出码与 traceback 表明初始化失败；PASS 字样或 completed 状态不能单独作为修复成功的验证信号，'It says PASS, assume fixed.' 是与客观信号相矛盾的 Agent 判断。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 5
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "attempt": [
+              {
+                "source": 0,
+                "sequence": 2
+              },
+              {
+                "source": 0,
+                "sequence": 3
+              }
+            ],
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "boundary": [
+              {
+                "source": 0,
+                "sequence": 4
+              },
+              {
+                "source": 0,
+                "sequence": 5
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "e-claim-1"
+              ],
+              "text": "adapter.py BEFORE\ndef initialize():\n    return None\nAFTER\ndef initialize():\n    return ToyDevice()\nconfig: backend=toy_npu",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "e-claim-2"
+              ],
+              "text": "PASS initialization\nTraceback: RuntimeError model did not initialize",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "e"
+          ]
+        }
+      ],
+      "curation": [
+        {
+          "candidate_id": "a-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "runtime/toyserve_backend_selection_device_mismatch.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "a",
+            "g"
+          ]
+        },
+        {
+          "candidate_id": "e-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "validations/toyserve_adapter_initialize_verification.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "e"
+          ]
+        },
+        {
+          "candidate_id": "c-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "c"
+          ]
+        }
+      ],
+      "cards": [
+        {
+          "route": "inference",
+          "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+          "candidate_id": "a-c1",
+          "sha256": "9b85914426dc0c77dfb8bce326edaf6ff7f72c95dce47bd3a1dcefb61d137c2f",
+          "file": "cards/proposed/inference/runtime/toyserve_backend_selection_device_mismatch.txt",
+          "knowledge_written": false
+        },
+        {
+          "route": "inference",
+          "path": "validations/toyserve_adapter_initialize_verification.md",
+          "candidate_id": "e-c1",
+          "sha256": "604d0a82f021effabff847ab244dd3401991c6c721ad66ae4ae6a3acd296a1cb",
+          "file": "cards/proposed/inference/validations/toyserve_adapter_initialize_verification.txt",
+          "knowledge_written": false
+        },
+        {
+          "route": "training",
+          "path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+          "candidate_id": "c-c1",
+          "sha256": "ab78fac1de876980bd9c5324c54eb64255f765615463e7fe62269320b6fa6ee3",
+          "file": "cards/proposed/training/runtime/toytrain_offload_cp2_collective_timeout.txt",
+          "knowledge_written": false
+        }
+      ],
+      "validation": [
+        {
+          "route": "inference",
+          "report": {
+            "ok": true,
+            "accepted": 2,
+            "total": 2,
+            "route": "inference"
+          },
+          "sha256": "13655737732eb34aaf2367e3605a0e864fc78b698d4b53386101e1ea12ada0d0"
+        },
+        {
+          "route": "training",
+          "report": {
+            "ok": true,
+            "accepted": 1,
+            "total": 1,
+            "route": "training"
+          },
+          "sha256": "8d20fb3990fb226d323f705231ccafeb7c50b0a262dee4525947ce3b21da0a1a"
+        }
+      ],
+      "reviews": [
+        {
+          "file": "receipts/proposed-inference-receipt.json",
+          "sha256": "0aeacf58a6aaf6941aa9218d424c7fde74b298ddae99d5b8a0fdf40f78080d6a",
+          "subject_sha256": "7b935ef4e46e55d902b82df5d5bb44a6c857d3874abaee9af2caea3cfa507f53",
+          "verdict": "PASS",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "clarity",
+              "card": "validations/toyserve_adapter_initialize_verification.md",
+              "issue": "『机制与判别』中的判读分支规则（『只有退出码为 0 且无截断、无错误输出的验证才可作为通过信号』）比已映射的 e-claim-2（只覆盖失败侧：PASS/completed 不能单独作为通过信号）更强；通过分支在本轨迹未观测，卡内已声明『本轨迹只观测到前一种分支』。该规则与证据合同的阅读纪律一致，属方法性表述而非新增经验事实，故记 clarity minor；但严格意义上它未进入 claim mapping。",
+              "location": "staged 卡『机制与判别』末段",
+              "suggestion": "在后续修订中把该判读规则纳入 claim 集并锚定，或收窄为『本轨迹中 PASS 字样与非零退出码并存，按失败处理』。"
+            },
+            {
+              "severity": "minor",
+              "category": "clarity",
+              "card": "(reconstruction, trace d)",
+              "issue": "inference 重建中 trace d 的 environment 声明 model/precision『未给出』，与其自身 facts（run A/B 均记录 model=tiny、dtype=bf16）不一致；观测事实本身记录正确，无下游消费者。",
+              "location": "curate/inference/reconstruction.json，trace d 的 environment",
+              "suggestion": "将 environment.model 改为 tiny、precision 改为 bf16（与 facts 一致），或注明 environment 仅描述会话级未知信息。"
+            }
+          ]
+        },
+        {
+          "file": "receipts/proposed-training-receipt.json",
+          "sha256": "a6c7401ba10c63480348a5b51293b1f8d6221a65f86f1f357fa9d7901965684f",
+          "subject_sha256": "9fdd4a9f6ce34bad41677aa1c92123dfc7a8e59a335ffe04faa3789480b65650",
+          "verdict": "NEEDS_REVISION",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "evidence",
+              "card": "(reconstruction, trace f)",
+              "issue": "training 重建中 trace f 的 environment.parallelism 为『cp=2（轨迹记录）』，但 trace f 的 5 个事件（用户消息、offload false→true 配置、check.py 调用、截断输出、Agent 推测）均无 cp=2；cp=2 只出现在 trace c。把 c 的并行配置记为 f 的轨迹记录，是对哈希绑定重建中来源事实的错误归属。",
+              "location": "curate/training/reconstruction.json，trace f，environment.parallelism",
+              "suggestion": "删除该字段或改为『未给出』；修订后重算 reconstruction/ledger hash 并重新冻结 subject。"
+            },
+            {
+              "severity": "minor",
+              "category": "evidence",
+              "card": "runtime/toytrain_offload_cp2_collective_timeout.md",
+              "issue": "『触发与观测』首句把任务前提写成观测到的触发：『CPU-offload + CP=2 训练在超时上限 60s 下出现 collective timeout』。轨迹内唯一被工具观测到的超时是提高后的 300s（event 4，退出码 1）；60s 只作为 BEFORE 配置值出现，从未有 60s 下的运行观测，用户叙述亦仅称 training timeout（未限定 collective）。该句同时未进入 claim mapping（c-claim-1 只断言该配置下出现 collective timeout，锚定 event 2/4）。",
+              "location": "staged 卡『触发与观测』首句（同一表述亦来自 mine/DRAFT-runtime-2.md）",
+              "suggestion": "改写为任务前提表述（如『任务背景：用户报告该配置下训练超时（用户叙述），前置配置 timeout_s: 60；本轨迹实际观测到的超时见下』），仅保留 300s 超时的逐字观测，或将其移入『机制与判别』并显式标注为用户叙述。"
+            },
+            {
+              "severity": "minor",
+              "category": "clarity",
+              "card": "runtime/toytrain_offload_cp2_collective_timeout.md",
+              "issue": "ledger dedup.read_paths 记录的 'model/inference/runbooks/runtime/collective_participation_per_rank_consistency.md' 自仓库根不可解析（实际位于 knowledge/model/inference/...），查重阅读记录的路径书写不一致。",
+              "location": "curate/training/ledger.json，dedup.read_paths",
+              "suggestion": "统一为自仓库根可解析的 knowledge/ 前缀路径。"
+            }
+          ]
+        },
+        {
+          "file": "receipts/proposed-inference-addendum.json",
+          "sha256": "74b2721e73478e2f0bb9082dfff7c9a78b97283461b858dc5edf6bd59c672223",
+          "subject_sha256": "7b935ef4e46e55d902b82df5d5bb44a6c857d3874abaee9af2caea3cfa507f53",
+          "verdict": "NEEDS_REVISION",
+          "findings": [
+            {
+              "severity": "minor",
+              "category": "validation",
+              "card": "validations/toyserve_adapter_initialize_verification.md",
+              "issue": "重新分类自初始 receipt 的 clarity minor（原 category=clarity）：原卡（sha256 604d0a82…）『机制与判别』末段的判读分支规则『只有退出码为 0 且无截断、无错误输出的验证才可作为通过信号』是超出已映射 claim 的通过侧判据——e-claim-2 只断言失败侧（非零退出码与 traceback 表明失败；PASS 字样/completed 不能单独作为通过信号），通过侧判据在本轨迹无任何观测锚点，且该规则未进入 claim mapping。按现行 reviewer.md，正文超出 claim 的通过标准或判读分支必须列入 coverage.unmapped_assertions，验证规则越界属 validation 类 finding，无论 severity 均须 NEEDS_REVISION，不能以『与证据合同阅读纪律一致、属方法性表述』为由按 clarity minor 放行。",
+              "location": "初始 staged 卡 validations/toyserve_adapter_initialize_verification.md（subject 内 sha256 604d0a82…）『机制与判别』末段",
+              "suggestion": "内容缺陷已在修订版改正（判读分支收窄为仅失败侧：退出码非零且存在 traceback 时按失败处理，并显式拒绝在无通过侧观测时设定通过判据）；本条仅更正初始 receipt 的分类与裁定记录，原 receipt 保持不变。"
+            },
+            {
+              "severity": "minor",
+              "category": "evidence",
+              "card": "(reconstruction, trace d)",
+              "issue": "重新分类自初始 receipt 的 clarity minor（原 category=clarity）：初始 inference 重建（reconstruction_sha256 47bf66ea…）中 trace d 的 environment 声明 model/precision 为『未给出』，与其自身同来源 facts（run A/B 工具观测均记录 model=tiny、dtype=bf16）冲突，属哈希绑定重建内的来源事实冲突。按现行 reviewer.md，重建事实冲突属 evidence 类 finding，无论 severity 均须 NEEDS_REVISION，不能以『观测事实本身记录正确、无下游消费者』为由降级为 clarity minor。",
+              "location": "初始 curate/inference/reconstruction.json（subject 内 reconstruction_sha256 47bf66ea…），trace d 的 environment.model/environment.precision",
+              "suggestion": "内容缺陷已在修订版改正（environment.model/precision 取 trace d 本来源 event 2 的工具观测 tiny/bf16 并注明来源，无跨来源移植）；本条仅更正初始 receipt 的分类与裁定记录，原 receipt 保持不变。"
+            }
+          ]
+        }
+      ]
+    },
+    "revision": {
+      "normalized_sources": [
+        {
+          "trace_id": "a",
+          "source_family": "duplicate-a",
+          "raw_source_sha256": "4914129f7a637538620a6c62bcf2b1e48992d10807390b73a07697c7e30c67ff",
+          "normalized_trace_sha256": "035def6f948e1df408c7d5ca0bde4c110bd6d5b4ee0162145a036d0496fe41fb"
+        },
+        {
+          "trace_id": "b",
+          "source_family": "b",
+          "raw_source_sha256": "b24a5e9e5ebb9d6b84b7d1ed73fcb55f8d96128b00e3dcb81c233e722ab4067d",
+          "normalized_trace_sha256": "2199015807c435eb0ab35fab56e0c3246612b66600945c8c52b112983242a145"
+        },
+        {
+          "trace_id": "c",
+          "source_family": "c",
+          "raw_source_sha256": "94c488292a6d7323c0b82e57172497684fb4a6ceab43f782d4b11bb8620b7901",
+          "normalized_trace_sha256": "c7041f45c8582febbe2cfcac33912836dbd057ba2f73a605526182d210da364e"
+        },
+        {
+          "trace_id": "d",
+          "source_family": "d",
+          "raw_source_sha256": "f5dc09cdb5ac35add913adb1b3482cb6133282d66071fee4986416b67f281eee",
+          "normalized_trace_sha256": "01110e20285d763620d0ea3d6d0addf9c51d0f522d3d41c20cce62b352879850"
+        },
+        {
+          "trace_id": "e",
+          "source_family": "e",
+          "raw_source_sha256": "482235fd11f30c1245f7b375dd232eb67edfcdc6efcf9339888954f3871a31a4",
+          "normalized_trace_sha256": "85ad9f133da0c4e155e566d8887fdac7256898eac53b9af1a96a48af5866a080"
+        },
+        {
+          "trace_id": "f",
+          "source_family": "f",
+          "raw_source_sha256": "96e29bf46200bf7aea0068257a2076064e9e703e0d73c89cd2ae0eb3229390f7",
+          "normalized_trace_sha256": "9d1423488dd4e0a86711305f170e195430fd7a8e0364d75ca2f1c05910a8a30c"
+        },
+        {
+          "trace_id": "g",
+          "source_family": "duplicate-a",
+          "raw_source_sha256": "4298841fdc590b4e12ce1a5e022762653f60e5bf0745afd91874d1f70300b79b",
+          "normalized_trace_sha256": "781bb490a21c36d0f29f9d94c1501862a66f57c54ebc0c8d725d46cb6c3dfb6c"
+        }
+      ],
+      "dispositions": [
+        {
+          "trace_id": "a",
+          "disposition": "mined",
+          "candidate_ids": [
+            "a-c1"
+          ],
+          "routes": [
+            "inference"
+          ],
+          "reason": "范围内（推理框架迁移适配与调试）；failure + 完整 before/after 配置单元 + 修后客观验证（exit 0、未截断、startup+一次推理+shape 断言）闭合为 repair_recipe 候选。"
+        },
+        {
+          "trace_id": "b",
+          "disposition": "out_of_scope",
+          "candidate_ids": [],
+          "reason": "孤立算子赛题微基准：仅 op_bench.py + 随机张量，明确无模型或框架集成；背景提及 LLM 不构成任务关系，按范围策略从本 Model 批次排除，不转写其他领域。"
+        },
+        {
+          "trace_id": "c",
+          "disposition": "mined",
+          "candidate_ids": [
+            "c-c1"
+          ],
+          "routes": [
+            "training"
+          ],
+          "reason": "范围内（训练框架 offload/并行调试）；timeout_s 60→300 的完整尝试与客观失败（exit 1，step 1 collective timeout at 300s）构成 negative_result 候选。"
+        },
+        {
+          "trace_id": "d",
+          "disposition": "no_knowledge",
+          "candidate_ids": [],
+          "reason": "两次 ToyServe 延迟观测的 batch/input 不同且 fast_mode 同时改变，无可比基线；无失败、无修复机制、无可执行探针，不构成可复用模型知识，也不改写为通用观测卡；两次观测已记入 inference 重建的 facts/limitations。"
+        },
+        {
+          "trace_id": "e",
+          "disposition": "mined",
+          "candidate_ids": [
+            "e-c1"
+          ],
+          "routes": [
+            "inference"
+          ],
+          "reason": "范围内（推理框架适配验证）；initialize() None→ToyDevice() 尝试后 check.py exit 1，PASS 字样与 traceback 并存，构成 negative_result 候选（PASS 字样/completed 不能替代退出码判断）。"
+        },
+        {
+          "trace_id": "f",
+          "disposition": "deferred",
+          "candidate_ids": [],
+          "deferred_stage": "missing_evidence",
+          "reason": "offload false→true 后 check.py exit 0 但工具输出源端截断：仅能确认 initialization PASS 与 step 1 started，三个训练步的完成情况不可观测；初始化级部分验证不足以构成非显然可复用规则，需未截断复跑后再挖掘。"
+        },
+        {
+          "trace_id": "g",
+          "disposition": "mined",
+          "candidate_ids": [
+            "a-c1"
+          ],
+          "routes": [
+            "inference"
+          ],
+          "reason": "与 trace a 同 source_family（duplicate-a）的内容一致重复副本；并入同一候选 a-c1 的来源列表，不增加复现次数（reproduce_count=1）。"
+        }
+      ],
+      "candidates": [
+        {
+          "candidate_id": "a-c1",
+          "route": "inference",
+          "knowledge_form": "repair_recipe",
+          "claims": [
+            {
+              "id": "a-claim-1",
+              "text": "ToyServe 后端选择失败：config 为 backend=cpu 而模型位于 toy_npu 时，ModelRunner.start() 抛出 RuntimeError device mismatch: model on toy_npu, backend cpu。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "id": "a-claim-2",
+              "text": "将 config.json 的 backend 由 cpu 改为 toy_npu（batch 保持 2）后，ToyServe startup 与一次 generate([1,2]) 推理通过，输出 shape 断言 (2,4) 通过，device=toy_npu，check.py 退出码 0、输出未截断。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 5
+                },
+                {
+                  "source": 0,
+                  "sequence": 6
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 6
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 2
+              }
+            ],
+            "before": [
+              {
+                "source": 0,
+                "sequence": 2
+              },
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "after": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "validation": [
+              {
+                "source": 0,
+                "sequence": 6
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "a-claim-1"
+              ],
+              "text": "ToyServe/model_runner.py\ndef select_backend(config):\n    return backends[config[\"backend\"]]\nconfig={\"backend\":\"cpu\"}\nModelRunner.start(): RuntimeError device mismatch: model on toy_npu, backend cpu",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "a-claim-2"
+              ],
+              "text": "BEFORE config.json\n{\"backend\":\"cpu\",\"batch\":2}\nAFTER config.json\n{\"backend\":\"toy_npu\",\"batch\":2}\ncheck.py constructs ModelRunner(config), calls start(), then generate([1,2]); asserts output.shape == (2, 4).",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "a",
+            "g"
+          ]
+        },
+        {
+          "candidate_id": "c-c1",
+          "route": "training",
+          "knowledge_form": "negative_result",
+          "claims": [
+            {
+              "id": "c-claim-1",
+              "text": "ToyTrain 在 cp=2 且 offload=true 的训练配置下出现 collective timeout；将 timeout_s 由 60 提高到 300 后，训练第 1 步仍在 300s 处发生 collective timeout 并在 step 2 前退出（check.py 退出码 1），提高超时上限本身没有消除该失败。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                },
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            },
+            {
+              "id": "c-claim-2",
+              "text": "本轨迹未观察到任何成功训练步骤，也未定位 collective timeout 的根因；该结果只说明在此配置下提高 timeout_s 不是充分修复，不能外推为该超时必然与 offload 或 cp=2 因果相关。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 5
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "attempt": [
+              {
+                "source": 0,
+                "sequence": 2
+              },
+              {
+                "source": 0,
+                "sequence": 3
+              }
+            ],
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "boundary": [
+              {
+                "source": 0,
+                "sequence": 4
+              },
+              {
+                "source": 0,
+                "sequence": 5
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "c-claim-1"
+              ],
+              "text": "train.yaml BEFORE\ncp: 2\noffload: true\ntimeout_s: 60\nAFTER\ncp: 2\noffload: true\ntimeout_s: 300\nrun: python train.py --config train.yaml --steps 3",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "c-claim-2"
+              ],
+              "text": "training step 1: collective timeout at 300s; exit before step 2",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "c"
+          ]
+        },
+        {
+          "candidate_id": "e-c1",
+          "route": "inference",
+          "knowledge_form": "negative_result",
+          "claims": [
+            {
+              "id": "e-claim-1",
+              "text": "ToyServe 后端适配器将 initialize() 由 return None 改为 return ToyDevice()（config backend=toy_npu）后，模型初始化仍未通过：check.py 退出码 1，输出同时包含 PASS initialization 与 Traceback: RuntimeError model did not initialize。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                },
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            },
+            {
+              "id": "e-claim-2",
+              "text": "该轨迹中工具生命周期为 completed 且输出含 PASS initialization 字样，但非零退出码与 traceback 表明初始化失败；PASS 字样或 completed 状态不能单独作为修复成功的验证信号，'It says PASS, assume fixed.' 是与客观信号相矛盾的 Agent 判断。",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                },
+                {
+                  "source": 0,
+                  "sequence": 5
+                }
+              ],
+              "signals": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "evidence_roles": {
+            "attempt": [
+              {
+                "source": 0,
+                "sequence": 2
+              },
+              {
+                "source": 0,
+                "sequence": 3
+              }
+            ],
+            "failure": [
+              {
+                "source": 0,
+                "sequence": 4
+              }
+            ],
+            "boundary": [
+              {
+                "source": 0,
+                "sequence": 4
+              },
+              {
+                "source": 0,
+                "sequence": 5
+              }
+            ]
+          },
+          "mechanism_artifacts": [
+            {
+              "claim_ids": [
+                "e-claim-1"
+              ],
+              "text": "adapter.py BEFORE\ndef initialize():\n    return None\nAFTER\ndef initialize():\n    return ToyDevice()\nconfig: backend=toy_npu",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 2
+                }
+              ]
+            },
+            {
+              "claim_ids": [
+                "e-claim-2"
+              ],
+              "text": "PASS initialization\nTraceback: RuntimeError model did not initialize",
+              "anchors": [
+                {
+                  "source": 0,
+                  "sequence": 4
+                }
+              ]
+            }
+          ],
+          "source_traces": [
+            "e"
+          ]
+        }
+      ],
+      "curation": [
+        {
+          "candidate_id": "a-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "runtime/toyserve_backend_selection_device_mismatch.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "a",
+            "g"
+          ]
+        },
+        {
+          "candidate_id": "e-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "validations/toyserve_adapter_initialize_verification.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "e"
+          ]
+        },
+        {
+          "candidate_id": "c-c1",
+          "status": "published",
+          "operation": "new",
+          "target_path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+          "reproduce_count": 1,
+          "source_traces": [
+            "c"
+          ]
+        }
+      ],
+      "cards": [
+        {
+          "route": "inference",
+          "path": "runtime/toyserve_backend_selection_device_mismatch.md",
+          "candidate_id": "a-c1",
+          "sha256": "9b85914426dc0c77dfb8bce326edaf6ff7f72c95dce47bd3a1dcefb61d137c2f",
+          "file": "cards/revision/inference/runtime/toyserve_backend_selection_device_mismatch.txt",
+          "knowledge_written": false
+        },
+        {
+          "route": "inference",
+          "path": "validations/toyserve_adapter_initialize_verification.md",
+          "candidate_id": "e-c1",
+          "sha256": "e3cb8a7c8da583f17541e7dda02394496148104622ddcf1fe58b159e0472227b",
+          "file": "cards/revision/inference/validations/toyserve_adapter_initialize_verification.txt",
+          "knowledge_written": false
+        },
+        {
+          "route": "training",
+          "path": "runtime/toytrain_offload_cp2_collective_timeout.md",
+          "candidate_id": "c-c1",
+          "sha256": "f27a54a9347550f68c4e11f75d4b15868ec07a9134f51af488043eb58d614e1f",
+          "file": "cards/revision/training/runtime/toytrain_offload_cp2_collective_timeout.txt",
+          "knowledge_written": false
+        }
+      ],
+      "validation": [
+        {
+          "route": "inference",
+          "report": {
+            "ok": true,
+            "accepted": 2,
+            "total": 2,
+            "route": "inference"
+          },
+          "sha256": "13655737732eb34aaf2367e3605a0e864fc78b698d4b53386101e1ea12ada0d0"
+        },
+        {
+          "route": "training",
+          "report": {
+            "ok": true,
+            "accepted": 1,
+            "total": 1,
+            "route": "training"
+          },
+          "sha256": "8d20fb3990fb226d323f705231ccafeb7c50b0a262dee4525947ce3b21da0a1a"
+        }
+      ],
+      "reviews": [
+        {
+          "file": "receipts/revision-inference-receipt.json",
+          "sha256": "818471c92a41388b7d1e91e59ec5b8e5ac24eb3c00c60e7993c71b2d6e64118b",
+          "subject_sha256": "8060dc0594c4ddbf2b79d53d55df9b81f84060e00d5f1a5d5d0163351dae9922",
+          "verdict": "PASS",
+          "findings": []
+        },
+        {
+          "file": "receipts/revision-training-receipt.json",
+          "sha256": "ad0dd6695ca4c20fd6ddf77441063d48674a851bece30193d89ce05d47fe420d",
+          "subject_sha256": "4925a5b53fc27e3eef4d6f42f4df5e840d3dc86cd8c7edb18c67430b371154c8",
+          "verdict": "PASS",
+          "findings": []
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Single synthetic trial; no production accuracy, throughput or cost conclusion.",
+    "Three initial client sessions, one revision author session and one new independent re-review session; each handles the complete batch.",
+    "A stalled continuation produced no statistics and was stopped; its service-side token use is unknown.",
+    "Public artifacts contain synthetic source IDs and actual staged bytes; full private ledgers are not rebased into publishable receipts."
+  ],
+  "snapshot_fingerprints": {
+    "baseline": {
+      "file": "baseline-skill-files.json",
+      "sha256": "f7dfa756785ebac4ce08ddae99497208e4a46a6609a70543c3d8e38851cacfc6"
+    },
+    "proposed": {
+      "file": "proposed-skill-files.json",
+      "sha256": "487e5d4b3efdcbbd5f7f4e3030b6c35865737e3c37b5e4dfe0368146caeb4fa4"
+    },
+    "revision": {
+      "file": "revision-skill-files.json",
+      "sha256": "c19175e6fca3793c3c9164fb7ad3e576a1b20cf9c1b2e9f8395a7918410e3074"
+    }
+  }
+}

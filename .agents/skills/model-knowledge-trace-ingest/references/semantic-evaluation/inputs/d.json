@@ -1,0 +1,10 @@
+[
+  {
+    "role": "user",
+    "content": "SYNTHETIC ToyServe two timing observations, evaluate what they establish."
+  },
+  {
+    "role": "tool",
+    "content": "run A: model=tiny,device=ToyNPU,dtype=bf16,batch=1,input=16,output=4,TP=1,warmup=2,median_latency_ms=10\nrun B: model=tiny,device=ToyNPU,dtype=bf16,batch=8,input=128,output=4,TP=1,warmup=2,median_latency_ms=6\nNo paired run at matching batch/input; runtime option fast_mode also changed."
+  }
+]

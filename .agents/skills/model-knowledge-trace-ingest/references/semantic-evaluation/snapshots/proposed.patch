@@ -1,0 +1,1085 @@
+diff --git a/.agents/skills/model-knowledge-trace-ingest/SKILL.md b/.agents/skills/model-knowledge-trace-ingest/SKILL.md
+index 0b0f8d49..dec950f5 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/SKILL.md
++++ b/.agents/skills/model-knowledge-trace-ingest/SKILL.md
+@@ -15,8 +15,8 @@ description: 从一批 Agent 运行轨迹中提取模型训练/推理优化、
+ 
+ - 自动识别常见的消息、内容块和事件封装，不以某个项目、存储服务或会话路径判断格式。
+ - 其他 Agent 的结构化记录通过声明式字段映射接入；不能确认角色的转写、未知块和不完整记录保留原文并记为 unknown，不猜测工具观测或成功状态。
+-- 保留会话及显式父子关系、事件顺序、工具 call id、完整正文与来源锚点；脱敏单独记账，不截短长输出。累积消息快照使用显式 snapshots 模式，只消除继承前缀，保留真实重复回合。
+-- 验证规范化文件、来源清单和事件覆盖；已有快照不可覆盖。归一化成功不代表语义已读或知识有效。
++- 保留会话及显式父子关系、事件顺序、工具 call id、完整正文与来源锚点；按[脱敏流程](references/privacy.md)清理凭据、身份和私有路径，单独记账，不截短长输出。累积消息快照使用显式 snapshots 模式，只消除继承前缀，保留真实重复回合。
++- 验证规范化文件、来源清单和事件覆盖；已有快照不可覆盖。工具生命周期 completed 不等于成功；读取 outcome、原始结果元数据与 limitations，非零退出码、截断或未知状态不能构成修复成功。父消息与父会话分别保留，不从 parentID 猜会话关系。归一化成功不代表语义已读或知识有效。
+ 
+ 批量输入读取[批处理接口](references/batch-processing.md)：接收一组目录或清单，离线 normalize 后 prepare。已符合统一事件合同的输入可以先 verify 再 prepare；旧的其他格式须重新 normalize。单来源是一个元素的批次，不把多轨迹输入拆为逐轨迹 Agent 任务。
+ 
+@@ -38,4 +38,6 @@ description: 从一批 Agent 运行轨迹中提取模型训练/推理优化、
+ 
+ 需要发布的卡由实际独立审查者按[审查要点](references/reviewer.md)复核标题、摘要、正文及完整机制，审查绑定冻结内容；语义问题不能降为 minor 后通过。没有独立审查能力就交付待审产物。修改正文、实质账本或重建后重新审查，脚本不能产生语义批准。
+ 
++冻结与写入前按[公开检查](references/privacy.md)对整批卡和受影响导航复查；检查失败不能冻结、批准或发布。自动检查不证明脱敏完备，独立审查仍须检查上下文中的身份和敏感信息。
++
+ 真实审查通过后由执行 Agent 按仓库合同写入已核对的卡片，创建不覆盖、更新核对旧内容 hash；统一补齐导航、日志、Lint、索引与目标查询验证。原始轨迹和取证账本留在调用方工作目录，不进入公开知识正文。运行与复现方式见[离线验证](references/validation.md)。
+diff --git a/.agents/skills/model-knowledge-trace-ingest/references/curation.md b/.agents/skills/model-knowledge-trace-ingest/references/curation.md
+index b75755f1..b35f5ba2 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/references/curation.md
++++ b/.agents/skills/model-knowledge-trace-ingest/references/curation.md
+@@ -28,7 +28,7 @@ staged-cards/<area>/<slug>.md
+ [
+   {"candidate_id":"c1","status":"published","operation":"new","target_path":"runtime/example_slug.md",
+    "dedup":{"decision":"create","queries":["实际执行的查询"]},"reproduce_count":1,
+-   "scope_evidence":{"summary":"本机制与实际模型/框架任务的关系","anchors":[{"source":0,"sequence":1}]},
++   "scope_evidence":{"summary":"本机制与实际模型/框架任务的关系","anchors":[{"source":0,"sequence":1},{"source":0,"sequence":3}]},
+    "validation_scope":["source_read"],
+    "omit_claims":[{"claim_id":"不采纳的原claim id","reason":"真实缺证原因；没有删减时省略此字段"}]},
+   {"candidate_id":"c2","status":"deferred","reason":"实际未决项"}
+@@ -45,6 +45,8 @@ python3 <SKILL_DIR>/scripts/curate_candidates.py <mine>/manifest.json --decision
+ 
+ ## 集中校验与冻结
+ 
++先按[脱敏与公开自包含检查](privacy.md)检查整批待审卡及导航。归一化脱敏不构成发布豁免；标题、摘要、代码块、日志和新增解释都须重查。未公开的候选编号、同簇指代不能承载复现条件，必须补全有证据的内容或链接现存公开卡；缺证时删除依赖结论或暂缓。
++
+ ```bash
+ python3 <SKILL_DIR>/scripts/validate_model_evidence.py <batch>/ledger.json <batch>/staged-cards --route <route> --candidates-manifest <mine>/manifest.json --report <batch>/validation-01.json
+ python3 <SKILL_DIR>/scripts/review_cards.py subject <batch>/ledger.json <batch>/staged-cards
+diff --git a/.agents/skills/model-knowledge-trace-ingest/references/data-processing.md b/.agents/skills/model-knowledge-trace-ingest/references/data-processing.md
+index c45d3fe9..3a7af534 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/references/data-processing.md
++++ b/.agents/skills/model-knowledge-trace-ingest/references/data-processing.md
+@@ -72,6 +72,8 @@ python3 <SKILL_DIR>/scripts/normalize_trace.py <导出.jsonl> --layout snapshots
+ | actor | user、assistant、system、developer、tool 或来源声明的其他角色 |
+ | event_type | user_message、assistant_message、system_message、tool_call、tool_result、reasoning、error、metric、artifact、session_start、session_end、unknown |
+ | tool | 可为空，否则含 name 与 call_id；不补造未知调用身份 |
++| outcome / result_metadata / limitations | 保留退出码、输出完整性、原始结果状态与元数据；元数据同样脱敏。completed 只是生命周期，非零退出码为 error；截断记 limitation；未识别或矛盾状态保留 unknown |
++| message_id / parent_message_id | 显式消息关系；普通消息 info.parentID 不映射为父会话。父会话仅来自明确 session 字段、session 对象/会话声明或声明式映射 |
+ | content.text | 脱敏后的完整正文，JSON 参数保持可解析；无文本上限裁剪 |
+ | provenance | 原始相对文件名、逻辑记录号、记录内容 hash、文件字节 hash、内部 locator 与适配版本 |
+ 
+@@ -90,3 +92,5 @@ python3 <SKILL_DIR>/scripts/read_trace.py read <normalized-dir> --sequence 12 --
+ ```
+ 
+ text_parts 按顺序连接得到原始字符区间，按 next_sequence/next_offset 续读。分页完整、索引完整与真实语义阅读分别记账。unknown、未解码媒体、源端截断、缺失子会话和未读正文进入重建 limitations；相关证据不足时暂缓结论，不凭记忆补齐。
++
++脱敏配置、元数据审计及发布前检查见[脱敏流程](privacy.md)。事件正文身份 hash 基于脱敏后的实际正文；原始文件/记录 hash 仍绑定私有原始材料。旧快照不能补标新脱敏版本，须由原始输入生成新目录。
+diff --git a/.agents/skills/model-knowledge-trace-ingest/references/mining.md b/.agents/skills/model-knowledge-trace-ingest/references/mining.md
+index afa64732..3ad9634e 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/references/mining.md
++++ b/.agents/skills/model-knowledge-trace-ingest/references/mining.md
+@@ -4,7 +4,7 @@
+ 
+ ## 先还原，再蒸馏
+ 
+-批量输入先读批清单和目录，再按候选机制组织多来源证据。小批可直接读取连续窗口，大批按 [batch-processing.md](batch-processing.md) 生成有界证据包。同窗相同文本可共享阅读，事件角色、顺序与版本逐一保留；按问题簇建立候选，不逐轨迹派子任务。建立实际用户目标、框架/模型、硬件/版本、命令与配置、源码修改、构建、运行、精度、性能和回退的时间线。区分用户转述、Agent 建议、源码观测、工具执行与产物验证；不能用后来的源码解释旧日志。
++批量输入先读批清单和目录，再按候选机制组织多来源证据。小批可直接读取连续窗口，大批按 [batch-processing.md](batch-processing.md) 生成有界证据包。同窗相同文本可共享阅读，事件角色、顺序与版本逐一保留；按问题簇建立候选，不逐轨迹派子任务。建立实际用户目标、框架/模型、硬件/版本、命令与配置、源码修改、构建、运行、精度、性能和回退的时间线。区分用户转述、Agent 建议、源码观测、工具执行与产物验证；读取 outcome/result_metadata/limitations，生命周期完成、日志中的 PASS 和退出码为零均不可单独替代目标验收；截断内容不支持对被截部分下结论。不能用后来的源码解释旧日志。
+ 
+ 按实验分别记录 before、尝试、结果和后续动作。多处同时改变时承认混杂，未证明的机制写 assumptions，缺失内容写 unknowns/limitations。相关性以实际任务和操作对象为依据；框架的环境调试调优同样在范围内，只有背景提示提及框架名则不构成任务证据。
+ 
+diff --git a/.agents/skills/model-knowledge-trace-ingest/references/privacy.md b/.agents/skills/model-knowledge-trace-ingest/references/privacy.md
+new file mode 100644
+index 00000000..c61a0301
+--- /dev/null
++++ b/.agents/skills/model-knowledge-trace-ingest/references/privacy.md
+@@ -0,0 +1,50 @@
++# 脱敏与公开自包含检查
++
++先保护原始输入，再归一化，再审查公开卡。所有 Agent 和来源使用相同流程；不依赖存储服务、项目目录或特定账号。归一化不是匿名化证明，公开前仍需语义复核。
++
++## Normalize：正文与元数据一起处理
++
++原始文件只读，原始 hash 留在私有工作目录。默认 `agent.trace-redaction.v2` 对正文、JSON 工具参数、嵌套 JSON 字符串及结果元数据递归处理：
++
++- 凭据：密码、AK/SK、API key、访问/刷新 token、Authorization、Cookie、URL userinfo 和敏感 query 参数、expect/send 密码。
++- 身份与网络：结构化账号/用户信息、邮箱、SSH 登录身份、内网 IPv4/IPv6、内网域名及主机字段。
++- 目录：个人 home、私有 workspace、数据/临时工作根和 Windows 用户目录。默认整条私有路径变成不含原文的占位符；不靠只换用户名保留可定位的项目树。
++
++同一次归一化中同值用相同占位符，不同值保持可区分。输出只记版本、分类次数及是否使用调用方策略，不导出原值映射。公共 Git 固定提交链接、仓库相对源码路径、系统 `/usr`、`/opt`、`/dev` 路径、模型 token/shape/精度/指标等技术证据不因敏感字段同名而全部删除。
++
++需要保留复现所需的相对路径时，由调用方在私有目录提供可选策略：
++
++```json
++{
++  "path_aliases": [
++    {"prefix": "/home/example/private_checkout", "replacement": "${PROJECT_ROOT}"},
++    {"prefix": "/data/private_weights", "replacement": "${MODEL_DIR}"}
++  ],
++  "private_terms": ["example-private-account"]
++}
++```
++
++```bash
++python3 <SKILL_DIR>/scripts/trace_batch.py normalize <raw-input.json> --output <new-normalized> --redaction-policy <private-policy.json>
++# 单来源也支持 normalize_trace.py ... --redaction-policy <private-policy.json>
++```
++
++前缀须为绝对路径、替换项为变量；最长前缀优先，保留后缀。策略不能放入公开产物。默认规则无法推断组织内的全部敏感标识，调用方须补充 private_terms/目录映射并人工复核。真实账号/模型位置未确认可以省略，不能编造版本或工作负载来填空。
++
++退出码、截断、错误状态及其限制须保留，脱敏不能删除这些观测，也不能让不同实验因占位符相同而合成一次运行。脱敏改变实际工件文本后，重新生成来源绑定、证据工件和审查主题；不复用旧 hash 或旧 PASS。
++
++## Curate：公开内容不依赖私有账本
++
++公开卡检查标题、摘要、正文、命令、日志和链接。把私有前缀改为 `${PROJECT_ROOT}`、`${MODEL_DIR}`、`${DATASET_DIR}`、`${PYTHON_ENV_ROOT}` 等有含义的变量，并在卡片中解释从何处取值，保留文件间相对关系与工作目录条件。无法确认路径角色时保持未知，不猜目录结构。
++
++“见候选 c1”“同簇 s5-…”等内部指代不能代替参数、消融或验证。已有公开卡使用真正存在的相对 Markdown 链接；没有公开卡则把已有证据支持的必要内容写进本卡，或撤回依赖该缺失内容的结论并明确缺口。不把内部账本发布来绕过脱敏。
++
++## 冻结和写入前：整批检查
++
++```bash
++python3 <SKILL_DIR>/scripts/audit_publication.py <repo-root> --files <changed-markdown-paths.json> --report <new-private-report.json>
++```
++
++文件清单为相对 root 的 Markdown 路径数组，包含待审卡及受影响导航；省略清单则扫描 root 下 Markdown。拒绝符号链接和路径越界，只读审计，不自动重写知识。报告只含路径、行号、类别和数量，不回显匹配值。可使用同一私有策略补充环境特有项。
++
++`validate_model_evidence.py` 和 `review_cards.py` 的冻结及发布清单入口也检查默认规则。自动发现任一未处理敏感项或内部候选指代即失败；人工检查仍须覆盖未被规则识别的身份、连接信息和上下文重识别风险。审查发现问题后修改原产物，重跑全批校验并重新审查，不编辑 receipt 或降低 finding 严重性。
+diff --git a/.agents/skills/model-knowledge-trace-ingest/references/reviewer.md b/.agents/skills/model-knowledge-trace-ingest/references/reviewer.md
+index 362aa9e8..b381cbff 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/references/reviewer.md
++++ b/.agents/skills/model-knowledge-trace-ingest/references/reviewer.md
+@@ -43,3 +43,5 @@
+ 新 curation_contract 的 coverage 每卡恰好一项，claim_ids 与 subject 中列表一致，complete_artifact_indexes 覆盖所有完整机制单元，checked 覆盖 subject.required_checks，unmapped_assertions 必须为空才能 PASS。不能默认填齐：尚未查明的正文断言应列出并退回修订。旧账本无强制 coverage，但不得声称完成新合同覆盖。
+ 
+ subject 使用规范化后的实质 ledger hash（将两类批准标记置回待审），与磁盘 ledger 的原始文件 hash 可能不同；完整复制工具实际输出，不能自行计算替代。不能通过运行时身份核验时保留待审，receipt 的字段、覆盖声明和 hash 均不认证审查者身份或阅读事实。
++
++逐卡检查[脱敏与自包含](privacy.md)：私有账号、工作目录、模型/数据集位置、内网连接、工具元数据及代码块全部覆盖；不能以变量或删词掩盖缺失的实验条件。核对工具退出码与截断标记，拒绝从 completed/PASS 推导成功。范围关系须有实际模型/框架观测，不能只有背景关键词。
+diff --git a/.agents/skills/model-knowledge-trace-ingest/references/scope-policy.md b/.agents/skills/model-knowledge-trace-ingest/references/scope-policy.md
+index 80e2026b..e5b81ece 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/references/scope-policy.md
++++ b/.agents/skills/model-knowledge-trace-ingest/references/scope-policy.md
+@@ -11,3 +11,5 @@
+ 无关的普通应用、系统管理、网站、文案及 Agent 编排仅记录 out_of_scope，不提取其知识。混合会话只采纳范围内的证据；缺上下文导致无法判定时记 deferred 并保留缺口。不要因系统提示词提到框架名称就把会话纳入，也不要因包含构建、测试或环境步骤而排除真实框架任务。
+ 
+ 远端全量初筛由调用方完成。本地批次仍逐来源记录实际去向，保持原始来源和候选对应关系，不对每条轨迹额外派发筛选 Agent。
++
++策展必须同时记录任务锚点和至少一处客观的模型调用、框架实现/集成或相关环境证据。算子路径含模型名称、赛题背景写 LLM、单算子输入 shape 接近模型或宣称可用于训练，都不足以证明关系。仅验证独立 kernel、DSL 微基准、算子用例或其 CI 的材料从本 Model 批次排除；不自动转写到其他领域。
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/audit_publication.py b/.agents/skills/model-knowledge-trace-ingest/scripts/audit_publication.py
+new file mode 100644
+index 00000000..89b0c0eb
+--- /dev/null
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/audit_publication.py
+@@ -0,0 +1,55 @@
++#!/usr/bin/env python3
++"""Read-only batch audit of public Markdown; never echo matches or rewrite knowledge."""
++
++import argparse
++import json
++from pathlib import Path
++
++from model_trace_common import child, write_new_json
++from trace_privacy import PROFILE, publication_findings
++
++
++def audit(root, files=None, policy=None):
++    root = Path(root).absolute()
++    if files is None:
++        files = [str(p.relative_to(root)) for p in sorted(root.rglob('*.md'))]
++    if not isinstance(files, list) or not all(isinstance(path, str) for path in files):
++        raise ValueError('files must be a JSON array of relative Markdown paths')
++    if len(set(files)) != len(files):
++        raise ValueError('duplicate publication path')
++    findings = []
++    for relative in files:
++        path = child(root, relative)
++        if path.suffix != '.md' or not path.is_file():
++            raise ValueError('publication target must be an existing Markdown file')
++        findings.extend({'path': relative, **row} for row in publication_findings(path.read_text(), policy))
++    return {'ok': not findings, 'profile': PROFILE, 'checked': len(files), 'findings': findings,
++            'knowledge_written': False, 'semantic_review_pass': False}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('root', type=Path)
++    parser.add_argument('--files', type=Path)
++    parser.add_argument('--redaction-policy', type=Path)
++    parser.add_argument('--report', type=Path)
++    args = parser.parse_args()
++    try:
++        result = audit(args.root, json.loads(args.files.read_text()) if args.files else None,
++                       json.loads(args.redaction_policy.read_text()) if args.redaction_policy else None)
++        if args.report:
++            if args.report.resolve().is_relative_to((args.root / 'knowledge').resolve()):
++                raise ValueError('publication report cannot be written into knowledge')
++            write_new_json(args.report, result)
++            print(json.dumps({key: value for key, value in result.items() if key != 'findings'} |
++                             {'findings_count': len(result['findings']), 'report': str(args.report)}, ensure_ascii=False))
++        else:
++            print(json.dumps(result, ensure_ascii=False, indent=2))
++        return 0 if result['ok'] else 1
++    except (ValueError, TypeError, OSError) as error:
++        print(json.dumps({'ok': False, 'error': str(error)}))
++        return 1
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/batch_exchange.py b/.agents/skills/model-knowledge-trace-ingest/scripts/batch_exchange.py
+index 06c46ecd..a9b57d5f 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/batch_exchange.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/batch_exchange.py
+@@ -46,6 +46,8 @@ def reading_view(batch, output, max_bytes=524288):
+                     continue
+                 included.append(sequence)
+                 header = {key: event.get(key) for key in ['sequence', 'actor', 'event_type', 'tool', 'timestamp']}
++                header.update({key: event[key] for key in ('outcome', 'result_metadata', 'limitations',
++                                                          'message_id', 'parent_message_id') if key in event})
+                 blocks.extend(['\nEVENT ' + json.dumps(header, ensure_ascii=False) + '\n',
+                                'TEXT_CHARACTERS ' + str(len(text)) + '\n', text, '\nEND_EVENT\n'])
+                 selected_characters += len(text)
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/model_trace_common.py b/.agents/skills/model-knowledge-trace-ingest/scripts/model_trace_common.py
+index 13253549..44f156a7 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/model_trace_common.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/model_trace_common.py
+@@ -3,90 +3,19 @@
+ import hashlib
+ import json
+ from pathlib import Path
+-import re
+ 
+ 
+ REPOSITORY = Path(__file__).resolve().parents[4]
+-EXTRA_SECRET = re.compile(
+-    r'(?i)((?<![\w-])(?:[A-Z][A-Z0-9_]*_(?:AK|SK)|access_key_id|secret_access_key|api_key|api-key|access_token|token|password|secret|账号密码|密码)'
+-    r'["\']?[ \t]*[:=：][ \t]*)(?:"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|[^\s,;"\'<>]+)'
+-)
+-CHINESE_PASSWORD = re.compile(r'((?:账号密码|密码)[ \t]*(?:[:=：][ \t]*)?)[A-Za-z0-9_!@#%^&*()+=./\\-]{4,}')
+-SECRET_KEY = re.compile(r'(?i)(?:password|passwd|secret|token|api[_-]?key|access[_-]?key(?:_id)?|secret_access_key|[a-z][a-z0-9_]*_(?:ak|sk)|authorization|密码)$')
++def redact(value, redactor=None):
++    from trace_privacy import Redactor
++    redactor = redactor or Redactor()
++    before = sum(redactor.counts.values())
++    result = redactor.clean(value)
++    return result, sum(redactor.counts.values()) - before
+ 
+ 
+-def redact(value):
+-    count = 0
+-    if isinstance(value, dict):
+-        result = {}
+-        for key, item in value.items():
+-            if SECRET_KEY.fullmatch(key) and item is not None:
+-                result[key], count = '<redacted>', count + 1
+-            else:
+-                result[key], found = redact(item)
+-                count += found
+-        return result, count
+-    if isinstance(value, list):
+-        result = []
+-        for item in value:
+-            clean, found = redact(item)
+-            result.append(clean)
+-            count += found
+-        return result, count
+-    if not isinstance(value, str):
+-        return value, 0
+-    for pattern in [EXTRA_SECRET, CHINESE_PASSWORD,
+-                    re.compile(r'(?i)(\bBearer\s+)[A-Za-z0-9._~+/=-]+'),
+-                    re.compile(r'(https?://[^\s/:@]+:)[^\s/@]+(?=@)')]:
+-        value, found = pattern.subn(lambda m: m.group(1) + '<redacted>', value)
+-        count += found
+-    return value, count
+-
+-
+-def redact_event(event):
+-    text = event['content']['text']
+-    extra_count = 0
+-    def scrub(value):
+-        nonlocal extra_count
+-        if isinstance(value, dict):
+-            return {key: scrub(item) for key, item in value.items()}
+-        if isinstance(value, list):
+-            return [scrub(item) for item in value]
+-        if not isinstance(value, str):
+-            return value
+-        # expect scripts often carry the credential in the line after a prompt,
+-        # without any password= assignment. Work on decoded command strings.
+-        lines = []
+-        password_prompt = False
+-        for line in value.splitlines(keepends=True):
+-            if 'expect' in line:
+-                password_prompt = bool(re.search(r'(?i)(password|assword|密码)', line))
+-            if password_prompt and re.search(r'\bsend\b', line):
+-                line, found = re.subn(r'(\bsend[ \t]+(?:--[ \t]+)?["\'])(.*?)(\\r["\'])',
+-                                     lambda match: match.group(1) + '<redacted>' + match.group(3), line)
+-                extra_count += found
+-                password_prompt = False
+-            lines.append(line)
+-        clean = ''.join(lines)
+-        clean, found = EXTRA_SECRET.subn(lambda match: match.group(1) + '<redacted>', clean)
+-        clean, chinese = CHINESE_PASSWORD.subn(lambda match: match.group(1) + '<redacted>', clean)
+-        extra_count += found + chinese
+-        return clean
+-    # Keep JSON tool arguments parseable so code and probe strings remain
+-    # recoverable after redaction. Redacting escaped JSON as plain text breaks it.
+-    try:
+-        decoded = json.loads(text)
+-    except ValueError:
+-        decoded = None
+-    if isinstance(decoded, (dict, list)):
+-        clean, count = redact(scrub(decoded))
+-        clean = json.dumps(clean, ensure_ascii=False, sort_keys=True).encode('utf-8', 'backslashreplace').decode('utf-8')
+-    else:
+-        clean, count = redact(scrub(text))
+-    event['content']['text'] = ''
+-    event, metadata_count = redact(event)
+-    event['content']['text'] = clean
+-    return event, count + metadata_count + extra_count
++def redact_event(event, redactor=None):
++    return redact(event, redactor)
+ 
+ 
+ def sha256_file(path):
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/normalize_trace.py b/.agents/skills/model-knowledge-trace-ingest/scripts/normalize_trace.py
+index d10516fc..83d0d7a8 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/normalize_trace.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/normalize_trace.py
+@@ -8,6 +8,7 @@ import json
+ from pathlib import Path
+ 
+ from model_trace_common import REPOSITORY, canonical, redact_event, sha256_file
++from trace_privacy import PROFILE as REDACTION_PROFILE, Redactor
+ from trace_adapters import Adapter, KINDS
+ 
+ MANIFEST = 'agent.trace-session.v1'
+@@ -57,7 +58,7 @@ def records(data, fmt, warnings):
+     return result
+ 
+ 
+-def normalize(source, output, fmt='auto', mapping=None, layout='events'):
++def normalize(source, output, fmt='auto', mapping=None, layout='events', redaction_policy=None):
+     require(fmt in {'auto', 'json', 'jsonl', 'text'}, 'unsupported input format')
+     source = Path(source).expanduser().absolute()
+     output = Path(output).expanduser().absolute()
+@@ -89,6 +90,7 @@ def normalize(source, output, fmt='auto', mapping=None, layout='events'):
+         files.append(path)
+     require(files, 'empty source')
+     identities, events, warnings, redactions = [], [], [], 0
++    redactor = Redactor(redaction_policy)
+     histories = {}
+     for path in files:
+         name = str(path.relative_to(source)) if source.is_dir() else path.name
+@@ -107,8 +109,11 @@ def normalize(source, output, fmt='auto', mapping=None, layout='events'):
+                                       'raw_file_sha256': file_hash, 'locator': locator,
+                                       'adapter': 'snapshot-prefix-v1' if layout == 'snapshots' else 'structural-v1',
+                                       'content_identity_sha256': digest(item['content'])}
+-                clean, count = redact_event(item)
++                clean, count = redact_event(item, redactor)
++                clean['provenance']['content_identity_sha256'] = digest(clean['content'])
++                clean['provenance']['redaction_profile'] = REDACTION_PROFILE
+                 redactions += count
++                warnings.extend(clean.get('limitations', []))
+                 safe = visible_unicode(clean)
+                 if clean != safe:
+                     warnings.append('Invalid Unicode units retained as visible escapes; raw hash keeps their identity.')
+@@ -124,6 +129,8 @@ def normalize(source, output, fmt='auto', mapping=None, layout='events'):
+                 'coverage': {'normalized_events': len(events), 'unknown_events': kinds['unknown'],
+                              'event_types': dict(kinds), 'redactions': redactions},
+                 'warnings': sorted(set(warnings)), 'mapping': mapping, 'layout': layout,
++                'redaction': {'profile': REDACTION_PROFILE, 'categories': dict(redactor.counts),
++                              'caller_policy_used': redaction_policy is not None},
+                 'source_capture_limitations': sorted(set(warnings)),
+                 'normalization_is_not_semantic_review': True}
+     output.mkdir(parents=True)
+@@ -163,6 +170,7 @@ def main():
+     parser.add_argument('--output', type=Path)
+     parser.add_argument('--format', choices=['auto', 'json', 'jsonl', 'text'], default='auto')
+     parser.add_argument('--mapping', type=Path)
++    parser.add_argument('--redaction-policy', type=Path, help='private declarative path aliases and literal terms')
+     parser.add_argument('--layout', choices=['events', 'snapshots'], default='events')
+     parser.add_argument('--verify', action='store_true')
+     args = parser.parse_args()
+@@ -171,7 +179,7 @@ def main():
+     try:
+         result = verify(args.source) if args.verify else normalize(
+             args.source, args.output, args.format, json.loads(args.mapping.read_text()) if args.mapping else None,
+-            args.layout)
++            args.layout, json.loads(args.redaction_policy.read_text()) if args.redaction_policy else None)
+     except (ValueError, KeyError, TypeError, OSError) as error:
+         result = {'ok': False, 'error': str(error)}
+     print(json.dumps(result, ensure_ascii=False))
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/read_trace.py b/.agents/skills/model-knowledge-trace-ingest/scripts/read_trace.py
+index 07f84df7..ddd7dead 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/read_trace.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/read_trace.py
+@@ -23,7 +23,9 @@ def read_event(directory, sequence, offset=0, characters=6000):
+             raise ValueError('offset is outside the original event')
+         end = min(len(text), offset + characters)
+         selected = text[offset:end]
+-        return {'sequence': sequence, 'actor': event['actor'], 'event_type': event['event_type'],
++        return {**{key: event[key] for key in ('outcome', 'result_metadata', 'limitations', 'session_id',
++                                              'parent_session_id', 'message_id', 'parent_message_id') if key in event},
++                'sequence': sequence, 'actor': event['actor'], 'event_type': event['event_type'],
+                 'tool': event.get('tool'), 'provenance': event['provenance'],
+                 'offset': offset, 'next_offset': end, 'total_characters': len(text),
+                 'complete_event': offset == 0 and end == len(text), 'has_more': end < len(text),
+@@ -56,7 +58,9 @@ def batch(directory, sequence=1, offset=0, characters=6000):
+         def page(size):
+             end = start + size
+             selected = text[start:end]
+-            return {'sequence': event['sequence'], 'actor': event['actor'], 'event_type': event['event_type'],
++            return {**{key: event[key] for key in ('outcome', 'result_metadata', 'limitations', 'session_id',
++                                                  'parent_session_id', 'message_id', 'parent_message_id') if key in event},
++                    'sequence': event['sequence'], 'actor': event['actor'], 'event_type': event['event_type'],
+                     'tool': event.get('tool'), 'provenance': event['provenance'],
+                     'offset': start, 'next_offset': end, 'total_characters': len(text),
+                     'complete_event': start == 0 and end == len(text), 'has_more': end < len(text),
+@@ -107,6 +111,7 @@ def index(directory, start=1, count=100):
+             break
+         selected.append({'sequence': event['sequence'], 'actor': event['actor'],
+                          'event_type': event['event_type'], 'tool': event.get('tool'),
++                         **{key: event[key] for key in ('outcome', 'limitations') if key in event},
+                          'text_characters': len(event['content']['text'])})
+     return {'events': selected, 'next_sequence': selected[-1]['sequence'] + 1 if selected else start,
+             'has_more': has_more}
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/review_cards.py b/.agents/skills/model-knowledge-trace-ingest/scripts/review_cards.py
+index 6181d4fc..e55a48c0 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/review_cards.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/review_cards.py
+@@ -9,6 +9,7 @@ from pathlib import Path
+ 
+ from model_trace_common import REPOSITORY, canonical, child, sha256_file
+ from mining_sources import CURATION
++from trace_privacy import require_publication_clean
+ from normalize_trace import require
+ 
+ REVIEW_CHECKS = {'scope', 'title', 'description', 'body', 'source_authority',
+@@ -29,6 +30,7 @@ def subject(ledger_path, cards_root):
+         for item in audit.get('trace_snapshot', {}).get('mechanism_artifacts', []):
+             item['verbatim_verified'] = False
+         target = entry['target_path']
++        require_publication_clean(child(cards_root, target).read_text())
+         card = {'path': target, 'sha256': sha256_file(child(cards_root, target))}
+         if frozen.get('curation_contract') == CURATION:
+             card.update(claim_ids=[c['id'] for c in entry.get('claims', [])],
+@@ -91,6 +93,7 @@ def inventory(ledger_path, cards_root, changed_paths, repository=REPOSITORY):
+     for entry in ledger['entries']:
+         if entry.get('status') in {'published', 'merged'}:
+             relative = 'knowledge/model/' + ledger['route'] + '/runbooks/' + entry['target_path']
++            require_publication_clean(child(cards_root, entry['target_path']).read_text())
+             expected[relative] = sha256_file(child(cards_root, entry['target_path']))
+     paths = json.loads(Path(changed_paths).read_text())
+     require(isinstance(paths, list) and all(isinstance(p, str) for p in paths), 'changed paths must be an array')
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/test_curation.py b/.agents/skills/model-knowledge-trace-ingest/scripts/test_curation.py
+index a53a5c26..0d77732e 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/test_curation.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/test_curation.py
+@@ -33,7 +33,7 @@ class CurationTests(unittest.TestCase):
+         self.decision = {'candidate_id': 'one', 'status': 'published', 'operation': 'new',
+                          'target_path': 'runtime/config_probe.md', 'dedup': old['dedup'], 'reproduce_count': 1,
+                          'scope_evidence': {'summary': 'SYNTHETIC framework diagnostic',
+-                                            'anchors': [{'source': 0, 'sequence': 1}]},
++                                            'anchors': [{'source': 0, 'sequence': 1}, {'source': 0, 'sequence': 3}]},
+                          'validation_scope': ['source_read']}
+         self.input = self.root / 'mine.json'
+         self.decisions = self.root / 'decisions.json'
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/test_review_regressions.py b/.agents/skills/model-knowledge-trace-ingest/scripts/test_review_regressions.py
+new file mode 100644
+index 00000000..5420f5c8
+--- /dev/null
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/test_review_regressions.py
+@@ -0,0 +1,127 @@
++"""Synthetic outcomes, ancestry, and privacy regression boundaries."""
++
++import json
++from pathlib import Path
++import tempfile
++import unittest
++
++from audit_publication import audit
++from normalize_trace import normalize
++from read_trace import read_event
++from trace_adapters import Adapter
++from trace_privacy import Redactor, publication_findings, require_publication_clean
++
++
++class OutcomeTests(unittest.TestCase):
++    def result(self, state):
++        return list(Adapter('s').convert({'info': {'role': 'assistant'}, 'parts': [
++            {'type': 'tool', 'tool': 'shell', 'state': state}]}))[-1]
++
++    def test_completed_nonzero_is_failure_even_when_stdout_says_pass(self):
++        event = self.result({'status': 'completed', 'input': {}, 'output': 'PASS',
++                             'metadata': {'exit': 1, 'password': 'synthetic-secret'}})
++        self.assertEqual('error', event['event_type'])
++        self.assertTrue(event['outcome']['failed'])
++        self.assertEqual(1, event['outcome']['exit_code'])
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            raw = root / 'raw.json'
++            raw.write_text(json.dumps(event))
++            normalize(raw, root / 'normalized')
++            page = read_event(root / 'normalized', 1)
++            self.assertEqual(1, page['outcome']['exit_code'])
++            self.assertNotIn('synthetic-secret', json.dumps(page))
++            self.assertEqual('synthetic-secret', json.loads(raw.read_text())['result_metadata']['metadata']['password'])
++
++    def test_truncated_output_is_limited_and_success_is_unqualified(self):
++        truncated = self.result({'status': 'completed', 'input': {}, 'output': 'partial',
++                                 'metadata': {'exit': 0, 'truncated': True, 'saved': '/home/fake/log'}})
++        self.assertIn('tool_output_truncated', truncated['limitations'])
++        self.assertTrue(truncated['outcome']['output_truncated'])
++        normal = self.result({'status': 'completed', 'input': {}, 'output': 'done',
++                              'metadata': {'exit': 0, 'truncated': False}})
++        self.assertEqual('tool_result', normal['event_type'])
++        self.assertNotIn('limitations', normal)
++        self.assertEqual(0, normal['outcome']['exit_code'])
++
++    def test_unknown_or_malformed_status_retains_evidence(self):
++        for status in ['waiting-for-retry', ['completed']]:
++            with self.subTest(status=status):
++                item = self.result({'status': status, 'input': {}, 'output': 'uncertain'})
++                self.assertEqual('unknown', item['event_type'])
++                self.assertIn('unrecognized_tool_status', item['limitations'])
++                self.assertEqual(status, item['result_metadata']['status'])
++
++    def test_message_parent_is_not_a_session_parent(self):
++        adapter = Adapter('default')
++        row = {'info': {'id': 'm2', 'sessionID': 'child', 'parentID': 'm1', 'role': 'assistant'},
++               'parts': [{'type': 'text', 'text': 'synthetic'}]}
++        item = list(adapter.convert(row))[0]
++        self.assertIsNone(item['parent_session_id'])
++        self.assertEqual('m1', item['parent_message_id'])
++        self.assertEqual('m2', item['message_id'])
++        list(adapter.convert({'type': 'session.created', 'properties': {'info': {'id': 'child', 'parentID': 'parent'}}}))
++        item = list(adapter.convert(row))[0]
++        self.assertEqual('parent', item['parent_session_id'])
++        self.assertEqual('m1', item['parent_message_id'])
++        row['parentSessionID'] = 'explicit'
++        self.assertEqual('explicit', list(adapter.convert(row))[0]['parent_session_id'])
++
++
++class PrivacyTests(unittest.TestCase):
++    def test_nested_commands_and_metadata_redact_without_changing_raw(self):
++        data = {'arguments': json.dumps({'cwd': '/home/synthetic-user/project',
++                'cmd': 'cd /home/synthetic-user/project && ssh fake@172.18.2.4',
++                'password': 'synthetic-secret'}), 'metadata': {'saved': '/tmp/private-log',
++                'email': 'person@example.org'}, 'ipv6': 'fd12::1234'}
++        original = json.dumps(data)
++        result = Redactor().clean(data)
++        cleaned = json.dumps(result)
++        for private in ['synthetic-user', '172.18.2.4', 'synthetic-secret', '/tmp/private-log', 'person@example.org', 'fd12::1234']:
++            self.assertNotIn(private, cleaned)
++        self.assertEqual(original, json.dumps(data))
++        self.assertEqual(result, Redactor().clean(result))
++
++    def test_portable_aliases_preserve_relative_paths_and_distinct_identity(self):
++        redactor = Redactor({'path_aliases': [{'prefix': '/home/fake/project', 'replacement': '${PROJECT_ROOT}'}]})
++        self.assertEqual('cd ${PROJECT_ROOT}; cat ${PROJECT_ROOT}/src/a.py',
++                         redactor.text('cd /home/fake/project; cat /home/fake/project/src/a.py'))
++        paths = redactor.clean(['/home/fake/a', '/home/fake/b', '/home/fake/a'])
++        self.assertNotEqual(paths[0], paths[1])
++        self.assertEqual(paths[0], paths[2])
++        self.assertNotIn('fake', json.dumps(dict(redactor.counts)))
++
++    def test_public_sources_numeric_evidence_and_system_paths_are_preserved(self):
++        data = {'source': 'https://github.com/example/repo/blob/' + 'a'*40 + '/home/test.py',
++                'command': '/usr/bin/python /opt/tool/test.py /dev/null',
++                'version': '10.2.1.3', 'token': 'hello', 'logprob': -1.3,
++                'shape': [8, 128, 256], 'token_count': 4096, 'batch': 8, 'dtype': 'bf16'}
++        self.assertEqual(data, Redactor().clean(data))
++        self.assertEqual('token=128', Redactor().text('token=128'))
++        self.assertEqual('git@github.com:example/repo.git', Redactor().text('git@github.com:example/repo.git'))
++
++    def test_publication_findings_are_safe_and_fail_closed(self):
++        text = '# Synthetic\n```sh\ncd /home/synthetic-user/project\n```\n见候选 c1\n'
++        findings = publication_findings(text)
++        self.assertIn({'line': 3, 'category': 'privacy_path'}, findings)
++        self.assertIn({'line': 5, 'category': 'unresolved_internal_reference'}, findings)
++        self.assertNotIn('synthetic-user', json.dumps(findings))
++        with self.assertRaisesRegex(ValueError, 'publication audit failed'):
++            require_publication_clean(text)
++        with tempfile.TemporaryDirectory() as tmp:
++            root = Path(tmp)
++            (root / 'card.md').write_text(text)
++            report = audit(root, ['card.md'])
++            self.assertFalse(report['ok'])
++            self.assertFalse(report['semantic_review_pass'])
++            self.assertNotIn('synthetic-user', json.dumps(report))
++            (root / 'link.md').symlink_to(root / 'card.md')
++            with self.assertRaises(ValueError):
++                audit(root, ['link.md'])
++            with self.assertRaises(ValueError):
++                audit(root, ['../card.md'])
++
++    def test_malformed_policy_is_rejected_without_echoing_values(self):
++        for policy in [{'path_aliases': 'private'}, {'path_aliases': ['private']}, {'private_terms': 'private'}]:
++            with self.subTest(policy=policy), self.assertRaises(ValueError):
++                Redactor(policy)
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/trace_adapters.py b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_adapters.py
+index d7e05e43..ae0fa89c 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/trace_adapters.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_adapters.py
+@@ -8,6 +8,56 @@ ROLES = {'user': 'user_message', 'assistant': 'assistant_message', 'system': 'sy
+          'developer': 'system_message', 'tool': 'tool_result'}
+ CALLS = {'tool_use', 'tool_call', 'function_call', 'custom_tool_call'}
+ RESULTS = {'tool_result', 'function_call_output', 'custom_tool_call_output'}
++EXIT_KEYS = ('exit', 'exit_code', 'exitCode', 'returncode', 'return_code', 'returnCode')
++TRUNCATED_KEYS = ('truncated', 'is_truncated', 'output_truncated', 'outputTruncated')
++
++
++def execution_evidence(event, source):
++    """Keep result metadata and distinguish process outcomes from lifecycle completion."""
++    fields = {*EXIT_KEYS, *TRUNCATED_KEYS, 'status', 'metadata', 'time', 'outcome', 'result_metadata', 'limitations'}
++    preserved = {key: value for key, value in source.items() if key in fields}
++    if not preserved:
++        return event
++    event['result_metadata'] = preserved
++    locations = [source, *(value for key, value in preserved.items()
++                           if key in {'metadata', 'outcome', 'result_metadata'} and isinstance(value, dict))]
++    exits = [obj[key] for obj in locations for key in EXIT_KEYS if key in obj]
++    truncated = [obj[key] for obj in locations for key in TRUNCATED_KEYS if key in obj]
++    limitations = list(event.get('limitations', []))
++    if isinstance(source.get('limitations'), list):
++        limitations.extend(item for item in source['limitations'] if isinstance(item, str))
++    outcome = {}
++    if exits:
++        if all(type(code) is int for code in exits) and len(set(exits)) == 1:
++            outcome['exit_code'] = exits[0]
++            if exits[0] != 0:
++                outcome['failed'] = True
++                event['event_type'] = 'error'
++        else:
++            limitations.append('ambiguous_exit_status')
++    if truncated:
++        if all(type(value) is bool for value in truncated):
++            outcome['output_truncated'] = any(truncated)
++            if any(truncated):
++                limitations.append('tool_output_truncated')
++        else:
++            limitations.append('ambiguous_output_completeness')
++    status = source.get('status')
++    if status is not None:
++        outcome['lifecycle'] = status
++        if isinstance(status, str) and status in {'error', 'failed', 'cancelled', 'canceled', 'aborted', 'timeout', 'timed_out'}:
++            outcome['failed'] = True
++            event['event_type'] = 'error'
++        elif not isinstance(status, str) or status not in {'completed', 'success', 'succeeded', 'running', 'pending'}:
++            limitations.append('unrecognized_tool_status')
++            event['event_type'] = 'unknown'
++    if outcome:
++        event['outcome'] = outcome
++    if limitations:
++        event['limitations'] = sorted(set(limitations))
++        if any(item.startswith('ambiguous_') for item in limitations):
++            event['event_type'] = 'unknown'
++    return event
+ 
+ 
+ def text(value):
+@@ -87,12 +137,26 @@ class Adapter:
+             if kind not in KINDS or fields.get('text') is None:
+                 yield self.event('unknown', 'unknown', value, ctx, locator)
+             else:
+-                yield self.event(kind, fields.get('actor') or 'unknown', fields['text'], ctx, locator,
+-                                 fields.get('tool_name'), fields.get('call_id'))
++                event = self.event(kind, fields.get('actor') or 'unknown', fields['text'], ctx, locator,
++                                   fields.get('tool_name'), fields.get('call_id'))
++                yield execution_evidence(event, fields) if kind in {'tool_result', 'error'} else event
+             return
+         info = value.get('info') if isinstance(value.get('info'), dict) else {}
++        session = value.get('session') if isinstance(value.get('session'), dict) else None
++        if session is not None:
++            ctx['session_id'] = session.get('id', session.get('session_id', ctx['session_id']))
++            ctx['parent_session_id'] = session.get('parent_session_id', session.get('parentID'))
++        if isinstance(value.get('type'), str) and value['type'] in {'session.created', 'session.updated'}:
++            properties = value.get('properties') or {}
++            declared = properties.get('info') if isinstance(properties, dict) else None
++            if isinstance(declared, dict):
++                ctx.update(session_id=declared.get('id', ctx['session_id']),
++                           parent_session_id=declared.get('parent_session_id', declared.get('parentID')))
++                self.context = {key: ctx[key] for key in ('session_id', 'parent_session_id', 'timestamp')}
++                yield self.event('session_start', 'system', declared, ctx, locator + '.properties.info')
++                return
+         for key, aliases in {'session_id': ('session_id', 'sessionId', 'sessionID'),
+-                             'parent_session_id': ('parent_session_id', 'parentSessionId', 'parentID'),
++                             'parent_session_id': ('parent_session_id', 'parentSessionId', 'parentSessionID'),
+                              'timestamp': ('timestamp',)}.items():
+             for alias in aliases:
+                 candidate = value.get(alias, info.get(alias))
+@@ -101,7 +165,15 @@ class Adapter:
+                         ctx['parent_session_id'] = None
+                     ctx[key] = candidate
+                     break
+-        self.context = {**ctx, 'timestamp': None}
++        self.context = {key: ctx[key] for key in ('session_id', 'parent_session_id', 'timestamp')}
++        self.context['timestamp'] = None
++        if isinstance(value.get('role', info.get('role')), str) and value.get('role', info.get('role')) in ROLES:
++            for key, aliases in {'message_id': ('id',), 'parent_message_id': ('parentID', 'parent_message_id')}.items():
++                for alias in aliases:
++                    identifier = value.get(alias, info.get(alias))
++                    if identifier is not None:
++                        ctx[key] = identifier
++                        break
+         kind = value.get('type')
+         kind = kind if isinstance(kind, str) else None
+         payload = value.get('payload')
+@@ -130,8 +202,9 @@ class Adapter:
+             if isinstance(body, dict) and 'text' in body:
+                 body = body['text']
+             tool = value.get('tool') if isinstance(value.get('tool'), dict) else {}
+-            yield self.event(explicit, value.get('actor', 'unknown'), body, ctx, locator,
+-                             tool.get('name'), tool.get('call_id'))
++            event = self.event(explicit, value.get('actor', 'unknown'), body, ctx, locator,
++                               tool.get('name'), tool.get('call_id'))
++            yield execution_evidence(event, value) if explicit in {'tool_result', 'error'} else event
+             return
+         if kind in CALLS:
+             yield self.event('tool_call', 'assistant', value.get('arguments', value.get('input')), ctx,
+@@ -139,8 +212,8 @@ class Adapter:
+             return
+         if kind in RESULTS:
+             result_kind = 'error' if value.get('is_error') is True else 'tool_result'
+-            yield self.event(result_kind, 'tool', value.get('output', value.get('content')), ctx,
+-                             locator, value.get('name'), value.get('call_id', value.get('tool_use_id')))
++            yield execution_evidence(self.event(result_kind, 'tool', value.get('output', value.get('content')), ctx,
++                                     locator, value.get('name'), value.get('call_id', value.get('tool_use_id'))), value)
+             return
+         role = value.get('role', info.get('role'))
+         role = role if isinstance(role, str) else None
+@@ -171,11 +244,12 @@ class Adapter:
+                         item['tool'] = {'name': name, 'call_id': call_id} if name is not None or call_id is not None else None
+                     if role == 'tool' and item['event_type'] == 'tool_result' and value.get('is_error') is True:
+                         item['event_type'] = 'error'
+-                    yield item
++                    yield execution_evidence(item, value) if role == 'tool' else item
+         elif content is not None:
+             result_kind = 'error' if role == 'tool' and value.get('is_error') is True else ROLES[role]
+-            yield self.event(result_kind, role, content, ctx, locator, value.get('name', info.get('tool')),
+-                             value.get('tool_call_id', value.get('call_id')))
++            event = self.event(result_kind, role, content, ctx, locator, value.get('name', info.get('tool')),
++                               value.get('tool_call_id', value.get('call_id')))
++            yield execution_evidence(event, value) if role == 'tool' else event
+         for index, call in enumerate(value.get('tool_calls', [])):
+             if not isinstance(call, dict):
+                 yield self.event('unknown', 'unknown', call, ctx, f'{locator}.tool_calls[{index}]')
+@@ -204,11 +278,19 @@ class Adapter:
+             yield self.event('tool_call', 'assistant', state.get('input'), ctx, locator,
+                              block.get('tool'), block.get('callID'))
+             if state.get('status') == 'completed' and 'output' in state:
+-                yield self.event('tool_result', 'tool', state['output'], ctx, locator,
+-                                 block.get('tool'), block.get('callID'))
++                event = execution_evidence(self.event('tool_result', 'tool', state['output'], ctx, locator,
++                                                     block.get('tool'), block.get('callID')), state)
++                if event.get('limitations'):
++                    self.warnings.extend(event['limitations'])
++                yield event
+             elif state.get('status') == 'error':
+-                yield self.event('error', 'tool', state.get('error', state), ctx, locator,
+-                                 block.get('tool'), block.get('callID'))
++                yield execution_evidence(self.event('error', 'tool', state.get('error', state), ctx, locator,
++                                                     block.get('tool'), block.get('callID')), state)
++            else:
++                self.warnings.append('unrecognized_or_incomplete_tool_state')
++                event = self.event('unknown', 'unknown', block, ctx, locator, block.get('tool'), block.get('callID'))
++                event['limitations'] = ['unrecognized_or_incomplete_tool_state']
++                yield execution_evidence(event, state)
+         else:
+             yield self.event('unknown', 'unknown', block, ctx, locator)
+ 
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py
+index 1236f6aa..6c603be4 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py
+@@ -70,7 +70,7 @@ def input_rows(path, raw=False):
+     return envelope, rows
+ 
+ 
+-def normalize_batch(source, output):
++def normalize_batch(source, output, redaction_policy=None):
+     from normalize_trace import normalize
+     envelope, rows = input_rows(source, raw=True)
+     output = fresh_output(output)
+@@ -79,7 +79,8 @@ def normalize_batch(source, output):
+     for row in rows:
+         target = output / row['trace_id']
+         fmt = row.get('format', 'auto')
+-        result = normalize(row['path'], target, fmt, row.get('mapping'), row.get('layout', 'events'))
++        result = normalize(row['path'], target, fmt, row.get('mapping'), row.get('layout', 'events'),
++                           redaction_policy=redaction_policy)
+         require(result.get('ok'), 'normalization failed: ' + row['trace_id'])
+         normalized.append({**row, 'normalized_dir': str(target)})
+     result = {**envelope, 'traces': normalized}
+@@ -415,6 +416,8 @@ def main():
+         cmd = sub.add_parser(name)
+         cmd.add_argument('input', type=Path)
+         cmd.add_argument('--output', type=Path, required=True)
++        if name == 'normalize':
++            cmd.add_argument('--redaction-policy', type=Path)
+         if name == 'prepare':
+             cmd.add_argument('--packet-bytes', type=int, default=262144)
+             cmd.add_argument('--chunk-characters', type=int, default=8192)
+@@ -438,7 +441,8 @@ def main():
+     args = parser.parse_args()
+     try:
+         if args.command == 'normalize':
+-            result = normalize_batch(args.input, args.output)
++            result = normalize_batch(args.input, args.output,
++                                     json.loads(args.redaction_policy.read_text()) if args.redaction_policy else None)
+         elif args.command == 'prepare':
+             result = prepare(args.input, args.output, args.packet_bytes, args.chunk_characters, args.references_only)
+         elif args.command == 'packet':
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/trace_privacy.py b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_privacy.py
+new file mode 100644
+index 00000000..1989701d
+--- /dev/null
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_privacy.py
+@@ -0,0 +1,218 @@
++"""Generic, local redaction and safe publication findings; never execute trace data."""
++
++from collections import Counter
++import ipaddress
++import json
++import re
++from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
++
++
++PROFILE = 'agent.trace-redaction.v2'
++SECRET_KEY = re.compile(r'(?i)(?:password|passwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token|secret[_-]?key|access[_-]?key(?:_id)?|secret_access_key|[a-z][a-z0-9_]*_(?:ak|sk)|authorization|cookie|set-cookie|密码|账号密码)$')
++ASSIGNMENT = re.compile(
++    r'(?i)((?<![\w-])(?:[A-Z][A-Z0-9_]*_(?:AK|SK)|access_key_id|secret_access_key|api[_-]?key|access_token|refresh_token|token|password|passwd|secret|账号密码|密码)["\']?[ \t]*[:=：][ \t]*)'
++    r'("(?:\\.|[^"\\\r\n])*"|\'(?:\\.|[^\'\\\r\n])*\'|[^\s,;"\'<>]+)')
++EMAIL = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b')
++IPV4 = re.compile(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])')
++PRIVATE_HOST = re.compile(r'(?i)\b[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*\.(?:internal|intranet|corp|lan|local)\b')
++URL = re.compile(r'(?:https?|ssh|git)://[^\s<>"\']+')
++ROOT = r'(?:/(?:home|Users|root|workspace|workspaces|data|mnt/workspace|mnt/data|tmp|var/tmp)/|[A-Za-z]:[\\/]+(?:Users|workspace|workspaces)[\\/]+)'
++PRIVATE_PATH = re.compile(r'(?<![A-Za-z0-9_}/])' + ROOT + r'[^\s\x00-\x1f\'"`<>;,)|}\]]+')
++QUOTED_PATH = re.compile(r'(["\'])(' + ROOT + r'[^\x00-\x1f"\']+)\1')
++PATH_KEYS = {'path', 'cwd', 'workdir', 'directory', 'home', 'model_path', 'file', 'filename', 'output_path'}
++VERSION_KEYS = {'version', 'release', 'build_version', 'cann_version', 'cuda_version', 'torch_version'}
++NETWORKS = tuple(ipaddress.ip_network(value) for value in
++                 ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10', 'fc00::/7', 'fe80::/10'])
++INTERNAL_REFERENCE = re.compile(r'见\s*候选(?:\s*[:：]?\s*[A-Za-z0-9_-]+)?|(?:候选|同簇|本簇)\s*[:：]?\s*[cs]\d(?:[A-Za-z0-9_-]*)|见\s+[cs]\d-[A-Za-z0-9_-]+')
++
++
++def placeholder(value):
++    return isinstance(value, str) and bool(re.fullmatch(r'(?:<[^<>]+>|\$\{[A-Z][A-Z0-9_]*\})', value))
++
++
++def private_address(value):
++    try:
++        address = ipaddress.ip_address(value)
++        return any(address.version == network.version and address in network for network in NETWORKS)
++    except ValueError:
++        return False
++
++
++class Redactor:
++    def __init__(self, policy=None):
++        policy = {} if policy is None else policy
++        if not isinstance(policy, dict) or set(policy) - {'path_aliases', 'private_terms'}:
++            raise ValueError('privacy policy supports path_aliases and private_terms only')
++        self.path_aliases = []
++        if not isinstance(policy.get('path_aliases', []), list):
++            raise ValueError('path_aliases must be a list')
++        for row in policy.get('path_aliases', []):
++            if not isinstance(row, dict):
++                raise ValueError('path aliases require prefix and replacement objects')
++            prefix, replacement = row.get('prefix'), row.get('replacement')
++            if (not isinstance(prefix, str) or len(prefix) < 3 or
++                    not (prefix.startswith('/') or re.match(r'^[A-Za-z]:[\\/]', prefix)) or
++                    not isinstance(replacement, str) or not re.fullmatch(r'\$\{[A-Z][A-Z0-9_]*\}', replacement)):
++                raise ValueError('path aliases require an absolute prefix and a portable variable')
++            self.path_aliases.append((prefix.rstrip('/\\'), replacement))
++        self.path_aliases.sort(key=lambda row: len(row[0]), reverse=True)
++        self.terms = policy.get('private_terms', [])
++        if not isinstance(self.terms, list) or any(not isinstance(s, str) or len(s) < 4 for s in self.terms):
++            raise ValueError('private_terms must be strings of at least four characters')
++        self.counts = Counter()
++        self.aliases = {}
++
++    def mask(self, kind, value):
++        if value is None or placeholder(value):
++            return value
++        self.counts[kind] += 1
++        key = (kind, str(value))
++        if key not in self.aliases:
++            number = 1 + sum(k[0] == kind for k in self.aliases)
++            self.aliases[key] = '${PRIVATE_' + kind.upper() + '_' + str(number) + '}'
++        return self.aliases[key]
++
++    def path(self, value):
++        if re.match(r'^/(?:home|Users)/<[^<>]+>(?:/|$)', value):
++            return value
++        for prefix, replacement in self.path_aliases:
++            if value == prefix or value.startswith((prefix + '/', prefix + '\\')):
++                self.counts['path'] += 1
++                return replacement + value[len(prefix):]
++        return self.mask('path', value)
++
++    def url(self, value):
++        try:
++            parsed = urlsplit(value)
++            host = parsed.hostname or ''
++            netloc = parsed.netloc
++            if parsed.username is not None and not (parsed.username == 'git' and parsed.password is None):
++                netloc = self.mask('credential', netloc.rsplit('@', 1)[0]) + '@' + netloc.rsplit('@', 1)[-1]
++            if private_address(host) or PRIVATE_HOST.fullmatch(host) or (host and '.' not in host and host != 'localhost' and not placeholder(host)):
++                public_host = self.mask('host', host)
++                netloc = netloc.replace('[' + host + ']', public_host) if ':' in host else netloc.replace(host, public_host)
++            pairs = parse_qsl(parsed.query, keep_blank_values=True)
++            if any(SECRET_KEY.fullmatch(key) or key.lower() == 'token' for key, _ in pairs):
++                query = urlencode([(key, self.mask('credential', item) if SECRET_KEY.fullmatch(key) or key.lower() == 'token'
++                                    else item) for key, item in pairs])
++            else:
++                query = parsed.query
++            return urlunsplit((parsed.scheme, netloc, parsed.path, query, parsed.fragment))
++        except ValueError:
++            return self.mask('url', value)
++
++    def text(self, value, key=''):
++        # Decode structured strings before substitution, preserving JSON tool arguments.
++        try:
++            decoded = json.loads(value)
++        except ValueError:
++            decoded = None
++        if isinstance(decoded, (dict, list)):
++            return json.dumps(self.clean(decoded), ensure_ascii=False, sort_keys=True)
++        for term in self.terms:
++            if term in value:
++                value = value.replace(term, self.mask('term', term))
++        lines, password_prompt = [], False
++        for line in value.splitlines(keepends=True):
++            if 'expect' in line:
++                password_prompt = bool(re.search(r'(?i)(password|assword|密码)', line))
++            if password_prompt and re.search(r'\bsend\b', line):
++                line = re.sub(r'(\bsend[ \t]+(?:--[ \t]+)?["\'])(.*?)(\\r["\'])',
++                              lambda m: m[1] + self.mask('credential', m[2]) + m[3], line)
++                password_prompt = False
++            lines.append(line)
++        value = ''.join(lines)
++        # URL paths are public source locators, not local filesystem paths.
++        parts, previous = [], 0
++        for match in URL.finditer(value):
++            parts.extend([self.plain(value[previous:match.start()], key), self.url(match[0])])
++            previous = match.end()
++        parts.append(self.plain(value[previous:], key))
++        return ''.join(parts)
++
++    def plain(self, value, key=''):
++        def assignment(match):
++            prefix, literal = match.groups()
++            quote = literal[0] if literal[:1] in {'"', "'"} else ''
++            content = literal[1:-1] if quote else literal
++            if placeholder(content) or (re.search(r'(?i)\btoken["\']?\s*[:=：]', prefix) and re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|0x[0-9a-fA-F]+', content)):
++                return match[0]
++            return prefix + quote + self.mask('credential', content) + quote
++        value = ASSIGNMENT.sub(assignment, value)
++        value = re.sub(r'(?i)(\bBearer\s+)[A-Za-z0-9._~+/=-]+',
++                       lambda m: m[1] + self.mask('credential', m[0][len(m[1]):]), value)
++        value = re.sub(r'((?:账号密码|密码)[ \t]*(?:[:=：][ \t]*)?)[A-Za-z0-9_!@#%^&*()+=./\\-]{4,}',
++                       lambda m: m[1] + self.mask('credential', m[0][len(m[1]):]), value)
++        for prefix, _ in self.path_aliases:
++            value = re.sub(r'(?<![\w}/])' + re.escape(prefix) + r'(?=$|[\\/\s\'"`;,])(?:[\\/][^\s\'"`<>;,)|}\]]*)?',
++                           lambda m: self.path(m[0]), value)
++        value = QUOTED_PATH.sub(lambda m: m[1] + self.path(m[2]) + m[1], value)
++        value = PRIVATE_PATH.sub(lambda m: self.path(m[0]), value)
++        def address(match):
++            before = value[max(0, match.start()-24):match.start()]
++            version = key.lower() in VERSION_KEYS or re.search(r'(?i)(?:version|release|build|CANN|CUDA|torch)\s*[:=]?\s*["\']?$', before)
++            return self.mask('host', match[0]) if private_address(match[0]) and not version else match[0]
++        value = IPV4.sub(address, value)
++        value = re.sub(r'(?<![\w:])(?:[A-Fa-f0-9]{0,4}:){2,}[A-Fa-f0-9:]{0,39}(?![\w:])',
++                       lambda m: self.mask('host', m[0]) if private_address(m[0]) else m[0], value)
++        value = EMAIL.sub(lambda m: m[0] if m[0].startswith('git@') and value[m.end():m.end()+1] == ':'
++                          and not PRIVATE_HOST.search(m[0]) else self.mask('email', m[0]), value)
++        value = PRIVATE_HOST.sub(lambda m: self.mask('host', m[0]), value)
++        def ssh_target(match):
++            user, host = match.groups()
++            before = value[max(0, value.rfind('\n', 0, match.start())+1):match.start()]
++            if user == 'git' and '.' in host and not PRIVATE_HOST.fullmatch(host):
++                return match[0]
++            if re.search(r'\b(?:ssh|scp|sftp|rsync)\b', before) or value[match.end():match.end()+1] == ':':
++                return self.mask('identity', user) + '@' + self.mask('host', host)
++            return match[0]
++        value = re.sub(r'(?<![\w])([A-Za-z0-9._-]+)@([A-Za-z0-9_.-]+)(?=[:\s]|$)', ssh_target, value)
++        return value
++
++    def clean(self, value, key='', ancestry=()):
++        if isinstance(value, dict):
++            result = {}
++            token_data = bool({'logprob', 'logits', 'token_id', 'input_ids', 'token_count'} & value.keys())
++            for name, item in value.items():
++                lower = name.lower()
++                if SECRET_KEY.fullmatch(name) and item is not None:
++                    result[name] = self.mask('credential', item)
++                elif lower == 'token' and isinstance(item, str) and not token_data:
++                    result[name] = self.mask('credential', item)
++                elif lower in {'username', 'user_name', 'email', 'email_address', 'account_id', 'user_id'} and item is not None:
++                    result[name] = self.mask('identity', item)
++                elif lower in {'name', 'id'} and ancestry and ancestry[-1] in {'user', 'author', 'account', 'owner'}:
++                    result[name] = self.mask('identity', item)
++                elif lower in PATH_KEYS and isinstance(item, str) and (re.match('^' + ROOT, item) or
++                        any(item == prefix or item.startswith((prefix+'/', prefix+'\\')) for prefix, _ in self.path_aliases)):
++                    result[name] = self.path(item)
++                elif lower in {'host', 'hostname', 'address', 'ip'} and isinstance(item, str) and not placeholder(item) and (
++                        private_address(item) or PRIVATE_HOST.fullmatch(item) or
++                        (re.fullmatch(r'[A-Za-z0-9_-]+', item) and item != 'localhost')):
++                    result[name] = self.mask('host', item)
++                else:
++                    result[name] = self.clean(item, lower, (*ancestry, lower))
++            return result
++        if isinstance(value, list):
++            return [self.clean(item, key, ancestry) for item in value]
++        return self.text(value, key) if isinstance(value, str) else value
++
++
++def publication_findings(text, policy=None):
++    """Return only category/line coordinates; findings never echo sensitive values."""
++    redactor, result = Redactor(policy), []
++    for number, line in enumerate(text.splitlines(), 1):
++        before = redactor.counts.copy()
++        redactor.text(line)
++        for category in sorted((redactor.counts - before)):
++            result.append({'line': number, 'category': 'privacy_' + category})
++        if INTERNAL_REFERENCE.search(line):
++            result.append({'line': number, 'category': 'unresolved_internal_reference'})
++    return result
++
++
++def require_publication_clean(text, policy=None):
++    findings = publication_findings(text, policy)
++    if findings:
++        summary = ', '.join(f"{row['category']} at line {row['line']}" for row in findings[:12])
++        raise ValueError('publication audit failed: ' + summary)
+diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/validate_model_evidence.py b/.agents/skills/model-knowledge-trace-ingest/scripts/validate_model_evidence.py
+index 2c7704ff..dc1bdfdb 100644
+--- a/.agents/skills/model-knowledge-trace-ingest/scripts/validate_model_evidence.py
++++ b/.agents/skills/model-knowledge-trace-ingest/scripts/validate_model_evidence.py
+@@ -12,6 +12,7 @@ import sys
+ from normalize_trace import verify
+ from model_trace_common import REPOSITORY, child, sha256_file, write_new_json
+ from mining_sources import CURATION, check_adoption
++from trace_privacy import require_publication_clean
+ 
+ sys.path.insert(0, str(REPOSITORY))
+ from governance.contracts.knowledge import Contract, split_frontmatter
+@@ -164,7 +165,9 @@ def validate(ledger_path, cards_root, route, approved=False, repository=REPOSITO
+             require(relative.name != 'index.md', 'index cannot be a card')
+             staged = child(cards_root, target)
+             require(staged.is_file(), 'staged target is missing')
+-            metadata, body = split_frontmatter(staged.read_text(encoding='utf-8'))
++            publication = staged.read_text(encoding='utf-8')
++            require_publication_clean(publication)
++            metadata, body = split_frontmatter(publication)
+             require(metadata is not None, 'missing frontmatter')
+             issues = contract.validate_card(Path('knowledge/model') / route / 'runbooks' / relative, metadata, body)
+             require(not issues, 'machine contract: ' + '; '.join(issue.code + ': ' + issue.message for issue in issues[:8]))
+@@ -239,10 +242,18 @@ def validate(ledger_path, cards_root, route, approved=False, repository=REPOSITO
+             require(ROLE_SETS[form] <= set(roles), 'missing form-specific evidence role')
+             for anchors in roles.values():
+                 resolve(anchors)
++            if form in {'repair_recipe', 'validated_pattern'}:
++                for event in resolve(roles['validation']):
++                    outcome = event.get('outcome') or {}
++                    require(not outcome.get('failed') and not outcome.get('output_truncated')
++                            and not event.get('limitations') and outcome.get('exit_code', 0) == 0,
++                            'failed, truncated or ambiguous execution cannot validate a successful pattern')
+             if ledger.get('curation_contract') == CURATION:
+                 relation = entry.get('scope_evidence') or {}
+                 require(bool(str(relation.get('summary', '')).strip()), 'missing actual model/framework relation')
+-                resolve(relation.get('anchors'))
++                relation_events = resolve(relation.get('anchors'))
++                require(any(event['event_type'] in OBJECTIVE for event in relation_events),
++                        'model/framework relation lacks observed integration or environment evidence')
+                 levels = entry.get('validation_scope')
+                 require(isinstance(levels, list) and bool(levels) and set(levels) <= {
+                     'source_read', 'static_check', 'cpu_reference', 'device_functional', 'end_to_end', 'performance'},

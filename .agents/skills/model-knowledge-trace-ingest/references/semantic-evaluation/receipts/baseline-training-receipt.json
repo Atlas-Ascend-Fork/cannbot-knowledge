@@ -1,0 +1,73 @@
+{
+  "schema_version": "model.trace-review.v1",
+  "subject": {
+    "schema_version": "model.trace-review-subject.v1",
+    "ledger_sha256": "c071bdb557d398a4350417f242aa276cb610a5a239332e75f1d5307fed6abf79",
+    "reconstruction_sha256": "d041652a368ae3354ed0596c52d56eb2dfc4257c3f3bdc434002a52f0641eb35",
+    "cards": [
+      {
+        "path": "runtime/toytrain_collective_timeout_raise_negative.md",
+        "sha256": "30f08d0ec663906bec8d0931a028b39f3b25a3e9aa27da3c3f2a5b8d9e5baf29",
+        "claim_ids": [
+          "claim-c-1",
+          "claim-c-2"
+        ],
+        "artifact_indexes": [
+          0,
+          1
+        ]
+      }
+    ],
+    "curation_contract": "model.trace-curation.v1",
+    "required_checks": [
+      "body",
+      "comparisons",
+      "contradictions",
+      "description",
+      "scope",
+      "source_authority",
+      "title",
+      "validation_scope"
+    ],
+    "subject_sha256": "ee69551d44b788a94b7d3f313b8bf4637cde86b78488102f67b49aa4a9572133"
+  },
+  "verdict": "PASS",
+  "summary": "独立复核 baseline 臂 training 路线的 1 张 staged 卡（trace-c-c1 negative_result）。claim 文本与两个 mechanism_artifacts 在 trace c 规范化事件与卡正文逐字出现，锚点解析正确；attempt/failure/boundary 角色齐备。触发观测只引用了实际观测到的 300s collective timeout（event 4），未把用户叙述的 60s 前置超时写成观测；结论明确限定单次尝试、根因未定位、不外推其他配置，无因果越界。trace f（源端截断、三步训练不可验证）被如实 deferred/missing_evidence 并在重建中记录缺口，未混入本卡。工具复现 frozen subject 一致，validate_model_evidence 复跑通过（1/1）。一条 minor clarity 发现不改变知识含义。",
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "clarity",
+      "card": "runtime/toytrain_collective_timeout_raise_negative.md",
+      "issue": "本臂规范化事件流未携带原始工具 outcome 元数据（raw 源中该次训练运行为 exit 1），失败信号以 tool_result 正文为准；卡片与 reconstruction unknowns 已如实披露，无结论依赖丢失元数据。",
+      "location": ".build/semantic-evaluation/normalized/c/normalized_trace.jsonl；卡『验证信号』节",
+      "suggestion": "无需修订本批卡；后续升级归一化保留退出码后可把『退出码 1』写入失败信号。"
+    }
+  ],
+  "coverage": [
+    {
+      "path": "runtime/toytrain_collective_timeout_raise_negative.md",
+      "claim_ids": [
+        "claim-c-1",
+        "claim-c-2"
+      ],
+      "checked": [
+        "scope",
+        "title",
+        "description",
+        "body",
+        "source_authority",
+        "validation_scope",
+        "comparisons",
+        "contradictions"
+      ],
+      "complete_artifact_indexes": [
+        0,
+        1
+      ],
+      "unmapped_assertions": []
+    }
+  ],
+  "reviewer": "opencode-review-7dd024588c32400a8881198925acba87",
+  "attestation": "agent-runtime-message",
+  "reviewed_at": "2026-11-06T09:54:13Z"
+}

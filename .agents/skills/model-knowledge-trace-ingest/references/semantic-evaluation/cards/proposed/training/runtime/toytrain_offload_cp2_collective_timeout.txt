@@ -1,0 +1,61 @@
+---
+type: Runbook
+title: ToyTrain offload+CP=2 训练 collective timeout：单独提高 timeout_s 不是充分修复
+description: 合成评测轨迹（SYNTHETIC）中的 ToyTrain 训练记录：cp=2、offload=true 下 collective timeout，将 timeout_s 由 60 提高到 300 后第 1 步仍在 300s 超时退出（退出码 1）。合成对象，不构成真实平台指引。
+tags:
+- task.debugging
+- topic.parallelism
+status: draft
+sources: []
+created_at: '2026-11-06T09:45:00Z'
+updated_at: '2026-11-06T09:45:00Z'
+platforms: []
+---
+
+# ToyTrain offload+CP=2 训练 collective timeout：单独提高 timeout_s 不是充分修复
+
+## 适用场景
+
+本卡来自合成评测轨迹（SYNTHETIC，非技术指引）；ToyTrain 为合成对象，结论只在轨迹证据范围内成立，不构成对任何真实框架或硬件的技术指引。任务背景：ToyTrain 框架在 CPU-offload + CP=2 的训练配置下出现 collective timeout，测试提高 timeout_s 是否解决。轨迹未给出 ToyTrain 版本、硬件与训练规模信息，平台范围未知。
+
+## 触发与观测
+
+CPU-offload + CP=2 训练在超时上限 60s 下出现 collective timeout。
+
+## 探针与操作
+
+尝试单元（轨迹原文，逐字）：
+
+```
+train.yaml BEFORE
+cp: 2
+offload: true
+timeout_s: 60
+AFTER
+cp: 2
+offload: true
+timeout_s: 300
+run: python train.py --config train.yaml --steps 3
+```
+
+实际执行命令：`python check.py`。
+
+失败路线明确不可采用：单独提高 timeout_s（60→300）在本轨迹中没有消除 collective timeout，不能作为该失败的修复手段重复尝试。
+
+## 机制与判别
+
+ToyTrain 在 cp=2 且 offload=true 的训练配置下出现 collective timeout；将 timeout_s 由 60 提高到 300 后，训练第 1 步仍在 300s 处发生 collective timeout 并在 step 2 前退出（check.py 退出码 1），提高超时上限本身没有消除该失败。
+
+超时在提高后的上限处再次触发，说明单纯等待更久没有让集合通信完成；根因未被定位，本轨迹不区分该失败是「仍需更久」还是「永远不会完成」，也未与 offload 或 cp=2 建立因果联系。
+
+## 验证信号
+
+工具原始输出（逐字）：`training step 1: collective timeout at 300s; exit before step 2`（event_type=error，退出码 1，输出未截断；合成轨迹内的设备级训练尝试，结果为失败）。
+
+## 适用与失效边界
+
+本轨迹未观察到任何成功训练步骤，也未定位 collective timeout 的根因；该结果只说明在此配置下提高 timeout_s 不是充分修复，不能外推为该超时必然与 offload 或 cp=2 因果相关。
+
+- 仅覆盖 timeout_s 60→300 一档；更高上限或其他配置组合未测试。
+- 执行的验证命令为 `python check.py`；`python train.py --config train.yaml --steps 3` 为轨迹记录的训练命令，未单独观测其直接输出。
+- 来源为合成评测轨迹（SYNTHETIC），不构成真实平台技术指引。

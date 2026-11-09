@@ -70,7 +70,7 @@ Query 会先按平台和技术范围过滤，再返回最相关的知识卡。�
 
 ## 7. 查询、写入和检查分开处理
 
-仓库维护三项基础 Skill、一项 Ascend C API 专用消费流程、一项仓内 trace producer 和两项源码级 Operator producer：
+仓库维护三项基础 Skill、Ascend C API 与 Runtime API 两项专用消费流程、两项仓内 trace producer 和两项源码级 Operator producer：
 
 | Skill | 用途 |
 |---|---|
@@ -80,6 +80,7 @@ Query 会先按平台和技术范围过滤，再返回最相关的知识卡。�
 | `knowledge-ingest` | 根据来源创建候选知识卡 |
 | `knowledge-lint` | 检查知识卡、导航、链接和日志 |
 | `ops-knowledge-trace-ingest` | 从算子开发 trace 生产 Runbook，只在本知识仓使用 |
+| `model-knowledge-trace-ingest` | 各类 Agent 轨迹先归一化，再批量提取模型/框架及其环境知识形成 Runbook；远端筛选和客户端调度由外层负责 |
 | `ops-knowledge-vv-ingest` | 提取不含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 |
 | `ops-knowledge-cv-ingest` | 提取含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 |
 

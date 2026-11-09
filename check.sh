@@ -28,6 +28,7 @@ python3 evals/run_retrieval.py --cases evals/model_inference_scope_cases.yaml
 python3 evals/run_retrieval.py --cases evals/runtime_api_selection_cases.yaml
 python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/ops-knowledge-trace-ingest/scripts -p 'test_*.py'
+python3 -m unittest discover -s .agents/skills/model-knowledge-trace-ingest/scripts -p 'test_*.py'
 python3 .agents/skills/ops-knowledge-trace-ingest/scripts/field_notes_lint.py
 ruff check .agents/skills governance evals
 bash -n install.sh check.sh get_resources.sh

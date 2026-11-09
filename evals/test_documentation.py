@@ -563,6 +563,7 @@ class DocumentationContractTests(unittest.TestCase):
             "ascendc-api-knowledge-query",
             "runtime-api-knowledge-query",
             "ops-knowledge-trace-ingest",
+            "model-knowledge-trace-ingest",
             "ops-knowledge-vv-ingest",
             "ops-knowledge-cv-ingest",
         }
@@ -578,6 +579,7 @@ class DocumentationContractTests(unittest.TestCase):
         ):
             text = (self.root / relative).read_text(encoding="utf-8")
             self.assertIn("ops-knowledge-trace-ingest", text, relative)
+            self.assertIn("model-knowledge-trace-ingest", text, relative)
             self.assertIn("ascendc-api-knowledge-query", text, relative)
         skills_spec = (self.root / "governance/specs/skills.md").read_text(encoding="utf-8")
         self.assertIn("仓内 trace producer", skills_spec)

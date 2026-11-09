@@ -182,7 +182,9 @@ bash install.sh claude /path/to/project consumer --platform a2
 
 模式只决定安装器托管的可用 Skill，不改变知识卡内容或可信程度。从 `contributor` 改为 `consumer` 后重跑安装器，会移除本知识仓对应的贡献类 Skill 链接，并同步已有的托管客户端入口。
 
-`ops-knowledge-trace-ingest` 只用于知识仓内的 trace → Runbook 生产，不安装到业务项目。贡献流程见[贡献知识](../recipes/contribute_knowledge.md)，正式要求见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
+`ops-knowledge-trace-ingest` 与 `model-knowledge-trace-ingest` 分别用于知识仓内的算子与模型 trace → Runbook 生产，不安装到业务项目。贡献流程见[贡献知识](../recipes/contribute_knowledge.md)，正式要求见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
+
+模型轨迹流程接收各类 Agent 的本地导出，先转为统一事件，再批量挖掘模型和框架相关知识。远端全量筛选与客户端调度由调用方完成；Skill 自带本地解析和校验工具。
 
 ### 接入 MCP 客户端
 
