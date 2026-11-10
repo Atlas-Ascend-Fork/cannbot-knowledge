@@ -29,7 +29,10 @@ REFERENCE_DEFINITION_RE = re.compile(
     rf"(?m)^[ \t]{{0,3}}\[({MARKDOWN_LABEL})\]:[ \t]*(?:<([^>\n]+)>|(\S+))"
 )
 FENCE_RE = re.compile(r"^[ \t]*(?P<fence>`{3,}|~{3,})")
-INLINE_CODE_RE = re.compile(r"(?P<ticks>`+)[^\n]*?(?P=ticks)")
+INLINE_CODE_RE = re.compile(
+    r"(?<!`)(?P<ticks>`+)(?!`)(?:(?!\n[ \t]*(?:\n|[-+*] |#{1,6} |>|\d+[.)] ))[\s\S])*?"
+    r"(?<!`)(?P=ticks)(?!`)"
+)
 
 
 def mask_code(text: str, *, inline: bool = True) -> str:

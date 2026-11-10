@@ -3,7 +3,7 @@
     "arm": "proposed",
     "base_commit": "c6248c95593537b12395b4e7be2486920cdf727c",
     "patch": "snapshots/proposed.patch",
-    "sha256": "5b08f472871d0b2be72e7961d29c748b75eaa8486a9f698377074b658e2a4ca7",
+    "sha256": "8ccf8958b4c4d076a11771e750d9a8a4ffa79a12f7c784978860a70daa26c524",
     "files_matched": 35,
     "reconstruction_ok": true
   },
@@ -11,7 +11,7 @@
     "arm": "revision",
     "base_commit": "c6248c95593537b12395b4e7be2486920cdf727c",
     "patch": "snapshots/revision.patch",
-    "sha256": "67987970757ec3eca367754fa52de38d50bfde5d65e793c12cd06cd585e128b3",
+    "sha256": "ce6d9b8ff711dba68fb7415811aea2d4358d3347cd0fe211d523954318299ae2",
     "files_matched": 46,
     "reconstruction_ok": true
   }

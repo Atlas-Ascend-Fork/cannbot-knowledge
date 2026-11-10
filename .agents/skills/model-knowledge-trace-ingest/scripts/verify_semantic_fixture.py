@@ -19,6 +19,10 @@ def require(value, message):
 
 
 def verify(output):
+    snapshots = json.loads((DATA / 'snapshot-reconstruction.json').read_text())
+    for snapshot in snapshots:
+        require(sha256_file(child(DATA, snapshot['patch'])) == snapshot['sha256'],
+                'recorded snapshot patch bytes changed: ' + snapshot['arm'])
     fixture = json.loads((DATA / 'inputs.json').read_text())
     results = json.loads((DATA / 'results.json').read_text())
     require(fixture.get('synthetic_only') is True and results.get('synthetic_only') is True,

@@ -83,5 +83,44 @@ class SkillArchitectureTests(unittest.TestCase):
                         self.assertNotIn(name, forbidden_calls)
 
 
+class SnapshotPatchIntegrityTests(unittest.TestCase):
+    def test_packaged_snapshot_patch_bytes_and_hashes_are_bound(self):
+        import shutil
+        from unittest import mock
+        import verify_semantic_fixture as semantic_fixture
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            data = root / 'data'
+            shutil.copytree(semantic_fixture.DATA, data)
+            descriptor = data / 'snapshot-reconstruction.json'
+            snapshots = json.loads(descriptor.read_text())
+            with mock.patch.object(semantic_fixture, 'DATA', data):
+                report = semantic_fixture.verify(root / 'accepted')
+                self.assertTrue(report['ok'])
+                self.assertEqual(report['model_calls'], 0)
+                self.assertFalse(report['semantic_review_pass'])
+                for snapshot in snapshots:
+                    with self.subTest(arm=snapshot['arm'], change='patch'):
+                        patch = data / snapshot['patch']
+                        original = patch.read_bytes()
+                        try:
+                            patch.write_bytes(original + b'\n')
+                            with self.assertRaisesRegex(ValueError, 'snapshot patch bytes changed'):
+                                semantic_fixture.verify(root / ('patch-' + snapshot['arm']))
+                        finally:
+                            patch.write_bytes(original)
+                    with self.subTest(arm=snapshot['arm'], change='declared_hash'):
+                        original = snapshot['sha256']
+                        try:
+                            snapshot['sha256'] = '0' * 64
+                            descriptor.write_text(json.dumps(snapshots) + '\n')
+                            with self.assertRaisesRegex(ValueError, 'snapshot patch bytes changed'):
+                                semantic_fixture.verify(root / ('hash-' + snapshot['arm']))
+                        finally:
+                            snapshot['sha256'] = original
+                            descriptor.write_text(json.dumps(snapshots) + '\n')
+
+
 if __name__ == '__main__':
     unittest.main()

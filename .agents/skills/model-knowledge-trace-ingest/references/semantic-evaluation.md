@@ -75,7 +75,7 @@ OpenCode 可见字段的保守累计为 **25,222,476** token（含 cache read/wr
 python3 .agents/skills/model-knowledge-trace-ingest/scripts/verify_semantic_fixture.py --output .build/model-trace-semantic-replay
 ```
 
-离线入口核对合成输入、实际去向覆盖、最终卡/receipt 字节及当前归一化重放；它不调用模型、不写知识，不签发语义批准。补丁与指纹用于在完整 checkout 的临时工作树重建固定 Skill 快照：
+离线入口核对已打包快照补丁的记录 hash、合成输入、实际去向覆盖、最终卡/receipt 字节及当前归一化重放；它不调用模型、不写知识，不签发语义批准，也不代替下面的 Git 快照重建。补丁与指纹用于在完整 checkout 的临时工作树重建固定 Skill 快照：
 
 ```bash
 git worktree add --detach <temporary-checkout> c6248c95593537b12395b4e7be2486920cdf727c

@@ -3,20 +3,20 @@ index 0b0f8d49..dec950f5 100644
 --- a/.agents/skills/model-knowledge-trace-ingest/SKILL.md
 +++ b/.agents/skills/model-knowledge-trace-ingest/SKILL.md
 @@ -15,8 +15,8 @@ description: 从一批 Agent 运行轨迹中提取模型训练/推理优化、
- 
+
  - 自动识别常见的消息、内容块和事件封装，不以某个项目、存储服务或会话路径判断格式。
  - 其他 Agent 的结构化记录通过声明式字段映射接入；不能确认角色的转写、未知块和不完整记录保留原文并记为 unknown，不猜测工具观测或成功状态。
 -- 保留会话及显式父子关系、事件顺序、工具 call id、完整正文与来源锚点；脱敏单独记账，不截短长输出。累积消息快照使用显式 snapshots 模式，只消除继承前缀，保留真实重复回合。
 -- 验证规范化文件、来源清单和事件覆盖；已有快照不可覆盖。归一化成功不代表语义已读或知识有效。
 +- 保留会话及显式父子关系、事件顺序、工具 call id、完整正文与来源锚点；按[脱敏流程](references/privacy.md)清理凭据、身份和私有路径，单独记账，不截短长输出。累积消息快照使用显式 snapshots 模式，只消除继承前缀，保留真实重复回合。
 +- 验证规范化文件、来源清单和事件覆盖；已有快照不可覆盖。工具生命周期 completed 不等于成功；读取 outcome、原始结果元数据与 limitations，非零退出码、截断或未知状态不能构成修复成功。父消息与父会话分别保留，不从 parentID 猜会话关系。归一化成功不代表语义已读或知识有效。
- 
+
  批量输入读取[批处理接口](references/batch-processing.md)：接收一组目录或清单，离线 normalize 后 prepare。已符合统一事件合同的输入可以先 verify 再 prepare；旧的其他格式须重新 normalize。单来源是一个元素的批次，不把多轨迹输入拆为逐轨迹 Agent 任务。
- 
+
 @@ -38,4 +38,6 @@ description: 从一批 Agent 运行轨迹中提取模型训练/推理优化、
- 
+
  需要发布的卡由实际独立审查者按[审查要点](references/reviewer.md)复核标题、摘要、正文及完整机制，审查绑定冻结内容；语义问题不能降为 minor 后通过。没有独立审查能力就交付待审产物。修改正文、实质账本或重建后重新审查，脚本不能产生语义批准。
- 
+
 +冻结与写入前按[公开检查](references/privacy.md)对整批卡和受影响导航复查；检查失败不能冻结、批准或发布。自动检查不证明脱敏完备，独立审查仍须检查上下文中的身份和敏感信息。
 +
  真实审查通过后由执行 Agent 按仓库合同写入已核对的卡片，创建不覆盖、更新核对旧内容 hash；统一补齐导航、日志、Lint、索引与目标查询验证。原始轨迹和取证账本留在调用方工作目录，不进入公开知识正文。运行与复现方式见[离线验证](references/validation.md)。
@@ -34,9 +34,9 @@ index b75755f1..58b51010 100644
     "omit_claims":[{"claim_id":"不采纳的原claim id","reason":"真实缺证原因；没有删减时省略此字段"}]},
    {"candidate_id":"c2","status":"deferred","reason":"实际未决项"}
 @@ -45,6 +45,8 @@ python3 <SKILL_DIR>/scripts/curate_candidates.py <mine>/manifest.json --decision
- 
+
  ## 集中校验与冻结
- 
+
 +先按[脱敏与公开自包含检查](privacy.md)检查整批待审卡及导航。归一化脱敏不构成发布豁免；标题、摘要、代码块、日志和新增解释都须重查。未公开的候选编号、同簇指代不能承载复现条件，必须补全有证据的内容或链接现存公开卡；缺证时删除依赖结论或暂缓。
 +
  ```bash
@@ -44,7 +44,7 @@ index b75755f1..58b51010 100644
  python3 <SKILL_DIR>/scripts/review_cards.py subject <batch>/ledger.json <batch>/staged-cards
 @@ -89,3 +91,5 @@ python3 <SKILL_DIR>/scripts/review_cards.py inventory <batch>/ledger.json <batch
  清单中的模型 Runbook 正文必须恰好等于采纳目标，公开字节须与 staged 相同；索引、日志不算新卡。此命令只读调用方提供的差异，不运行 Git、不认证差异完整性，也不执行发布。任务已有未提交修改时，不把整个 git diff 当作本批范围。
- 
+
  交付候选去向、实际写入路径、证据与未决项、独立审查记录和检查结果。Skill 不自动提交 Git、推送或创建远端工作项。
 +
 +重建与卡片一起冻结：环境字段逐一回本来源事实锚点核对，不接受跨来源填默认值。before 配置不能代替 before 运行观测；正文判读规则须与采用的 claim 一起映射。独立审查指出重建、来源归属或未映射断言问题时，修订有关重建/候选/正文与绑定 hash，保留初次拒绝记录，重新冻结并取得新审查；不只修一张卡或复用旧 PASS。
@@ -60,10 +60,10 @@ index c45d3fe9..3a7af534 100644
 +| message_id / parent_message_id | 显式消息关系；普通消息 info.parentID 不映射为父会话。父会话仅来自明确 session 字段、session 对象/会话声明或声明式映射 |
  | content.text | 脱敏后的完整正文，JSON 参数保持可解析；无文本上限裁剪 |
  | provenance | 原始相对文件名、逻辑记录号、记录内容 hash、文件字节 hash、内部 locator 与适配版本 |
- 
+
 @@ -90,3 +92,5 @@ python3 <SKILL_DIR>/scripts/read_trace.py read <normalized-dir> --sequence 12 --
  ```
- 
+
  text_parts 按顺序连接得到原始字符区间，按 next_sequence/next_offset 续读。分页完整、索引完整与真实语义阅读分别记账。unknown、未解码媒体、源端截断、缺失子会话和未读正文进入重建 limitations；相关证据不足时暂缓结论，不凭记忆补齐。
 +
 +脱敏配置、元数据审计及发布前检查见[脱敏流程](privacy.md)。事件正文身份 hash 基于脱敏后的实际正文；原始文件/记录 hash 仍绑定私有原始材料。旧快照不能补标新脱敏版本，须由原始输入生成新目录。
@@ -72,17 +72,17 @@ index afa64732..cf47fd00 100644
 --- a/.agents/skills/model-knowledge-trace-ingest/references/mining.md
 +++ b/.agents/skills/model-knowledge-trace-ingest/references/mining.md
 @@ -4,7 +4,7 @@
- 
+
  ## 先还原，再蒸馏
- 
+
 -批量输入先读批清单和目录，再按候选机制组织多来源证据。小批可直接读取连续窗口，大批按 [batch-processing.md](batch-processing.md) 生成有界证据包。同窗相同文本可共享阅读，事件角色、顺序与版本逐一保留；按问题簇建立候选，不逐轨迹派子任务。建立实际用户目标、框架/模型、硬件/版本、命令与配置、源码修改、构建、运行、精度、性能和回退的时间线。区分用户转述、Agent 建议、源码观测、工具执行与产物验证；不能用后来的源码解释旧日志。
 +批量输入先读批清单和目录，再按候选机制组织多来源证据。小批可直接读取连续窗口，大批按 [batch-processing.md](batch-processing.md) 生成有界证据包。同窗相同文本可共享阅读，事件角色、顺序与版本逐一保留；按问题簇建立候选，不逐轨迹派子任务。建立实际用户目标、框架/模型、硬件/版本、命令与配置、源码修改、构建、运行、精度、性能和回退的时间线。区分用户转述、Agent 建议、源码观测、工具执行与产物验证；读取 outcome/result_metadata/limitations，生命周期完成、日志中的 PASS 和退出码为零均不可单独替代目标验收；截断内容不支持对被截部分下结论。不能用后来的源码解释旧日志。
- 
+
  按实验分别记录 before、尝试、结果和后续动作。多处同时改变时承认混杂，未证明的机制写 assumptions，缺失内容写 unknowns/limitations。相关性以实际任务和操作对象为依据；框架的环境调试调优同样在范围内，只有背景提示提及框架名则不构成任务证据。
- 
+
 @@ -72,3 +72,9 @@
  候选的 `sources` 使用来源对象数组；已有 mine 产物也可用整数索引引用该原始 manifest 的顶层 `sources`。离线 `scripts/mining_sources.py` 将这类引用按候选数组的原顺序解析为来源对象，拒绝布尔值、越界索引和缺失 hash。批量汇总保留原 manifest/hash，同时在汇总副本中解析来源，不能让旧索引改指另一批次的来源。候选的角色、claim 和工件锚点中的 `source` 始终指向该候选自己的来源数组；最终策展账本必须写来源对象。
- 
+
  重建采用 `model.trace-reconstruction.v1`，内容与证据校验器一致：顶层 route 与 traces；每个 trace 的 source 对象与最终 ledger 的对应来源相同；task.summary、environment、timeline、facts、assumptions、unknowns、limitations、coverage 均齐全。timeline/facts 使用本来源的 event_refs；coverage 同时记录 `[1,N]` 索引范围与实际语义读取范围，不冒充全量完成。
 +
 +## 来源字段与运行观测不得串用
@@ -152,7 +152,7 @@ index 362aa9e8..ac07d826 100644
 +++ b/.agents/skills/model-knowledge-trace-ingest/references/reviewer.md
 @@ -43,3 +43,7 @@
  新 curation_contract 的 coverage 每卡恰好一项，claim_ids 与 subject 中列表一致，complete_artifact_indexes 覆盖所有完整机制单元，checked 覆盖 subject.required_checks，unmapped_assertions 必须为空才能 PASS。不能默认填齐：尚未查明的正文断言应列出并退回修订。旧账本无强制 coverage，但不得声称完成新合同覆盖。
- 
+
  subject 使用规范化后的实质 ledger hash（将两类批准标记置回待审），与磁盘 ledger 的原始文件 hash 可能不同；完整复制工具实际输出，不能自行计算替代。不能通过运行时身份核验时保留待审，receipt 的字段、覆盖声明和 hash 均不认证审查者身份或阅读事实。
 +
 +逐卡检查[脱敏与自包含](privacy.md)：私有账号、工作目录、模型/数据集位置、内网连接、工具元数据及代码块全部覆盖；不能以变量或删词掩盖缺失的实验条件。核对工具退出码与截断标记，拒绝从 completed/PASS 推导成功。范围关系须有实际模型/框架观测，不能只有背景关键词。
@@ -164,7 +164,7 @@ index 80e2026b..e5b81ece 100644
 +++ b/.agents/skills/model-knowledge-trace-ingest/references/scope-policy.md
 @@ -11,3 +11,5 @@
  无关的普通应用、系统管理、网站、文案及 Agent 编排仅记录 out_of_scope，不提取其知识。混合会话只采纳范围内的证据；缺上下文导致无法判定时记 deferred 并保留缺口。不要因系统提示词提到框架名称就把会话纳入，也不要因包含构建、测试或环境步骤而排除真实框架任务。
- 
+
  远端全量初筛由调用方完成。本地批次仍逐来源记录实际去向，保持原始来源和候选对应关系，不对每条轨迹额外派发筛选 Agent。
 +
 +策展必须同时记录任务锚点和至少一处客观的模型调用、框架实现/集成或相关环境证据。算子路径含模型名称、赛题背景写 LLM、单算子输入 shape 接近模型或宣称可用于训练，都不足以证明关系。仅验证独立 kernel、DSL 微基准、算子用例或其 CI 的材料从本 Model 批次排除；不自动转写到其他领域。
@@ -847,8 +847,8 @@ index 13253549..44f156a7 100644
  import json
  from pathlib import Path
 -import re
- 
- 
+
+
  REPOSITORY = Path(__file__).resolve().parents[4]
 -EXTRA_SECRET = re.compile(
 -    r'(?i)((?<![\w-])(?:[A-Z][A-Z0-9_]*_(?:AK|SK)|access_key_id|secret_access_key|api_key|api-key|access_token|token|password|secret|账号密码|密码)'
@@ -862,8 +862,8 @@ index 13253549..44f156a7 100644
 +    before = sum(redactor.counts.values())
 +    result = redactor.clean(value)
 +    return result, sum(redactor.counts.values()) - before
- 
- 
+
+
 -def redact(value):
 -    count = 0
 -    if isinstance(value, dict):
@@ -938,8 +938,8 @@ index 13253549..44f156a7 100644
 -    return event, count + metadata_count + extra_count
 +def redact_event(event, redactor=None):
 +    return redact(event, redactor)
- 
- 
+
+
  def sha256_file(path):
 diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/normalize_trace.py b/.agents/skills/model-knowledge-trace-ingest/scripts/normalize_trace.py
 index d10516fc..674b5847 100644
@@ -947,16 +947,16 @@ index d10516fc..674b5847 100644
 +++ b/.agents/skills/model-knowledge-trace-ingest/scripts/normalize_trace.py
 @@ -8,6 +8,7 @@ import json
  from pathlib import Path
- 
+
  from model_trace_common import REPOSITORY, canonical, redact_event, sha256_file
 +from trace_privacy import PROFILE as REDACTION_PROFILE, Redactor
  from trace_adapters import Adapter, KINDS
- 
+
  MANIFEST = 'agent.trace-session.v1'
 @@ -57,7 +58,7 @@ def records(data, fmt, warnings):
      return result
- 
- 
+
+
 -def normalize(source, output, fmt='auto', mapping=None, layout='events'):
 +def normalize(source, output, fmt='auto', mapping=None, layout='events', redaction_policy=None):
      require(fmt in {'auto', 'json', 'jsonl', 'text'}, 'unsupported input format')
@@ -1050,12 +1050,12 @@ index 6181d4fc..e55a48c0 100644
 --- a/.agents/skills/model-knowledge-trace-ingest/scripts/review_cards.py
 +++ b/.agents/skills/model-knowledge-trace-ingest/scripts/review_cards.py
 @@ -9,6 +9,7 @@ from pathlib import Path
- 
+
  from model_trace_common import REPOSITORY, canonical, child, sha256_file
  from mining_sources import CURATION
 +from trace_privacy import require_publication_clean
  from normalize_trace import require
- 
+
  REVIEW_CHECKS = {'scope', 'title', 'description', 'body', 'source_authority',
 @@ -29,6 +30,7 @@ def subject(ledger_path, cards_root):
          for item in audit.get('trace_snapshot', {}).get('mechanism_artifacts', []):
@@ -1119,7 +1119,7 @@ index a53a5c26..6dd2c573 100644
 @@ -52,6 +52,24 @@ class CurationTests(unittest.TestCase):
          self.ledger.write_text(json.dumps(data))
          return validate(self.ledger, self.cards, 'inference', candidates_manifest=self.input)
- 
+
 +    def test_private_information_cannot_be_frozen_or_validated(self):
 +        self.stage()
 +        card = next(self.cards.rglob('*.md'))
@@ -1364,8 +1364,8 @@ index d7e05e43..ae0fa89c 100644
 +        if any(item.startswith('ambiguous_') for item in limitations):
 +            event['event_type'] = 'unknown'
 +    return event
- 
- 
+
+
  def text(value):
 @@ -87,12 +137,26 @@ class Adapter:
              if kind not in KINDS or fields.get('text') is None:
@@ -1476,15 +1476,15 @@ index d7e05e43..ae0fa89c 100644
 +                yield execution_evidence(event, state)
          else:
              yield self.event('unknown', 'unknown', block, ctx, locator)
- 
+
 diff --git a/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py
 index 1236f6aa..6c603be4 100644
 --- a/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py
 +++ b/.agents/skills/model-knowledge-trace-ingest/scripts/trace_batch.py
 @@ -70,7 +70,7 @@ def input_rows(path, raw=False):
      return envelope, rows
- 
- 
+
+
 -def normalize_batch(source, output):
 +def normalize_batch(source, output, redaction_policy=None):
      from normalize_trace import normalize
@@ -1759,7 +1759,7 @@ index 2c7704ff..9e87f01f 100644
  from model_trace_common import REPOSITORY, child, sha256_file, write_new_json
  from mining_sources import CURATION, check_adoption
 +from trace_privacy import require_publication_clean
- 
+
  sys.path.insert(0, str(REPOSITORY))
  from governance.contracts.knowledge import Contract, split_frontmatter
 @@ -164,7 +165,9 @@ def validate(ledger_path, cards_root, route, approved=False, repository=REPOSITO

@@ -773,5 +773,85 @@ class OperatorSourceCorpusTests(unittest.TestCase):
         self.assertTrue(checked, "no registered Operator sources checked")
 
 
+class CheckEntryGitEnvironmentTests(unittest.TestCase):
+    def test_real_pre_push_context_does_not_reach_source_resource_fixture(self):
+        with tempfile.TemporaryDirectory(prefix="check-hook-context-") as temporary:
+            directory = Path(temporary)
+            parent = directory / "parent"
+            parent.mkdir()
+            clean = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+            clean.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT="0")
+
+            def git(*arguments, cwd=parent, environment=clean, check=True):
+                return subprocess.run(
+                    ["git", *arguments], cwd=cwd, env=environment,
+                    capture_output=True, text=True, check=check,
+                )
+
+            git("init", "--quiet")
+            (parent / "sentinel").write_text("parent repository must remain unchanged" + chr(10))
+            git("add", "sentinel")
+            git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                "commit", "--quiet", "-m", "parent fixture")
+            linked = directory / "linked"
+            git("worktree", "add", "--detach", str(linked), "HEAD")
+            target = directory / "target.git"
+            git("init", "--bare", "--quiet", str(target))
+            git("remote", "add", "origin", str(target))
+            before = git("rev-parse", "HEAD").stdout.strip()
+            trace = directory / "trace.jsonl"
+            tools = directory / "tools"
+            tools.mkdir()
+            context_names = git("rev-parse", "--local-env-vars").stdout.splitlines()
+            child_lines = [
+                "#!" + sys.executable,
+                "import json, os, subprocess, sys",
+                "from pathlib import Path",
+                "names = json.loads(os.environ['CHECK_PROBE_CONTEXT_NAMES'])",
+                "inherited = [name for name in names if name in os.environ]",
+                "result = subprocess.run([sys.executable, '-m', 'unittest', "
+                "'evals.test_source_resources.SourceResourceTests."
+                "test_remote_variants_and_local_paths_keep_identical_revision', '-q'], "
+                "capture_output=True, text=True)",
+                "with Path(os.environ['CHECK_PROBE_TRACE']).open('a') as stream:",
+                "    stream.write(json.dumps({'delegate_exit': result.returncode, "
+                "'inherited_git_context': inherited}) + chr(10))",
+                "sys.stdout.write(result.stdout)",
+                "sys.stderr.write(result.stderr)",
+                # Stop after the real Host probe; this is not a full-gate result.
+                "sys.exit(result.returncode or 172)",
+            ]
+            child = tools / "python3"
+            child.write_text(chr(10).join(child_lines) + chr(10))
+            child.chmod(0o755)
+            hook_lines = [
+                "#!" + sys.executable,
+                "import json, os, subprocess, sys",
+                "from pathlib import Path",
+                "result = subprocess.run(['/bin/bash', os.environ['CHECK_PROBE_ENTRY']])",
+                "with Path(os.environ['CHECK_PROBE_TRACE']).open('a') as stream:",
+                "    stream.write(json.dumps({'entry_exit': result.returncode}) + chr(10))",
+                "sys.exit(1)",
+            ]
+            hook = parent / ".git/hooks/pre-push"
+            hook.write_text(chr(10).join(hook_lines) + chr(10))
+            hook.chmod(0o755)
+            probe = dict(clean, PATH=str(tools) + os.pathsep + clean["PATH"],
+                         CHECK_PROBE_ENTRY=str(ROOT / "check.sh"),
+                         CHECK_PROBE_TRACE=str(trace),
+                         CHECK_PROBE_CONTEXT_NAMES=json.dumps(context_names))
+            pushed = git("push", "origin", "HEAD:refs/heads/probe", cwd=linked,
+                         environment=probe, check=False)
+            self.assertNotEqual(pushed.returncode, 0, "probe hook deliberately rejects publication")
+            events = [json.loads(line) for line in trace.read_text().splitlines()]
+            delegated = next(event for event in events if "delegate_exit" in event)
+            entry = next(event for event in events if "entry_exit" in event)
+            self.assertEqual(delegated["inherited_git_context"], [], pushed.stdout + pushed.stderr)
+            self.assertEqual(delegated["delegate_exit"], 0, pushed.stdout + pushed.stderr)
+            self.assertEqual(entry["entry_exit"], 172, pushed.stdout + pushed.stderr)
+            self.assertEqual(git("rev-parse", "HEAD").stdout.strip(), before)
+            self.assertEqual(git("status", "--porcelain", cwd=linked).stdout, "")
+
+
 if __name__ == "__main__":
     unittest.main()

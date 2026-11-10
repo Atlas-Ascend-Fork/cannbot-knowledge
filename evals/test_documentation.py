@@ -40,6 +40,29 @@ from governance.contracts.knowledge import (  # noqa: E402
 )
 
 
+def first_content_heading(text: str) -> str:
+    """Return the first ATX heading outside the Contract code fences."""
+    from governance.contracts.checks.links import mask_code
+
+    prose = mask_code(text, inline=False)
+    return next(
+        (line for line in prose.splitlines() if re.match(r"^#{1,6}(?:[ \t]|$)", line)),
+        "",
+    )
+
+def active_governance_spec_entries(entries: dict[str, str]) -> set[str]:
+    """Keep the explicitly inactive refinery preview outside the active Specs."""
+    actual = set(entries)
+    preview = entries.get("refinery.md")
+    if preview is None:
+        return actual
+    prelude = preview.split("\n## ", 1)[0]
+    inactive_markers = ('# 精炼规约(预案)', '第一,这是一份**预览版**', '在仓库接受并通过部署验收(§10)之前一律不启用', '在那之前本文不改变 master 的任何现行治理')
+    if all(marker in prelude for marker in inactive_markers):
+        actual.remove("refinery.md")
+    return actual
+
+
 class DocumentationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -218,7 +241,11 @@ class DocumentationContractTests(unittest.TestCase):
 
     def test_governance_specs_keep_five_focused_entries(self) -> None:
         expected = {"okf.md", "paths.md", "frontmatter.md", "schemas.md", "skills.md"}
-        actual = {path.name for path in (self.root / "governance/specs").glob("*.md")}
+        entries = {
+            path.name: path.read_text(encoding="utf-8")
+            for path in (self.root / "governance/specs").glob("*.md")
+        }
+        actual = active_governance_spec_entries(entries)
         self.assertEqual(expected, actual)
 
     def test_okf_reference_is_pinned_and_scoped(self) -> None:
@@ -656,6 +683,46 @@ class DocumentationContractTests(unittest.TestCase):
         )
         self.assertEqual([], vendor_metadata)
 
+    def test_first_content_heading_allows_source_notice_before_h1(self) -> None:
+        cases = [('normal', '# Title\n'), ('leading source warning', '> **Source warning**\n\n# Title\n'), ('leading source paragraph', 'Source notice.\n\n# Title\n'), ('backtick code', '```text\n# code only\n```\n# Title\n'), ('tilde code', '~~~text\n# code only\n~~~\n# Title\n')]
+        for name, body in cases:
+            with self.subTest(name=name):
+                self.assertEqual("# Title", first_content_heading(body))
+
+    def test_first_content_heading_rejects_missing_or_later_h1(self) -> None:
+        cases = [('H2 before H1', '## Premature\n# Title\n'), ('no heading', 'source notice only\n'), ('only fenced heading', '```text\n# code only\n```\n'), ('empty', '')]
+        for name, body in cases:
+            with self.subTest(name=name):
+                self.assertFalse(first_content_heading(body).startswith("# "))
+
+    def test_explicitly_inactive_refinery_preserves_five_active_specs(self) -> None:
+        expected = {"okf.md", "paths.md", "frontmatter.md", "schemas.md", "skills.md"}
+        entries = {name: "# Active Spec\n" for name in expected}
+        self.assertEqual(expected, active_governance_spec_entries(entries))
+        entries["refinery.md"] = (
+            self.root / "governance/specs/refinery.md"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(expected, active_governance_spec_entries(entries))
+
+    def test_spec_filter_rejects_missing_extra_or_active_preview_entries(self) -> None:
+        expected = {"okf.md", "paths.md", "frontmatter.md", "schemas.md", "skills.md"}
+        entries = {name: "# Active Spec\n" for name in expected}
+        preview = (self.root / "governance/specs/refinery.md").read_text(encoding="utf-8")
+        self.assertNotEqual(
+            expected, active_governance_spec_entries({"refinery.md": preview})
+        )
+        self.assertNotEqual(
+            expected, active_governance_spec_entries({**entries, "unknown.md": preview})
+        )
+        for marker in ('# 精炼规约(预案)', '第一,这是一份**预览版**', '在仓库接受并通过部署验收(§10)之前一律不启用', '在那之前本文不改变 master 的任何现行治理'):
+            with self.subTest(missing_inactive_declaration=marker):
+                self.assertNotEqual(
+                    expected,
+                    active_governance_spec_entries(
+                        {**entries, "refinery.md": preview.replace(marker, "", 1)}
+                    ),
+                )
+
     def test_markdown_structure(self) -> None:
         failures: list[str] = []
         for document in self.documentation_files():
@@ -669,7 +736,7 @@ class DocumentationContractTests(unittest.TestCase):
                 except ValueError:
                     failures.append(f"{document.relative_to(self.root)}: unterminated frontmatter")
                     continue
-            first = next((line for line in lines[content_start:] if line.strip()), "")
+            first = first_content_heading("\n".join(lines[content_start:]))
             if not first.startswith("# "):
                 failures.append(f"{document.relative_to(self.root)}: first content heading is not H1")
             if (

@@ -14,6 +14,17 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$repo_root"
 
+# Git hooks export paths for the invoking repository. Child fixtures and
+# resource checkouts must discover their own Git directories.
+if ! git_local_env_vars="$(git rev-parse --local-env-vars)"; then
+  echo "Cannot enumerate Git repository-local environment." >&2
+  exit 1
+fi
+while IFS= read -r git_env_var; do
+  unset "$git_env_var"
+done <<< "$git_local_env_vars"
+unset git_env_var git_local_env_vars
+
 python3 .agents/skills/knowledge-lint/scripts/knowledge_lint.py \
   --knowledge-root . --strict-navigation
 python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py \
