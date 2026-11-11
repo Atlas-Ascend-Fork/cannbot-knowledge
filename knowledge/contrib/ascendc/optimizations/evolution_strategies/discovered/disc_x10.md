@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X10: 设备侧分组调度 + NZ plane 权重缓存（Grouped Matmul Cube 化）"
-description: "Grouped matmul（group_list 为 device 端 cumsum）的 Cube 化不要在 host 侧展开分组计划：每个 AIC 核在设备侧自行从 group_list 构建本核的 (group, M-block) 调度（empty group 自然跳过，无 host 同步）；…"
+description: "Grouped matmul（group_list 为 device 端 cumsum）的 Cube 化不要在 host 侧展开分组计划：每个 AIC 核在设备侧自行从 group_list 构建本核的 (group, M-block) 调度（empty group 自然跳过，无 host 同步）；每个专家的 weight 以 NZ plane 形式作为静态缓存放入 GM workspace，tile 排序采用 m-fastest，使多核共享同一 weight strip，weight 流量按 ceil(m_g/baseM) 量级下降；epilogue 放独立 AIV kernel 全向量流水完成。"
 tags:
   - task.optimization
   - topic.programming_model.execution_unit.cube
@@ -11,22 +11,11 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T15:50:00Z"
 platforms:
   - a2
 ---
-
 # Strategy X10: 设备侧分组调度 + NZ plane 权重缓存（Grouped Matmul Cube 化）
-
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X10
-> origin: discovered
-> discovered_round: 1
-> discovered_from: round_1/parallel_1
-> base_speedup: 4.8213x (vs PyTorch golden; baseline kernel 0.0026x)
-> ```
 
 ## 核心思路
 Grouped matmul（group_list 为 device 端 cumsum）的 Cube 化不要在 host 侧展开分组计划：每个 AIC 核在设备侧自行从 group_list 构建本核的 (group, M-block) 调度（empty group 自然跳过，无 host 同步）；每个专家的 weight 以 NZ plane 形式作为静态缓存放入 GM workspace，tile 排序采用 m-fastest，使多核共享同一 weight strip，weight 流量从朴素 M×K×N 降到约 ceil(m_g/baseM)×K×N（约 2 个数量级）。epilogue（dequant/激活/再量化）放独立 AIV kernel 全向量流水完成。
@@ -42,5 +31,6 @@ Grouped matmul（group_list 为 device 端 cumsum）的 Cube 化不要在 host �
 - AIV epilogue kernel：TQue 双缓冲流水，NZ 行重组 → fp32 dequant（weight_scale UB 缓存）→ 高层 Silu API（注意非原地安全，内部 Div(dst,src,dst)）→ Max 折叠 absmax → Div 量化 → 队列化 DataCopyPad 输出
 - Host：MatmulApiTiling 建 tiling，GM blob 多槽 ring 传入；cube 不可用（E>64/N>10240 等）时回退 VEC kernel
 
-## 来源
-自动发现于第 1 轮进化，算子 level4_grouped_matmul_swiglu_quant（cann-bench submit 基线），speedup 4.8213x vs PyTorch（基线 0.0026x），精度 20/20
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。

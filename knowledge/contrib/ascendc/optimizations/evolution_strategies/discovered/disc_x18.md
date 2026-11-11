@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X18: Fused img2col LoadData3D 随路展开（含 band 窗口化突破 L1 容量）"
-description: "卷积的 im2col GM 物化路径流量为 特征图→UB→GM→L1→L0，GM 往返可占整算子 70%。"
+description: "卷积的 im2col GM 物化路径流量为 特征图→UB→GM→L1→L0，GM 往返占比高；fused 模式让 A 侧不落地，用 img2col LoadData3D 从 L1 直接随路展开进 L0A，并以 band 窗口化突破 L1 容量。"
 tags:
   - task.optimization
   - topic.compute.neighborhood.convolution
@@ -12,30 +12,17 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T16:45:00Z"
 platforms:
   - a2
 ---
 
 # Strategy X18: Fused img2col LoadData3D 随路展开（含 band 窗口化突破 L1 容量）
 
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X18
-> origin: discovered
-> discovered_round: 4
-> discovered_from: level3_conv_2d-cannbench-web-submit (P3/P5) + conv2d_base (tilelang2ascendc-ops-generator)
-> base_speedup: conv2d_base case0 46→21us（消 70% im2col 物化）；cann-bench 大 case 0.32→0.59
-> ```
-
-> **已晋升为 P129**：策略卡见 [../cards/p129_fused_img2col_loaddata3d.md](../cards/p129_fused_img2col_loaddata3d.md)，Playbook 见 [../../../runbooks/performance/p129_fused_img2col_loaddata3d.md](../../../runbooks/performance/p129_fused_img2col_loaddata3d.md)，precondition YAML 见 cannbot-skills 仓 `community/ops/ascendc-evolution-strategies/references/preconditions/`。本文件保留为实战详细记录（含实测数据与否定项依据），卡片内容以 P129 为准。
-
-
-
+> **已晋升为 P129**：策略卡见 [../cards/p129_fused_img2col_loaddata3d.md](../cards/p129_fused_img2col_loaddata3d.md)，Playbook 见 [../../../runbooks/performance/p129_fused_img2col_loaddata3d.md](../../../runbooks/performance/p129_fused_img2col_loaddata3d.md)，precondition YAML 见 cannbot-skills 仓 `community/ops/ascendc-evolution-strategies/references/preconditions/`。本文件保留该策略的详细机制说明，卡片内容以 P129 为准。
 
 ## 核心思路
-卷积的 im2col GM 物化路径流量为 `特征图→UB→GM→L1→L0`，GM 往返可占整算子 70%。
+卷积的 im2col GM 物化路径流量为 `特征图→UB→GM→L1→L0`，GM 往返占比高。
 fused 模式让 **A 侧不落地**：特征图转 NC1HWC0 常驻 L1，用 img2col LoadData3D
 （pad/stride/dilation 硬件处理）从 L1 直接随路展开进 L0A，B 侧复用 K-major
 权重 ws。CopyOut/epilogue/m/n 分解与 normal 路径完全复用，改动集中在 A 侧加载。
@@ -53,26 +40,23 @@ Ho' = o1−o0 代数恒成立，m→(ho,wo) 光栅与全图一致。块 = (img, 
   重复加载（L1 入口带宽瓶颈）
 - **前提条件**: Ci%16==0（img2col channelSize 约束，非对齐先通道补零）；
   xNz + 常驻 B 面板 ≤ L1 预算（不满足时用 band 窗口化）
-- **预期收益**: 消 im2col 物化 70% 占比（46→21us 级）；band 化使大 case
-  从 normal 路径 0.32 → 0.59
 
 ## 实现要点
 1. **硬件 img2col 展开 k 序 = (ci1, kh, kw, ci0)**——C0 通道块在最外层，与软件
    惯用 (kh,kw,ci) 不同；权重 ws 必须按同序 repack（缓存键带布局标志）。
    两序在 Ci==16 或 kHkW==1 时恰好重合会"蒙对"——**必须用 one-hot 探针**
-   （单元素置 1 观察落点）在 Ci>16 且 kHkW>1 的几何上实测确认，勿凭文档假设
+   （单元素置 1 观察落点）在 Ci>16 且 kHkW>1 的几何上确认，勿凭文档假设
 2. NCHW 需 xtrans AIV kernel 先生成 xT [H*W, Ci]（TransDataTo5HD repeat 批量
    转置；bf16 按 uint16 位级转置）；NHWC 直接用原始 x，零中转
-3. 门控回退（实测坑）：
-   - **l1W ≤ ~17 窄特征图 img2col LoadData3D 病理性慢**（~10us/次，为正常 7 倍，
-     mExtension 调满无效）→ W<24 回 im2col 物化路径
+3. 门控回退（关键坑）：
+   - **窄特征图（l1W 小）img2col LoadData3D 病理性慢**（mExtension 调满无效）
+     → 设置宽度下限（经验阈值 W<24）回 im2col 物化路径
    - **kExtension > 64 不可靠**（部分几何出垃圾甚至挂死设备）→ 保持 ≤64
-   - 留环境变量开关（如 CONV2D_FUSED=0）做 A/B 与回退
+   - 留环境变量开关做 A/B 与回退
 4. 每个 k tile 的展开与 Mmad 重叠靠 L0 队列深度（见 X11 要点 3）
 5. 尾块纪律不变：m/n 满 tile 计算 + Fixpipe 裁剪；channelSize 非 16 倍数会
    跳分形块，空间尾 round16
 
-## 来源
-conv2d_base（tilelang2ascendc-ops-generator）P5 首次落地（k 序探针发现）；
-cann-bench conv_2d P3/P5 推广 band 窗口化（xNz 8MB/4MB 超 L1 的 case 2/3）
-与非对齐 Ci（xtrans 通道补零后覆盖 Ci=63/47/97/65/31 等）。
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。

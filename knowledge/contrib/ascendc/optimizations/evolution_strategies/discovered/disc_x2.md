@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X2: 大张量驻留 Device、仅小索引过总线"
-description: "对于 host 协调的 gather/scatter/routing 类算子（host 预先排序并算好索引、kernel 仅做按索引搬运），"
+description: "host 协调的 gather/scatter/routing 类算子应让大张量驻留 device，仅把小索引张量过总线交给 CPU 排序，再由 NPU kernel 按索引搬运；避免大数据张量 device→host→device 往返。"
 tags:
   - task.optimization
   - topic.mixture_of_experts
@@ -11,29 +11,18 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/120ae95ac453606fe8eb69a5d1662382d30fc315/community/ops/evolution-strategies/references/discovered/disc_X2.md
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T15:50:00Z"
 platforms:
   - a2
 ---
-
 # Strategy X2: 大张量驻留 Device、仅小索引过总线
-
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X2
-> origin: discovered
-> discovered_round: 1
-> discovered_from: round_1/parallel_1
-> base_speedup: 0.17x
-> ```
 
 ## 核心思路
 对于 host 协调的 gather/scatter/routing 类算子（host 预先排序并算好索引、kernel 仅做按索引搬运），
 **不要**把大数据张量 (N×H) 做 device→host→device 往返再在 CPU gather，而是让大张量**全程驻留 device**，
 只把小的 int32 索引张量 (N×K，比数据小一两个数量级) 过总线交给 CPU 做必须的排序，
 然后在 NPU 上用 AscendC kernel 完成实际 gather。这把总线传输量从 O(N·H) 降到 O(N·K)，
-对 H 大、K 小的 MoE 路由场景收益巨大（H=4608、K=1 时传输量减少约 4608 倍）。
+对 H 大、K 小的 MoE 路由场景收益巨大（H≫K 时传输量按 H/K 量级下降）。
 
 ## 适用场景
 - **算子类型**: MoE InitRouting、gather/scatter、embedding lookup 等 host 协调索引、kernel 搬数据的算子
@@ -42,7 +31,6 @@ platforms:
   1. host 已（或可）在 CPU 端完成索引排序/计算，索引张量远小于数据张量
   2. NPU 不支持某些索引操作（如 int32 argsort）时仍需 CPU 排序，但只需传索引
   3. kernel 接口允许大数据张量直接以 device 指针传入（不要求 host 持有 gather 结果）
-- **预期收益**: 总线传输量从 O(N·H) 降到 O(N·K)；H≫K 时大 shape 可获 10–20x kernel 级提升
 
 ## 实现要点
 - host 侧：仅对小索引张量做 `stable_argsort` 并算 `dst_to_src`，narrow/contiguous 回切输出去掉 padding 列
@@ -54,9 +42,8 @@ platforms:
 - `DataCopyExtParams.blockLen` 单位是**字节** (rowBytes = H*sizeof(T))，勿误用元素数
 
 ## 已知局限
-- 消除大张量往返后，host 侧固定开销（CPU stable-argsort + 索引 D2H/H2D 同步 + kernel launch，~100us/call）
-  成为小 shape 的新瓶颈，使小 shape speedup 上限约 0.16x。要进一步突破需把排序/scatter 也搬到 device
-  （on-device counting/bucket sort + 全 device gather/scatter，彻底去 host 往返）
+- 消除大张量往返后，host 侧固定开销（CPU 排序 + 索引 D2H/H2D 同步 + kernel launch）会成为小 shape 的新瓶颈；要进一步突破需把排序/scatter 也搬到 device（on-device counting/bucket sort + 全 device gather/scatter）。
 
-## 来源
-自动发现于第 1 轮进化，算子 MoeInitRouting，speedup 0.17x（相对基线 0.093x 提升 ~1.87x，大 shape kernel 级 ~20x）
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。

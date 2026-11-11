@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X82: 门控幅度预算驱动的 sub-chunk 收缩（衰减可分离化）+ V 轴并行"
-description: "分块 delta-rule 的 sub-chunk 长度 C 是自由参数（块内是精确的，块间状态递推与 C 无关），但它不是数值自由的：参考实现的 C=64 让 |cumsum(gate)| 在官方 case 上达到 181，此时 exp() 上/下溢，而参考的 clamp(.., max=0) 在…"
+description: "分块 delta-rule 的 sub-chunk 长度 C 是自由参数，但受门控累积幅度预算约束：C 过大时 exp(G[i]-G[j]) 会溢出。按预算收缩 C 后衰减可分离为 exp(G[i])*exp(-G[j])，块内计算由 rank-3 衰减张量塌缩为四个小 GEMM；V 轴作为并行轴可做到零核间通信与状态 UB 常驻。"
 tags:
   - task.optimization
   - topic.programming_model.execution_unit.cube
@@ -11,29 +11,19 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T16:45:00Z"
 platforms:
   - a2
 ---
 
 # Strategy X82: 门控幅度预算驱动的 sub-chunk 收缩（衰减可分离化）+ V 轴并行
 
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X82
-> origin: discovered
-> discovered_round: 1
-> discovered_from: round_1/parallel_2 (node x0, open_exploration)
-> base_speedup: "vs PyTorch geomean 6.639x(基线) -> 26.9788x; 相对基线 4.06x (asc 329.83us -> 81.16us, 同一 45 case 配对)"
-> ```
-
 ## 核心思路
 
 分块 delta-rule 的 **sub-chunk 长度 C 是自由参数**（块内是精确的，块间状态递推与 C 无关），
-但它**不是数值自由的**：参考实现的 C=64 让 |cumsum(gate)| 在官方 case 上达到 **181**，
-此时 `exp()` 上/下溢，而参考的 `clamp(.., max=0)` 在严格下三角上是 no-op。
-把 C 按「门控累积幅度预算」收缩到 **16**（实测全 50 case 的最大 |cumsum| 仅 **52.6**）后，
+但它**不是数值自由的**：C 过大时，门控经 cumsum 后的累积幅度会超出 `exp()` 的安全范围
+（fp32 上溢界约 88），而参考实现里的 `clamp(.., max=0)` 在严格下三角上可能是 no-op。
+把 C 按「门控累积幅度预算」收缩到使 `exp(±G)` 不溢出的最大值后，
 
 ```
 decay[i,j] = exp(G[i] - G[j]) = exp(G[i]) * exp(-G[j])
@@ -48,14 +38,14 @@ decay[i,j] = exp(G[i] - G[j]) = exp(G[i]) * exp(-G[j])
 ## 适用场景
 
 - 分块 delta-rule / 门控线性注意力前向（KDA、GDN、GLA、Mamba2 的逐通道门控分支）
-- 序列短（本算子 T ≤ 97，≤2 个 64-chunk）或门控幅度大（gate 经 cumsum 后量级达 10^2）
+- 序列较短（不超过两个 64-chunk）或门控幅度大（gate 经 cumsum 后量级达 10^2）
 - 需要在**向量核**上算块内矩阵而形状不足以喂饱 Cube 的 tiny-shape 场景
 - 参考实现里出现 `exp2(clamp(gk_i - gk_j, max=0))` 这类 rank-3 衰减张量时，优先检查 C 是否可收缩
 
 ## 实现要点
 
-- **先测预算再定 C**：对全量 case 统计 `max |cumsum(gate)|`，取使 `exp(±G)` 不溢出的最大 C。
-  本算子 64→16（预算 181→52.6）。C 变小会增加块数（串行段变长），需与块内收益权衡。
+- **先测预算再定 C**：对全量形状统计 `max |cumsum(gate)|`，取使 `exp(±G)` 不溢出的最大 C。
+  C 变小会增加块数（串行段变长），需与块内收益权衡。
 - 门控激活的 softplus 路径可写成 `-exp(a_log + ln(softplus(z)))`，避免一次标量 `exp`。
 - 每个 sub-chunk 的递推（全部 2D、归约轴显式，无逐元素标量读）：
   ```
@@ -75,12 +65,12 @@ decay[i,j] = exp(G[i] - G[j]) = exp(G[i]) * exp(-G[j])
 
 ## 边界
 
-- C 收缩会**增加块数**：块间状态递推是串行段，T 很长时块数×每块固定开销可能反超收益；本算子 T≤97 才成立。
-- 精度与参考**逐位不同**（参考的 clamp 在 C=64 下实际生效与否取决于 gate 分布）；须按掩蔽判据验收。
-- 本线实测：batch 模式崩溃 507035（仅 per-case 可用），交付前必须解决流安全——见 failure pattern 记录。
+- C 收缩会**增加块数**：块间状态递推是串行段，T 很长时块数×每块固定开销可能反超收益。
+- 精度与参考**逐位不同**（参考的 clamp 在大 C 下实际生效与否取决于 gate 分布）；须按掩蔽判据验收。
+- 批量模式下需验证流安全，交付前不能只依赖单形状路径。
 
-## 来源
+## 验证方法
 
-自动发现于第 1 轮进化，算子 FusedRecurrentKda（910B2C，进化基线内核模式）：
-round_1/parallel_2（node x0, open_exploration），asc 329.83us → 81.16us（同一 45 case 配对，4.06x 相对基线；
-vs PyTorch geomean 6.639x → 26.9788x）。
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。
+- 对数值安全类改动，额外扫描门控累积幅度的极值输入，确认 `exp(±G)` 不溢出。

@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X29: Shift-Free Tap-Comb 稠密直算（stride=1 反卷积消 Gather）"
-description: "对 stride==1 的反卷积/ConvTranspose2d，利用数学恒等变换："
+description: "对 stride==1 的反卷积/ConvTranspose2d，利用数学恒等变换把转置卷积化为零填充输入 + 180° 翻核的标准 cross-correlation，再用 shift-free tap-comb 稠密 Axpy 取代逐 tap Gather 与 col2im 散射。"
 tags:
   - task.optimization
   - topic.compute.neighborhood.convolution
@@ -11,24 +11,12 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T16:45:00Z"
 platforms:
   - a2
 ---
 
 # Strategy X29: Shift-Free Tap-Comb 稠密直算（stride=1 反卷积消 Gather）
-
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X29
-> origin: discovered
-> discovered_round: 2
-> discovered_from: round_2/parallel_2 (sv1)
-> base_speedup: 0.927x vs PyTorch (case0 22.53us vs ref 20.88us); case7 2.433x
-> op_family: conv (ConvTranspose/deconv stride=1)
-> bottlenecks: [compute_bound, mte2_stall]
-> ```
 
 ## 核心思路
 
@@ -42,7 +30,7 @@ platforms:
 - 固定 (ci,kf2,kf) 时 comb 中 `kf..kf+ho-1` 行 CONTIGUOUS，因此每 (ci,kf2,kf,co) 的累加是**一次对齐 Axpy(len=ho*woA)**；
 - 稠密 Axpy 链取代逐 tap 的 Gather 间接寻址，**彻底消除 Gather/col2im 散射/G workspace 往返/AIC→AIV 交接**。
 
-相比 Gather-based 直接累加（x0，~10+ cycles/elem V-pipe Gather），X29 是 shift-free 布局，V-pipe 只做对齐稠密 FMA。
+相比 Gather-based 直接累加，X29 的 shift-free 布局让 V-pipe 仅做对齐稠密 FMA。
 
 ## 适用场景
 
@@ -52,14 +40,13 @@ platforms:
 
 ## 实现要点
 
-- **零填充平面尺寸必须 `ph = ho+kh-1`（不是 `hi+2t`）**：pad>0 时后者少一行，comb 读取越界（case8 实测 bug）。
-- **DataCopyPad UB→GM blockLen 必须 ≥ 32B**：wo<8 时 28B/24B 直接 507015 ADDR_MISALIGN（GM→UB 方向无此限制）。规避：host 分配 `[n][co][ho][woA]` 填充缓冲，kernel 单次 bulk DataCopyPad 写，host 返回 `[:wo]` 视图。
-- **DataCopyPad(GM→UB)+left/rightPadding 向量化 comb 构建在 dav-2201 上 507015 fault**：已回退标量 SetValue（残余标量阶段 ~144 次）。
-- **host 预处理下沉**：model_new_ascendc.py 不再构造 x2（permute/reshape/zeros/copy 三个 torch kernel 实测 ~17us），直接传原始 NCHW x；kernel 按 x[n][ci] 连续平面 blockCount=1 DataCopyPad 读取。
+- **零填充平面尺寸必须 `ph = ho+kh-1`（不是 `hi+2t`）**：pad>0 时后者少一行，comb 读取越界。
+- **DataCopyPad UB→GM blockLen 必须 ≥ 32B**：wo<8 时更小的 blockLen 直接 507015 ADDR_MISALIGN（GM→UB 方向无此限制）。规避：host 分配 `[n][co][ho][woA]` 填充缓冲，kernel 单次 bulk DataCopyPad 写，host 返回 `[:wo]` 视图。
+- **DataCopyPad(GM→UB)+left/rightPadding 向量化 comb 构建在 dav-2201 上 507015 fault**：回退标量 SetValue（残余标量 comb 放置）。
+- **host 预处理下沉**：host 不再构造预填充张量（permute/reshape/zeros/copy），直接传原始 NCHW x；kernel 按 x[n][ci] 连续平面 blockCount=1 DataCopyPad 读取。
 - 权重预翻核：`wf[kf][kf2]=at[...,(KH-1-kf)*KW+(KW-1-kf2)]` 在 host 预计算或 kernel 标量预翻核。
-- 残余开销：标量 comb 放置 + 稠密 Axpy 链 + 单 kernel launch floor（910B ~11us）。
+- 残余开销：标量 comb 放置 + 稠密 Axpy 链 + 单 kernel launch 地板。
 
-## 来源
-
-自动发现于第 2 轮进化，算子 10_ConvTranspose2d（evo_v3 round_2/parallel_2 sv1）。
-case0 [1,3,4,4] 0.927x（22.53us），case7 [1,1,5,5] 2.433x；相对 round_2 两 kernel 基线 41.2us → 22.5us（1.83x kernel 级）。
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；全量精度门禁加逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带；布局变换类改动需覆盖 pad/stride 边界与原始 NCHW 输入路径。

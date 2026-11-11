@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X8: Host-Side Precomputation of Constant Offset Tables"
-description: "许多 AscendC kernel 在 Init 阶段会计算一些仅由超参数决定、与输入数据无关的常量表，例如："
+description: "Init 阶段仅由超参数决定的常量表（量化 offset、gather 索引、stride 修正、RoPE 频率等）移到 host/Tiling 预计算，device 只做一次 DataCopy，消除每次 launch 的标量循环与 UB 占用。"
 tags:
   - task.optimization
   - topic.compute.normalization
@@ -11,21 +11,11 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T15:50:00Z"
 platforms:
   - a2
 ---
-
 # Strategy X8: Host-Side Precomputation of Constant Offset Tables
-
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X8
-> origin: discovered
-> discovered_from: best_decode deep profiling (NPU 12, msprof compare)
-> base_speedup: 实测有效（2026-07-20，best_decode2 round_1 n2 host Pi 转置缓存）：mean_asc 149.58→125.64us（-16.0%，同窗口），R1 主线，"零风险最大单项"
-> ```
 
 ## 核心思路
 
@@ -142,12 +132,6 @@ __aicore__ inline void Init(GM_ADDR kOffGm, GM_ADDR kInvGm, ...) {
 - 单独使用 X4：减少 Init 阶段标量指令，略微降低头开销；
 - 与 X3 组合：释放的 UB 可用于增大 TB。
 
-## 预期收益
-
-- 消除 `Init` 中 D-loop 级别的标量计算（约 D 次 `SetValue` + 位运算）；
-- 头开销降低 2-5 us（取决于表的数量和 D 的大小）；
-- 释放的 UB 可支持 X3 的 TB 提升，带来额外 10%-20% 收益。
-
 ## 常见陷阱
 
 ⚠️ **TilingData 过大**：若 offset 表很大（如 D=4096），不宜放入 TilingData，
@@ -177,9 +161,6 @@ grep -n "struct.*Tiling\|TilingData\|BEGIN_TILING_DATA_DEF" \
     op_host/*.h op_host/*.cpp
 ```
 
-## 来源
-
-发现于 best_decode 深度性能分析：
-`Init` 阶段存在多个 `for (int64_t i = 0; i < D_; i++)` 循环填充
-`kOffBaseBuf_`、`kInvBaseBuf_`、`vOffBaseBuf_`、`vInvBaseBuf_`、`strideOffBuf_`。
-这些表完全由 `D_`、`mseBits_`、`vqb_` 决定，本可在 Host 预计算。
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。

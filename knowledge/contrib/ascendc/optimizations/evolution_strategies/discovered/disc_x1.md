@@ -11,22 +11,11 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/120ae95ac453606fe8eb69a5d1662382d30fc315/community/ops/evolution-strategies/references/discovered/disc_X1.md
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T15:50:00Z"
 platforms:
   - a2
 ---
-
 # Strategy X1: Inline Target Capture
-
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X1
-> origin: discovered
-> discovered_round: 2
-> discovered_from: round_2/parallel_2
-> base_speedup: 2.58x
-> ```
 
 ## 核心思路
 在 Online Softmax 的前向流式扫描过程中，当处理到包含目标索引的 tile 时，立即捕获目标元素的原始值（如 target logit），
@@ -55,5 +44,6 @@ platforms:
 4. 注意：targetLocalIdx 的 GetValue 是标量操作，对 Vec 流水线无影响；
    条件判断(`if (t == targetTileId)`)的分支开销极低（每行仅 K 次比较）
 
-## 来源
-自动发现于第 2 轮进化，算子 cross_entropy_loss，speedup 2.58x
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。

@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X16: 循环算子 H-slice 多核切分 (Recurrent H-Slice Multi-Core Split)"
-description: "对 LSTM/GRU/RNN/scan 类含串行循环的算子，时间维不可并行，并行度只能从 batch×hidden 中榨取。"
+description: "对 LSTM/GRU/RNN/scan 类含串行循环的算子，时间维不可并行，并行度只能从 batch×hidden 中榨取；小 batch 时将 hidden 维度切分到多个 AIV 核，各核独占隐藏单元及对应门控列，递归权重切片 UB 常驻，c/h 状态分片独立更新，零核间通信。"
 tags:
   - task.optimization
   - topic.programming_model.execution_unit.cube
@@ -11,22 +11,12 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T16:45:00Z"
 platforms:
   - a2
 ---
 
 # Strategy X16: 循环算子 H-slice 多核切分 (Recurrent H-Slice Multi-Core Split)
-
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X16
-> origin: discovered
-> discovered_round: 3
-> discovered_from: round_3/parallel_0 (n3_s1_s1), round_4/parallel_1 (x0_x1_x1 移植)
-> base_speedup: 2.12x (与 X15 组合后 mean, vs PyTorch)
-> ```
 
 ## 核心思路
 对 LSTM/GRU/RNN/scan 类含串行循环的算子，时间维不可并行，并行度只能从 batch×hidden 中榨取。
@@ -44,17 +34,16 @@ H-slice 两种模式间调度（经验阈值：batchNum≤4 或 (H≥256 且 bat
   残差部分在小 batch 下的多核利用——两者正交，组合收益叠乘
 
 ## 实现要点
-- **门控列映射（血泪教训，必须遵守）**：4H 融合门控维布局为 [i|f|g|o] 四个 H 块，
+- **门控列映射（关键正确性约束，必须遵守）**：4H 融合门控维布局为 [i|f|g|o] 四个 H 块，
   隐藏单元 j 的四个门控列是 {j, H+j, 2H+j, 3H+j}，**不是**连续的 [4j, 4j+4)。
   W_hh/W_ih/bias 切片必须按跨步列取，按连续 [4·hStart, 4·hEnd) 切会导致 i/f/g/o
   张冠李戴——该 bug 表现为精度随机挂（输入分布温和时碰巧通过）、c 状态超数学上界
   甚至 fp16 Inf。x_proj 若由 host 按 gate-major [seq,4,batch,H] 排布则天然正确
 - host 侧 tiling 调度两种模式，所有 shape 统一走 kernel，不要保留 host 回退循环
   （回退路径会掩盖未优化的 shape）
-- H-slice 缓冲区全部 ALIGN32 对齐；调度阈值实现后需用实测校准一次
+- H-slice 缓冲区全部 ALIGN32 对齐；调度阈值需按目标平台校准
 - 每核 W_hh 切片 UB 常驻后，剩余 UB 决定 batch tile 大小，二者需一起算预算
 
-## 证据
-- 纯 kernel 路径（Vector-AXPY 系）：0.335x → 0.799x（+138%，round_3 n3_s1_s1）
-- 跨分支移植进 X15 混合架构：0.852x → 2.12x mean / 1.81x geomean（+149%，round_4 x0_x1_x1）
-- 60-case 扩展验证：geomean 2.03x / mean 2.42x，大 batch shape 优势更明显
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。

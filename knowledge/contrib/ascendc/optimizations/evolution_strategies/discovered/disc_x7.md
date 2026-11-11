@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X7: Token Block Size (TB) Tuning for Pure-Vector Attention"
-description: "在纯 AIV（Vector）实现的 FlashDecode / TurboQuant decode 中，kernel 内部以"
+description: "纯 AIV 实现的 decode/quantized-KV attention 中，token block（TB）决定标量循环占比、向量利用率和 UB 压力；在 UB 预算内动态增大 TB（尤其 MSE 路径）可降低 scalar bound。"
 tags:
   - task.optimization
   - topic.attention
@@ -11,21 +11,11 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T15:50:00Z"
 platforms:
   - a2
 ---
-
 # Strategy X7: Token Block Size (TB) Tuning for Pure-Vector Attention
-
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X7
-> origin: discovered
-> discovered_from: best_decode deep profiling (NPU 12, msprof compare)
-> base_speedup: 实测有效（2026-07-21，best_decode2 round_3/parallel_3 x1）：同窗口 mean_asc -4.2%（最净窗 -8.5%），case9 -42.6%/case10 -30.4%/case0 -21.1%；x1 最终 114.71us，为 merge_final 基座
-> ```
 
 ## 核心思路
 
@@ -40,25 +30,22 @@ slot，解量化后做 `q·K`、softmax、weighted-V 累加。TB 的选择直接
 3. **UB 容量压力**：TB 增大时，`slotBuf_`、`kBlkBuf_`、`vBlkBuf_`、
    `rawBlkBuf_` 等 buffer 线性增大，可能触顶。
 
-当前实现中 FP8 路径 `TB=16`、MSE 路径 `TB=8`。分析显示 MSE 路径的
-`aiv_scalar_ratio` 显著高于 FP8 路径，一个重要原因是其 TB 只有 8。
-通过动态选择 TB（尤其是 MSE 路径），可以在 UB 容量允许范围内尽量增大 TB，
-降低标量循环占比。
+不同路径的 buffer 占用不同：FP8 路径通常可用较大 TB，MSE 路径因额外 centroids/offset buffer 只能用较小 TB，容易形成 scalar bound。通过动态选择 TB（尤其是 MSE 路径），可以在 UB 容量允许范围内尽量增大 TB，降低标量循环占比。
 
 ## 适用场景
 
 - **算子类型**：纯 Vector 实现的 decode attention、quantized KV attention。
 - **触发条件**：
-  1. profiling 显示 `aiv_scalar_ratio` 高（>40%）且 `aiv_vec_ratio` 不高；
+  1. profiling 显示 `aiv_scalar_ratio` 高且 `aiv_vec_ratio` 不高；
   2. 当前 TB 固定为较小值（如 8），而 UB 仍有剩余空间；
   3. MSE 路径比 FP8 路径慢的比例高于理论值（MSE 多一次 centroids gather）。
 - **限制条件**：必须保证 `TB * slotPad_ * sizeof(T)` 不超过可用 UB。
 
 ## 前提条件
 
-1. Kernel 的 buffer 分配支持动态 TB（当前用 `tb_` 成员变量控制，已支持）。
+1. Kernel 的 buffer 分配支持动态 TB（需用运行期变量控制）。
 2. Host 侧能够将 TB 作为 Tiling 参数传入 kernel。
-3. 已验证不同 TB 下的精度和边界行为（尤其是尾块 `nTok < TB`）。
+3. 需验证不同 TB 下的精度和边界行为（尤其是尾块 `nTok < TB`）。
 
 ## 实现要点
 
@@ -69,7 +56,7 @@ Host 侧根据路径和 UB 预算选择 TB：
 ```cpp
 int64_t ComputeTb(bool keyFp8, int64_t D, int64_t slotLen, int64_t slotPad) {
     // 基础约束
-    const int64_t UB_SIZE = 128 * 1024;  // 910B AIV UB, 需按实际平台查询
+    const int64_t UB_SIZE = 128 * 1024;  // A2 AIV UB, 需按实际平台查询
     const int64_t RESERVED = 20 * 1024;  // 栈、队列、中间 buffer 预留
     const int64_t FP8_TB = 16;
     const int64_t MSE_TB_MIN = 8;
@@ -114,12 +101,6 @@ MSE 路径中 `pitBuf_`（`D*D` fp32）是最大的固定开销。若 Host 侧�
 
 这是本策略与 X4（Host 预计算）的典型组合。
 
-## 预期收益
-
-- MSE 路径 `aiv_scalar_ratio` 预计从 43% 降至 30% 以下；
-- 每个 chunk 的向量指令数不变，但 dispatch 次数减少一半；
-- 综合收益：MSE 路径耗时降低 15%-25%（取决于 shape）。
-
 ## 常见陷阱
 
 ⚠️ **UB 溢出**：增大 TB 前必须精确计算 UB 使用量，尤其是 `slotPad_` 已按 32B
@@ -142,8 +123,6 @@ grep -n "InitBuffer.*slotBuf\|InitBuffer.*kBlkBuf\|InitBuffer.*vBlkBuf\|InitBuff
 grep -n "useQrot\|qrotGm_\|pitBuf_" op_kernel/*.cpp
 ```
 
-## 来源
-
-发现于 best_decode 深度性能分析：FP8 路径 TB=16 的 scalar ratio 为 52%，
-而 MSE 路径 TB=8 的 scalar ratio 为 43%（且 vec ratio 明显更高）。
-MSE 路径若去掉 `pitBuf_` 并将 TB 提升到 16，有望接近 FP8 路径的标量占比。
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。

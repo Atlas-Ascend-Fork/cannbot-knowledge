@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: "X60: 向量链发射最小化（代数重写 + calcount 合并）"
-description: "当 profiling 显示 Vector busy 高但数据吞吐极低（每条向量指令平均仅 ~4-5ns ≈ 发射率墙，Scalar busy 与 Vector busy 同高且来自指令发射）时，优化目标应从\"数据通路带宽\"切换为\"指令/发射单元数\"：(1) 用位代数恒等式重写数值链——如用伴随掩码…"
+description: "当 profiling 显示 Vector busy 高但数据吞吐低、每条向量指令平均耗时接近发射率墙，且 Scalar busy 与 Vector busy 同高时，优化目标应从数据通路带宽切换为指令/发射单元数：用位代数恒等式重写数值链（如伴随掩码 And 替代 floor 取整技巧链），并把多次小 calcount 的同类 API call 合并为一次大 calcount call，减少 scalar call site 的发射与簿记开销。"
 tags:
   - task.optimization
   - topic.data_movement
@@ -11,34 +11,24 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T16:45:00Z"
 platforms:
   - a2
 ---
 
 # Strategy X60: 向量链发射最小化（代数重写 + calcount 合并）
 
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X60
-> origin: discovered
-> discovered_round: 1
-> discovered_from: round_1/parallel_1
-> base_speedup: 1.40x (T2/T3; 310P W4A8 nibble 抽取链, 相对已含 X59 的 baseline)
-> ```
-
 ## 核心思路
-当 profiling 显示 Vector busy 高但数据吞吐极低（每条向量指令平均仅 ~4-5ns ≈ 发射率墙，
+当 profiling 显示 Vector busy 高但数据吞吐极低（每条向量指令平均耗时接近发射率墙，
 Scalar busy 与 Vector busy 同高且来自指令发射）时，优化目标应从"数据通路带宽"切换为
 "指令/发射单元数"：(1) 用**位代数恒等式**重写数值链——如用伴随掩码 And（b&0x08）替代
-floor 取整技巧链（x*k+c 后 cast），一条恒等式可证明的位运算等价式把 21 call/13 屏障的链压到
-9 call/5 屏障；(2) 把 N 次小 calcount 的**同类 API call 合并为 1 个大 calcount call**——
+floor 取整技巧链（x*k+c 后 cast），一条恒等式可证明的位运算等价式可大幅压缩长链的
+call 与屏障数；(2) 把 N 次小 calcount 的**同类 API call 合并为 1 个大 calcount call**——
 底层微指令流完全相同（wrapper 按 repeat 拆分发射），但每 call 省 N-1 个 scalar call site
 的发射/簿记开销。
 
 ## 适用场景
-- 向量链密集、每个 op 后跟 PipeBarrier、Scalar busy 占比 20%+ 的内核（发射开销主导型）
+- 向量链密集、每个 op 后跟 PipeBarrier、Scalar busy 显著的内核（发射开销主导型）
 - 无 vector ShiftLeft/ShiftRight 的老架构（310P/m200 等）上用 half 域乘加技巧模拟位操作的链
   （nibble 提取、位域拆装）——代数重写收益最大
 - 症状识别：改动前后 MTE2/MTE3 不变而 Scalar busy 大幅下降 = 发射开销被压缩的直接证据
@@ -53,11 +43,14 @@ floor 取整技巧链（x*k+c 后 cast），一条恒等式可证明的位运算
    数据粒度，X60 压缩指令粒度）
 3. **屏障精简逐条分析**：dst 不相交的相邻 op 背靠背发射免屏障；真 WAR/RAW 边保留
    （同 pipe 指令按序发射是前提）
-4. **收益判据**：每窗口（2048B）发射单元数下降比例 ≈ Scalar busy 下降比例；
-   Vector busy 下降幅度 = 被删 call 数 × ~4.5ns × 窗口数
+4. **收益判据**：发射单元数下降比例 ≈ Scalar busy 下降比例；Vector busy 下降幅度与被删
+   call 数、窗口数成正比
 
-## 来源
-自动发现于 quant_batch_matmul_v4 第二轮进化 round_1/parallel_1（ops-nn，Ascend310P3，
-W4A8 W4Trans 段），相对已含 X59 的 baseline（= 仓 HEAD 78a8081b4）：T1 1.29x / T2 1.40x /
-T3 1.40x / G1 1.36x / G2 1.13x，精度 5/5 bit-exact。流水线证据：Vector 848→616μs、
-Scalar 310→83μs（MTE2/Mmad/MTE3 不变）。
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；用全量精度门禁与逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带。
+
+## 补充判据（跨算子复核）
+
+- **循环不变量基向量外提**：`CreateVecIndex + Muls` 生成 `-[0..S-1]` 这类与迭代无关的掩码基向量，若在每轮 TOPK 内重复生成，会多付两条向量 op + 一次 barrier；提到循环外只算一次，内层只保留 `Adds(cond)+clamp+fv`，可稳定拿到 +2% 量级。
+- **边界**：只适用于与迭代索引无关的基向量；如果基向量依赖每轮变化的 `tk/bt`，不能外提。

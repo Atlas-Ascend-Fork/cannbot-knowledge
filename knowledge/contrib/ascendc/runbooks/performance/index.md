@@ -1,5 +1,8 @@
 # 性能优化 Playbook
 
+> 注：P148–P161 当前为 `draft`（待实际算子正确性/性能验证证据），不视为 stable 策略。
+
+
 包含进化策略的分步落地 Playbook，以及 Kernel `clock`/`asc_time_stamp` 的测量与无输出诊断。
 
 ## Runbook
@@ -148,3 +151,18 @@
 - [P99 Playbook: BroadCast + 批量向量运算替代逐行标量循环](p99_broadcast_batch_vector_ops.md)：P99 把小向量（如 `rstd[gRows]`）广播到大矩阵（`[gRows, D]`）后，用 1 条 `Mul`/…
 
 - [Kernel 周期与时间戳测量：clock 与 asc_time_stamp](kernel_clock_and_time_stamp_measurement.md)：在 Kernel 内用 clock 测同线程局部代码的相对周期差、用 asc_time_stamp 输出结构化时间戳时，如何摆正测量区、排除同步/冷启动/编译优化/测量次数的干扰，并定位"时间戳没有输出"；同时划清 clock 不是 profiling 采集器这一边界。
+
+- [P148 Playbook: 有界分数下免 running-max，并让 PV 在 L0C 跨 chunk 累加 落地 SOP](p148_fixed_offset_l0c_accumulation.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x126.md。
+- [P149 Playbook: CV 环加深：RING 槽与 PRELAUNCH 的硬约束 落地 SOP](p149_ring_prelaunch_constraint.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x127.md。
+- [P150 Playbook: 相邻引用合批（slot-pair batching）摊薄 per-ref 固定成本 落地 SOP](p150_adjacent_ref_batching.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x129.md。
+- [P151 Playbook: MIX(CV) per-task 固定成本墙：优先 M 方向合批，而不是加宽 N 落地 SOP](p151_mgroup_batching.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x140.md。
+- [P152 Playbook: 把 V 从共享 L1 页槽拆成独立环，并在 PV 头部预取 落地 SOP](p152_v_independent_ring.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x144.md。
+- [P153 Playbook: L0B 按 chunk 奇偶轮转的双 slot，重叠 K/V 填充与 mma 落地 SOP](p153_l0b_parity_double_slot.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x145.md。
+- [P154 Playbook: 在 L0C 预算内把 block_m 取到最大 16 对齐值 落地 SOP](p154_block_m_max_l0c.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x149.md。
+- [P155 Playbook: softmax 两趟合成一条扁平 tile 流并提前 2 tile 预取 落地 SOP](p155_softmax_flattened_tile_stream.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x156.md。
+- [P156 Playbook: CV 环 0x2 配对握手批量化（按形状门控） 落地 SOP](p156_0x2_handshake_batching.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x157.md。
+- [P157 Playbook: attention 前向按原生 stride 寻址，删除布局转换的全张量拷贝 落地 SOP](p157_native_stride_addressing.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x160.md。
+- [P158 Playbook: head-major K/V 布局把 strided 小 burst 变成连续 burst 落地 SOP](p158_head_major_kv_layout.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x173.md。
+- [P159 Playbook: 有界 logits 下 softmax 去 frozen-shift 落地 SOP](p159_frozen_shift_free_softmax.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x174.md。
+- [P160 Playbook: 把 kv_end 相同的连续 q-block 合进一个 ring（n2_mg 合并） 落地 SOP](p160_n2_mg_merge.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x175.md。
+- [P161 Playbook: head-major 转置放 wrapper 还是 kernel：算端到端带宽账 落地 SOP](p161_transpose_wrapper_vs_kernel.md)：完整发现记录见 ../../optimizations/evolution_strategies/discovered/disc_x179.md。

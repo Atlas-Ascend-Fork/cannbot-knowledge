@@ -11,26 +11,16 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-knowledge/merge_requests/103
     role: primary
 created_at: "2026-10-13T00:00:00Z"
-updated_at: "2026-10-13T00:00:00Z"
+updated_at: "2026-11-03T16:45:00Z"
 platforms:
   - a2
 ---
 
 # Strategy X28: 小 S Prefill FA 自适应 KV Chunk 粒度
 
-> 进化发现元数据（迁移自 cannbot-skills `references/discovered/` 原始 frontmatter）：
->
-> ```yaml
-> id: X28
-> origin: discovered
-> discovered_round: 3
-> discovered_from: round_3/parallel_0 (n2_cont_cont)
-> base_speedup: 0.976x (P8-canonical), geomean 0.588 vs baseline 0.500
-> ```
-
 ## 核心思路
 FA/GQA prefill 的 host 侧常把 `kvPad = align_up(S, nChunk)`，nChunk 取 cube 列分形友好的 256(fp16)/128(fp32) 大块。
-当序列长度 S 很小（如 S=3~113）时，kvPad 被大幅上取整（S=3 → kvPad=256，85x 填充浪费），attention 的
+当序列长度 S 远小于 nChunk 时，kvPad 被大幅上取整（如 S=3 → kvPad=256，绝大多数列是填充），attention 的
 QK^T/softmax/PV 全在 mask 覆盖的 pad 列上白算（mask 只是让 exp→0，计算照跑）。
 
 本策略把 nChunk 改为 **按 S 自适应**：小 S（如 S<=256）用 nChunk=64（kvPad=align_up(S,64)），kernel 支持
@@ -48,8 +38,8 @@ QK^T/softmax/PV 全在 mask 覆盖的 pad 列上白算（mask 只是让 exp→0�
 - fp32 3xTF32 路径同步支持尾块（zZ→nZ transpose load 列宽参数化）。
 - 尾块 nCols 必须 16 对齐（kvPad=align_up(S,16) 保证）。
 - 联动：packDataElems 变小使更多 case 落入 host 打包融合路径；但中型 case strided-DMA pack 可能反而慢，
-  需按数据量调 pack 路径阈值（本案例 131072→80000）。
+  需按数据量调 pack 路径阈值。
 
-## 来源
-自动发现于 GroupedQueryAttention 进化第 3 轮，n2_cont_cont（round_3/parallel_0），geomean 0.588（基线 0.500），
-P8 规范 score 0.976。小/中 case attention device 时间降 2-4x。与 X7(TB tuning)/X20(weight repack cache) 正交互补。
+## 验证方法
+- 在目标算子上做同设备同窗口 A/B（正反序至少两轮），比较父变体与变体；全量精度门禁加逐 bit/逐元素对比确认语义未变。
+- 容量类改动先做 UB/L1/L0C 预算审计；诊断类改动先做同码 A/A 噪声带；尾块路径需覆盖 S 小于/等于/大于 nChunk 的边界。
