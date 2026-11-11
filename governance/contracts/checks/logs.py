@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from pathlib import Path
 
 from ..knowledge import Contract, Issue
@@ -36,6 +37,13 @@ def check_repository(contract: Contract) -> list[tuple[Path, Issue]]:
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}\.md", path.name):
             results.append(
                 (path, Issue("log.filename", "log filename must use YYYY-MM-DD.md"))
+            )
+            continue
+        try:
+            datetime.strptime(path.stem, "%Y-%m-%d")
+        except ValueError:
+            results.append(
+                (path, Issue("log.filename", "log filename must use a valid calendar date"))
             )
             continue
         date = path.stem
