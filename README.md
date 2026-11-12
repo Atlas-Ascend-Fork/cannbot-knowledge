@@ -40,7 +40,7 @@ CANN 领域知识库面向 [CANN](https://hiascend.com/software/cann) 社区，�
           CANNBot 读取正文并核对来源
 ```
 
-本仓维护九项 Skill：七项可安装到业务项目，`ops-knowledge-trace-ingest` 与 `model-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
+本仓维护十项 Skill：七项可安装到业务项目，`ops-knowledge-trace-ingest`、`model-knowledge-trace-ingest` 与 `knowledge-issue-handler` 只在本知识仓内使用。另有两个 vendored 依赖副本 `gitcode-issue-handler` 与 `gitcode-toolkit`（来源 `cann/cannbot-skills` 的裁剪版，仅新增 Windows `fcntl` shim，裁剪口径见各自 `VENDORED.md`；供仓内 Issue 处理使用，不计入十项、不由安装器链接）。
 
 | Skill | 作用 | 是否修改知识仓 |
 |---|---|---|
@@ -49,6 +49,7 @@ CANN 领域知识库面向 [CANN](https://hiascend.com/software/cann) 社区，�
 | `runtime-api-knowledge-query` | 复用 Query 推荐和比较 CANN Runtime API，核验 CUDA 候选替代、差异与证据边界 | 否 |
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级和通用建卡，支持按需链接图谱 | 创建候选卡；构图只读正文，产物始终由 Git 忽略 |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
+| `knowledge-issue-handler` | 复用通用 GitCode Handler，结合知识检索分诊并回复本仓 Issue | 仓内使用；默认只读并生成回复稿 |
 | `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、导航、Lint 和检索门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
 | `model-knowledge-trace-ingest` | 将各类 Agent 运行轨迹归一化，批量挖掘模型优化、训练/推理框架及其环境调试知识，归并为 Runbook | 仓内使用；外层负责远端筛选与客户端调度，只写经审查的模型卡、导航和日志 |
 | `ops-knowledge-vv-ingest` | 从固定版本源码提取不含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
@@ -108,7 +109,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 
 安装和使用方法见[安装与使用指南](docs/installation_and_usage.md)；把知识库接入 MCP 客户端（Claude Desktop、Cursor 等）的说明见 [mcp-server](mcp-server/README.md)，工具参数与接入配置见 [TOOLS.md](mcp-server/TOOLS.md)与 [MCP_CONFIG.md](mcp-server/MCP_CONFIG.md)，接入故障排查见 [TROUBLESHOOTING.md](mcp-server/TROUBLESHOOTING.md)；Docker 一键部署见 [DOCKER.md](mcp-server/docker/DOCKER.md)。
 
-设计取舍见[设计原则](docs/design_principles.md)；常见任务见[形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)、[查询 API](recipes/api_search.md)和[使用知识库进行算子开发](recipes/operator_development.md)。
+设计取舍见[设计原则](docs/design_principles.md)；常见任务见[形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)、[查询 API](recipes/api_search.md)和[使用知识库进行算子开发](recipes/operator_development.md)；用 Agent 分析和回复本仓 Issue 见[使用 Agent 处理知识库 Issue](docs/issue_handling.md)。
 
 知识库纳入 CANN 领域的概念与机制、API、硬件与平台知识、设计与优化方法，以及可复用的调试和故障处置经验，详见[知识纳入范围](docs/knowledge_and_skills_boundary.md#什么内容放到知识库仓)。用户可以将本仓作为个人 Skill 的知识来源，通过 `knowledge-query` 检索并引用相关知识卡。
 

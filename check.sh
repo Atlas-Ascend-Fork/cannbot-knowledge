@@ -25,6 +25,9 @@ while IFS= read -r git_env_var; do
 done <<< "$git_local_env_vars"
 unset git_env_var git_local_env_vars
 
+# Vendored dependency copies are upstream-trimmed trees whose internal style
+# is owned by cann/cannbot-skills; syncing upstream replaces them wholesale,
+# so repository lint rules must not gate them.
 python3 .agents/skills/knowledge-lint/scripts/knowledge_lint.py \
   --knowledge-root . --strict-navigation
 python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py \
@@ -42,7 +45,16 @@ python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/ops-knowledge-trace-ingest/scripts -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/model-knowledge-trace-ingest/scripts -p 'test_*.py'
 python3 .agents/skills/ops-knowledge-trace-ingest/scripts/field_notes_lint.py
-ruff check .agents/skills governance evals
+# ruff 的显式路径列表把 vendored 依赖副本（gitcode-issue-handler、gitcode-toolkit）
+# 排除在仓库风格门禁外：它们是上游裁剪副本，风格归上游仓所有，同步时整体替换。
+ruff_paths=(governance evals)
+for skill_dir in .agents/skills/*/; do
+  case "$skill_dir" in
+    .agents/skills/gitcode-issue-handler/|.agents/skills/gitcode-toolkit/) ;;
+    *) ruff_paths+=("$skill_dir") ;;
+  esac
+done
+ruff check "${ruff_paths[@]}"
 bash -n install.sh check.sh get_resources.sh
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then

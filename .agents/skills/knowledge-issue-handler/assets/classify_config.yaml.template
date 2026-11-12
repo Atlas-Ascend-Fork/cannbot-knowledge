@@ -1,0 +1,33 @@
+# cannbot-knowledge 的 gitcode-issue-handler 默认业务配置。
+# 由 Agent 在原 Handler 配置流程中复用；不会自动覆盖实际配置。
+# Token 只通过 GITCODE_TOKEN 环境变量提供，不写入本文件。
+
+repo: "cann/cannbot-knowledge"
+
+responsibility:
+  handle:
+    - Knowledge-Report 知识问题反馈，包括知识错误、过时、证据、适用范围和导航问题
+    - Knowledge-Request 知识需求，包括 CANN、DSL、API、算子、调试和优化知识缺口
+    - Bug-Report 工具与 Skill 缺陷，包括检索、摄入、Lint、安装、图谱和 CI 问题
+    - 角色任命申请：Requirement 中申请成为 Committer/Reviewer 的提名类 Issue，按提名记录式首响处理，只陈述可核验贡献，不承诺任命结论
+  list-only:
+    - Requirement 治理与能力建议，以及 RFC、公共组件新增或主动行为调整；角色任命申请不在此列，已归入 handle 单独首响
+  ignore:
+    - Roadmap、路线图、规划汇总和纯工作记录
+
+ignored_issue_ids: []
+
+# 默认只生成并审核草稿。开启自动首响也不授权后续追问自动回复。
+auto-response: false
+
+# 不根据卡片作者、评论者或模型推测自动确定知识库维护责任人。
+auto-assign: false
+auto-assign-fallback-user: ""
+
+# 以下设置只管理增量跟进，不启动后台任务，也不授权自动关闭。
+follow_up:
+  lookback_days: 30
+  fetch_pages: 10
+  poll_hours: 24
+  stale_hours: 48
+  state_file: .cannbot/gitcode-issue-handler/data/followup-watch.json

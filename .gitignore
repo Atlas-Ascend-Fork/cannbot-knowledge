@@ -1,4 +1,5 @@
 artifacts/
+.cannbot/
 .DS_Store
 
 .build/

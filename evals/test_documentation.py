@@ -30,6 +30,11 @@ import yaml
 
 TAG_RE = re.compile(r"\b(?:task|topic|paradigm)(?:\.[a-z][a-z0-9_]*)+\b")
 
+# Vendored dependency copies (source: cann/cannbot-skills) live under
+# .agents/skills/ but stay upstream-pristine; repository documentation and
+# frontmatter contracts do not apply to them.
+VENDORED_SKILLS = ("gitcode-issue-handler", "gitcode-toolkit")
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -191,6 +196,14 @@ class DocumentationContractTests(unittest.TestCase):
                 result.append(path)
             else:
                 result.extend(path.rglob("*.md"))
+        vendored_roots = [
+            self.root / ".agents/skills" / name for name in VENDORED_SKILLS
+        ]
+        result = [
+            path
+            for path in result
+            if not any(path.is_relative_to(root) for root in vendored_roots)
+        ]
         return sorted(result)
 
     def external_documentation_files(self) -> list[Path]:
@@ -630,7 +643,7 @@ class DocumentationContractTests(unittest.TestCase):
     def test_each_skill_links_its_references(self) -> None:
         failures: list[str] = []
         for skill in sorted((self.root / ".agents/skills").iterdir()):
-            if not skill.is_dir():
+            if not skill.is_dir() or skill.name in VENDORED_SKILLS:
                 continue
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
             references = skill / "references"
@@ -645,7 +658,7 @@ class DocumentationContractTests(unittest.TestCase):
     def test_skill_frontmatter_contract(self) -> None:
         failures: list[str] = []
         for skill in sorted((self.root / ".agents/skills").iterdir()):
-            if not skill.is_dir():
+            if not skill.is_dir() or skill.name in VENDORED_SKILLS:
                 continue
             text = (skill / "SKILL.md").read_text(encoding="utf-8")
             parts = text.split("---", 2)
@@ -686,12 +699,15 @@ class DocumentationContractTests(unittest.TestCase):
             "knowledge-ingest",
             "knowledge-query",
             "knowledge-lint",
+            "knowledge-issue-handler",
             "ascendc-api-knowledge-query",
             "runtime-api-knowledge-query",
             "ops-knowledge-trace-ingest",
             "model-knowledge-trace-ingest",
             "ops-knowledge-vv-ingest",
             "ops-knowledge-cv-ingest",
+            "gitcode-issue-handler",
+            "gitcode-toolkit",
         }
         actual = {path.name for path in (self.root / ".agents/skills").iterdir() if path.is_dir()}
         self.assertEqual(expected, actual)
@@ -709,6 +725,12 @@ class DocumentationContractTests(unittest.TestCase):
             self.assertIn("ascendc-api-knowledge-query", text, relative)
         skills_spec = (self.root / "governance/specs/skills.md").read_text(encoding="utf-8")
         self.assertIn("仓内 trace producer", skills_spec)
+        for relative in ("README.md", "governance/specs/skills.md"):
+            self.assertIn(
+                "knowledge-issue-handler",
+                (self.root / relative).read_text(encoding="utf-8"),
+                relative,
+            )
 
     def test_trace_ingest_uses_current_repository_contracts(self) -> None:
         root = self.root / ".agents/skills/ops-knowledge-trace-ingest"
