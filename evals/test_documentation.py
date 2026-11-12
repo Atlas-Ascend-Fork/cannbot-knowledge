@@ -50,6 +50,105 @@ def first_content_heading(text: str) -> str:
         "",
     )
 
+def retired_a5_card_references(text: str, card: Path, bundle: Path) -> list[tuple[int, str]]:
+    """Find obsolete card names without interpreting source names as cards."""
+    if "_a5" not in text:
+        return []
+    from governance.contracts.checks.links import (
+        INLINE_LINK_RE,
+        REFERENCE_DEFINITION_RE,
+        REFERENCE_LINK_RE,
+        _markdown_destination,
+        _reference_label,
+        mask_code,
+    )
+
+    def blank(value: str) -> str:
+        return "".join("\n" if char == "\n" else " " for char in value)
+
+    def card_target(value: str) -> Path | None:
+        from urllib.parse import unquote, urlsplit
+
+        if urlsplit(value).scheme or value.startswith("#"):
+            return None
+        value = unquote(value.split("#", 1)[0])
+        if value.startswith("/"):
+            target = bundle / value.lstrip("/")
+        elif value.startswith("knowledge/"):
+            target = bundle.parent / value
+        elif value.startswith(".") or value.endswith(".md"):
+            # Markdown file paths are relative even when their first component
+            # also names a Bundle domain. Extensionless Concept IDs are separate.
+            target = card.parent / value
+        elif "/" in value and (bundle / value.split("/", 1)[0]).is_dir():
+            target = bundle / value
+        else:
+            target = card.parent / value
+        if target.suffix != ".md":
+            target = target.with_name(target.name + ".md")
+        target = target.resolve()
+        return target if target.is_relative_to(bundle.resolve()) else None
+
+    def accepted_link(value: str) -> bool:
+        target = card_target(value)
+        return target is None or target.is_file()
+
+    prose = mask_code(text, inline=False)
+    prose = re.sub(r"\A---\n.*?\n---\n", lambda m: blank(m.group()), prose, flags=re.DOTALL)
+    definitions = {}
+    for match in REFERENCE_DEFINITION_RE.finditer(prose):
+        definitions.setdefault(_reference_label(match.group(1)), match.group(2) or match.group(3))
+    edits = []
+    card_links: set[str] = set()
+    for match in INLINE_LINK_RE.finditer(prose):
+        target = _markdown_destination(match.group(3))
+        if accepted_link(target):
+            edits.append((match.start(), match.end()))
+        else:
+            card_links.add(target.split("#", 1)[0])
+    for match in REFERENCE_LINK_RE.finditer(prose):
+        target = definitions.get(_reference_label(match.group(3) or match.group(2)))
+        if target and accepted_link(target):
+            edits.append((match.start(), match.end()))
+    for match in REFERENCE_DEFINITION_RE.finditer(prose):
+        target = match.group(2) or match.group(3)
+        if accepted_link(target):
+            edits.append((match.start(), match.end()))
+        else:
+            card_links.add(target.split("#", 1)[0])
+    for start, end in sorted(set(edits), reverse=True):
+        prose = prose[:start] + blank(prose[start:end]) + prose[end:]
+    prose = re.sub(r"https?://[^\s<>()]+", lambda m: blank(m.group()), prose)
+    candidate = re.compile(
+        r"(?<![a-zA-Z0-9_./-])(?P<ref>[a-zA-Z0-9_./-]*_a5(?:\.md)?)"
+        r"(?![a-zA-Z0-9_/-]|\.[a-zA-Z0-9_])"
+    )
+    failures = []
+    for number, line in enumerate(prose.splitlines(), 1):
+        for match in candidate.finditer(line):
+            reference = match.group("ref")
+            target = card_target(reference)
+            if target is None or target == card.resolve() or target.is_file():
+                continue
+            explicit_card = reference in card_links or reference.startswith(("/", "knowledge/")) or (
+                reference.endswith(".md") and len(Path(reference).parts) == 1
+            ) or (
+                not reference.endswith(".md") and "/" in reference and not reference.startswith(".")
+                and (bundle / reference.split("/", 1)[0]).is_dir()
+            )
+            before, after = line[:match.start()], line[match.end():]
+            adjacent_card = re.search(r"(?:卡片?|知识页|正式卡)\s*[:：]?\s*[`\"「]*$", before) or re.match(
+                r"^[`\"」]*\s*(?:卡片?|知识页|正式卡)", after
+            )
+            replacement = target.with_name(target.name.removesuffix("_a5.md") + "_950.md")
+            renamed_card = replacement.is_file() and re.search(r"(?:见|参阅|参照)\s*[`\"「]*$", before)
+            source_context = re.match(r"^[`\"」]*\s*(?:函数|符号|变量|源码|目录)", after)
+            relative_card = reference.endswith(".md") and re.search(r"(?:见|参阅|参照|[Ss]ee)\s*[`\"「]*$", before)
+            if explicit_card or adjacent_card or ((renamed_card or relative_card) and not source_context):
+                failures.append((number, reference))
+    return failures
+
+
 def active_governance_spec_entries(entries: dict[str, str]) -> set[str]:
     """Keep the explicitly inactive refinery preview outside the active Specs."""
     actual = set(entries)
@@ -657,23 +756,108 @@ class DocumentationContractTests(unittest.TestCase):
         )
 
     def test_knowledge_does_not_refer_to_retired_a5_card_suffix(self) -> None:
-        stale = re.compile(
-            r"(?:见[^\n]*_a5|_a5[^\n]*(?:卡|文件|目标)|"
-            r"(?:生成|创建|没有)[^\n]*_a5|_a5[^\n]*正式卡)"
-        )
         failures: list[str] = []
         for card in sorted((self.root / "knowledge").rglob("*.md")):
             text = card.read_text(encoding="utf-8")
-            frame = re.match(r"\A---\n.*?\n---\n", text, re.DOTALL)
-            body = text[frame.end():] if frame else text
-            for number, line in enumerate(body.splitlines(), start=1):
-                # A valid link's target and a card's own filename are not prose
-                # references to a retired card suffix.
-                line = re.sub(r"\]\([^)]*\)", "]", line)
-                if stale.search(line):
-                    offset = text[: frame.end()].count("\n") if frame else 0
-                    failures.append(f"{card.relative_to(self.root)}:{number + offset}")
+            for number, _ in retired_a5_card_references(text, card, self.root / "knowledge"):
+                failures.append(f"{card.relative_to(self.root)}:{number}")
         self.assertEqual([], failures)
+
+    def test_retired_a5_reference_check_accepts_source_names_and_current_cards(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            bundle = Path(temporary) / "knowledge"
+            card = bundle / "model/inference/concepts/current_a5.md"
+            card.parent.mkdir(parents=True)
+            card.write_text("# Current\n")
+            (bundle / "ops").mkdir()
+            samples = [
+                "| fused_deep_moe_a5_base.h | 支持本卡明确实例 |",
+                "flags分别见矩阵 | op_kernel/moe_distribute_combine_v2_a5.h |",
+                "| csrc/cam_moe_combine_normal_a5.h | 每core固定目标rank |",
+                "见 `csrc/op_kernel/fused_deep_moe_a5` 源码目录。",
+                "本卡调用 `notify_dispatch_a5` 函数，并描述目标rank。",
+                "参见 [source_a5.md](https://example.test/commit/docs/source_a5.md)，本卡保留源码名。",
+                "参见 [source_a5.md][src]\n[src]: https://example.test/commit/source_a5.md\n",
+                "参见 [current_a5.md](current_a5.md)，这是当前存在的卡片。",
+                "`current_a5.md` 文件是本卡。",
+                "```python\nold_a5.md  # 仅源码摘录\n```\n",
+                "~~~text\n参见 obsolete_a5 卡片\n~~~\n",
+                "---\nsources: https://example.test/obsolete_a5.md\n---\n# Current\n",
+            ]
+            for sample in samples:
+                with self.subTest(sample=sample):
+                    self.assertEqual([], retired_a5_card_references(sample, card, bundle))
+
+    def test_retired_a5_reference_check_rejects_obsolete_card_references(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            bundle = Path(temporary) / "knowledge"
+            card = bundle / "model/inference/concepts/current.md"
+            card.parent.mkdir(parents=True)
+            (bundle / "ops").mkdir()
+            (card.parent / "mla_prolog_950.md").write_text("# Current replacement\n")
+            samples = [
+                "参见 `mla_prolog_a5.md`。",
+                "旧卡 `mla_prolog_a5` 说明了此限制。",
+                "尚未生成 `mla_prolog_a5` 正式卡。",
+                "详见 model/inference/concepts/mla_prolog_a5。",
+                "[旧实现](mla_prolog_a5.md)",
+                "[旧实现][old]\n[old]: mla_prolog_a5.md\n",
+                "参见 ../mla_prolog_a5.md。",
+                "See mla_prolog_a5.md.",
+                "参见 `mla_prolog_a5`。",
+            ]
+            for sample in samples:
+                with self.subTest(sample=sample):
+                    self.assertTrue(retired_a5_card_references(sample, card, bundle))
+            located = "---\ntitle: Example\n---\n\n参见 `mla_prolog_a5.md`。\n"
+            self.assertEqual([(5, "mla_prolog_a5.md")], retired_a5_card_references(located, card, bundle))
+
+    def test_retired_a5_reference_check_normalizes_relative_card_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            bundle = Path(temporary) / "knowledge"
+            card = bundle / "model/inference/concepts/current.md"
+            card.parent.mkdir(parents=True)
+            variants = card.parent / "variants"
+            variants.mkdir()
+            (variants / "current_a5.md").write_text("# Existing relative card\n")
+            relative_model = card.parent / "model"
+            relative_model.mkdir()
+            (relative_model / "current_a5.md").write_text("# Relative directory named model\n")
+            for prefix in ("", "./"):
+                reference = prefix + "mla_prolog_a5.md"
+                with self.subTest(rejected_plain_filename=reference):
+                    self.assertEqual([(1, reference)], retired_a5_card_references(f"`{reference}`", card, bundle))
+                for reference in (
+                    prefix + "variants/mla_prolog_a5.md",
+                    prefix + "variants/nested/mla_prolog_a5.md",
+                    prefix + "model/mla_prolog_a5.md",
+                    prefix + "variants/mla_prolog_a5",
+                ):
+                    with self.subTest(rejected=reference):
+                        text = f"参见旧卡片 `{reference}`。"
+                        self.assertEqual([(1, reference)], retired_a5_card_references(text, card, bundle))
+                reference = prefix + "variants/mla_prolog_a5.md"
+                with self.subTest(rejected_plain_reference=reference):
+                    self.assertEqual([(1, reference)], retired_a5_card_references(f"参见 `{reference}`。", card, bundle))
+                for text in (
+                    f"[旧卡片]({reference})",
+                    f"[旧卡片][old]\n[old]: {reference}\n",
+                ):
+                    with self.subTest(rejected_link=text):
+                        self.assertTrue(retired_a5_card_references(text, card, bundle))
+                for reference in (
+                    prefix + "variants/current_a5.md",
+                    prefix + "model/current_a5.md",
+                ):
+                    with self.subTest(accepted_card=reference):
+                        self.assertEqual([], retired_a5_card_references(f"参见卡片 `{reference}`。", card, bundle))
+                source = prefix + "csrc/op_kernel/fused_deep_moe_a5"
+                with self.subTest(accepted_source=source):
+                    self.assertEqual([], retired_a5_card_references(f"见 `{source}` 源码目录。", card, bundle))
+                material = prefix + "patterns/domains/port_a3_to_a5.md"
+                with self.subTest(accepted_material=material):
+                    text = f"promote to canonical OL/P-P entry under `{material}`."
+                    self.assertEqual([], retired_a5_card_references(text, card, bundle))
 
     def test_skill_sources_do_not_contain_agent_vendor_metadata(self) -> None:
         vendor_metadata = sorted(
