@@ -1,0 +1,92 @@
+# SGLang 推理加速与框架调用接口
+
+记录 SGLang 与 sgl-kernel-npu 在模型推理调用链中的入口、参数、布局和状态边界；这些是框架集成接口。Ascend C、Triton 与 CATLASS 的具体实现和限制由各卡的固定源码说明。
+
+- [SGL直接槽位状态的全层备份与单层恢复](sgl_direct_state_transfer.md)：区分 direct_lf_pf 的D2H全层备份和 direct_pf_lf 的H2D单层恢复、直接索引与异步缓冲生命周期。
+- [SGL图像视频patch展平与时间补帧接口](sgl_flatten_patches.md)：说明 flatten_patches 的末帧重复、空间合并整除、输出网格及可能共享输入存储的边界。
+- [SGL HC后混合的四路残差与CANN9.1厂商绑定](sgl_hc_post.md)：说明 hc_post 的矩阵方向、固定四流/隐藏宽度、recipes profile依赖和版本不回退。
+- [SGL KV整页换维传输与异步流所有权](sgl_kv_dim_exchange.md)：说明 transfer_kv_dim_exchange 的层页布局互换、首token确定页号、配对indexer/scale和同步要求。
+- [SGL Mamba状态的双向全层槽位搬运](sgl_mamba_state_transfer.md)：说明 transfer_mamba_state 的直接槽位索引、层槽位互换、紧凑pitch与异步同步边界。
+- [SGL mHC预处理Sinkhorn与后混合厂商接口](sgl_mhc_pre_post.md)：说明 mhc_pre_sinkhorn/mhc_post 的FP32参数、vendor输出类型、CANN9.1依赖与构造精度证据边界。
+- [SGLang稀疏KV卸载的注册内存、索引拷贝与槽位查找](sgl_sparse_kv_offload_primitives.md)：解释create_shm_tensor/free_shm/unidex_copy_inplace/slot_map_lookup的CPU与设备地址区分、逻辑行字节合同和进程内异步生命周期。
+
+- [批次不变推理接口](batch_invariants/index.md)：共 6 张知识卡（如 SGLang Batch Invariant AddRmsNorm：三返回值与残差边界、SGLang Batch Invariant FIA：OpOverloadPacket、v2参数与图捕获缓冲、SGLang Batch Invariant Linear Online Max/Sum：词表分片与打包掩码 等）。
+- [SGLang ADA 分块稀疏注意力接口](sgl_ada_block_sparse_attention.md)：说明新原生ADA的GQA、掩码与路由限制，并区分旧attentions接口的Host序列数组、null槽、sparseMode和动态ACLNN边界。
+- [SGL 残差相加与RMSNorm偏置融合接口](sgl_add_rmsnorm_bias.md)：明确 add_rmsnorm_bias 的输入dtype残差和、FP32归一化、双返回值以及量化切片边界。
+- [SGLang AICPU AddExample的输入与独立存储合同](sgl_aicpu_add_example.md)：说明add_example的FP32/INT32、同shape连续ND、无广播、输出独立存储和aicpu无回退分发，保留整数溢出未验证边界。
+- [SGL分页KV新增槽位的分配索引接口](sgl_alloc_extend.md)：说明 alloc_extend 的旧页补满、新页顺序消费和values[0]条件写入，区分索引计算与KV搬运。
+- [SGLang追加local块接口的过滤、去重和整数边界](sgl_append_local_block.md)：说明append_local_block_to_topk_idx保持候选顺序、只对追加local去重，以及num_blocks容量与int32溢出限制。
+- [SGLang apply_token_bitmask 原地词表掩码接口](sgl_apply_token_bitmask.md)：说明 apply_token_bitmask 的位序、选行、原地别名、显式实现选择与子集 wheel 边界，区分 arch22/arch35 声明和待完成的 NPU 验收。
+- [SGL变长缓存片段复制与布尔返回值](sgl_assign_cache_segments.md)：说明 assign_cache_op 的位模式复制、32字节访问边界和True不保证发生复制的状态语义。
+- [SGL注意力残差快照的归一化打分与softmax混合](sgl_attn_residual_mix.md)：说明 attn_res_mix_fused 的有效bank前缀、原值加权、不做末尾RMSNorm和空输入别名。
+- [SGL交错token/batch矩阵乘与显式NZ权重打包](sgl_batch_matmul_transpose.md)：说明 batch_matmul_transpose 的MBK布局、四维ND承载NZ、输出原地覆盖和仅A2/A3原生支持。
+- [SGLang投机输出构造与有效前缀长度](sgl_build_out_tokens.md)：说明build_out_tokens_triton如何保留draft尾部、插入bonus、固定gamma+1输出，并将提交前缀交由接受长度控制。
+- [SGLang验证树构造的预分配输出与掩码模式](sgl_build_verification_tree.md)：蒸馏build_tree_kernel_efficient的父索引、tree_mask容量和retrive链表语义，保留bitpacking未实现与平台未定位边界。
+- [SGL缓存槽位映射的打包写入与读出接口](sgl_cache_locations.md)：区分cache_loc_assign与update的读写方向、返回别名和16槽位限制，并核对预取存储、UB计费及CANN9.1.0减法重载证据。
+- [SGL经典链拒绝采样的真实提案分布与残差抽样](sgl_chain_rejection_sampling.md)：说明chain_speculative_sampling_triton的严格接受比较、线性输出跨度、三阶段临时区和最终残差CDF，区分被忽略的树及阈值参数。
+- [SGLang chunk_gated_delta_rule 的状态与长度契约](sgl_chunk_gated_delta_rule.md)：区分各序列实际长度、V×K 状态布局、可选块进入状态缓冲，以及 arch22/arch35 的状态精度差异。
+- [SGLang chunk_kda_fwd 的门控、布局与十一项输出](sgl_chunk_kda_fwd.md)：说明 KDA 融合prefill的逐通道门控、packed边界、K/V状态顺序和固定11项返回值，避免与GDN标量门控混用。
+- [SGLang compressor 的压缩输出与缓存续接](sgl_compressor.md)：说明 DeepSeek-V4 compressor 的重叠分组、有效输出行、模式2跨架构缓存表差异及 rotary_mode=2 的强制边界。
+- [SGLang CompressorV2 的环形缓存与有效输出](sgl_compressor_v2.md)：记录 CANN9.2/A3 实验接口的无APE分组压缩、必需状态块表、未定义padding与eager执行边界。
+- [SGLang FIA页表准备的当前块与因果长度](sgl_fia_prep.md)：说明fia_prep将稀疏逻辑块转为物理页、当前块置末、可复用输出与二次幂槽宽要求。
+- [SGLang decode块索引器的score-only与packed边界](sgl_flash_decode_block_indexer.md)：说明flash_decode_bnsd_with_topk_idx的支持分支、逻辑块索引、local追加、packed单KV头及调度参数边界。
+- [SGLang Flash MLA 与配套调度信息接口](sgl_flash_mla_and_metadata.md)：说明950/CANN9.2非量化分页MLA的576/512共享KV、sink与右对齐mask，以及metadata重建条件。
+- [SGLang prefill双索引入口的全局行掩码与选块分支](sgl_flash_prefill_block_indexers.md)：比较带索引attention输出与纯选块两个prefill接口，明确全局query行因果语义、topk宽度变化和host同步。
+- [SGLang融合GDN decode的状态池和负索引语义](sgl_fused_gdn_decode.md)：说明单token递推、V×K连续FP32状态池原地写回、负槽零状态与Q/K归一化选项。
+- [SGL缩放偏移的元素数量分发与常数分支](sgl_fused_scale_shift.md)：说明 fused_scale_shift 的三类shift广播、逐元素优先、scale_constant只在一条分支生效。
+- [SGL MLA低秩QK拆分与独立RMSNorm接口](sgl_fused_split_qk_norm.md)：保留 fused_split_qk_norm 的三段布局、对象权重/bias属性、旋转K直拷贝和元信息检查。
+- [SGL归一化后BF16激活乘FP32门值接口](sgl_gate_multiply.md)：保留 gate_multiply 的独立sigmoid、精确dtype边界、910C融合阈值和非连续退回表达式路径。
+- [SGLang GDN块内累积、三角求逆与WY接口链](sgl_gdn_chunk_linear_system.md)：串联chunk_local_cumsum、chunk_scaled_dot_kkt、solve_tril与recompute_w_u_fwd，保留逆矩阵语义、分块边界缓存和精度限制。
+- [SGLang GDN块进入状态与输出重建接口](sgl_gdn_chunk_state_and_output.md)：说明chunk_delta_h与chunk_fwd_o的K×V状态、残差V、累计gate、返回顺序和等长多batch门控寻址限制。
+- [SGLang GDN门控的softplus阈值与输出精度](sgl_gdn_gating.md)：说明fused_gdn_gating的对数衰减和sigmoid双输出、beta乘阈值语义、连续指针寻址及extend/decode区别。
+- [SGLang GQA共享稀疏decode的双入口与分发边界](sgl_gqa_shared_sparse_decode.md)：比较纯Triton与可选原生GQA入口，说明逻辑块映射、向量sink、分块舍入和A2/A3 UB限制。
+- [SGL Kpool环形tail写入、汇聚与分页cache更新接口](sgl_kpool_tail_cache.md)：串联四个Kpool API的计划字段、有效请求判定、softmax汇聚和可变状态，区分函数名与实际旋转行为。
+- [SGL KV压缩写回的FP8/MXFP8字节布局](sgl_kv_compress_epilog.md)：说明KV压缩的FP8/MX字节布局、旧Direct Host的Tiling缓存与原地ABI，并区分新raw ACLNN的检查和生命周期。
+- [SGLang 量化共享KV的640字节布局与host调度接口](sgl_kv_quant_sharedkv_metadata.md)：记录950量化共享KV注意力的混合BF16/FP8/E8M0字节布局、1024整数调度表与图捕获外生成要求，保留重构后待验收状态。
+- [SGL行归一化接口的带符号和与L2平方和](sgl_l1_l2_norm.md)：区分 l1_norm 的带符号求和、FP32输出与 l2norm_fwd 的平方和epsilon和auto/triton宽度上限。
+- [SGLang LaserAttention 的FP16和形状硬边界](sgl_laser_attention.md)：说明新原生la的FP16与形状边界，并区分旧attentions::la的四维校验、双FP32输出与动态ACLNN调用合同。
+- [SGL分组LayerNorm/RMSNorm与SiLU门控接口](sgl_layer_norm_fwd.md)：说明 layer_norm_fwd 的门控顺序、group-major统计布局、输出复用和被忽略的activation参数。
+- [旧KV缓存按请求有效前缀提交接口](sgl_legacy_kv_prefix_commit.md)：保存旧KV前缀提交的Host检查、行stride与Triton双plane搬运，明确有效长度、槽位冲突、异步生命周期和未知平台边界。
+- [旧attentions LayerNorm 的输出形状与动态ACLNN接入](sgl_legacy_layernorm.md)：说明旧layernorm的normalized_shape推导、mean/rstd继承输入dtype及format、动态两段式调用与未确认平台版本边界。
+- [SGL旧Torch LoRA接口：固定rank的BGMV与分段SGMV](sgl_legacy_lora_bgmv_sgmv.md)：区分bgmv/sgmv逐行和分段路由、统一rank与标量scale、FP32中间值、expand原地累加及旧构建绑定边界。
+- [SGL旧QKV RMSNorm与多轴MRoPE的频率、gate及部分旋转合同](sgl_legacy_qkv_mrope.md)：说明triton_split_qkv_rmsnorm_mrope的三轴频率选择、Q/gate解交错、全维RMSNorm后部分NeoX旋转、均衡分核与弱guard；平台未定位。
+- [旧attentions RainFusionAttention 的布局与输出分配](sgl_legacy_rain_fusion_attention.md)：说明旧Rain接口的TND与BNSD字符串检查、Host序列数组、两输出shape及dtype分配和外部动态核心边界。
+- [旧路由专家缩放与共享专家相加接口](sgl_legacy_routed_shared_mul_add.md)：保存旧MoE routed乘常数再加shared的Host与Triton grid-stride实现，明确packed寻址、尾块、精度和未知平台边界。
+- [旧SiTU逐行INT8与可选浮点接口](sgl_legacy_situ_int8.md)：保存旧SiTU两个wrapper的逐行INT8公式、浮点分支和Host失败域，明确累计group越视图读取、有效前缀、整行资源及未知平台边界。
+- [旧版SparseBlockEstimate的块掩码估计与接口边界](sgl_legacy_sparse_block_estimate.md)：保存旧attentions稀疏块估计的采样Matmul、半精度归约、阈值选块、POD和资源同步，并限定TND包装器、输出容量及全局tile状态风险。
+- [旧SwiGLU浮点输出与SiLU后限幅接口](sgl_legacy_swiglu_float_postclip.md)：说明旧activation.swiglu_quant的need_quant=False数学、有效前缀与未写scale，区分INT8和MXFP8的限幅位置，保留未知平台及实际Host边界。
+- [旧SwiGLU的Triton MXFP8与限幅浮点接口](sgl_legacy_swiglu_mxfp8.md)：保存旧Triton SwiGLU在SiLU前限幅、每32元素E4M3与E8M0量化及浮点分支，明确累计group越视图、slice尾块和未知平台边界。
+- [旧OAI交错布局门控激活接口](sgl_legacy_swiglu_oai_interleaved.md)：保存旧OAI偶奇交错gate与up、16行Triton分块及layer包装，区分新版分半布局，保留空输入、精度与未知平台边界。
+- [旧零专家恒等贡献与路由元数据改写接口](sgl_legacy_zero_experts_identity.md)：保存旧零专家权重求和乘hidden的Triton实现及scale与index原地改写，明确全masked首项、布局资源和未知平台边界。
+- [SGLang Lightning Indexer V2的候选块与稀疏消费者](sgl_lightning_indexer_v2_candidates.md)：说明A3/CANN9.2加权ReLU打分、候选块位置域、两种返回协议、sparse consumer和不被主核消费的metadata。
+- [SGL LoRA expand 的原地累加、切片边界与rank差别](sgl_lora_expand.md)：说明SGEMMV/SGEMMC expand的低秩类型、切片和原地累加，并区分有效rank数学域与SGEMMV按32字节块搬运的容量边界。
+- [SGL LoRA shrink 的分块适配器与Vector/Cube精度](sgl_lora_shrink.md)：区分 sgemmv_shrink 的FP32中间输出与 sgemmc_shrink 的低精度写回，保留切片布局和rank约束。
+- [SGLang Markov贪心投影与选择的舍入合同](sgl_markov_greedy_step.md)：说明markov_greedy_step_triton的投影shape、FP32/FP16/BF16舍入、NaN并列规则与batch16至31的Torch分支。
+- [SGLang Markov采样的Philox、词表分片与噪声所有权](sgl_markov_sample_step.md)：解释markov_sample_step_triton的舍入、温度、Philox计数协议、全局词表索引、gather回调和外部噪声重放条件。
+- [SGLang MLA预处理的量化、缓存模式与原地输出](sgl_mla_preprocess.md)：说明arch22的MLA融合预处理、FRACTAL_NZ权重、四个预分配输出及cache_mode精度和布局限制。
+- [SGLang MLA Prolog V4 的五输出、无RoPE与量化边界](sgl_mlaprolog_v4.md)：说明CANN9.2 V4五输出与双缓存、16量化组合的平台和Host约束，以及七输出functional、GE拷贝与原地恢复边界。
+- [SGLang分页MTP注意力的固定draft宽度与graph契约](sgl_paged_mtp_attention_decode.md)：说明DSpArk分页GQA的固定gamma、FIA ND缓存、右对齐因果和不截断有效KV的max_kv_len。
+- [SGLang PoolKeyIndexer的host长度与外部扩展边界](sgl_pool_key_indexer.md)：记录PoolKeyIndexer的池展开、host整数序列、单索引输出及独立attentions/vendor依赖，保留硬件验收缺口。
+- [SGL采样概率过滤、打包键还原与RN重归一化](sgl_probability_filter_renorm.md)：区分top-k与top-p的FP32输入、阈值转换、双排序和原地临时值过滤，保留精确键上界、分母下限及外部Torch核心边界。
+- [SGL位置缓存QKV融合接口的两次BF16舍入](sgl_qkv_pos_cache_half.md)：明确 pos_cache_half 变体的int32索引截断、packed频率表、最终QK强制BF16和wide-grid条件。
+- [SGL张量并行QKV RMSNorm与NeoX RoPE接口](sgl_qkv_tp_rmsnorm_rope.md)：说明 split_qkv_tp_rmsnorm_rope 的全局QK统计、完整head分片、归一化后dtype舍入和组内一致调用。
+- [SGL Gemma Q/gate解交错与部分RoPE接口](sgl_qkvgate_gemma_rope.md)：说明 split_qkvgate_gemma_rmsnorm_rope 的逐head交错布局、原始Gemma偏移和只读gate/V。
+- [SGLang QFA的MXFP8尺度布局与配套调度接口](sgl_quant_flash_attn_and_metadata.md)：说明950/CANN9.2量化GQA尺度与metadata合同，并区分dff源码的9.1版本声明、0/1/6实现事实及部署身份缺口。
+- [SGL RMSNorm 加偏置及可选INT8接口](sgl_rmsnorm_bias.md)：说明 rmsnorm_bias 的FP32归一化、逐通道量化和arch35待验证范围。
+- [SGL 无权重RMSNorm的输入与精度边界](sgl_rmsnorm_without_weight.md)：说明 fused_rmsnorm_without_weight 的连续三维输入、二次幂通道和低精度平方边界。
+- [SGL MQA Q/K旋转位置编码与预选频率缓存](sgl_rope_qk_mqa.md)：说明 fused_rope_qk_mqa 的独立Q/K头数、预先按token选表、两种配对和Triton二次幂约束。
+- [SGLang row_argmax的NaN与并列索引语义](sgl_row_argmax.md)：记录row_argmax的FP32二维输入、列连续约束、最小并列索引与首个NaN规则，以及Triton/独立Torch入口。
+- [SGLang DSpark生存概率预算与验证长度调度](sgl_schedule_verify_lens_topk.md)：说明schedule_verify_lens_topk_triton的FP32累乘、稳定排序、预算分配、验证长度上下界与三Kernel二次排名边界。
+- [SGL sigmoid 门控的逐元素与逐行广播接口](sgl_sigmoid_mul.md)：区分 fused_sigmoid_mul 与 broadcast 变体的形状、混合精度、连续化和新输出约定。
+- [SGL SiTU 浮点激活与分组有效前缀](sgl_situ_and_mul.md)：说明 situ_and_mul 的 gate/up 饱和公式、两种 group 编码、未写 padding 和 int32 行调度边界。
+- [SGL SiTU 与 MXFP8 融合接口的固定宽度契约](sgl_situ_mxfp8_quant.md)：明确950专用 situ_mxfp8_quant 的6144输入宽度、BF16舍入边界、32元素scale和有效前缀。
+- [SGLang CATLASS softFP8 W8A16矩阵乘与分组前缀合同](sgl_softfp8_w8a16_matmul.md)：说明已注册softfp8_w8a16_matmul/grouped_matmul的E4M3位容器、128块scale、BF16输出及GMM前缀，标明BMM仅有文档。
+- [SGLang非量化共享KV滑窗接口](sgl_sparse_attn_sharedkv.md)：说明共享KV滑窗合同、旧Direct缓存与owner边界，以及非量化CPU metadata的成本分核、1024项ABI和异步生命周期。
+- [SGLang稀疏FlashAttention的分离RoPE与索引契约](sgl_sparse_flash_attention.md)：说明DSA/MLA分离RoPE、稀疏索引和max/sum，并限定固定原生分支复用K作为MM2右矩阵时独立V的语义风险。
+- [SGLang Sparse Flash MLA的SWA/CSA/HCA与metadata契约](sgl_sparse_flash_mla_and_metadata.md)：说明A2/A3 CANN9.2稀疏共享MLA的压缩位置域、强制sink、2048项metadata一致性及vendor导入顺序。
+- [SGL 投机状态快照提交与卷积窗口回滚接口](sgl_speculative_state_commit.md)：区分旧mover、KDA目的stride mover、通用scatter与卷积rollback的真实布局、负step、别名和异步生命周期；平台未定位，不冒充完整Operator。
+- [SGL QKV拆分、可选RMSNorm与两种RoPE配对](sgl_split_qkv_rmsnorm_rope.md)：说明 split_qkv_rmsnorm_rope 的重复半表、成对bias、可选归一化和V原值复制。
+- [SGL SwiGLU 分组量化的三种 scale 布局](sgl_swiglu_group_quant.md)：区分SwiGLU三种量化scale布局，并补旧Direct Host的可选指针、空域、Tiling缓存及clamp key遗漏边界。
+- [SGL SwiGLU-OAI 的裁剪、INT8舍入与分组输出](sgl_swiglu_oai_quant.md)：保留 swiglu_oai_quant 的gate单侧裁剪、up加一、dtype转换后截断和1536列倍数限制。
+- [SGL 张量并行RMSNorm的局部统计与全局缩放](sgl_tp_rmsnorm_statistics.md)：串联 fused_variance、跨rank AVG 与 fused_rsqrt_mul，区分两个接口的通道约束。
+- [SGL目标分布树采样的兄弟遍历与拒绝概率临时区](sgl_tree_target_only_sampling.md)：说明tree_speculative_sampling_target_only的真实树指针、两类接受阈值、清零draft scratch、残差抽样及调用方索引与并发约束。

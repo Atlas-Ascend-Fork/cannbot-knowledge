@@ -132,3 +132,5 @@
 - [vLLM Ascend 原生 FP8：block scale、950 重组与浮点回退预算](vllm_ascend_native_fp8_execution.md)：对原生 block-wise FP8 权重按硬件和层形态选择 MXFP8 重组或模型 dtype 展开，检查 scale 配对、归约维整除和 MLA 吸收层，避免按磁盘位宽估算显存。
 
 - [量化权重变小仍 OOM：部署收益与峰值显存分账](quantization_deployment_benefit_accounting.md)：量化后额外 dynamic quant/dequant 开销变大、W8A8 显存不降或端到端变慢时，分账 FFN、KV、激活、workspace、通信与 host overhead，按相同部署条件验证。
+
+- [SGLang 昇腾优化规则与适用边界](sglang_ascend/index.md)：共 3 张知识卡（如 SGLang HiCache的MemFabric映射Host池与异步staging、SGLang稀疏KV卸载的模型准入与预算分离、SGLang KV静态预算与mem-fraction-static的正确调参方向）。

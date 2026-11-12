@@ -36,3 +36,5 @@
 - [NPU Profiling 采集：ProfilerManager 窗口、Level1 与指标配置](npu_profiling_collection_and_metrics.md)：NPU Profiler 只生成基本计数或基础指标、缺流水利用率时，核对 Level1、PipeUtilization、record_shapes 和手动采集窗口；另列 CANN Executor 的 ProfilerManager 配置。
 
 - [SuperKernel 范围分析：依赖边界、受控基线与融合验证](superkernel_scope_analysis_and_validation.md)：从模块、整层到跨层选择 SuperKernel scope，识别动态控制流和分流控核边界；在相同 GE 配置下比较预热后的中位数、波动、编译产物和精度。
+
+- [SGLang 昇腾性能优化指南](sglang_ascend/index.md)：共 9 张知识卡（如 SGLang 昇腾 attention 后端与混合 GDN 的选择边界、SGLang 昇腾在线与离线性能评测的接口和指标、SGLang Ascend 环境变量：框架、DeepEP与DSPARK路径的作用域 等）。

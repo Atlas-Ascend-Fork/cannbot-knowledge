@@ -1,0 +1,44 @@
+# SGLang 昇腾运行时、缓存与通信集成
+
+本目录收录固定版本来源支持的知识；具体平台、配置和验证边界见各卡正文。
+
+- [SGLang ACL Host回调辅助线程的订阅与退出边界](sglang_ascend_cache_host_callback.md)：解释按NPU设备缓存report线程、stream指针提取、process_report驱动和显式注册前置条件，不把helper存在当默认启用。
+- [SGLang NPU Mamba状态布局与投机卷积窗口预算](sglang_ascend_cache_mamba_dense_windows.md)：说明NPU禁用CUDA envelope与重叠窗口去重、KDA窗口轴交换、dense draft中间态的字节开销和清拷贝融合守卫。
+- [SGLang Mamba与卷积状态的NPU HiCache搬运分支](sglang_ascend_cache_mamba_host_exchange.md)：说明Mamba Host池对strided槽的staging、sync/async搬运、首层全层传输、conv-only空状态守卫和MTP独立分配回退。
+- [SGLang MemCache的KV分量键、前缀命中与混合状态完整性](sglang_ascend_cache_memcache_contract.md)：从NpuMemcacheStore提取配置覆盖、rank映射、缓冲区注册、KV/Indexer/scale分量键及v1/v2前缀和辅助池命中规则。
+- [SGLang MHA HiCache的Ascend全层搬运与布局守卫](sglang_ascend_cache_mha_host_exchange.md)：说明MHA Host池kernel_ascend仅支持page_first_direct、首层触发全层H2D、D2H逐buffer分组和连续多层设备缓冲区要求。
+- [SGLang MLA HiCache的AscendC分层流水与分量元数据](sglang_ascend_cache_mla_host_exchange.md)：说明MLA split Host镜像、packed FP8和Indexer层子集、MemFabric AIV地址重写、逐层H2D、target全层D2H及旧传输分支的MTP不兼容跳过。
+- [SGLang NPU原生KV池的FIA视图、NZ写入与PD字节布局](sglang_ascend_cache_native_pool_layouts.md)：区分MHA全层连续底座与FIA逐层视图、MLA分离/合并/FP8记录、DCP全局索引及CPU回缩的布局合同。
+- [SGLang NPU分页分配器的续写、Decode与回收合同](sglang_ascend_cache_page_allocator.md)：说明NPUPagedTokenToKVPoolAllocator的小于200页Kernel分支、尾页复用、Decode新页计算、int32返回和Host去重回收。
+- [SGLang Ascend KV池选择、Indexer省层与DCP预算一致性](sglang_ascend_cache_pool_routing_budget.md)：说明NPU原生MHA/MLA/SWA/MiniMax池选择、Indexer实际层与预算同步、PD/HiCache省层守卫和target/draft DCP原始预算与builder入参容量。
+- [SGLang稀疏卸载Attention的BSND Decode与TND Prefill交接](sglang_ascend_cache_sparse_attention.md)：说明紧凑selected KV的TopK重编号、dummy空行、hit/miss消费依赖、Prefill完整前缀物化及CP分支边界。
+- [SGLang稀疏KV管理器的请求重置、紧凑写入与四流物化](sglang_ascend_cache_sparse_manager.md)：解释Host全量KV与device当前TopK缓存、v1/v2输入差别、ragged prefill、sentinel映射和hit/miss/refill/slot-map事件交接。
+- [SGLang NPU流式会话复用的页对齐与回退](sglang_ascend_cache_streaming_alignment.md)：说明NPU会话prefix不足一页或低于保护边界时释放slot并回退普通前缀匹配，以及尾部截断需页对齐以防SWA双重释放。
+- [SGLang NPU滑窗KV映射的分配、清除与释放顺序](sglang_ascend_cache_swa_mapping.md)：说明NPU分页分配器、decode scatter映射、is_cuda兼容别名规避、SWA先释放和请求ring不返还分页空闲池的边界。
+- [SGLang Ascend PD的PP分层与DCP页交错传输合同](sglang_ascend_pd_kv_geometry.md)：解释AscendKVManager的2MiB批注册、C4/C128与draft导出顺序、DCP1到N本地/全局页映射和不支持的目标索引路径。
+- [SGLang Ascend PD元数据驻留、配置服务与启动职责](sglang_ascend_pd_metadata_service.md)：说明PD输出元数据在NPU的D2D路径、int64 bootstrap标识、固定行宽，以及node0配置存储与HTTP bootstrap的不同职责。
+- [SGLang Mooncake Ascend传输协议的显式选择与设备身份](sglang_ascend_pd_mooncake_transport.md)：说明ENABLE_ASCEND_TRANSFER_WITH_MOONCAKE如何改写hostname与protocol、物理卡覆盖参数和初始化超时，以及它与MemFabric Ascend后端的区别。
+- [SGLang Ascend PD传输引擎的协议回退与注册失败口径](sglang_ascend_pd_transfer_engine.md)：说明MemFabric TransferEngine的P/D角色、store和session端点、device_rdma预热、协议枚举回退及batch_register只记录失败。
+- [SGLang NPU分布式初始化顺序与KV显存基线](sglang_ascend_runtime_bootstrap.md)：说明NPU补丁、设备选择、进程组、通信预热和模型加载前显存测量的先后关系，以及draft不能参与WORLD测量的原因。
+- [SGLang NPU容器构建配方的版本、设备与依赖边界](sglang_ascend_runtime_container_recipe.md)：固定当前Dockerfile的CANN9.1/PTA2.10/内核2026.11组合、A3与950的MemFabric/ZBAL区别及all_npu不安装硬件运行时的事实。
+- [SGLang NPU默认参数解析与容量分档边界](sglang_ascend_runtime_defaults.md)：从platform_hook与NPU默认解析说明ascend后端强制选择、page128、32/64GiB档的prefill和图batch默认，以及HiCache和对称内存限制。
+- [SGLang NPU探测、显存查询与设备模块选择](sglang_ascend_runtime_device_probe.md)：区分torch_npu不可见时报错、ZBAL容量和可用显存口径、分布式最小值与GiB/MiB单位，以及避免CUDA初始化的设备模块解析。
+- [SGLang NPU扩散语言模型的元数据复用与批量去噪](sglang_ascend_runtime_dllm_vectorized.md)：说明dLLM同步去噪固定canvas的NPU元数据复用、JointThreshold默认向量化、强制一个位置的topk语义与FDFO状态分离。
+- [SGLang NPU环境报告的版本发现与证据缺口](sglang_ascend_runtime_environment_report.md)：说明check_env如何收集TorchNPU/内核/DeepEP、CANN与BiSheng、驱动和拓扑，区分报告缺失、路径选择与真正运行验证。
+- [SGLang独立自定义算子库的注册检查与ABI提示](sglang_ascend_runtime_extra_ops_loading.md)：解释TorchOpLoader的env显式路径、预导入、CPython文件名检查、已注册幂等返回与缺失符号的启动失败边界。
+- [SGLang约束解码在NPU上的Token位图应用](sglang_ascend_runtime_grammar_mask.md)：说明XGrammar与LLGuidance在NPU转入sgl_kernel_npu位图算子、mask设备搬移及静态入口的平台边界。
+- [SGLang HCCL进程组、量化归约与通信缓冲区分配](sglang_ascend_runtime_hccl_groups.md)：说明NPU独立MoE EP组、HCCL缓冲区参数优先级、自定义组的全局参与约束和INT8 all-gather后归约的代价。
+- [SGLang NPU初始化与ND/NZ权重格式的分支守卫](sglang_ascend_runtime_init_nz.md)：说明init_npu_backend对LLM/扩散导入的区别、ND/NZ对齐与packed-FP4例外、关闭格式转换的风险，以及ZBAL和辅助流只初始化边界。
+- [SGLang NPU IPC重建的TP rank映射补丁](sglang_ascend_runtime_ipc_rank_patch.md)：说明NPU multiprocessing重建为何改写设备索引、register_sgl_tp_rank的前置条件和固定第六索引的版本脆弱性。
+- [SGLang融合算子的NPU平台分派与能力元数据](sglang_ascend_runtime_kernel_dispatch.md)：区分forward_npu平台组合与forward_torch_npu内核来源、自动选择的capabilities守卫、强制后端和PrivateUse1注册生命周期。
+- [SGLang NPU权重加载的融合模块映射与KV量化配置](sglang_ascend_runtime_loader_kv_quant.md)：说明NPU视觉与语言融合权重映射、ModelSlim target/draft KV dtype配置、跳过CUDA capability检查及校准scale来源边界。
+- [SGLang MindSpore模型实现复用Torch HCCL的启动边界](sglang_ascend_runtime_mindspore_hccl.md)：说明NPU专用MindSpore runner的rank与端口环境、PYNATIVE O0初始化和现有Torch组handle复用，区分通信接入与全模型支持。
+- [SGLang精度Dump调试器的条件创建与chunked prefix门控](sglang_ascend_runtime_msprobe_setup.md)：说明msprobe缺依赖只告警但配置仍禁图/跳过warmup、可导入时seed_all副作用，以及target按Prefill后端决定chunked prefix cache而draft不改全局的规则。
+- [SGLang NPU多模态编码合批与占位符同步边界](sglang_ascend_runtime_multimodal_batching.md)：说明跨请求ViT cache miss合批、特殊full路径、NPU生成mask前同步以及EVS改写后token计数的回读代价。
+- [SGLang两阶段PP在HCCL上的配对收发与skip标记](sglang_ascend_runtime_pp2_matching.md)：说明NPU PP=2输出通信为何合并send/recv，以及纯chunk跳过时仍发送标记以维持跨microbatch匹配和事件生命周期。
+- [SGLang NPU性能采集的Profiler补丁、输出与版本分支](sglang_ascend_runtime_profile_outputs.md)：说明GPU活动名映射NPU、旧采集器Level1 PipeUtilization配置与V2不同、NPU trace handler输出和停止时跨rank屏障。
+- [SGLang NPU并行与缓存参数的解析次序和组合守卫](sglang_ascend_runtime_resolution_guards.md)：说明平台默认后仍需按模型/CP/PD/HiCache验证组合，保留CP整除、DCP传输白名单、Host接收与布局自动转换不完整的边界。
+- [SGLang Ascend采样的融合TopK守卫与确定性路径](sglang_ascend_runtime_sampling.md)：说明Ascend从温度缩放logits采样、TopK1到1024融合资格、排序回退、min-p、logprob及种子采样编译禁用边界。
+- [SGLang NPU Indexer与专家路由回读的容量和并行合同](sglang_ascend_runtime_state_capture.md)：说明Indexer只支持DP attention、Host/Device int32缓存预算、专家scattered路径all-gather、draft隔离和拷贝事件后的finalize。
+- [SGLang NPU权重导出的HCCL组与模块显式导出守卫](sglang_ascend_runtime_weight_export.md)：说明远程导出按TP端口构组、nccl到hccl替换、逐参数broadcast、组销毁和模型显式weight_export_error拒绝行为。
+- [SGLang NPU远程权重更新的HCCL连接与IPC身份](sglang_ascend_runtime_weight_updates.md)：区分RemoteInstanceConnector连接组、checkpoint-engine的NPU UUID以及重载量化后处理失败只告警的恢复风险。

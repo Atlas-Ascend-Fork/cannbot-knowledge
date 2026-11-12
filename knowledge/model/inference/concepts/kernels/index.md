@@ -12,3 +12,5 @@
 - [recurrent_gated_delta_rule](recurrent_gated_delta_rule.md)：Next自研GDN递推kernel与当前Qwen3.5原生API的输入/状态边界，后者只支持非投机Decode。
 - [SparseAttnSharedKV (SAS) Kernel](sparse_attn_sharedkv.md)：V4 Shared-KV Attention 的 SWA/CSA/HCA 算法与当前 SparseFlashMLA 三种入口、PA_BBND、压缩长度余数和 metadata 配对。
 - [Sparse Flash Attention Kernel](sparse_flash_attention.md)：保留 SFA 的 A3 离散访存与 TileLang 算法，更新当前 packed、C8 返回值及 Offload 有效 token 缓存契约。
+
+- [SGLang 公共算子注册、架构检测与显式后端分发](sgl_operator_registry.md)：解释 register_operator/register_impl 的进程级架构缓存、互斥支持集、auto别名、惰性加载和无回退错误分类。

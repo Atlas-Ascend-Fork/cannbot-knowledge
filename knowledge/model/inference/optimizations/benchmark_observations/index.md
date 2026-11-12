@@ -31,3 +31,7 @@
 - [A3 LI TopK 融合与 HcPost 的来源观测](ascendc_a3_li_hcpost_source_observations.md)：分开记录固定 A3 指南的 LI TopK 融合相对收益和 HcPost shape 时延，不将两组测量拼接或外推。
 
 - [Kimi K3 950DT：固定接受长度折算的 Decode 时延观测](kimi_k3_950dt_low_latency.md)：记录 32 卡、100K 输入、256 输出与接受长度按 4 折算下的约 28→10 ms 观测，保留仅统计主草稿模型耗时的边界。
+
+- [SGLang 昇腾性能与质量观测](sglang_ascend/index.md)：保存A2 W8A8无草稿低并发的版本、KV容量修正、合成性能负载与固定50题GSM8K结果，限定重复和证据缺口。
+
+- [SGLang Kernel NPU 通信性能观测](sgl_kernel_npu/index.md)：保存 DeepEP 在 A3 HCCS 上的负载、EP 规模与上游时延带宽，保留统计与软件身份缺口。

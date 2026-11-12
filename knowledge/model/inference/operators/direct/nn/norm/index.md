@@ -1,0 +1,30 @@
+# 归一化计算
+
+- [AddRmsnormBias A2/A3 Direct Invoke 算子知识](sgl_add_rmsnorm_bias.md)：闭合quant_scaleNone的残差相加与FP32 RMS仿射双输出，记录weight跨行预读、低dtype加法边界与无Hostguard及物理资源限制。
+- [AddRmsnormBias 950 Direct Invoke 算子知识](sgl_add_rmsnorm_bias_950.md)：闭合quant_scaleNone的残差相加与FP32 RMS仿射双输出，记录weight跨行预读、低dtype加法边界与无Hostguard及物理资源限制。
+- [AddRmsnormBiasInt8 A2/A3 Direct Invoke 算子知识](sgl_add_rmsnorm_bias_int8.md)：闭合残差RMS仿射的独立INT8域和2048转换slice，精确列出K小于2048的逻辑范围风险、双输出及完整字节和精度边界。
+- [AddRmsnormBiasInt8 950 Direct Invoke 算子知识](sgl_add_rmsnorm_bias_int8_950.md)：闭合残差RMS仿射的独立INT8域和2048转换slice，精确列出K小于2048的逻辑范围风险、双输出及完整字节和精度边界。
+- [FusedSplitQkNorm A2/A3 Direct Invoke 算子知识](sgl_fused_split_qk_norm.md)：闭合MLA低秩三段拆分的四bias特化、FP32独立RMSNorm与PE复制，保留空输入、完整元信息校验及非二次幂arange准入边界。
+- [FusedSplitQkNorm 950 Direct Invoke 算子知识](sgl_fused_split_qk_norm_950.md)：闭合MLA低秩三段拆分的四bias特化、FP32独立RMSNorm与PE复制，保留空输入、完整元信息校验及非二次幂arange准入边界。
+- [SGL带符号行归一化 A2/A3 Direct Invoke 算子知识](sgl_l1_norm.md)：还原l1_norm的Vector核分行、整行归约和FP32输出，区分带符号分母、无掩码宽度及Triton编译器资源边界。
+- [SGL带符号行归一化 950 Direct Invoke 算子知识](sgl_l1_norm_950.md)：还原l1_norm的Vector核分行、整行归约和FP32输出，区分带符号分母、无掩码宽度及Triton编译器资源边界。
+- [L2normFwd A2/A3 Direct Invoke 算子知识](sgl_l2norm_fwd.md)：闭合L2Norm两宽度分支的FP32平方和、行块与dtype输出，保留小宽度program尾行重叠及未显式padding边界，区分逻辑流量和编译器分配。
+- [L2normFwd 950 Direct Invoke 算子知识](sgl_l2norm_fwd_950.md)：闭合L2Norm两宽度分支的FP32平方和、行块与dtype输出，保留小宽度program尾行重叠及未显式padding边界，区分逻辑流量和编译器分配。
+- [LayerNormFwd A2/A3 Direct Invoke 算子知识](sgl_layer_norm_fwd.md)：闭合独立输出的分组LayerNorm六种bias门控路线及groupmajor统计，保留Direct宽度截断、padding均值和48行编译准入边界。
+- [LayerNormFwd 950 Direct Invoke 算子知识](sgl_layer_norm_fwd_950.md)：闭合独立输出的分组LayerNorm六种bias门控路线及groupmajor统计，保留Direct宽度截断、padding均值和48行编译准入边界。
+- [LayerNormFwdInplace A2/A3 Direct Invoke 算子知识](sgl_layer_norm_fwd_inplace.md)：闭合out精确alias x的分组LayerNorm六门控路线、统计与先读后写生命周期，排除部分overlap并保留padding和48行工具链边界。
+- [LayerNormFwdInplace 950 Direct Invoke 算子知识](sgl_layer_norm_fwd_inplace_950.md)：闭合out精确alias x的分组LayerNorm六门控路线、统计与先读后写生命周期，排除部分overlap并保留padding和48行工具链边界。
+- [RmsNormFwd A2/A3 Direct Invoke 算子知识](sgl_rms_norm_fwd.md)：闭合独立输出分组RMSNorm六种bias门控路线与groupmajor rstd，明确meanNone、padding清零和Direct宽度/48行编译准入边界。
+- [RmsNormFwd 950 Direct Invoke 算子知识](sgl_rms_norm_fwd_950.md)：闭合独立输出分组RMSNorm六种bias门控路线与groupmajor rstd，明确meanNone、padding清零和Direct宽度/48行编译准入边界。
+- [RmsNormFwdInplace A2/A3 Direct Invoke 算子知识](sgl_rms_norm_fwd_inplace.md)：闭合out精确alias x的分组RMSNorm六门控路线、rstd统计与先读后写生命周期，排除partial overlap并保留Direct资源和整数边界。
+- [RmsNormFwdInplace 950 Direct Invoke 算子知识](sgl_rms_norm_fwd_inplace_950.md)：闭合out精确alias x的分组RMSNorm六门控路线、rstd统计与先读后写生命周期，排除partial overlap并保留Direct资源和整数边界。
+- [RmsnormBias A2/A3 Direct Invoke 算子知识](sgl_rmsnorm_bias.md)：闭合quant_scaleNone的FP32 RMSNorm仿射单输出与weight跨行预读，保留无输入guard、950上游待验证及物理资源边界。
+- [RmsnormBias 950 Direct Invoke 算子知识](sgl_rmsnorm_bias_950.md)：闭合quant_scaleNone的FP32 RMSNorm仿射单输出与weight跨行预读，保留无输入guard、950上游待验证及物理资源边界。
+- [RmsnormBiasInt8 A2/A3 Direct Invoke 算子知识](sgl_rmsnorm_bias_int8.md)：闭合独立INT8 RMS仿射和1024量化slice，精确记录K小于1024逻辑范围、量化padding、950待验证及真实字节和精度边界。
+- [RmsnormBiasInt8 950 Direct Invoke 算子知识](sgl_rmsnorm_bias_int8_950.md)：闭合独立INT8 RMS仿射和1024量化slice，精确记录K小于1024逻辑范围、量化padding、950待验证及真实字节和精度边界。
+- [FusedRmsnormWithoutWeight A2/A3 Direct Invoke 算子知识](sgl_rmsnorm_without_weight.md)：闭合无权重RMSNorm的六个Triton行块候选、固定核数任务轮转与按行归约，明确无显式FP32平方、属性缓存与编译器物理分配边界。
+- [FusedRmsnormWithoutWeight 950 Direct Invoke 算子知识](sgl_rmsnorm_without_weight_950.md)：闭合无权重RMSNorm的六个Triton行块候选、固定核数任务轮转与按行归约，明确无显式FP32平方、属性缓存与编译器物理分配边界。
+- [FusedRsqrtMul A2/A3 Direct Invoke 算子知识](sgl_rsqrt_mul.md)：闭合FP32统计缩放的七个Triton二维候选与广播复用，记录variance及weight重复读取字节、调用方AVG与设备缓存边界。
+- [FusedRsqrtMul 950 Direct Invoke 算子知识](sgl_rsqrt_mul_950.md)：闭合FP32统计缩放的七个Triton二维候选与广播复用，记录variance及weight重复读取字节、调用方AVG与设备缓存边界。
+- [FusedVariance A2/A3 Direct Invoke 算子知识](sgl_variance.md)：闭合局部均方的八个Triton候选、FP32行归约与统计量GM流量，明确调用方AVG、block_l96编译准入与未guard输入边界。
+- [FusedVariance 950 Direct Invoke 算子知识](sgl_variance_950.md)：闭合局部均方的八个Triton候选、FP32行归约与统计量GM流量，明确调用方AVG、block_l96编译准入与未guard输入边界。

@@ -1,0 +1,42 @@
+# SGLang 昇腾模型、量化与适配指南
+
+本目录收录固定版本来源支持的知识；具体平台、配置和验证边界见各卡正文。
+
+- [SGLang 昇腾 LoRA 的驻留槽、逐 rank 一致性与安全清零](sglang_ascend_lora_resident_slots.md)：补齐 Ascend LoRA 上层池管理：rank/模块 admission、确定性槽分配、pin/LRU/FIFO 和复用前清零。
+- [SGLang 昇腾 LoRA 的 SGEMV、批次元数据与图边界](sglang_ascend_lora_sgemv_batch_graph.md)：说明 Ascend LoRA shrink/expand、融合投影、adapter 元数据、Embedding 限制和 DP/prefill graph 排除条件。
+- [SGLang 昇腾模型默认后端与量化配置守卫](sglang_ascend_model_configuration_guards.md)：记录 DSV4 BF16 KV、DSA 跳过 GPU 选择、MXFP8 MoE 保留 Ascend runner 及 DLLM 后端优先级。
+- [SGLang 昇腾模型的 DCP 与 draft KV 规划合同](sglang_ascend_model_dcp_draft_contract.md)：说明 NPU DCP 模型白名单、Kimi-K3 的 A2A 配置和 NextN 执行宽度与 KV 规划的一致性。
+- [SGLang 昇腾 DeepSeek 的 MHA、MLA 与 DSA 模型分派](sglang_ascend_model_deepseek_mha_mla_dispatch.md)：连接 prefill/decode 模式、NPU prepare/core 配对、CP latent KV 重建和共享专家参数。
+- [SGLang 昇腾 DSV4 DSpark draft 的 attention 与加载限制](sglang_ascend_model_deepseek_v4_dspark.md)：说明非压缩 draft、Q head norm、BF16 wo_a、分 stage 词表权重与 ModelSlim shared fusion 排除条件。
+- [SGLang 昇腾 DeepSeek V4 的 RoPE、并行准备与输出投影](sglang_ascend_model_deepseek_v4_execution.md)：记录 DSV4 模型的逐 forward RoPE 缓存、Q/KV 多流、CP 完整 metadata 和 950 MXFP8 wo_a 守卫。
+- [SGLang 昇腾 DSV4 NextN 的多流残差与单层收尾](sglang_ascend_model_deepseek_v4_nextn_state.md)：说明 NextN HC 隐状态投影、DP token ID gather、逐 forward RoPE 以及必须完成的 deferred HC post。
+- [SGLang 昇腾 Dense 模型的 RoPE、ALiBi 与 QK 布局差异](sglang_ascend_model_dense_rope_variants.md)：按 Baichuan、Llama、Llama4、StableLM 与 Gemma2 区分位置编码 dtype、融合分派和分类模型特例。
+- [SGLang 昇腾 DFlash draft 的 Norm、RoPE 与 sink 边界](sglang_ascend_model_dflash_draft_prologue.md)：说明 draft 训练 rotary width、Gemma Norm 回退、普通 QK 融合、FP32 sink 与当前重复投影位置。
+- [SGLang 昇腾模型变体的明确排除与证据强度](sglang_ascend_model_explicit_unsupported_variants.md)：区分ERNIE5.5 Flash的CUDA-only强制拒绝与Bailing MoE V3旧注释，按NPU gate生产及消费调用链判断证据。
+- [SGLang 昇腾 Gemma4 多模态 PLE 的静态 shape 适配](sglang_ascend_model_gemma4_multimodal_ple.md)：说明 graph 兼容 token 替换、PP 首末 stage 分工、positions 修改与 multimodal mask 的模型约束。
+- [SGLang 昇腾 GLM MoE 的阶段融合与路由缩放](sglang_ascend_model_glm_moe_routes.md)：记录 GLM4 decode QKV 融合、prefill shared overlap、MoELite sigmoid 和 TopK 缩放的不同条件。
+- [SGLang 昇腾 GPT-OSS 与 Grok 的激活和路由精度](sglang_ascend_model_gptoss_grok_router_semantics.md)：区分 GPT-OSS 的 NPU SwiGLU-OAI 与 KV 保存责任，以及 Grok FP32 router softcap/FP32 RoPE。
+- [SGLang 昇腾 DSV4 与 Xing4 的超连接布局约定](sglang_ascend_model_hyper_connection_layouts.md)：区分950 HC batch轴、Xing4矩阵方向，以及DSV4非CUDA分支的deferred残差收尾与DP行传输。
+- [SGLang 昇腾多模型 MoE 的路由语义与空批次](sglang_ascend_model_legacy_moe_semantics.md)：保留 AFMoE、ERNIE4、DBRX、Xverse、DeepSeek、SDAR 与 Step3.5 的 NPU 路由和缩放差异。
+- [SGLang 昇腾 LLaDA2 的路由与 QKV 融合限制](sglang_ascend_model_llada2_diffusion_routing.md)：说明 NPU 禁止 expert_capacity block routing、关闭重复 renorm，以及带可选 bias 的位置缓存融合。
+- [SGLang 昇腾 MindSpore 模型桥接的 DLPack 与同步](sglang_ascend_model_mindspore_dlpack_bridge.md)：说明 sgl_mindspore 架构解析、Tensor 双向 DLPack 转换和返回 PyTorch 前的 NPU 同步边界。
+- [SGLang 昇腾 MiniMax M2/M3 的 QK 与 SwiGLU-OAI 适配](sglang_ascend_model_minimax_qk_oai.md)：区分 M2 TP QK Norm、M3 Gemma Norm/OAI 参数、稀疏 index QK 与 shared expert overlap 条件。
+- [SGLang 昇腾 MTP 的量化配置与通信隔离](sglang_ascend_model_mtp_quantization_isolation.md)：连接 DeepSeek、Qwen3-Next、Qwen3.5、Qwen4 和 GLM NextN 的 BF16 draft、临时通信 override 与恢复。
+- [SGLang 昇腾 Qwen3 Dense 与 MoE 的融合 QK 准备](sglang_ascend_model_qwen3_norm_rope.md)：说明 Qwen3 的位置缓存、QK RMSNorm+bias 参数、空批次和 NPU MLP 缓存预取/流等待边界。
+- [SGLang 昇腾 Qwen3-Next 与 Qwen3.5 的混合注意力准备](sglang_ascend_model_qwen_hybrid_attention.md)：区分 GDN 输入投影、full-attention gate、prefill M-RoPE 和 decode Gemma RMSNorm 融合。
+- [SGLang 昇腾视觉模型的 CPU 长度元数据与 adapter 布局](sglang_ascend_model_vision_host_metadata.md)：连接 GLM4V、Qwen2VL、MiniCPM、PaddleOCR 等模型的 CPU cu_seqlens、一次构建复用和局部合并重建。
+- [SGLang 昇腾 MoE 后端参数的有效组合与拒绝条件](sglang_ascend_moe_backend_config_validation.md)：说明 ascend_ops JSON、主模型与 speculative draft 一致性、Waterfill 冲突和未实现 fused_op 的失败边界。
+- [SGLang 昇腾 DeepEP 的通信 dtype 协商与状态生命周期](sglang_ascend_moe_deepep_wire_compatibility.md)：说明 normal/LL dtype 优先级、新旧扩展签名兼容、NPU INT8 legacy 标志和 handle/事件配对。
+- [SGLang 昇腾 EPLB 的统计窗口、分层迁移与恢复闭环](sglang_ascend_moe_eplb_control_loop.md)：补齐 NPU 权重迁移上层的 EPLB 触发、统计新鲜度、算法选择、分 chunk yield 和缺失专家恢复。
+- [SGLang 昇腾公共层的 Norm、激活与输出适配](sglang_ascend_quant_common_layer_fallbacks.md)：区分原生 Norm/激活后端、Gemma provider、Embedding/softcap 回退和 HC/残差输出的 dtype 边界。
+- [SGLang 昇腾 compressed-tensors 的可用 scheme 与限制](sglang_ascend_quant_compressed_tensors.md)：按 Dense、动态 INT8/INT4 MoE、WNA16 和 MXFP4 分支解释配置选择，避免沿用 GPU scheme。
+- [SGLang 昇腾 DeepSeek 权重名称与量化分片加载](sglang_ascend_quant_deepseek_weight_loading.md)：说明 ModelSlim KV scale 名称、packed 权重映射、expert/fused shard 顺序和 MLA 权重连续布局。
+- [SGLang 昇腾 GPTQ 与 AutoRound 的解包和 TP 精度边界](sglang_ascend_quant_gptq_autoround.md)：说明 GPTQ v1/v2 零点差异、desc_act 限制及4-bit专家负 scale 修正对 TP shard 的要求。
+- [SGLang 昇腾静态与动态 INT8 Linear](sglang_ascend_quant_int8_linear.md)：区分 ModelSlim W8A8 静态输入量化、动态 per-token scale、行并行偏置和预量化输入元组。
+- [SGLang 昇腾 W8A8 MoE 的 INT8 通信与专家计算](sglang_ascend_quant_int8_moe.md)：连接 ModelSlim channel scale、INT8 dispatch、双 GMM 动态量化和 FuseEP 权重预处理。
+- [SGLang 昇腾整数 W4A4 的新旧 packing 与分片](sglang_ascend_quant_integer_w4a4_packing.md)：区分整数 W4A4 与 MXFP4，说明 packing 环境变量、Dense/专家参数形状及 scale 位编码。
+- [SGLang ModelSlim 名称映射与混合投影量化](sglang_ascend_quant_modelslim_resolution.md)：说明 ModelSlim 配置别名、FLOAT 回退、w13/w2 独立 scheme 与反量化偏置对 RMSNorm 的影响。
+- [SGLang 昇腾 MXFP8 Dense 的在线量化与 TP scale 对齐](sglang_ascend_quant_mxfp8_dense.md)：说明 E4M3 权重、32 元素 E8M0 scale、64 元素配对布局及跨 TP 分片的 block 对齐。
+- [SGLang 昇腾 MXFP8 专家的离线布局与在线 runner](sglang_ascend_quant_mxfp8_moe.md)：连接 ModelSlim E4M3/E8M0 权重、在线 MXFP8 expert、NZ 转置和 normal/low_latency 通信约定。
+- [SGLang 昇腾离线 FP4 专家与 DSV4 路由守卫](sglang_ascend_quant_offline_fp4_moe.md)：区分 ModelSlim W4A8/W4A4 MXFP4 专家和 DSV4 专用 FP4 方法，保留原始 scale、激活与融合边界。
+- [SGLang ModelSlim 离线 MXFP4 Dense 的 W4A8 与 W4A4](sglang_ascend_quant_offline_mxfp4_dense.md)：区分同样 packed FP4 权重的两种激活精度、32 元素 scale、TP 打包维度和单层 matmul 参数。

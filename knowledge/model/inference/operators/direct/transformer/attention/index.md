@@ -1,0 +1,32 @@
+# 注意力与状态计算
+
+- [分块门控 Delta 状态更新 A2/A3 Direct Invoke 算子知识](sgl_chunk_delta_h.md)：闭合 chunk_delta_h 的64个selector、状态双舍入与V片guard；警示多batch门控寻址、无残差None算术和尾片padding风险。
+- [分块门控 Delta 状态更新 950 Direct Invoke 算子知识](sgl_chunk_delta_h_950.md)：闭合 chunk_delta_h 的64个selector、状态双舍入与V片guard；警示多batch门控寻址、无残差None算术和尾片padding风险。
+- [GDN 块输出重建 A2/A3 Direct Invoke 算子知识](sgl_chunk_fwd_o.md)：闭合 chunk_fwd_o 的三个dot与门控因果融合、19参数及四路selector；限定等长gate批次偏移、变长identity缓存和第三dot前低精cast。
+- [GDN 块输出重建 950 Direct Invoke 算子知识](sgl_chunk_fwd_o_950.md)：闭合 chunk_fwd_o 的三个dot与门控因果融合、19参数及四路selector；限定等长gate批次偏移、变长identity缓存和第三dot前低精cast。
+- [块内标量累积和 A2/A3 Direct Invoke 算子知识](sgl_chunk_local_cumsum.md)：闭合 chunk_local_cumsum_scalar_npu 的Vector分块扫描与12个子selector，警示head-first非逆置换、反向partial padding及输入dtype舍入边界。
+- [块内标量累积和 950 Direct Invoke 算子知识](sgl_chunk_local_cumsum_950.md)：闭合 chunk_local_cumsum_scalar_npu 的Vector分块扫描与12个子selector，警示head-first非逆置换、反向partial padding及输入dtype舍入边界。
+- [分块门控 KKT 构造 A2/A3 Direct Invoke 算子知识](sgl_chunk_scaled_dot_kkt.md)：闭合 chunk_scaled_dot_kkt_fwd_npu 的分组key分片矩阵乘及门控三角写出，保留无guard输入合同、变长缓存与K尾片padding边界。
+- [分块门控 KKT 构造 950 Direct Invoke 算子知识](sgl_chunk_scaled_dot_kkt_950.md)：闭合 chunk_scaled_dot_kkt_fwd_npu 的分组key分片矩阵乘及门控三角写出，保留无guard输入合同、变长缓存与K尾片padding边界。
+- [FIA稀疏物理页表准备 A2/A3 Direct Invoke 算子知识](sgl_fia_prep.md)：闭合fia_prep的逐query寻址、exclusive scan稳定重排、slot转页与双输出，记录own无条件追加、INT64窄化、容量和零长度边界。
+- [FIA稀疏物理页表准备 950 Direct Invoke 算子知识](sgl_fia_prep_950.md)：闭合fia_prep的逐query寻址、exclusive scan稳定重排、slot转页与双输出，记录own无条件追加、INT64窄化、容量和零长度边界。
+- [融合 GDN 单 token 递推 A2/A3 Direct Invoke 算子知识](sgl_fused_gdn_decode.md)：闭合 fused_gdn_decode 的Vector门控、VK状态池和16个生命周期子selector；限定同H键、负槽/复制池语义及Kpadding与槽并发边界。
+- [融合 GDN 单 token 递推 950 Direct Invoke 算子知识](sgl_fused_gdn_decode_950.md)：闭合 fused_gdn_decode 的Vector门控、VK状态池和16个生命周期子selector；限定同H键、负槽/复制池语义及Kpadding与槽并发边界。
+- [融合 GDN 双门控 A2/A3 Direct Invoke 算子知识](sgl_fused_gdn_gating.md)：闭合 fused_gdn_gating 的单Vector节点、14参数及按row分块的三路线；限定96KiB启发预算、向量stride与异步双输出生命周期。
+- [融合 GDN 双门控 950 Direct Invoke 算子知识](sgl_fused_gdn_gating_950.md)：闭合 fused_gdn_gating 的单Vector节点、14参数及按row分块的三路线；限定96KiB启发预算、向量stride与异步双输出生命周期。
+- [GDN 仅衰减门控 A3 Direct Invoke 算子知识](sgl_gdn_gating_without_sigmoid.md)：闭合 legacy without_sigmoid 的固定48分核、11参数和g视图与原b对象返回；警示非二次幂行块编译前提，平台仅有A3/950活动CI计划证据。
+- [GDN 仅衰减门控 950 Direct Invoke 算子知识](sgl_gdn_gating_without_sigmoid_950.md)：闭合 legacy without_sigmoid 的固定48分核、11参数和g视图与原b对象返回；警示非二次幂行块编译前提，平台仅有A3/950活动CI计划证据。
+- [SGL GQA共享稀疏解码 A2/A3 Direct Invoke 算子知识](sgl_gqa_share_sparse_decode.md)：闭合use_native=False的GQA共享稀疏Triton注意力72条Route、双dot与LSE合并；draft限定S1预取额外page0、finite-floor与A2/A3 UB边界。
+- [SGL GQA共享稀疏解码 Ascend 950 Direct Invoke 算子知识](sgl_gqa_share_sparse_decode_950.md)：闭合950公开use_native=False的GQA共享稀疏Triton注意力72条Route、双dot与LSE合并；draft保留S1预取额外page0和finite-floor风险，不外推A2/A3 UB容量。
+- [量化共享 KV 稀疏注意力 950 Direct Invoke 算子知识](sgl_kv_quant_sparse_attn_sharedkv_950.md)：闭合 kv_quant_sparse_attn_sharedkv 的量化解包与单MIX五阶段；警示未初始化参数、128头sink索引及稀疏调度同步风险，不能据此保证运行正确。
+- [旧版 LightningIndexer A3 Direct Invoke 算子知识](sgl_legacy_lightning_indexer.md)：说明 torch.ops.npu.lightning_indexer 的旧版44B ABI、4个PA模板、Cube与Vector双GM缓冲及LD归并，并保留默认属性、缓存、缺省长度和零任务清理的静态风险。
+- [Mega分块 GDN A3 Direct Invoke 算子知识](sgl_mega_chunk_gdn.md)：闭合原生mega_chunk_gdn的七阶段PTO MIX、逐字段参数、内存与同步；限定Python转换和缩放边界，并记录零长序列、元数据及排序风险。
+- [SGL 分页MTP注意力 A3 Direct Invoke 算子知识](sgl_paged_mtp_attention_decode.md)：闭合A3固定gamma分页GQA的64条Triton路线、Q打包/小页补齐、双dot与FP32分块归约，限定Device长度、空可见集合和编译资源边界。
+- [SGL 分页MTP注意力 Ascend 950 Direct Invoke 算子知识](sgl_paged_mtp_attention_decode_950.md)：闭合950固定gamma分页GQA的32条Triton路线、原Q寻址、双dot与FP32分块归约，说明动态Device长度、空可见集合和源可见编译边界。
+- [GDN 分块 WY 重算 A2/A3 Direct Invoke 算子知识](sgl_recompute_w_u_fwd.md)：闭合 recompute_w_u_fwd 的逆矩阵复用、K/V分片和当前batch寻址，区分U与W的FP32 dot精度属性及变长缓存边界。
+- [GDN 分块 WY 重算 950 Direct Invoke 算子知识](sgl_recompute_w_u_fwd_950.md)：闭合 recompute_w_u_fwd 的逆矩阵复用、K/V分片和当前batch寻址，区分U与W的FP32 dot精度属性及变长缓存边界。
+- [SGL 原生逐 token GDN 状态递推 A3 Direct Invoke 算子知识](sgl_recurrent_gated_delta_rule.md)：闭合 mixedQKV BF16 recurrent GDN 的24参数、四状态模式、UB分区与SDK9.1尾栈；警示A3行距与尾部、scratch私有副本、索引弱guard及gk未消费。
+- [SGL 原生逐 token GDN 状态递推 950 Direct Invoke 算子知识](sgl_recurrent_gated_delta_rule_950.md)：闭合 mixedQKV BF16 recurrent GDN 的24参数、四状态模式、UB分区与SDK9.1尾栈；警示A3行距与尾部、scratch私有副本、索引弱guard及gk未消费。
+- [分块单位下三角求逆 A2/A3 Direct Invoke 算子知识](sgl_solve_tril.md)：闭合 solve_tril 的16阶向量递推及32/64阶FP32合并，保留变长索引缓存、尾块补零差异与编译资源边界。
+- [分块单位下三角求逆 950 Direct Invoke 算子知识](sgl_solve_tril_950.md)：闭合 solve_tril 的16阶向量递推及32/64阶FP32合并，保留变长索引缓存、尾块补零差异与编译资源边界。
+- [原生稀疏注意力分数 A2/A3 Direct Invoke 算子知识](sgl_sparse_attention_score.md)：闭合 npu_sparse_attention_score 的 Direct Host、168字节POD及三槽MIX流水；警示可选长度未初始化、无保护回退及精度属性不生效等静态风险。

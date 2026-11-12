@@ -209,3 +209,7 @@
 - [Lightning Indexer 量化接入：GLM/V3.2 的 LI cache、scale 与 CP 重排](lightning_indexer_quantization_scale_cache.md)：GLM li_cache_quant_mode 与 V3.2 kv_cache_quant_mode 的独立 LI 量化闭环：Hadamard、indexer_key_scale_cache、CP gather/restore 和 prev/next scale 对齐。
 
 - [TorchNPU 推理接口选型：功能索引、版本与产品支持](torch_npu_api_selection.md)：torch_npu 官方文档索引的使用边界：按功能区分量化、Attention、MoE 和多流候选，再核对版本、产品、签名、返回与副作用。
+
+- [SGLang 内核库集成](sgl_kernel_npu/index.md)：共 11 张知识卡（如 DeepEP A2：单机与跨机通信的缓冲、量化与人工验收、DeepEP Buffer：通信组绑定、策略选择与事件兼容边界、SGLang Batch Invariant：外部算子包安装与懒加载依赖 等）。
+- [SGLang 昇腾注意力、图执行与扩散适配](sglang_ascend/index.md)：共 68 张知识卡（如 SGLang Ascend 注意力：GQA、MLA、DSA与阶段路由、SGLang Ascend DCP页交错与稀疏索引本地化、SGLang Ascend MLA DCP：局部attention与自然对数LSE合并 等）。
+- [SGLang 昇腾运行时、缓存与通信集成](sglang_ascend_runtime/index.md)：共 40 张知识卡（如 SGLang ACL Host回调辅助线程的订阅与退出边界、SGLang NPU Mamba状态布局与投机卷积窗口预算、SGLang Mamba与卷积状态的NPU HiCache搬运分支 等）。

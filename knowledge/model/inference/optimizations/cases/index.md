@@ -23,3 +23,5 @@
 - [LongCat A3 AFD 的收发配对与流汇合案例](longcat_a3_afd_stream_pairing.md)：当前 AFD 两半通信组、rank/tag 配对与 npugraph_ex Decode 延迟接收；区分 Prefill chunk 与 Decode 预取。
 
 - [DIA A3 大融合算子的泳道图调优案例](deepseek_indexer_attention_a3_tuning.md)：固定 PyPTO DIA 实现的 Gather、Matmul、barrier 与 reshape 调优，保留75%运行时缩短的来源口径和复测边界。
+
+- [SGLang 昇腾优化实现案例](sglang_ascend/index.md)：从CMO helper和Qwen3/layer-boundary调用解释预取字节上限、主流先行依赖、prefill piecewise触发和收益验收边界。

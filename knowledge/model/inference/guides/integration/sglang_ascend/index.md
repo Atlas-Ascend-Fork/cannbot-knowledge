@@ -1,0 +1,72 @@
+# SGLang 昇腾注意力、图执行与扩散适配
+
+本目录收录固定版本来源支持的知识；具体平台、配置和验证边界见各卡正文。
+
+- [SGLang Ascend 注意力：GQA、MLA、DSA与阶段路由](sglang_ascend_attn_backend_dispatch.md)：固定版本Ascend后端如何按prefill、decode、verify、CP和KV量化选择FIA、FA、稀疏或原生回退，并区分各路线的Host长度参与和DCP verify设备因果mask。
+- [SGLang Ascend DCP页交错与稀疏索引本地化](sglang_ascend_attn_dcp_page_layout.md)：按物理页计算DCP所属rank、局部长度和verify链前沿，说明全局TopK过滤压紧及保序要求。
+- [SGLang Ascend MLA DCP：局部attention与自然对数LSE合并](sglang_ascend_attn_dcp_partial_merge.md)：区分dense MLA和DSA的DCP局部计算入口、head交换与LSE归一化，保留dense MLA decode的FIA与head比限制及无法返回LSE的拒绝边界。
+- [SGLang Ascend DSA DCP验证：逐query因果行与局部稀疏attention](sglang_ascend_attn_dsa_dcp_verify.md)：将固定宽度投机验证展成请求优先的独立query行，说明PA_BSND页表、非因果本地稀疏模式和LSE恢复。
+- [SGLang Ascend DSA索引器：缓存写入、量化与CP/DCP元数据](sglang_ascend_attn_dsa_indexer.md)：闭合NPU DSA索引器Q/K准备、独立投影流、全局缓存地址、Hadamard量化和Lightning Indexer的TopK输出契约。
+- [SGLang Ascend GDN：卷积历史、chunk prefill与投机状态](sglang_ascend_attn_gdn_state.md)：说明NPU Gated DeltaNet在decode/prefill/verify中的卷积run mode、门控dtype、分块状态写回和候选中间态。
+- [SGLang Ascend混合线性注意力：图元数据与接受后双状态恢复](sglang_ascend_attn_hybrid_state_commit.md)：闭合固定图bucket中的Mamba slot、query边界和树检索缓冲，以及GDN/KDA投机接受后SSM提交和conv rollback。
+- [SGLang Ascend KDA：V-first状态、ragged验证与步态提交](sglang_ascend_attn_kda_state.md)：说明KDA原生chunk/persistent状态布局、门控预激活、卷积转置及投机中间态搬移，避免照搬通用连续状态mover。
+- [SGLang Ascend MiniMax-M3：按query展开的稀疏预填充与验证](sglang_ascend_attn_minimax_sparse.md)：说明NPU块索引器、forced block合并、GQA稀疏主attention、native/FIA选择及图元数据刷新，区分GPU专属MSA优化。
+- [SGLang Ascend MLA前缀读取：逐请求去页尾与NZ/FP8视图](sglang_ascend_attn_mla_prefix_gather.md)：说明prefix页表展平后为何必须按请求剔除padding，及NZ物理布局、FP8字节索引和DCP重组的顺序。
+- [SGLang Ascend MLA预处理：MLAPO、MLAProlog与权重生命周期](sglang_ascend_attn_mla_preprocess.md)：按投影kernel类型选择MLA预处理模式，说明INT8/MXFP8量化布局、RoPE重排、NZ缓存和PD释放原始权重的前提。
+- [SGLang Ascend MLA模型层：投影吸收、索引复用与流依赖](sglang_ascend_attn_mla_projection.md)：闭合DeepSeek MLA/DSA模型层从q_lora到稀疏attention和输出投影的NPU分支，说明融合精度选择、动态INT8与BF16索引器边界。
+- [SGLang Ascend ModelSlim MLA FP8：动态Q与共享latent缩放](sglang_ascend_attn_modelslim_fp8_kv.md)：说明Q_FP8_DYNAMIC_KV_FP8的arch35/MLA守卫、逐层声明和静态K scale约束，以及动态Q、BF16 RoPE与FIA v2的配合。
+- [SGLang Ascend mRoPE：多轴位置与文本RoPE回退](sglang_ascend_attn_mrope_dispatch.md)：区分二维多模态位置的Triton路径、一维文本npu_mrope和宽Q原生回退，保留空输入及融合KV写限制。
+- [SGLang Ascend原生SDPA回退：GQA、SWA与交叉注意力](sglang_ascend_attn_native_sdpa.md)：说明逐请求PyTorch注意力参考路径的KV读取、SWA因果对齐和logit cap，及主机同步与吞吐代价。
+- [SGLang Ascend 后端注册与拒绝条件：混合状态、K-pool和图变体](sglang_ascend_attn_registry_boundaries.md)：区分NPU实际注册的Ascend、V4、GDN和KDA后端，保留短卷积侧状态缺口及K-pool和GPU图变体不可直接迁移的边界。
+- [SGLang Ascend RoPE分派：可选融合kernel与原生回退](sglang_ascend_attn_rope_dispatch.md)：说明fused_rope_qk_mqa缺失时的模型导入保护、token与dtype守卫、npu_mrope形状适配和rotary_mul边界。
+- [SGLang Ascend V4分配器：C128独立页与引用计数回收](sglang_ascend_attn_v4_allocator.md)：闭合full/SWA/C4派生地址与C128独立paged allocator的容量预检、prefix共享、投机预留和请求释放。
+- [SGLang Ascend V4缓存：PA_ND压缩页、混合字节与状态ring](sglang_ascend_attn_v4_cache_layout.md)：区分SWA/C4/C128的NPU物理页、950混合FP8/BF16/scale行、indexer独立缓冲及压缩state生命周期。
+- [SGLang Ascend DeepSeek-V4：SWA、C4、C128与压缩状态路由](sglang_ascend_attn_v4_compressed_routes.md)：说明V4原始滑窗与两种压缩attention、NPU compressor/indexer、CP元数据切换及graph重放状态刷新，保留A3与950差异。
+- [SGLang Ascend V4 C128前缀共享：完整页边界与HiCache恢复](sglang_ascend_attn_v4_radix_ownership.md)：说明只有完整C128页组进入radix、节点拆分与引用计数，以及host-only命中加载后刷新请求sidecar的必要性。
+- [SGLang Ascend V4请求表：C128 sidecar与请求槽复用](sglang_ascend_attn_v4_request_sidecar.md)：说明C128独立页表宽度、prefix命中早于request分配时的暂存协议，以及normal/PD decode释放顺序。
+- [SGLang Ascend V4 RoPE：预热表、前向memo与图内生命周期](sglang_ascend_attn_v4_rope_cache.md)：说明interleaved RoPE表的dtype/device键、buffer注册、position逐轮gather和禁止图内临时构表的约束。
+- [SGLang Ascend V4缓存窗口：分配后挂钩与verify实时bundle](sglang_ascend_attn_v4_verify_bundle.md)：区分预留容量与本轮投机写区间，说明C4无NonZero压紧、C128页表展开、CPU镜像和PD状态索引适配。
+- [SGLang Ascend DeepSeek YaRN RoPE：双表扩展、局部旋转与缩放](sglang_ascend_attn_yarn_rope.md)：说明DeepseekScalingRotaryEmbedding在NPU同时维护半宽cache与完整cos/sin表，扩容时保持mscale和dtype一致，并仅旋转rotary段。
+- [SGLang Diffusion NPU激活与Norm：融合、缓存和TP归约](sglang_ascend_diffusion_activation_norm.md)：说明SwiGLU/GEGLU、FP32 LayerNorm缓存、残差调制与跨TP RMSNorm不可省略的归约。
+- [SGLang Diffusion Ascend FA：变长边界、Ring LSE与MXFP8门槛](sglang_ascend_diffusion_ascend_fa.md)：从BSND/TND布局、空段与LSE规范到950 MXFP8自注意力、正交旋转和head分块，区分普通与量化路线。
+- [SGLang Diffusion块稀疏：首步LASER与首帧保留](sglang_ascend_diffusion_block_sparse.md)：说明BlockSparse后端的metadata、128块/stride8估计、首帧稠密保护和BNSD实际调用。
+- [SGLang Diffusion Ascend CI：A3用例、质量基线与Host页缓存](sglang_ascend_diffusion_ci_acceptance.md)：区分历史A3性能表、部分不做一致性的用例和加载期Host内存规避，给出可复核验收方法。
+- [SGLang Diffusion GLM-Image：NPU顺序多输出与条件切片](sglang_ascend_diffusion_glm_multioutput.md)：说明模型/配置/阶段如何将多输出请求串行化，以及无KV缓存时逐sample attention裁剪的成本。
+- [SGLang Diffusion Helios：NPU调度器sigma转FP32](sglang_ascend_diffusion_helios.md)：说明Helios/UniPC为避免Expm1 float64而将sigma转FP32的NPU分支及长去噪数值验收，保留DMD流程差异。
+- [SGLang Diffusion HunyuanImage3：NPU多输出和MoE归约所有权](sglang_ascend_diffusion_hunyuan_image.md)：说明NPU顺序输出策略及Ascend finalize内部聚合与共享MLP已归约的边界，防止重复集合通信。
+- [SGLang Diffusion通用kernel：NPU延迟分派与RoPE回退](sglang_ascend_diffusion_kernel_fallback.md)：区分import时绑定与动态平台键，说明NPU scale-shift、rotary_mul门槛和Torch高精度norm回退。
+- [SGLang Diffusion LASER：短序列回退与H3 BF16缩放](sglang_ascend_diffusion_laser.md)：说明attentions依赖、BNSD填充、变长与双段padding限制，以及MiniMax-H3范围保护与普通FP16转换的差异。
+- [SGLang Diffusion量化加载与驻留：后处理、CPU offload和释放](sglang_ascend_diffusion_load_offload.md)：串联checkpoint加载设备、一次性量化后处理、NPU内部格式和组件释放，区分加载峰值与推理常驻内存。
+- [SGLang Diffusion LTX-2：NPU RMSNorm和全通掩码消除](sglang_ascend_diffusion_ltx2.md)：说明TP1/TP多head归一化区别和仅当encoder mask全通时删除掩码的条件。
+- [SGLang Diffusion MiniMax-H3：NPU全循环、packed attention与VAE门控](sglang_ascend_diffusion_minimax_h3.md)：说明全去噪循环NPU入口、与LASER的真实token边界配合及VAE SiluAndMul，避免从导入推导完整模型验证。
+- [SGLang Diffusion ModelSlim：逐层识别与量化路由](sglang_ascend_diffusion_modelslim.md)：说明quant_model_description、合并投影一致性、权重名映射和INT8/MXFP8/MXFP4方案选择。
+- [SGLang Diffusion MOVA：NPU布局、复数精度与平台判断缺陷](sglang_ascend_diffusion_mova.md)：说明channels_last_3d规避、complex64频率缓存和三段torchair编译，同时保留漏调用平台判定的静态缺陷。
+- [SGLang Diffusion离线MXFP4：双层scale契约与当前源码缺陷](sglang_ascend_diffusion_mxfp4_offline.md)：保留packed权重和smooth scale流程，并明确未定义属性及无mul_scale访问使固定版本不能直接当运行配方。
+- [SGLang Diffusion在线MXFP4：加载期双层量化与实验边界](sglang_ascend_diffusion_mxfp4_online.md)：说明mxfp4_npu区别于ROCm mxfp4，950硬件门槛、NZ后处理和CPU offload下的加载峰值。
+- [SGLang Diffusion MXFP8适配器：SRT复用与逐层排除](sglang_ascend_diffusion_mxfp8_adapter.md)：说明serialized标记、block32与dynamic activation限制，以及NPU复用NPUMXFP8LinearMethod的边界。
+- [SGLang Diffusion离线MXFP8：scale配对与NPU矩阵方向](sglang_ascend_diffusion_mxfp8_offline.md)：说明ModelSlim E4M3权重、E8M0分块scale后处理和动态activation量化的shape/dtype契约。
+- [SGLang Diffusion NPU平台：设备映射、探测与后端选择](sglang_ascend_diffusion_platform.md)：说明平台插件优先级、可见设备、no_grad语义、内存查询及NPU通信类与注意力路由的实际边界。
+- [SGLang Diffusion NPU profiling：活动、调度与trace归属](sglang_ascend_diffusion_profiler.md)：说明torch_npu profiler替换、CPU/NPU双活动、warmup与停止同步，以及不能套用CUDA gzip导出命名的边界。
+- [SGLang Diffusion RainFusion：空间重排、块选择与批次边界](sglang_ascend_diffusion_rain.md)：说明8×8空间重排、128块TopK估计、首帧密集保护，以及当前仅取首batch选择索引的限制。
+- [SGLang Diffusion NPU RoPE：NeoX广播与Flux复数路径](sglang_ascend_diffusion_rotary.md)：说明NPU rotary_mul条件、BSND位置广播和FLUX/LongCat避免float64的实际模型分支。
+- [SGLang Diffusion SenseNova：FIA长度、BNSD与MLP融合](sglang_ascend_diffusion_sensenova_attention.md)：说明可调用FIA的必要条件、变量前缀fallback和无梯度BF16 SwiGLU融合的缓存约束。
+- [SGLang Diffusion SenseNova去噪：前缀缓存与循环外预计算](sglang_ascend_diffusion_sensenova_cache.md)：说明FIA可用时BNSD缓存、Host可见长度、非FIA多batch的布尔mask回退和think_mode长度风险，及NPU时间/噪声嵌入预计算。
+- [SGLang Diffusion NPU编译：torchair、区域编译与VAE调用缓存](sglang_ascend_diffusion_torchair.md)：说明NPU编译参数、CacheDiT条件延期、区域匹配和按对象身份缓存ActiveTarget callable。
+- [SGLang Ascend批次不变运算：norm拆分与FIA图handler](sglang_ascend_graph_batch_invariant_fia.md)：说明batch-invariant wrapper的dtype限制、add/RMSNorm拆分和FIA out重载保留，避免将图ABI适配当作数值验证。
+- [SGLang Ascend NPUGraph：捕获、长度重绑定与重放栅栏](sglang_ascend_graph_capture_update.md)：闭合按shape捕获的NPUGraph、共享pool、FIA主机长度更新和DFlash实时缓冲刷新，精确保留异步update/replay顺序。
+- [SGLang Ascend分段图：静态shape捕获与弱引用输出](sglang_ascend_graph_piecewise_shapes.md)：说明piecewise NPU backend如何按符号维选择捕获shape、回退通用compiled graph、保持输入地址与输出生命周期。
+- [SGLang Ascend ViT图：累计边界、共享池与输出克隆](sglang_ascend_graph_vit_buffers.md)：说明视觉block/merger图捕获条件、Qwen3 deepstack、FIA TND累计长度和图输出跨重放的所有权。
+- [SGLang Ascend投机参数：Eagle、MTP、DSpark与DFlash启动约束](sglang_ascend_spec_argument_guards.md)：对齐算法别名、draft宽度和并行守卫，区分NPU允许的路线、CUDA专属block verification和V4模型额外限制。
+- [SGLang Ascend投机写地址：固定窗口与cache_loc_update回退](sglang_ascend_spec_cache_locations.md)：说明NPU草稿/验证写窗口从request表取址、int32输出和位置填充，区分GPU融合地址翻译与NPU端点tensor路线。
+- [SGLang Ascend DFlash循环：target hidden物化与图回退](sglang_ascend_spec_dflash_runtime.md)：说明DFlash草稿借用target head、上下文KV物化、私有滑窗request表，以及NPU禁用GPU融合准备和DP草稿图的实际边界。
+- [SGLang Ascend DFlash采样边界：可用kernel与worker语义分离](sglang_ascend_spec_dflash_sampling_boundary.md)：说明NPU为何显式禁用DFlash非greedy验证，及top-k/top-p归一化的native探测、回退和显存成本。
+- [SGLang Ascend DFlash验证元数据：live长度、Q边界与padding](sglang_ascend_spec_dflash_verify_metadata.md)：说明DFlashVerifyInput在NPU延迟规划、重建V4当前写窗口、线性allow mask与ragged累计边界的契约。
+- [SGLang Ascend DSpark链采样：候选stride与接受概率](sglang_ascend_spec_dspark_chain_sampling.md)：说明NPU chain sampler的uniform矩阵宽度、target概率准备、cutoff接受截断及bonus索引，区分Torch调度与外部kernel调用。
+- [SGLang Ascend DSpark草稿与预算：舍入一致的Markov回退](sglang_ascend_spec_dspark_markov_fallback.md)：说明Markov提案的dtype舍入、非CUDA参考分派、TP采样tie-break，以及NPU预算排序与KV投影融合限制。
+- [SGLang Ascend DSpark验证：实时长度、compact散射与epilogue](sglang_ascend_spec_dspark_verify_layout.md)：说明target verify executor如何保存live前缀、扩张Host长度一次、post-pad规划、compact输出恢复和图内/图外接受的统一结果。
+- [SGLang Ascend DSpark循环：提案、预算验证与状态提交](sglang_ascend_spec_dspark_worker.md)：闭合DSpark从固定gamma草稿到compact/static验证、接受与target hidden注入的NPU模型循环，保留图折叠与线性状态边界。
+- [SGLang Ascend Eagle草稿worker：分阶段后端与图回退](sglang_ascend_spec_eagle_draft_backends.md)：说明draft decode/extend使用独立attention backend和NPU图runner，及动态阶段能力、内存统计和CPU长度依赖。
+- [SGLang Ascend Eagle批次计划：padding后元数据与draft完成栅栏](sglang_ascend_spec_eagle_plan_stream.md)：说明关闭图时的post-pad重规划、plan stream后mRoPE/verify缓冲刷新和V4 C128接受后清理边界。
+- [SGLang Ascend多层MTP图缓冲：共享地址与原生准备回退](sglang_ascend_spec_multilayer_graph_buffers.md)：说明逐步反向捕获、共享输入buffer、NPU原生prepare替换及select_index和padding哨兵约束。
+- [SGLang Ascend多层MTP：独立runner与逐步图选择](sglang_ascend_spec_multilayer_mtp.md)：说明de-tied多层Eagle的后端、cache与logits选择，以及NPU坚持每step图和非图post-pad元数据初始化。
+- [SGLang Ascend Eagle树验证：树元数据与采样能力分派](sglang_ascend_spec_tree_verify.md)：说明NPU树构建、贪心验证及可选采样kernel的调用契约，区分topk树路线、线性rejection和DFlash额外限制。

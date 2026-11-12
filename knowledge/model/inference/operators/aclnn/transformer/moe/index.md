@@ -1,0 +1,53 @@
+# 混合专家计算与通信
+
+- [DeepEP Dispatch FFN Combine INT8 A3 ACLNN 算子知识](sgl_deepep_dispatch_ffn_combine.md)：说明 aclnnDispatchFFNCombine 在A3上的INT8路由、双GMM与SwiGLU单MIX内核，闭合内层分发、POD、CATLASS实例和内存同步及静态失败边界。
+- [SGL DeepEP DispatchLayout A2/A3 ACLNN 算子知识](sgl_deepep_dispatch_layout.md)：闭合 aclnnDispatchLayout 的专家计数、rank 去重和专家内发送序号，说明A3与A2单机多轮、A2跨机专用路线、逐字段POD、UB与GM字节布局及同步失效边界。
+- [SGL DeepEP DispatchLayout 950 ACLNN 算子知识](sgl_deepep_dispatch_layout_950.md)：闭合 aclnnDispatchLayout 的专家计数、rank 去重和专家内发送序号，说明950通用多轮路线、逐字段POD、UB与GM字节布局及同步失效边界。
+- [SGL DeepEP FusedDeepMoe A3 ACLNN 算子知识](sgl_deepep_fused_deep_moe.md)：闭合 A3 INT8 NZ 权重的 Dispatch、两次分组矩阵乘、SwiGLU、动态量化与 Combine，说明 aclnnFusedDeepMoe 的三条实际路线、逐字段 POD、Cube/Vector 交接、通信窗口和静态风险。
+- [DeepEP FusedDeepMoe MXFP4 E1M2 SiTU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp4_e1m2_situ_950.md)：说明950上E1M2权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP FusedDeepMoe MXFP4 E1M2 SwiGLU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp4_e1m2_swiglu_950.md)：说明950上E1M2权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP FusedDeepMoe MXFP4 E2M1 SiTU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp4_e2m1_situ_950.md)：说明950上E2M1权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP FusedDeepMoe MXFP4 E2M1 SwiGLU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp4_e2m1_swiglu_950.md)：说明950上E2M1权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP FusedDeepMoe MXFP8 E4M3 SiTU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp8_e4m3_situ_950.md)：说明950上E4M3权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP FusedDeepMoe MXFP8 E4M3 SwiGLU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp8_e4m3_swiglu_950.md)：说明950上E4M3权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP FusedDeepMoe MXFP8 E5M2 SiTU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp8_e5m2_situ_950.md)：说明950上E5M2权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP FusedDeepMoe MXFP8 E5M2 SwiGLU 950 ACLNN 算子知识](sgl_deepep_fused_deep_moe_mxfp8_e5m2_swiglu_950.md)：说明950上E5M2权重与动态MX激活的融合MoE，闭合32个key、稀疏与共享专家、双GMM当前CATLASS实例及MTE窗口同步，记录静态生产者与尾域风险。
+- [DeepEP Low Combine INT8 A2/A3 ACLNN 算子知识](sgl_deepep_low_combine_int8.md)：说明 aclnnMoeLowLatencyCombineV2 的 INT8 通信归并、A2 层级与 A3 MTE 路由、g16/g8 量化精度、逐字段参数和内存同步及静态失败边界。
+- [DeepEP Low Combine MXFP8 950 ACLNN 算子知识](sgl_deepep_low_combine_mxfp8_950.md)：说明 aclnnMoeLowLatencyCombineV2 在950上的g32 E4M3与E8通信加权归并、双到单缓冲回退、24个资源selector、逐字段参数与同步及静态尾域边界。
+- [DeepEP Low Combine 无量化 A2/A3 ACLNN 算子知识](sgl_deepep_low_combine_noquant.md)：说明 aclnnMoeLowLatencyCombineV2 在 A2/A3 上的无量化加权归并、完整 Host 路由、逐字段参数、MTE/AICPU/AIV RDMA 实现与内存同步边界。
+- [DeepEP Low Combine 无量化 950 ACLNN 算子知识](sgl_deepep_low_combine_noquant_950.md)：说明 aclnnMoeLowLatencyCombineV2 在 950 上的无量化 MTE 原子或共享归并、CCU 双 mission 实现、独立 Host 路由及 SDK/HCOMM 内存同步闭包。
+- [SGL DeepEP Low-Latency INT8 动态量化 Dispatch A2/A3 ACLNN 算子知识](sgl_deepep_low_dispatch_int8.md)：闭合 aclnnMoeLowLatencyDispatchV2 的 INT8 量化、A2 三拓扑与 A3 EP/TP、smooth/no-smooth 十三 Route，说明 POD、通信内存、scale 生命周期和静态失败边界。
+- [SGL DeepEP Low-Latency INT8 动态量化 Dispatch 950 ACLNN 算子知识](sgl_deepep_low_dispatch_int8_950.md)：说明 aclnnMoeLowLatencyDispatchV2 的 Ascend 950 INT8 量化、MTE/CCU 六 Route、SDK/HCOMM 双 mission 实现、Host 与 Device 字节布局及已见静态限制。
+- [SGL DeepEP Low-Latency MXFP4 Dispatch 950 ACLNN 算子知识](sgl_deepep_low_dispatch_mxfp4_950.md)：闭合公开 q4 MXFP4 的 BF16/FP16、E2M1/E1M2 十六条 950 MTE Route，说明 FP16Convert、packed 数据与 E8M0 指数、POD/通信字节及奇数 hidden 和资源边界。
+- [SGL DeepEP Low-Latency MXFP8 Dispatch 950 ACLNN 算子知识](sgl_deepep_low_dispatch_mxfp8_950.md)：闭合公开 q3 MXFP8 E4M3/E5M2 的八条 950 MTE Route、每组 E8M0 指数算法、POD 与通信字节，说明 scale/输入对齐容量和 CCU 枚举冲突。
+- [SGL DeepEP Low-Latency 无量化 Dispatch A2/A3 ACLNN 算子知识](sgl_deepep_low_dispatch_noquant.md)：闭合 LowLatencyDispatchV2 无量化的 A2 single/fullmesh/hierarchy、A3 legacy/hybrid 与 TP2 路线，说明通信协议、POD、字节账与静态失败边界。
+- [SGL DeepEP Low-Latency 无量化 Dispatch 950 ACLNN 算子知识](sgl_deepep_low_dispatch_noquant_950.md)：说明 aclnnMoeLowLatencyDispatchV2 在 Ascend 950 上的无量化分发、Host/POD、六条 MTE/CCU Route、双 mission 通信核心、内存与同步及已见静态限制。
+- [SGL DeepEP Low-Latency Per-Token FP8 Dispatch 950 ACLNN 算子知识](sgl_deepep_low_dispatch_per_token_fp8_950.md)：闭合 aclnnMoeLowLatencyDispatchV2 的公开 q5 FP8 E4M3 量化与四条 950 MTE Route，说明 POD、窗口与 UB 字节、scale 生命周期、CCU 拒绝及其它静态边界。
+- [DeepEP MegaMoE A16W16 SiTU A3 ACLNN 算子知识](sgl_deepep_mega_moe_a16w16_situ.md)：说明 aclnnMegaMoe 在A3上的BF16双GMM与SiTU、分层激活参数、Tanh临时区、接收轮次和HCCL9.2窗口生命周期，并保留静态边界。
+- [DeepEP MegaMoE A16W16 SwiGLU A3 ACLNN 算子知识](sgl_deepep_mega_moe_a16w16_swiglu.md)：说明 aclnnMegaMoe 在A3上的BF16双GMM与SwiGLU、接收轮次、MIX同步及HCCL9.2窗口生命周期，并记录源码可见的静态边界。
+- [DeepEP MegaMoE MXFP4 E2M1 SiTU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a4w4_fp_e2m1_situ_950.md)：说明 aclnnMegaMoe 在950上的FP4原生GMM1、SiTU分段近似到E4量化、展开FP4权重GMM2及MTE与URMA/UBX完整路由和静态边界。
+- [DeepEP MegaMoE MXFP4 E2M1 SwiGLU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a4w4_fp_e2m1_swiglu_950.md)：说明 aclnnMegaMoe 在950上的FP4原生GMM1、SwiGLU到E4量化、展开FP4权重GMM2、MTE及URMA/UBX路由与固定9.2静态边界。
+- [DeepEP MegaMoE MXFP8 E4M3 W4 SiTU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a8w4_fp_e4m3_situ_950.md)：说明aclnnMegaMoe在950上的E4M3激活、FP4权重展开双GMM、SiTU DEFAULT/LINEAR与动态MX量化、MTE与URMA/UBX分支，以及Host L1布局、GM交接和生命周期。
+- [DeepEP MegaMoE MXFP8 E4M3 W4 SwiGLU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a8w4_fp_e4m3_swiglu_950.md)：说明aclnnMegaMoe在950上的E4M3激活、FP4权重展开双GMM、SwiGLU动态MX量化、MTE与URMA/UBX分支，以及Host L1布局、GM交接和生命周期。
+- [DeepEP MegaMoE A8W4-INT SiTU A3 ACLNN 算子知识](sgl_deepep_mega_moe_a8w4_int_situ.md)：说明 aclnnMegaMoe 的A3 INT4 MSD双路GMM、bias补偿后SiTU、Tanh临时区复用、动态量化与分批同步，并闭合内存和HCCL9.2生命周期。
+- [DeepEP MegaMoE A8W4-INT SwiGLU A3 ACLNN 算子知识](sgl_deepep_mega_moe_a8w4_int_swiglu.md)：说明 aclnnMegaMoe 的A3 INT32 NZ到INT4描述符、MSD双路GMM、补偿bias与SwiGLU量化、分批同步、内存字节和HCCL9.2窗口生命周期。
+- [DeepEP MegaMoE MXFP8 E4M3 SiTU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a8w8_fp_e4m3_situ_950.md)：说明 aclnnMegaMoe 在950上的E4M3双GMM、SiTU分段tanh与动态MX量化、默认和linear参数支路及MTE/URMA/UBX窗口同步，并保留固定9.2静态限制。
+- [DeepEP MegaMoE MXFP8 E4M3 SwiGLU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a8w8_fp_e4m3_swiglu_950.md)：说明 aclnnMegaMoe 在950上的E4M3双GMM、SwiGLU与动态MX量化、MTE及URMA/UBX路由、窗口生命周期，并保留固定9.2依赖的静态限制。
+- [DeepEP MegaMoE MXFP8 E5M2 SiTU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a8w8_fp_e5m2_situ_950.md)：说明 aclnnMegaMoe 在950上的E5M2双GMM、SiTU分段tanh与动态MX量化、DEFAULT/LINEAR参数支路及MTE/URMA/UBX窗口同步，并保留固定9.2静态限制。
+- [DeepEP MegaMoE MXFP8 E5M2 SwiGLU 950 ACLNN 算子知识](sgl_deepep_mega_moe_a8w8_fp_e5m2_swiglu_950.md)：说明 aclnnMegaMoe 在950上的E5M2双GMM、SwiGLU与动态MX量化、MTE及URMA/UBX路由、窗口生命周期，并保留固定9.2依赖的静态限制。
+- [DeepEP MegaMoE A8W8-INT SiTU A3 ACLNN 算子知识](sgl_deepep_mega_moe_a8w8_int_situ.md)：说明 aclnnMegaMoe 的A3 INT8 NZ双GMM、SiTU分层参数与Tanh复用、动态量化、两条Combine路线、接收轮表和HCCL9.2窗口生命周期。
+- [DeepEP MegaMoE A8W8-INT SwiGLU A3 ACLNN 算子知识](sgl_deepep_mega_moe_a8w8_int_swiglu.md)：说明 aclnnMegaMoe 的A3 INT8 NZ双GMM、逐token动态量化、两条Combine路线、接收轮表、内存字节与HCCL9.2窗口生命周期，并记录静态边界。
+- [SGL DeepEP Normal 加权 Combine A2/A3 ACLNN 算子知识](sgl_deepep_normal_combine.md)：闭合公开 Normal Combine 的 A2 单多轮与 A3 legacy/hybrid 六条 Route，说明原序恢复、FP32 加权、POD/window/UB 字节、双轮同步及 TP2 与资源限制。
+- [SGL DeepEP Normal 加权 Combine 950 ACLNN 算子知识](sgl_deepep_normal_combine_950.md)：闭合公开 Normal Combine 在 950 的单多轮、legacy/hybrid 与 rank-major/fallback 八条 Route，说明加权恢复、32 项窗口 ABI、四 MiB 前缀及 UB/轮间同步限制。
+- [SGL DeepEP 跨节点加权 Combine A2 ACLNN 算子知识](sgl_deepep_normal_combine_internode_a2.md)：闭合公开 A2 分层加权 Combine 的实际 key3000 与默认无 body 终点，说明两次 RINT、4096 密集返送、POD/UB/window 字节及 SDK RDMA 和元数据限制。
+- [SGL DeepEP NormalDispatch 动态INT8量化 A2/A3 ACLNN 算子知识](sgl_deepep_normal_dispatch_int8.md)：闭合 aclnnCamMoeDispatchNormal 在A2/A3的quant_mode=2路径，说明逐轮专家紧凑布局、窗口协议、三元组、分核UB和同步边界。
+- [SGL DeepEP NormalDispatch 动态INT8量化 950 ACLNN 算子知识](sgl_deepep_normal_dispatch_int8_950.md)：闭合 aclnnCamMoeDispatchNormal 在950的quant_mode=2路径，说明逐轮专家紧凑布局、窗口协议、三元组、分核UB和同步边界。
+- [SGL DeepEP 跨节点 BF16 Dispatch A2 ACLNN 算子知识](sgl_deepep_normal_dispatch_internode_a2.md)：闭合公开 A2 跨节点 BF16 非量化 Dispatch 的环境 key、单多 server 分支与 SDK RDMA 核心，说明去重 record、IPC 展开、POD/UB/window 字节和布局及未写输出限制。
+- [SGL DeepEP NormalDispatch MXFP4量化 950 ACLNN 算子知识](sgl_deepep_normal_dispatch_mxfp4_950.md)：闭合 aclnnCamMoeDispatchNormal 在950的quant_mode=4路径，说明逐轮专家紧凑布局、窗口协议、三元组、分核UB和同步边界。
+- [SGL DeepEP NormalDispatch MXFP8量化 950 ACLNN 算子知识](sgl_deepep_normal_dispatch_mxfp8_950.md)：闭合 aclnnCamMoeDispatchNormal 在950的quant_mode=3路径，说明逐轮专家紧凑布局、窗口协议、三元组、分核UB和同步边界。
+- [SGL DeepEP NormalDispatch 无量化 A2/A3 ACLNN 算子知识](sgl_deepep_normal_dispatch_noquant.md)：闭合 aclnnCamMoeDispatchNormal 在A2/A3的quant_mode=0路径，说明逐轮专家紧凑布局、窗口协议、三元组、分核UB和同步边界。
+- [SGL DeepEP NormalDispatch 无量化 950 ACLNN 算子知识](sgl_deepep_normal_dispatch_noquant_950.md)：闭合 aclnnCamMoeDispatchNormal 在950的quant_mode=0路径，说明逐轮专家紧凑布局、窗口协议、三元组、分核UB和同步边界。
+- [SGL DeepEP NormalDispatch PerToken FP8量化 950 ACLNN 算子知识](sgl_deepep_normal_dispatch_per_token_fp8_950.md)：闭合 aclnnCamMoeDispatchNormal 在950的quant_mode=5路径，说明逐轮专家紧凑布局、窗口协议、三元组、分核UB和同步边界。
+- [SGL DeepEP NotifyDispatch A2/A3 ACLNN 算子知识](sgl_deepep_notify_dispatch.md)：闭合 aclnnNotifyDispatch 的计数交换、逐轮专家与源rank偏移生成，说明实际窗口、POD、批次UB、八统计核和静态边界。
+- [SGL DeepEP NotifyDispatch 950 ACLNN 算子知识](sgl_deepep_notify_dispatch_950.md)：闭合 aclnnNotifyDispatch 的计数交换、逐轮专家与源rank偏移生成，说明实际窗口、POD、批次UB、八统计核和静态边界。
+- [SGL DeepEP NotifyDispatchA2 A2 ACLNN 算子知识](sgl_deepep_notify_dispatch_a2.md)：闭合 aclnnNotifyDispatchA2 的两级元数据交换、RDMA BatchWrite、专家计数和展开索引，保留双server约束及静态资源风险。

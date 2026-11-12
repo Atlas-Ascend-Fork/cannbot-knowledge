@@ -20,3 +20,5 @@
 - [vLLM Ascend 环境准备：版本配对、硬件镜像与分层验收](vllm_ascend_versioned_environment.md)：区分ceac/3164与5f5发布宏、Native pin和release配对；按硬件选择安装依赖与分层验收，不拼接不同来源版本。
 
 - [推理并行配置选型：按 Prefill、Decode 和模型结构找参考 YAML](parallel_reference_config_selection.md)：Qwen3-MoE 16TP/128EP 与 Kimi PD Prefill/Decode 参考配置，核对 cp_size、o_proj_tp_size、R1/GLM/V3.2/LongCat YAML、DP 本地 batch 和显存通信预算。
+
+- [sglang ascend](sglang_ascend/index.md)：对齐A3/950的CANN9.1.0组件组、Python3.12、TorchNPU、MemFabric和NPU Kernel，保留旧A2/A3 CANN8.5说明的边界，并定义服务与PD验收入口。

@@ -1,3 +1,5 @@
 # Transformer 算子
 
-- [注意力算子](attention/index.md)：解析 Kimi K3 残差 bank 融合算子 AttnResFwd 在 vLLM Ascend 950/A5 上的四条 Route、Tiling ABI、UB 容量、BF16 舍入及同步边界，支持框架适配和性能诊断。
+- [注意力算子](attention/index.md)：共 54 张知识卡（如 SGL 自适应块稀疏注意力 A2/A3 ACLNN 算子知识、SGL 分块门控 Delta 递推 A2/A3 ACLNN 算子知识、SGL 分块门控 Delta 递推 950 ACLNN 算子知识 等）。
+
+- [混合专家计算与通信](moe/index.md)：共 51 张知识卡（如 DeepEP Dispatch FFN Combine INT8 A3 ACLNN 算子知识、SGL DeepEP DispatchLayout A2/A3 ACLNN 算子知识、SGL DeepEP DispatchLayout 950 ACLNN 算子知识 等）。

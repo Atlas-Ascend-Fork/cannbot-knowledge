@@ -127,3 +127,5 @@
 - [模型导入失败：models 命名空间遮蔽与 PYTHONPATH 缺失](model_package_namespace_shadowing.md)：ModuleNotFoundError models.gpt_oss 等同级模块导入失败时，区分模型子目录 __init__.py 遮蔽和启动脚本缺少仓库根路径。
 - [多 DP MoE row_idx_decode 形状不匹配：本地 batch 与图模式](moe_dp_rank_buffer_sizing.md)：DP buffer、row_idx_decode 或 npu_moe_compute_expert_tokens / npu_moe_init_routing 报 shape 错时，核对 MoE 本地 batch、batch_size_per_dp_rank、topk 和实际 token 数；覆盖 eager/图模式差异。
 - [MoE 加载后处理未触发：GroupedMatmul 维度与量化 scale 错误](moe_post_load_hook_missing.md)：MoE 首次推理 GroupedMatmul Dim 1 mismatch 或 scale 形状错误时，检查权重分片、布局以及 process_weights_after_loading 后处理调用链。
+
+- [SGLang Ascend 故障分流：PD元数据、图流、分配与权重版本](sglang_ascend_doc_failure_triage.md)：依据固定FAQ提取GLOO元数据碰撞、Fill图错误、alloc_extend故障与OOM分流，保留未定位根因及当前KV预算实现对FAQ因果表述的纠正。

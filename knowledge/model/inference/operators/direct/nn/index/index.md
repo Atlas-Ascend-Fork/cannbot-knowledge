@@ -1,0 +1,30 @@
+# 索引与缓存搬运
+
+- [SGL在线Argmax置信度融合 A2/A3 Direct Invoke 算子知识](sgl_argmax_softmax_prob_fused.md)：还原A2/A3上argmax_softmax_prob_fused的在线最大值/指数和合并、双标量输出、tile输入预算与row stride，保留非有限、空域和拓扑缓存边界。
+- [SGL在线Argmax置信度融合 950 Direct Invoke 算子知识](sgl_argmax_softmax_prob_fused_950.md)：还原950上argmax_softmax_prob_fused的在线最大值/指数和合并、双标量输出、tile输入预算与row stride，保留非有限、空域和拓扑缓存边界。
+- [BuildOutTokens A2/A3 Direct Invoke 算子知识](sgl_build_out_tokens.md)：闭合投机输出构造的stride读取、256元素轮转及int64全位选择，明确未提交draft后缀、gamma0和长度语义边界。
+- [BuildOutTokens 950 Direct Invoke 算子知识](sgl_build_out_tokens_950.md)：闭合投机输出构造的stride读取、256元素轮转及int64全位选择，明确未提交draft后缀、gamma0和长度语义边界。
+- [验证树构造 A3 Direct Invoke 算子知识](sgl_build_verification_tree.md)：说明 build_tree_kernel_efficient 的实际模式枚举、分batch启动、九字段参数、child与祖先构建、五Queue字节账及QLEN覆盖地址边界。
+- [验证树构造 950 Direct Invoke 算子知识](sgl_build_verification_tree_950.md)：说明 build_tree_kernel_efficient 的实际模式枚举、分batch启动、九字段参数、child与祖先构建、五Queue字节账及QLEN覆盖地址边界。
+- [请求因果长度展开 A2/A3 Direct Invoke 算子知识](sgl_expand_causal_seqlens.md)：闭合DSA请求长度展开的Host校验、四类query tile与双输出，说明局部prefix归约、预分配地址复用及INT32/长度一致性边界。
+- [请求因果长度展开 950 Direct Invoke 算子知识](sgl_expand_causal_seqlens_950.md)：闭合DSA请求长度展开的Host校验、四类query tile与双输出，说明局部prefix归约、预分配地址复用及INT32/长度一致性边界。
+- [Kpool选块展开与尾token追加 A2/A3 Direct Invoke 算子知识](sgl_expand_kpool_group_and_tail_to_topk.md)：闭合pool-major索引展开与tail追加的四种行tile，区分128KiB启发式与实际UB、物理对齐view、有效行裁剪及扩展shape准入。
+- [Kpool选块展开与尾token追加 950 Direct Invoke 算子知识](sgl_expand_kpool_group_and_tail_to_topk_950.md)：闭合pool-major索引展开与tail追加的四种行tile，区分128KiB启发式与实际UB、物理对齐view、有效行裁剪及扩展shape准入。
+- [KpoolAssembleSoftmaxRotateWriteCache A2/A3 Direct Invoke 算子知识](sgl_kpool_assemble_softmax_rotate_write_cache.md)：闭合tail/chunk计划assembly的七写mask源路线与FP32 online softmax、BF16原值cache，记录单pass字节、全tail空chunk及显式grid边界。
+- [KpoolAssembleSoftmaxRotateWriteCache 950 Direct Invoke 算子知识](sgl_kpool_assemble_softmax_rotate_write_cache_950.md)：闭合tail/chunk计划assembly的七写mask源路线与FP32 online softmax、BF16原值cache，记录单pass字节、全tail空chunk及显式grid边界。
+- [KpoolDecodeUpdateAndMaybeWriteCache A2/A3 Direct Invoke 算子知识](sgl_kpool_decode_update_and_maybe_write_cache.md)：闭合decode Kpool有效性三路线、两pass逐通道softmax及页表BF16 cache/tail顺序写，记录实际历史读、原地冲突和地址边界。
+- [KpoolDecodeUpdateAndMaybeWriteCache 950 Direct Invoke 算子知识](sgl_kpool_decode_update_and_maybe_write_cache_950.md)：闭合decode Kpool有效性三路线、两pass逐通道softmax及页表BF16 cache/tail顺序写，记录实际历史读、原地冲突和地址边界。
+- [KPoolIndexerPrepareDecodeInput A2/A3 Direct Invoke 算子知识](sgl_kpool_indexer_prepare_decode_input.md)：kpool_indexer_prepare_decode_input 的8个head投影实例与独立页表Vector节点、F.pad布局边界和M为0时输出宽度差异；draft未做运行验证。
+- [KPoolIndexerPrepareDecodeInput 950 Direct Invoke 算子知识](sgl_kpool_indexer_prepare_decode_input_950.md)：kpool_indexer_prepare_decode_input 的8个head投影实例与独立页表Vector节点、F.pad布局边界和M为0时输出宽度差异；draft未做运行验证。
+- [KpoolWriteTailAndMaybeCompress A2/A3 Direct Invoke 算子知识](sgl_kpool_write_tail_and_maybe_compress.md)：闭合全N draft tail写后条件压缩的六effective路线与FP32在线softmax，记录score存储舍入、GM重读、候选cache及原地冲突边界。
+- [KpoolWriteTailAndMaybeCompress 950 Direct Invoke 算子知识](sgl_kpool_write_tail_and_maybe_compress_950.md)：闭合全N draft tail写后条件压缩的六effective路线与FP32在线softmax，记录score存储舍入、GM重读、候选cache及原地冲突边界。
+- [MarkovSampleStepLocal A2/A3 Direct Invoke 算子知识](sgl_markov_sample_step_local.md)：闭合无gather的本地Markov采样24种partial特化及finish，记录step舍入、Philox/外部noise所有权、keptlogits、索引bits与完整GM流量。
+- [MarkovSampleStepLocal 950 Direct Invoke 算子知识](sgl_markov_sample_step_local_950.md)：闭合无gather的本地Markov采样24种partial特化及finish，记录step舍入、Philox/外部noise所有权、keptlogits、索引bits与完整GM流量。
+- [ScatterKpoolTailUpdates A2/A3 Direct Invoke 算子知识](sgl_scatter_kpool_tail_updates.md)：闭合128通道K/score计划scatter与环形地址、inactive参数及原地写集，保留metadata窄化、源目标别名和跨计划冲突边界。
+- [ScatterKpoolTailUpdates 950 Direct Invoke 算子知识](sgl_scatter_kpool_tail_updates_950.md)：闭合128通道K/score计划scatter与环形地址、inactive参数及原地写集，保留metadata窄化、源目标别名和跨计划冲突边界。
+- [ScheduleVerifyLensTopk A2/A3 Direct Invoke 算子知识](sgl_schedule_verify_lens_topk.md)：闭合验证长度调度的prep、条件排名、finalize多Kernel图与GM统计交接，记录稳定键、二次比较、int32原子及runtime预算缓存。
+- [ScheduleVerifyLensTopk 950 Direct Invoke 算子知识](sgl_schedule_verify_lens_topk_950.md)：闭合验证长度调度的prep、条件排名、finalize多Kernel图与GM统计交接，记录稳定键、二次比较、int32原子及runtime预算缓存。
+- [SlotMap槽位查找 A3 Direct Invoke 算子知识](sgl_slot_map_lookup.md)：说明slot_map_lookup的固定TopK2048、32字节行读取与UB Gather、两组流水缓冲、非法索引sentinel及命中标志值域。
+- [UniDex索引行拷贝 A3 Direct Invoke 算子知识](sgl_unidex_copy.md)：说明unidex_copy_inplace的字节行寻址、原始设备可见地址、两深度UB队列、掩码与值域跳过及异步所有权。
+- [SGL贪心链前缀验证 A3 Direct Invoke 算子知识](sgl_verify_tree_greedy.md)：还原verify_tree_greedy在A3配置的单program线性前缀接受、未读树边、固定N行距和原地输出边界，区分CI接线与运行验证。
+- [SGL贪心链前缀验证 950 Direct Invoke 算子知识](sgl_verify_tree_greedy_950.md)：还原verify_tree_greedy在950配置的单program线性前缀接受、未读树边、固定N行距和原地输出边界，区分CI接线与运行验证。

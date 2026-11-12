@@ -21,3 +21,5 @@
 - [vLLM Suffix proposer：CPU后缀缓存、变长草稿与Ascend接线](vllm_ascend_suffix_proposer_contract.md)：核对v0.32 SuffixDecodingProposer的Arctic缓存、请求身份、CPU token输入、长度边界和stop_request，区分固定名义K与逐请求变长输出，再检查Ascend工厂和Runner传参。
 - [vLLM 模型状态协议：ModelState、专有元数据与采样扩展](vllm_model_state_protocol.md)：沿 ModelState、ModelSpecificAttnMetadata 和 DefaultModelState 区分抽象入口、请求状态、任务列表、自定义采样器与 bonus token，核对 prompt/MM 嵌入的有效行、填充视图及 Ascend 扩展边界。
 - [vLLM 多模态输入归一化（Multimodal Input Norm）：参数工厂与后端分派](vllm_multimodal_input_norm_contract.md)：解释 FusedMMInputNorm 的 rescale/mean/std 折叠、processor 配置回退、容差恒等判断、视觉 dtype 转换及 CUDA/XPU/OOT 分派，区分框架数学合同与具体后端执行和性能证据。
+
+- [SGLang 昇腾运行时平台概念](sglang_ascend_runtime/index.md)：说明NPUSRTPlatform的Ascend默认后端、Triton/图能力声明、固定零设备capability和峰值显存口径，区分软件接口与硬件验收。
