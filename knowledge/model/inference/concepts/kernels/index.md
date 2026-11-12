@@ -2,7 +2,7 @@
 
 - [Compressor (C4A / C128A KV 压缩融合算子)](compressor.md)：V4 C4A/C128A 压缩算法、当前独立 RMSNorm/RoPE 与缓存写回；区分 HiF8、FP8 和离线/在线 CP 状态生命周期。
 - [Deepseek Indexer Attention Kernel](deepseek_indexer_attention.md)：`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。这是 PyPTO "MegaKernel" 能力在 DeepSeek-V3.2-Exp 上的典型实例。 PyPTO 源码：`ops/pypto/src/deepseek_indexer_attention/op_kernel/deepseek_indexer_attention.cpp`。
-- [npu_fused_infer_attention_score (v1 / v2)](fused_infer_attention_score.md)：核对当前 R1 FIA v1/v2、packed Query 与 Paged NZ KV、C8 反量化参数及框架 block_table 传入。
+- [FIA v1/v2：参数名、TND/Paged NZ 布局与分路径 mask](fused_infer_attention_score.md)：TND Prefill 不等长请求的 KV 长度：Qwen Dense 分页路径传普通原值，Qwen3-MoE 直读路径传累加长度；区分 v1/v2、Paged NZ、float8 Decode mask，以及 6.0 v1 全遮蔽行和 BSH 单 Query 边界。
 - [GatherSelectionKvCache](gather_selection_kv_cache.md)：说明TopK选择缓存复用、当前packed TND调用和workspace来源，区分Host卸载场景与算子可接受的device输入。
 - [Indexer Prolog Kernel](indexer_prolog.md)：区分 V3.2 的 PyPTO 三流融合与 V4 压缩 K、HiF8/FP8/Int8 Q 前处理，并修正 GLM-5 模型身份和当前 FP8 支持。
 - [Lightning Indexer Kernel](lightning_indexer.md)：LI 的精确 TopK、当前 V4 压缩长度/余数与 Int8、FP8、HiF8 模式，以及 CP 临时缓存和 metadata 配对。

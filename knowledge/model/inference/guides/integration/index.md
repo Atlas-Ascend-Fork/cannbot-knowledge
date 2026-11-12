@@ -199,3 +199,13 @@
 - [vLLM Ascend Xlite 运行接线：V1/V2、DP dummy、token预算与回退](vllm_ascend_xlite_runner_dispatch.md)：沿 XliteModelRunnerMixin、XliteWorker 与 XliteWrapper 核对profile旁路、DP dummy同步、max_m和metadata；区分logger.error、真正raise、原生forward回退及外部runtime初始化。
 
 - [vLLM Ascend 7d9e运行时迁移：采样、缓存与图接入](vllm_ascend_7d9e_runtime_delta_contract.md)：固定7d9e核对310P采样、AscendStore/RFork寿命、GLM PCP与KPool、CANN TopK、V4.1首SWA回放、MLA补头、QSA版本门禁及PLE512分块，按条件和数据归属迁移。
+
+- [Attention 融合链选型：GQA、MLA Absorb 与 Indexer 稀疏路径](attention_fusion_chain_selection.md)：按真实注意力结构选择 Norm、RoPE、缓存写入、FIA/稀疏 FA 与输出投影链路，区分 Prefill 和 Decode 的缓存消费者。
+- [并行改造接入：通信组、RowParallelLinear 归约与权重分片](parallel_groups_and_weight_shards.md)：不同 TP 模块交换激活与重排，核对通信组、RowParallelLinear 显式归约、TP/EP 权重分片和在线/离线切分，并区分 MoE routing、MC2 dispatch 的 quant_mode 编码。
+- [RoPE 接入：预计算 cos/sin、按 position_ids 索引与跨层复用](rotary_embedding_cache_precompute.md)：RoPE 每层或每步重复计算 cos/sin 时，预计算位置表并缓存、跨层复用；按 position_ids 和 dtype 索引，保留 YaRN、interleaved 与动态 scaling 边界。
+- [W8A8 MLP：gate_up、SwiGLU、down 与 MoE scale 链](w8a8_mlp_and_moe_scale_flow.md)：W8A8 MLP 的 gate_up/down 与 SwiGLU 量化 scale 传递；post-load 的 smooth_scales、NZ 与 dtype 处理，以及 MoE 路由/通信侧 scale 对齐。
+
+- [compressed-tensors 接入：产物契约、targets/ignore 与运行加载链](compressed_tensors_runtime_loading_contract.md)：量化配置读取优先级：顶层 quantization_config、text_config 和 compression_config；从 targets/ignore、target_scheme_map 到 hf_config.quant_config、weight_loader、post-load 的接线与缺 scale 诊断。
+- [Lightning Indexer 量化接入：GLM/V3.2 的 LI cache、scale 与 CP 重排](lightning_indexer_quantization_scale_cache.md)：GLM li_cache_quant_mode 与 V3.2 kv_cache_quant_mode 的独立 LI 量化闭环：Hadamard、indexer_key_scale_cache、CP gather/restore 和 prev/next scale 对齐。
+
+- [TorchNPU 推理接口选型：功能索引、版本与产品支持](torch_npu_api_selection.md)：torch_npu 官方文档索引的使用边界：按功能区分量化、Attention、MoE 和多流候选，再核对版本、产品、签名、返回与副作用。

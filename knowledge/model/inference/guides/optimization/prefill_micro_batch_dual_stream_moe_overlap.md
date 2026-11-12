@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: R1 Prefill 微批双流：按请求切分并对齐通信轮次
-description: 更新当前R1按请求边界切packed微批、两种双流流水及EP一致chunk轮次，明确开关和验收。
+description: R1 Prefill microbatch 双流 MoE：按请求边界切 packed 微批，对齐 EP 通信和 chunk 轮次；核对 micro_batch_mode、事件与输出顺序。
 tags:
 - task.debugging
 - topic.mixture_of_experts
@@ -18,7 +18,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-29T14:57:06Z'
+updated_at: '2026-11-10T01:14:22Z'
 platforms:
 - a3
 scope:
@@ -29,6 +29,10 @@ scope:
       - prefill
       objective:
       - throughput
+aliases:
+- Prefill microbatch
+- Prefill micro batch 双流
+- 双微批 MoE 流水
 ---
 
 # R1 Prefill 微批双流：按请求切分并对齐通信轮次

@@ -2,10 +2,10 @@
 
 分阶段实施优化并验证精度、性能与回退。
 
-- [LLM Decode 图编译指南（当前 GE 与 npugraph_ex）](graph_mode_decode_only_compile_backends.md)：当前 Decode-only 路由、主/draft独立接口、两种编译后端、宽度命名空间、队列修复与预热验收。
-- [R1 Prefill 微批双流：按请求切分并对齐通信轮次](prefill_micro_batch_dual_stream_moe_overlap.md)：更新当前R1按请求边界切packed微批、两种双流流水及EP一致chunk轮次，明确开关和验收。
+- [LLM Decode 图模式：编译配置、backend 定界与精度排查](graph_mode_decode_only_compile_backends.md)：LLM 图模式的 GE/npugraph_ex 编译配置、backend/aot_eager 精度定界、frozen_parameter 冻结与非连续权重、dynamic 长度和版本故障。
+- [R1 Prefill 微批双流：按请求切分并对齐通信轮次](prefill_micro_batch_dual_stream_moe_overlap.md)：R1 Prefill microbatch 双流 MoE：按请求边界切 packed 微批，对齐 EP 通信和 chunk 轮次；核对 micro_batch_mode、事件与输出顺序。
 - [单卡推理优化指南：分阶段验证 KV、融合算子与 Decode 图模式](staged_single_card_optimize_pipeline.md)：记录来源 model-optimize Skill 的三阶段参考流程：KVCache 与 FA、其他融合算子、Decode 图适配；每阶段对照基线验证，具体阶段是否需要取决于现有实现和瓶颈。
-- [多流优化流程：拆解依赖、选择后端并验收真实收益](multi_stream_optimization_workflow.md)：当前多流依赖拆解、后端API分发、LongCat GE/npugraph编排与真实性能验收，替换旧GE-only片段。
+- [多流优化流程：拆解依赖、选择后端并验收真实收益](multi_stream_optimization_workflow.md)：多流依赖、GE/npugraph_ex 后端与 LongCat 编排；HunyuanImage 的 share_mlp_stream 初始化注入、Qwen3-Next patch 案例选型及同步、控核和真实重叠验收。
 
 - [vLLM Ascend AI QoS：A3 网络流量优先级和交换机联动](vllm_ascend_ai_qos_network.md)：结合AI QoS中文资料与两原图区分Strict Priority的SP、通道tag和UB交换机VL，核对A3/DSMI/驱动限制与实际策略，再测拥塞和服务尾延迟。
 - [vLLM Ascend AISBench 定时剖析：采集窗口、raw/parsed 与产物完整性](vllm_ascend_aisbench_profile_artifacts.md)：追踪 ProfileSpec、ProfileController 和 profile_manifest，核对正式请求触发、跨节点端点、raw 打包、逐 rank 解析上传和离线合并，区分采集完成与模型性能验收。 补Nightly profiling入口与benchmark键选择、7/90天保留期和GitHub/OBS定位，保留评论解析缺口，分别验收完整trace与性能基线。
@@ -30,3 +30,9 @@
 - [vLLM Ascend 投机解码：方法、Runner、验证器与动态 K 选型（含 MTP 概率恢复）](vllm_ascend_speculative_method_selection.md)：按MRv1/MRv2和固定版本区分方法、草稿checkpoint、采样分布与图模式；保留DFlash2后续图/滑窗变化及质量性能验收。
 - [vLLM Ascend Suffix Decoding：A2四卡Qwen3-32B与SLO评测口径](vllm_ascend_suffix_decoding_contract.md)：限定A2四卡Qwen3-32B的Suffix Decoding配方，核对Arctic依赖、名义K=3与CPU草稿接线，区分18行来源性能表的TPOT倒数增益、延迟下降和SLO条件。
 - [vLLM Ascend 系统调优：TCMalloc、NPU allocator、HCCL 与主机配置](vllm_ascend_system_tuning_contract.md)：按进程、容器和宿主机区分性能候选；核对 PYTORCH_NPU_ALLOC_CONF 的默认追加、sleep/RL 约束及有效环境，记录 TCMalloc、队列、通信和 OS 配置的验证与回退条件。
+
+- [kernel_details 字段解读：流水指标、控核与多流真实重叠](kernel_details_field_interpretation.md)：kernel_details.csv 字段解读：OP State 是执行状态，不能当作精度检查 pass/fail；区分 Type 的 HCCL/AI_CORE 与 Accelerator Core，解释 aic_mac_ratio、aic_mte2_ratio、aiv_mte3_ratio、时间、核数与重叠。
+- [Profiling 产物识别：torch_npu ascend_pt 与原生 msprof 目录](npu_profiling_artifact_layouts.md)：找到 kernel_details/trace_view 或 op_summary/msprof 配对文件，核对采集 run、phase、rank 与 device，避免混合多卡数据。
+- [NPU Profiling 采集：ProfilerManager 窗口、Level1 与指标配置](npu_profiling_collection_and_metrics.md)：NPU Profiler 只生成基本计数或基础指标、缺流水利用率时，核对 Level1、PipeUtilization、record_shapes 和手动采集窗口；另列 CANN Executor 的 ProfilerManager 配置。
+
+- [SuperKernel 范围分析：依赖边界、受控基线与融合验证](superkernel_scope_analysis_and_validation.md)：从模块、整层到跨层选择 SuperKernel scope，识别动态控制流和分流控核边界；在相同 GE 配置下比较预热后的中位数、波动、编译产物和精度。

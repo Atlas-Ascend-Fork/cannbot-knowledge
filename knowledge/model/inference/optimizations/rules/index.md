@@ -36,7 +36,7 @@
 - [MC2 dispatch/combine（fullmesh_v2）必须独占一个 HCCL 通信域，不能与 EP/TP/CP 复用](mc2_dedicated_comm_domain.md)：MC2 dispatch/combine（fullmesh_v2）必须独占一个 HCCL 通信域，不能与 EP/TP/CP 复用。规划一个用 MC2 融合 dispatch/combine（npu_moe_distribute_dispatch_v2/combine_v2）的 MoE EP decode 部署的通…
 - [MoE 专家并行跨卡分发按 prefill/decode 阶段选型：多 token 走 double-routing、少 token 走融合 dispatch/combine](moe_ep_dispatch_path_by_stage.md)：MoE 专家并行跨卡分发按 prefill/decode 阶段选型：多 token 走 double-routing、少 token 走融合 dispatch/combine。优化一个 MoE + 专家并行(EP) 部署（moe_tp_size==1、专家均分各卡），要决定「跨卡把 token 送到目标专家再收回」的分发/合并怎么实现时。EP 下同一份建模在 prefill 与 decode 对跨卡分发的开销诉求不同，用同一套实现覆盖两阶段不是最优。
 - [double-routing：MoE 从 TP 切 EP 把 routing/finalizing 开销降到 1/ep_size 的 8 步 AllToAll 骨架（相对 AllGather 更省峰值内存/通信）](moe_ep_double_routing_skeleton.md)：double-routing：MoE 从 TP 切 EP 把 routing/finalizing 开销降到 1/ep_size 的 8 步 AllToAll 骨架（相对 AllGather 更省峰值内存/通信）。MoE 骨干推理随并行度增大时发现 routing/finalizing 成为瓶颈，或要给一个 MoE 选跨卡专家分发方案（EP 下 double-routing 还是 AllGather）时。
-- [MoE Decode：按当前后端编排共享与路由专家](moe_shared_expert_decode_dual_stream.md)：更新GE stream22和npugraph_ex原生流/事件的共享专家编排，明确combine解耦仍不证明实际重叠。
+- [MoE 共享专家双流：GE/npugraph_ex 与 Qwen3-Next DeePEP patch](moe_shared_expert_decode_dual_stream.md)：共享专家与路由专家的 Decode 多流编排；区分 GE、npugraph_ex 及 Qwen3-Next SGLang/DeePEP patch 的 shared_expert_stream、等待与开关。
 - [带零/恒等专家的 MoE 用 copy_expert_num 在 MC2 dispatch/combine 内免掉专门 AllToAll](moe_zero_expert_copy_expert_num.md)：带零/恒等专家的 MoE 用 copy_expert_num 在 MC2 dispatch/combine 内免掉专门 AllToAll。MoE 结构里有一类零计算 / 恒等专家（输出 MoE(x)=x、无 FFN），走 EP 切分、路由专家与零专家均分到每卡时。直觉会为零专家单独走一条计算分支、或为它的 identity 贡献单独再 AllToAll 交换一遍 token 回本地做 identity——这两种都多余。
 - [online PD 的 Gloo CPU 通信组：参考启动配置与网卡排查边界](online_gloo_cpu_comm_domain_env_bringup.md)：dp_leader_group：跨 DP 的 DP-leader 间同步； tp_cpu_group：DP-leader → TP workers 广播 Python 对象（连续批调度的队列共识即依赖它做 Gloo poll-and-all-reduce）。
 - [PD 分离 KV-transfer 同步超时按 HCCL RDMA 超时×重试预算推导，勿硬编码固定值](pd_kv_transfer_timeout_from_hccl_rdma_budget.md)：昇腾 PD（prefill/decode）分离推理中，跨节点 KV-transfer 走 HCCL RDMA，其上层「KV 同步超时」旋钮（llmdatadist 的 LLMConfig.sync_kv_timeout / mooncake 连接器写入的 ASCEND_TRANSFER_TIMEOUT 环境变量）不应硬编码固定值（如 20000ms），应从底层 HCCL RDMA 的退避×重试预算推导：timeout_ms = (4.096 · 2^HCCL_RDMA_TIMEOUT · HCCL_RDMA_RETRY_CNT) // 1000 + 3000（默认 HCCL_RDMA_TIMEOUT=20、HCCL_RDMA_RETRY_CNT=7），并允许 ASCEND_TRANSFER_TIMEOUT 非空时显式覆盖。未显式覆盖时的推导关系：上层 KV 同步超时按 RDMA 退避×重试总预算加 3000ms 余量；ASCEND_TRANSFER_TIMEOUT 覆盖值未被校验，可能破坏该预算关系，避免在 RDMA 尚在重试时把传输误判为失败。反例：写死固定超时会在 HCCL_RDMA_TIMEOUT/HCCL_RDMA_RETRY_CNT 被调大后偏小、触发假失败。参考实现 vllm-ascend：utils.py 的 get_transfer_timeout_value()，接入 llmdatadist_c_mgr_connector、mooncake_connector、mooncake_layerwise_connector 三处 KV 连接器。关键昇腾术语：HCCL RDMA、PD 分离、KV cache manager、llmdatadist、mooncake/HIXL、distributed_timeout。
@@ -93,7 +93,7 @@
 ## 部署、测量与公共约束
 
 - [因果稀疏注意力 CP prefill 的 zigzag 负载均衡：每 rank 两段两次调用 + 头尾因果前缀 actual_seq_lengths（qlen≠kvlen）](causal_cp_prefill_zigzag_actual_seqlens.md)：解释每请求ZigZag头尾配对和两次因果调用，更新统一PrefillCPMetaData与双缓存映射，保留独立vLLM参考边界。
-- [Decode 多流控核平衡：LongCat 双重路径拖尾的优化规则](decode_multi_stream_overlap_core_balance.md)：当前 LongCat Decode 的 GE/npugraph_ex 多流、两套核数、事件汇合与 AFD 边界；修正旧单数开关及版本拼接。
+- [Decode 多流控核平衡：LongCat 双重路径拖尾的优化规则](decode_multi_stream_overlap_core_balance.md)：LongCat Decode 多流并行后，用 limit_core_num 给两条重路径分配 Cube/Vector 核数，平衡时长和拖尾；支持 GE/npugraph_ex，enable_multi_streams=2 为两路12/24，配置1为8/16与16/32；核对事件、AFD及回退。
 - [HIXL/HCCS IPC KV 传输须 2 MiB 内存对齐（分配点 over-allocate + narrow）](hixl_hccs_ipc_2mib_alignment.md)：online PD 分离推理走 HIXL / HCCS IPC 的 KV 传输后端（KVTransferManager，mooncake.engine.TransferEngine protocol=ascend，对应 Atlas A3 超节点场景）时：所有要向传输引擎 register_memory 的 NPU…
 - [推理输入预处理（host 侧）两类坑：大 batch 分词 host OOM + 逐 batch .item() 同步 / 逐次整数算术](inference_preprocess_hotpath_host.md)：推理输入预处理（host 侧）两类坑：大 batch 分词 host OOM + 逐 batch .item() 同步 / 逐次整数算术。推理的输入准备 / 预处理阶段（分词、按 batch 展平写 KV、位置换算）跑在 host CPU、且大 batch / 每 step 都触发。两类隐蔽坑：一类吃 host …
 - [MTP 与分片 Prefill 的缓存和请求边界](mtp_cache_and_microbatch_prefill_bookkeeping.md)：更新为统一 Executor 的实际预测层缓存声明、packed 请求边界与 CP 元数据，不保留私有 cycle runner 接口。
@@ -117,7 +117,7 @@
 - [aclgraph decode 稳态期优化：warm-up 后 skip_guard_eval_unsafe 跳 guard 复评 + custom op reinplace 映射](aclgraph_decode_steady_state_skip_guard_reinplace.md)：已在 acl_graph（torch.compile + ACLGraph 捕获）跑通 decode、想再压 host 侧开销时的两项稳态优化。前提：exe_mode == "acl_graph" 且 torch.compile 编译路径生效的 decode；仅对非 warm-up 的稳态步开启——warm-up…
 - [C8 量化参数规则：绑定权重快照，离线预取与重新标定](c8_kv_scale_provenance_reuse_offline.md)：说明 C8 参数包与模型权重的绑定关系、受限网络下的预取方法，以及结构相似仍不能确认适用的边界。
 - [CFG 样本并行规则：比较双分支设备投入、通信与单步时延](cfg_parallel_sample_level_diffusion.md)：CFG样本并行设备/通信取舍；更新Wan默认CFG2×Ulysses4并区分来源性能表CFG1×Ulysses8。
-- [跨流同步规则：GE 控制边、显式 Event 与历史 tagged API](graph_mode_multi_stream_cross_stream_sync_api.md)：图模式多流并行的跨流同步：GE 控制边、wait_tensor 与 npugraph_ex Stream/Event、record/wait 及 record_stream；说明旧 aclgraph tagged-event API 的替代路径。
+- [图模式多流跨流同步：GE 单流冲突、控制边与显式 Event](graph_mode_multi_stream_cross_stream_sync_api.md)：图模式多流并行的跨流同步：GE 控制边、wait_tensor 与 npugraph_ex Stream/Event、record/wait、record_stream；核对旧 aclgraph tagged-event 替代路径、enable_single_stream 单流冲突、动态开关、enable_inner_parallel 与控核版本边界。
 - [KV cache 卸载到 Host 内存：设备单层 temp + 专用流 D2H 重叠 + 逐层异步搬算掩盖](kvcache_offload_host_swap.md)：KV cache 卸载到 Host 内存：设备单层 temp + 专用流 D2H 重叠 + 逐层异步搬算掩盖。适用：KV cache 占设备内存最高、即使量化后长序列 / 大 batch 仍受限于设备内存、batch size 上不去（memory_bound）；结构如 mla Full KVCache 或分层管…
 - [多机/多进程 DP+EP MoE 推理的集合通信一致性对齐（phase 对齐 + 变长换定长）](multimachine_dp_ep_moe_collective_alignment.md)：多机/多进程 DP+EP MoE 推理的集合通信一致性对齐（phase 对齐 + 变长换定长）。MoE 模型多机 / 多进程 DP + EP 推理里，单进程组内多个 DP rank 各自持请求、又要在 MoE 层做跨 rank 集合通信。凡相互做 MoE 集合通信的 DP 进程，必须在同一状态下发起集合通信；一旦各进程按各自本地请求独立推进，请求数/token 数不整除进程数时进程会错开 → 集合通信不一致（对不齐 / 挂起）。有两处对齐要做。
 - [多卡 Ring/序列并行注意力用异步 all-gather + 本地 FA + LSE 合并掩盖 KV 通信](ring_attention_comm_compute_overlap_lse_merge.md)：多卡（ring_world_size > 1）Ring / Unified-SP（Ulysses + Ring 两级）序列并行做长序列注意力时，KV 需跨 ring rank 汇聚。经典 Ring Attention 用逐步 P2P（send/recv）在环内轮转 KV，通信与计算难以充分重叠、且被拆成 ring…
@@ -130,3 +130,5 @@
 
 - [vLLM Ascend Runner 选择规则：V2 默认、功能回退与环境覆盖](vllm_ascend_model_runner_selection.md)：按环境覆盖、功能排除表和Worker选择实际Runner，区分V1 PP异步允许列表与async_scheduling默认关闭、V2验证patch和各进程安装时序；回退不代替模型/硬件性能验收。
 - [vLLM Ascend 原生 FP8：block scale、950 重组与浮点回退预算](vllm_ascend_native_fp8_execution.md)：对原生 block-wise FP8 权重按硬件和层形态选择 MXFP8 重组或模型 dtype 展开，检查 scale 配对、归约维整除和 MLA 吸收层，避免按磁盘位宽估算显存。
+
+- [量化权重变小仍 OOM：部署收益与峰值显存分账](quantization_deployment_benefit_accounting.md)：量化后额外 dynamic quant/dequant 开销变大、W8A8 显存不降或端到端变慢时，分账 FFN、KV、激活、workspace、通信与 host overhead，按相同部署条件验证。

@@ -1,7 +1,8 @@
 ---
 type: Optimization
 title: Decode 多流控核平衡：LongCat 双重路径拖尾的优化规则
-description: 当前 LongCat Decode 的 GE/npugraph_ex 多流、两套核数、事件汇合与 AFD 边界；修正旧单数开关及版本拼接。
+description: LongCat Decode 多流并行后，用 limit_core_num 给两条重路径分配 Cube/Vector 核数，平衡时长和拖尾；支持 GE/npugraph_ex，enable_multi_streams=2
+  为两路12/24，配置1为8/16与16/32；核对事件、AFD及回退。
 tags:
 - task.optimization
 - topic.attention
@@ -15,7 +16,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-29T13:44:43Z'
+updated_at: '2026-11-10T01:48:58Z'
 platforms:
 - a3
 scope:
@@ -32,6 +33,7 @@ scope:
         - moe
       execution_mode:
       - ge_graph
+      - npugraph_ex
 ---
 
 # Decode 多流控核平衡

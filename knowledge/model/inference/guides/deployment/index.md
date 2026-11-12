@@ -18,3 +18,5 @@
 - [vLLM Ascend Ray 多机启动：通信、资源视图与模型拓扑](vllm_ascend_ray_multinode_bootstrap.md)：以固定Qwen3多机教程区分物理通信、Ray资源发现与真实模型推理，核对启动前环境、共享路径、TP/PP映射和验收，硬件组合保持待确认。
 - [vLLM Ascend RFork：兼容 seed、处理后权重与回退生命周期](vllm_ascend_rfork_weight_warmstart.md)：按固定版本核对checkpoint/processed路径、manifest、租约、发布与清理；后续Engram与legacy planner边界不提升成设备运行结果。
 - [vLLM Ascend 环境准备：版本配对、硬件镜像与分层验收](vllm_ascend_versioned_environment.md)：区分ceac/3164与5f5发布宏、Native pin和release配对；按硬件选择安装依赖与分层验收，不拼接不同来源版本。
+
+- [推理并行配置选型：按 Prefill、Decode 和模型结构找参考 YAML](parallel_reference_config_selection.md)：Qwen3-MoE 16TP/128EP 与 Kimi PD Prefill/Decode 参考配置，核对 cp_size、o_proj_tp_size、R1/GLM/V3.2/LongCat YAML、DP 本地 batch 和显存通信预算。

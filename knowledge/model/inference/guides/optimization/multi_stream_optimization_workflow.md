@@ -1,7 +1,8 @@
 ---
 type: Guide
 title: 多流优化流程：拆解依赖、选择后端并验收真实收益
-description: 当前多流依赖拆解、后端API分发、LongCat GE/npugraph编排与真实性能验收，替换旧GE-only片段。
+description: 多流依赖、GE/npugraph_ex 后端与 LongCat 编排；HunyuanImage 的 share_mlp_stream 初始化注入、Qwen3-Next
+  patch 案例选型及同步、控核和真实重叠验收。
 tags:
 - task.optimization
 - topic.graph_execution
@@ -14,11 +15,21 @@ sources:
   role: implementation
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/hunyuanimage-moe-multi-stream.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py
+  role: supporting
 created_at: '2026-10-21T01:51:39Z'
-updated_at: '2026-10-29T14:32:21Z'
+updated_at: '2026-11-09T09:54:13Z'
 platforms:
 - a2
 - a3
+aliases:
+- HunyuanImage share_mlp_stream
+- MoE 多流案例选型
+- GE 与 npugraph_ex 多流工作流
 ---
 
 # 多流优化流程：拆解依赖、选择后端并验收真实收益
@@ -57,6 +68,21 @@ platforms:
 **控核（`limit_core_num`）**：多流之后，一条流可能吃满全部 Core 把另一条流挤成拖尾，逻辑并行退化成物理串行。控核就是给每条流分配上限核数让双流计算时间接近——**来源示例按可用资源划分两条流的配额；超额或竞争可能破坏重叠，须按具体平台和调度验证**。Ascend IR 用算子级 `torchair.scope.limit_core_num`（优先级高于全局 `config.ge_config.aicore_num`），npugraph_ex 用 Stream 级 torch.npu.npugraph_ex.scope.limit_core_num（该来源仅支持 Ascend C 算子控核；混入不支持的算子可能失去收益甚至卡死，须核对每个算子支持并验证混合路径）；当前stream_utils按后端分发，须核对模型实际导入和算子支持。仓内封装 `limit_core_num(switch_flag, aic_num, aiv_num)` 转发 `tng.scope.limit_core_num`（[`executor/utils/common_utils.py` L133](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/common_utils.py)）。
 
 LongCat-Flash当前支持GE与npugraph_ex的显式多流编排。enable_multi_streams=1时MoE为8/16核、主流16/32；=2时各12/24，分配需结合实际硬件。预取要求多流，SuperKernel该模型仅GE。AFD在npugraph Decode需在最终相加前等待接收。具体步骤和分组见[当前部署](../models/longcat_flash_deployment.md)，不能照搬旧GE-only片段。
+
+## 按模型选择已有案例
+
+| 场景 | 知识入口与实现差异 |
+| --- | --- |
+| 共享专家与路由专家 | [共享专家双流](../../optimizations/rules/moe_shared_expert_decode_dual_stream.md)，GE 与 npugraph_ex 的同步分别核对 |
+| HunyuanImage-3.0 多模态 MoE | 初始化创建 share_mlp_stream 并注入 decoder/MoE，前向按原生流执行 shared MLP，消费前等待；相关结构见[模型卡](../../concepts/models/hunyuan_image_3.md) |
+| Qwen3-Next SGLang/DeePEP patch | 同[共享专家规则](../../optimizations/rules/moe_shared_expert_decode_dual_stream.md)的独立 patch 分支，开关 ENABLE_NPU_DEEPEP_MOE_MULTI_STREAM；不能当成统一 Executor custom_params |
+| Indexer 前处理 | [A3 Indexer Prolog](../../optimizations/cases/indexer_prolog_streams_fixed_implementation.md)，不是整个 Attention 模块并行 |
+| KV Offload 搬运 | [V3.2-Exp Prefill 事件](../../optimizations/cases/deepseek_v32_offload_stream_events.md)，区分 CP 持久槽与非 CP 整层复制 |
+| Prefill micro-batch | [微批双流](prefill_micro_batch_dual_stream_moe_overlap.md)，同步粒度区别于 Decode 共享专家 |
+| LongCat 计算分核 | [Decode 多流控核规则](../../optimizations/rules/decode_multi_stream_overlap_core_balance.md)，配额只在对应平台/结构下验证 |
+| LongCat AFD | [AFD 流配对](../../optimizations/cases/longcat_a3_afd_stream_pairing.md)，Send/Recv、分组和最终合流单独核对 |
+
+HunyuanImage 的 stream 进入初始化和模块构造，不能只拷贝前向 with-block；Qwen3-Next patch 的 clone 与 dispatcher 生命周期也可能增加内存/复制成本。上述入口分别保存实现差异，不把八个案例重写成八套通用多流规则。多流验证所需的 Start Time、Stream ID、Block Dim 和流水指标见[kernel_details 字段卡](kernel_details_field_interpretation.md)。
 
 ## 调试与验证(真假并行)
 
@@ -200,3 +226,9 @@ block-beta
 ## 来源
 
 固定设计文档与实现来源沿 Frontmatter 及图内链接核对；具体 API 统一见 [跨流同步规则](../../optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api.md)。
+
+- [.agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md)（supporting）
+
+- [.agents/skills/model-infer-multi-stream/references/hunyuanimage-moe-multi-stream.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/hunyuanimage-moe-multi-stream.md)（supporting）
+
+- [models/hunyuan-image-3.0/adaptor_patches/hunyuan.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/hunyuan-image-3.0/adaptor_patches/hunyuan.py)（supporting）

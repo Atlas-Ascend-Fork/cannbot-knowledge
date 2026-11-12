@@ -1,7 +1,8 @@
 ---
 type: Optimization
 title: 权重预取决策：按带宽窗口、缓存空间和消费依赖安排预取
-description: 在已核验的 A3 LongCat Decode 路径中，依据带宽窗口、相邻算子搬运压力和依赖选择预取位置与范围；具体实现分别进入 LongCat 案例及平台待核验的 vLLM MoE 草稿。
+description: 在已核验的 A3 LongCat Decode 路径中，依据带宽窗口、相邻算子搬运压力和依赖选择预取位置与范围；具体实现分别进入 LongCat
+  案例及平台待核验的 vLLM MoE 草稿。
 tags:
 - task.optimization
 - topic.attention
@@ -12,7 +13,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-29T15:24:40Z'
+updated_at: '2026-11-09T09:27:22Z'
 platforms:
 - a3
 scope:
@@ -26,6 +27,7 @@ scope:
       - tpot
       execution_mode:
       - ge_graph
+      - npugraph_ex
 ---
 
 # 权重预取决策：按带宽窗口、缓存空间和消费依赖安排预取

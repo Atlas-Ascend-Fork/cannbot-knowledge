@@ -1,0 +1,3282 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+pr: https://gitcode.com/cann/cann-recipes-infer/merge_requests/1264
+base: 6451c465a7ae7ac38e269c572d90d5e73fecc411
+head: be558c27e39aa82f495071a1ccccc49528be75c2
+technical_revision: 944d2d3ece86f7df33dbb0cb155c72ca619a9c66
+note: 固定 PR 迁出文件、逐节处置与知识事实验收。流程/纯导航不作为技术知识；旧断言经固定实现纠正或以明确版本/未知边界迁入，不把来源或召回通过当成硬件验证。
+decisions:
+- id: migrate_contract
+  topic: 模型类与加载生命周期
+  disposition: migrated
+  target: model/inference/guides/bringup/cann_executor_model_onboarding
+  retrieval_cases: &id001
+  - infer_skill_migrator_contract_question
+- id: migrate_namespace
+  topic: 模型包遮蔽与启动路径
+  disposition: migrated
+  target: model/inference/runbooks/runtime/model_package_namespace_shadowing
+  retrieval_cases: &id002
+  - infer_skill_migrator_import_symbol
+- id: migrate_postload
+  topic: 加载后处理与布局例外
+  disposition: migrated
+  target: model/inference/runbooks/runtime/moe_post_load_hook_missing
+  retrieval_cases: &id003
+  - infer_skill_review_postload
+- id: migrate_dp
+  topic: DP 本地 buffer
+  disposition: migrated
+  target: model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+  retrieval_cases: &id004
+  - infer_skill_migrator_dp_question
+- id: parallel_refs
+  topic: 参考 YAML 与结构路由
+  disposition: migrated
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases: &id005
+  - infer_skill_parallel_analysis_question
+- id: parallel_group
+  topic: 组内 rank、对象与通信名称
+  disposition: migrated
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: &id006
+  - infer_skill_parallel_impl_symbol
+- id: parallel_reduce
+  topic: RowParallelLinear 归约
+  disposition: migrated
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: &id007
+  - infer_skill_parallel_impl_question
+- id: parallel_boundary
+  topic: 跨模块激活交换
+  disposition: migrated
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: &id008
+  - infer_skill_review_parallel_boundary
+- id: parallel_moe
+  topic: MoE 路由编码与专用域
+  disposition: migrated
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: &id009
+  - infer_skill_parallel_impl_question
+  - infer_skill_pr248_moe_quant_mode_a2
+  - infer_skill_pr248_moe_quant_mode_a3
+- id: parallel_weights
+  topic: 在线和离线权重切分
+  disposition: migrated
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: &id010
+  - infer_skill_parallel_impl_symbol
+- id: cache_addresses
+  topic: 块表和 slot 寻址
+  disposition: reuse
+  target: model/inference/concepts/frameworks/kv_cache_manager
+  retrieval_cases: &id011
+  - infer_skill_repair_paged_address
+  source_anchor:
+    path: .agents/skills/model-infer-kvcache/SKILL.md
+    heading: '### 2.3 slot_mapping 构造'
+- id: cache_entry
+  topic: 缓存声明、分组与容量
+  disposition: reuse
+  target: model/inference/concepts/frameworks/kv_cache_manager
+  retrieval_cases: &id012
+  - infer_skill_repair_paged_address
+- id: cache_layout
+  topic: GQA 与 MLA 物理布局
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id013
+  - infer_skill_kvcache_paged
+- id: cache_lengths_dense
+  topic: Dense 分页 Prefill 长度
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id014
+  - infer_skill_repair_dense_prefill
+  source_anchor:
+    path: .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+    heading: '### actual_seq_lengths 构造'
+- id: cache_lengths_moe
+  topic: MoE 直读 Prefill 与分页 Decode
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id015
+  - infer_skill_kvcache_lengths
+- id: cache_mask
+  topic: 普通、滑窗和 MTP mask
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id016
+  - infer_skill_kvcache_mask
+- id: cache_fp8
+  topic: MoE FP8 Decode 分支
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id017
+  - infer_skill_repair_moe_float8
+- id: cache_versions
+  topic: v1/v2 参数与接口边界
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id018
+  - infer_skill_kvcache_versions
+- id: cache_precision
+  topic: 缓存写入精度陷阱
+  disposition: migrated
+  target: model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+  retrieval_cases: &id019
+  - infer_skill_precision_fa
+  - infer_skill_pr248_cache_layout_a2
+  - infer_skill_pr248_cache_layout_a3
+- id: fusion_gqa
+  topic: GQA 融合链
+  disposition: migrated
+  target: model/inference/guides/integration/attention_fusion_chain_selection
+  retrieval_cases: &id020
+  - infer_skill_fusion_chain_question
+- id: fusion_absorb
+  topic: MLA absorb 融合链
+  disposition: migrated
+  target: model/inference/guides/integration/attention_fusion_chain_selection
+  retrieval_cases: &id021
+  - infer_skill_review_mla_fusion
+- id: fusion_indexer
+  topic: Indexer 融合链
+  disposition: migrated
+  target: model/inference/guides/integration/attention_fusion_chain_selection
+  retrieval_cases: &id022
+  - infer_skill_fusion_chain_question
+- id: fusion_rope
+  topic: RoPE 跨层位置表
+  disposition: migrated
+  target: model/inference/guides/integration/rotary_embedding_cache_precompute
+  retrieval_cases: &id023
+  - infer_skill_fusion_rope_question
+- id: quant_postload
+  topic: 量化布局与 post-load
+  disposition: migrated
+  target: model/inference/runbooks/runtime/moe_post_load_hook_missing
+  retrieval_cases: &id024
+  - infer_skill_review_postload
+- id: quant_swiglu
+  topic: Dense W8A8 SwiGLU 链
+  disposition: migrated
+  target: model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+  retrieval_cases: &id025
+  - infer_skill_quant_scale_question
+- id: quant_sidechannel
+  topic: MoE scale 传递
+  disposition: migrated
+  target: model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+  retrieval_cases: &id026
+  - infer_skill_review_swiglu
+- id: quant_c8
+  topic: MLA C8 闭环
+  disposition: reuse
+  target: model/inference/optimizations/rules/mla_c8_int8_kv_cache_op_wiring
+  retrieval_cases: &id027
+  - infer_skill_quant_c8
+- id: quant_memory
+  topic: 量化收益、显存分账与部署边界
+  disposition: migrated
+  target: model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+  retrieval_cases: &id028
+  - infer_skill_review_benefit
+- id: quant_evidence
+  topic: 受控收益和组合数据
+  disposition: migrated
+  target: model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+  retrieval_cases: &id029
+  - infer_skill_quant_benefit_question
+- id: graph_options
+  topic: 图模式配置与动态长度
+  disposition: migrated
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: &id030
+  - infer_skill_graph_options
+  - infer_skill_graph_dynamic
+- id: graph_backends
+  topic: 分层 backend 定界
+  disposition: migrated
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: &id031
+  - infer_skill_graph_precision
+- id: graph_frozen
+  topic: 冻结与非连续权重
+  disposition: migrated
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: &id032
+  - infer_skill_review_graph
+- id: profile_executor
+  topic: Executor 内置窗口
+  disposition: migrated
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: &id033
+  - infer_skill_profiling_collect_symbol
+- id: profile_manual
+  topic: 手动采集与框架未知条件
+  disposition: migrated
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: &id034
+  - infer_skill_repair_profiling_sglang
+  - infer_skill_repair_profiling_vllm
+- id: profile_metrics
+  topic: Level1 和指标及 shape 采集
+  disposition: migrated
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: &id035
+  - infer_skill_profiling_a2
+- id: profile_schedule
+  topic: RECORD 收尾与步数
+  disposition: migrated
+  target: model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+  retrieval_cases: &id036
+  - infer_skill_profiling_schedule_symbol
+- id: profile_compile
+  topic: 首次编译污染
+  disposition: migrated
+  target: model/inference/runbooks/performance/profiler_first_compile_pollution
+  retrieval_cases: &id037
+  - infer_skill_profiling_compile_question
+- id: profile_parse
+  topic: 解析失败与文件系统
+  disposition: migrated
+  target: model/inference/runbooks/performance/profiler_csv_parse_failure
+  retrieval_cases: &id038
+  - infer_skill_profiling_parse_question
+- id: profile_layout
+  topic: torch_npu 与 msprof 产物路径
+  disposition: migrated
+  target: model/inference/guides/optimization/npu_profiling_artifact_layouts
+  retrieval_cases: &id039
+  - infer_skill_perf_layout_question
+- id: profile_fields
+  topic: kernel 字段与时间线重叠
+  disposition: migrated
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases: &id040
+  - infer_skill_perf_fields_question
+- id: multi_api
+  topic: 多流 API 路由与依赖
+  disposition: migrated
+  target: model/inference/guides/optimization/multi_stream_optimization_workflow
+  retrieval_cases: &id041
+  - infer_skill_review_multi
+- id: multi_core
+  topic: 资源控核与瓶颈
+  disposition: reuse
+  target: model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  retrieval_cases: &id042
+  - infer_skill_multi_core
+- id: multi_hunyuan
+  topic: HunyuanImage 初始化注入
+  disposition: migrated
+  target: model/inference/guides/optimization/multi_stream_optimization_workflow
+  retrieval_cases: &id043
+  - infer_skill_multi_hunyuan
+- id: multi_qwen
+  topic: Qwen3-Next 共享专家补丁
+  disposition: migrated
+  target: model/inference/optimizations/rules/moe_shared_expert_decode_dual_stream
+  retrieval_cases: &id044
+  - infer_skill_multi_patch
+- id: multi_indexer
+  topic: Indexer Prolog 事件
+  disposition: reuse
+  target: model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+  retrieval_cases: &id045
+  - infer_skill_multi_indexer
+- id: multi_offload
+  topic: Offload 异步依赖
+  disposition: reuse
+  target: model/inference/optimizations/cases/deepseek_v32_offload_stream_events
+  retrieval_cases: &id046
+  - infer_skill_multi_offload
+- id: multi_microbatch
+  topic: Prefill 微批流水
+  disposition: reuse
+  target: model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+  retrieval_cases: &id047
+  - infer_skill_multi_microbatch
+- id: multi_afd
+  topic: AFD 通信配对
+  disposition: reuse
+  target: model/inference/optimizations/cases/longcat_a3_afd_stream_pairing
+  retrieval_cases: &id048
+  - infer_skill_multi_afd
+- id: prefetch_order
+  topic: 权重预取依赖与窗口
+  disposition: migrated
+  target: model/inference/optimizations/rules/decode_weight_prefetch_ordering
+  retrieval_cases: &id049
+  - infer_skill_repair_prefetch_order
+- id: prefetch_budget
+  topic: LongCat 字节预算
+  disposition: migrated
+  target: model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+  retrieval_cases: &id050
+  - infer_skill_prefetch_values
+- id: runtime_mc2
+  topic: MC2 回退
+  disposition: reuse
+  target: model/inference/runbooks/runtime/mc2_fused_comm_op_compatibility_fallback
+  retrieval_cases: &id051
+  - infer_skill_runtime_mc2
+- id: runtime_firstfail
+  topic: rank 首错与 HCCL 次生错误
+  disposition: migrated
+  target: model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+  retrieval_cases: &id052
+  - infer_skill_runtime_hccl
+- id: runtime_vocab
+  topic: 本地索引与词表 padding
+  disposition: migrated
+  target: model/inference/runbooks/runtime/shard_local_index_vocab_padding_mtp_layer
+  retrieval_cases: &id053
+  - infer_skill_runtime_vocab
+- id: runtime_init
+  topic: 构造期 CPU 密集初始化
+  disposition: migrated
+  target: model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+  retrieval_cases: &id054
+  - infer_skill_runtime_cpu_question
+- id: precision_known
+  topic: packed 专家、zero expert 和归一化
+  disposition: migrated
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: &id055
+  - infer_skill_review_expert_load
+- id: precision_requests
+  topic: 请求所有权与 DP token
+  disposition: migrated
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: &id056
+  - infer_skill_precision_dp_tokens
+- id: precision_tolerance
+  topic: 比较指标与容差
+  disposition: migrated
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: &id057
+  - infer_skill_precision_tolerance
+- id: precision_inner
+  topic: 全遮蔽行参数
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id058
+  - infer_skill_repair_inner_precise_a2
+  source_anchor:
+    path: .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+    heading: '### inner_precise 与行无效修正'
+- id: precision_single
+  topic: BSH 单 Query 的旧版边界
+  disposition: migrated
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: &id059
+  - infer_skill_repair_bsh_a2
+  source_anchor:
+    path: .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+    heading: '### atten_mask 与 sparse_mode 联合校验'
+- id: superkernel_scope
+  topic: SuperKernel 融合范围与后端
+  disposition: reuse
+  target: model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope
+  retrieval_cases: &id060
+  - infer_skill_repair_superkernel_scope
+- id: defer_mla_shapes
+  topic: MLA rope 维度约束
+  disposition: migrated
+  reason: 迁入版本化语义、失效条件或待核验边界；不把旧示例、阈值或工具当成通用可执行保证。
+  source_anchor:
+    path: .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+    heading: '### MLA rope 约束'
+  target: model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+  retrieval_cases: &id061
+  - infer_skill_complete_defer_mla_shapes
+- id: defer_debug_probe
+  topic: 图内取值与版本化 DFX 边界
+  disposition: migrated
+  reason: 迁入版本化语义、失效条件或待核验边界；不把旧示例、阈值或工具当成通用可执行保证。
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: &id062
+  - infer_skill_complete_defer_debug_probe
+- id: defer_determinism_env
+  topic: Matmul 错峰调试与确定性边界
+  disposition: migrated
+  reason: 迁入版本化语义、失效条件或待核验边界；不把旧示例、阈值或工具当成通用可执行保证。
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: &id063
+  - infer_skill_complete_defer_determinism_env
+- id: defer_fa_checker
+  topic: 旧 FA 检查器失效边界
+  disposition: migrated
+  reason: 迁入版本化语义、失效条件或待核验边界；不把旧示例、阈值或工具当成通用可执行保证。
+  target: model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+  retrieval_cases: &id064
+  - infer_skill_complete_defer_fa_checker
+- id: defer_history_numbers
+  topic: 历史容差与 Mamba workaround 边界
+  disposition: migrated
+  reason: 迁入版本化语义、失效条件或待核验边界；不把旧示例、阈值或工具当成通用可执行保证。
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: &id065
+  - infer_skill_complete_defer_history_numbers
+- id: workflow
+  topic: 编排、提示词、计划和输出模板
+  disposition: workflow
+  reason: 属于 Agent 工作流、工具和导航维护，不作为可检索技术正文；其中技术细项由本清单其他条目单独承载。
+- id: api_navigation
+  topic: TorchNPU 接口功能定义与版本化选型
+  disposition: migrated
+  target: model/inference/guides/integration/torch_npu_api_selection
+  retrieval_cases:
+  - infer_skill_r3_api_lookup
+- id: multi_ge_params
+  topic: GE 多流参数与动态开关
+  disposition: migrated
+  target: model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+  retrieval_cases: &id066
+  - infer_skill_complete_multi_ge_params
+- id: multi_ge_limits
+  topic: GE 控核层次与组合优先级
+  disposition: migrated
+  target: model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+  retrieval_cases: &id067
+  - infer_skill_complete_multi_ge_limits
+- id: multi_npugraph_limits
+  topic: npugraph_ex 控核与版本限制
+  disposition: migrated
+  target: model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+  retrieval_cases: &id068
+  - infer_skill_complete_multi_npugraph_limits
+- id: quant_contract
+  topic: 量化产物到运行对象的契约
+  disposition: migrated
+  target: model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+  retrieval_cases: &id069
+  - infer_skill_complete_quant_contract
+- id: quant_li
+  topic: LI 模式选择与 scale 缓存闭环
+  disposition: migrated
+  target: model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+  retrieval_cases: &id070
+  - infer_skill_complete_quant_li
+- id: profiler_lifecycle
+  topic: ProfilerManager 阶段生命周期
+  disposition: migrated
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: &id071
+  - infer_skill_complete_profiler_lifecycle
+- id: profiler_fields_exact
+  topic: Profiler 完整列名与统计口径
+  disposition: migrated
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases: &id072
+  - infer_skill_complete_profiler_fields_exact
+- id: config_complete
+  topic: 全部迁出配置入口与参数核对
+  disposition: migrated
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases: &id073
+  - infer_skill_complete_config_complete
+- id: hf_config
+  topic: HF Config 兼容性与字段语义
+  disposition: migrated
+  target: model/inference/guides/bringup/cann_executor_model_onboarding
+  retrieval_cases: &id074
+  - infer_skill_complete_hf_config
+- id: runtime_checkpoints
+  topic: 异步报错和 Gloo 调试屏障
+  disposition: migrated
+  target: model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+  retrieval_cases: &id075
+  - infer_skill_complete_runtime_checkpoints
+- id: runtime_stale_processes
+  topic: 设备进程归属与残留诊断
+  disposition: migrated
+  target: model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+  retrieval_cases: &id076
+  - infer_skill_complete_runtime_stale_processes
+- id: cache_api
+  topic: 缓存元数据和管理器接口位置
+  disposition: migrated
+  target: model/inference/concepts/frameworks/kv_cache_manager
+  retrieval_cases: &id077
+  - infer_skill_complete_cache_api
+- id: li_mode_contract
+  topic: LI 静态配置与产品部署边界
+  disposition: migrated
+  target: model/inference/concepts/quantization/li_cache_quantization_mode_contract
+  retrieval_cases:
+  - infer_skill_r3_li_mode_950_scope
+- id: superkernel_scope_method
+  topic: SuperKernel 候选范围分析
+  disposition: migrated
+  target: model/inference/guides/optimization/superkernel_scope_analysis_and_validation
+  retrieval_cases:
+  - infer_skill_r3_sk_scope
+- id: superkernel_validation
+  topic: SuperKernel 单项受控验证
+  disposition: migrated
+  target: model/inference/guides/optimization/superkernel_scope_analysis_and_validation
+  retrieval_cases:
+  - infer_skill_r3_sk_validate
+files:
+- path: .agents/README.md
+  base_blob: 3f09e741fe80a95e719c0d09ba049f04367d816c
+  deleted_sha256: 641b5f2696abbb26910d858a995f306ebb3ce0b2130e26eb3bd582f42aa71c9a
+  decisions:
+  - workflow
+- path: .agents/agents/model-infer-analyzer.md
+  base_blob: a37a5d307cd25f4b640a0f38d74d3fb3f6bdb66e
+  deleted_sha256: 12b0c9de11b7b0cc79f20dbc8f4360c5494598abf6de3957c02b86ee1a38b83b
+  decisions:
+  - workflow
+- path: .agents/agents/model-infer-implementer.md
+  base_blob: f9d3c1000342df2b35c47fd894489fce3c835bdb
+  deleted_sha256: f693e4d4e50e29bc6a2c3f8325c342a4be3374034e82e87fccd0a3e1dcdb7ad9
+  decisions:
+  - workflow
+- path: .agents/agents/model-infer-reviewer.md
+  base_blob: 8af6409a8cbf7622b9b1d3ed0667c44e41179b24
+  deleted_sha256: 61010ab35e584a6cdee4f0131c2eab316b239fba245b6b15cbc5833f8ae28d21
+  decisions:
+  - workflow
+- path: .agents/hooks/post_tool_use.py
+  base_blob: 3851b02f0e64731d309d3f329a42d24c7b6daed1
+  deleted_sha256: 453042925c6bb55d6ac7750858a89b5fbffe7c2c46310bd2f13315ba2dbb7bf2
+  decisions:
+  - workflow
+- path: .agents/hooks/pre_tool_use.py
+  base_blob: 193b49280432da6191a6d61abcefd6cb43aa6ed5
+  deleted_sha256: bfd5d6bf3f08950ae7e606bbe245cdb3e46288a656d5d1cb9d727156fd343fd9
+  decisions:
+  - workflow
+- path: .agents/hooks/subagent_stop.py
+  base_blob: 5710879528ae40071f4a9707f0bcbe560b1cedef
+  deleted_sha256: 1f2aeffa905ca7c73de2c42374c8e4bd4c762db4e55b1fd2ab76f5476ce8eb5a
+  decisions:
+  - workflow
+- path: .agents/hooks/time_reminder.py
+  base_blob: c330637731daf9ac35a865d725b0887751c61bd9
+  deleted_sha256: 97cbb4549000f4e91f19070ce07a23ce4ae8931a331b156998cbc76d179f29b2
+  decisions:
+  - workflow
+- path: .agents/settings.json
+  base_blob: 8001723b3466286a9fe81d6567467ca923e577ea
+  deleted_sha256: c64010aa8a6d9f3c519582afbd8dcdf472a2b5158d086842ade340be8801f9a8
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-fusion/SKILL.md
+  base_blob: f40e818a6df7de94e1ee89eca6ce89a01977f0ba
+  deleted_sha256: 8e23fcb0c441b509809474332f66ed3cfbf95049eeb8b51e973b43698a7248cd
+  decisions:
+  - fusion_gqa
+  - fusion_absorb
+  - fusion_indexer
+  - fusion_rope
+  - workflow
+- path: .agents/skills/model-infer-fusion/references/module-attention-gqa.md
+  base_blob: e681e1ecb7f88250be3e5a8257f5d973192b46a7
+  deleted_sha256: 5a36b4717439e277a95db61cc4d05407002c72f869af726fec6389337c3ef8a5
+  decisions:
+  - fusion_gqa
+  - cache_lengths_dense
+  - cache_lengths_moe
+  - cache_fp8
+- path: .agents/skills/model-infer-fusion/references/module-attention-mla-absorb.md
+  base_blob: c94b1ae12a6b76229ce996fa625ef8d3093ddfde
+  deleted_sha256: e56f3b05303d472e421e40a9f5d736e254b91835cc78808dbfb711b918547bca
+  decisions:
+  - fusion_absorb
+- path: .agents/skills/model-infer-fusion/references/module-attention-mla-indexer.md
+  base_blob: 1dd6f8c0096b6eafdc027c0b1055ac274a9dc118
+  deleted_sha256: a2a17448435dc9b6c1bb89fe1e578fe4be5d41adb30ec4b675c0b5dc9d57854b
+  decisions:
+  - fusion_indexer
+- path: .agents/skills/model-infer-fusion/references/rotary-embedding-pattern.md
+  base_blob: 700cdb453198291c43bbec8744ac156ada020286
+  deleted_sha256: 27a5e3ec0734c91c9131de29be0f6f61e573217c95f26f2526da1abe0aa1b39b
+  decisions:
+  - fusion_rope
+- path: .agents/skills/model-infer-fusion/references/torch_npu_API/torch_npu_list.md
+  base_blob: 35961c2f99883bc4cb683de18411a701eea5ee54
+  deleted_sha256: 4089d86679c3910c8aaf2713b73bce295ba447c130195a48bbaa50a62bc078a2
+  decisions:
+  - api_navigation
+- path: .agents/skills/model-infer-fusion/scripts/torch_npu_query.py
+  base_blob: ea61a3644012420f297ddcc91e335a6643c2a86a
+  deleted_sha256: a8ea6eb66148eeee073ebeada08ceb899395342d0d23980a3f10ca9f2e78d514
+  decisions:
+  - api_navigation
+- path: .agents/skills/model-infer-graph-mode/SKILL.md
+  base_blob: 818fcb316befb661b04c730ccd261a19bbb8488f
+  deleted_sha256: 05b410ba808a85ee58694ef47b713eb045ac131c0c2f1ed456f6bc9d0a8988cb
+  decisions:
+  - graph_options
+  - graph_backends
+  - graph_frozen
+  - defer_debug_probe
+  - workflow
+- path: .agents/skills/model-infer-graph-mode/references/ge-graph-guide.md
+  base_blob: 103dfb9211a8c3122680b8d2120cf09967442a43
+  deleted_sha256: 2885a81f8d48e3bf6bb31cd9b0c5175514f4cdfd83baa41fb04a8594bb47b7d7
+  decisions:
+  - graph_options
+  - graph_backends
+  - graph_frozen
+  - defer_debug_probe
+- path: .agents/skills/model-infer-graph-mode/references/llm-model-guide.md
+  base_blob: 36e21f7bff5b1dec941338882a2c91821c195f07
+  deleted_sha256: 7a54dadeba92cd4ace12a39ffd95ba83c0a837864c8cec286b85db4c7732f52e
+  decisions:
+  - graph_options
+  - graph_backends
+  - graph_frozen
+  - defer_debug_probe
+- path: .agents/skills/model-infer-graph-mode/references/npugraph_ex-guide.md
+  base_blob: eaba9dfbb6297747eb1c62b674fb2b67ee25907a
+  deleted_sha256: d51339cb9335c6504db27a969d4e579d009ccc066c73372e990b6ebfd4e61d1f
+  decisions:
+  - graph_options
+  - graph_backends
+  - graph_frozen
+  - defer_debug_probe
+- path: .agents/skills/model-infer-kvcache/SKILL.md
+  base_blob: c741993a95224c25fcab57de380126be015d4c51
+  deleted_sha256: 243d9e77236e6b1ca6e2e4bdf1b6515873dec3777a2e4f685a89ba0e76409023
+  decisions:
+  - cache_addresses
+  - cache_entry
+  - cache_layout
+  - cache_lengths_dense
+  - cache_lengths_moe
+  - cache_mask
+  - cache_fp8
+  - cache_versions
+  - cache_precision
+  - defer_mla_shapes
+  - workflow
+- path: .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  base_blob: 1d2bf02019207c4e76c4f4ccd246909e6f10bd37
+  deleted_sha256: 10cb6a4acad4cee631ff7d2002d49685d22301a16b6f65576d06bd8e944a4eb1
+  decisions:
+  - cache_addresses
+  - cache_entry
+  - cache_layout
+  - cache_lengths_dense
+  - cache_lengths_moe
+  - cache_mask
+  - cache_fp8
+  - cache_versions
+  - cache_precision
+  - defer_mla_shapes
+- path: .agents/skills/model-infer-kvcache/references/framework_kv_reference.md
+  base_blob: b72a06d8d70740a52b61c97155acb2af53219ae9
+  deleted_sha256: 46ebb48d598d311eed9b0b96254b3c9903e83229c55a33eed1c01e8e9731af34
+  decisions:
+  - cache_entry
+  - cache_addresses
+  - cache_api
+- path: .agents/skills/model-infer-migrator/SKILL.md
+  base_blob: 61cf03b33410e8e4c7245589017b9583f50550c4
+  deleted_sha256: f83fa7ba62ea7ce104e85e87ddc51f84e9139f79065b4aca071d9b4b4a167596
+  decisions:
+  - migrate_contract
+  - migrate_namespace
+  - migrate_postload
+  - migrate_dp
+  - workflow
+- path: .agents/skills/model-infer-migrator/references/common_issues.md
+  base_blob: 6abe8dd816a30af6c6472da40377f66da1cf4114
+  deleted_sha256: 3905fb363cbbb16d6a9b674153ce46fc3b086c2bc626107d1d9b1fa53a1258da
+  decisions:
+  - migrate_namespace
+  - migrate_postload
+  - migrate_dp
+  - cache_mask
+  - cache_fp8
+- path: .agents/skills/model-infer-migrator/references/framework_templates.md
+  base_blob: 8f562a097047fd8a4b1f58a16a0a7bfc3d02035b
+  deleted_sha256: 1f1da0549528721650e4532cbc1cbd41304465115bcf19fc3c7cd934c335ab51
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-migrator/references/readme_template.md
+  base_blob: bd13695aeb98ccd0b1b856f4e711c4e2ab73c4e2
+  deleted_sha256: 09e40d9b2ec1a5ded151d339d9327934be035a081211d17c35ec7759a5a6fc59
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-migrator/references/standalone_templates.md
+  base_blob: df11229c7f4a9a5f398985ddd47291c91bf09122
+  deleted_sha256: 7004f9a131e9bfce1cf4a6de64efc5d45d136739b24248b4cfe52ab4c23813d7
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-migrator/references/yaml_template.md
+  base_blob: a0f83e1637f2a11cdb883d695598d085aead6ce0
+  deleted_sha256: b37d15b38e47185e053a449898743ee6a2325cfbeafff357f492708b58674f3c
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-migrator/scripts/collect_baseline.py
+  base_blob: 5f5b3bf6cf05e629201363b11cd210e13ebd45d5
+  deleted_sha256: 7be09980a3439903e6ee34f366728b64abf87186842664b7de7c38ac14f9abb8
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-multi-stream/SKILL.md
+  base_blob: ffa2576f2fbee36403324fcae6cc27038e4ff83b
+  deleted_sha256: 6f77fc5eafe4f6a0404a6dacb62de624ce8e01316b34d6c67cb611007309ee9b
+  decisions:
+  - multi_api
+  - multi_core
+  - multi_hunyuan
+  - multi_qwen
+  - multi_indexer
+  - multi_offload
+  - multi_microbatch
+  - multi_afd
+  - profile_fields
+  - workflow
+- path: .agents/skills/model-infer-multi-stream/references/api-routing.md
+  base_blob: 6e1aa6c176133accf1726f8f8be049c220eadcd0
+  deleted_sha256: 0d3d75b3ab3d7fd38948495baa24ae1442af78c3defc874b566e929eb1a58534
+  decisions:
+  - multi_api
+- path: .agents/skills/model-infer-multi-stream/references/ascend_ir_limit_cores.md
+  base_blob: ea994b2a001d05d29498d1ecedb4a1c67f0a89ab
+  deleted_sha256: 3163207d325d60e20c59510b9f3d221fec2330c74ba88ac3b31243dd657ec79c
+  decisions:
+  - multi_core
+  - multi_ge_limits
+- path: .agents/skills/model-infer-multi-stream/references/ascend_ir_multi_stream.md
+  base_blob: 804683b559aa33a249d46f0bd0e6f177e9a58377
+  deleted_sha256: 1462e8c18c441c1e6b4bc507196841003f99d86e628b699c397de67179ef40ae
+  decisions:
+  - multi_api
+  - multi_ge_params
+  - multi_ge_limits
+- path: .agents/skills/model-infer-multi-stream/references/ge-reorder-design-check.md
+  base_blob: 2c89b76c845526798c38dc073ed06c0895876ac2
+  deleted_sha256: 668b1cf224e7c779c3e1c6e5c3182d4231c25d1fb7714cbdb3fe8551eee1b5b9
+  decisions:
+  - multi_api
+- path: .agents/skills/model-infer-multi-stream/references/hunyuanimage-moe-multi-stream.md
+  base_blob: ed479ed522b6fb7a167e1c1d902355730902afcd
+  deleted_sha256: 8b9f7053386783c79203bf1226f4b81a9d6a81ed86e80101bc27b94a164a71f0
+  decisions:
+  - multi_hunyuan
+- path: .agents/skills/model-infer-multi-stream/references/indexer-prolog-multi-stream.md
+  base_blob: c8fece4e7b095302f858a450b21eca3cafc7f8be
+  deleted_sha256: d9e1c2bb87b22e5eae39294f1fc0b2dd89e955adf5ead95ad0afff74e24a2742
+  decisions:
+  - multi_indexer
+- path: .agents/skills/model-infer-multi-stream/references/kernel-fields-lookup.md
+  base_blob: d926df24e1fa04413a8c166a04ea0d68c3f51122
+  deleted_sha256: a06e492d97e6e9d9d842ee9820d9f07dbdf1ac0d307f7622a60840c03b2bab31
+  decisions:
+  - profile_fields
+- path: .agents/skills/model-infer-multi-stream/references/kvcache-offload-async-stream.md
+  base_blob: a8ef560d7db1d5eaf037c47248178b0bbb2849ff
+  deleted_sha256: 708b7b90058b2b2364ddc211d0ffcdb66f951070dd3d7d1e1ef2b61ff09870ad
+  decisions:
+  - multi_offload
+- path: .agents/skills/model-infer-multi-stream/references/longcat-flash-afd-overlap.md
+  base_blob: ac0f49efa96d2f64a7d8fc3b8f8875a0dd4ab131
+  deleted_sha256: dbf23298d78fc858a56533a6bf63a0c7b30abccf6874a9e0e659f8f7bc7de784
+  decisions:
+  - multi_afd
+- path: .agents/skills/model-infer-multi-stream/references/longcat-flash-multi-stream-limit-core.md
+  base_blob: df569687dd38e0d869a967c5659d270447a34545
+  deleted_sha256: 58cca2d4a197c0ccb34c173c076b7a175989f16551cdaf4d399bc6b7f7a1b24c
+  decisions:
+  - multi_core
+- path: .agents/skills/model-infer-multi-stream/references/module-decomposition.md
+  base_blob: 9f4941aabd8c07ec2880b2c4bb2241616448f5cc
+  deleted_sha256: 859a4432e872452f353001c70c148b9153796f9392df9978b694370108b467d1
+  decisions:
+  - multi_api
+- path: .agents/skills/model-infer-multi-stream/references/moe-shared-expert-dual-stream.md
+  base_blob: dfe4ee1ab8cecb9885eff4bffb22bd8da4adee3f
+  deleted_sha256: 6f931d8639ca6963004b5c28646d16803cbb2045edd09e2a147ebdb9e3549e23
+  decisions:
+  - multi_qwen
+- path: .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+  base_blob: 1bc6a7f498c22bb972f609a6aade6791bd66c263
+  deleted_sha256: 3ded018b55bf6228d90c20e3eaec276c68d0e2c6feaa8925cb520d22030d488e
+  decisions:
+  - multi_api
+  - multi_core
+  - multi_hunyuan
+  - multi_qwen
+  - multi_indexer
+  - multi_offload
+  - multi_microbatch
+  - multi_afd
+  - profile_fields
+- path: .agents/skills/model-infer-multi-stream/references/npugraph_ex_limit_cores.md
+  base_blob: ab6f7af3d9bdd90c1296fa153ebab921fbe096e8
+  deleted_sha256: e88a3830b5182d42f16d9ebd88969e350e72c80843045179c633a38d0076e99d
+  decisions:
+  - multi_core
+  - multi_npugraph_limits
+- path: .agents/skills/model-infer-multi-stream/references/npugraph_ex_multi_stream.md
+  base_blob: 878b1b07fd9bd85abb149e93f5d0f6283a55c931
+  deleted_sha256: 0e1c234ff1e1f689f2591a3f6b36ca7fb39f19698ee40d134da6255f2ec77acc
+  decisions:
+  - multi_api
+- path: .agents/skills/model-infer-multi-stream/references/plan-detail-fragment.md
+  base_blob: c69e989751408576fc5ccbbdf9a238e92c0c4b01
+  deleted_sha256: 5ddcb42bbbd753975d34da4d5b18a1a0c4efdbb33982f348662d8460ee853b95
+  decisions:
+  - multi_api
+  - multi_core
+  - multi_hunyuan
+  - multi_qwen
+  - multi_indexer
+  - multi_offload
+  - multi_microbatch
+  - multi_afd
+  - profile_fields
+- path: .agents/skills/model-infer-multi-stream/references/prefill-microbatch-dual-stream.md
+  base_blob: 23f80dd6f9e8f6c4745a3680e0d3c13846993f28
+  deleted_sha256: 3c21c295927b8cf3a30b731aece96958c5a1248c8c1788054b208bbe45c961d2
+  decisions:
+  - multi_microbatch
+- path: .agents/skills/model-infer-multi-stream/references/qwen3-next-moe-dual-stream-patch.md
+  base_blob: b6a85b2a08efa44b780d46f6346ca4d60de97ec0
+  deleted_sha256: f79967769029d8f564993fa9ff90316c5afcd0476a63ef52ac9fe26f0d062215
+  decisions:
+  - multi_qwen
+- path: .agents/skills/model-infer-multi-stream/references/timeline-overlap-check.md
+  base_blob: 5f52dad55e313bf03c21a942b8ad325da8fd74ca
+  deleted_sha256: ba482c982a08adfab4e61e857371bb1dc8d8c1789b3f85e99b6caef2091c0d0a
+  decisions:
+  - profile_fields
+- path: .agents/skills/model-infer-optimize/SKILL.md
+  base_blob: f34440cf7d524a818ea585b3c31fea54a038b52a
+  deleted_sha256: 66a06e53ad02031ab63d03a496b8c8b244b33df0041d2077a60a6f7a1af5859d
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-optimize/scripts/archive_progress.py
+  base_blob: 8721f0e106c5f03c5ec6ebc1fe1bec0aebddf209
+  deleted_sha256: f30d05ab32736c9e5451cb50b93b5ec8382e9f2d1ed328a7b564d8e2ba4cde47
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-optimize/templates/optimization_report_template.md
+  base_blob: 05f60226b5ea35993d7c19cf1682434e563cde42
+  deleted_sha256: 62f34ed3225b28718ada17187293d76d9dcb438592ec5beec44e56e235527059
+  decisions:
+  - workflow
+  - runtime_mc2
+- path: .agents/skills/model-infer-optimize/templates/progress_template.md
+  base_blob: 26c5c93462976a86e632bd442b4b83c4ec4719c9
+  deleted_sha256: 7763563211140ea2b31602e48e3abe19d7ebdd9264ba96b372d640cd513337f9
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-parallel-analysis/SKILL.md
+  base_blob: 06c77c2a5a952a19d8c8b793b29ac07fee499d19
+  deleted_sha256: 32c2c171f06a72e365c94a3dca327bacaad0db27a0b3446a02ccaf2db6f2695f
+  decisions:
+  - parallel_refs
+  - workflow
+- path: .agents/skills/model-infer-parallel-analysis/references/config-index.md
+  base_blob: 8c68e03817fa6ca87a6b529b2ed02fea8fc9ac46
+  deleted_sha256: a91d2dfc76a5ca289d0085f6a70f7ed3f1796088d29c1a294ee83587b84203ca
+  decisions:
+  - parallel_refs
+  - config_complete
+- path: .agents/skills/model-infer-parallel-impl/SKILL.md
+  base_blob: 471897c842733e5f37e9193356a740ea5656251e
+  deleted_sha256: b3d72921793b2546a60512861ebc5ee216024f8fccbf08ead4c415ae77a83f1d
+  decisions:
+  - parallel_group
+  - parallel_reduce
+  - parallel_boundary
+  - parallel_moe
+  - parallel_weights
+  - workflow
+- path: .agents/skills/model-infer-parallel-impl/references/framework_code_examples.md
+  base_blob: 7668683d6ac85b3786b20733dce22bbd61a2841b
+  deleted_sha256: fc5479d2e8f8300aa015acd2ffa2c1b5c9661e02368679d4970083a1563c7398
+  decisions:
+  - parallel_group
+  - parallel_reduce
+  - parallel_boundary
+  - parallel_moe
+  - parallel_weights
+- path: .agents/skills/model-infer-parallel-impl/references/framework_moe_parallel.md
+  base_blob: debb7372f9e75354d31a356e5de8c63eeea11fb4
+  deleted_sha256: 00cdba8ea1df848bdca9c0c4063e03afba4cbbbd4a4763db281af92134508128
+  decisions:
+  - parallel_group
+  - parallel_reduce
+  - parallel_boundary
+  - parallel_moe
+  - parallel_weights
+- path: .agents/skills/model-infer-parallel-impl/references/standalone_parallel.md
+  base_blob: c270acde96f532a4cd9932588536b98d3f3fb6c0
+  deleted_sha256: 147c299ddb42cfbab6dab71d2b9b9fd03b750780b8c9cfd8ba19906478bdd2c4
+  decisions:
+  - parallel_group
+  - parallel_reduce
+  - parallel_boundary
+  - parallel_moe
+  - parallel_weights
+- path: .agents/skills/model-infer-perf-breakdown/SKILL.md
+  base_blob: f6c459dc02e2ce45819404292e3272eba40a87f4
+  deleted_sha256: 3f4c69af02eb3b953a2bb15dcf07e421cb0c1e27b9249f8cea8eecdda6510428
+  decisions:
+  - profile_layout
+  - profile_fields
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/references/cluster_dialogue.md
+  base_blob: 5ec8b70686aa54966e94ca9900b17628adff8fe3
+  deleted_sha256: 2344926a2bf1db2f88ae2bd16e0cb00fbae3685105a507d3ed4288bef9805c3d
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/references/history_template.md
+  base_blob: 720fc23d1c6ac3f86a952b48ace8bcf62ce9452a
+  deleted_sha256: e18206764a7f876017e7e692039c7a85bf656c2acfa238df11fdb4d8f75084d7
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/references/insight_workflow.md
+  base_blob: 4922af930a4715c99bb18406bd22866aebf29bdf
+  deleted_sha256: 1824010b592d9c86151a1cb5935afa2cacb389243729e33de9820a12b4385d90
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+  base_blob: 0b703cc7808b910272fed3eaa5caa86e25aefe91
+  deleted_sha256: 0f1eda9bda0e4ef7d4983a64f6c510b6594c169b1f5572a5c73075888fc97f39
+  decisions:
+  - profile_fields
+- path: .agents/skills/model-infer-perf-breakdown/references/phase0a_prompt.md
+  base_blob: 09c39b8f26d9005819da990c53763df880ef458c
+  deleted_sha256: 6a4418d9c1ffb93a359368ba2f986d6334e1f1d4e12bdc44324a6366a114c975
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/references/phase0b_workflow.md
+  base_blob: 43aedf6331ea460ff8687d329a0328cef6472b21
+  deleted_sha256: 81cf1934e75421d4c8a64690c07923b891e040858edad06d0ac927702450eec1
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/references/prof_layouts.md
+  base_blob: 7d9ce0d7c8f4ce8c7dbcb6b903b806c97670542d
+  deleted_sha256: 22ee6d98b57d1256c7f0c5c987bce3c599c32f4455ca978d1be604b7c6998186
+  decisions:
+  - profile_layout
+- path: .agents/skills/model-infer-perf-breakdown/references/reuse_policy.md
+  base_blob: ae3a9342abe8473abc7599a1299a79de735d7957
+  deleted_sha256: 03cdd9633f4ac0bd48e8a0a2175fe41ad29b7877c7e7724763dd6e1c9dd950a1
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/references/theoretical_perf_workflow.md
+  base_blob: 2d05c3f7fc777ab29872002991c59c221f9cb544
+  deleted_sha256: 588db9189adff7f19d02f899f82749b37b25cd3d66b4ae8f292c724a1e01171b
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/scripts/analyze_kernels.py
+  base_blob: 82828432713f3cc57e6fae42c7e780d7ed924d16
+  deleted_sha256: 3393c1eefa4fa4b49910c2efb70115726d4e7ddb9929915f3d3eb029274ec640
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/scripts/compare_runs.py
+  base_blob: fb4870f248e0abfffccb4564a6fff80d57017d26
+  deleted_sha256: 17ce106193e70a36b2f1a59cb87162203b6027f31a22658485f05d73fbd74365
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/scripts/detect_structure.py
+  base_blob: 09286f3e7acf748aab0246966058fe84054cb00d
+  deleted_sha256: 297aa8907f536d2430a856a2661955a5be6f4231716a2ce2e400c13e23e03185
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/scripts/gen_insights.py
+  base_blob: 36fc2a33bdcf31628b8965218d8539eda5345665
+  deleted_sha256: 6c16aadc480849dd2c83a5efaa54b6da6af7c90c53d79c5230cd7e6b0d708923
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/scripts/render.py
+  base_blob: b4228d2b67a408e5c04a065cbf8d3b7f333c516a
+  deleted_sha256: 8bcebed698938fa8926b928845de058066f65568264207c3fa4eadc89f043912
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-perf-breakdown/scripts/render_insights.py
+  base_blob: 3bfc0a5daf121959890c3ba7fb40744b7f176e6a
+  deleted_sha256: e3fd99985de0e951c6ddc1b94963cffc25c6b9ed39a4ca146ffad7629150eceb
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-precision-debug/SKILL.md
+  base_blob: d9f1384fa34dd9217900265981a8b5ddd6eef42c
+  deleted_sha256: 175cc6738bcd5e41e45017aa8134c1b9f7c4b75ab6288c225dd25010d79110b0
+  decisions:
+  - precision_known
+  - precision_requests
+  - precision_tolerance
+  - cache_precision
+  - cache_layout
+  - cache_lengths_dense
+  - cache_lengths_moe
+  - cache_mask
+  - cache_fp8
+  - precision_inner
+  - precision_single
+  - defer_mla_shapes
+  - defer_determinism_env
+  - defer_debug_probe
+  - defer_history_numbers
+  - workflow
+- path: .agents/skills/model-infer-precision-debug/references/graph_mode_debug.md
+  base_blob: 797b9d647f479249fd5089f51906a0b5c214f4a6
+  deleted_sha256: ed34b51cd981afaf74274be2bbe6e2c9f63878f10adf2a4eb167b6d3e47dda56
+  decisions:
+  - graph_backends
+  - graph_frozen
+  - defer_debug_probe
+- path: .agents/skills/model-infer-precision-debug/references/known_issues.md
+  base_blob: 3d34c0004b1dfc68b6037bebdcd4e327f1f62487
+  deleted_sha256: 5fb7fbadd2fef5a5c782a278bfde257a79851a6275e54e151768e881090c9ace
+  decisions:
+  - precision_known
+  - precision_requests
+  - defer_history_numbers
+- path: .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+  base_blob: 8a8b6a50f0bbe6400a2c41fa0aa4e99fd1a05bfb
+  deleted_sha256: f4160462064f1ce65f868458ad722642c5243348143bc96ac990b9a3295e730f
+  decisions:
+  - cache_precision
+  - cache_layout
+  - cache_lengths_dense
+  - cache_lengths_moe
+  - cache_mask
+  - cache_fp8
+  - cache_versions
+  - precision_inner
+  - precision_single
+  - defer_mla_shapes
+- path: .agents/skills/model-infer-precision-debug/references/operator_compare.md
+  base_blob: b811a29b70d99941ffa9758584a6b1969b3702ff
+  deleted_sha256: 9d925f8a19396a7443c73116cae9a58daa4b8bcd8fa527a652af5fdc29b14d85
+  decisions:
+  - precision_tolerance
+  - defer_debug_probe
+- path: .agents/skills/model-infer-precision-debug/scripts/fa_debug_utils.py
+  base_blob: 2b2bdd3ca3eff002cc57bb01e982508c60949487
+  deleted_sha256: 896aa6d65a1c33c1165f70a66d6e7f4d524349014742753db9b1abfa5c9faab1
+  decisions:
+  - defer_fa_checker
+- path: .agents/skills/model-infer-prefetch/SKILL.md
+  base_blob: 35ce47289f5ca9a15f6f5f9c714e84867f37559b
+  deleted_sha256: f20fcbb5ceeeaa482a169041c00f87a505790cb7b199ed11c121ad2754d7aa1f
+  decisions:
+  - prefetch_order
+  - prefetch_budget
+  - workflow
+- path: .agents/skills/model-infer-profiling/SKILL.md
+  base_blob: c83303c48c63563ad81ab30e56f640bffe14cf7e
+  deleted_sha256: de0a53291ad6a18b4c246b51383b9de2508ffe0216ea51cf207403e541b0897b
+  decisions:
+  - profile_executor
+  - profile_manual
+  - profile_metrics
+  - profile_schedule
+  - profile_compile
+  - profile_parse
+  - workflow
+  - profiler_lifecycle
+  - profiler_fields_exact
+- path: .agents/skills/model-infer-profiling/references/troubleshooting.md
+  base_blob: ed9ff85b52fa94fec7e03741414dc5461bdaba10
+  deleted_sha256: 76db0bc69c2f9df34e85911ca3586d6dd4742110e5fb7be566183ead9c39948d
+  decisions:
+  - profile_schedule
+  - profile_parse
+  - profile_compile
+  - profile_layout
+- path: .agents/skills/model-infer-profiling/scripts/profile_template.py
+  base_blob: 44a1f440f1ecf9d31e2e3187184582a8ace6b37f
+  deleted_sha256: 9e189d770b90fcf185b4fb1f3c678ee0efa0eff9713112f7992705454cd0b9a9
+  decisions:
+  - profile_manual
+  - profile_metrics
+  - profile_schedule
+  - profile_compile
+- path: .agents/skills/model-infer-quantization/SKILL.md
+  base_blob: 11fa322e7c3b152ea713aa84386d118268b75501
+  deleted_sha256: 2cf06b7522a13f6b084cc0098f7b819e6b39ba5c7ad21bab8c540613c73d392c
+  decisions:
+  - quant_postload
+  - quant_swiglu
+  - quant_sidechannel
+  - quant_c8
+  - quant_memory
+  - quant_evidence
+  - workflow
+- path: .agents/skills/model-infer-quantization/references/quantization-contract.md
+  base_blob: 67a14f9ea65dc8f6ebd523d54826bb095a6aa891
+  deleted_sha256: 7eb662a343c9f2c3599abb4406bdd9b346ee4eb6cbb715f64b494648d432140b
+  decisions:
+  - quant_postload
+  - quant_swiglu
+  - quant_sidechannel
+  - quant_c8
+  - quant_memory
+  - quant_evidence
+  - quant_contract
+- path: .agents/skills/model-infer-quantization/references/quantization-fusion-and-benefit.md
+  base_blob: 9c05f46b8126dbf7cf4c325851fed06478897e11
+  deleted_sha256: 4a41bc7987e77959a1f396b2acbe84305405c2307a1b1cd0d17363e9938f0e5a
+  decisions:
+  - quant_postload
+  - quant_swiglu
+  - quant_sidechannel
+  - quant_c8
+  - quant_memory
+  - quant_evidence
+- path: .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+  base_blob: 496e08e2ea1bb187ebb1e0cbae40875fe3e3001a
+  deleted_sha256: 9715f62548acc5a9e241edf6f9d8f8dd2e6e59c944d4b0e3080697a33be9090b
+  decisions:
+  - quant_postload
+  - quant_swiglu
+  - quant_sidechannel
+  - quant_c8
+  - quant_memory
+  - quant_evidence
+  - quant_li
+  - li_mode_contract
+- path: .agents/skills/model-infer-quantization/references/quantization-templates.md
+  base_blob: c3d2b3d65343f1be1ec4181e4b84c437605ab659
+  deleted_sha256: 2fd95508cb93e01f3cc6f7eaff9854c2d31f1d42db21b02d608dbd0f443463c3
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-runtime-debug/SKILL.md
+  base_blob: a99211f36143e96371245fa85cb71ff7029b1644
+  deleted_sha256: d6ef2c97f84b8213dc28db63336440020049d4ae237c7c5a8f0f8e958aad5e21
+  decisions:
+  - runtime_mc2
+  - runtime_firstfail
+  - runtime_vocab
+  - runtime_init
+  - cache_versions
+  - workflow
+  - runtime_checkpoints
+  - runtime_stale_processes
+  - hf_config
+- path: .agents/skills/model-infer-sota-approach/SKILL.md
+  base_blob: a39be21866561e5590a943b351d6dada3d6038e6
+  deleted_sha256: df179de138e88d9b316d92110ca6880651cb973146bb5e6e3a8257060aa9e15d
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-sota-approach/references/decision-rules.md
+  base_blob: c0798394f0f9a8c71c6368b9f51d2236b636ca52
+  deleted_sha256: 36a0bb90f7cdbd2cc3f5fcfad141114997db2da8685e77d168252f2c0f828a06
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-sota-approach/references/plan-dashboard-template.md
+  base_blob: 44db2afc5b41cd68784e62d45a327aaf516c9592
+  deleted_sha256: ea3fdad5dc80402035a57b078138d30f78a8b70cf815fcd1986e1373e9612bd7
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-sota-approach/references/plan-file-template.md
+  base_blob: c9b6a6e6dc65cc94bb5f539df742d37a94ac6f9a
+  deleted_sha256: 25086f811426ed422af4b359d1f6144d8c5a1ef74e2ffd2575d3fad6a695e368
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-sota-approach/references/scenario-confirm.md
+  base_blob: dd5b7401a4f1ce17259f40953a3f2f1fc055ac21
+  deleted_sha256: 0ac235af6c82b42981779a2a2799fdfc238fdc8cb9d6b1f4f5dfea912e9a7e0c
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-sota-approach/references/scenario-setup.md
+  base_blob: 7cc1b2ec646944e7ecb6ff12a14d532cd9d2ca6f
+  deleted_sha256: 35467869b3e499b8ab54853c764f36ad0fc504237086899d3dac656c3acde5a9
+  decisions:
+  - workflow
+  - profile_compile
+- path: .agents/skills/model-infer-sota-approach/references/subagent-prompt-templates.md
+  base_blob: 9e1f355fbe9934aa87f8b2524e69d31a9be8e2a5
+  deleted_sha256: 7812ccfef25c977aeb0a8b3fc1af98bf8ad7ad0373068efa617884d7174b9015
+  decisions:
+  - workflow
+- path: .agents/skills/model-infer-superkernel/SKILL.md
+  base_blob: 482646f53a4d970a0d6f9db02b9380d3a3683e17
+  deleted_sha256: f6c0b7d76a4810e741c3201deb5434294d312155cba9aa8e2f39ffc93145b7e7
+  decisions:
+  - superkernel_scope
+  - superkernel_scope_method
+  - superkernel_validation
+- path: .agents/skills/model-infer-superkernel/references/performance-baseline-guide.md
+  base_blob: 9454151fa8e762577d98964c6232afca04a2e7ab
+  deleted_sha256: e7f97a988e23993abb48aed413227399bc0c96b61d0d355b59ebeff1ba22996f
+  decisions:
+  - superkernel_scope
+  - superkernel_scope_method
+  - superkernel_validation
+- path: .agents/skills/model-infer-superkernel/references/scope-analysis-guide.md
+  base_blob: 17c7a25b63a1d47c9e228a3c024a49c782181b2e
+  deleted_sha256: ac510cc448318046add255e55a08be06344ba3802fa2039cc8453dff7349c269
+  decisions:
+  - superkernel_scope
+  - superkernel_scope_method
+  - superkernel_validation
+- path: .agents/skills/model-infer-superkernel/references/scope-templates/attention-only.md
+  base_blob: 8447c73b584066901b0372b2164a1c7904ce4adc
+  deleted_sha256: 433433caf81663e3d7e1ec3205ab3330556f572346f929c7f6431cfedebd569c
+  decisions:
+  - superkernel_scope
+  - superkernel_scope_method
+  - superkernel_validation
+- path: .agents/skills/model-infer-superkernel/references/scope-templates/full-model.md
+  base_blob: f5b7279cce61aa0fece74abf31bfba34c324267e
+  deleted_sha256: 2b17714b98b66fba979ec93e4827eb85646e5589b94771041cc680b646a13558
+  decisions:
+  - superkernel_scope
+  - superkernel_scope_method
+  - superkernel_validation
+- path: .agents/skills/model-infer-superkernel/references/scope-templates/moe-only.md
+  base_blob: 54458ec769e7329018ea56a0b3c1b8e808f3969e
+  deleted_sha256: 79a7d3ee599fd5afe5ab92ba3b16041b43f48a556b25e553552c6cb67da202fb
+  decisions:
+  - superkernel_scope
+  - superkernel_scope_method
+  - superkernel_validation
+- path: AGENTS.md
+  base_blob: 05891d26ef83a674539ea96cd01174b38aa5ee93
+  deleted_sha256: dfd33d4e8e78942d353e21f5fbb3bcf3ecefb3938f948b1d4c3323b1faae3bdb
+  decisions:
+  - workflow
+- path: docs/agent/DeepSeekV4.1-Flash-Model-Agent.md
+  base_blob: 981d46a9e7dbf2014a2d865edd5ce6abcdcdd088
+  deleted_sha256: 1bffde231f25a9a5082d228b06767f9d7a16c8cf89e001d2c1198011746a268b
+  decisions:
+  - workflow
+- path: docs/agent/model-infer-optimize-design.md
+  base_blob: 291c596e119e9163aae89904c58418391e8fcb1d
+  deleted_sha256: edf992b789060a3ea8133f1505e9131d91f8ba3e8dc1516c3dd38f1835712d30
+  decisions:
+  - workflow
+- path: docs/agent/sota-approach-skill-design.md
+  base_blob: 01e044c38b1eff4bd14d8de9deb73828ae5cb4e8
+  deleted_sha256: ad4de9f593f0b6dcbc1b98586fe341a7e873476cd9faefefac416e6b9fa2557f
+  decisions:
+  - workflow
+facts:
+- id: migrate_contract
+  target: model/inference/guides/bringup/cann_executor_model_onboarding
+  retrieval_cases: *id001
+  required_content:
+  - forward_metadata
+  - load_weights
+  - process_weights_after_loading
+  source_paths:
+  - .agents/skills/model-infer-migrator/SKILL.md
+- id: migrate_namespace
+  target: model/inference/runbooks/runtime/model_package_namespace_shadowing
+  retrieval_cases: *id002
+  required_content:
+  - PYTHONPATH
+  - __init__.py
+  source_paths:
+  - .agents/skills/model-infer-migrator/SKILL.md
+  - .agents/skills/model-infer-migrator/references/common_issues.md
+- id: migrate_postload
+  target: model/inference/runbooks/runtime/moe_post_load_hook_missing
+  retrieval_cases: *id003
+  required_content:
+  - process_weights_after_loading
+  - NZ
+  source_paths:
+  - .agents/skills/model-infer-migrator/SKILL.md
+  - .agents/skills/model-infer-migrator/references/common_issues.md
+- id: migrate_dp
+  target: model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+  retrieval_cases: *id004
+  required_content:
+  - batch_size_per_dp_rank
+  - row_idx_decode
+  source_paths:
+  - .agents/skills/model-infer-migrator/SKILL.md
+  - .agents/skills/model-infer-migrator/references/common_issues.md
+- id: parallel_refs
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases: *id005
+  required_content:
+  - world_size
+  - cp_size
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/SKILL.md
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: parallel_group
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: *id006
+  required_content:
+  - get_rank
+  - get_group
+  - get_group_name
+  source_paths:
+  - .agents/skills/model-infer-parallel-impl/SKILL.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_code_examples.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_moe_parallel.md
+  - .agents/skills/model-infer-parallel-impl/references/standalone_parallel.md
+- id: parallel_reduce
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: *id007
+  required_content:
+  - RowParallelLinear
+  - AllReduce
+  source_paths:
+  - .agents/skills/model-infer-parallel-impl/SKILL.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_code_examples.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_moe_parallel.md
+  - .agents/skills/model-infer-parallel-impl/references/standalone_parallel.md
+- id: parallel_boundary
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: *id008
+  required_content:
+  - AllGather
+  - ReduceScatter
+  source_paths:
+  - .agents/skills/model-infer-parallel-impl/SKILL.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_code_examples.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_moe_parallel.md
+  - .agents/skills/model-infer-parallel-impl/references/standalone_parallel.md
+- id: parallel_moe
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: *id009
+  required_content:
+  - expert_tokens_num_type
+  - group_list_type
+  - npu_moe_init_routing_v2
+  - npu_moe_distribute_dispatch_v2
+  - '| -1 | 1 |'
+  - '| 0 | 2 |'
+  source_paths:
+  - .agents/skills/model-infer-parallel-impl/SKILL.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_code_examples.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_moe_parallel.md
+  - .agents/skills/model-infer-parallel-impl/references/standalone_parallel.md
+- id: parallel_weights
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  retrieval_cases: *id010
+  required_content:
+  - weight_loader
+  - 离线
+  source_paths:
+  - .agents/skills/model-infer-parallel-impl/SKILL.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_code_examples.md
+  - .agents/skills/model-infer-parallel-impl/references/framework_moe_parallel.md
+  - .agents/skills/model-infer-parallel-impl/references/standalone_parallel.md
+- id: cache_addresses
+  target: model/inference/concepts/frameworks/kv_cache_manager
+  retrieval_cases: *id011
+  required_content:
+  - block_table
+  - slot_mapping
+  - physical_block
+  source_paths:
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-kvcache/references/framework_kv_reference.md
+- id: cache_entry
+  target: model/inference/concepts/frameworks/kv_cache_manager
+  retrieval_cases: *id012
+  required_content:
+  - CacheEntry
+  - manager_key
+  source_paths:
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-kvcache/references/framework_kv_reference.md
+- id: cache_layout
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id013
+  required_content:
+  - NZ
+  - block_table
+  source_paths:
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: cache_lengths_dense
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id014
+  required_content:
+  - qwen_dense_prefill
+  - actual_seq_lengths_kv
+  source_paths:
+  - .agents/skills/model-infer-fusion/references/module-attention-gqa.md
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: cache_lengths_moe
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id015
+  required_content:
+  - qwen3_moe_prefill
+  - actual_seq_lengths_cu_kv
+  source_paths:
+  - .agents/skills/model-infer-fusion/references/module-attention-gqa.md
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: cache_mask
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id016
+  required_content:
+  - sparse_mode
+  - MTP
+  source_paths:
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-migrator/references/common_issues.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: cache_fp8
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id017
+  required_content:
+  - qwen3_moe_decode_float8
+  - dequant_scale_key/value
+  source_paths:
+  - .agents/skills/model-infer-fusion/references/module-attention-gqa.md
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-migrator/references/common_issues.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: cache_versions
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id018
+  required_content:
+  - actual_seq_qlen
+  - softmax_scale
+  source_paths:
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: cache_precision
+  target: model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+  retrieval_cases: *id019
+  required_content:
+  - slot_mapping
+  - kv_len
+  - 按请求固定切片
+  - 连续缓存
+  - 普通未压缩分页缓存
+  - kv_cache_manager.md#普通分页缓存的物理槽位
+  source_paths:
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: fusion_gqa
+  target: model/inference/guides/integration/attention_fusion_chain_selection
+  retrieval_cases: *id020
+  required_content:
+  - GQA/MHA
+  - QKV
+  source_paths:
+  - .agents/skills/model-infer-fusion/SKILL.md
+  - .agents/skills/model-infer-fusion/references/module-attention-gqa.md
+- id: fusion_absorb
+  target: model/inference/guides/integration/attention_fusion_chain_selection
+  retrieval_cases: *id021
+  required_content:
+  - absorb
+  - latent
+  source_paths:
+  - .agents/skills/model-infer-fusion/SKILL.md
+  - .agents/skills/model-infer-fusion/references/module-attention-mla-absorb.md
+- id: fusion_indexer
+  target: model/inference/guides/integration/attention_fusion_chain_selection
+  retrieval_cases: *id022
+  required_content:
+  - TopK
+  - Indexer
+  source_paths:
+  - .agents/skills/model-infer-fusion/SKILL.md
+  - .agents/skills/model-infer-fusion/references/module-attention-mla-indexer.md
+- id: fusion_rope
+  target: model/inference/guides/integration/rotary_embedding_cache_precompute
+  retrieval_cases: *id023
+  required_content:
+  - position_ids
+  - persistent=False
+  source_paths:
+  - .agents/skills/model-infer-fusion/SKILL.md
+  - .agents/skills/model-infer-fusion/references/rotary-embedding-pattern.md
+- id: quant_postload
+  target: model/inference/runbooks/runtime/moe_post_load_hook_missing
+  retrieval_cases: *id024
+  required_content:
+  - smooth_scales
+  - NZ
+  source_paths:
+  - .agents/skills/model-infer-quantization/SKILL.md
+  - .agents/skills/model-infer-quantization/references/quantization-fusion-and-benefit.md
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: quant_swiglu
+  target: model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+  retrieval_cases: *id025
+  required_content:
+  - npu_dequant_swiglu_quant
+  - pertoken_scale
+  source_paths:
+  - .agents/skills/model-infer-quantization/SKILL.md
+  - .agents/skills/model-infer-quantization/references/quantization-fusion-and-benefit.md
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: quant_sidechannel
+  target: model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+  retrieval_cases: *id026
+  required_content:
+  - side channel
+  - BF16 dispatch
+  source_paths:
+  - .agents/skills/model-infer-quantization/SKILL.md
+  - .agents/skills/model-infer-quantization/references/quantization-fusion-and-benefit.md
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: quant_c8
+  target: model/inference/optimizations/rules/mla_c8_int8_kv_cache_op_wiring
+  retrieval_cases: *id027
+  required_content:
+  - quant_scale_ckv
+  - ckv_scale
+  source_paths:
+  - .agents/skills/model-infer-quantization/SKILL.md
+  - .agents/skills/model-infer-quantization/references/quantization-fusion-and-benefit.md
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: quant_memory
+  target: model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+  retrieval_cases: *id028
+  required_content:
+  - workspace
+  - KV
+  source_paths:
+  - .agents/skills/model-infer-quantization/SKILL.md
+  - .agents/skills/model-infer-quantization/references/quantization-fusion-and-benefit.md
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: quant_evidence
+  target: model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+  retrieval_cases: *id029
+  required_content:
+  - LongCat
+  - 基线
+  source_paths:
+  - .agents/skills/model-infer-quantization/SKILL.md
+  - .agents/skills/model-infer-quantization/references/quantization-fusion-and-benefit.md
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: graph_options
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: *id030
+  required_content:
+  - force_eager
+  - capture_limit
+  source_paths:
+  - .agents/skills/model-infer-graph-mode/SKILL.md
+  - .agents/skills/model-infer-graph-mode/references/ge-graph-guide.md
+  - .agents/skills/model-infer-graph-mode/references/llm-model-guide.md
+  - .agents/skills/model-infer-graph-mode/references/npugraph_ex-guide.md
+- id: graph_backends
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: *id031
+  required_content:
+  - aot_eager
+  - backend=eager
+  source_paths:
+  - .agents/skills/model-infer-graph-mode/SKILL.md
+  - .agents/skills/model-infer-graph-mode/references/ge-graph-guide.md
+  - .agents/skills/model-infer-graph-mode/references/llm-model-guide.md
+  - .agents/skills/model-infer-graph-mode/references/npugraph_ex-guide.md
+  - .agents/skills/model-infer-precision-debug/references/graph_mode_debug.md
+- id: graph_frozen
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: *id032
+  required_content:
+  - frozen_parameter
+  - 非连续
+  source_paths:
+  - .agents/skills/model-infer-graph-mode/SKILL.md
+  - .agents/skills/model-infer-graph-mode/references/ge-graph-guide.md
+  - .agents/skills/model-infer-graph-mode/references/llm-model-guide.md
+  - .agents/skills/model-infer-graph-mode/references/npugraph_ex-guide.md
+  - .agents/skills/model-infer-precision-debug/references/graph_mode_debug.md
+- id: profile_executor
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: *id033
+  required_content:
+  - active=3
+  - skip_first=3
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+- id: profile_manual
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: *id034
+  required_content:
+  - 手动
+  - ProfilerManager
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+- id: profile_metrics
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: *id035
+  required_content:
+  - Level1
+  - PipeUtilization
+  - record_shapes
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+- id: profile_schedule
+  target: model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+  retrieval_cases: *id036
+  required_content:
+  - RECORD
+  - warmup
+  - repeat
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+  - .agents/skills/model-infer-profiling/references/troubleshooting.md
+- id: profile_compile
+  target: model/inference/runbooks/performance/profiler_first_compile_pollution
+  retrieval_cases: *id037
+  required_content:
+  - 编译
+  - Prefill
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+  - .agents/skills/model-infer-profiling/references/troubleshooting.md
+  - .agents/skills/model-infer-sota-approach/references/scenario-setup.md
+- id: profile_parse
+  target: model/inference/runbooks/performance/profiler_csv_parse_failure
+  retrieval_cases: *id038
+  required_content:
+  - run failed
+  - analyse
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+  - .agents/skills/model-infer-profiling/references/troubleshooting.md
+- id: profile_layout
+  target: model/inference/guides/optimization/npu_profiling_artifact_layouts
+  retrieval_cases: *id039
+  required_content:
+  - ascend_pt
+  - mindstudio_profiler_output
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/SKILL.md
+  - .agents/skills/model-infer-perf-breakdown/references/prof_layouts.md
+  - .agents/skills/model-infer-profiling/references/troubleshooting.md
+- id: profile_fields
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases: *id040
+  required_content:
+  - Start Time
+  - Duration
+  - 交集
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/kernel-fields-lookup.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+  - .agents/skills/model-infer-multi-stream/references/timeline-overlap-check.md
+  - .agents/skills/model-infer-perf-breakdown/SKILL.md
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: multi_api
+  target: model/inference/guides/optimization/multi_stream_optimization_workflow
+  retrieval_cases: *id041
+  required_content:
+  - npu_stream_switch
+  - Event
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/api-routing.md
+  - .agents/skills/model-infer-multi-stream/references/ascend_ir_multi_stream.md
+  - .agents/skills/model-infer-multi-stream/references/ge-reorder-design-check.md
+  - .agents/skills/model-infer-multi-stream/references/module-decomposition.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+  - .agents/skills/model-infer-multi-stream/references/npugraph_ex_multi_stream.md
+- id: multi_core
+  target: model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  retrieval_cases: *id042
+  required_content:
+  - enable_multi_streams
+  - npugraph_ex
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/ascend_ir_limit_cores.md
+  - .agents/skills/model-infer-multi-stream/references/longcat-flash-multi-stream-limit-core.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+  - .agents/skills/model-infer-multi-stream/references/npugraph_ex_limit_cores.md
+- id: multi_hunyuan
+  target: model/inference/guides/optimization/multi_stream_optimization_workflow
+  retrieval_cases: *id043
+  required_content:
+  - share_mlp_stream
+  - 初始化
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/hunyuanimage-moe-multi-stream.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+- id: multi_qwen
+  target: model/inference/optimizations/rules/moe_shared_expert_decode_dual_stream
+  retrieval_cases: *id044
+  required_content:
+  - shared_expert_stream
+  - DeePEP
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/moe-shared-expert-dual-stream.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+  - .agents/skills/model-infer-multi-stream/references/qwen3-next-moe-dual-stream-patch.md
+- id: multi_indexer
+  target: model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+  retrieval_cases: *id045
+  required_content:
+  - npu_wait_tensor
+  - npugraph_ex
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/indexer-prolog-multi-stream.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+- id: multi_offload
+  target: model/inference/optimizations/cases/deepseek_v32_offload_stream_events
+  retrieval_cases: *id046
+  required_content:
+  - D2H
+  - Prefill
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/kvcache-offload-async-stream.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+- id: multi_microbatch
+  target: model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+  retrieval_cases: *id047
+  required_content:
+  - micro_batch_mode
+  - 请求
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+  - .agents/skills/model-infer-multi-stream/references/prefill-microbatch-dual-stream.md
+- id: multi_afd
+  target: model/inference/optimizations/cases/longcat_a3_afd_stream_pairing
+  retrieval_cases: *id048
+  required_content:
+  - send_tag
+  - recv_tag
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/SKILL.md
+  - .agents/skills/model-infer-multi-stream/references/longcat-flash-afd-overlap.md
+  - .agents/skills/model-infer-multi-stream/references/multi-stream-cases-index.md
+- id: prefetch_order
+  target: model/inference/optimizations/rules/decode_weight_prefetch_ordering
+  retrieval_cases: *id049
+  required_content:
+  - 窗口
+  - 带宽
+  source_paths:
+  - .agents/skills/model-infer-prefetch/SKILL.md
+- id: prefetch_budget
+  target: model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+  retrieval_cases: *id050
+  required_content:
+  - '18'
+  - '36'
+  - '7'
+  - GMM
+  source_paths:
+  - .agents/skills/model-infer-prefetch/SKILL.md
+- id: runtime_mc2
+  target: model/inference/runbooks/runtime/mc2_fused_comm_op_compatibility_fallback
+  retrieval_cases: *id051
+  required_content:
+  - '24'
+  - double_routing
+  source_paths:
+  - .agents/skills/model-infer-optimize/templates/optimization_report_template.md
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: runtime_firstfail
+  target: model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+  retrieval_cases: *id052
+  required_content:
+  - OOM
+  - rank
+  source_paths:
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: runtime_vocab
+  target: model/inference/runbooks/runtime/shard_local_index_vocab_padding_mtp_layer
+  retrieval_cases: *id053
+  required_content:
+  - vocab
+  - lmhead
+  source_paths:
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: runtime_init
+  target: model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+  retrieval_cases: *id054
+  required_content:
+  - no_init_weights
+  - CPU
+  source_paths:
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: precision_known
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: *id055
+  required_content:
+  - packed
+  - identity
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/known_issues.md
+- id: precision_requests
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: *id056
+  required_content:
+  - DP
+  - 请求
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+- id: precision_tolerance
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: *id057
+  required_content:
+  - BF16
+  - 容差
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/operator_compare.md
+- id: precision_inner
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id058
+  required_content:
+  - inner_precise
+  - Q_S=1
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: precision_single
+  target: model/inference/concepts/kernels/fused_infer_attention_score
+  retrieval_cases: *id059
+  required_content:
+  - pre_tokens
+  - 不生效
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: superkernel_scope
+  target: model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope
+  retrieval_cases: *id060
+  required_content:
+  - scope
+  - GE
+  source_paths:
+  - .agents/skills/model-infer-superkernel/SKILL.md
+  - .agents/skills/model-infer-superkernel/references/performance-baseline-guide.md
+  - .agents/skills/model-infer-superkernel/references/scope-analysis-guide.md
+- id: defer_mla_shapes
+  target: model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+  retrieval_cases: *id061
+  required_content:
+  - 512/128
+  - '64'
+  - 特定版本
+  source_paths:
+  - .agents/skills/model-infer-kvcache/SKILL.md
+  - .agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/kvcache_fa_checklist.md
+- id: defer_debug_probe
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  retrieval_cases: *id062
+  required_content:
+  - save_npugraph_tensor
+  - 尚不能承诺
+  - run_eagerly
+  source_paths:
+  - .agents/skills/model-infer-graph-mode/SKILL.md
+  - .agents/skills/model-infer-graph-mode/references/ge-graph-guide.md
+  - .agents/skills/model-infer-graph-mode/references/llm-model-guide.md
+  - .agents/skills/model-infer-graph-mode/references/npugraph_ex-guide.md
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+  - .agents/skills/model-infer-precision-debug/references/graph_mode_debug.md
+  - .agents/skills/model-infer-precision-debug/references/operator_compare.md
+- id: defer_determinism_env
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: *id063
+  required_content:
+  - CLOSE_MATMUL_K_SHIFT=1
+  - 不证明
+  - 版本
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+- id: defer_fa_checker
+  target: model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+  retrieval_cases: *id064
+  required_content:
+  - debug_fa_all_params
+  - 默认
+  - 失效
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/scripts/fa_debug_utils.py
+- id: defer_history_numbers
+  target: model/inference/runbooks/precision/inference_precision_symptom_triage
+  retrieval_cases: *id065
+  required_content:
+  - Mamba
+  - workaround
+  - 容差
+  source_paths:
+  - .agents/skills/model-infer-precision-debug/SKILL.md
+- id: multi_ge_params
+  target: model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+  retrieval_cases: *id066
+  required_content:
+  - enable_inner_parallel
+  - ENABLE_DYNAMIC_SHAPE_MULTI_STREAM
+  - stream_priority
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/references/ascend_ir_multi_stream.md
+- id: multi_ge_limits
+  target: model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+  retrieval_cases: *id067
+  required_content:
+  - enable_single_stream
+  - _op_aicore_num
+  - aicore_num
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/references/ascend_ir_limit_cores.md
+  - .agents/skills/model-infer-multi-stream/references/ascend_ir_multi_stream.md
+- id: multi_npugraph_limits
+  target: model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+  retrieval_cases: *id068
+  required_content:
+  - Ascend C
+  - 8.5.0
+  - 线程
+  source_paths:
+  - .agents/skills/model-infer-multi-stream/references/npugraph_ex_limit_cores.md
+- id: quant_contract
+  target: model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+  retrieval_cases: *id069
+  required_content:
+  - CompressedTensorsConfig.from_config
+  - target_scheme_map
+  - UnquantizedLinearMethod
+  source_paths:
+  - .agents/skills/model-infer-quantization/references/quantization-contract.md
+- id: quant_li
+  target: model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+  retrieval_cases: *id070
+  required_content:
+  - li_cache_quant_mode
+  - indexer_key_scale_cache
+  - restore_indices
+  source_paths:
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: profiler_lifecycle
+  target: model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  retrieval_cases: *id071
+  required_content:
+  - check_if_update
+  - set_status
+  - tensorboard_trace_handler
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+- id: profiler_fields_exact
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases: *id072
+  required_content:
+  - aic_mte1_ratio
+  - aiv_mte3_ratio
+  - aic_mac_ratio
+  source_paths:
+  - .agents/skills/model-infer-profiling/SKILL.md
+- id: config_complete
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases: *id073
+  required_content:
+  - config/pd/prefill.yaml
+  - config/pd/decode.yaml
+  - —
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: hf_config
+  target: model/inference/guides/bringup/cann_executor_model_onboarding
+  retrieval_cases: *id074
+  required_content:
+  - rope_parameters
+  - auto_map
+  - num_hidden_layers
+  source_paths:
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: runtime_checkpoints
+  target: model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+  retrieval_cases: *id075
+  required_content:
+  - monitored_barrier
+  - GLOO
+  - HCCL
+  source_paths:
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: runtime_stale_processes
+  target: model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+  retrieval_cases: *id076
+  required_content:
+  - 残留
+  - PID
+  - 任务
+  source_paths:
+  - .agents/skills/model-infer-runtime-debug/SKILL.md
+- id: cache_api
+  target: model/inference/concepts/frameworks/kv_cache_manager
+  retrieval_cases: *id077
+  required_content:
+  - ModelCacheInfo.layer_infos
+  - ATTN_TYPE_MANAGER_MAP
+  - allocate_cache_tensors
+  source_paths:
+  - .agents/skills/model-infer-kvcache/references/framework_kv_reference.md
+- id: profiler_column_0
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_0
+  required_content:
+  - Step Id
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_1
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_1
+  required_content:
+  - Device_id
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_2
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_2
+  required_content:
+  - Model ID
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_3
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_3
+  required_content:
+  - Task ID
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_4
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_4
+  required_content:
+  - Stream ID
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_5
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_5
+  required_content:
+  - Name
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_6
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_6
+  required_content:
+  - Type
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_7
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_7
+  required_content:
+  - OP State
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_8
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_8
+  required_content:
+  - Accelerator Core
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_9
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_9
+  required_content:
+  - Start Time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_10
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_10
+  required_content:
+  - Duration(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_11
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_11
+  required_content:
+  - Wait Time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_12
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_12
+  required_content:
+  - HF32 Eligible
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_13
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_13
+  required_content:
+  - Input Shapes
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_14
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_14
+  required_content:
+  - Output Shapes
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_15
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_15
+  required_content:
+  - Input Data Types
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_16
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_16
+  required_content:
+  - Output Data Types
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_17
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_17
+  required_content:
+  - Input Formats
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_18
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_18
+  required_content:
+  - Output Formats
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_19
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_19
+  required_content:
+  - Context ID
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_20
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_20
+  required_content:
+  - aicore_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_21
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_21
+  required_content:
+  - aic_total_cycles
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_22
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_22
+  required_content:
+  - aic_mac_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_23
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_23
+  required_content:
+  - aic_mac_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_24
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_24
+  required_content:
+  - aic_scalar_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_25
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_25
+  required_content:
+  - aic_scalar_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_26
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_26
+  required_content:
+  - aic_mte1_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_27
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_27
+  required_content:
+  - aic_mte1_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_28
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_28
+  required_content:
+  - aic_mte2_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_29
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_29
+  required_content:
+  - aic_mte2_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_30
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_30
+  required_content:
+  - aic_fixpipe_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_31
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_31
+  required_content:
+  - aic_fixpipe_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_32
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_32
+  required_content:
+  - aic_icache_miss_rate
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_33
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_33
+  required_content:
+  - cube_utilization(%)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_34
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_34
+  required_content:
+  - aic_mac_fp16_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_35
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_35
+  required_content:
+  - aic_mac_int8_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_36
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_36
+  required_content:
+  - aic_cube_fops
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_37
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_37
+  required_content:
+  - aiv_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_38
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_38
+  required_content:
+  - aiv_total_cycles
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_39
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_39
+  required_content:
+  - aiv_vec_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_40
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_40
+  required_content:
+  - aiv_vec_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_41
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_41
+  required_content:
+  - aiv_scalar_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_42
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_42
+  required_content:
+  - aiv_scalar_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_43
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_43
+  required_content:
+  - aiv_mte2_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_44
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_44
+  required_content:
+  - aiv_mte2_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_45
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_45
+  required_content:
+  - aiv_mte3_time(us)
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_46
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_46
+  required_content:
+  - aiv_mte3_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_47
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_47
+  required_content:
+  - aiv_icache_miss_rate
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_48
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_48
+  required_content:
+  - aiv_vec_fp32_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_49
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_49
+  required_content:
+  - aiv_vec_fp16_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_50
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_50
+  required_content:
+  - aiv_vec_int32_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_51
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_51
+  required_content:
+  - aiv_vec_misc_ratio
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_52
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_52
+  required_content:
+  - aiv_vector_fops
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: configuration_0
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_0
+  required_content:
+  - models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_1
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_1
+  required_content:
+  - models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_2
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_2
+  required_content:
+  - models/deepseek_r1/config/decode_r1_rank_16_16ep_a8w8.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_3
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_3
+  required_content:
+  - models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_128_128ep_decode_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_4
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_4
+  required_content:
+  - models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_128_128ep_w8a8c8_decode_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_5
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_5
+  required_content:
+  - models/glm_5/config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_6
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_6
+  required_content:
+  - models/kimi_k2_thinking/config/pd/decode.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_7
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_7
+  required_content:
+  - models/longcat_flash/config/longcat_flash_densetp8_ep128_gegraph_mtp_eplb_w8a8.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_8
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_8
+  required_content:
+  - models/qwen3_moe/config/qwen3_235b_128ep.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_9
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_9
+  required_content:
+  - models/deepseek_r1/config/decode_r1_rank_16_16tp_a8w8.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_10
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_10
+  required_content:
+  - models/qwen3_moe/config/qwen3_235b_16tp.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_11
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_11
+  required_content:
+  - models/gpt_oss/config/gpt_oss_120b_8tp.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_12
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_12
+  required_content:
+  - models/gpt_oss/config/gpt_oss_20b.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_13
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_13
+  required_content:
+  - models/longcat_flash/config/longcat_flash_densetp8_ep32.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_14
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_14
+  required_content:
+  - models/longcat_flash/config/longcat_flash_densetp8_ep32_gegraph_mtp.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_15
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_15
+  required_content:
+  - models/qwen3_moe/config/qwen3_235b_attn4tp8dp.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_16
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_16
+  required_content:
+  - models/deepseek_r1/config/prefill_k2_rank_32_32sp_32tp_32ep_a8w8.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_17
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_17
+  required_content:
+  - models/deepseek_r1/config/prefill_r1_rank_32_32dp_32ep_a8w8.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_18
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_18
+  required_content:
+  - models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_64_64ep_prefill_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_19
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_19
+  required_content:
+  - models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_64_64ep_w8a8c8_prefill_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_20
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_20
+  required_content:
+  - models/glm_5/config/glm_5_rank_64_64ep_w8a8_prefill_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_21
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_21
+  required_content:
+  - models/kimi_k2_thinking/config/pd/prefill.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_22
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_22
+  required_content:
+  - models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_128_128ep_w8a8c8_offload_benchmark.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: configuration_23
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_config_23
+  required_content:
+  - models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_longseq.yaml
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/references/config-index.md
+- id: parallel_batch_algebra
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_parallel_batch
+  required_content:
+  - attn_dp_size=world_size//attn_tp_size
+  - batch_size_per_dp_rank=batch_size//attn_dp_size
+  - 增加 DP 会让
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/SKILL.md
+- id: parallel_history_thresholds
+  target: model/inference/guides/deployment/parallel_reference_config_selection
+  retrieval_cases:
+  - infer_skill_complete_parallel_history
+  required_content:
+  - 80%/95%
+  - 20%/40%
+  - 5%/15%
+  - 不作为通用
+  source_paths:
+  - .agents/skills/model-infer-parallel-analysis/SKILL.md
+- id: final_graph_recompile_limit
+  target: model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+  required_content:
+  - hit recompile_limit
+  - kv_len
+  - actual_seq_lengths_kv
+  - guard
+  retrieval_cases:
+  - infer_skill_final_graph_recompile_limit
+  source_paths:
+  - .agents/skills/model-infer-graph-mode/SKILL.md
+- id: final_standalone_process_group
+  target: model/inference/guides/integration/parallel_groups_and_weight_shards
+  required_content:
+  - torchrun
+  - dist.init_process_group("hccl")
+  - build_parallel_context
+  - parallel_ctx
+  retrieval_cases:
+  - infer_skill_final_standalone_process_group
+  source_paths:
+  - .agents/skills/model-infer-parallel-impl/SKILL.md
+- id: final_expert_tokens_dp_shape
+  target: model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+  required_content:
+  - npu_moe_compute_expert_tokens
+  - npu_moe_init_routing
+  - per-rank buffer
+  retrieval_cases:
+  - infer_skill_final_expert_tokens_dp_shape
+  source_paths:
+  - .agents/skills/model-infer-migrator/references/common_issues.md
+- id: profiler_column_53
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_53
+  required_content:
+  - Block Dim
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_54
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_54
+  required_content:
+  - Block Num
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_55
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_55
+  required_content:
+  - Mix Block Dim
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_column_56
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_complete_field_56
+  required_content:
+  - Mix Block Num
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_task_type_0
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_final_task_type_0
+  required_content:
+  - AI_CORE
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_task_type_1
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_final_task_type_1
+  required_content:
+  - AI_CPU
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_task_type_2
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_final_task_type_2
+  required_content:
+  - HCCL
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_task_type_3
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_final_task_type_3
+  required_content:
+  - MIX_AIC
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_task_type_4
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_final_task_type_4
+  required_content:
+  - MIX_AIV
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_task_type_5
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_final_task_type_5
+  required_content:
+  - FFTS_PLUS
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: profiler_task_type_6
+  target: model/inference/guides/optimization/kernel_details_field_interpretation
+  retrieval_cases:
+  - infer_skill_final_task_type_6
+  required_content:
+  - DVPP
+  source_paths:
+  - .agents/skills/model-infer-perf-breakdown/references/kernel_data_guide.md
+- id: api_navigation
+  target: model/inference/guides/integration/torch_npu_api_selection
+  required_content:
+  - 量化
+  - 签名
+  - 副作用
+  - 产品支持
+  - Beta
+  retrieval_cases:
+  - infer_skill_r3_api_lookup
+  source_paths:
+  - .agents/skills/model-infer-fusion/references/torch_npu_API/torch_npu_list.md
+- id: li_mode_contract
+  target: model/inference/concepts/quantization/li_cache_quantization_mode_contract
+  required_content:
+  - platform_version == "950"
+  - li_cache_quant_mode
+  - FP16
+  - FP32
+  - mm_quant_mode
+  retrieval_cases:
+  - infer_skill_r3_li_mode_950_scope
+  source_paths:
+  - .agents/skills/model-infer-quantization/references/quantization-structure-cards.md
+- id: superkernel_scope_method
+  target: model/inference/guides/optimization/superkernel_scope_analysis_and_validation
+  required_content:
+  - 逐层扩大
+  - 逐段缩小
+  - 跨方法
+  - 静态层循环
+  - 动态控制流
+  - 数据依赖
+  - 控核边界
+  retrieval_cases:
+  - infer_skill_r3_sk_scope
+  source_paths:
+  - .agents/skills/model-infer-superkernel/SKILL.md
+  - .agents/skills/model-infer-superkernel/references/scope-analysis-guide.md
+- id: superkernel_validation
+  target: model/inference/guides/optimization/superkernel_scope_analysis_and_validation
+  required_content:
+  - enable_superkernel
+  - 中位数
+  - 首次编译
+  - 关闭 profiler
+  - same_ge_one_switch
+  - eager_vs_ge
+  retrieval_cases:
+  - infer_skill_r3_sk_validate
+  source_paths:
+  - .agents/skills/model-infer-superkernel/SKILL.md
+  - .agents/skills/model-infer-superkernel/references/performance-baseline-guide.md
+  - .agents/skills/model-infer-superkernel/references/scope-analysis-guide.md
+- id: quant_runtime_layers
+  target: model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+  required_content:
+  - 产物
+  - Linear / FusedMoEGMM
+  - process_weights_after_loading
+  - 峰值显存
+  retrieval_cases:
+  - infer_skill_complete_quant_contract
+  source_paths:
+  - .agents/skills/model-infer-quantization/references/quantization-contract.md
+profiler_columns:
+- Step Id
+- Device_id
+- Model ID
+- Task ID
+- Stream ID
+- Name
+- Type
+- OP State
+- Accelerator Core
+- Start Time(us)
+- Duration(us)
+- Wait Time(us)
+- Block Dim
+- Block Num
+- Mix Block Dim
+- Mix Block Num
+- HF32 Eligible
+- Input Shapes
+- Output Shapes
+- Input Data Types
+- Output Data Types
+- Input Formats
+- Output Formats
+- Context ID
+- aicore_time(us)
+- aic_total_cycles
+- aic_mac_time(us)
+- aic_mac_ratio
+- aic_scalar_time(us)
+- aic_scalar_ratio
+- aic_mte1_time(us)
+- aic_mte1_ratio
+- aic_mte2_time(us)
+- aic_mte2_ratio
+- aic_fixpipe_time(us)
+- aic_fixpipe_ratio
+- aic_icache_miss_rate
+- cube_utilization(%)
+- aic_mac_fp16_ratio
+- aic_mac_int8_ratio
+- aic_cube_fops
+- aiv_time(us)
+- aiv_total_cycles
+- aiv_vec_time(us)
+- aiv_vec_ratio
+- aiv_scalar_time(us)
+- aiv_scalar_ratio
+- aiv_mte2_time(us)
+- aiv_mte2_ratio
+- aiv_mte3_time(us)
+- aiv_mte3_ratio
+- aiv_icache_miss_rate
+- aiv_vec_fp32_ratio
+- aiv_vec_fp16_ratio
+- aiv_vec_int32_ratio
+- aiv_vec_misc_ratio
+- aiv_vector_fops
+configuration_rows:
+- source: models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 1
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 1
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/deepseek_r1/config/decode_r1_rank_16_16ep_a8w8.yaml
+  parallel_config:
+    world_size: 16
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_128_128ep_decode_benchmark.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 4
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 8
+    cp_size: 128
+- source: models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_128_128ep_w8a8c8_decode_benchmark.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 4
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 4
+    cp_size: 128
+- source: models/glm_5/config/glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 4
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 4
+    cp_size: 128
+- source: models/kimi_k2_thinking/config/pd/decode.yaml
+  parallel_config:
+    world_size: 32
+    attn_tp_size: 1
+    dense_tp_size: 4
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 8
+    cp_size: 1
+- source: models/longcat_flash/config/longcat_flash_densetp8_ep128_gegraph_mtp_eplb_w8a8.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 8
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 16
+    o_proj_tp_size: 8
+    cp_size: null
+- source: models/qwen3_moe/config/qwen3_235b_128ep.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: null
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 1
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/deepseek_r1/config/decode_r1_rank_16_16tp_a8w8.yaml
+  parallel_config:
+    world_size: 16
+    attn_tp_size: 16
+    dense_tp_size: 16
+    moe_tp_size: 16
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/qwen3_moe/config/qwen3_235b_16tp.yaml
+  parallel_config:
+    world_size: 16
+    attn_tp_size: 16
+    dense_tp_size: null
+    moe_tp_size: 16
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/gpt_oss/config/gpt_oss_120b_8tp.yaml
+  parallel_config:
+    world_size: 8
+    attn_tp_size: 8
+    dense_tp_size: null
+    moe_tp_size: 8
+    embed_tp_size: null
+    lmhead_tp_size: 8
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/gpt_oss/config/gpt_oss_20b.yaml
+  parallel_config:
+    world_size: 1
+    attn_tp_size: 1
+    dense_tp_size: null
+    moe_tp_size: 1
+    embed_tp_size: null
+    lmhead_tp_size: 1
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/longcat_flash/config/longcat_flash_densetp8_ep32.yaml
+  parallel_config:
+    world_size: 32
+    attn_tp_size: 1
+    dense_tp_size: 8
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 1
+    o_proj_tp_size: 1
+    cp_size: null
+- source: models/longcat_flash/config/longcat_flash_densetp8_ep32_gegraph_mtp.yaml
+  parallel_config:
+    world_size: 32
+    attn_tp_size: 1
+    dense_tp_size: 8
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 1
+    o_proj_tp_size: 8
+    cp_size: null
+- source: models/qwen3_moe/config/qwen3_235b_attn4tp8dp.yaml
+  parallel_config:
+    world_size: 32
+    attn_tp_size: 4
+    dense_tp_size: null
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 1
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/deepseek_r1/config/prefill_k2_rank_32_32sp_32tp_32ep_a8w8.yaml
+  parallel_config:
+    world_size: 32
+    attn_tp_size: 32
+    dense_tp_size: 32
+    moe_tp_size: 1
+    embed_tp_size: 32
+    lmhead_tp_size: 32
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/deepseek_r1/config/prefill_r1_rank_32_32dp_32ep_a8w8.yaml
+  parallel_config:
+    world_size: 32
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 32
+    lmhead_tp_size: 32
+    o_proj_tp_size: null
+    cp_size: null
+- source: models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_64_64ep_prefill_benchmark.yaml
+  parallel_config:
+    world_size: 64
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 8
+    cp_size: 64
+- source: models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_64_64ep_w8a8c8_prefill_benchmark.yaml
+  parallel_config:
+    world_size: 64
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 1
+    cp_size: 64
+- source: models/glm_5/config/glm_5_rank_64_64ep_w8a8_prefill_benchmark.yaml
+  parallel_config:
+    world_size: 64
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 1
+    cp_size: 64
+- source: models/kimi_k2_thinking/config/pd/prefill.yaml
+  parallel_config:
+    world_size: 32
+    attn_tp_size: 1
+    dense_tp_size: 1
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 1
+    cp_size: 32
+- source: models/deepseek_v3_2_exp/config/deepseek_v3.2_exp_rank_128_128ep_w8a8c8_offload_benchmark.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 4
+    moe_tp_size: 1
+    embed_tp_size: 16
+    lmhead_tp_size: 16
+    o_proj_tp_size: 4
+    cp_size: 128
+- source: models/deepseek_r1/config/decode_r1_rank_128_128ep_a8w8c8_mtp_longseq.yaml
+  parallel_config:
+    world_size: 128
+    attn_tp_size: 1
+    dense_tp_size: 4
+    moe_tp_size: 1
+    embed_tp_size: 1
+    lmhead_tp_size: 16
+    o_proj_tp_size: null
+    cp_size: null
+reviewed_head: 5f5b8ad325822214f6d3f1b1e629c51aa88c8a2d
+followup_files:
+- path: .agents/README.md
+  before_blob: b173074fe69c32a4d216d67f0bd96bb768d82104
+  after_blob: e75b54111895a84de975bab1bb601bb2cdaa5801
+  deleted_sha256: b2669951eaf8d89bb47110dd207bef137cfe58b638522f0de5bad1902fec12be
+  added_sha256: 573aafa31584c812bb814f08208f99285f216cf9f810bbbcc927d0511f4e4279
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/agents/model-infer-analyzer.md
+  before_blob: 09d0b63d78980eea6a295da1fb59490b1112884d
+  after_blob: 577706618c9203b3f653d642191393f4bd063a10
+  deleted_sha256: 07823b10ccc97e3cbada7972baa9be75986c02986c11ed5daabb2c5f696291b0
+  added_sha256: 567807ac6ecd1b4fddd3b1d4203a60c5c35c5a96377e06f11cbcbc7f32ccb8a7
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/agents/model-infer-implementer.md
+  before_blob: 706f20ffbd48a7b62514eaf159557eab00d98e3a
+  after_blob: 5c3ef3b44f418453918746a09b7556c592f97413
+  deleted_sha256: 169fc6f2e502eb01eecb08e85c2eef75b5fcb280667cc0e4c64c80ef021c6d45
+  added_sha256: f4c9370548c76b129dfc5dcc504d2534e7702fafd2f88c9ab0c013abcd14e2af
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/agents/model-infer-reviewer.md
+  before_blob: 6ef7eea9941a4bd1264c4118bd9eef4c7d76d75e
+  after_blob: 13172d4428cdd31ba878aaa8dc17b979a4064ddc
+  deleted_sha256: a8943aed5a8da4ec7700a89fba4814df4d53c3f0e701c50f54c6258c588f5579
+  added_sha256: 829a5394baaa0537d42bee17b350a6bd46035c9e2b6132c811a9dfa8e2600ab5
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/hooks/hook_paths.py
+  before_blob: null
+  after_blob: a89f0370bc5d9db219c0b6fd439846c90910664f
+  deleted_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  added_sha256: ffb8b86a7ee54356d700778d5677e86389d146a7bd4b0f747be3615fb6aed0e4
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/hooks/post_tool_use.py
+  before_blob: 32f8beea1e2fddfb8799af8fc8a3275e2b1a91ce
+  after_blob: c7a9a5dc7695cd7dd7a5f63a408c9f3bc638ec8b
+  deleted_sha256: 83c39eb2ee6de8ceb6f84adc7775679944e8d06067e7f854ce7af6dba256de28
+  added_sha256: 721c8dccaa71b4d1afdc3af9ef36e0fb5ad118090ba839a0b699df25be51be7e
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/hooks/pre_tool_use.py
+  before_blob: 4a6b47884b48ad2c6a314f898f15425e5923f56a
+  after_blob: 5dc81584d1c300d28a08f561a5026d900d087ae4
+  deleted_sha256: 03b69ab504a0fcc0eb8bee08df1483978e2cdb8aed6326ab6ea75d3f43d7a3fb
+  added_sha256: 35541383a49c9e42acb10ff53320818310d9a2b9256d6fa431a8caff10f0562b
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/hooks/subagent_stop.py
+  before_blob: d9fa25bd60a57e7b3221674cb21178f1e6e7c100
+  after_blob: 86dde1e8cdbe6939d1168200691213fa734396e0
+  deleted_sha256: ff7ee52422fbf0f9755223e0c61ba35290a8e9c15ba8f06440fc1a51a19324ca
+  added_sha256: 7eb56e68b727fb013568cade284784cbbd096339cec6ccb632508f2ee0b83dc5
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/hooks/time_reminder.py
+  before_blob: 11ca29bfd227ce4c3091dfdb632ef9931ed92c49
+  after_blob: 46f03e152442ae84d7f37d6bcbd6454b56ee4254
+  deleted_sha256: 2f4fdae468c3bbdeb12395e06b5cf12d580dc99ffa2ad1283bc4b5233c60aaf4
+  added_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .agents/settings.json
+  before_blob: 744191c3e724d70360e18a695fa12c401f2a29c3
+  after_blob: 6c9a16a35609bff1793b12c7e13d786872d8b445
+  deleted_sha256: 68ab5965abc8c36c0f134de890a7ad8b2821980a2b8bc2d2a60d8808aa70ef4c
+  added_sha256: 1fd69adfc7a88243756cb4a38bd2ac41ab22cc9aee44cc9220fd500383b9d97f
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: .gitignore
+  before_blob: 0ee5e97036cf1653485e5e67b60b19823d3e252a
+  after_blob: c83c80be7848825a6cc4caac9346fe844fab7e9b
+  deleted_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  added_sha256: de37420cafc0c604ab2610f981441d9d46b0bab7ceee0d3b3f9d17139e366dac
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: AGENTS.md
+  before_blob: 5931d4f0b214a48a5fd9d3fecec77a28c4392915
+  after_blob: acdd179e881e93217a54a534a0ed019e9053cc11
+  deleted_sha256: 4388c1100462705640821709eef32a6043819fd4b0c9bbb2a27abfe3184aa1c7
+  added_sha256: de8d99caaa933ed2f24efa8a91e79c2cab6e7b2301a4cef20bf20a8c584d0ba1
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: docs/agent/DeepSeekV4.1-Flash-Model-Agent.md
+  before_blob: fa088165ceab61fea573ba8bdd99d2ddb5806b00
+  after_blob: eb86bb088222abf4f03315079624d4496489792c
+  deleted_sha256: 1adc49bf0965a5024feae4871f4e1356dbb3cc343d1a191be25e5d0bb2b23a47
+  added_sha256: ca23008ec33aa229f67d503aeb0a35488d2ef6c8395dcd5c4877f18f5a8c9cff
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: docs/agent/model-infer-optimize-design.md
+  before_blob: f5df7abb0e79f30c5d6de16284002dceced5ad97
+  after_blob: 9cfa99e8e98ec163790d2bf2c4719d028878bae6
+  deleted_sha256: 847d17a6931cbdfee19c3627d653c27facfe6f2425f1a455917fdd26410d186e
+  added_sha256: 5ea5bc20b0a3237a6dd2d9781fa352b82af7e6cbbc448511435b8f1021c75774
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+- path: scripts/init-agent.sh
+  before_blob: 7daeaeaa2036adb7956ed8b74cf039b92bdcb80c
+  after_blob: 78fe4212e9dbc9d1b6817de6216e9d62a302c9cb
+  deleted_sha256: c69531a63272ef78eb9cc3cc0c3c674b5ea69fd02879f3b657f44ed9551d9b29
+  added_sha256: 3aa0a0c6c0fd4f3bd6db51b13cf3d21b56612fef5667636d0531863fca00072d
+  disposition: workflow
+  reason: 知识库安装、角色分工、客户端 Hook 或使用说明；未变更推理技术知识，不作为 Bundle 正文。
+reviewed_file_count: 112
+profiler_task_types:
+- AI_CORE
+- AI_CPU
+- HCCL
+- MIX_AIC
+- MIX_AIV
+- FFTS_PLUS
+- DVPP

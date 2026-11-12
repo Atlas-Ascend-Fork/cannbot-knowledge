@@ -1,0 +1,4246 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+source_table: .agents/skills/model-infer-fusion/references/torch_npu_API/torch_npu_list.md
+recipes_revision: 944d2d3ece86f7df33dbb0cb155c72ca619a9c66
+op_plugin_revision: b3065ed3ed174b08b7ecfcc564c0c464fb91fd13
+entries:
+- api: torch_npu.empty_with_swapped_memory
+  source_label: torch_npu.empty_with_swapped_memory
+  group: formal
+  source_row_sha256: 6483d1cf3e618884357e8e1d632adabc4e720b5e45825cad63ef66210de8e8b7
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-empty_with_swapped_memory.md
+  source_doc_sha256: a07e76e6e30648c81c7987db1c85ad8e3be84bdebad8ba192e91e9fe361c5258
+  disposition: migrated
+  target: model/inference/apis/torch_npu/empty_with_swapped_memory
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.empty_with_swapped_memory
+  - 申请一个device信息为NPU且实际内存在host侧的`Tensor`。
+  - torch_npu.empty_with_swapped_memory(size, dtype=None, device=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_0_a2
+  - infer_skill_r3_api_0_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-empty_with_swapped_memory.md
+  source_summary: 申请一个device信息为NPU且实际内存在host侧的`Tensor`。
+  source_facts:
+  - source_excerpt: 申请一个device信息为NPU且实际内存在host侧的`Tensor`
+    required_content:
+    - device信息为NPU
+    - 内存在host侧
+  capability_cases:
+  - infer_skill_r4_capability_0
+- api: torch_npu.erase_stream
+  source_label: torch_npu.erase_stream
+  group: formal
+  source_row_sha256: f4f7ca7a556dbe642587fd41d68da51fa69d1e950dec34ebcc5b1d78c5985206
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-erase_stream.md
+  source_doc_sha256: 92400806eb6f7e2146baded035087c8df977dcfc332a57b6feefea30e5c27bf1
+  disposition: migrated
+  target: model/inference/apis/torch_npu/erase_stream
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.erase_stream
+  - 删除 record_stream 为张量登记的流使用记录；删除前必须保证消费已完成，不能用它替代流间等待。
+  - torch_npu.erase_stream(tensor, stream) -> None
+  retrieval_cases:
+  - infer_skill_r3_api_1_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-erase_stream.md
+  source_summary: '`Tensor`通过record_stream在内存池上添加的已被stream使用的标记后，可以通过该接口移除该标记。'
+  source_facts:
+  - source_excerpt: '`Tensor`通过record_stream在内存池上添加的已被stream使用的标记后，可以通过该接口移除该标记'
+    required_content:
+    - record_stream
+    - 流使用记录
+    - 消费已完成
+  capability_cases:
+  - infer_skill_r4_capability_1
+- api: torch.npu.get_device_limit
+  source_label: torch.npu.get_device_limit
+  group: formal
+  source_row_sha256: 3c139ddc559758fd187a03b463916e17ace7cd4b4e014698dcbb655c9d48c891
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-get_device_limit.md
+  source_doc_sha256: 2030dcd0c2e74ad5615e2eaa3f44705227161bb00c209d829cf4186539aa3fbb
+  disposition: migrated
+  target: model/inference/apis/torch_npu/get_device_limit
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch.npu.get_device_limit
+  - 通过此接口，获取指定Device上的Device资源限制。
+  - torch.npu.get_device_limit(device) ->Dict
+  retrieval_cases:
+  - infer_skill_r3_api_2_a2
+  - infer_skill_r3_api_2_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-get_device_limit.md
+  source_summary: 通过该接口，获取指定Device上的Device资源限制。
+  source_facts:
+  - source_excerpt: 通过该接口，获取指定Device上的Device资源限制
+    required_content:
+    - 获取指定Device
+    - 资源限制
+  capability_cases:
+  - infer_skill_r4_capability_2
+- api: torch.npu.get_stream_limit
+  source_label: torch.npu.get_stream_limit
+  group: formal
+  source_row_sha256: 4428c2cb07d0ef83ac5ec8e2b936f8bd276eb9866c54f4f75e2b17e5aa499210
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-get_stream_limit.md
+  source_doc_sha256: e1595b270b931c7f369e042b8125d987699657b83df453c52b308a42b783326d
+  disposition: migrated
+  target: model/inference/apis/torch_npu/get_stream_limit
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch.npu.get_stream_limit
+  - 通过此接口，获取指定Stream的Device资源限制。
+  - torch.npu.get_stream_limit(stream) ->Dict
+  retrieval_cases:
+  - infer_skill_r3_api_3_a2
+  - infer_skill_r3_api_3_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-get_stream_limit.md
+  source_summary: 通过该接口，获取指定Stream的Device资源限制。
+  source_facts:
+  - source_excerpt: 通过该接口，获取指定Stream的Device资源限制
+    required_content:
+    - 获取指定Stream
+    - 资源限制
+  capability_cases:
+  - infer_skill_r4_capability_3
+- api: torch_npu.matmul_checksum
+  source_label: torch_npu.matmul_checksum
+  group: formal
+  source_row_sha256: 32bdc5c94c0116105ab5e18bf30edc4297b60fa3db1064b91a256384b81c736e
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-matmul_checksum.md
+  source_doc_sha256: d99b4dfe5f7a177ffb121df112cdba83224f5f0d8574a45c11c44421487c99f2
+  disposition: migrated
+  target: model/inference/apis/torch_npu/matmul_checksum
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.matmul_checksum
+  - 对 matmul 的计算过程进行校验，用于定位 AI Core 硬件故障；校验通过不代表整网数值精度通过。
+  - torch_npu.matmul_checksum(a, b, c) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_4_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-matmul_checksum.md
+  source_summary: 提供基于原生torch.matmul和Tensor.matmul接口的AIcore错误硬件故障检测接口。内部执行矩阵计算结果校验过程，校验误差和实时计算的校验门限进行对比，判断校验误差是否超越门限，若超越则认为发生了AIcore错误。
+  source_facts:
+  - source_excerpt: 提供基于原生torch.matmul和Tensor.matmul接口的AIcore错误硬件故障检测接口
+    required_content:
+    - torch.matmul
+    - Tensor.matmul
+    - 硬件故障
+  - source_excerpt: 内部执行矩阵计算结果校验过程，校验误差和实时计算的校验门限进行对比，判断校验误差是否超越门限，若超越则认为发生了AIcore错误
+    required_content:
+    - 校验误差超过实时门限
+    - AI Core
+  capability_cases:
+  - infer_skill_r4_capability_4
+- api: torch_npu.npu_advance_step_flashattn
+  source_label: torch_npu.npu_advance_step_flashattn
+  group: formal
+  source_row_sha256: 537f4770f41f706e6f16b67f836a779ceb38e53bc38d6c4558d9c9f0d3c28b48
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_advance_step_flashattn.md
+  source_doc_sha256: c2e795e6f1dcd0976a562ba44dfa0d029dfc3b7e0be9e7b177937ca10550b1bc
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_advance_step_flashattn
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_advance_step_flashattn
+  - 在NPU上执行vLLM库中advance_step_flashattn的功能，在每个生成步骤中原地更新`input_tokens`，`input_positions`，`seq_lens`和`slot_mapping`。
+  - torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_positions, seq_lens, slot_mapping,
+    block_tables, num_seqs, num_queries, block_size) -> ()
+  retrieval_cases:
+  - infer_skill_r3_api_5_a2
+  - infer_skill_r3_api_5_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_advance_step_flashattn.md
+  source_summary: 在NPU上实现vLLM库中advance_step_flashattn的功能，在每个生成步骤中原地更新`input_tokens`，`input_positions`，`seq_lens`和`slot_mapping`。
+  source_facts:
+  - source_excerpt: 在NPU上实现vLLM库中advance_step_flashattn的功能，在每个生成步骤中原地更新`input_tokens`，`input_positions`，`seq_lens`和`slot_mapping`
+    required_content:
+    - vLLM
+    - 每个生成步骤
+    - 原地更新
+    - input_tokens
+    - input_positions
+    - seq_lens
+    - slot_mapping
+  capability_cases:
+  - infer_skill_r4_capability_5
+- api: torch_npu.npu_all_gather_base_mm
+  source_label: torch_npu.npu_all_gather_base_mm
+  group: formal
+  source_row_sha256: a56c1cf5ceb8e12cafe933faf7be6b1bd41007d8ee4118a370764fac869a3102
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_all_gather_base_mm.md
+  source_doc_sha256: 61d1734bc786ea0b5e457b79ab6ec946221df56ab5df02a3991671759f12261f
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_all_gather_base_mm
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_all_gather_base_mm
+  - TP切分场景下，融合`allgather`和`matmul`，执行通信和计算流水并行。
+  - torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, bias=None, x1_scale=None, x2_scale=None, gather_index=0,
+    gather_output=True, comm_turn=0, output_dtype=None, comm_mode=None) -> tuple[Tensor, Tensor]
+  retrieval_cases:
+  - infer_skill_r3_api_6_a2
+  - infer_skill_r3_api_6_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_all_gather_base_mm.md
+  source_summary: TP切分场景下，融合`allgather`和`matmul`，实现通信和计算流水并行。
+  source_facts:
+  - source_excerpt: TP切分场景下，融合`allgather`和`matmul`，实现通信和计算流水并行
+    required_content:
+    - TP
+    - allgather
+    - matmul
+    - 通信和计算流水并行
+  capability_cases:
+  - infer_skill_r4_capability_6
+- api: torch_npu.npu_alltoallv_gmm
+  source_label: torch_npu.npu_alltoallv_gmm
+  group: formal
+  source_row_sha256: 70a6323a85f2ce523d2273f1422a989b3bac5df1675f4b2b429cd9f7c25d06aa
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_alltoallv_gmm.md
+  source_doc_sha256: f5fb6f15c591b699f5e027a4fc09cb46ca2d1968a415e7289fb46ff220bdb5ad
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_alltoallv_gmm
+  platforms:
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_alltoallv_gmm
+  - MoE（Mixture of Experts，混合专家模型）网络中，执行路由专家AlltoAllv、Permute、GroupedMatMul融合并执行与共享专家MatMul并行融合，先通信后计算。
+  - torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts, recv_counts, *, send_counts_tensor=None,
+    recv_counts_tensor=None, mm_x=None, mm_weight=None, trans_gmm_weight=False, trans_mm_weight=False, permute_out_flag=False)
+    -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_7_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_alltoallv_gmm.md
+  source_summary: MoE（Mixture of Experts，混合专家模型）网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算。
+  source_facts:
+  - source_excerpt: MoE（Mixture of Experts，混合专家模型）网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算
+    required_content:
+    - AlltoAllv
+    - Permute
+    - GroupedMatMul
+    - 共享专家
+    - 先通信后计算
+  capability_cases:
+  - infer_skill_r4_capability_7
+- api: torch_npu.npu_anti_quant
+  source_label: torch_npu.npu_anti_quant
+  group: formal
+  source_row_sha256: 0146294393e7d388a7b3b3dac91c47f2051132cdab68819cb39e46e8d869c2e1
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_anti_quant.md
+  source_doc_sha256: 91832c2a253bc62cfdaa87c00b5aa375b5a8ad22ff2eaad0454d2ea4e08e3eee
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_anti_quant
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_anti_quant
+  - 以 scale 和可选 offset 将整数量化值恢复到目标浮点类型。
+  - torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_8_a2
+  - infer_skill_r3_api_8_a3
+  - infer_skill_r3_api_capability_npu_anti_quant
+  - infer_skill_r3_api_global_npu_anti_quant
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_anti_quant.md
+  source_summary: 对张量`x`进行反量化操作，即将整数恢复为浮点数。
+  source_facts:
+  - source_excerpt: 对张量`x`进行反量化操作，即将整数恢复为浮点数
+    required_content:
+    - 整数量化值恢复到目标浮点类型
+  capability_cases:
+  - infer_skill_r4_capability_8
+- api: torch_npu.npu_convert_weight_to_int4pack
+  source_label: torch_npu.npu_convert_weight_to_int4pack
+  group: formal
+  source_row_sha256: b8f2a7831059453dc2e1101cd669bf82aad5592197d27c13cf4866ffa6ff3be3
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_convert_weight_to_int4pack.md
+  source_doc_sha256: 21992e0237afbc71ec96b82bde78d2239a72970ccee45dadd49bb9d864539f44
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_convert_weight_to_int4pack
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_convert_weight_to_int4pack
+  - 将`int32`类型的输入`tensor`打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
+  - torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_9_a2
+  - infer_skill_r3_api_9_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_convert_weight_to_int4pack.md
+  source_summary: 将`int32`类型的输入`tensor`打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
+  source_facts:
+  - source_excerpt: 将`int32`类型的输入`tensor`打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放
+    required_content:
+    - int32
+    - 每8个
+    - int4
+    - 交叠排放
+  capability_cases:
+  - infer_skill_r4_capability_9
+- api: torch_npu.npu_cross_entropy_loss
+  source_label: torch_npu.npu_cross_entropy_loss
+  group: formal
+  source_row_sha256: b58729fd6c034af30e88fd419da0563f9531da57a7813c4209ffd9fae34826da
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_cross_entropy_loss.md
+  source_doc_sha256: c9ed5afe98b6696ea3c98e7f0fa20b5a43c0dd38a0c351c6a38b393a992ebd16
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_cross_entropy_loss.md
+  source_summary: 计算输入`input`和标签`target`之间的交叉熵损失。此API将原生`CrossEntropyLoss`中的log_softmax和nll_loss融合，降低计算时使用的内存。
+- api: torch_npu.npu_dequant_swiglu_quant
+  source_label: torch_npu.npu_dequant_swiglu_quant
+  group: formal
+  source_row_sha256: a708b366492d1480eec85fffbc997f00e5f30ab7b437128c079d2871d4b0af87
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_dequant_swiglu_quant.md
+  source_doc_sha256: f4efb5eea0076fa43865baf4be61ff30b8d4f09767079c9757a4c9b2da1469bc
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_dequant_swiglu_quant
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_dequant_swiglu_quant
+  - 对张量`x`做dequant反量化+swiglu激活+quant量化操作，同时支持分组。
+  - torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=None, bias=None, quant_scale=None,
+    quant_offset=None, group_index=None, activate_left=False, quant_mode=0, swiglu_mode=0, clamp_limit=7.0, float
+    glu_alpha=1.702, float glu_bias=1.0) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_11_a2
+  - infer_skill_r3_api_11_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_dequant_swiglu_quant.md
+  source_summary: 对张量`x`做dequant反量化+swiglu激活+quant量化操作，同时支持分组。
+  source_facts:
+  - source_excerpt: 对张量`x`做dequant反量化+swiglu激活+quant量化操作，同时支持分组
+    required_content:
+    - dequant反量化
+    - swiglu激活
+    - quant量化
+    - 支持分组
+  capability_cases:
+  - infer_skill_r4_capability_11
+- api: torch_npu.npu_dynamic_block_quant
+  source_label: torch_npu.npu_dynamic_block_quant
+  group: formal
+  source_row_sha256: 06d964005b6e61a15ebe87cfd7607fc313b48aa5065e9eb2d4630af0e748d792
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_dynamic_block_quant.md
+  source_doc_sha256: b4f31e8c8b3fba2f6fa7e47caf0285ba440988f4825125217572ac84b3d795e2
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_dynamic_block_quant
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_dynamic_block_quant
+  - 对输入张量，通过给定的`row_block_size`和`col_block_size`将输入划分成多个数据块，以数据块为基本粒度进行量化。
+  - torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_type=1, row_block_size=1, col_block_size=128)
+    -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_12_a2
+  - infer_skill_r3_api_12_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_dynamic_block_quant.md
+  source_summary: 对输入张量，通过给定的`row_block_size`和`col_block_size`将输入划分成多个数据块，以数据块为基本粒度进行量化。在每个块中，先计算出当前块对应的量化参数`scale`，并根据`scale`对输入进行量化。输...
+  source_facts:
+  - source_excerpt: 对输入张量，通过给定的`row_block_size`和`col_block_size`将输入划分成多个数据块，以数据块为基本粒度进行量化
+    required_content:
+    - row_block_size
+    - col_block_size
+    - 数据块
+    - 量化
+  - source_excerpt: 在每个块中，先计算出当前块对应的量化参数`scale`，并根据`scale`对输入进行量化
+    required_content:
+    - 逐块计算 scale
+    - 逐块量化
+  - source_excerpt: 输...
+    required_content:
+    - 返回量化结果和每块的 scale
+  capability_cases:
+  - infer_skill_r4_capability_12
+- api: torch_npu.npu_dynamic_quant
+  source_label: torch_npu.npu_dynamic_quant
+  group: formal
+  source_row_sha256: 0775f55d51175c0bce69b5da850c1821003dbe742aa232cdbdfa11ffa211da26
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_dynamic_quant.md
+  source_doc_sha256: c6ec306fc99faf0d30e90dcd44c9f5b6669abccdfee8911f381a4e6c8eeb6d5c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_dynamic_quant
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_dynamic_quant
+  - 对输入的张量进行pertoken对称动态量化。
+  - torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type=None) ->(Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_13_a2
+  - infer_skill_r3_api_13_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_dynamic_quant.md
+  source_summary: 对输入的张量进行pertoken对称动态量化。
+  source_facts:
+  - source_excerpt: 对输入的张量进行pertoken对称动态量化
+    required_content:
+    - pertoken
+    - 对称动态量化
+  capability_cases:
+  - infer_skill_r4_capability_13
+- api: torch_npu.npu_dynamic_quant_asymmetric
+  source_label: torch_npu.npu_dynamic_quant_asymmetric
+  group: formal
+  source_row_sha256: d3072f80101a7a88d7014c84d3dc37fb47d1fc7456afb4033b73170cc45ea761
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_dynamic_quant_asymmetric.md
+  source_doc_sha256: 61d5a70d56462587876fa3fbc6428370067a1d44459f894ac4f6e84673ef4f19
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_dynamic_quant_asymmetric
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_dynamic_quant_asymmetric
+  - 按输入范围同时计算量化值、scale 与 offset，支持 token、tensor 以及按专家分组的量化。
+  - torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=None, dst_type=None, quant_mode="pertoken")
+    -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_14_a2
+  - infer_skill_r3_api_14_a3
+  - infer_skill_r3_api_capability_npu_dynamic_quant_asymmetric
+  - infer_skill_r3_api_global_npu_dynamic_quant_asymmetric
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_dynamic_quant_asymmetric.md
+  source_summary: 对输入的张量进行动态非对称量化。支持pertoken、pertensor和MoE（Mixture of Experts，混合专家模型）场景。
+  source_facts:
+  - source_excerpt: 对输入的张量进行动态非对称量化
+    required_content:
+    - 动态非对称量化
+  - source_excerpt: 支持pertoken、pertensor和MoE（Mixture of Experts，混合专家模型）场景
+    required_content:
+    - pertoken
+    - pertensor
+    - MoE
+  capability_cases:
+  - infer_skill_r4_capability_14
+- api: torch_npu.npu_fast_gelu
+  source_label: torch_npu.npu_fast_gelu
+  group: formal
+  source_row_sha256: 527141456d06a9e7e79edd4e7cdef3ab1c466ecc41493179fb26b1e770494057
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_fast_gelu.md
+  source_doc_sha256: a9709dfe8e962f4010eca5b1799f99c58a87bcc76334ccdde9afe110b87312b1
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_fast_gelu
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_fast_gelu
+  - 快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
+  - torch_npu.npu_fast_gelu(input) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_15_a2
+  - infer_skill_r3_api_15_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_fast_gelu.md
+  source_summary: 快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
+  source_facts:
+  - source_excerpt: 快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果
+    required_content:
+    - Fast Gaussian Error Linear Units
+    - 每个元素
+    - FastGelu
+  capability_cases:
+  - infer_skill_r4_capability_15
+- api: torch_npu.npu_ffn
+  source_label: torch_npu.npu_ffn
+  group: formal
+  source_row_sha256: 7e0ae61b2716c97019b194990eed3f6e56323d44bc4d356f3f6871eb60c5bf6e
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_ffn.md
+  source_doc_sha256: 461d12454830f6a7685e7e411a08e3f1ff97595a2af92cff9f49972e06c814e0
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_ffn
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_ffn
+  - 执行 FFN 或 MoE FFN；expert_tokens 的有无与编码决定分组路径。
+  - torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert_tokens_index=None, bias1=None,
+    bias2=None, scale=None, offset=None, deq_scale1=None, deq_scale2=None, antiquant_scale1=None, antiquant_scale2=None,
+    antiquant_offset1=None, antiquant_offset2=None, inner_precise=None, output_dtype=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_16_a2
+  - infer_skill_r3_api_16_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_ffn.md
+  source_summary: FFN算子提供MoeFFN和FFN的计算功能。在没有专家分组（`expert_tokens`为空）时是FFN，有专家分组（`expert_tokens`不为空）时是MoeFFN。
+  source_facts:
+  - source_excerpt: FFN算子提供MoeFFN和FFN的计算功能
+    required_content:
+    - FFN
+    - MoE
+  - source_excerpt: 在没有专家分组（`expert_tokens`为空）时是FFN，有专家分组（`expert_tokens`不为空）时是MoeFFN
+    required_content:
+    - expert_tokens 为空时是普通 FFN
+    - 非空时是 MoE FFN
+  capability_cases:
+  - infer_skill_r4_capability_16
+- api: torch_npu.npu_fused_infer_attention_score
+  source_label: torch_npu.npu_fused_infer_attention_score
+  group: formal
+  source_row_sha256: 8b73920b6853ba1b405958b056c145cf4ccff94183cc8f38f5f45b21bd7c73da
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_fused_infer_attention_score.md
+  source_doc_sha256: 97fec178819645e5babf856d7d05f005b5eb3fec032b411975069d147e715a25
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_fused_infer_attention_score
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_fused_infer_attention_score
+  - 适配增量和全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。
+  - torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, atten_mask=None, actual_seq_lengths=None,
+    actual_seq_lengths_kv=None, dequant_scale1=None, quant_scale1=None, dequant_scale2=None, quant_scale2=None,
+    quant_offset2=None, antiquant_scale=None, antiquant_offset=None, block_table=None, query_padding_size=None,
+    kv_padding_size=None, key_antiquant_scale=None, key_antiquant_offset=None, value_antiquant_scale=None, value_antiquant_offset=None,
+    key_shared_prefix=None, value_shared_prefix=None, actual_shared_prefix_len=None, query_rope=None, key_rope=None,
+    key_rope_antiquant_scale=None, num_heads=1, scale=1.0, pre_tokens=2147483647, next_tokens=2147483647, input_layout="BSH",
+    num_key_value_heads=0, sparse_mode=0, inner_precise=0, block_size=0, antiquant_mode=0, softmax_lse_flag=False,
+    key_antiquant_mode=0, value_antiquant_mode=0) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_17_a2
+  - infer_skill_r3_api_17_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_fused_infer_attention_score.md
+  source_summary: 适配增量和全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当`query`矩阵的S为1，进入Incre...
+  source_facts:
+  - source_excerpt: 适配增量和全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）
+    required_content:
+    - PromptFlashAttention
+    - IncreFlashAttention
+  - source_excerpt: 当`query`矩阵的S为1，进入Incre...
+    required_content:
+    - query 的 S=1
+    - IncreFlashAttention
+    - 其余进入 PromptFlashAttention
+  capability_cases:
+  - infer_skill_r4_capability_17
+- api: torch_npu.npu_fused_infer_attention_score_v2
+  source_label: torch_npu.npu_fused_infer_attention_score_v2
+  group: formal
+  source_row_sha256: 327fd34e2a4ed1d04dd40d57147256304311b087966932047d1be99ec3f0abe6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_fused_infer_attention_score_v2.md
+  source_doc_sha256: c6999f98e00f981e66c289a617a05b3efae1ec2b94785d71ab0331b0559b509f
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_fused_infer_attention_score_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_fused_infer_attention_score_v2
+  - 适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。
+  - torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=None, key_rope=None, pse_shift=None,
+    atten_mask=None, actual_seq_qlen=None, actual_seq_kvlen=None, block_table=None, dequant_scale_query=None, dequant_scale_key=None,
+    dequant_offset_key=None, dequant_scale_value=None, dequant_offset_value=None, dequant_scale_key_rope=None, quant_scale_out=None,
+    quant_offset_out=None, learnable_sink=None, num_query_heads=1, num_key_value_heads=0, softmax_scale=1.0, pre_tokens=2147483647,
+    next_tokens=2147483647, input_layout="BSH", sparse_mode=0, block_size=0, query_quant_mode=0, key_quant_mode=0,
+    value_quant_mode=0, inner_precise=0, return_softmax_lse=False, query_dtype=None, key_dtype=None, value_dtype=None,
+    query_rope_dtype=None, key_rope_dtype=None, key_shared_prefix_dtype=None, value_shared_prefix_dtype=None, dequant_scale_query_dtype=None,
+    dequant_scale_key_dtype=None, dequant_scale_value_dtype=None, dequant_scale_key_rope_dtype=None) -> (Tensor,
+    Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_18_a2
+  - infer_skill_r3_api_18_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_fused_infer_attention_score_v2.md
+  source_summary: 适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。当不涉及system
+    prefix、左pad...
+  source_facts:
+  - source_excerpt: 适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）
+    required_content:
+    - PromptFlashAttention
+    - IncreFlashAttention
+  - source_excerpt: 当不涉及system prefix、左pad...
+    required_content:
+    - system prefix
+    - 左 padding
+    - KV 量化参数合一
+    - pertensor 全量化
+    - 老接口
+  capability_cases:
+  - infer_skill_r4_capability_18
+- api: torch_npu.npu_fusion_attention
+  source_label: torch_npu.npu_fusion_attention
+  group: formal
+  source_row_sha256: 7fcae85a5d1d96b0949398e0fb60699071eaa355b513c04c6047d3fdf2c3926b
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_fusion_attention.md
+  source_doc_sha256: 36025ac2d88b53fac35a19f29083270726d71702814d5933a6ac891e2273a6be
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_fusion_attention
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_fusion_attention
+  - 融合 Q/K 注意力分数、mask/softmax 和 V 聚合；布局与返回结构按该版签名核对。
+  - torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=None, padding_mask=None, atten_mask=None,
+    scale=1., keep_prob=1., pre_tockens=2147483647, next_tockens=2147483647, inner_precise=0, prefix=None, actual_seq_qlen=None,
+    actual_seq_kvlen=None, sparse_mode=0, gen_mask_parallel=True, sync=False, softmax_layout="", sink=None) -> (Tensor,
+    Tensor, Tensor, Tensor, int, int, int)
+  retrieval_cases:
+  - infer_skill_r3_api_19_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_fusion_attention.md
+  source_summary: 实现“Transformer Attention Score”的融合计算，实现的计算公式如下：
+  source_facts:
+  - source_excerpt: 实现“Transformer Attention Score”的融合计算，实现的计算公式如下：
+    required_content:
+    - 注意力分数
+    - mask/softmax
+    - V 聚合
+    - Transformer Attention Score
+  capability_cases:
+  - infer_skill_r4_capability_19
+- api: torch_npu.npu_gather_sparse_index
+  source_label: torch_npu.npu_gather_sparse_index
+  group: formal
+  source_row_sha256: 64e5141c7072465edb9b3826983b3e23eb9c7ae8b6eb93b44b0e1e41456aa2ed
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_gather_sparse_index.md
+  source_doc_sha256: 86b4f2dc4db578cbaccd58a3f17585cff2d44237f91db018656542c70ec5941c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_gather_sparse_index
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_gather_sparse_index
+  - 按 index 从二维输入的第0维取数，输出保留索引外形及被选行的尾维。
+  - torch_npu.npu_gather_sparse_index(input, index) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_20_a2
+  - infer_skill_r3_api_20_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_gather_sparse_index.md
+  source_summary: —
+  source_facts:
+  - source_excerpt: —
+    required_content:
+    - 二维输入
+    - 第0维取数
+  capability_cases:
+  - infer_skill_r4_capability_20
+- api: torch_npu.npu_gelu
+  source_label: torch_npu.npu_gelu
+  group: formal
+  source_row_sha256: 62f92f8dc9effdc0a30582e4bd8c97204f8a3a4326de4b5cacb500a29da84889
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_gelu.md
+  source_doc_sha256: ccb69f3ee7b564cf197a0ec80d94f6640378b81bf5fc26f286c5312ee033e0c3
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_gelu
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_gelu
+  - 计算高斯误差线性单元的激活函数。
+  - torch_npu.npu_gelu(input, approximate='none') -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_21_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_gelu.md
+  source_summary: 计算高斯误差线性单元的激活函数。
+  source_facts:
+  - source_excerpt: 计算高斯误差线性单元的激活函数
+    required_content:
+    - 高斯误差线性单元
+  capability_cases:
+  - infer_skill_r4_capability_21
+- api: torch_npu.npu_gelu_mul
+  source_label: torch_npu.npu_gelu_mul
+  group: formal
+  source_row_sha256: d0ff65b756da1ea487775b6cd8627c10f960703705e6991a22f320a9723391b6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_gelu_mul.md
+  source_doc_sha256: bb54fd8b490944a107d2a51a860a5643860ed7cba26a8770c2640046a3e95051
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_gelu_mul
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_gelu_mul
+  - 将输入末维分成两部分，对一部分做 GELU 后与另一部分相乘，适配门控激活路径。
+  - torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_22_a2
+  - infer_skill_r3_api_22_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_gelu_mul.md
+  source_summary: 当输入Tensor的尾轴为32B对齐场景时，使用该API可对输入Tensor进行GELU与MUL结合的复合计算操作以提高算子性能，若尾轴为非32B对齐场景时，建议走小算子拼接逻辑，即按照下述公式分步拼接计算。
+  source_facts:
+  - source_excerpt: 当输入Tensor的尾轴为32B对齐场景时，使用该API可对输入Tensor进行GELU与MUL结合的复合计算操作以提高算子性能，若尾轴为非32B对齐场景时，建议走小算子拼接逻辑，即按照下述公式分步拼接计算
+    required_content:
+    - GELU
+    - 乘
+    - 尾轴的32B对齐
+    - 拆分计算路径
+  capability_cases:
+  - infer_skill_r4_capability_22
+- api: torch_npu.npu_gmm_alltoallv
+  source_label: torch_npu.npu_gmm_alltoallv
+  group: formal
+  source_row_sha256: e30f7df930299581b1e0783001efc29f119db65fa611e6894c57ca873baa66fc
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_gmm_alltoallv.md
+  source_doc_sha256: 904595acdd3619dee7e5691ee32cde8569a92bb97ae6f1b5fddc23790edb6377
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_gmm_alltoallv
+  platforms:
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_gmm_alltoallv
+  - MoE网络中，执行路由专家GroupedMatMul、AlltoAllv融合并执行与共享专家MatMul并行融合，先计算后通信。
+  - torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts, recv_counts, *, send_counts_tensor=None,
+    recv_counts_tensor=None, mm_x=None, mm_weight=None, trans_gmm_weight=False, trans_mm_weight=False) -> (Tensor,
+    Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_23_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_gmm_alltoallv.md
+  source_summary: MoE网络中，完成路由专家GroupedMatMul、AlltoAllv融合并实现与共享专家MatMul并行融合，先计算后通信。
+  source_facts:
+  - source_excerpt: MoE网络中，完成路由专家GroupedMatMul、AlltoAllv融合并实现与共享专家MatMul并行融合，先计算后通信
+    required_content:
+    - GroupedMatMul
+    - AlltoAllv
+    - 共享专家
+    - 先计算后通信
+  capability_cases:
+  - infer_skill_r4_capability_23
+- api: torch_npu.npu_group_norm_silu
+  source_label: torch_npu.npu_group_norm_silu
+  group: formal
+  source_row_sha256: c40d8b2a8570f2a2116a4df1471ae23f01ae0e9cfe36165dbc2f9ce966cae2c8
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_group_norm_silu.md
+  source_doc_sha256: fd0c244444da4ae83db48b82fffe4dfd58194a3d8201d2c0b52837e48ad97942
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_group_norm_silu
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_group_norm_silu
+  - 融合 GroupNorm 与 SiLU，同时产生归一化统计量及激活结果。
+  - torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_24_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_group_norm_silu.md
+  source_summary: 计算输入张量`input`按组归一化的结果，包括张量out、均值meanOut、标准差的倒数rstdOut以及silu的输出。
+  source_facts:
+  - source_excerpt: 计算输入张量`input`按组归一化的结果，包括张量out、均值meanOut、标准差的倒数rstdOut以及silu的输出
+    required_content:
+    - 组归一化
+    - out
+    - meanOut
+    - rstdOut
+    - SiLU
+  capability_cases:
+  - infer_skill_r4_capability_24
+- api: torch_npu.npu_group_norm_swish
+  source_label: torch_npu.npu_group_norm_swish
+  group: formal
+  source_row_sha256: 1ab9b33b283f7f63d96d66e77dc3114e15a331b08a755391c91f0a95ee760a60
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_group_norm_swish.md
+  source_doc_sha256: 176985a22afa21b48806cf6f220e7b7d95b45370c5b04ce231076c726386cb55
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_group_norm_swish
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_group_norm_swish
+  - 计算输入`input`的组归一化结果`y`，均值`mean`，标准差的倒数`rstd`，以及swish的输出。
+  - torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_scale=1.0) -> (Tensor, Tensor,
+    Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_25_a2
+  - infer_skill_r3_api_25_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_group_norm_swish.md
+  source_summary: 计算输入`input`的组归一化结果`y`，均值`mean`，标准差的倒数`rstd`，以及swish的输出。
+  source_facts:
+  - source_excerpt: 计算输入`input`的组归一化结果`y`，均值`mean`，标准差的倒数`rstd`，以及swish的输出
+    required_content:
+    - 组归一化
+    - 均值
+    - 标准差的倒数
+    - swish
+  capability_cases:
+  - infer_skill_r4_capability_25
+- api: torch_npu.npu_group_quant
+  source_label: torch_npu.npu_group_quant
+  group: formal
+  source_row_sha256: 0f149ff6bf8cb0ee0ef1fc6e1398f9fb5971056177fbf9bf05d1bff78dad4fda
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_group_quant.md
+  source_doc_sha256: 14311493c7f9d33f141f613d4a5726bc09a49728720819ea65327d0f7671b0c7
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_group_quant
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_group_quant
+  - 对输入的张量进行分组量化操作。
+  - torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_26_a2
+  - infer_skill_r3_api_26_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_group_quant.md
+  source_summary: 对输入的张量进行分组量化操作。
+  source_facts:
+  - source_excerpt: 对输入的张量进行分组量化操作
+    required_content:
+    - 分组量化
+  capability_cases:
+  - infer_skill_r4_capability_26
+- api: torch_npu.npu_grouped_matmul
+  source_label: torch_npu.npu_grouped_matmul
+  group: formal
+  source_row_sha256: 59009d72f0d13a6d8054a18e6bb0256a8eb95a618b1aa501471d1c0d35049505
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_grouped_matmul.md
+  source_doc_sha256: a71aab66e92e75f06a4346e000711a077f9999914a672b9cf610f0ea803bc76d
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_grouped_matmul
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_grouped_matmul
+  - 按分组边界对多组输入和权重执行矩阵乘，group_list 编码须与路由结果一致。
+  - npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_scale=None, antiquant_offset=None,
+    per_token_scale=None, group_list=None, activation_input=None, activation_quant_scale=None, activation_quant_offset=None,
+    split_item=0, group_type=None, group_list_type=0, act_type=0, output_dtype=None, tuning_config=None) -> List[Tensor]
+  retrieval_cases:
+  - infer_skill_r3_api_27_a2
+  - infer_skill_r3_api_27_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_grouped_matmul.md
+  source_summary: '`npu_grouped_matmul`是一种对多个矩阵乘法（matmul）操作进行分组计算的高效方法。该API实现了对多个矩阵乘法操作的批量处理，通过将具有相同形状或相似形状的矩阵乘法操作组合在一起，减少内存访问开销和计算资源的浪费...'
+  source_facts:
+  - source_excerpt: '`npu_grouped_matmul`是一种对多个矩阵乘法（matmul）操作进行分组计算的高效方法'
+    required_content:
+    - 分组
+    - 矩阵乘
+  - source_excerpt: 该API实现了对多个矩阵乘法操作的批量处理，通过将具有相同形状或相似形状的矩阵乘法操作组合在一起，减少内存访问开销和计算资源的浪费...
+    required_content:
+    - 相同或相似形状
+    - 批量处理
+    - 内存访问开销
+  capability_cases:
+  - infer_skill_r4_capability_27
+- api: torch_npu.npu_grouped_matmul_swiglu_quant_v2
+  source_label: torch_npu.npu_grouped_matmul_swiglu_quant_v2
+  group: formal
+  source_row_sha256: 8c2004eead1bea3a356056971d625d24375fe123ae6edd62816702dd915be982
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_grouped_matmul_swiglu_quant_v2.md
+  source_doc_sha256: ed80a729d527a7d62714b3a30b9e22a5181a4db586b94de9d0d127bbd8e23c82
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_grouped_matmul_swiglu_quant_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_grouped_matmul_swiglu_quant_v2
+  - 将 GroupedMatmul、SwiGLU 与量化组合，减少中间结果的独立处理。
+  - torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, group_list, *, smooth_scale=None,
+    weight_assist_matrix=None, bias=None, dequant_mode=0, dequant_dtype=0, quant_mode=0, quant_dtype=0, group_list_type=0,
+    tuning_config=None) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_28_a2
+  - infer_skill_r3_api_28_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_grouped_matmul_swiglu_quant_v2.md
+  source_summary: '`npu_grouped_matmul_swiglu_quant_v2`是一种融合分组矩阵乘法（GroupedMatmul）、SwiGLU混合激活函数、量化（quant）的计算方法。该方法适用于需要对矩阵乘法结果进行SwiGLU激活函...'
+  source_facts:
+  - source_excerpt: '`npu_grouped_matmul_swiglu_quant_v2`是一种融合分组矩阵乘法（GroupedMatmul）、SwiGLU混合激活函数、量化（quant）的计算方法'
+    required_content:
+    - GroupedMatmul
+    - SwiGLU
+    - 量化
+  - source_excerpt: 该方法适用于需要对矩阵乘法结果进行SwiGLU激活函...
+    required_content:
+    - 矩阵乘结果
+    - 门控激活
+    - 量化
+  capability_cases:
+  - infer_skill_r4_capability_28
+- api: torch_npu.npu_incre_flash_attention
+  source_label: torch_npu.npu_incre_flash_attention
+  group: formal
+  source_row_sha256: de9910e544743659f50cc57ba55487e0ac76d704ac87696ac1d21ae0b820d26d
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_incre_flash_attention.md
+  source_doc_sha256: 8f50ec22df1e0835c2ffe9e5d321d5405b8464bec1d759b7ba885c8e35e4f55b
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_incre_flash_attention
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_incre_flash_attention
+  - 基于当前 Query 和历史 KV 计算增量注意力。
+  - torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse_shift=None, atten_mask=None,
+    actual_seq_lengths=None, dequant_scale1=None, quant_scale1=None, dequant_scale2=None, quant_scale2=None, quant_offset2=None,
+    antiquant_scale=None, antiquant_offset=None, block_table=None, kv_padding_size=None, num_heads=1, scale_value=1.0,
+    input_layout="BSH", num_key_value_heads=0, block_size=0, inner_precise=1) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_29_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_incre_flash_attention.md
+  source_summary: 增量FA实现。
+  source_facts:
+  - source_excerpt: 增量FA实现
+    required_content:
+    - 增量注意力
+    - 历史 KV
+  capability_cases:
+  - infer_skill_r4_capability_29
+- api: torch_npu.npu_interleave_rope
+  source_label: torch_npu.npu_interleave_rope
+  group: formal
+  source_row_sha256: f760bfe15c0a2379e9986f1c86b4dea4280082a7ab618407bf6a7d9966d6a740
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_interleave_rope.md
+  source_doc_sha256: 3bb32f218d10a1905eb7eff2a33e42dbcd7868041ce2a358be49b63a1b792be6
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_interleave_rope
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_interleave_rope
+  - 针对单输入`x`进行旋转位置编码。
+  - torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_30_a2
+  - infer_skill_r3_api_30_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_interleave_rope.md
+  source_summary: 针对单输入`x`进行旋转位置编码。
+  source_facts:
+  - source_excerpt: 针对单输入`x`进行旋转位置编码
+    required_content:
+    - 单输入
+    - 旋转位置编码
+  capability_cases:
+  - infer_skill_r4_capability_30
+- api: torch_npu.npu_kv_quant_sparse_flash_attention
+  source_label: torch_npu-npu_kv_quant_sparse_flash_attention
+  group: formal
+  source_row_sha256: e98fd73e6c2a32312855a3f4fe95dc96b360005f5aaaf3b93870e5280e6dfe0e
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_kv_quant_sparse_flash_attention.md
+  source_doc_sha256: afbe08d1dfe204d1c83c9461877d536850f5b3ca17f9d1c70eca56695e41369d
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_kv_quant_sparse_flash_attention
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_kv_quant_sparse_flash_attention
+  - '`kv_quant_sparse_flash_attention`在`sparse_flash_attention`的基础上支持了[Per-Token-Head-Tile-128量化]输入。'
+  - torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, scale_value, key_quant_mode,
+    value_quant_mode, *, key_dequant_scale=None, value_dequant_scale=None, block_table=None, actual_seq_lengths_query=None,
+    actual_seq_lengths_kv=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND", sparse_mode=3, pre_tokens=2^63-1,
+    next_tokens=2^63-1, attention_mode=0, quant_scale_repo_mode=1, tile_size=128, rope_head_dim=64) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_31_a2
+  - infer_skill_r3_api_31_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_kv_quant_sparse_flash_attention.md
+  source_summary: '`kv_quant_sparse_flash_attention`在`sparse_flash_attention`的基础上支持了[Per-Token-Head-Tile-128量化]输入。随着大模型上下文长度的增加，Sparse
+    A...'
+  source_facts:
+  - source_excerpt: '`kv_quant_sparse_flash_attention`在`sparse_flash_attention`的基础上支持了[Per-Token-Head-Tile-128量化]输入'
+    required_content:
+    - sparse_flash_attention
+    - Per-Token-Head-Tile-128
+  - source_excerpt: 随着大模型上下文长度的增加，Sparse A...
+    required_content:
+    - 长上下文
+    - 稀疏注意力
+    - 量化 KV
+  capability_cases:
+  - infer_skill_r4_capability_31
+- api: torch_npu.npu_kv_rmsnorm_rope_cache
+  source_label: torch_npu.npu_kv_rmsnorm_rope_cache
+  group: formal
+  source_row_sha256: f99c81f51e31e345ab457d7cc79648a1b5d8d1fd98c2fb4f213a3f87ecf1d628
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_kv_rmsnorm_rope_cache.md
+  source_doc_sha256: 136f67a2ae0ff5752a42146d1311458734263c81aad232670c99beeaab1c623c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_kv_rmsnorm_rope_cache
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_kv_rmsnorm_rope_cache
+  - 融合了MLA（Multi-head Latent Attention）结构中RMSNorm归一化计算与RoPE（Rotary Position Embedding）位置编码以及更新KVCache的ScatterUpdate操作。
+  - torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None, c_kv_scale=None,
+    k_rope_offset=None, c_kv_offset=None, epsilon=1e-5, cache_mode='Norm', is_output_kv=False) -> (Tensor, Tensor,
+    Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_32_a2
+  - infer_skill_r3_api_32_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_kv_rmsnorm_rope_cache.md
+  source_summary: 融合了MLA（Multi-head Latent Attention）结构中RMSNorm归一化计算与RoPE（Rotary Position Embedding）位置编码以及更新KVCache的ScatterUpdate操作。
+  source_facts:
+  - source_excerpt: 融合了MLA（Multi-head Latent Attention）结构中RMSNorm归一化计算与RoPE（Rotary Position Embedding）位置编码以及更新KVCache的ScatterUpdate操作
+    required_content:
+    - RMSNorm
+    - RoPE
+    - KVCache
+    - ScatterUpdate
+  capability_cases:
+  - infer_skill_r4_capability_32
+- api: torch_npu.npu_lightning_indexer
+  source_label: torch_npu-npu_lightning_indexer
+  group: formal
+  source_row_sha256: 2e63e695a1953eeee963c5c378095383ca048087bdbd72a5c0ef32aa3df80eea
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_lightning_indexer.md
+  source_doc_sha256: 950822d1aa97c6328dece92068f8dc12fcf0884e876266959d24ffdb54273bab
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_lightning_indexer
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_lightning_indexer
+  - 为每个 Query 选择关键 KV 位置的 TopK 索引，供后续稀疏注意力消费。
+  - torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None,
+    block_table=None, layout_query="BSND", layout_key="BSND", sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1,
+    next_tokens=2^63-1, return_value=False) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_33_a2
+  - infer_skill_r3_api_33_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_lightning_indexer.md
+  source_summary: '`lightning_indexer`基于一系列操作得到每一个token对应的Top-$k$个位置。'
+  source_facts:
+  - source_excerpt: '`lightning_indexer`基于一系列操作得到每一个token对应的Top-$k$个位置'
+    required_content:
+    - 每个 Query
+    - TopK 索引
+    - 稀疏注意力
+  capability_cases:
+  - infer_skill_r4_capability_33
+- api: torch_npu.npu_mla_prolog
+  source_label: torch_npu.npu_mla_prolog
+  group: formal
+  source_row_sha256: 0f926f00d1df51077f6462c5bccfe017423769efa0694c3324ec3a4a1db8f34b
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_mla_prolog.md
+  source_doc_sha256: 1f6ca140c26715afea88194cec0d4f325317b8ed68a656b8c57c38e81880b743
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_mla_prolog
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_mla_prolog
+  - 推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。
+  - torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
+    rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None,
+    dequant_scale_w_dkv_kr=None, quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, rmsnorm_epsilon_cq=1e-05,
+    rmsnorm_epsilon_ckv=1e-05, cache_mode="PA_BSND") -> (Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_34_a2
+  - infer_skill_r3_api_34_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_mla_prolog.md
+  source_summary: 推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。
+  source_facts:
+  - source_excerpt: 推理场景下，Multi-Head Latent Attention（MLA）前处理的计算
+    required_content:
+    - MLA
+    - 前处理
+  capability_cases:
+  - infer_skill_r4_capability_34
+- api: torch_npu.npu_mla_prolog_v2
+  source_label: torch_npu.npu_mla_prolog_v2
+  group: formal
+  source_row_sha256: 842facc2c5c7245af30bff50d0414dbdd40f549d578fabafee684387c79b8cf6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_mla_prolog_v2.md
+  source_doc_sha256: d26d441c2d30e44e921971eb945e7c37ff37dbd89ca1c5d4144cc997037116dc
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_mla_prolog_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_mla_prolog_v2
+  - 推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。
+  - torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
+    rope_sin, rope_cos, cache_index, kv_cache, kr_cache, *, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None,
+    dequant_scale_w_dkv_kr=None, quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, rmsnorm_epsilon_cq=1e-05,
+    rmsnorm_epsilon_ckv=1e-05, cache_mode="PA_BSND") -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_35_a2
+  - infer_skill_r3_api_35_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_mla_prolog_v2.md
+  source_summary: 推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。主要计算过程分为五路；
+  source_facts:
+  - source_excerpt: 推理场景下，Multi-Head Latent Attention（MLA）前处理的计算
+    required_content:
+    - MLA
+    - 前处理
+  - source_excerpt: 主要计算过程分为五路；
+    required_content:
+    - 五路
+    - DynamicQuant
+  capability_cases:
+  - infer_skill_r4_capability_35
+- api: torch_npu.npu_mm_all_reduce_base
+  source_label: torch_npu.npu_mm_all_reduce_base
+  group: formal
+  source_row_sha256: 0fd8c62b1b181d4b4cc118972c0f2351db3271cab32dc6b3e7f87b47164fa77c
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_mm_all_reduce_base.md
+  source_doc_sha256: 78e48b8051c5d38589fed978a8ad67890e4541ca7eac5f6418eb348aa521b099
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_mm_all_reduce_base
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_mm_all_reduce_base
+  - TP切分场景下，执行mm和all_reduce的融合，融合算子内部执行计算和通信流水并行。
+  - torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, antiquant_scale=None, antiquant_offset=None,
+    x3=None, dequant_scale=None, pertoken_scale=None, comm_quant_scale_1=None, comm_quant_scale_2=None, comm_turn=0,
+    antiquant_group_size=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_36_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_mm_all_reduce_base.md
+  source_summary: TP切分场景下，实现mm和all_reduce的融合，融合算子内部实现计算和通信流水并行。
+  source_facts:
+  - source_excerpt: TP切分场景下，实现mm和all_reduce的融合，融合算子内部实现计算和通信流水并行
+    required_content:
+    - TP
+    - mm
+    - all_reduce
+    - 计算和通信流水并行
+  capability_cases:
+  - infer_skill_r4_capability_36
+- api: torch_npu.npu_mm_reduce_scatter_base
+  source_label: torch_npu.npu_mm_reduce_scatter_base
+  group: formal
+  source_row_sha256: 0ef81336203bd841df496c9554a29ccb576c83b8f02222fa42e738ac35a8a7ea
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_mm_reduce_scatter_base.md
+  source_doc_sha256: 2f6c2e831ea6043ded1b4c9310ffd785cd16dc234b7e3577d6d7170c0cef4fae
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_mm_reduce_scatter_base
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_mm_reduce_scatter_base
+  - TP切分场景下，执行matmul和reduce_scatter的融合，融合算子内部执行计算和通信流水并行。
+  - torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='sum', bias=None, x1_scale=None,
+    x2_scale=None, comm_turn=0, output_dtype=None, comm_mode=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_37_a2
+  - infer_skill_r3_api_37_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_mm_reduce_scatter_base.md
+  source_summary: TP切分场景下，实现matmul和reduce_scatter的融合，融合算子内部实现计算和通信流水并行。支持perchannel，pertoken量化。
+  source_facts:
+  - source_excerpt: TP切分场景下，实现matmul和reduce_scatter的融合，融合算子内部实现计算和通信流水并行
+    required_content:
+    - TP
+    - matmul
+    - reduce_scatter
+    - 计算和通信流水并行
+  - source_excerpt: 支持perchannel，pertoken量化
+    required_content:
+    - 支持 perchannel
+    - pertoken 量化
+  capability_cases:
+  - infer_skill_r4_capability_37
+- api: torch_npu.npu_moe_compute_expert_tokens
+  source_label: torch_npu.npu_moe_compute_expert_tokens
+  group: formal
+  source_row_sha256: 23da88e09df2498beb30d24c397dbb0ddb6e2c3905b3aede4e936772b1a5eafe
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_compute_expert_tokens.md
+  source_doc_sha256: 78ba6b076b4ed90f22935d5ead35b1861ebfde129b85fc7ed5af36e53df244dd
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_compute_expert_tokens
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_compute_expert_tokens
+  - MoE（Mixture of Experts，混合专家模型）计算中，通过二分查找的方式查找每个专家处理的最后一行的位置。
+  - torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_38_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_compute_expert_tokens.md
+  source_summary: MoE（Mixture of Experts，混合专家模型）计算中，通过二分查找的方式查找每个专家处理的最后一行的位置。
+  source_facts:
+  - source_excerpt: MoE（Mixture of Experts，混合专家模型）计算中，通过二分查找的方式查找每个专家处理的最后一行的位置
+    required_content:
+    - 二分查找
+    - 每个专家
+    - 最后一行
+  capability_cases:
+  - infer_skill_r4_capability_38
+- api: torch_npu.npu_moe_distribute_combine
+  source_label: torch_npu.npu_moe_distribute_combine
+  group: formal
+  source_row_sha256: 82aa286df6fc350f01678c8eafa902869ae6c71ee5f1c6168d28193700351737
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_distribute_combine.md
+  source_doc_sha256: 96b08e8473500a4d1604b917f1e9b03272944ea3824957d016d79fa77ec81ece
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_distribute_combine
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_distribute_combine
+  - 先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。
+  - torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, group_ep,
+    ep_world_size, ep_rank_id, moe_expert_num, *, tp_send_counts=None, x_active_mask=None, activation_scale=None,
+    weight_scale=None, group_list=None, expand_scales=None, shared_expert_x=None, group_tp="", tp_world_size=0,
+    tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, out_dtype=0,
+    comm_quant_mode=0, group_list_type=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_39_a2
+  - infer_skill_r3_api_39_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_distribute_combine.md
+  source_summary: 先进行reduce_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。需与torch_npu.npu_moe_distribute_dispatch配套使用，相当于按npu_moe_distri...
+  source_facts:
+  - source_excerpt: 先进行reduce_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）
+    required_content:
+    - 先 ReduceScatterV
+    - 再 AlltoAllv
+    - 乘权重后求和
+  - source_excerpt: 需与torch_npu.npu_moe_distribute_dispatch配套使用，相当于按npu_moe_distri...
+    required_content:
+    - 与 npu_moe_distribute_dispatch 配对
+    - 原路回收
+  capability_cases:
+  - infer_skill_r4_capability_39
+- api: torch_npu.npu_moe_distribute_combine_add_rms_norm
+  source_label: torch_npu.npu_moe_distribute_combine_add_rms_norm
+  group: formal
+  source_row_sha256: 1113b39b50dfedf2b3e3057acd94fe0fcd5de74344644fd27435b108a903f38f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_distribute_combine_add_rms_norm.md
+  source_doc_sha256: bef9a507ced84ac98a305f57cdb9411ec89995c99305928d17311538c6281e02
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_distribute_combine_add_rms_norm
+  platforms:
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_distribute_combine_add_rms_norm
+  - 与 dispatch_v2 配对回收 MoE token，并融合残差加法和 RMSNorm；通信元数据须来自相匹配的派发调用。
+  - torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales,
+    residual_x, gamma, group_ep, ep_world_size, ep_rank_id, moe_expert_num, *, tp_send_counts=None, x_active_mask=None,
+    activation_scale=None, weight_scale=None, group_list=None, expand_scales=None, shared_expert_x=None, elastic_info=None,
+    ori_x=None, const_expert_alpha_1=None, const_expert_alpha_2=None, const_expert_v=None, group_tp="", tp_world_size=0,
+    tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, global_bs=0, out_dtype=0,
+    comm_quant_mode=0, group_list_type=0, norm_eps=1e-06, int zero_expert_num=0, int copy_expert_num=0, int const_expert_num=0)
+    -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_40_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_distribute_combine_add_rms_norm.md
+  source_summary: 需与torch_npu.npu_moe_distribute_dispatch_v2配套使用，相当于按`npu_moe_distribute_dispatch_v2`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作。
+  source_facts:
+  - source_excerpt: 需与torch_npu.npu_moe_distribute_dispatch_v2配套使用，相当于按`npu_moe_distribute_dispatch_v2`算子收集数据的路径原路返回后对数据进行`add_rms_norm`操作
+    required_content:
+    - dispatch_v2
+    - 回收
+    - 残差加法
+    - RMSNorm
+  capability_cases:
+  - infer_skill_r4_capability_40
+- api: torch_npu.npu_moe_distribute_combine_v2
+  source_label: torch_npu.npu_moe_distribute_combine_v2
+  group: formal
+  source_row_sha256: deb2347fe732a07f5a1d685283bbf3c367e22d4807513a396390dde28501565d
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_distribute_combine_v2.md
+  source_doc_sha256: d6360d8e9de63a4371e91d28abc1439bd7c9b4655d945e26ebb8744047ba7c09
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_distribute_combine_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_distribute_combine_v2
+  - 需与torch_npu.npu_moe_distribute_dispatch_v2配套使用，相当于按npu_moe_distribute_dispatch_v2算子收集数据的路径原路返回。
+  - torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_combine, ep_send_counts, expert_scales,
+    group_ep, ep_world_size, ep_rank_id, moe_expert_num, *, tp_send_counts=None, x_active_mask=None, expand_scales=None,
+    shared_expert_x=None, elastic_info=None, ori_x=None, const_expert_alpha_1=None, const_expert_alpha_2=None, const_expert_v=None,
+    performance_info=None, group_tp="", tp_world_size=0, tp_rank_id=0, expert_shard_type=0, shared_expert_num=1,
+    shared_expert_rank_num=0, global_bs=0, comm_quant_mode=0, comm_alg="", zero_expert_num=0, copy_expert_num=0,
+    const_expert_num=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_41_a2
+  - infer_skill_r3_api_41_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_distribute_combine_v2.md
+  source_summary: 需与torch_npu.npu_moe_distribute_dispatch_v2配套使用，相当于按npu_moe_distribute_dispatch_v2算子收集数据的路径原路返回。
+  source_facts:
+  - source_excerpt: 需与torch_npu.npu_moe_distribute_dispatch_v2配套使用，相当于按npu_moe_distribute_dispatch_v2算子收集数据的路径原路返回
+    required_content:
+    - npu_moe_distribute_dispatch_v2
+    - 配套
+    - 原路返回
+  capability_cases:
+  - infer_skill_r4_capability_41
+- api: torch_npu.npu_moe_distribute_dispatch
+  source_label: torch_npu.npu_moe_distribute_dispatch
+  group: formal
+  source_row_sha256: 238c9a76e67d63dc80e6f69515d92850cba1bb54a68e44dec9ce757a8d19d498
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_distribute_dispatch.md
+  source_doc_sha256: 5ef39bb468deab94952f239c133badedf7c47d01e500819fa1fa1a746f75dc87
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_distribute_dispatch
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_distribute_dispatch
+  - 需与torch\_npu.npu\_moe\_distribute\_combine配套使用，执行MoE的并行部署下的token dispatch与combine。
+  - torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num, *,
+    scales=None, x_active_mask=None, expert_scales=None, group_tp="", tp_world_size=0, tp_rank_id=0, expert_shard_type=0,
+    shared_expert_num=1, shared_expert_rank_num=0, quant_mode=0, global_bs=0, expert_token_nums_type=1) -> (Tensor,
+    Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_42_a2
+  - infer_skill_r3_api_42_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_distribute_dispatch.md
+  source_summary: 需与torch_npu.npu_moe_distribute_combine配套使用，完成MoE的并行部署下的token dispatch与combine。对token数据先进行quant量化（可选），再进行EP（Expert
+    Par...
+  source_facts:
+  - source_excerpt: 需与torch_npu.npu_moe_distribute_combine配套使用，完成MoE的并行部署下的token dispatch与combine
+    required_content:
+    - npu_moe_distribute_combine
+    - 配套
+    - dispatch
+    - combine
+  - source_excerpt: 对token数据先进行quant量化（可选），再进行EP（Expert Par...
+    required_content:
+    - 可选量化
+    - EP 的 AlltoAllv
+    - 可选 TP AllGatherV
+  capability_cases:
+  - infer_skill_r4_capability_42
+- api: torch_npu.npu_moe_distribute_dispatch_v2
+  source_label: torch_npu.npu_moe_distribute_dispatch_v2
+  group: formal
+  source_row_sha256: 3c6b988e897f86dda794852bf2ba7195fe676c9d30ad44856f0190b253d66223
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_distribute_dispatch_v2.md
+  source_doc_sha256: 802ea2c9961632b565ff398d69062f93617954c12a0048b4b3f64217dde4c995
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_distribute_dispatch_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_distribute_dispatch_v2
+  - 按路由专家分发 token，与 combine_v2 或 combine_add_rms_norm 配对，量化和通信配置按本版接口核对。
+  - torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size, ep_rank_id, moe_expert_num,
+    *, scales=None, x_active_mask=None, expert_scales=None, elastic_info=None, performance_info=None, group_tp="",
+    tp_world_size=0, tp_rank_id=0, expert_shard_type=0, shared_expert_num=1, shared_expert_rank_num=0, quant_mode=0,
+    global_bs=0, expert_token_nums_type=1, comm_alg="", zero_expert_num=0, copy_expert_num=0, const_expert_num=0)
+    -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_43_a2
+  - infer_skill_r3_api_43_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_distribute_dispatch_v2.md
+  source_summary: 需与torch_npu.npu_moe_distribute_combine_v2或torch_npu.npu_moe_distribute_combine_add_rms_norm配套使用，完成MoE的并行部署下的token
+    dis...
+  source_facts:
+  - source_excerpt: 需与torch_npu.npu_moe_distribute_combine_v2或torch_npu.npu_moe_distribute_combine_add_rms_norm配套使用，完成MoE的并行部署下的token
+      dis...
+    required_content:
+    - combine_v2
+    - combine_add_rms_norm
+    - 配对
+  capability_cases:
+  - infer_skill_r4_capability_43
+- api: torch_npu.npu_moe_finalize_routing
+  source_label: torch_npu.npu_moe_finalize_routing
+  group: formal
+  source_row_sha256: dcaa484a6e78fd3e323de7e26a0fc1ac6d368fdb65cda5a54771155faddd4692
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_finalize_routing.md
+  source_doc_sha256: 4e2bc04f009aed92edde662a2e4ed6259d053eaea42ea894fe398078dac7e48a
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_finalize_routing
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_finalize_routing
+  - 在MoE计算的最后，合并MoE FFN(Feedforward Neural Network)的输出结果。
+  - torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, scales, expanded_src_to_dst_row,
+    export_for_source_row, drop_pad_mode=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_44_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_finalize_routing.md
+  source_summary: 在MoE计算的最后，合并MoE FFN(Feedforward Neural Network)的输出结果。
+  source_facts:
+  - source_excerpt: 在MoE计算的最后，合并MoE FFN(Feedforward Neural Network)的输出结果
+    required_content:
+    - 合并
+    - MoE FFN
+    - 输出结果
+  capability_cases:
+  - infer_skill_r4_capability_44
+- api: torch_npu.npu_moe_gating_top_k
+  source_label: torch_npu.npu_moe_gating_top_k
+  group: formal
+  source_row_sha256: 31cac5786a40b2b1f6f015f95f8d6c6fd02854339a53604bbc4d0e8a2d0ae38f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_gating_top_k.md
+  source_doc_sha256: 58ef1afead9665812ae1d7a034c10d6cb1edb8f6368a8bc71890c6078ec60c38
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_gating_top_k
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_gating_top_k
+  - MoE计算中，对输入x做Sigmoid/SoftMax计算，对计算结果分组进行排序，最后根据分组排序的结果选取前k个专家。
+  - npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0,
+    out_flag=False, routed_scaling_factor=1.0, eps=1e-20) -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_45_a2
+  - infer_skill_r3_api_45_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_gating_top_k.md
+  source_summary: MoE计算中，对输入x做Sigmoid/SoftMax计算，对计算结果分组进行排序，最后根据分组排序的结果选取前k个专家。
+  source_facts:
+  - source_excerpt: MoE计算中，对输入x做Sigmoid/SoftMax计算，对计算结果分组进行排序，最后根据分组排序的结果选取前k个专家
+    required_content:
+    - Sigmoid/SoftMax
+    - 分组
+    - 排序
+    - 前k个专家
+  capability_cases:
+  - infer_skill_r4_capability_45
+- api: torch_npu.npu_moe_gating_top_k_softmax
+  source_label: torch_npu.npu_moe_gating_top_k_softmax
+  group: formal
+  source_row_sha256: de72c9a9f0ebd320c2a06ba20286aa2e1b59721402bb5ee1ab6ad49abc52e531
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_gating_top_k_softmax.md
+  source_doc_sha256: c8caff34946865cef64942aa8170a85c09fe31aa41ead7b0db43ec87de09e524
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_gating_top_k_softmax
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_gating_top_k_softmax
+  - MoE计算中，对输入`x`做Softmax计算，再做topk操作。
+  - torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_46_a2
+  - infer_skill_r3_api_46_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_gating_top_k_softmax.md
+  source_summary: MoE计算中，对输入`x`做Softmax计算，再做topk操作。
+  source_facts:
+  - source_excerpt: MoE计算中，对输入`x`做Softmax计算，再做topk操作
+    required_content:
+    - Softmax
+    - 再做topk
+  capability_cases:
+  - infer_skill_r4_capability_46
+- api: torch_npu.npu_moe_init_routing
+  source_label: torch_npu.npu_moe_init_routing
+  group: formal
+  source_row_sha256: 63f2e2329a1d86ef809a454daaff7f7fe0fde8d5eea17b30d49f5fa4d88345d6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_init_routing.md
+  source_doc_sha256: 67303ba6343791f4c6571142ea3c5b913b9dec0ddbd59f3743b9b6319524ac35
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_init_routing
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_init_routing
+  - MoE的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理。
+  - torch_npu.npu_moe_init_routing(x, row_idx, expert_idx, active_num) -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_47_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_init_routing.md
+  source_summary: MoE的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理。
+  source_facts:
+  - source_excerpt: MoE的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理
+    required_content:
+    - npu_moe_gating_top_k_softmax
+    - routing处理
+  capability_cases:
+  - infer_skill_r4_capability_47
+- api: torch_npu.npu_moe_init_routing_v2
+  source_label: torch_npu.npu_moe_init_routing_v2
+  group: formal
+  source_row_sha256: f2a1c9f726595a075595c0e18bbb3061aa1660b1917e93f2a6ce9d5dfec07198
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_init_routing_v2.md
+  source_doc_sha256: 5eb20c753e2776403bd746a9ce75e899924d429e68ded8a12a24742905d37697
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_init_routing_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_init_routing_v2
+  - MoE（Mixture of Experts）的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理，支持不量化和动态量化模式。
+  - torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, active_num=-1, expert_capacity=-1,
+    expert_num=-1, drop_pad_mode=0, expert_tokens_num_type=0, expert_tokens_num_flag=False, quant_mode=0, active_expert_range=[],
+    row_idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_48_a2
+  - infer_skill_r3_api_48_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_init_routing_v2.md
+  source_summary: MoE（Mixture of Experts）的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理，支持不量化和动态量化模式。
+  source_facts:
+  - source_excerpt: MoE（Mixture of Experts）的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理，支持不量化和动态量化模式
+    required_content:
+    - npu_moe_gating_top_k_softmax
+    - 支持不量化和动态量化
+  capability_cases:
+  - infer_skill_r4_capability_48
+- api: torch_npu.npu_moe_re_routing
+  source_label: torch_npu.npu_moe_re_routing
+  group: formal
+  source_row_sha256: 03b9f04d383736d259534ea97236cf1325278b670df44e9d8434fac6916b27f3
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_re_routing.md
+  source_doc_sha256: 1c0e2bcca7b593ea7aeef5689538759e597acc8c717beff44d4d4d74dfac9478
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_re_routing
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_re_routing
+  - MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
+  - torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_scales=None, expert_token_num_type=1,
+    idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_49_a2
+  - infer_skill_r3_api_49_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_re_routing.md
+  source_summary: MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
+  source_facts:
+  - source_excerpt: MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列
+    required_content:
+    - AlltoAll
+    - token按照专家顺序重新排列
+  capability_cases:
+  - infer_skill_r4_capability_49
+- api: torch_npu.npu_moe_update_expert
+  source_label: torch_npu.npu_moe_update_expert
+  group: formal
+  source_row_sha256: 7d0234e98ab9956be92746ade751194196db11aed2aa535bc849f12a7e0cfc69
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_moe_update_expert.md
+  source_doc_sha256: d8ae82c80582542b061782be977ed851b843ff469bca6d954e1845dc4a76f0f0
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_moe_update_expert
+  platforms:
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_moe_update_expert
+  - 将逻辑专家映射到实际部署的专家，并按输入 mask 处理专家裁剪。
+  - torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, pruning_threshold=None, active_mask=None,
+    local_rank_id=-1, world_size=-1, balance_mode=0) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_50_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_moe_update_expert.md
+  source_summary: 本API支持负载均衡和专家剪枝功能。经过映射后的专家表和mask可传入Moe层进行数据分发和处理。
+  source_facts:
+  - source_excerpt: 本API支持负载均衡和专家剪枝功能
+    required_content:
+    - 负载均衡
+    - 专家剪枝
+  - source_excerpt: 经过映射后的专家表和mask可传入Moe层进行数据分发和处理
+    required_content:
+    - 映射后的专家表和 mask
+    - MoE 数据分发
+  capability_cases:
+  - infer_skill_r4_capability_50
+- api: torch_npu.npu_prefetch
+  source_label: torch_npu.npu_prefetch
+  group: formal
+  source_row_sha256: 2c04c1299e3e78547658a4e4c6eea59d78d4eb3ef594e99a8c1b2751891bad39
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_prefetch.md
+  source_doc_sha256: 81e12b006ecb819bfd7c974bf6d21b7d2768b984f8ac51d1eed83cadff1ae160
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_prefetch
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_prefetch
+  - 提前将指定权重区间搬到 L2 Cache，收益取决于实际窗口和计算依赖。
+  - torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
+  retrieval_cases:
+  - infer_skill_r3_api_51_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_prefetch.md
+  source_summary: 提供网络`weight`预取功能，将需要预取的权重搬到L2 Cache中。尤其在做较大`Tensor`的MatMul计算且需要搬移到L2 Cache的操作时，可通过该接口提前预取权重，适当提高模型性能，具体效果取决于用户采用的并行方式...
+  source_facts:
+  - source_excerpt: 提供网络`weight`预取功能，将需要预取的权重搬到L2 Cache中
+    required_content:
+    - 权重
+    - L2
+  - source_excerpt: 尤其在做较大`Tensor`的MatMul计算且需要搬移到L2 Cache的操作时，可通过该接口提前预取权重，适当提高模型性能，具体效果取决于用户采用的并行方式...
+    required_content:
+    - MatMul
+    - 预取
+    - 并行方式
+    - 实际窗口
+  capability_cases:
+  - infer_skill_r4_capability_51
+- api: torch_npu.npu_prompt_flash_attention
+  source_label: torch_npu.npu_prompt_flash_attention
+  group: formal
+  source_row_sha256: 209789f4f5031747d61888fa736c6b216019ecadf696b5a417fd914348243bb0
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_prompt_flash_attention.md
+  source_doc_sha256: eba2bc6a9f42d0873374018b357f089db272798fe7c3e42fdfc5efae7a10d8d9
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_prompt_flash_attention
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_prompt_flash_attention
+  - 对 Prompt 输入执行全量注意力计算。
+  - torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, padding_mask=None, atten_mask=None,
+    actual_seq_lengths=None, deq_scale1=None, quant_scale1=None, deq_scale2=None, quant_scale2=None, quant_offset2=None,
+    num_heads=1, scale_value=1.0, pre_tokens=2147483647, next_tokens=0, input_layout="BSH",num_key_value_heads=0,
+    actual_seq_lengths_kv=None, sparse_mode=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_52_a2
+  - infer_skill_r3_api_52_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_prompt_flash_attention.md
+  source_summary: 全量FA实现。
+  source_facts:
+  - source_excerpt: 全量FA实现
+    required_content:
+    - 全量注意力
+    - Prompt
+  capability_cases:
+  - infer_skill_r4_capability_52
+- api: torch_npu.npu_quant_lightning_indexer
+  source_label: torch_npu.npu_quant_lightning_indexer
+  group: formal
+  source_row_sha256: c691f8bb53674663ae8ec3aa4f5a2c5814f51a1e64f9963467d0abd5036edc96
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_quant_lightning_indexer.md
+  source_doc_sha256: caf2081344f4976bfbee0fa3b2667425cbf73a3f205974874a49c45d0677474c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_quant_lightning_indexer
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_quant_lightning_indexer
+  - 使用量化 Q/K 及配套 scale，选出稀疏注意力所需的关键 token 索引。
+  - torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode,
+    key_quant_mode, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND',
+    layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_53_a2
+  - infer_skill_r3_api_53_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_quant_lightning_indexer.md
+  source_summary: QuantLightningIndexer是推理场景下，SparseFlashAttention（SFA）前处理的计算，选出关键的稀疏token，并对输入query和key进行量化实现存8算8，获取最大收益。
+  source_facts:
+  - source_excerpt: QuantLightningIndexer是推理场景下，SparseFlashAttention（SFA）前处理的计算，选出关键的稀疏token，并对输入query和key进行量化实现存8算8，获取最大收益
+    required_content:
+    - SFA
+    - 存8算8
+    - INT8
+    - query
+    - key
+    - 稀疏 token
+    correction: 完整公式及参数接收已量化的 query/key 和配套 scale；存8算8指索引内积，不意味着本接口将任意浮点输入自动量化。
+    correction_source: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_quant_lightning_indexer.md
+  capability_cases:
+  - infer_skill_r4_capability_53
+- api: torch_npu.npu_quant_matmul
+  source_label: torch_npu.npu_quant_matmul
+  group: formal
+  source_row_sha256: 927b14bad7dd0c1779d7938b0ad593c2ed5b13b843adf86072c3ce7946aca4b5
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_quant_matmul.md
+  source_doc_sha256: 6a717b4f01d80929c4856d47e61331ab9aef74af30b1843517bbf07832079c77
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_quant_matmul
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_quant_matmul
+  - 执行量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
+  - npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, bias=None, output_dtype=None, group_sizes=None)
+    -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_54_a2
+  - infer_skill_r3_api_54_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_quant_matmul.md
+  source_summary: 完成量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
+  source_facts:
+  - source_excerpt: 完成量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维
+    required_content:
+    - 矩阵乘
+    - 最小支持输入维度为2维
+    - 最大支持输入维度为6维
+  capability_cases:
+  - infer_skill_r4_capability_54
+- api: torch_npu.npu_quant_matmul_reduce_sum
+  source_label: torch_npu.npu_quant_matmul_reduce_sum
+  group: formal
+  source_row_sha256: c0c698945395660f98dc54a24028f4cae368d60a01b5aa6bf9bc3c66b09bfab3
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_quant_matmul_reduce_sum.md
+  source_doc_sha256: bdd323b356b20bc20e14dee482d90573da1b3854046f90ad64c613f926302200
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_quant_matmul_reduce_sum
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_quant_matmul_reduce_sum
+  - 执行分组量化矩阵乘，并对各组结果求和。
+  - torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_55_a2
+  - infer_skill_r3_api_55_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_quant_matmul_reduce_sum.md
+  source_summary: 完成量化的分组矩阵计算，然后所有组的矩阵计算结果相加后输出。
+  source_facts:
+  - source_excerpt: 完成量化的分组矩阵计算，然后所有组的矩阵计算结果相加后输出
+    required_content:
+    - 分组量化矩阵乘
+    - 各组结果求和
+  capability_cases:
+  - infer_skill_r4_capability_55
+- api: torch_npu.npu_quant_scatter
+  source_label: torch_npu.npu_quant_scatter
+  group: formal
+  source_row_sha256: 4541eab4fcedf14430fa5d03b043479eb7aa5f563123356f8a925ed63ac152ac
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_quant_scatter.md
+  source_doc_sha256: 535a11de85d12c408469f30ba37ad24485d8234bb24e5728fd960c58e27d336e
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_quant_scatter
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_quant_scatter
+  - 量化 updates 后按 axis 与 indices 写入新输出，保留原 input。
+  - torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1,
+    reduce='update') -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_56_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_quant_scatter.md
+  source_summary: 先将`updates`进行量化，然后将`updates`中的值按指定的轴`axis`和索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`本身的数据不变。
+  source_facts:
+  - source_excerpt: 先将`updates`进行量化，然后将`updates`中的值按指定的轴`axis`和索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`本身的数据不变
+    required_content:
+    - 量化 updates
+    - 新输出
+    - 保留原 input
+  capability_cases:
+  - infer_skill_r4_capability_56
+- api: torch_npu.npu_quant_scatter_
+  source_label: torch_npu.npu_quant_scatter_
+  group: formal
+  source_row_sha256: d667501377ff8f3f94e7782d8441dc1785fc2ecf028bf3114911b50542c27291
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_quant_scatter_.md
+  source_doc_sha256: d11109e121de7e89a99ded88eeeefb8f98a6569e4e5384a7bd8ddac3abf5cd9f
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_quant_scatter_
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_quant_scatter_
+  - 量化 updates 后按 axis 与 indices 更新 input，调用会改变原张量。
+  - torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1,
+    reduce='update') -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_57_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_quant_scatter_.md
+  source_summary: 先将`updates`进行量化，然后将`updates`中的值按指定的轴`axis`和索引`indices`更新`input`中的值，`input`中的数据被改变。
+  source_facts:
+  - source_excerpt: 先将`updates`进行量化，然后将`updates`中的值按指定的轴`axis`和索引`indices`更新`input`中的值，`input`中的数据被改变
+    required_content:
+    - 量化 updates
+    - 更新 input
+    - 改变原张量
+  capability_cases:
+  - infer_skill_r4_capability_57
+- api: torch_npu.npu_quantize
+  source_label: torch_npu.npu_quantize
+  group: formal
+  source_row_sha256: b279689511df9fade7605d67a3c325310f3c6c3fbe1c1a6065b5a2a286d27c8c
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_quantize.md
+  source_doc_sha256: a02c3ba9007216114a1704dccc067a7971ee33d5552da6d11c94ec788bfb8718
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_quantize
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_quantize
+  - 对输入的张量进行量化处理。
+  - torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_58_a2
+  - infer_skill_r3_api_58_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_quantize.md
+  source_summary: 对输入的张量进行量化处理。
+  source_facts:
+  - source_excerpt: 对输入的张量进行量化处理
+    required_content:
+    - 张量进行量化
+  capability_cases:
+  - infer_skill_r4_capability_58
+- api: torch_npu.npu_recurrent_gated_delta_rule
+  source_label: torch_npu.npu_recurrent_gated_delta_rule
+  group: formal
+  source_row_sha256: f939e33803ca23b0626a8e3b8d87347ddbd5163607e90cc5626151c7f2e218fe
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_recurrent_gated_delta_rule.md
+  source_doc_sha256: 2342fcfa5fe3851db171664158e0f0c808d76f34d52af7922615cabd40b53639
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_recurrent_gated_delta_rule
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_recurrent_gated_delta_rule
+  - 对线性注意力执行门控递归状态更新与输出计算。
+  - torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None, scale=None, actual_seq_lengths=None,
+    ssm_state_indices=None, num_accepted_tokens=None, g=None, gk=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_59_a2
+  - infer_skill_r3_api_59_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_recurrent_gated_delta_rule.md
+  source_summary: 该接口实现了变步长Recurrent Gated Delta Rule（RGDR）的计算逻辑，是Transformer线性注意力机制的关键算子之一。通过引入门控机制与递归更新策略，RGDR能够在保持线性时间复杂度的同时，有效捕捉长距离...
+  source_facts:
+  - source_excerpt: 该接口实现了变步长Recurrent Gated Delta Rule（RGDR）的计算逻辑，是Transformer线性注意力机制的关键算子之一
+    required_content:
+    - 变步长
+    - Recurrent Gated Delta Rule
+    - RGDR
+    - 线性注意力
+  - source_excerpt: 通过引入门控机制与递归更新策略，RGDR能够在保持线性时间复杂度的同时，有效捕捉长距离...
+    required_content:
+    - 门控递归
+    - 线性时间复杂度
+    - 长距离依赖
+  capability_cases:
+  - infer_skill_r4_capability_59
+- api: torch_npu.npu_rotary_mul
+  source_label: torch_npu.npu_rotary_mul
+  group: formal
+  source_row_sha256: b8a0b2e452bcbc919df52a87eecdf4325198f0c3099e104d7860f4a1038314dc
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_rotary_mul.md
+  source_doc_sha256: 6cef5f9ff10ffbea9d1e3a8b7acbf2f8e20254372b25aaf51785d80cd2b4cbb8
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_rotary_mul
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_rotary_mul
+  - 执行Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。
+  - torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half') -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_60_a2
+  - infer_skill_r3_api_60_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_rotary_mul.md
+  source_summary: 实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。
+  source_facts:
+  - source_excerpt: 实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息
+    required_content:
+    - Rotary Position Embedding
+    - 二维平面旋转
+    - 位置信息
+  capability_cases:
+  - infer_skill_r4_capability_60
+- api: torch_npu.npu_scaled_masked_softmax
+  source_label: torch_npu.npu_scaled_masked_softmax
+  group: formal
+  source_row_sha256: c3bf586d08241b37750a32cd1c693ab6e188559775a9e9063c0d300a5593b7f6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_scaled_masked_softmax.md
+  source_doc_sha256: 6a1518c23430a14ae0c812051fc6e3ca5503565ec74f4296d814599eb7326fc8
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_scaled_masked_softmax
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_scaled_masked_softmax
+  - 计算输入张量`x`缩放并按照`mask`遮蔽后的`Softmax`结果。
+  - torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_61_a2
+  - infer_skill_r3_api_61_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_scaled_masked_softmax.md
+  source_summary: 计算输入张量`x`缩放并按照`mask`遮蔽后的`Softmax`结果。
+  source_facts:
+  - source_excerpt: 计算输入张量`x`缩放并按照`mask`遮蔽后的`Softmax`结果
+    required_content:
+    - 缩放
+    - mask
+    - 遮蔽
+    - Softmax
+  capability_cases:
+  - infer_skill_r4_capability_61
+- api: torch_npu.npu_scatter_nd_update
+  source_label: torch_npu.npu_scatter_nd_update
+  group: formal
+  source_row_sha256: 73f685f4c06ff1577e246e79a21d025acc20a8c38bc8a35ea8139a1082c91677
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_scatter_nd_update.md
+  source_doc_sha256: bb2d35a1002db977f9d4f5093e13c003d0db9a278ae8511ecbf5f3d89d0bb3ed
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_scatter_nd_update
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_scatter_nd_update
+  - 将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`本身的数据不变。
+  - torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_62_a2
+  - infer_skill_r3_api_62_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_scatter_nd_update.md
+  source_summary: 将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`本身的数据不变。
+  source_facts:
+  - source_excerpt: 将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`本身的数据不变
+    required_content:
+    - updates
+    - indices
+    - 输出tensor
+    - input本身的数据不变
+  capability_cases:
+  - infer_skill_r4_capability_62
+- api: torch_npu.npu_scatter_nd_update_
+  source_label: torch_npu.npu_scatter_nd_update_
+  group: formal
+  source_row_sha256: 2f89d5a8f40426bba411d046fcd260bf7c41d9b8d3f3eefa7b9c30d8a4772661
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_scatter_nd_update_.md
+  source_doc_sha256: 633cb7c174042daa1c93622ea3e49d911a5b92fe7565647565449be4cdccce89
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_scatter_nd_update_
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_scatter_nd_update_
+  - 将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`中的数据被改变。
+  - torch_npu.npu_scatter_nd_update_(input, indices, updates) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_63_a2
+  - infer_skill_r3_api_63_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_scatter_nd_update_.md
+  source_summary: 将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`中的数据被改变。
+  source_facts:
+  - source_excerpt: 将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`中的数据被改变
+    required_content:
+    - updates
+    - indices
+    - input中的数据被改变
+  capability_cases:
+  - infer_skill_r4_capability_63
+- api: torch_npu.npu_scatter_pa_kv_cache
+  source_label: torch_npu.npu_scatter_pa_kv_cache
+  group: formal
+  source_row_sha256: 1720a8f306ec395218942ffe361c8b59b89e2b5c49084ffb6602ca5e349c6ea7
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_scatter_pa_kv_cache.md
+  source_doc_sha256: f96be49043585381761f5e6a051284eda33d501b19da51348df8306a2841968c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_scatter_pa_kv_cache
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_scatter_pa_kv_cache
+  - 更新KVCache中指定位置的`key`和`value`。
+  - torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mapping, *, compress_lens=None, compress_seq_offsets=None,
+    seq_lens=None) -> ()
+  retrieval_cases:
+  - infer_skill_r3_api_64_a2
+  - infer_skill_r3_api_64_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_scatter_pa_kv_cache.md
+  source_summary: 更新KVCache中指定位置的`key`和`value`。
+  source_facts:
+  - source_excerpt: 更新KVCache中指定位置的`key`和`value`
+    required_content:
+    - KVCache
+    - 指定位置
+    - key
+    - value
+  capability_cases:
+  - infer_skill_r4_capability_64
+- api: torch_npu.npu_sim_exponential_
+  source_label: torch_npu.npu_sim_exponential_
+  group: formal
+  source_row_sha256: d08e536cc653d6dfc1e4b3071d447123c1059008bcedb43e9ccdf85b67718149
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_sim_exponential_.md
+  source_doc_sha256: eed9ca056727ad0a90afa5dadfc274949846f679eed85ac946a04ab98d2a83c7
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_sim_exponential_
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_sim_exponential_
+  - 使用给定 lambd 的指数分布采样值覆盖输入张量。
+  - torch_npu.npu_sim_exponential_(input, lambd=1, *, generator=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_65_a2
+  - infer_skill_r3_api_65_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_sim_exponential_.md
+  source_summary: 根据参数`lambd`生成指数分布随机数，并原地填充至输入张量`input`。
+  source_facts:
+  - source_excerpt: 根据参数`lambd`生成指数分布随机数，并原地填充至输入张量`input`
+    required_content:
+    - lambd
+    - 指数分布
+    - 覆盖输入张量
+  capability_cases:
+  - infer_skill_r4_capability_65
+- api: torch_npu.npu_sparse_flash_attention
+  source_label: torch_npu.npu_sparse_flash_attention
+  group: formal
+  source_row_sha256: 8567ff62ef2bca19a7091de551b79c0e0e0e876f21569cf22c7aaae461e38843
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_sparse_flash_attention.md
+  source_doc_sha256: aa4ad3fdef95566576735b0aaacd51229ca481bf84eee8e1b37c235e992cf23a
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_sparse_flash_attention
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_sparse_flash_attention
+  - sparse_flash_attention（SFA）是针对大序列长度推理场景的高效注意力计算模块，该模块通过“只计算关键部分”大幅减少计算量，然而会引入大量的离散访存，造成数据搬运时间增加，进而影响整体性能。
+  - torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_value, *, block_table=None, actual_seq_lengths_query=None,
+    actual_seq_lengths_kv=None, query_rope=None, key_rope=None, sparse_block_size=1, layout_query='BSND', layout_kv='BSND',
+    sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, attention_mode=0, return_softmax_lse=False) -> (Tensor,
+    Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_66_a2
+  - infer_skill_r3_api_66_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_sparse_flash_attention.md
+  source_summary: sparse_flash_attention（SFA）是针对大序列长度推理场景的高效注意力计算模块，该模块通过“只计算关键部分”大幅减少计算量，然而会引入大量的离散访存，造成数据搬运时间增加，进而影响整体性能。
+  source_facts:
+  - source_excerpt: sparse_flash_attention（SFA）是针对大序列长度推理场景的高效注意力计算模块，该模块通过“只计算关键部分”大幅减少计算量，然而会引入大量的离散访存，造成数据搬运时间增加，进而影响整体性能
+    required_content:
+    - SFA
+    - 大序列长度
+    - 只计算关键部分
+    - 离散访存
+    - 数据搬运时间
+  capability_cases:
+  - infer_skill_r4_capability_66
+- api: torch_npu.npu_sparse_lightning_indexer_grad_kl_loss
+  source_label: torch_npu.npu_sparse_lightning_indexer_grad_kl_loss
+  group: formal
+  source_row_sha256: 956f767fba124686aea4b1f0e3da305ef4a148bb1e80a8429f63157c8e2c895e
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_sparse_lightning_indexer_grad_kl_loss.md
+  source_doc_sha256: d2d426773d6bb047ab91dd0993e91f3913ac82de1e9640dd416d2de3dedfe103
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_sparse_lightning_indexer_grad_kl_loss.md
+  source_summary: 该接口实现了npu_lightning_indexer的反向功能，并融合了Loss的计算。npu_lightning_indexer用于筛选Attention的`query`与`key`间最高内在联系的Top-k项，存放在`spars...
+- api: torch_npu.npu_swiglu_quant
+  source_label: torch_npu.npu_swiglu_quant
+  group: formal
+  source_row_sha256: 917f2d5d658cc2090f0c0d066647f56041c3b12e2d1e4c6485f72aca0c77779e
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_swiglu_quant.md
+  source_doc_sha256: 83f003edfc0027960fddcb40fef9a6166a8d40f7750ac8cab70cf1186d9a2ef9
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_swiglu_quant
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_swiglu_quant
+  - 在swiglu激活函数后添加quant操作，执行输入`x`的`SwiGluQuant`计算，支持`int8`或`int4`量化输出，支持MoE场景和非MoE场景（`group_index`为空），支持分组量化，支持动态/静态量化。
+  - torch_npu.npu_swiglu_quant(x, *, smooth_scales=None, offsets=None, group_index=None, activate_left=False, quant_mode=0,
+    group_list_type=0, dst_type=None) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_68_a2
+  - infer_skill_r3_api_68_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_swiglu_quant.md
+  source_summary: 在swiglu激活函数后添加quant操作，实现输入`x`的`SwiGluQuant`计算，支持`int8`或`int4`量化输出，支持MoE场景和非MoE场景（`group_index`为空），支持分组量化，支持动态/静态量化。
+  source_facts:
+  - source_excerpt: 在swiglu激活函数后添加quant操作，实现输入`x`的`SwiGluQuant`计算，支持`int8`或`int4`量化输出，支持MoE场景和非MoE场景（`group_index`为空），支持分组量化，支持动态/静态量化
+    required_content:
+    - swiglu
+    - int8
+    - int4
+    - group_index
+    - 分组量化
+    - 动态/静态量化
+  capability_cases:
+  - infer_skill_r4_capability_68
+- api: torch_npu.npu_top_k_top_p
+  source_label: torch_npu.npu_top_k_top_p
+  group: formal
+  source_row_sha256: fa810bb4bd813ddc1e6d666c32b60a7bf1ac4a5aff5e62a0084f5be766cd4935
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_top_k_top_p.md
+  source_doc_sha256: 948b124d6aa02fa9361288a6cfde24b35b173c5957b2e6c8751ec378b110a977
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_top_k_top_p
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_top_k_top_p
+  - 对 logits 进行 top-k 与 top-p 候选过滤。
+  - torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_69_a2
+  - infer_skill_r3_api_69_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_top_k_top_p.md
+  source_summary: 对原始输入`logits`进行`top-k`和`top-p`采样过滤。
+  source_facts:
+  - source_excerpt: 对原始输入`logits`进行`top-k`和`top-p`采样过滤
+    required_content:
+    - logits
+    - top-k
+    - top-p
+    - 候选过滤
+  capability_cases:
+  - infer_skill_r4_capability_69
+- api: torch_npu.npu_top_k_top_p_sample
+  source_label: torch_npu.npu_top_k_top_p_sample
+  group: formal
+  source_row_sha256: b8fa4b81b159ca1da8a870d5f4032a120028e2205274dd7ece3678cfbcfc93d6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_top_k_top_p_sample.md
+  source_doc_sha256: 9138fbcd5925534b77dd2b60570b5e688d0958c8d16dc9ceab6ca797faed865a
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_top_k_top_p_sample
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_top_k_top_p_sample
+  - 按 logits、top-k/top-p 和随机权重进行候选筛选及采样，并返回所选索引和相关分布。
+  - torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need_logits=False, top_k_guess=32)
+    -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_70_a2
+  - infer_skill_r3_api_70_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_top_k_top_p_sample.md
+  source_summary: 根据输入词频`logits`、`top_k`/`top_p`采样参数、随机采样权重分布`q`，进行topK-topP-Sample采样计算，输出每个batch的最大词频`logits_select_idx`，以及topK-topP采样...
+  source_facts:
+  - source_excerpt: 根据输入词频`logits`、`top_k`/`top_p`采样参数、随机采样权重分布`q`，进行topK-topP-Sample采样计算，输出每个batch的最大词频`logits_select_idx`，以及topK-topP采样...
+    required_content:
+    - logits
+    - top-k/top-p
+    - 随机权重
+    - logits_select_idx
+    - logits_top_kp_select
+    correction: 原摘要把选择位置概括为最大词频；完整文档有独立使能的指数采样，不能将全部路径等同 argmax。
+    correction_source: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_top_k_top_p_sample.md
+  capability_cases:
+  - infer_skill_r4_capability_70
+- api: torch_npu.npu_trans_quant_param
+  source_label: torch_npu.npu_trans_quant_param
+  group: formal
+  source_row_sha256: 6757517c87e999e3ad9cde9be73626a5aa115e009e9b2a452b251bddb4e38cc6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_trans_quant_param.md
+  source_doc_sha256: cde68b13873b711466d503d19d9095f56b062d89e77a2872e8b7579abe40dd9e
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_trans_quant_param
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_trans_quant_param
+  - 将浮点 scale 编码成量化矩阵乘需要的整数位域表示，可同时编码 offset。
+  - torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_71_a2
+  - infer_skill_r3_api_71_a3
+  - infer_skill_r3_api_capability_npu_trans_quant_param
+  - infer_skill_r3_api_global_npu_trans_quant_param
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_trans_quant_param.md
+  source_summary: 完成量化计算参数`scale`数据类型的转换，将`float32`数据按照bit位存储进一个`int64`数据里。
+  source_facts:
+  - source_excerpt: 完成量化计算参数`scale`数据类型的转换，将`float32`数据按照bit位存储进一个`int64`数据里
+    required_content:
+    - float32 scale
+    - 位域编码
+    - int64
+  capability_cases:
+  - infer_skill_r4_capability_71
+- api: torch_npu.npu_transpose_batchmatmul
+  source_label: torch_npu.npu_transpose_batchmatmul
+  group: formal
+  source_row_sha256: 19c9826afdd2d693229b32fd16a9ad86987e89a974224c1a162c3ff5bf96665b
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_transpose_batchmatmul.md
+  source_doc_sha256: c6c1c264d264fcef34acbd16b9b2193b7a532bab0a08000df7f0283d1b676edd
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_transpose_batchmatmul
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_transpose_batchmatmul
+  - 执行张量`input`与张量`weight`的矩阵乘计算。
+  - torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, perm_x1=[0,1,2], perm_x2=[0,1,2],
+    perm_y=[1,0,2], batch_split_factor=1) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_72_a2
+  - infer_skill_r3_api_72_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_transpose_batchmatmul.md
+  source_summary: 完成张量`input`与张量`weight`的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。`perm_x1`代表张量input的转置序列，`perm_x2`代表张量weight的转置...
+  source_facts:
+  - source_excerpt: 完成张量`input`与张量`weight`的矩阵乘计算
+    required_content:
+    - input
+    - weight
+    - 矩阵乘
+  - source_excerpt: 仅支持三维的Tensor传入
+    required_content:
+    - 仅支持三维 Tensor
+  - source_excerpt: Tensor支持转置，转置序列根据传入的数列进行变更
+    required_content:
+    - 转置批量矩阵乘
+    - 转置排列
+  - source_excerpt: '`perm_x1`代表张量input的转置序列，`perm_x2`代表张量weight的转置...'
+    required_content:
+    - perm_x1 对应 input
+    - perm_x2 对应 weight
+  capability_cases:
+  - infer_skill_r4_capability_72
+- api: torch_npu.npu_weight_quant_batchmatmul
+  source_label: torch_npu.npu_weight_quant_batchmatmul
+  group: formal
+  source_row_sha256: a34b7f4c552a823f80b0282b0421b04c46476f89def34eedd4496d13bc82df20
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-npu_weight_quant_batchmatmul.md
+  source_doc_sha256: 4d0b1bea44a18008df5cd4bb1adcf1c58d2315073722506e4c9eaeaf6d8d4dbf
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_weight_quant_batchmatmul
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_weight_quant_batchmatmul
+  - 此接口用于执行矩阵乘计算中`weight`输入和输出的量化操作，支持pertensor、perchannel、pergroup多场景量化。
+  - torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset=None, quant_scale=None,
+    quant_offset=None, bias=None, antiquant_group_size=0, inner_precise=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_73_a2
+  - infer_skill_r3_api_73_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-npu_weight_quant_batchmatmul.md
+  source_summary: 该接口用于实现矩阵乘计算中`weight`输入和输出的量化操作，支持pertensor、perchannel、pergroup多场景量化。
+  source_facts:
+  - source_excerpt: 该接口用于实现矩阵乘计算中`weight`输入和输出的量化操作，支持pertensor、perchannel、pergroup多场景量化
+    required_content:
+    - weight
+    - pertensor
+    - perchannel
+    - pergroup
+  capability_cases:
+  - infer_skill_r4_capability_73
+- api: torch.npu.reset_stream_limit
+  source_label: torch.npu.reset_stream_limit
+  group: formal
+  source_row_sha256: e5ecea06fdfffe5bb8c869bfc78712defadc5b92a91ac5f7fe482ff46d0044ac
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-reset_stream_limit.md
+  source_doc_sha256: 3acd75d08fab0ac7b96ef535d44d4add6fe634d4897b5c652bea0277c0ce366a
+  disposition: migrated
+  target: model/inference/apis/torch_npu/reset_stream_limit
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch.npu.reset_stream_limit
+  - 恢复指定 Stream 的默认资源限制，与 set_stream_limit 的设置操作配套。
+  - torch.npu.reset_stream_limit(stream) -> None
+  retrieval_cases:
+  - infer_skill_r3_api_74_a2
+  - infer_skill_r3_api_74_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-reset_stream_limit.md
+  source_summary: 调用`torch.npu.set_stream_limit`接口设置指定Stream的Device资源限制后，可调用本接口重置指定Stream的Device资源限制，恢复默认配置，此时可通过`torch.npu.get_stream_...
+  source_facts:
+  - source_excerpt: 调用`torch.npu.set_stream_limit`接口设置指定Stream的Device资源限制后，可调用本接口重置指定Stream的Device资源限制，恢复默认配置，此时可通过`torch.npu.get_stream_...
+    required_content:
+    - set_stream_limit
+    - 指定 Stream
+    - 默认资源限制
+    - get_stream_limit
+  capability_cases:
+  - infer_skill_r4_capability_74
+- api: torch_npu.scatter_update
+  source_label: torch_npu.scatter_update
+  group: formal
+  source_row_sha256: 99ea10e085359baec2560cd1e17b6286fc6d39501783c9e54eb3dd69bda89a80
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-scatter_update.md
+  source_doc_sha256: e053e42290e3baa03b9ad052a455e94a696e66e83d65f78ae4841daa2440988c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/scatter_update
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.scatter_update
+  - 将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据不变。
+  - torch_npu.scatter_update(data, indices, updates, axis) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_75_a2
+  - infer_skill_r3_api_75_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-scatter_update.md
+  source_summary: 将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据不变。
+  source_facts:
+  - source_excerpt: 将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据不变
+    required_content:
+    - updates
+    - axis
+    - indices
+    - 输出tensor
+    - data本身的数据不变
+  capability_cases:
+  - infer_skill_r4_capability_75
+- api: torch_npu.scatter_update_
+  source_label: torch_npu.scatter_update_
+  group: formal
+  source_row_sha256: ee9ede56c9318368002693d4a9b3bc534388d13cf5140963dee690c7d5faaaeb
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-scatter_update_.md
+  source_doc_sha256: f30f5bb3343a602b7f6febceb49e2562064251a6203065377bf1958b2a39cfcf
+  disposition: migrated
+  target: model/inference/apis/torch_npu/scatter_update_
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.scatter_update_
+  - 将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据被改变。
+  - torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_76_a2
+  - infer_skill_r3_api_76_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-scatter_update_.md
+  source_summary: 将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据被改变。
+  source_facts:
+  - source_excerpt: 将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据被改变
+    required_content:
+    - updates
+    - axis
+    - indices
+    - data本身的数据被改变
+  capability_cases:
+  - infer_skill_r4_capability_76
+- api: torch.npu.set_device_limit
+  source_label: torch.npu.set_device_limit
+  group: formal
+  source_row_sha256: 05d3ba3054b87ba3d8ecb17e33bc491312cf820434c772153a75d603a3b1b668
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-set_device_limit.md
+  source_doc_sha256: f87a2e6436fa447b3f2aee3104f3eb9318448c41a56a0d8a04f1dd7b3cdf6b3e
+  disposition: migrated
+  target: model/inference/apis/torch_npu/set_device_limit
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch.npu.set_device_limit
+  - 为当前进程指定设备的 Cube/Vector 执行核数。
+  - torch.npu.set_device_limit(device, cube_num=-1, vector_num=-1) -> None
+  retrieval_cases:
+  - infer_skill_r3_api_77_a2
+  - infer_skill_r3_api_77_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-set_device_limit.md
+  source_summary: 设置一个进程上指定device，执行算子时所使用的cube和vector核数。
+  source_facts:
+  - source_excerpt: 设置一个进程上指定device，执行算子时所使用的cube和vector核数
+    required_content:
+    - 当前进程
+    - 设备
+    - Cube/Vector
+  capability_cases:
+  - infer_skill_r4_capability_77
+- api: torch.npu.set_stream_limit
+  source_label: torch.npu.set_stream_limit
+  group: formal
+  source_row_sha256: 478889027930bffa757874b156235ef6431b218e942b2c645a330c09aa9f3ce3
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/torch_npu-set_stream_limit.md
+  source_doc_sha256: deb905ec04979ec95dfb08f4f3f9ff08c4301a6a9e7cc55bcb5f5138c5f313f5
+  disposition: migrated
+  target: model/inference/apis/torch_npu/set_stream_limit
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch.npu.set_stream_limit
+  - 设置指定Stream的Device资源限制。
+  - torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
+  retrieval_cases:
+  - infer_skill_r3_api_78_a2
+  - infer_skill_r3_api_78_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/torch_npu-set_stream_limit.md
+  source_summary: 设置指定Stream的Device资源限制。
+  source_facts:
+  - source_excerpt: 设置指定Stream的Device资源限制
+    required_content:
+    - 指定Stream
+    - Device资源限制
+  capability_cases:
+  - infer_skill_r4_capability_78
+- api: torch_npu._npu_dropout
+  source_label: （beta）torch_npu._npu_dropout
+  group: beta
+  source_row_sha256: a46a0a4e6545168531cde9f07bb3d0269b1580ee6ab440832583d0fcb85726b2
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-_npu_dropout.md
+  source_doc_sha256: 86368b3f97f2d7e136b4cd638b0c8286264ba55738d89cf881e058fea2bdf2f4
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-_npu_dropout.md
+  source_summary: 不使用种子（seed）进行dropout结果计数。
+- api: torch_npu.copy_memory_
+  source_label: （beta）torch_npu.copy_memory_
+  group: beta
+  source_row_sha256: a4fc7448da9739815b553d39312ea17e7a396864f6982f8a9c7b259eb5b9de2f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-copy_memory_.md
+  source_doc_sha256: b44cbfa29a0a5fd2fdb90c8fb48ed63a77b5a464bd27d79998c90367706aa823
+  disposition: migrated
+  target: model/inference/apis/torch_npu/copy_memory_
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.copy_memory_
+  - 把源张量内容写入目标张量并返回目标。
+  - torch_npu.copy_memory_(self, src, non_blocking=False) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_80_a2
+  - infer_skill_r3_api_80_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-copy_memory_.md
+  source_summary: 从src拷贝元素到self张量，并原地返回self张量。
+  source_facts:
+  - source_excerpt: 从src拷贝元素到self张量，并原地返回self张量
+    required_content:
+    - 源张量内容写入目标张量
+    - 返回目标
+  capability_cases:
+  - infer_skill_r4_capability_80
+- api: torch_npu.empty_with_format
+  source_label: （beta）torch_npu.empty_with_format
+  group: beta
+  source_row_sha256: 55843afeaaadf75124bb3840574a7bcdbaa387c5601243be7dd000bc40f4f875
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-empty_with_format.md
+  source_doc_sha256: de6c6f749a0e7b0ce8eb51a5c5ccb6a5ef54b7d05292428596e6b12e47aca3b9
+  disposition: migrated
+  target: model/inference/apis/torch_npu/empty_with_format
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.empty_with_format
+  - 返回一个填充未初始化数据的张量。
+  - torch_npu.empty_with_format(size, dtype, layout, device, pin_memory, acl_format)
+  retrieval_cases:
+  - infer_skill_r3_api_81_a2
+  - infer_skill_r3_api_81_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-empty_with_format.md
+  source_summary: 返回一个填充未初始化数据的张量。
+  source_facts:
+  - source_excerpt: 返回一个填充未初始化数据的张量
+    required_content:
+    - 未初始化数据
+    - 张量
+  capability_cases:
+  - infer_skill_r4_capability_81
+- api: torch_npu.fast_gelu
+  source_label: （beta）torch_npu.fast_gelu
+  group: beta
+  source_row_sha256: bc18f7f3020ea6ebf1d1674145abc4464068d083e2a8f802b88af6e6805117f7
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-fast_gelu.md
+  source_doc_sha256: 9a122a411d59594b2ebc77993f92380aee4af3419523b49d59e54faf20aa33cc
+  disposition: migrated
+  target: model/inference/apis/torch_npu/fast_gelu
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.fast_gelu
+  - 快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算FastGelu。
+  - torch_npu.fast_gelu(input) -> Tensor
+  - FakeTensor
+  retrieval_cases:
+  - infer_skill_r3_api_82_a2
+  - infer_skill_r3_api_82_a3
+  - infer_skill_r3_api_feature_fast_gelu
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-fast_gelu.md
+  source_summary: 快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算FastGelu。支持FakeTensor模式。
+  source_facts:
+  - source_excerpt: 快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算FastGelu
+    required_content:
+    - FastGelu
+    - 每个元素
+  - source_excerpt: 支持FakeTensor模式
+    required_content:
+    - 支持 FakeTensor
+  capability_cases:
+  - infer_skill_r4_capability_82
+- api: torch_npu.npu_alloc_float_status
+  source_label: （beta）torch_npu.npu_alloc_float_status
+  group: beta
+  source_row_sha256: 57cfe691a916bc9cd40cb4717230ce6cecd053533a7a3f16252978b9f28f45a6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_alloc_float_status.md
+  source_doc_sha256: 5e8ed1477505366717ba103c7b029ae1c38098356d11b7026be9d9de2e57a3db
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_alloc_float_status
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_alloc_float_status
+  - 创建供后续溢出检测记录使用的状态张量。
+  - torch_npu.npu_alloc_float_status(input) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_83_a2
+  - infer_skill_r3_api_83_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_alloc_float_status.md
+  source_summary: 申请一个专门用于存储浮点运算状态标志的Tensor。该Tensor用于后续记录计算过程中的溢出状态。
+  source_facts:
+  - source_excerpt: 申请一个专门用于存储浮点运算状态标志的Tensor
+    required_content:
+    - 溢出检测
+    - 状态张量
+  - source_excerpt: 该Tensor用于后续记录计算过程中的溢出状态
+    required_content:
+    - 后续
+    - 溢出
+  capability_cases:
+  - infer_skill_r4_capability_83
+- api: torch_npu.npu_anchor_response_flags
+  source_label: （beta）torch_npu.npu_anchor_response_flags
+  group: beta
+  source_row_sha256: a8b3e79c74353c330fd13828d593c19d9302a804a92463a83921a01103c0e1d6
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_anchor_response_flags.md
+  source_doc_sha256: ba166456e75e9db2ad79ee913dba438713e065f273375b490a8a19c37f662e8e
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_anchor_response_flags
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_anchor_response_flags
+  - 为特征图上的候选锚点生成参与后续处理的标志。
+  - torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_84_a2
+  - infer_skill_r3_api_84_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_anchor_response_flags.md
+  source_summary: 在单个特征图中生成锚点的响应标志，即标识哪些锚点需要参与训练或推理。
+  source_facts:
+  - source_excerpt: 在单个特征图中生成锚点的响应标志，即标识哪些锚点需要参与训练或推理
+    required_content:
+    - 特征图
+    - 锚点
+    - 标志
+  capability_cases:
+  - infer_skill_r4_capability_84
+- api: torch_npu.npu_apply_adam
+  source_label: （beta）torch_npu.npu_apply_adam
+  group: beta
+  source_row_sha256: 2fbba8f83a5fbed3e63f9ef03009fb35bceae6159f1e6dbded22a0813a17aa5b
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_apply_adam.md
+  source_doc_sha256: c950634c209dd5928032019bedd00854f9b1fa958ed416577160f02adc48f7ce
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_apply_adam.md
+  source_summary: 获取adam优化器的计算结果。
+- api: torch_npu.npu_batch_nms
+  source_label: （beta）torch_npu.npu_batch_nms
+  group: beta
+  source_row_sha256: 7e4165e3e0a8a7b7f6d4e471c002657fa89a3e39a9c6509213f5e2e5840cc650
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_batch_nms.md
+  source_doc_sha256: ea6185a4db4ca51428ede70ef13a28a1fe18c337102af1f12c1a1d131d890cb0
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_batch_nms
+  platforms: []
+  status: draft
+  required_content:
+  - torch_npu.npu_batch_nms
+  - 对 batch 内各类别的候选框按分数和 IoU 阈值筛选，并限制保留框数量。
+  - torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_per_class, max_total_size, change_coordinate_frame=False,
+    transpose_box=False) -> (Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_86_unlocated
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_batch_nms.md
+  source_summary: 以批量处理方式对每个类别的检测框进行非极大值抑制（Non-Maximum Suppression，NMS），从而去除冗余检测框，输出保留下来的检测框及其对应的类别和得分。
+  source_facts:
+  - source_excerpt: 以批量处理方式对每个类别的检测框进行非极大值抑制（Non-Maximum Suppression，NMS），从而去除冗余检测框，输出保留下来的检测框及其对应的类别和得分
+    required_content:
+    - NMS
+    - 类别
+    - 得分
+    - 检测框
+  capability_cases:
+  - infer_skill_r4_capability_86
+- api: torch_npu.npu_bert_apply_adam
+  source_label: （beta）torch_npu.npu_bert_apply_adam
+  group: beta
+  source_row_sha256: 60d3d5e24f2acff14058ef3703c10640c1b8956ef83818441d3bbe2334274fb5
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_bert_apply_adam.md
+  source_doc_sha256: 64d13c0625ed1e7ee625c8a8e701a2f61da048775fa28072560b43f88c60263c
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_bert_apply_adam.md
+  source_summary: 针对bert模型，获取adam优化器的计算结果。
+- api: torch_npu.npu_bmmV2
+  source_label: （beta）torch_npu.npu_bmmV2
+  group: beta
+  source_row_sha256: 54f7cc6ef04f12dc18f162779ebda9acf36031465e5264e07c9a1125a1bdb249
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_bmmV2.md
+  source_doc_sha256: 639f9b115f38a2430e5488ee0211e5f3cd7ff3ba77fc1034de4ab63fa6cc0d0b
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_bmm_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_bmmV2
+  - 计算批量矩阵乘，批次与矩阵维度按该接口的输入规则匹配。
+  - torch_npu.npu_bmmV2(self, mat2, output_sizes) -> Tensor
+  - FakeTensor
+  retrieval_cases:
+  - infer_skill_r3_api_88_a2
+  - infer_skill_r3_api_88_a3
+  - infer_skill_r3_api_feature_npu_bmm_v2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_bmmV2.md
+  source_summary: 将矩阵“a”乘以矩阵“b”，生成“a*b”。支持FakeTensor模式。
+  source_facts:
+  - source_excerpt: 将矩阵“a”乘以矩阵“b”，生成“a*b”
+    required_content:
+    - 批量矩阵乘
+  - source_excerpt: 支持FakeTensor模式
+    required_content:
+    - 支持 FakeTensor
+  capability_cases:
+  - infer_skill_r4_capability_88
+- api: torch_npu.npu_bounding_box_decode
+  source_label: （beta）torch_npu.npu_bounding_box_decode
+  group: beta
+  source_row_sha256: c1e3b6d9ad2250ff5a3713d833d4bb6e9668d9dece384e76020bcd58826600a4
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_bounding_box_decode.md
+  source_doc_sha256: 0c6713e56c7ec9a0b8b9c5f55d874981a4898ecb5c1168ac9df85c06144a683d
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_bounding_box_decode
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_bounding_box_decode
+  - 用候选框与预测偏移重建目标框坐标。
+  - torch_npu.npu_bounding_box_decode(rois, deltas, means0, means1, means2, means3, stds0, stds1, stds2, stds3,
+    max_shape, wh_ratio_clip) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_89_a2
+  - infer_skill_r3_api_89_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_bounding_box_decode.md
+  source_summary: 根据rois和deltas生成标注框。自定义Faster R-CNN算子。
+  source_facts:
+  - source_excerpt: 根据rois和deltas生成标注框
+    required_content:
+    - rois
+    - deltas
+    - 框坐标
+  - source_excerpt: 自定义Faster R-CNN算子
+    required_content:
+    - Faster R-CNN
+  capability_cases:
+  - infer_skill_r4_capability_89
+- api: torch_npu.npu_bounding_box_encode
+  source_label: （beta）torch_npu.npu_bounding_box_encode
+  group: beta
+  source_row_sha256: c599eca3d4d8ca056fde9882a296b36ce0b7cc014af8be0fab8911de3275c47f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_bounding_box_encode.md
+  source_doc_sha256: ca3c6cf89e604b1bc52c5e8f141f07054ff3903733cde6e10df9562ba8236c50
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_bounding_box_encode.md
+  source_summary: 计算标注框和ground truth真值框之间的坐标变化。自定义Faster R-CNN算子。
+- api: torch_npu.npu_broadcast
+  source_label: （beta）torch_npu.npu_broadcast
+  group: beta
+  source_row_sha256: db2dee5c8d152115b1bbbcfbff7e3151511dc1748c25a5d2df244181412bbe11
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_broadcast.md
+  source_doc_sha256: 355c4c14234bd197e6b4767ae34f89553bdd4ed0adc3857570224106d29cef3b
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_broadcast
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_broadcast
+  - 按给定外形扩展张量的维度或单例轴。
+  - torch_npu.npu_broadcast(self, size) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_91_a2
+  - infer_skill_r3_api_91_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_broadcast.md
+  source_summary: 返回self张量的新视图，其单维度扩展，结果连续。张量也可以扩展更多维度，新的维度添加在最前面。
+  source_facts:
+  - source_excerpt: 返回self张量的新视图，其单维度扩展，结果连续
+    required_content:
+    - 广播结果连续
+    - 文档称为新视图
+  - source_excerpt: 张量也可以扩展更多维度，新的维度添加在最前面
+    required_content:
+    - 新增维度放在最前面
+  capability_cases:
+  - infer_skill_r4_capability_91
+- api: torch_npu.npu_ciou
+  source_label: （beta）torch_npu.npu_ciou
+  group: beta
+  source_row_sha256: 818f689ac04cef4c04fac1d0d6f1d14746f6eb9aec39a77bf4293ab9e4433998
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_ciou.md
+  source_doc_sha256: 5b840ecd815f28e98161e98924435b25c5c5627f58a20fa8ec327455984f9200
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_ciou
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_ciou
+  - 在距离交并比基础上计入框几何关系，生成 CIoU 度量。
+  - torch_npu.npu_ciou(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_flag=False) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_92_a2
+  - infer_skill_r3_api_92_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_ciou.md
+  source_summary: 应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty term，并propose CIoU。
+  source_facts:
+  - source_excerpt: 应用基于NPU的CIoU操作
+    required_content:
+    - CIoU
+  - source_excerpt: 在DIoU的基础上增加了penalty term，并propose CIoU
+    required_content:
+    - DIoU
+    - 惩罚项
+  capability_cases:
+  - infer_skill_r4_capability_92
+- api: torch_npu.npu_clear_float_status
+  source_label: （beta）torch_npu.npu_clear_float_status
+  group: beta
+  source_row_sha256: d14eaaebed2e028d2ee8af9abecfcfb69bc002211a16a0fc613bc37ab9217cc8
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_clear_float_status.md
+  source_doc_sha256: 57091753069f4d5e4ad9a879edfa09fd382cb2bf7f87c91be9952a59034c10e2
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_clear_float_status
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_clear_float_status
+  - 清空浮点溢出检测状态，与状态分配及读取操作配套。
+  - torch_npu.npu_clear_float_status(self) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_93_a2
+  - infer_skill_r3_api_93_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_clear_float_status.md
+  source_summary: 清除溢出检测相关标志位。
+  source_facts:
+  - source_excerpt: 清除溢出检测相关标志位
+    required_content:
+    - 清空浮点溢出检测状态
+  capability_cases:
+  - infer_skill_r4_capability_93
+- api: torch_npu.npu_confusion_transpose
+  source_label: （beta）torch_npu.npu_confusion_transpose
+  group: beta
+  source_row_sha256: 05098176435fd2e77be4e507fc209116f4a2b73197355c5263058ce4796ac61f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_confusion_transpose.md
+  source_doc_sha256: f2d2a8bf122ab476354e72266f2f53e68d9bd9f25a7fe896304cdc9b5e48c372
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_confusion_transpose
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_confusion_transpose
+  - 组合 reshape 与 transpose，次序由接口参数指定。
+  - torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_94_a2
+  - infer_skill_r3_api_94_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_confusion_transpose.md
+  source_summary: 同时执行reshape与transpose运算。
+  source_facts:
+  - source_excerpt: 同时执行reshape与transpose运算
+    required_content:
+    - reshape
+    - transpose
+    - 次序
+  capability_cases:
+  - infer_skill_r4_capability_94
+- api: torch_npu.npu_conv2d
+  source_label: （beta）torch_npu.npu_conv2d
+  group: beta
+  source_row_sha256: 3bb4e691e60c117831ef51c3dab509ede575763e1b6f027b4b79a6088d93d403
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_conv2d.md
+  source_doc_sha256: 0db12fe6baf7346c4e983227ab1ac16f05473d2c864d71ec67a6015a4b5e187d
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_conv2d
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_conv2d
+  - 对输入平面执行二维卷积。
+  - torch_npu.npu_conv2d(input, weight, bias, stride, padding, dilation, groups) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_95_a2
+  - infer_skill_r3_api_95_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_conv2d.md
+  source_summary: 在由多个输入平面组成的输入图像上应用一个2D卷积。
+  source_facts:
+  - source_excerpt: 在由多个输入平面组成的输入图像上应用一个2D卷积
+    required_content:
+    - 二维卷积
+  capability_cases:
+  - infer_skill_r4_capability_95
+- api: torch_npu.npu_conv3d
+  source_label: （beta）torch_npu.npu_conv3d
+  group: beta
+  source_row_sha256: 2f8cb7f0f2ed2a0a05d5f4d80757fbfe4bdb4ea9a88ce6238a62fceb73582d27
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_conv3d.md
+  source_doc_sha256: 3c7fd5919bdf71c012647796ee3803cd043448bfb15580cf66a2f95a0509e87c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_conv3d
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_conv3d
+  - 对输入体数据执行三维卷积。
+  - torch_npu.npu_conv3d(input, weight, bias, stride, padding, dilation, groups) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_96_a2
+  - infer_skill_r3_api_96_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_conv3d.md
+  source_summary: 在由多个输入平面组成的输入图像上应用一个3D卷积。
+  source_facts:
+  - source_excerpt: 在由多个输入平面组成的输入图像上应用一个3D卷积
+    required_content:
+    - 三维卷积
+  capability_cases:
+  - infer_skill_r4_capability_96
+- api: torch_npu.npu_conv_transpose2d
+  source_label: （beta）torch_npu.npu_conv_transpose2d
+  group: beta
+  source_row_sha256: 4a58eced320f063e55c326a9ba2096aae1975ee654d91ef968c7d9d7e6724a56
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_conv_transpose2d.md
+  source_doc_sha256: b1fc1e513e8bd1648bd29b710b7c82b8ee16759768e4a6f22a46a910fbd54c26
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_conv_transpose2d
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_conv_transpose2d
+  - 执行二维转置卷积，按输出形状及步长等参数生成结果。
+  - torch_npu.npu_conv_transpose2d(input, weight, bias, padding, output_padding, stride, dilation, groups) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_97_a2
+  - infer_skill_r3_api_97_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_conv_transpose2d.md
+  source_summary: 在由多个输入平面组成的输入图像上应用一个2D转置卷积算子，有时这个过程也被称为“反卷积”。
+  source_facts:
+  - source_excerpt: 在由多个输入平面组成的输入图像上应用一个2D转置卷积算子，有时这个过程也被称为“反卷积”
+    required_content:
+    - 二维转置卷积
+    - 反卷积
+  capability_cases:
+  - infer_skill_r4_capability_97
+- api: torch_npu.npu_convolution
+  source_label: （beta）torch_npu.npu_convolution
+  group: beta
+  source_row_sha256: 152ab55bbfdb21747b36652c179a9a5d6c6960548a7a0f0511036e3c33f52f69
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_convolution.md
+  source_doc_sha256: afa3c3cb9262693ce080784c80fd643af94635b04bdc4cdd2438c70fc30abd22
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_convolution
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_convolution
+  - 按输入维度和参数执行二维或三维卷积。
+  - torch_npu.npu_convolution(input, weight, bias, stride, padding, dilation, groups) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_98_a2
+  - infer_skill_r3_api_98_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_convolution.md
+  source_summary: 在由多个输入平面组成的输入图像上应用一个2D或3D卷积。
+  source_facts:
+  - source_excerpt: 在由多个输入平面组成的输入图像上应用一个2D或3D卷积
+    required_content:
+    - 二维或三维卷积
+  capability_cases:
+  - infer_skill_r4_capability_98
+- api: torch_npu.npu_convolution_transpose
+  source_label: （beta）torch_npu.npu_convolution_transpose
+  group: beta
+  source_row_sha256: 28de71516d4e8d8bab4c759cae15be01ccf68e63f5dffeea24134175aea41456
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_convolution_transpose.md
+  source_doc_sha256: df85f40e8f026e968edcc0aa5796e4e18388c576320358dfc7610b539c8756bc
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_convolution_transpose
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_convolution_transpose
+  - 执行二维或三维转置卷积。
+  - torch_npu.npu_convolution_transpose(input, weight, bias, padding, output_padding, stride, dilation, groups)
+    -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_99_a2
+  - infer_skill_r3_api_99_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_convolution_transpose.md
+  source_summary: 在由多个输入平面组成的输入图像上应用一个2D或3D转置卷积算子，有时这个过程也被称为“反卷积”。
+  source_facts:
+  - source_excerpt: 在由多个输入平面组成的输入图像上应用一个2D或3D转置卷积算子，有时这个过程也被称为“反卷积”
+    required_content:
+    - 二维或三维转置卷积
+    - 反卷积
+  capability_cases:
+  - infer_skill_r4_capability_99
+- api: torch_npu.npu_deformable_conv2d
+  source_label: （beta）torch_npu.npu_deformable_conv2d
+  group: beta
+  source_row_sha256: 2ad83a90866503369dfd3731794cecd632c317e9d4c48ac808f7b917bf76bcdd
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_deformable_conv2d.md
+  source_doc_sha256: 1e20e4233a707090ca835cc9af2f06a560ec59272655d38f38119812aa819adc
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_deformable_conv2d
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_deformable_conv2d
+  - 使用偏移采样位置完成二维可变形卷积。
+  - torch_npu.npu_deformable_conv2d(self, weight, offset, bias=None, kernel_size, stride, padding, dilation=[1,1,1,1],
+    groups=1, deformable_groups=1, modulated=True) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_100_a2
+  - infer_skill_r3_api_100_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_deformable_conv2d.md
+  source_summary: 使用预期输入计算变形卷积（deformable convolution）的输出。
+  source_facts:
+  - source_excerpt: 使用预期输入计算变形卷积（deformable convolution）的输出
+    required_content:
+    - 偏移采样
+    - 可变形卷积
+  capability_cases:
+  - infer_skill_r4_capability_100
+- api: torch_npu.npu_diou
+  source_label: （beta）torch_npu.npu_diou
+  group: beta
+  source_row_sha256: f9c726454646fc28b6057f3200f21c06f3ffba274edf7288499897c7aab29b82
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_diou.md
+  source_doc_sha256: a840cd37ca4cb16970776a86a0007fa6f100beaf6fcbef3ed0ddb7eaff2a53b4
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_diou
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_diou
+  - 计算带目标框距离因素的 DIoU。
+  - torch_npu.npu_diou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_101_a2
+  - infer_skill_r3_api_101_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_diou.md
+  source_summary: 应用基于NPU的DIoU操作。考虑到目标之间距离，以及距离和范围的重叠率，不同目标或边界需趋于稳定。
+  source_facts:
+  - source_excerpt: 应用基于NPU的DIoU操作
+    required_content:
+    - DIoU
+  - source_excerpt: 考虑到目标之间距离，以及距离和范围的重叠率，不同目标或边界需趋于稳定
+    required_content:
+    - 框距离
+    - 重叠度
+  capability_cases:
+  - infer_skill_r4_capability_101
+- api: torch_npu.npu_dropout_with_add_softmax
+  source_label: （beta）torch_npu.npu_dropout_with_add_softmax
+  group: beta
+  source_row_sha256: eb19339d8c8b8ecb18b85180c75859af0fa785363cf840442f3787e60affc432
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_dropout_with_add_softmax.md
+  source_doc_sha256: 485a5e49c27361711d9f02efcc317089672a622495965d7ee5a078d623052e6b
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_dropout_with_add_softmax.md
+  source_summary: 实现axpy_v2、softmax_v2、drop_out_domask_v3功能。即：
+- api: torch_npu.npu_dtype_cast
+  source_label: （beta）torch_npu.npu_dtype_cast
+  group: beta
+  source_row_sha256: b9cd6026ff892adce5dd03897b11cb6a55b8cc80d097297fac0694d418f672cb
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_dtype_cast.md
+  source_doc_sha256: d2b0a95bd4a9fe274a0a0c6f8c17c89810357a5557a465b9c12be7a850622940
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_dtype_cast
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_dtype_cast
+  - 执行张量数据类型（dtype）转换。
+  - torch_npu.npu_dtype_cast(input, dtype) -> Tensor
+  - FakeTensor
+  retrieval_cases:
+  - infer_skill_r3_api_103_a2
+  - infer_skill_r3_api_103_a3
+  - infer_skill_r3_api_feature_npu_dtype_cast
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_dtype_cast.md
+  source_summary: 执行张量数据类型（dtype）转换。支持FakeTensor模式。
+  source_facts:
+  - source_excerpt: 执行张量数据类型（dtype）转换
+    required_content:
+    - dtype
+    - 转换
+  - source_excerpt: 支持FakeTensor模式
+    required_content:
+    - 支持 FakeTensor
+  capability_cases:
+  - infer_skill_r4_capability_103
+- api: torch_npu.npu_format_cast
+  source_label: （beta）torch_npu.npu_format_cast
+  group: beta
+  source_row_sha256: 73bf8dd8896c6196d4c32e1542fe3dc1406c1ee02fed629178aa530b817eea70
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_format_cast.md
+  source_doc_sha256: 556d65d9157bcf2c3d878fb7890a804f13f6d98750bc47957b96322885f408c5
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_format_cast
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_format_cast
+  - 修改`input`的数据格式为目标格式，修改后的新张量不会替换原有张量。
+  - torch_npu.npu_format_cast(input, acl_format) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_104_a2
+  - infer_skill_r3_api_104_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_format_cast.md
+  source_summary: 修改`input`的数据格式为目标格式，修改后的新张量不会替换原有张量。
+  source_facts:
+  - source_excerpt: 修改`input`的数据格式为目标格式，修改后的新张量不会替换原有张量
+    required_content:
+    - 数据格式
+    - 新张量不会替换原有张量
+  capability_cases:
+  - infer_skill_r4_capability_104
+- api: torch_npu.npu_format_cast_
+  source_label: （beta）torch_npu.npu_format_cast_
+  group: beta
+  source_row_sha256: 17201f80db787b76f69ed38d5dc54468cc143872688271a7cdbe49a3260384e3
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_format_cast_.md
+  source_doc_sha256: 7c128dcad3eb86000bff40ea7cbbaff6a625c741843ee6ac3d1925f3ef90edc2
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_format_cast_
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_format_cast_
+  - 原地修改`input`的数据格式为目标格式。
+  - torch_npu.npu_format_cast_(input, src) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_105_a2
+  - infer_skill_r3_api_105_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_format_cast_.md
+  source_summary: 原地修改`input`的数据格式为目标格式。
+  source_facts:
+  - source_excerpt: 原地修改`input`的数据格式为目标格式
+    required_content:
+    - 原地
+    - 数据格式
+    - 目标格式
+  capability_cases:
+  - infer_skill_r4_capability_105
+- api: torch_npu.npu_fused_attention_score
+  source_label: （beta）torch_npu.npu_fused_attention_score
+  group: beta
+  source_row_sha256: 11b8248a28e422eee851ca71bf739a8ef48bbd3b2d0beea1935d592faecea54f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_fused_attention_score.md
+  source_doc_sha256: 83f0618020ee538c59343efa897f70a00af60d3061af48ed263b3b06c590291d
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_fused_attention_score
+  platforms: []
+  status: draft
+  required_content:
+  - torch_npu.npu_fused_attention_score
+  - 旧版 Transformer attention score 融合接口，使用前须确认其版本与产品范围。
+  - torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attention_mask, scale, keep_prob, query_transpose=False,
+    key_transpose=False, bmm_score_transpose_a=False, bmm_score_transpose_b=False, value_transpose=False, dx_transpose=False)
+    -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_106_unlocated
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_fused_attention_score.md
+  source_summary: 实现“Transformer attention score”的融合计算逻辑，主要将matmul、transpose、add、softmax、dropout、batchmatmul、permute等计算进行了融合。
+  source_facts:
+  - source_excerpt: 实现“Transformer attention score”的融合计算逻辑，主要将matmul、transpose、add、softmax、dropout、batchmatmul、permute等计算进行了融合
+    required_content:
+    - matmul
+    - transpose
+    - add
+    - softmax
+    - dropout
+    - batchmatmul
+    - permute
+  capability_cases:
+  - infer_skill_r4_capability_106
+- api: torch_npu.npu_get_float_status
+  source_label: （beta）torch_npu.npu_get_float_status
+  group: beta
+  source_row_sha256: 7fa1a0c7bffd505a130ddcbcfc839232ce37923ae7abc081169d52344955669b
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_get_float_status.md
+  source_doc_sha256: 2473ec2b21722045b39b609f7ea1681ceb32fad46eaa0418f9f385f656dec9e1
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_get_float_status
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_get_float_status
+  - 读取已有浮点状态张量记录的溢出信息。
+  - torch_npu.npu_get_float_status(self) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_107_a2
+  - infer_skill_r3_api_107_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_get_float_status.md
+  source_summary: 获取溢出检测结果。
+  source_facts:
+  - source_excerpt: 获取溢出检测结果
+    required_content:
+    - 读取
+    - 溢出
+  capability_cases:
+  - infer_skill_r4_capability_107
+- api: torch_npu.npu_giou
+  source_label: （beta）torch_npu.npu_giou
+  group: beta
+  source_row_sha256: 1d4df5f42f3898ddb97ba05177783eaa0bdae7426028b25a5b751b3bcb191db3
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_giou.md
+  source_doc_sha256: a3b4b0de8e794c7ad8ef13b2048536c3160a53199497fc1efde17f060361a789
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_giou
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_giou
+  - 根据交集、并集及最小包围区域计算 GIoU。
+  - torch_npu.npu_giou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_108_a2
+  - infer_skill_r3_api_108_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_giou.md
+  source_summary: 首先计算两个框的最小封闭面积和IoU，然后计算封闭区域中不属于两个框的封闭面积的比例，最后从IoU中减去这个比例，得到GIoU。
+  source_facts:
+  - source_excerpt: 首先计算两个框的最小封闭面积和IoU，然后计算封闭区域中不属于两个框的封闭面积的比例，最后从IoU中减去这个比例，得到GIoU
+    required_content:
+    - 最小包围区域
+    - IoU 减去
+    - 面积比例
+  capability_cases:
+  - infer_skill_r4_capability_108
+- api: torch_npu.npu_grid_assign_positive
+  source_label: （beta）torch_npu.npu_grid_assign_positive
+  group: beta
+  source_row_sha256: e4d7cacaa65082fff0afd2ae2e8baa2e10e102652aba431227e3dd655c8b6651
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_grid_assign_positive.md
+  source_doc_sha256: 418552dafbf9315d14f626390c3f45485d8a511f6658f68e9a7b0060dd4cb1e5
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_grid_assign_positive.md
+  source_summary: 执行position-sensitive的候选区域池化梯度计算。
+- api: torch_npu.npu_gru
+  source_label: （beta）torch_npu.npu_gru
+  group: beta
+  source_row_sha256: 18d43fa52c7b6e4bde213f225bf8b251174a7f5475494ffa5527afc6abf2b1fe
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_gru.md
+  source_doc_sha256: 17e60afb64123971d8018b9b6d73b52507668885d9ba902ea4e57b00cc7d4a21
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_gru
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_gru
+  - 执行门控递归单元的序列计算。
+  - torch_npu.npu_gru(input, hx, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, has_biases, num_layers,
+    dropout, train, bidirectional, batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_110_a2
+  - infer_skill_r3_api_110_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_gru.md
+  source_summary: 计算DynamicGRUV2。
+  source_facts:
+  - source_excerpt: 计算DynamicGRUV2
+    required_content:
+    - DynamicGRUV2
+  capability_cases:
+  - infer_skill_r4_capability_110
+- api: torch_npu.npu_indexing
+  source_label: （beta）torch_npu.npu_indexing
+  group: beta
+  source_row_sha256: 1535859789fd3de9a2d13488e89f6adc76a35efa77b1fbd48802280a884a089d
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_indexing.md
+  source_doc_sha256: 179e2f2c1fe0ad40ee884d764276d2893e25d99fc7160716f3ef5ee8f869efac
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_indexing
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_indexing
+  - 用 begin、end 与 strides 从输入中选取切片。
+  - torch_npu.npu_indexing(self, begin, end, strides, begin_mask=0, end_mask=0, ellipsis_mask=0, new_axis_mask=0,
+    shrink_axis_mask=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_111_a2
+  - infer_skill_r3_api_111_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_indexing.md
+  source_summary: 以begin为起始索引，end为结束索引，strides为步长，对输入张量进行切片。
+  source_facts:
+  - source_excerpt: 以begin为起始索引，end为结束索引，strides为步长，对输入张量进行切片
+    required_content:
+    - begin
+    - end
+    - strides
+    - 切片
+  capability_cases:
+  - infer_skill_r4_capability_111
+- api: torch_npu.npu_iou
+  source_label: （beta）torch_npu.npu_iou
+  group: beta
+  source_row_sha256: 67ec7c59e7462f60e45307ef033e6bb6d2b72ae25325aff6e51d71b1a49d61d1
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_iou.md
+  source_doc_sha256: 11712535b93b6944b52ed1494cc17e087f95e43cd58aeff9b5fe50ef75e882f7
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_iou
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_iou
+  - 根据ground-truth和预测区域计算交并比（IoU）或前景交叉比（IoF）。
+  - torch_npu.npu_iou(bboxes, gtboxes, mode=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_112_a2
+  - infer_skill_r3_api_112_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_iou.md
+  source_summary: 根据ground-truth和预测区域计算交并比（IoU）或前景交叉比（IoF）。
+  source_facts:
+  - source_excerpt: 根据ground-truth和预测区域计算交并比（IoU）或前景交叉比（IoF）
+    required_content:
+    - ground-truth
+    - 预测区域
+    - IoU
+    - IoF
+  capability_cases:
+  - infer_skill_r4_capability_112
+- api: torch_npu.npu_layer_norm_eval
+  source_label: （beta）torch_npu.npu_layer_norm_eval
+  group: beta
+  source_row_sha256: b79458802c2a0e376a98b5f53c73b91a2c3c26f2bb9d577138a0d56e9facb909
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_layer_norm_eval.md
+  source_doc_sha256: d4102f6171348a452910612366c4bd059443c28036396b635d783963355c9146
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_layer_norm_eval
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_layer_norm_eval
+  - 执行推理用 LayerNorm，保持被替换层的归一化轴、权重和 epsilon 语义。
+  - torch_npu.npu_layer_norm_eval(input, normalized_shape, weight=None, bias=None, eps=1e-05) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_113_a2
+  - infer_skill_r3_api_113_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_layer_norm_eval.md
+  source_summary: 对层归一化结果进行计算。与`torch.nn.functional.layer_norm`相同，优化NPU设备实现。
+  source_facts:
+  - source_excerpt: 对层归一化结果进行计算
+    required_content:
+    - LayerNorm
+  - source_excerpt: 与`torch.nn.functional.layer_norm`相同，优化NPU设备实现
+    required_content:
+    - torch.nn.functional.layer_norm
+    - 归一化轴
+    - epsilon
+  capability_cases:
+  - infer_skill_r4_capability_113
+- api: torch_npu.npu_linear
+  source_label: （beta）torch_npu.npu_linear
+  group: beta
+  source_row_sha256: 57920adad2e61a55d4338e180bad041ba4f6af1ac3efc2e9806beb7bca9c9482
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_linear.md
+  source_doc_sha256: addf88b503b16c08bb2d348bcc1438de037c041748aedc35c90abb4c1f8bfc2c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_linear
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_linear
+  - 执行线性矩阵投影，按接口约定组合输入与权重。
+  - torch_npu.npu_linear(input, weight, bias=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_114_a2
+  - infer_skill_r3_api_114_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_linear.md
+  source_summary: 将矩阵“a”乘以矩阵“b”，生成“a*b”。
+  source_facts:
+  - source_excerpt: 将矩阵“a”乘以矩阵“b”，生成“a*b”
+    required_content:
+    - 线性
+    - 矩阵投影
+  capability_cases:
+  - infer_skill_r4_capability_114
+- api: torch_npu.npu_lstm
+  source_label: （beta）torch_npu.npu_lstm
+  group: beta
+  source_row_sha256: 8f39916b0f16493fe3c700e2b0f5ab1b8bf1dc92ad0f62cc62753144ac7864da
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_lstm.md
+  source_doc_sha256: 1988638e0daf5d456cf303ddc23fa30f1881637ed8e292fe8e2c797ea3f43ea7
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_lstm
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_lstm
+  - 执行带记忆状态的递归网络计算。
+  - torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropout, train, bidirectional, batch_first,
+    flag_seq, direction)
+  retrieval_cases:
+  - infer_skill_r3_api_115_a2
+  - infer_skill_r3_api_115_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_lstm.md
+  source_summary: 计算DynamicRNN。
+  source_facts:
+  - source_excerpt: 计算DynamicRNN
+    required_content:
+    - DynamicRNN
+  capability_cases:
+  - infer_skill_r4_capability_115
+- api: torch_npu.npu_max
+  source_label: （beta）torch_npu.npu_max
+  group: beta
+  source_row_sha256: 072dbf4433b2280448f223b1126a59f8b25b04c7b4a1d2e3c79fee0d7e9e9583
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_max.md
+  source_doc_sha256: 9c669c29e718923705d7919ef8d4a3f29e57b2b1fc095d8d35d2574ffe271471
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_max
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_max
+  - 沿指定维度求最大结果，输出形式以此重载为准。
+  - torch_npu.npu_max(self, dim, keepdim=False) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_116_a2
+  - infer_skill_r3_api_116_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_max.md
+  source_summary: 使用dim对最大结果进行计算。类似于torch.max，优化NPU设备实现。
+  source_facts:
+  - source_excerpt: 使用dim对最大结果进行计算
+    required_content:
+    - dim
+    - 最大
+  - source_excerpt: 类似于torch.max，优化NPU设备实现
+    required_content:
+    - torch.max
+  capability_cases:
+  - infer_skill_r4_capability_116
+- api: torch_npu.npu_min
+  source_label: （beta）torch_npu.npu_min
+  group: beta
+  source_row_sha256: d857ac6a248683bbe877d1f13968ba28f512762c7139b5fbed49f65f46084134
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_min.md
+  source_doc_sha256: 25578322ac3ad9691ac3c0918db083285e71a2b4c63a065b7faa062ca8556fa0
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_min
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_min
+  - 沿指定维度求最小结果，输出形式以此重载为准。
+  - torch_npu.npu_min(self, dim, keepdim=False) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_117_a2
+  - infer_skill_r3_api_117_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_min.md
+  source_summary: 使用dim对最小结果进行计算。类似于`torch.min`，优化NPU设备实现。
+  source_facts:
+  - source_excerpt: 使用dim对最小结果进行计算
+    required_content:
+    - dim
+    - 最小
+  - source_excerpt: 类似于`torch.min`，优化NPU设备实现
+    required_content:
+    - torch.min
+  capability_cases:
+  - infer_skill_r4_capability_117
+- api: torch_npu.npu_mish
+  source_label: （beta）torch_npu.npu_mish
+  group: beta
+  source_row_sha256: da18e570ce203c73a085b542d4389eb4e6b47a317c3f1fd7d7ab3c0f41f1bd6b
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_mish.md
+  source_doc_sha256: daa4d4988b9024fac1131423e582964e95904ea70b29f57898614ffadc7eddd8
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_mish
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_mish
+  - 执行 Mish 非线性激活。
+  - torch_npu.npu_mish(self) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_118_a2
+  - infer_skill_r3_api_118_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_mish.md
+  source_summary: 按元素计算self的双曲正切。
+  source_facts:
+  - source_excerpt: 按元素计算self的双曲正切
+    required_content:
+    - x * tanh(softplus(x))
+    - 不是单独的 tanh
+    correction: 原索引和接口文档误写为双曲正切；同一固定提交 test_mish.py 的 CPU 参照为 x*tanh(softplus(x))。
+    correction_source: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/test/test_base_ops/test_mish.py
+  capability_cases:
+  - infer_skill_r4_capability_118
+- api: torch_npu.npu_mla_prolog_v3
+  source_label: （beta）torch_npu.npu_mla_prolog_v3
+  group: beta
+  source_row_sha256: ca2324eda02140cb69d0f769565129a02d85b864a5abbf46e01cf4c014a4651c
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_mla_prolog_v3.md
+  source_doc_sha256: 0297c66ca29e50effd87a08696c9b6b705aed1d726ee90b37fed13fcd09c9cc0
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_mla_prolog_v3
+  platforms:
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_mla_prolog_v3
+  - 推理场景下Multi-Head Latent Attention前处理的计算操作。
+  - torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv_kr, rmsnorm_gamma_cq, rmsnorm_gamma_ckv,
+    rope_sin, rope_cos, kv_cache, kr_cache, cache_index=None, dequant_scale_x=None, dequant_scale_w_dq=None, dequant_scale_w_uq_qr=None,
+    dequant_scale_w_dkv_kr=None, quant_scale_ckv=None, quant_scale_ckr=None, smooth_scales_cq=None, actual_seq_len=None,
+    k_nope_clip_alpha=None, rmsnorm_epsilon_cq=1e-05, rmsnorm_epsilon_ckv=1e-05, cache_mode='PA_BSND', query_norm_flag=False,
+    weight_quant_mode=0, kv_cache_quant_mode=0, query_quant_mode=0, ckvkr_repo_mode=0, quant_scale_repo_mode=0,
+    tile_size=128, qc_qr_scale=1.0, kc_scale=1.0) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_119_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_mla_prolog_v3.md
+  source_summary: 推理场景下Multi-Head Latent Attention前处理的计算操作。该算子实现四条并行的计算路径：
+  source_facts:
+  - source_excerpt: 推理场景下Multi-Head Latent Attention前处理的计算操作
+    required_content:
+    - MLA
+    - 前处理
+  - source_excerpt: 该算子实现四条并行的计算路径：
+    required_content:
+    - 四条并行
+    - Query
+    - KV
+  capability_cases:
+  - infer_skill_r4_capability_119
+- api: torch_npu.npu_multi_head_attention
+  source_label: （beta）torch_npu.npu_multi_head_attention
+  group: beta
+  source_row_sha256: e1e4d6dbfd8991f35af287cc8a915b846286248d2eee0bc288d7aa0aaaf93a71
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_multi_head_attention.md
+  source_doc_sha256: 51f79a26b3c839659565dddb49f055091ad101612daafae002773643d1aef50a
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_multi_head_attention
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_multi_head_attention
+  - 融合多头注意力的投影、分头与注意力计算链路。
+  - torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, value_weight, attn_mask, out_proj_weight,
+    query_bias, key_bias, value_bias, out_proj_bias, dropout_mask, attn_head_num, attn_dim_per_head, src_len, tgt_len,
+    dropout_prob, softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_120_a2
+  - infer_skill_r3_api_120_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_multi_head_attention.md
+  source_summary: 实现Transformer模块中的MultiHeadAttention计算逻辑。
+  source_facts:
+  - source_excerpt: 实现Transformer模块中的MultiHeadAttention计算逻辑
+    required_content:
+    - Transformer
+    - MultiHeadAttention
+    - 投影
+  capability_cases:
+  - infer_skill_r4_capability_120
+- api: torch_npu.npu_nms_rotated
+  source_label: （beta）torch_npu.npu_nms_rotated
+  group: beta
+  source_row_sha256: d75994beba12de122b17baf86c4f9dc8b736c3a6ad313b5d84fb40d81adfd944
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_nms_rotated.md
+  source_doc_sha256: 9f747265eaa86ed37e1a1c86c76a3b6fe8423c288ff124a552f3f29a6d4ce6e2
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_nms_rotated
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_nms_rotated
+  - 依据分数和重叠度筛选旋转目标框。
+  - torch_npu.npu_nms_rotated(dets, scores, iou_threshold, scores_threshold=0, max_output_size=-1, mode=0) -> (Tensor,
+    Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_121_a2
+  - infer_skill_r3_api_121_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_nms_rotated.md
+  source_summary: 按分数降序选择旋转标注框的子集。
+  source_facts:
+  - source_excerpt: 按分数降序选择旋转标注框的子集
+    required_content:
+    - 旋转
+    - NMS
+    - 分数降序
+  capability_cases:
+  - infer_skill_r4_capability_121
+- api: torch_npu.npu_nms_v4
+  source_label: （beta）torch_npu.npu_nms_v4
+  group: beta
+  source_row_sha256: 0bb3a08f2f8d73917eb67a090d36a530ff491d6743d26c333a65885c4d78060d
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_nms_v4.md
+  source_doc_sha256: 6ba030f82a209f360b3c9887a294bb29056c8c1600523b6e65ef96e5cfe6cd52
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_nms_v4
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_nms_v4
+  - 按分数降序选择标注框的子集。
+  - torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_threshold, pad_to_max_output_size=False)
+    -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_122_a2
+  - infer_skill_r3_api_122_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_nms_v4.md
+  source_summary: 按分数降序选择标注框的子集。
+  source_facts:
+  - source_excerpt: 按分数降序选择标注框的子集
+    required_content:
+    - NMS
+    - 分数降序
+    - 子集
+  capability_cases:
+  - infer_skill_r4_capability_122
+- api: torch_npu.npu_nms_with_mask
+  source_label: （beta）torch_npu.npu_nms_with_mask
+  group: beta
+  source_row_sha256: 6b0c0a277cc86dd42e86f33cf9770a9059957c486f2f5103d2e414f83282896d
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_nms_with_mask.md
+  source_doc_sha256: 3bfde17b00be44cb2bcfcbdc0cef1e069b0b39f045eee248e837ab4163b73c50
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_nms_with_mask
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_nms_with_mask
+  - 执行候选框抑制并提供后续筛选所需的有效标志。
+  - torch_npu.npu_nms_with_mask(input, iou_threshold) -> (Tensor, Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_123_a2
+  - infer_skill_r3_api_123_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_nms_with_mask.md
+  source_summary: 生成值0或1，用于nms算子确定有效位。
+  source_facts:
+  - source_excerpt: 生成值0或1，用于nms算子确定有效位
+    required_content:
+    - NMS
+    - 有效标志
+    - 0/1
+  capability_cases:
+  - infer_skill_r4_capability_123
+- api: torch_npu.npu_one_hot
+  source_label: （beta）torch_npu.npu_one_hot
+  group: beta
+  source_row_sha256: 222495ceb857135845ac4f092b1f616803109ad9ff868f2b77872119a3165481
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_one_hot.md
+  source_doc_sha256: 662ea9f54acace516af43a181406ee416d783b8dcd3d512ab6668b4e5d49b8f1
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_one_hot
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_one_hot
+  - 在索引指定位置填入 on_value，其余位置使用 off_value。
+  - torch_npu.npu_one_hot(input, num_classes=-1, depth=1, on_value=1, off_value=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_124_a2
+  - infer_skill_r3_api_124_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_one_hot.md
+  source_summary: 返回一个one-hot张量。input中index表示的位置采用on_value值，而其他所有位置采用off_value的值。
+  source_facts:
+  - source_excerpt: 返回一个one-hot张量
+    required_content:
+    - 独热编码
+  - source_excerpt: input中index表示的位置采用on_value值，而其他所有位置采用off_value的值
+    required_content:
+    - index
+    - on_value
+    - off_value
+  capability_cases:
+  - infer_skill_r4_capability_124
+- api: torch_npu.npu_pad
+  source_label: （beta）torch_npu.npu_pad
+  group: beta
+  source_row_sha256: 4ad20c008fa3bfcc77a77426a01d4fce7a1ca181a7d98b4568f4392af23e2a93
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_pad.md
+  source_doc_sha256: 8986a35f9227edb1c741a53fb677b4ed54ff95a69c6a9b4bae36058cb16f09cc
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_pad
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_pad
+  - 按给定边界范围为张量填充元素。
+  - torch_npu.npu_pad(input, paddings) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_125_a2
+  - infer_skill_r3_api_125_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_pad.md
+  source_summary: 填充张量。
+  source_facts:
+  - source_excerpt: 填充张量
+    required_content:
+    - 边界
+    - 填充
+  capability_cases:
+  - infer_skill_r4_capability_125
+- api: torch_npu.npu_ps_roi_pooling
+  source_label: （beta）torch_npu.npu_ps_roi_pooling
+  group: beta
+  source_row_sha256: 9915c2ff958242db84b9cb9f5d355536840e6176a134a668135b9bf8e56eea0f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_ps_roi_pooling.md
+  source_doc_sha256: 137d077680d1307c7c25953cb46fffa7cae232d5810d2866c6f1764a972b9cda
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_ps_roi_pooling
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_ps_roi_pooling
+  - 对候选区域执行位置敏感的 ROI 池化。
+  - torch_npu.npu_ps_roi_pooling(x, rois, spatial_scale, group_size, output_dim) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_126_a2
+  - infer_skill_r3_api_126_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_ps_roi_pooling.md
+  source_summary: 执行Position Sensitive ROI Pooling。
+  source_facts:
+  - source_excerpt: 执行Position Sensitive ROI Pooling
+    required_content:
+    - Position Sensitive ROI Pooling
+  capability_cases:
+  - infer_skill_r4_capability_126
+- api: torch_npu.npu_ptiou
+  source_label: （beta）torch_npu.npu_ptiou
+  group: beta
+  source_row_sha256: 8947146dcfea050fd237f4eb76ca0a56ffa1233238edb7b52b01987bc9c341b2
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_ptiou.md
+  source_doc_sha256: 23b533fa33a49d8a2f2f51e18e359a0f5e943472683485314e44f1f6e66fa001
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_ptiou
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_ptiou
+  - 计算候选区域的 IoU 或 IoF 度量。
+  - torch_npu.npu_ptiou(bboxes, gtboxes, mode=0) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_127_a2
+  - infer_skill_r3_api_127_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_ptiou.md
+  source_summary: 根据ground-truth和预测区域计算交并比（IoU）或前景交叉比（IoF）。
+  source_facts:
+  - source_excerpt: 根据ground-truth和预测区域计算交并比（IoU）或前景交叉比（IoF）
+    required_content:
+    - ground-truth
+    - 预测区域
+    - IoU
+    - IoF
+  capability_cases:
+  - infer_skill_r4_capability_127
+- api: torch_npu.npu_random_choice_with_mask
+  source_label: （beta）torch_npu.npu_random_choice_with_mask
+  group: beta
+  source_row_sha256: 263701661483b9f4e473ff44919ebd1debe73703ee16a0584c6ef4cad51f41c3
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_random_choice_with_mask.md
+  source_doc_sha256: 761f815469a2e0b83365e3e13e1838c278c4f91eb584b6f2f0f86d42bcf42315
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_random_choice_with_mask
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_random_choice_with_mask
+  - 从非零元素的位置中随机选取索引，并返回相应有效标志。
+  - torch_npu.npu_random_choice_with_mask(x, count=256, seed=0, seed2=0) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_128_a2
+  - infer_skill_r3_api_128_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_random_choice_with_mask.md
+  source_summary: 获取非零元素的index，混洗后输出。
+  source_facts:
+  - source_excerpt: 获取非零元素的index，混洗后输出
+    required_content:
+    - 非零元素
+    - 索引
+    - 随机
+  capability_cases:
+  - infer_skill_r4_capability_128
+- api: torch_npu.npu_reshape
+  source_label: （beta）torch_npu.npu_reshape
+  group: beta
+  source_row_sha256: c14025e6bc400755542f623b6b7dd97a65988e986421bd442f63b2bac80c0bfd
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_reshape.md
+  source_doc_sha256: 8188bb2ba4650185de1f0437fb0e428950bbbdabc1f8ec97373f3d9b4682a51c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_reshape
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_reshape
+  - 重新解释张量外形，数据是否复制及内存格式转换按该重载核对。
+  - torch_npu.npu_reshape(self, shape, bool can_refresh=False) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_129_a2
+  - infer_skill_r3_api_129_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_reshape.md
+  source_summary: reshape张量。仅更改张量shape，其数据不变。
+  source_facts:
+  - source_excerpt: reshape张量
+    required_content:
+    - reshape
+  - source_excerpt: 仅更改张量shape，其数据不变
+    required_content:
+    - 仅改变 shape
+    - 元素数据不变
+  capability_cases:
+  - infer_skill_r4_capability_129
+- api: torch_npu.npu_rms_norm
+  source_label: （beta）torch_npu.npu_rms_norm
+  group: beta
+  source_row_sha256: a040b22f86aa6d9a2861506cb7ca1660164efcada8aa2290edaad235f4eaf100
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_rms_norm.md
+  source_doc_sha256: f96a3a0771160f7fe0a24a30430c5be0950a77c7879c9d63f08c9b086b96069c
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_rms_norm
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_rms_norm
+  - RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。
+  - torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_130_a2
+  - infer_skill_r3_api_130_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_rms_norm.md
+  source_summary: RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。
+  source_facts:
+  - source_excerpt: RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分
+    required_content:
+    - RmsNorm
+    - 相比LayerNorm
+    - 去掉了减去均值
+  capability_cases:
+  - infer_skill_r4_capability_130
+- api: torch_npu.npu_roi_align
+  source_label: （beta）torch_npu.npu_roi_align
+  group: beta
+  source_row_sha256: 8788514d4ec1476d0a191576cbb949518624c7886b6b3bfbc6ceca37caba9574
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_roi_align.md
+  source_doc_sha256: 44bd0f1f45c21e614384f3b003f227a2e173b012c3b300f1318455b10476fab0
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_roi_align
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_roi_align
+  - 从特征图按候选区域进行 ROI Align 采样，形成区域特征。
+  - torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_width, sample_num, roi_end_mode)
+    -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_131_a2
+  - infer_skill_r3_api_131_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_roi_align.md
+  source_summary: 从特征图中获取ROI特征矩阵。自定义Faster R-CNN算子。
+  source_facts:
+  - source_excerpt: 从特征图中获取ROI特征矩阵
+    required_content:
+    - 特征图
+    - ROI Align
+    - 区域特征
+  - source_excerpt: 自定义Faster R-CNN算子
+    required_content:
+    - Faster R-CNN
+  capability_cases:
+  - infer_skill_r4_capability_131
+- api: torch_npu.npu_rotated_iou
+  source_label: （beta）torch_npu.npu_rotated_iou
+  group: beta
+  source_row_sha256: 0c56abbd5117f74fc1e96f546b199db1b11a86ae421416e12afbde004fb09442
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_rotated_iou.md
+  source_doc_sha256: 960709c7e1208e364c969e0ae14abe8d8996a0c06f55a2d91d14b28f6f2d9533
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_rotated_iou
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_rotated_iou
+  - 计算旋转框之间的 IoU。
+  - torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,v_threshold=0.0, e_threshold=0.0)
+    -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_132_a2
+  - infer_skill_r3_api_132_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_rotated_iou.md
+  source_summary: 计算旋转框的IoU。
+  source_facts:
+  - source_excerpt: 计算旋转框的IoU
+    required_content:
+    - 旋转框
+    - IoU
+  capability_cases:
+  - infer_skill_r4_capability_132
+- api: torch_npu.npu_rotated_overlaps
+  source_label: （beta）torch_npu.npu_rotated_overlaps
+  group: beta
+  source_row_sha256: 3236cb4c92b7f88ef0c5125a2d39206b293c432fd0b94c52853b153e5f70e019
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_rotated_overlaps.md
+  source_doc_sha256: 0e2fe36549d141a1599818902c990fe50d499168ab3aa37bd859f669494b27c4
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_rotated_overlaps
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_rotated_overlaps
+  - 计算成组旋转框之间的重叠关系。
+  - torch_npu.npu_rotated_overlaps(self, query_boxes, trans=False) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_133_a2
+  - infer_skill_r3_api_133_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_rotated_overlaps.md
+  source_summary: 计算旋转框的重叠面积。
+  source_facts:
+  - source_excerpt: 计算旋转框的重叠面积
+    required_content:
+    - 旋转框
+    - 重叠面积
+  capability_cases:
+  - infer_skill_r4_capability_133
+- api: torch_npu.npu_sign_bits_pack
+  source_label: （beta）torch_npu.npu_sign_bits_pack
+  group: beta
+  source_row_sha256: cd97b0478ff2902f8bb891ee07efe5f695b3d6df19f86fd87ea5eb372840634d
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_sign_bits_pack.md
+  source_doc_sha256: b3541d5b83ffb48d07b28cab48d2d953184ad0ba16386101d5c1d701ae5dd0ac
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_sign_bits_pack
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_sign_bits_pack
+  - 把浮点值的符号编码到 uint8 字节中，以每字节八个位保存。
+  - torch_npu.npu_sign_bits_pack(self, size) -> Tensor
+  - 小端序
+  - uint8
+  - 8个
+  retrieval_cases:
+  - infer_skill_r3_api_134_a2
+  - infer_skill_r3_api_134_a3
+  - infer_skill_r3_api_feature_npu_sign_bits_pack
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_sign_bits_pack.md
+  source_summary: 将`float`类型的输入打包为`uint8`类型。每8个浮点数打包为一个`uint8`数值，-1.0编码为二进制位0，1.0编码为二进制位1，并按小端序进行打包。
+  source_facts:
+  - source_excerpt: 将`float`类型的输入打包为`uint8`类型
+    required_content:
+    - float16/float32
+    - uint8
+  - source_excerpt: 每8个浮点数打包为一个`uint8`数值，-1.0编码为二进制位0，1.0编码为二进制位1，并按小端序进行打包
+    required_content:
+    - 每个字节承载8个
+    - 小端序
+    - 输入符号
+    - '-1.0'
+    - '1.0'
+  capability_cases:
+  - infer_skill_r4_capability_134
+- api: torch_npu.npu_sign_bits_unpack
+  source_label: （beta）torch_npu.npu_sign_bits_unpack
+  group: beta
+  source_row_sha256: 39c841ad6565b8786eda785341ad62759525b3a6a1198d242d7841d692ce388f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_sign_bits_unpack.md
+  source_doc_sha256: 4ae9397d546af1a184750e5622f6de9b517e5000810bbb43da9a263f1426186f
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_sign_bits_unpack
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_sign_bits_unpack
+  - 把字节中的符号位恢复成浮点符号值。
+  - torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
+  - 小端序
+  - uint8
+  - 8个
+  retrieval_cases:
+  - infer_skill_r3_api_135_a2
+  - infer_skill_r3_api_135_a3
+  - infer_skill_r3_api_feature_npu_sign_bits_unpack
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_sign_bits_unpack.md
+  source_summary: 将`uint8`类型的输入拆包为`float`类型。将`uint8`数值中的8个二进制位解码为8个浮点数，0解码为-1.0，1解码为1.0，并以小端序进行返回。
+  source_facts:
+  - source_excerpt: 将`uint8`类型的输入拆包为`float`类型
+    required_content:
+    - uint8
+    - float16
+    - float32
+  - source_excerpt: 将`uint8`数值中的8个二进制位解码为8个浮点数，0解码为-1.0，1解码为1.0，并以小端序进行返回
+    required_content:
+    - 小端序
+    - 8倍
+    - 编码位
+    - '-1.0'
+    - '1.0'
+  capability_cases:
+  - infer_skill_r4_capability_135
+- api: torch_npu.npu_silu
+  source_label: （beta）torch_npu.npu_silu
+  group: beta
+  source_row_sha256: 2f4361bd5b239d8c1b0ef28a7cab29e51c3b09c728d73f9bb784947d8a19aa2f
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_silu.md
+  source_doc_sha256: 1b75e1078d6b91072c2010402b8c656d11766107ef05724399b98ea67298df00
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_silu
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_silu
+  - 计算输入乘以其 sigmoid 的门控激活。
+  - torch_npu.npu_silu(self) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_136_a2
+  - infer_skill_r3_api_136_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_silu.md
+  source_summary: 计算self的Swish。Swish是一种激活函数，计算公式为' x * sigmoid(x) '。
+  source_facts:
+  - source_excerpt: 计算self的Swish
+    required_content:
+    - Swish
+  - source_excerpt: Swish是一种激活函数，计算公式为' x * sigmoid(x) '
+    required_content:
+    - x * sigmoid(x)
+  capability_cases:
+  - infer_skill_r4_capability_136
+- api: torch_npu.npu_slice
+  source_label: （beta）torch_npu.npu_slice
+  group: beta
+  source_row_sha256: 7db69cfb24e0644d052072ac81e0cbc24f2160e4b2f67f3b41adbf12077f6367
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_slice.md
+  source_doc_sha256: 33f290d81d4818c4e70b6531a286f3fd7f3c72b72156f6ba01ce94f01ea126af
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_slice
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_slice
+  - 按起点与范围提取输入张量的子区域。
+  - torch_npu.npu_slice(self, offsets, size) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_137_a2
+  - infer_skill_r3_api_137_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_slice.md
+  source_summary: 从张量中提取切片。
+  source_facts:
+  - source_excerpt: 从张量中提取切片
+    required_content:
+    - 起点
+    - 范围
+    - 子区域
+  capability_cases:
+  - infer_skill_r4_capability_137
+- api: torch_npu.npu_softmax_cross_entropy_with_logits
+  source_label: （beta）torch_npu.npu_softmax_cross_entropy_with_logits
+  group: beta
+  source_row_sha256: eb3a3f72e2d2201a0d7c5e98a29ae826952dce19f65202c9299f9699eb81b7db
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_softmax_cross_entropy_with_logits.md
+  source_doc_sha256: 9821e6a0ae7be2f4ebc55b8a9d0198d2a2b94fc84f8b621d5300bb697f0c5520
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_softmax_cross_entropy_with_logits.md
+  source_summary: 计算softmax的交叉熵损失。
+- api: torch_npu.npu_sort_v2
+  source_label: （beta）torch_npu.npu_sort_v2
+  group: beta
+  source_row_sha256: 96c759698e1eb108243386f07252dd673b74d50578055de43e641ec2ec83b8b1
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_sort_v2.md
+  source_doc_sha256: eca2d5ea22a64cfe61c7f3fbb055be918711324891b8a1bf446fcca74054e19b
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_sort_v2
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_sort_v2
+  - 沿指定维度排序元素，不返回排序索引。
+  - torch_npu.npu_sort_v2(self, dim=-1, descending=False, out=None) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_139_a2
+  - infer_skill_r3_api_139_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_sort_v2.md
+  source_summary: 沿给定维度，对输入张量元素进行升序排序（不返回索引）。若dim未设置，则选择输入的最后一个维度。如果descending为True，则元素将按值降序排序。
+  source_facts:
+  - source_excerpt: 沿给定维度，对输入张量元素进行升序排序（不返回索引）
+    required_content:
+    - 指定维度
+    - 不返回排序索引
+  - source_excerpt: 若dim未设置，则选择输入的最后一个维度
+    required_content:
+    - dim 未设置
+    - 最后一个维度
+  - source_excerpt: 如果descending为True，则元素将按值降序排序
+    required_content:
+    - descending=True
+    - 降序
+  capability_cases:
+  - infer_skill_r4_capability_139
+- api: torch_npu.npu_swiglu
+  source_label: （beta）torch_npu.npu_swiglu
+  group: beta
+  source_row_sha256: 8a92ed158ed487f129e0f104e65a85c6e2a100fe9ad1e61826c16241c7e53084
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_swiglu.md
+  source_doc_sha256: b75485fbf2be5eef9de5e1f6681cd0af4fadf082eec6656ba6a1dd5ae534a200
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_swiglu
+  platforms:
+  - a2
+  status: stable
+  required_content:
+  - torch_npu.npu_swiglu
+  - Swish门控线性单元激活函数，执行张量`input`的swiglu计算。
+  - torch_npu.npu_swiglu(Tensor input, int dim=-1) -> (Tensor)
+  retrieval_cases:
+  - infer_skill_r3_api_140_a2
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_swiglu.md
+  source_summary: Swish门控线性单元激活函数，实现张量`input`的swiglu计算。
+  source_facts:
+  - source_excerpt: Swish门控线性单元激活函数，实现张量`input`的swiglu计算
+    required_content:
+    - Swish门控线性单元
+    - swiglu
+  capability_cases:
+  - infer_skill_r4_capability_140
+- api: torch_npu.npu_transpose
+  source_label: （beta）torch_npu.npu_transpose
+  group: beta
+  source_row_sha256: 6b1f7c6fa430575e8619d8182dd52f39140296a064553e2f05fbfefa154db18b
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_transpose.md
+  source_doc_sha256: 6e753f2802604c3c5b396fd39d49dbd856ce820facbfc0978f3759be1234c9f3
+  disposition: migrated
+  target: model/inference/apis/torch_npu/npu_transpose
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.npu_transpose
+  - 返回原始张量视图，其维度已permute，结果连续。
+  - torch_npu.npu_transpose(self, perm, require_contiguous=True) -> Tensor
+  - FakeTensor
+  retrieval_cases:
+  - infer_skill_r3_api_141_a2
+  - infer_skill_r3_api_141_a3
+  - infer_skill_r3_api_feature_npu_transpose
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_transpose.md
+  source_summary: 返回原始张量视图，其维度已permute，结果连续。支持FakeTensor模式。
+  source_facts:
+  - source_excerpt: 返回原始张量视图，其维度已permute，结果连续
+    required_content:
+    - permute
+    - 连续
+  - source_excerpt: 支持FakeTensor模式
+    required_content:
+    - 支持 FakeTensor
+  capability_cases:
+  - infer_skill_r4_capability_141
+- api: torch_npu.npu_yolo_boxes_encode
+  source_label: （beta）torch_npu.npu_yolo_boxes_encode
+  group: beta
+  source_row_sha256: cc600422a67295bd29fa63640c7cce4fa947fb16bf529d7bb842f5b2e6696034
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_yolo_boxes_encode.md
+  source_doc_sha256: c406d36431501072b0f1c156f7e41ad79e86d2c81f43d77b4e9bb2d756544726
+  disposition: out_of_scope
+  reason: 训练、反向、优化器或依赖训练真值的目标编码，不属于本批推理接入；保留显式处置，不把它当已摄入的接口定义。
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-npu_yolo_boxes_encode.md
+  source_summary: 根据YOLO的锚点框（anchor box）和真值框（ground-truth box）生成标注框。自定义mmdetection算子。
+- api: torch_npu.one_
+  source_label: （beta）torch_npu.one_
+  group: beta
+  source_row_sha256: 914b4e56123bd220abf63652457b477e30487b580b056d9cc1c79ba319caf164
+  source_doc: https://github.com/Ascend/op-plugin/blob/b3065ed3ed174b08b7ecfcc564c0c464fb91fd13/docs/context/%EF%BC%88beta%EF%BC%89torch_npu-one_.md
+  source_doc_sha256: 831a43a5428347c7dfecb5c3e75f672b5f8404b785137966c2504061788bcfc4
+  disposition: migrated
+  target: model/inference/apis/torch_npu/one_
+  platforms:
+  - a2
+  - a3
+  status: stable
+  required_content:
+  - torch_npu.one_
+  - 使用数值1覆盖目标张量。
+  - torch_npu.one_(self) -> Tensor
+  retrieval_cases:
+  - infer_skill_r3_api_143_a2
+  - infer_skill_r3_api_143_a3
+  source_url: https://gitcode.com/Ascend/op-plugin/blob/7.3.0/docs/context/（beta）torch_npu-one_.md
+  source_summary: 用1填充self张量。
+  source_facts:
+  - source_excerpt: 用1填充self张量
+    required_content:
+    - 数值1
+    - 覆盖目标张量
+  capability_cases:
+  - infer_skill_r4_capability_143

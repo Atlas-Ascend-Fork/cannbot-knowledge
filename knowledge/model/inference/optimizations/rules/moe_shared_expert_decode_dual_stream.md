@@ -1,7 +1,8 @@
 ---
 type: Optimization
-title: MoE Decode：按当前后端编排共享与路由专家
-description: 更新GE stream22和npugraph_ex原生流/事件的共享专家编排，明确combine解耦仍不证明实际重叠。
+title: MoE 共享专家双流：GE/npugraph_ex 与 Qwen3-Next DeePEP patch
+description: 共享专家与路由专家的 Decode 多流编排；区分 GE、npugraph_ex 及 Qwen3-Next SGLang/DeePEP patch
+  的 shared_expert_stream、等待与开关。
 tags:
 - task.optimization
 - topic.mixture_of_experts
@@ -19,13 +20,15 @@ sources:
   role: implementation
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage1/0003-feat-moe-multi-stream.patch
   role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/qwen3-next-moe-dual-stream-patch.md
+  role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-29T14:57:06Z'
+updated_at: '2026-11-09T09:40:31Z'
 platforms:
 - agnostic
 ---
 
-# MoE Decode：按当前后端编排共享与路由专家
+# MoE 共享专家双流：GE/npugraph_ex 与 Qwen3-Next DeePEP patch
 
 ## 独立分支及合流
 
@@ -56,3 +59,5 @@ Qwen3-Next stage1补丁由ENABLE_NPU_DEEPEP_MOE_MULTI_STREAM控制，通过全�
 - [modeling_glm.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/glm_5/models/modeling_glm.py)（implementation）
 - [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/kimi_k2_thinking/models/modeling_deepseek.py)（implementation）
 - [0003-feat-moe-multi-stream.patch](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/integration/sglang/qwen3-next/patches/stage1/0003-feat-moe-multi-stream.patch)（implementation）
+
+- [.agents/skills/model-infer-multi-stream/references/qwen3-next-moe-dual-stream-patch.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/qwen3-next-moe-dual-stream-patch.md)（supporting）

@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: 多卡 HcclAllGather / Get_Socket_Timeout 排查：核对全部 rank 的故障与通信状态
-description: Get_Socket_Timeout / connect timeout 给出的三条「可能原因」（远端未发起 connect、算子启动过晚、链路断开）会把人引向网络排查——但 hccn_tool -i $devid -tls -g 本来源现场检查各卡 TLS / 网络为正常，不能据此判断其他故障现场也正常。
+description: HCCL timeout 或卡住时，核对全部 rank 首错、OOM、未到达和残留进程占用；区分网络、同步与设备资源，并检查 Gloo 调试屏障边界。
 tags:
 - task.debugging
 - topic.parallelism
@@ -11,10 +11,21 @@ status: stable
 sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/54
   role: evidence
+- resource: https://docs.pytorch.org/docs/2.8/distributed.html#torch.distributed.monitored_barrier
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-runtime-debug/SKILL.md
+  role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-29T15:29:20Z'
+updated_at: '2026-11-10T01:48:58Z'
 platforms:
 - a3
+aliases:
+- HCCL timeout 与 rank 首错
+- 其他 rank OOM 导致通信超时
+- monitored_barrier
+- 异步同步点与 rank 检查点
+- 残留进程 HCCL
+- HCCL 卡住
 ---
 
 # 多卡 HcclAllGather / Get_Socket_Timeout 排查：核对全部 rank 的故障与通信状态
@@ -50,9 +61,19 @@ Get_Socket_Timeout(EI0006): Getting socket times out. Reason:
 ## 修法（诊断流程）
 
 1. **不要停留在 rank0 的异步 timeout 栈**。遇到 `HcclAllGather` 超时 / `EI0006 Get_Socket_Timeout`，先 **grep 全部 rank 的日志**，找**最早的、非通信类**的真实错误（此处是 `EL0004 Memory_Allocation_Failure`）。
-2. 网络自检（`hccn_tool ... -tls`）全正常反而是**「超时是次生、根因在别处」**的佐证，不是要继续查网络的信号。
+2. 网络自检（`hccn_tool ... -tls`）正常，只能支持本次自检范围；结合其他 rank 的 OOM 等首错判断超时是否次生。没有对应硬错误时仍保留网络、链路和通信配置假设，不能凭一次 TLS 检查排除网络。
 3. 需要精确定位真实下发点时，用 `ASCEND_LAUNCH_BLOCKING=1` 强制集合通信同步下发（会拖慢性能，**定位后需取消**）。
 4. 根因确认为显存不足后，走内存缓解手段——如单机 W8A8C8 下增大 `oproj_tp_size` / `dense_tp_size` 把重投影权重进一步分片，见 [local-tp-memory-heavy-projections](../../optimizations/rules/local_tp_memory_heavy_projections.md)。
+
+## 同步检查点与 host 侧屏障
+
+NPU 操作异步下发，forward 返回或在 synchronize 处报错，不等于错误由该行算子引入。先按 Prefill/Decode、层、模块逐步放少量 `torch.npu.synchronize()` 检查点，并比较所有 rank 的日志；同步会扰动时序，不能一次插满。
+
+已有 rank 失败时直接加 dist.barrier 可能使其他 rank 继续等待。PyTorch 2.8 的 `torch.distributed.monitored_barrier` 提供 host 侧超时与未到达 rank 报告，但仅支持 GLOO 后端；需要匹配的 Gloo 调试组，不能在 HCCL 组上照搬调用，也不证明 NPU stream 上的任务已经全部完成。调试结束恢复正常同步路径，保留首错和参与顺序证据。
+
+无明确报错时先对齐任务启动器、PID/rank 和 npu-smi 状态。部分 rank 进程缺失、HBM 不均要回查对应加载日志；进程存在但 CPU 低且 HBM 不变也可能在等 I/O 或同步，不能仅凭这一项认定死锁。旧材料的8进程、3GB HBM只是示例，不是所有拓扑的固定判据。
+
+残留任务进程可能占用设备或通信资源，清理前先把 PID/进程所属任务与本次运行对应；不照搬按用户名批量 kill 的命令。重新启动后复查参与 rank 和通信顺序，不能把清理后能启动当成已定位全部根因。
 
 ## 参考实现 / 观测场景
 
@@ -61,3 +82,7 @@ Get_Socket_Timeout(EI0006): Getting socket times out. Reason:
 ## Evidence
 
 - [远程来源](https://gitcode.com/cann/cann-recipes-infer/issues/54)（evidence）
+
+- [https://docs.pytorch.org/docs/2.8/distributed.html#torch.distributed.monitored_barrier](https://docs.pytorch.org/docs/2.8/distributed.html#torch.distributed.monitored_barrier)（supporting）
+
+- [.agents/skills/model-infer-runtime-debug/SKILL.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-runtime-debug/SKILL.md)（supporting）

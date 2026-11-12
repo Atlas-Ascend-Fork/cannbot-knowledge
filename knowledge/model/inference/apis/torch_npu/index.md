@@ -1,0 +1,136 @@
+# TorchNPU 推理接口
+
+- [张量内存复制（torch_npu.copy_memory_）](copy_memory_.md)：torch_npu.copy_memory_：把源张量内容写入目标张量并返回目标。
+- [指定格式的未初始化张量分配（torch_npu.empty_with_format）](empty_with_format.md)：torch_npu.empty_with_format：指定格式的未初始化张量分配。返回一个填充未初始化数据的张量。
+- [NPU 设备标记与 Host 内存张量分配（torch_npu.empty_with_swapped_memory）](empty_with_swapped_memory.md)：torch_npu.empty_with_swapped_memory：NPU 设备标记与 Host 内存张量分配。申请一个device信息为NPU且实际内存在host侧的`Tensor`。
+- [消费流标记移除（torch_npu.erase_stream）](erase_stream.md)：torch_npu.erase_stream：删除 record_stream 为张量登记的流使用记录；删除前必须保证消费已完成，不能用它替代流间等待。
+- [FastGelu 与 FakeTensor（torch_npu.fast_gelu）](fast_gelu.md)：torch_npu.fast_gelu：FastGelu 与 FakeTensor。快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算FastGelu。
+- [设备资源限制查询（torch.npu.get_device_limit）](get_device_limit.md)：torch.npu.get_device_limit：设备资源限制查询。通过此接口，获取指定Device上的Device资源限制。
+- [流资源限制查询（torch.npu.get_stream_limit）](get_stream_limit.md)：torch.npu.get_stream_limit：流资源限制查询。通过此接口，获取指定Stream的Device资源限制。
+- [矩阵乘 AI Core 硬件校验（torch_npu.matmul_checksum）](matmul_checksum.md)：torch_npu.matmul_checksum：对 matmul 的计算过程进行校验，用于定位 AI Core 硬件故障；校验通过不代表整网数值精度通过。 该接口基于 `torch.matmul` 和 `Tensor.matmul` 做 AI Core 硬件故障检测。
+- [vLLM 生成步状态原地更新（torch_npu.npu_advance_step_flashattn）](npu_advance_step_flashattn.md)：torch_npu.npu_advance_step_flashattn：vLLM 生成步状态原地更新。在NPU上执行vLLM库中advance_step_flashattn的功能，在每个生成步骤中原地更新`input_tokens`，`input_positions`，`seq_lens`和`slot_mapping`。
+- [AllGather 与矩阵乘通算融合（torch_npu.npu_all_gather_base_mm）](npu_all_gather_base_mm.md)：torch_npu.npu_all_gather_base_mm：AllGather 与矩阵乘通算融合。TP切分场景下，融合`allgather`和`matmul`，执行通信和计算流水并行。
+- [浮点状态存储分配（torch_npu.npu_alloc_float_status）](npu_alloc_float_status.md)：torch_npu.npu_alloc_float_status：创建供后续溢出检测记录使用的状态张量。
+- [AlltoAllv 后分组矩阵乘融合（torch_npu.npu_alltoallv_gmm）](npu_alltoallv_gmm.md)：torch_npu.npu_alltoallv_gmm：AlltoAllv 后分组矩阵乘融合。MoE（Mixture of Experts，混合专家模型）网络中，执行路由专家AlltoAllv、Permute、GroupedMatMul融合并执行与共享专家MatMul并行融合，先通信后计算。
+- [锚点响应标记（torch_npu.npu_anchor_response_flags）](npu_anchor_response_flags.md)：torch_npu.npu_anchor_response_flags：为特征图上的候选锚点生成参与后续处理的标志。
+- [整数量化反变换（torch_npu.npu_anti_quant）](npu_anti_quant.md)：torch_npu.npu_anti_quant：整数权重反量化为浮点，以 scale 和可选 offset 恢复量化数据；区别于动态量化和量化参数位域编码。
+- [批量非极大抑制（torch_npu.npu_batch_nms）](npu_batch_nms.md)：torch_npu.npu_batch_nms：对 batch 内各类别的候选框按分数和 IoU 阈值筛选，并限制保留框数量。 以 batch、类别为单位抑制冗余检测框，返回保留检测框、类别、得分及相应计数；数量上限和阈值仍按该版参数核对。
+- [批量矩阵乘（torch_npu.npu_bmmV2）](npu_bmm_v2.md)：torch_npu.npu_bmmV2：计算批量矩阵乘，批次与矩阵维度按该接口的输入规则匹配。
+- [候选框解码（torch_npu.npu_bounding_box_decode）](npu_bounding_box_decode.md)：torch_npu.npu_bounding_box_decode：用候选框与预测偏移重建目标框坐标。 以 rois 和 deltas 重建框坐标，是 Faster R-CNN 的候选框解码环节。
+- [连续张量广播（torch_npu.npu_broadcast）](npu_broadcast.md)：torch_npu.npu_broadcast：按给定外形扩展张量的维度或单例轴。 广播结果连续，文档称为新视图；扩展单例维，也允许新增维度，新增维度放在最前面。
+- [完整交并比计算（torch_npu.npu_ciou）](npu_ciou.md)：torch_npu.npu_ciou：在距离交并比基础上计入框几何关系，生成 CIoU 度量。 CIoU 在 DIoU 基础上增加惩罚项；不能仅用普通交并比替代其几何度量。
+- [浮点状态清除（torch_npu.npu_clear_float_status）](npu_clear_float_status.md)：torch_npu.npu_clear_float_status：清空浮点溢出检测状态，与状态分配及读取操作配套。
+- [形状与轴顺序联合变换（torch_npu.npu_confusion_transpose）](npu_confusion_transpose.md)：torch_npu.npu_confusion_transpose：组合 reshape 与 transpose，次序由接口参数指定。
+- [二维卷积（torch_npu.npu_conv2d）](npu_conv2d.md)：torch_npu.npu_conv2d：对输入平面执行二维卷积。
+- [三维卷积（torch_npu.npu_conv3d）](npu_conv3d.md)：torch_npu.npu_conv3d：对输入体数据执行三维卷积。
+- [二维转置卷积（torch_npu.npu_conv_transpose2d）](npu_conv_transpose2d.md)：torch_npu.npu_conv_transpose2d：执行二维转置卷积，按输出形状及步长等参数生成结果。 二维转置卷积也常称为反卷积；不能因此将它理解为任意卷积的精确逆运算。
+- [INT4 权重交叠打包（torch_npu.npu_convert_weight_to_int4pack）](npu_convert_weight_to_int4pack.md)：torch_npu.npu_convert_weight_to_int4pack：INT4 权重交叠打包。将`int32`类型的输入`tensor`打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
+- [通用卷积（torch_npu.npu_convolution）](npu_convolution.md)：torch_npu.npu_convolution：按输入维度和参数执行二维或三维卷积。
+- [通用转置卷积（torch_npu.npu_convolution_transpose）](npu_convolution_transpose.md)：torch_npu.npu_convolution_transpose：执行二维或三维转置卷积。 二维或三维转置卷积也常称为反卷积；其输出形状仍由该版 stride、padding 等参数约束。
+- [可变形二维卷积（torch_npu.npu_deformable_conv2d）](npu_deformable_conv2d.md)：torch_npu.npu_deformable_conv2d：使用偏移采样位置完成二维可变形卷积。
+- [反量化与 SwiGLU 再量化融合（torch_npu.npu_dequant_swiglu_quant）](npu_dequant_swiglu_quant.md)：torch_npu.npu_dequant_swiglu_quant：反量化与 SwiGLU 再量化融合。对张量`x`做dequant反量化+swiglu激活+quant量化操作，同时支持分组。
+- [距离交并比计算（torch_npu.npu_diou）](npu_diou.md)：torch_npu.npu_diou：计算带目标框距离因素的 DIoU。 DIoU 同时考虑框距离与重叠度，不能只保留交集/并集的普通 IoU 项。
+- [张量 Dtype 转换与 FakeTensor（torch_npu.npu_dtype_cast）](npu_dtype_cast.md)：torch_npu.npu_dtype_cast：张量 Dtype 转换与 FakeTensor。执行张量数据类型（dtype）转换。
+- [逐块动态量化（torch_npu.npu_dynamic_block_quant）](npu_dynamic_block_quant.md)：torch_npu.npu_dynamic_block_quant：对输入张量，通过给定的`row_block_size`和`col_block_size`将输入划分成多个数据块，以数据块为基本粒度进行量化。 按行列块划分输入后，逐块计算 scale 并逐块量化；返回量化结果和每块的 scale。
+- [逐 Token 对称动态量化（torch_npu.npu_dynamic_quant）](npu_dynamic_quant.md)：torch_npu.npu_dynamic_quant：逐 Token 对称动态量化。对输入的张量进行pertoken对称动态量化。
+- [动态非对称量化（torch_npu.npu_dynamic_quant_asymmetric）](npu_dynamic_quant_asymmetric.md)：torch_npu.npu_dynamic_quant_asymmetric：按输入范围同时计算量化值、scale 与 offset，支持 token、tensor 以及按专家分组的量化。
+- [FastGelu 逐元素激活（torch_npu.npu_fast_gelu）](npu_fast_gelu.md)：torch_npu.npu_fast_gelu：FastGelu 逐元素激活。快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
+- [前馈与专家前馈计算（torch_npu.npu_ffn）](npu_ffn.md)：torch_npu.npu_ffn：执行 FFN 或 MoE FFN；expert_tokens 的有无与编码决定分组路径。 `expert_tokens` 为空时是普通 FFN，非空时是 MoE FFN；专家分组编码仍须与实际参数版本和路由结果一致。
+- [张量数据格式转换：返回新张量（torch_npu.npu_format_cast）](npu_format_cast.md)：torch_npu.npu_format_cast：张量数据格式转换：返回新张量。修改`input`的数据格式为目标格式，修改后的新张量不会替换原有张量。
+- [张量数据格式原地转换（torch_npu.npu_format_cast_）](npu_format_cast_.md)：torch_npu.npu_format_cast_：张量数据格式原地转换。原地修改`input`的数据格式为目标格式。
+- [旧版注意力融合（torch_npu.npu_fused_attention_score）](npu_fused_attention_score.md)：torch_npu.npu_fused_attention_score：旧版 Transformer attention score 融合接口，使用前须确认其版本与产品范围。 旧版 Transformer Attention Score 融合链包含 matmul、transpose、add、softmax、dropout、batchmatmul、permute；不能与推理用 FIA 仅凭名称混同。
+- [FlashAttention 增量与全量分支（torch_npu.npu_fused_infer_attention_score）](npu_fused_infer_attention_score.md)：torch_npu.npu_fused_infer_attention_score：适配增量和全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。 该版文档按 query 的 S=1 选择 IncreFlashAttention，其余进入 PromptFlashAttention。
+- [FlashAttention v2 版本化选型（torch_npu.npu_fused_infer_attention_score_v2）](npu_fused_infer_attention_score_v2.md)：torch_npu.npu_fused_infer_attention_score_v2：适配增量&全量推理场景的FlashAttention算子，既可以支持全量计算场景（PromptFlashAttention），也可支持增量计算场景（IncreFlashAttention）。 该版文档推荐在不涉及 system prefix、左 padding、KV 量化参数合一、pertensor 全量化时使用 v2；涉及这些场景时转查老接口 `npu_fused_infer_attention_score`。
+- [Transformer Attention Score 与 Mask Softmax 融合（torch_npu.npu_fusion_attention）](npu_fusion_attention.md)：torch_npu.npu_fusion_attention：Transformer Attention Score 与 Mask Softmax 融合。融合 Q/K 注意力分数、mask/softmax 和 V 聚合；布局与返回结构按该版签名核对。
+- [稀疏索引取数（torch_npu.npu_gather_sparse_index）](npu_gather_sparse_index.md)：torch_npu.npu_gather_sparse_index：按 index 从二维输入的第0维取数，输出保留索引外形及被选行的尾维。
+- [GELU 高斯误差线性激活（torch_npu.npu_gelu）](npu_gelu.md)：torch_npu.npu_gelu：GELU 高斯误差线性激活。计算高斯误差线性单元的激活函数。
+- [GELU 与乘法融合（torch_npu.npu_gelu_mul）](npu_gelu_mul.md)：torch_npu.npu_gelu_mul：将输入末维分成两部分，对一部分做 GELU 后与另一部分相乘，适配门控激活路径。
+- [浮点状态读取（torch_npu.npu_get_float_status）](npu_get_float_status.md)：torch_npu.npu_get_float_status：读取已有浮点状态张量记录的溢出信息。
+- [广义交并比 GIoU（torch_npu.npu_giou）](npu_giou.md)：torch_npu.npu_giou：根据交集、并集及最小包围区域计算 GIoU。 按最小包围区域计算未被并集覆盖的面积比例，再由 IoU 减去该比例得到 GIoU；不应简化为普通 IoU。
+- [分组矩阵乘后 AlltoAllv 融合（torch_npu.npu_gmm_alltoallv）](npu_gmm_alltoallv.md)：torch_npu.npu_gmm_alltoallv：分组矩阵乘后 AlltoAllv 融合。MoE网络中，执行路由专家GroupedMatMul、AlltoAllv融合并执行与共享专家MatMul并行融合，先计算后通信。
+- [GroupNorm 与 SiLU 融合（torch_npu.npu_group_norm_silu）](npu_group_norm_silu.md)：torch_npu.npu_group_norm_silu：融合 GroupNorm 与 SiLU，同时产生归一化统计量及激活结果。 组归一化除激活结果外还提供统计量：文档列出 out、meanOut、rstdOut 以及 SiLU 输出，其中 rstdOut 为标准差的倒数；消费端必须核对返回项顺序。
+- [GroupNorm 与 Swish 融合（torch_npu.npu_group_norm_swish）](npu_group_norm_swish.md)：torch_npu.npu_group_norm_swish：GroupNorm 与 Swish 融合。计算输入`input`的组归一化结果`y`，均值`mean`，标准差的倒数`rstd`，以及swish的输出。
+- [张量分组量化（torch_npu.npu_group_quant）](npu_group_quant.md)：torch_npu.npu_group_quant：张量分组量化。对输入的张量进行分组量化操作。
+- [分组批量矩阵乘（torch_npu.npu_grouped_matmul）](npu_grouped_matmul.md)：torch_npu.npu_grouped_matmul：按分组边界对多组输入和权重执行矩阵乘，group_list 编码须与路由结果一致。 将相同或相似形状的多组矩阵乘批量处理，可减少独立调用和内存访问开销；具体形状支持、分组边界与收益仍由该版参数契约及实际负载决定。
+- [分组矩阵乘与 SwiGLU 量化融合（torch_npu.npu_grouped_matmul_swiglu_quant_v2）](npu_grouped_matmul_swiglu_quant_v2.md)：torch_npu.npu_grouped_matmul_swiglu_quant_v2：将 GroupedMatmul、SwiGLU 与量化组合，减少中间结果的独立处理。 链路按矩阵乘结果进入 SwiGLU 门控激活后再量化理解，不能将单独的浮点 GMM 输出当成融合链最终输出。
+- [DynamicGRUV2 递归计算（torch_npu.npu_gru）](npu_gru.md)：torch_npu.npu_gru：执行门控递归单元的序列计算。 原功能名 DynamicGRUV2 对应本接口的 GRU 序列计算；该名称用于定位接口，具体状态和权重排列以本版签名及参数表为准。
+- [增量注意力（torch_npu.npu_incre_flash_attention）](npu_incre_flash_attention.md)：torch_npu.npu_incre_flash_attention：基于当前 Query 和历史 KV 计算增量注意力。
+- [步长切片（torch_npu.npu_indexing）](npu_indexing.md)：torch_npu.npu_indexing：用 begin、end 与 strides 从输入中选取切片。
+- [单输入交错 RoPE 位置编码（torch_npu.npu_interleave_rope）](npu_interleave_rope.md)：torch_npu.npu_interleave_rope：单输入交错 RoPE 位置编码。针对单输入`x`进行旋转位置编码。
+- [真值与预测框 IoU 或 IoF（torch_npu.npu_iou）](npu_iou.md)：torch_npu.npu_iou：真值与预测框 IoU 或 IoF。根据ground-truth和预测区域计算交并比（IoU）或前景交叉比（IoF）。
+- [量化 KV 稀疏注意力（torch_npu.npu_kv_quant_sparse_flash_attention）](npu_kv_quant_sparse_flash_attention.md)：torch_npu.npu_kv_quant_sparse_flash_attention：`kv_quant_sparse_flash_attention`在`sparse_flash_attention`的基础上支持了[Per-Token-Head-Tile-128量化]输入。 该版本面向长上下文稀疏注意力，支持量化 KV 的 Per-Token-Head-Tile-128 路径。
+- [RMSNorm 与 RoPE 及 KVCache 写入融合（torch_npu.npu_kv_rmsnorm_rope_cache）](npu_kv_rmsnorm_rope_cache.md)：torch_npu.npu_kv_rmsnorm_rope_cache：RMSNorm 与 RoPE 及 KVCache 写入融合。融合了MLA（Multi-head Latent Attention）结构中RMSNorm归一化计算与RoPE（Rotary Position Embedding）位置编码以及更新KVCache的ScatterUpdate操作。
+- [推理层归一化（torch_npu.npu_layer_norm_eval）](npu_layer_norm_eval.md)：torch_npu.npu_layer_norm_eval：执行推理用 LayerNorm，保持被替换层的归一化轴、权重和 epsilon 语义。 本接口对应 `torch.nn.functional.layer_norm` 的层归一化语义。
+- [稀疏 token 索引（torch_npu.npu_lightning_indexer）](npu_lightning_indexer.md)：torch_npu.npu_lightning_indexer：为每个 Query 选择关键 KV 位置的 TopK 索引，供后续稀疏注意力消费。
+- [线性投影（torch_npu.npu_linear）](npu_linear.md)：torch_npu.npu_linear：执行线性矩阵投影，按接口约定组合输入与权重。
+- [DynamicRNN LSTM 递归计算（torch_npu.npu_lstm）](npu_lstm.md)：torch_npu.npu_lstm：执行带记忆状态的递归网络计算。 原功能名 DynamicRNN 对应本接口的 LSTM 递归计算；该名称不表示任意 RNN 单元都可不经状态、权重布局核对直接替换。
+- [指定维度最大值（torch_npu.npu_max）](npu_max.md)：torch_npu.npu_max：沿指定维度求最大结果，输出形式以此重载为准。 沿 dim 维计算最大结果，对应 `torch.max` 的相关重载语义；值与索引的返回形式须按实际重载核对。
+- [指定维度最小值（torch_npu.npu_min）](npu_min.md)：torch_npu.npu_min：沿指定维度求最小结果，输出形式以此重载为准。 沿 dim 维计算最小结果，对应 `torch.min` 的相关重载语义；值与索引的返回形式须按实际重载核对。
+- [Mish 激活（torch_npu.npu_mish）](npu_mish.md)：torch_npu.npu_mish：执行 Mish 非线性激活。 Mish 的参照计算为 `x * tanh(softplus(x))`，不是单独的 tanh。
+- [MLA 推理前处理（torch_npu.npu_mla_prolog）](npu_mla_prolog.md)：torch_npu.npu_mla_prolog：MLA 推理前处理。推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。
+- [MLA Prolog v2 五路前处理（torch_npu.npu_mla_prolog_v2）](npu_mla_prolog_v2.md)：torch_npu.npu_mla_prolog_v2：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。 文档按五路描述：Query 非 RoPE 分量、Query RoPE 分量、压缩 KV cache、RoPE key cache，以及 qN 经 DynamicQuant 得到的量化参数。
+- [MLA Prolog v3 四路前处理（torch_npu.npu_mla_prolog_v3）](npu_mla_prolog_v3.md)：torch_npu.npu_mla_prolog_v3：推理场景下Multi-Head Latent Attention前处理的计算操作。 MLA 前处理有四条并行路径：Query 的非 RoPE 分量、Query 的 RoPE 分量、压缩 KV cache 与 RoPE key cache。
+- [矩阵乘与 AllReduce 通算融合（torch_npu.npu_mm_all_reduce_base）](npu_mm_all_reduce_base.md)：torch_npu.npu_mm_all_reduce_base：矩阵乘与 AllReduce 通算融合。TP切分场景下，执行mm和all_reduce的融合，融合算子内部执行计算和通信流水并行。
+- [量化矩阵乘与 ReduceScatter 融合（torch_npu.npu_mm_reduce_scatter_base）](npu_mm_reduce_scatter_base.md)：torch_npu.npu_mm_reduce_scatter_base：TP切分场景下，执行matmul和reduce_scatter的融合，融合算子内部执行计算和通信流水并行。 TP 通算融合支持 perchannel 与 pertoken量化，两侧 scale 粒度不同。
+- [MoE 专家末行二分查找（torch_npu.npu_moe_compute_expert_tokens）](npu_moe_compute_expert_tokens.md)：torch_npu.npu_moe_compute_expert_tokens：MoE 专家末行二分查找。MoE（Mixture of Experts，混合专家模型）计算中，通过二分查找的方式查找每个专家处理的最后一行的位置。
+- [MoE token 回收通信（torch_npu.npu_moe_distribute_combine）](npu_moe_distribute_combine.md)：torch_npu.npu_moe_distribute_combine：先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。 回收顺序是先 ReduceScatterV，再 AlltoAllv，最后乘权重后求和。
+- [专家回收与残差归一化融合（torch_npu.npu_moe_distribute_combine_add_rms_norm）](npu_moe_distribute_combine_add_rms_norm.md)：torch_npu.npu_moe_distribute_combine_add_rms_norm：与 dispatch_v2 配对回收 MoE token，并融合残差加法和 RMSNorm；通信元数据须来自相匹配的派发调用。
+- [MoE v2 派发与回收配对（torch_npu.npu_moe_distribute_combine_v2）](npu_moe_distribute_combine_v2.md)：torch_npu.npu_moe_distribute_combine_v2：MoE v2 派发与回收配对。需与torch_npu.npu_moe_distribute_dispatch_v2配套使用，相当于按npu_moe_distribute_dispatch_v2算子收集数据的路径原路返回。
+- [MoE token 派发通信（torch_npu.npu_moe_distribute_dispatch）](npu_moe_distribute_dispatch.md)：torch_npu.npu_moe_distribute_dispatch：需与torch\_npu.npu\_moe\_distribute\_combine配套使用，执行MoE的并行部署下的token dispatch与combine。 派发按可选量化、EP 的 AlltoAllv、可选 TP AllGatherV 的顺序组织；量化模式、EP/TP 通信域以及返回给 combine 的元数据必须配套。
+- [MoE v2 派发与归一化回收配对（torch_npu.npu_moe_distribute_dispatch_v2）](npu_moe_distribute_dispatch_v2.md)：torch_npu.npu_moe_distribute_dispatch_v2：MoE v2 派发与归一化回收配对。按路由专家分发 token，与 combine_v2 或 combine_add_rms_norm 配对，量化和通信配置按本版接口核对。
+- [MoE FFN 输出合并（torch_npu.npu_moe_finalize_routing）](npu_moe_finalize_routing.md)：torch_npu.npu_moe_finalize_routing：MoE FFN 输出合并。在MoE计算的最后，合并MoE FFN(Feedforward Neural Network)的输出结果。
+- [MoE 分组门控与 TopK 专家选择（torch_npu.npu_moe_gating_top_k）](npu_moe_gating_top_k.md)：torch_npu.npu_moe_gating_top_k：MoE 分组门控与 TopK 专家选择。MoE计算中，对输入x做Sigmoid/SoftMax计算，对计算结果分组进行排序，最后根据分组排序的结果选取前k个专家。
+- [MoE Softmax 后 TopK 专家选择（torch_npu.npu_moe_gating_top_k_softmax）](npu_moe_gating_top_k_softmax.md)：torch_npu.npu_moe_gating_top_k_softmax：MoE Softmax 后 TopK 专家选择。MoE计算中，对输入`x`做Softmax计算，再做topk操作。
+- [MoE 路由初始化与 gating 结果接入（torch_npu.npu_moe_init_routing）](npu_moe_init_routing.md)：torch_npu.npu_moe_init_routing：MoE 路由初始化与 gating 结果接入。MoE的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理。
+- [MoE v2 路由初始化与动态量化（torch_npu.npu_moe_init_routing_v2）](npu_moe_init_routing_v2.md)：torch_npu.npu_moe_init_routing_v2：MoE v2 路由初始化与动态量化。MoE（Mixture of Experts）的routing计算，根据torch_npu.npu_moe_gating_top_k_softmax的计算结果做routing处理，支持不量化和动态量化模式。
+- [AlltoAll 后按专家重排 Token（torch_npu.npu_moe_re_routing）](npu_moe_re_routing.md)：torch_npu.npu_moe_re_routing：AlltoAll 后按专家重排 Token。MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
+- [MoE 专家负载均衡与剪枝（torch_npu.npu_moe_update_expert）](npu_moe_update_expert.md)：torch_npu.npu_moe_update_expert：将逻辑专家映射到实际部署的专家，并按输入 mask 处理专家裁剪。 支持负载均衡和专家剪枝。
+- [多头注意力融合（torch_npu.npu_multi_head_attention）](npu_multi_head_attention.md)：torch_npu.npu_multi_head_attention：融合多头注意力的投影、分头与注意力计算链路。 Transformer 的 MultiHeadAttention 融合计算包含多头注意力的投影与注意力链路；替换时仍须核对布局和输出结构。
+- [旋转框非极大抑制（torch_npu.npu_nms_rotated）](npu_nms_rotated.md)：torch_npu.npu_nms_rotated：依据分数和重叠度筛选旋转目标框。 旋转框 NMS 按分数降序选择保留子集；旋转框的重叠定义不能直接用轴对齐框的 IoU 替代。
+- [NMS V4 按分数筛选检测框（torch_npu.npu_nms_v4）](npu_nms_v4.md)：torch_npu.npu_nms_v4：NMS V4 按分数筛选检测框。按分数降序选择标注框的子集。
+- [NMS 有效标志输出（torch_npu.npu_nms_with_mask）](npu_nms_with_mask.md)：torch_npu.npu_nms_with_mask：执行候选框抑制并提供后续筛选所需的有效标志。 NMS 的 mask 提供 0/1 有效标志语义，后续据此筛选候选；0/1 描述有效性，不在这里额外推断张量存储 dtype。
+- [独热编码（torch_npu.npu_one_hot）](npu_one_hot.md)：torch_npu.npu_one_hot：在索引指定位置填入 on_value，其余位置使用 off_value。 输入 index 指定的位置使用 on_value，其余位置使用 off_value；两者不是固定只能取1和0的隐式常量。
+- [张量边界填充（torch_npu.npu_pad）](npu_pad.md)：torch_npu.npu_pad：按给定边界范围为张量填充元素。
+- [权重 L2 预取（torch_npu.npu_prefetch）](npu_prefetch.md)：torch_npu.npu_prefetch：提前将指定权重区间搬到 L2 Cache，收益取决于实际窗口和计算依赖。 适合检查较大 MatMul 的权重搬运窗口；收益取决于并行方式、实际窗口和依赖关系，不能只由权重张量大小判定预取有效。
+- [全量注意力（torch_npu.npu_prompt_flash_attention）](npu_prompt_flash_attention.md)：torch_npu.npu_prompt_flash_attention：对 Prompt 输入执行全量注意力计算。
+- [位置敏感 ROI 池化（torch_npu.npu_ps_roi_pooling）](npu_ps_roi_pooling.md)：torch_npu.npu_ps_roi_pooling：对候选区域执行位置敏感的 ROI 池化。 Position Sensitive ROI Pooling 即位置敏感候选区域池化，区分于普通 ROI Pooling 与 ROI Align。
+- [候选区域重叠度（torch_npu.npu_ptiou）](npu_ptiou.md)：torch_npu.npu_ptiou：计算候选区域的 IoU 或 IoF 度量。 计算 ground-truth 与预测区域之间的 IoU 或 IoF，二者分母定义不同，需按 mode 核对。
+- [SFA 量化稀疏 token 索引（torch_npu.npu_quant_lightning_indexer）](npu_quant_lightning_indexer.md)：torch_npu.npu_quant_lightning_indexer：使用量化 Q/K 及配套 scale，选出稀疏注意力所需的关键 token 索引。 这是 SFA 的稀疏 token 前处理：接收量化 query、key 的 INT8 数据和配套 scale，通过内积、尺度恢复、ReLU、weights 加权及 TopK 生成索引。
+- [量化矩阵乘的二维至六维输入（torch_npu.npu_quant_matmul）](npu_quant_matmul.md)：torch_npu.npu_quant_matmul：量化矩阵乘的二维至六维输入。执行量化的矩阵乘计算，最小支持输入维度为2维，最大支持输入维度为6维。
+- [量化分组矩阵乘后归约（torch_npu.npu_quant_matmul_reduce_sum）](npu_quant_matmul_reduce_sum.md)：torch_npu.npu_quant_matmul_reduce_sum：执行分组量化矩阵乘，并对各组结果求和。
+- [量化散点更新：保留原输入（torch_npu.npu_quant_scatter）](npu_quant_scatter.md)：torch_npu.npu_quant_scatter：量化散点更新：保留原输入。量化 updates 后按 axis 与 indices 写入新输出，保留原 input。
+- [量化散点原地更新（torch_npu.npu_quant_scatter_）](npu_quant_scatter_.md)：torch_npu.npu_quant_scatter_：量化散点原地更新。量化 updates 后按 axis 与 indices 更新 input，调用会改变原张量。
+- [输入张量量化（torch_npu.npu_quantize）](npu_quantize.md)：torch_npu.npu_quantize：输入张量量化。对输入的张量进行量化处理。
+- [非零位置随机抽样（torch_npu.npu_random_choice_with_mask）](npu_random_choice_with_mask.md)：torch_npu.npu_random_choice_with_mask：从非零元素的位置中随机选取索引，并返回相应有效标志。
+- [变步长 RGDR 线性注意力（torch_npu.npu_recurrent_gated_delta_rule）](npu_recurrent_gated_delta_rule.md)：torch_npu.npu_recurrent_gated_delta_rule：对线性注意力执行门控递归状态更新与输出计算。 变步长 Recurrent Gated Delta Rule（RGDR），线性注意力的门控递归与状态更新。
+- [张量外形重排（torch_npu.npu_reshape）](npu_reshape.md)：torch_npu.npu_reshape：重新解释张量外形，数据是否复制及内存格式转换按该重载核对。 reshape 仅改变 shape，元素数据不变；是否发生复制或格式转换仍需按该版重载核对，不能把数据值不变等同于零复制。
+- [RMSNorm 均方根归一化（torch_npu.npu_rms_norm）](npu_rms_norm.md)：torch_npu.npu_rms_norm：RMSNorm 均方根归一化。RmsNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。
+- [候选区域对齐采样（torch_npu.npu_roi_align）](npu_roi_align.md)：torch_npu.npu_roi_align：从特征图按候选区域进行 ROI Align 采样，形成区域特征。 Faster R-CNN 使用的 ROI Align 从特征图按候选区域对齐采样，输出区域特征矩阵。
+- [RoPE 二维平面旋转位置编码（torch_npu.npu_rotary_mul）](npu_rotary_mul.md)：torch_npu.npu_rotary_mul：RoPE 二维平面旋转位置编码。执行Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。
+- [旋转框交并比（torch_npu.npu_rotated_iou）](npu_rotated_iou.md)：torch_npu.npu_rotated_iou：计算旋转框之间的 IoU。
+- [旋转框重叠面积（torch_npu.npu_rotated_overlaps）](npu_rotated_overlaps.md)：torch_npu.npu_rotated_overlaps：计算成组旋转框之间的重叠关系。 输出旋转框组间的重叠面积关系；不要把重叠面积直接当成已经归一化的 IoU。
+- [缩放与 Mask 遮蔽后 Softmax（torch_npu.npu_scaled_masked_softmax）](npu_scaled_masked_softmax.md)：torch_npu.npu_scaled_masked_softmax：缩放与 Mask 遮蔽后 Softmax。计算输入张量`x`缩放并按照`mask`遮蔽后的`Softmax`结果。
+- [多维索引散点更新：保留原输入（torch_npu.npu_scatter_nd_update）](npu_scatter_nd_update.md)：torch_npu.npu_scatter_nd_update：多维索引散点更新：保留原输入。将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`本身的数据不变。
+- [多维索引散点原地更新（torch_npu.npu_scatter_nd_update_）](npu_scatter_nd_update_.md)：torch_npu.npu_scatter_nd_update_：多维索引散点原地更新。将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`中的数据被改变。
+- [分页 KVCache 位置更新（torch_npu.npu_scatter_pa_kv_cache）](npu_scatter_pa_kv_cache.md)：torch_npu.npu_scatter_pa_kv_cache：分页 KVCache 位置更新。更新KVCache中指定位置的`key`和`value`。
+- [符号位打包（torch_npu.npu_sign_bits_pack）](npu_sign_bits_pack.md)：torch_npu.npu_sign_bits_pack：把浮点值的符号编码到 uint8 字节中，以每字节八个位保存。
+- [符号位解包（torch_npu.npu_sign_bits_unpack）](npu_sign_bits_unpack.md)：torch_npu.npu_sign_bits_unpack：把字节中的符号位恢复成浮点符号值。
+- [SiLU 激活（torch_npu.npu_silu）](npu_silu.md)：torch_npu.npu_silu：计算输入乘以其 sigmoid 的门控激活。 SiLU 也称 Swish，按元素计算 `x * sigmoid(x)`。
+- [指数随机数原地填充（torch_npu.npu_sim_exponential_）](npu_sim_exponential_.md)：torch_npu.npu_sim_exponential_：使用给定 lambd 的指数分布采样值覆盖输入张量。
+- [张量切片（torch_npu.npu_slice）](npu_slice.md)：torch_npu.npu_slice：按起点与范围提取输入张量的子区域。
+- [无索引排序与维度选择（torch_npu.npu_sort_v2）](npu_sort_v2.md)：torch_npu.npu_sort_v2：沿指定维度排序元素，不返回排序索引。 dim 未设置时选择最后一个维度；默认按升序排序，descending=True 时按降序排序；此接口不返回排序索引。
+- [SFA 长序列稀疏注意力（torch_npu.npu_sparse_flash_attention）](npu_sparse_flash_attention.md)：torch_npu.npu_sparse_flash_attention：SFA 长序列稀疏注意力。sparse_flash_attention（SFA）是针对大序列长度推理场景的高效注意力计算模块，该模块通过“只计算关键部分”大幅减少计算量，然而会引入大量的离散访存，造成数据搬运时间增加，进而影响整体性能。
+- [SwiGLU 门控线性激活（torch_npu.npu_swiglu）](npu_swiglu.md)：torch_npu.npu_swiglu：SwiGLU 门控线性激活。Swish门控线性单元激活函数，执行张量`input`的swiglu计算。
+- [SwiGLU 后动态或静态分组量化（torch_npu.npu_swiglu_quant）](npu_swiglu_quant.md)：torch_npu.npu_swiglu_quant：SwiGLU 后动态或静态分组量化。在swiglu激活函数后添加quant操作，执行输入`x`的`SwiGluQuant`计算，支持`int8`或`int4`量化输出，支持MoE场景和非MoE场景（`group_index`为空），支持分组量化，支持动态/静态量化。
+- [采样候选过滤（torch_npu.npu_top_k_top_p）](npu_top_k_top_p.md)：torch_npu.npu_top_k_top_p：对 logits 进行 top-k 与 top-p 候选过滤。
+- [TopK TopP 过滤与指数采样（torch_npu.npu_top_k_top_p_sample）](npu_top_k_top_p_sample.md)：torch_npu.npu_top_k_top_p_sample：按 logits、top-k/top-p 和随机权重进行候选筛选及采样，并返回所选索引和相关分布。 输出 `logits_select_idx` 为所选位置，`logits_top_kp_select` 为 top-k/top-p 处理后的分布。
+- [量化 scale 编码（torch_npu.npu_trans_quant_param）](npu_trans_quant_param.md)：torch_npu.npu_trans_quant_param：将浮点 scale 编码成量化矩阵乘需要的整数位域表示，可同时编码 offset。 这里的输入是 float32 scale，编码后的位域用 int64 张量承载；输入浮点精度与输出承载类型是两项不同约束。
+- [连续张量转置与 FakeTensor（torch_npu.npu_transpose）](npu_transpose.md)：torch_npu.npu_transpose：连续张量转置与 FakeTensor。返回原始张量视图，其维度已permute，结果连续。
+- [三维转置批量矩阵乘（torch_npu.npu_transpose_batchmatmul）](npu_transpose_batchmatmul.md)：torch_npu.npu_transpose_batchmatmul：执行张量`input`与张量`weight`的矩阵乘计算。 三维转置批量矩阵乘，仅支持三维输入并限定转置排列。
+- [权重量化矩阵乘：pertensor、perchannel 与 pergroup（torch_npu.npu_weight_quant_batchmatmul）](npu_weight_quant_batchmatmul.md)：torch_npu.npu_weight_quant_batchmatmul：权重量化矩阵乘：pertensor、perchannel 与 pergroup。此接口用于执行矩阵乘计算中`weight`输入和输出的量化操作，支持pertensor、perchannel、pergroup多场景量化。
+- [常数原地填充（torch_npu.one_）](one_.md)：torch_npu.one_：使用数值1覆盖目标张量。
+- [流资源限制重置（torch.npu.reset_stream_limit）](reset_stream_limit.md)：torch.npu.reset_stream_limit：恢复指定 Stream 的默认资源限制，与 set_stream_limit 的设置操作配套。 先前由 set_stream_limit 设置的指定 Stream 可恢复默认资源限制，随后通过 get_stream_limit 读取核对；重置操作不推导其他流或其他进程的状态。
+- [按轴索引散点更新：保留原数据（torch_npu.scatter_update）](scatter_update.md)：torch_npu.scatter_update：按轴索引散点更新：保留原数据。将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据不变。
+- [按轴索引散点原地更新（torch_npu.scatter_update_）](scatter_update_.md)：torch_npu.scatter_update_：按轴索引散点原地更新。将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据被改变。
+- [进程内设备核数设置（torch.npu.set_device_limit）](set_device_limit.md)：torch.npu.set_device_limit：为当前进程指定设备的 Cube/Vector 执行核数。
+- [流设备资源限制设置（torch.npu.set_stream_limit）](set_stream_limit.md)：torch.npu.set_stream_limit：流设备资源限制设置。设置指定Stream的Device资源限制。

@@ -1,7 +1,7 @@
 ---
 type: Concept
-title: npu_fused_infer_attention_score (v1 / v2)
-description: 核对当前 R1 FIA v1/v2、packed Query 与 Paged NZ KV、C8 反量化参数及框架 block_table 传入。
+title: FIA v1/v2：参数名、TND/Paged NZ 布局与分路径 mask
+description: TND Prefill 不等长请求的 KV 长度：Qwen Dense 分页路径传普通原值，Qwen3-MoE 直读路径传累加长度；区分 v1/v2、Paged NZ、float8 Decode mask，以及 6.0 v1 全遮蔽行和 BSH 单 Query 边界。
 tags:
 - task.implementation
 - topic.attention
@@ -15,11 +15,38 @@ sources:
   role: implementation
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/models/deepseek_r1/deepseek_r1_prefill_optimization.md
   role: implementation
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-kvcache/SKILL.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-kvcache/references/fa-code-examples.md
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen/models/modeling_qwen.py
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/models/modeling_qwen3_moe.py
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gpt_oss/models/modeling_gpt_oss.py
+  role: supporting
+- resource: https://www.hiascend.com/doc_center/source/zh/Pytorch/600/apiref/apilist/ptaoplist_000837.html
+  role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py
+  role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-29T15:24:38Z'
+updated_at: '2026-11-10T03:51:43Z'
 platforms:
 - a2
 - a3
+aliases:
+- npu_fused_infer_attention_score
+- npu_fused_infer_attention_score_v2
+- FA v1 v2 参数对照
+- Paged KV cache shape
+- GQA 与 MLA 五维 NZ 缓存布局
+- npu_fused_infer_attention_score (v1 / v2)
+- inner_precise 全遮蔽行
+- BSH Q_S=1 sparse_mode pre_tokens
+- Qwen3-MoE float8 Decode
+- FP8 KV Decode mask
+- torch_npu.npu_fused_infer_attention_score
+- torch_npu.npu_fused_infer_attention_score_v2
 ---
 
 # npu_fused_infer_attention_score (v1 / v2)
@@ -47,6 +74,50 @@ flowchart LR
 ```
 
 ## Key Parameters
+
+### v1/v2 参数名与参考模型
+
+| 语义 | v1 | v2 |
+| --- | --- | --- |
+| 缩放 | scale | softmax_scale |
+| Query 头数 | num_heads | num_query_heads |
+| Query 长度 | actual_seq_lengths | actual_seq_qlen |
+| KV 长度 | actual_seq_lengths_kv | actual_seq_kvlen |
+| KV 头数 | num_key_value_heads | num_key_value_heads |
+| 参考反量化入口 | antiquant_scale/offset、antiquant_mode | dequant_scale_query/key/value 及对应 quant_mode |
+
+先确认实际调用的 namespace、schema 与后端适配层，再匹配参数；不同包装可能直接拒绝未知参数，不能承诺“错名一定静默使用默认值”。固定代码中 Qwen Dense、Qwen3-MoE、GPT-OSS 当前均使用 v2；Kimi 和 R1 normal 仍有 v1，不能沿用旧 Skill 表“Qwen3-MoE 用 v1”来判定当前实现。两个版本都存在分页与非分页、分离 RoPE 的实际路径，不按版本号推断所有能力。GPT-OSS 的 v2 用 learnable_sink；其他调用的 sink 能力需另核对 schema。
+
+### 按调用路径选择 sparse_mode 与 mask
+
+| 实际路径 | 配置及缓存消费者 |
+| --- | --- |
+| Qwen Dense 标准 TND | 两阶段先写分页缓存，再按 block_table 读取；sparse_mode=3 与 causal mask |
+| Qwen3-MoE 标准 TND | Prefill 直读当前 K/V、mode=3；BF16 Decode 读分页缓存、mode=3；float8 KV Decode 为 mode=0、atten_mask=None |
+| GPT-OSS 滑窗 TND | 两阶段保持 sparse_mode=4、pre_tokens=sliding_window、next_tokens=0 与 band mask；非滑窗层为3 |
+| R1 absorb/prolog 单 token | sparse_mode=0、atten_mask=None；有效历史长度另传 |
+| R1 absorb/prolog MTP | q_len>1 时 sparse_mode=3，保留多个验证 token 间的因果 mask |
+
+该表是固定模型实现，不是所有 FIA 重载的参数规范。不能把“Decode 一律不用 mask”或“Decode 一律 mode=0”推广到标准 TND、滑窗及 MTP。mask 的 True/False 语义按构造器与接口核对，形容为“下三角 mask”不足以决定极性；压缩 causal/band 模式的参考模型使用 get_init_attn_mask(2048, device)，不按最大上下文长度随意扩展。完整矩阵模式、可接受 dtype 与其他维度约束继续核对目标 API。
+
+### Paged KV 的实际存储
+
+GQA/MHA CacheEntry 可按 [block_num, block_size, local_kv_heads, head_dim] 分配，传给 FIA 时 view 为 [block_num, block_size, local_kv_heads*head_dim]。MLA 的 nope/rope 则按 PA_NZ 写入并 view 为五维 NZ，具体见下文；两者 Query 仍可为 packed [T,N,D]。block_table 必须对应该缓存分组和已分配块，不能把 layout 字符串的后缀当成物理 KV shape。
+
+TND 的长度语义由实际缓存消费者决定。以下表固定到 Recipes `944d2d3ece86f7df33dbb0cb155c72ca619a9c66`，路径 ID 只用于区分本表的调用分支；`paged` 表示传入 block_table，`current` 表示当前 batch 的 K/V、没有 block_table。不能把 Qwen Dense 与 Qwen3-MoE 的 Prefill 合并，也不能把 FP8 Decode 归入 BF16 分支。
+
+| 路径 ID | K/V 来源 | actual_seq_qlen 字段 | actual_seq_kvlen 字段 | sparse_mode | atten_mask |
+| --- | --- | --- | --- | --- | --- |
+| qwen_dense_prefill | paged | actual_seq_lengths_cu_q | actual_seq_lengths_kv | 3 | causal |
+| qwen_dense_decode | paged | actual_seq_lengths_cu_q | actual_seq_lengths_kv | 3 | causal |
+| qwen_dense_decode_npugraph_ex | paged | actual_seq_lengths_cu_list_q | actual_seq_lengths_list_kv | 3 | causal |
+| qwen3_moe_prefill | current | actual_seq_lengths_cu_q | actual_seq_lengths_cu_kv | 3 | causal |
+| qwen3_moe_decode_bf16 | paged | actual_seq_lengths_cu_q | actual_seq_lengths_kv | 3 | causal |
+| qwen3_moe_decode_float8 | paged | actual_seq_lengths_cu_q | actual_seq_lengths_kv | 0 | None |
+
+Qwen Dense 的 Prefill **先 scatter K/V 到缓存再调用 FIA**；每请求 KV 长度为 `[3,5]` 时传 `[3,5]`，Query 边界为 `[3,8]`。Qwen3-MoE Prefill 则先直读当前 K/V，KV 和 Query 都取 `[3,8]`，FIA 返回后才更新缓存。普通 Decode 若两个请求历史长度为 `[9,13]`、各新增1个 token，Query 取 `[1,2]`，KV 仍为 `[9,13]`。MTP 按每请求 q_len 构造累计 Query 边界。
+
+表中 Qwen3-MoE Decode 的 Tensor 字段对应非 npugraph_ex 分支；该模型的 npugraph_ex Decode 同样换成 `actual_seq_lengths_cu_list_q` / `actual_seq_lengths_list_kv` 的 host list，数值仍是累计 Q、普通 KV。FP8 分支额外设置 `dequant_scale_key/value` 及 `key_quant_mode=value_quant_mode=4`，不能仅关 mask 而漏 scale。host list 与 Tensor 不改变长度语义，见[长度类型诊断](../../runbooks/runtime/fia_actual_seq_lengths_kv_backend_type.md)。
 
 Atlas A3 上固定 DeepSeek-R1 Decode 路径 launch（源 `models/deepseek_r1/models/modeling_deepseek.py:L1271`）：
 
@@ -78,9 +149,9 @@ attn_output, _ = self.fa_ops.npu_fused_infer_attention_score_v2(
 
 Atlas A3 R1 Prefill 优化文档报告其 NTD 输入、TND 输出方案相对 TND 方案计算效率约提升 15%；这是特定 Prefill 实现的来源观测，不是本页 v2 Decode TND_NTD 的对比实验，也不能据此归因到 Kᵀ 访问连续性。Qwen 的支持产品范围为 A2/A3，不能把 R1 的测量外推到所有 FIA 调用。
 
-### sparse_mode
+### R1 absorb/prolog 的 sparse_mode
 
-- `0`：普通因果（decode 单 token 时 `attention_mask = None`）；
+- `0`：该路径单 token Decode 不另做因果 mask，`attention_mask = None`，可见历史由 KV 长度控制；不能把 mode=0 本身称为因果模式；
 - `3`：MTP 场景下 `q_len > 1`，使用 MTP 因果 mask，让多 draft token 之间严格因果 + 对历史全可见。
 
 ### 量化入口
@@ -88,6 +159,21 @@ Atlas A3 R1 Prefill 优化文档报告其 NTD 输入、TND 输出方案相对 TN
 - `dequant_scale_query`：来自 `npu_mla_prolog_v3` 的 `dequant_scale_q_nope`，当 W8 + C8 双启时不为 None；
 - `dequant_scale_key` / `dequant_scale_value`：`ckv_scale`（KV per-tensor scale，FP32 / torch.float）；
 - `query_quant_mode=3`：per-token-head，与 mla_prolog 端 `query_quant_mode=1` 对齐的 C8 路径。
+
+## v1 6.0 的单 Query 与全遮蔽行边界
+
+此节仅归纳官方 **PyTorch 6.0 文档中的 v1 `torch_npu.npu_fused_infer_attention_score`、Atlas A2** 约束。它不替代上面 Recipes v2 模型调用表，也不据此声明 A3、950 或 v2 有相同限制。完整接口及产品范围见 [6.0 官方 API](https://www.hiascend.com/doc_center/source/zh/Pytorch/600/apiref/apilist/ptaoplist_000837.html)。
+
+| inner_precise | 精度选择 | 行无效修正 |
+| --- | --- | --- |
+| 0 | high_precision | disabled |
+| 1 | high_performance | disabled |
+| 2 | high_precision | enabled |
+| 3 | high_performance | enabled |
+
+自定义 mask 的 **全遮蔽行** 是行无效修正的排查场景。该版文档针对 `Q_S>1`、`sparse_mode` 为0或1且自定义 mask 的情况建议开启修正；`Q_S=1` 只允许0或1。Recipes 的 LLM 示例没有2/3的验证用例，不能把它们当作所有 NaN 或精度问题的通用开关。
+
+对于该版 v1 的 BSH 输入，`Q_S=1` 转入 IncreFlashAttention 分支，`sparse_mode`、`pre_tokens` 和 `next_tokens` 不生效。因此只设置 band 或 pre_tokens 并不能证明单 token Decode 实现了滑窗。应核对可见 KV、实际 mask 和目标版本支持的窗口实现，并以窗口外 token 的反例与参考 attention 对比。不要把这条旧版限制覆盖到上表 TND v2 路径。
 
 ## 当前 packed 与缓存边界
 
@@ -127,3 +213,17 @@ R1 当前按总 token 数推导 q_len，CacheEntry 绑定 nope/rope cache 后按
 - [sparse-attn-sharedkv](sparse_attn_sharedkv.md)（并列：通用 FIA 服务 R1/Qwen 的稠密 Softmax-Attention；SAS 是 DeepSeek-V4 的 Shared-KV 统一稀疏/压缩/滑窗 Attention 算子）
 - [vggt](../../../spatial/concepts/models/vggt.md) / [hunyuan3d](../../../spatial/concepts/models/hunyuan3d.md)（跨域·空间智能：VGGT global attention 与 Hunyuan3D DiT 用 FIA 替换原生 attention 以入图）
 - 跨域·具身：[cosmos-transfer2.5](../../../embodied/concepts/world_models/cosmos_transfer2_5.md)、[cosmos-predict2.5](../../../embodied/concepts/world_models/cosmos_predict2_5.md)、[pi0](../../../embodied/concepts/manipulation/pi0.md)、[isaac-gr00t](../../../embodied/concepts/manipulation/isaac_gr00t.md)、[pi05](../../../embodied/concepts/manipulation/pi05.md)、[alpamayo-r1](../../../embodied/concepts/navigation/alpamayo_r1.md)、[gradient-checkpoint-refine](../../../embodied/concepts/techniques/gradient_checkpoint_refine.md)、[om-atc-offline](../../../embodied/concepts/techniques/om_atc_offline.md)、[flow-matching-action-expert](../../../embodied/concepts/modules/flow_matching_action_expert.md)（VLA / 世界模型用 FIA 替换原生 attention 入图）
+
+- [.agents/skills/model-infer-kvcache/SKILL.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-kvcache/SKILL.md)（supporting）
+
+- [.agents/skills/model-infer-kvcache/references/fa-code-examples.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-kvcache/references/fa-code-examples.md)（supporting）
+
+- [models/qwen/models/modeling_qwen.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen/models/modeling_qwen.py)（supporting）
+
+- [models/qwen3_moe/models/modeling_qwen3_moe.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/qwen3_moe/models/modeling_qwen3_moe.py)（supporting）
+
+- [models/gpt_oss/models/modeling_gpt_oss.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/gpt_oss/models/modeling_gpt_oss.py)（supporting）
+
+- [ptaoplist_000837.html](https://www.hiascend.com/doc_center/source/zh/Pytorch/600/apiref/apilist/ptaoplist_000837.html)（supporting）
+
+- [execution_engine.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/engine/execution_engine.py)（supporting）

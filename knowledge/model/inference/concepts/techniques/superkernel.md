@@ -18,7 +18,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/graph_utils.py
   role: constraint
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-29T13:55:50Z'
+updated_at: '2026-11-10T03:40:06Z'
 platforms:
 - a3
 ---
@@ -99,3 +99,5 @@ LongCat-Flash 同样在 `ge_graph` 下使能 `enable_superkernel`。由于 LongC
 - [LongCat范围](../../optimizations/cases/longcat_a3_superkernel_layout_fusion.md)
 - [Qwen3-MoE范围](../../optimizations/cases/qwen3_moe_a3_superkernel_scopes.md)
 - [当前图编译](../../guides/optimization/graph_mode_decode_only_compile_backends.md)
+
+- [范围分析与受控验证](../../guides/optimization/superkernel_scope_analysis_and_validation.md)

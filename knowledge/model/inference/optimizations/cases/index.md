@@ -3,7 +3,7 @@
 保留平台与实现差异，通用条件统一引用对应规则。
 
 - [DeepSeek/Kimi A3 Prefill CP：统一元数据与请求所有者](deepseek_kimi_a3_prefill_cp.md)：按当前统一Executor解释每请求ZigZag、CP整域约束、计算/持久缓存双视图和请求所有者。
-- [LongCat A3 Decode 权重预取：QBMM 与 MLA_Prolog 的相邻排布](longcat_a3_decode_weight_prefetch.md)：当前 LongCat GE/npugraph_ex 的 Decode 预取开关、专用 stream、事件依赖与字节预算边界。
+- [LongCat A3 Decode 权重预取：QBMM 与 MLA_Prolog 的相邻排布](longcat_a3_decode_weight_prefetch.md)：LongCat A3 Decode GE/npugraph_ex 的 QBMM/MLAProlog 预取：18/36/7 MiB、GMM1 int8 每专家字节预算、触发窗口与事件依赖。
 - [LongCat A3 SuperKernel 案例：非 KVP 路径的布局融合修复](longcat_a3_superkernel_layout_fusion.md)：当前 LongCat GE SuperKernel 的分段、后端拒绝条件与布局审查；撤下旧 KVP 分支和跨版本修复示例。
 - [LongCat A3 局部 TP 案例：o_proj 与 dense MLP 的 DP/TP 边界](longcat_dp_tp_projections.md)：记录固定 LongCat A3 Decode 在 Attention DP 下的 o_proj K 轴切分、dense MLP 切分和布局转换；沿用局部 TP 规则，不将模型通信序列泛化为统一实现。
 - [LongCat-Lite A2/A3 入图案例：NgramEmbedding host gap 与精度边界](longcat_lite_ngram_graph_host_gap.md)：当前N-gram buffer/packed图适配和A2来源对照，撤下旧A3中间值并区分最终Prolog组合结果。

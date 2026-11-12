@@ -14,9 +14,11 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-29T13:45:11Z'
+updated_at: '2026-11-10T01:14:22Z'
 platforms:
 - a3
+aliases:
+- torch_npu.npu_prefetch
 ---
 
 # Weight Prefetch (npu_prefetch)
@@ -24,6 +26,8 @@ platforms:
 ## Summary
 
 该优化提供网络 weight 预取功能，在算子计算的同时，**利用空闲的带宽，提前将一些访存 bound 算子的权重从 HBM 搬运到 L2 Cache 中**，提升算子性能。`npu_prefetch` 技术的详细介绍，请参考 [官方文档](https://www.hiascend.com/document/detail/zh/Pytorch/730/apiref/torchnpuCustomsapi/docs/context/torch_npu-npu_prefetch.md)。LongCat-Flash 通过 `model_config.custom_params.enable_prefetch` 开关使能该优化。
+
+固定 LongCat 调用的完整 Python 标识为 `torch_npu.npu_prefetch`；max_size 是预取字节预算，dependency 表达先后关系。具体 offset、权重 view、流和阶段门控见下方实现案例，不能只根据 API 名推断所有后端支持。
 
 ## Mechanism
 

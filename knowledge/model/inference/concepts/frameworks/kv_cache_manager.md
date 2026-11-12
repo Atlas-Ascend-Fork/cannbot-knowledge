@@ -1,7 +1,8 @@
 ---
 type: Concept
 title: KV Cache Manager（框架级 Paged Attention KV Cache 管理）
-description: Executor 缓存管理的四种策略、manager_key 分组、压缩布局、HBM 与 swapped 分配、owner 选择、投机状态预留及 PD 导出限制；按当前实现核对容量公式与接入契约。
+description: Executor 分页缓存管理：block_table 将逻辑块映射到物理 block，slot_mapping 指定写入槽位；核对 manager_key、CacheEntry、四种策略、压缩布局、HBM/swapped
+  分配、容量和 PD 导出。
 tags:
 - task.implementation
 - topic.architecture
@@ -23,10 +24,16 @@ sources:
   role: implementation
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/docs/design/kv_cache_design.md
   role: supporting
+- resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-kvcache/references/framework_kv_reference.md
+  role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-10-29T15:24:38Z'
+updated_at: '2026-11-10T01:14:22Z'
 platforms:
 - agnostic
+aliases:
+- KVCacheManager
+- block_table 与 slot_mapping 分页寻址
+- 逻辑块到物理 block 的映射
 ---
 
 # KV Cache Manager（分页缓存与固定状态管理）
@@ -45,6 +52,12 @@ platforms:
 - `is_mla_backend` 必须显式声明，不能由 `num_head == 1` 推断：GQA 切分后也可能每 rank 只有一个 KV head。PD 传输据此判断 MLA 缓存是否复制。
 
 `block_table`、`slot_mapping`、block id、容量与使用率均按 **manager key** 索引，而不是仅按注意力类型。多个条目共享 key 时共享逻辑索引；需要不同块粒度时必须使用不同 key。
+
+## 缓存声明和源码定位
+
+`ModelCacheInfo.layer_infos` 保存各层的 `LayerCacheInfo`，每层的 caches 绑定 CacheEntry；层数和 layer_infos 长度必须一致。模型通过 get_cache_info 声明，`ModelWorker.get_cache_info` 委托模型，无方法时返回 None。旧材料的 `ModelWorker._get_cache_info` 不是当前统一入口。
+
+`ATTN_TYPE_MANAGER_MAP` 在 single_type_kv_cache_manager.py 将类型注册到 FullAttentionManager、SlidingWindowManager、RingCacheManager、MambaManager；新增类型还要满足容量、分配和索引契约。`allocate_cache_tensors` 当前是 cache_utils.py 的函数，不是 `KVCacheManager.allocate_cache_tensors` 方法。SWAPPED 分配在该函数调用 `torch_npu.empty_with_swapped_memory`，不能仅通过更改字符串就保证所有算子支持换出内存。
 
 ## 三层职责
 
@@ -106,6 +119,20 @@ real_blocks_needed = last_block - first_valid_block + 1
 
 普通未压缩缓存的 slot mapping 使用 `position // block_size` 和 `position % block_size`。Mamba 直接按块表寻址，不生成 token slot；`compress_ratio>1` 的条目同样跳过普通逐 token slot 生成，由模型的压缩缓存逻辑处理。RingCache 使用 `block_id * block_size + position % block_size`，同次请求超过容量时只保留最后一圈的写入，其余置 -1，避免环绕位置冲突；null block 对应槽位也置 -1。
 
+### 普通分页缓存的物理槽位
+
+FullAttention / SlidingWindow 的普通未压缩缓存，按本 manager 的 block_size，将逻辑 token 位置映射到实际物理 block。标量表达如下，block_table 在例子中表示二维索引表；批量实现由 prepare_slot_mapping 的 gather 完成：
+
+```python
+logical_block, offset = divmod(position, block_size)
+physical_block = block_table[batch_idx][logical_block]
+slot = physical_block * block_size + offset
+```
+
+例如 block_size=128，两个请求的块表为 `[[7,2],[3,5]]`，第0个请求 position=129 写入物理槽257，第1个请求同一 position 写入641。块分配不连续时，不能用 `batch_idx * max_seq_len + position` 代替块表寻址。slot_mapping 服务写入，FIA 的 block_table 服务分页读取，二者应指向同一缓存分组和块分配。
+
+该公式不覆盖上面的 RingCache、压缩缓存或 Mamba 状态；不要据此替换其专用寻址路径。来源为固定 cache_utils.py 的 prepare_slot_mapping，使用前还需保留块表宽度、合法块和位置边界检查。
+
 ## 容量与显存预算
 
 `FIXED_BLOCK_ATTN_TYPES` 包含 SlidingWindow、Mamba、RingCache。最大并发数取 `batch_size_per_dp_rank`：
@@ -155,3 +182,5 @@ FullAttention 等非固定类型：
 - [MLA](../modules/mla.md)
 - [Gemma 4](../models/gemma4_26b_a4b.md)
 - [Hy3](../models/hy3_preview.md)
+
+- [.agents/skills/model-infer-kvcache/references/framework_kv_reference.md](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-kvcache/references/framework_kv_reference.md)（supporting）

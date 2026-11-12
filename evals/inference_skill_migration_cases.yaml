@@ -1,0 +1,7599 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+cases:
+- id: infer_skill_migrator_contract_question
+  query: 新模型怎么接入统一 Executor 的加载钩子和 forward
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/bringup/cann_executor_model_onboarding
+- id: infer_skill_migrator_contract_symbol
+  query: ForwardMetaData 与加载钩子
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/bringup/cann_executor_model_onboarding
+- id: infer_skill_migrator_import_question
+  query: 模型目录启动找不到同级模型 Python 导入包遮蔽
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/model_package_namespace_shadowing
+- id: infer_skill_migrator_import_symbol
+  query: 'ModuleNotFoundError: No module named ''models.gpt_oss'''
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/model_package_namespace_shadowing
+- id: infer_skill_migrator_postload_question
+  query: 首次 GMM 维度不匹配 模型忘记加载后处理钩子
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_migrator_postload_symbol
+  query: ModelWorker._process_weights_after_loading
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_migrator_dp_question
+  query: 多 DP 图模式 row_idx_decode 形状不匹配
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+- id: infer_skill_migrator_dp_symbol
+  query: batch_size_per_dp_rank
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+- id: infer_skill_parallel_analysis_question
+  query: 按 Prefill 和 Decode 选模型并行参考 YAML
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_parallel_analysis_symbol
+  query: qwen3_235b_16tp.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_parallel_impl_question
+  query: RowParallelLinear 需要自己做 AllReduce 吗
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_parallel_impl_symbol
+  query: get_group_name(name)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_fusion_chain_question
+  query: GQA MLA Indexer 三种 Attention 融合链怎么选
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/attention_fusion_chain_selection
+- id: infer_skill_fusion_chain_symbol
+  query: Attention 融合链选型
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/attention_fusion_chain_selection
+- id: infer_skill_fusion_rope_question
+  query: RoPE cos sin 预计算 按位置索引 跨层复用
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/rotary_embedding_cache_precompute
+- id: infer_skill_fusion_rope_symbol
+  query: cos_cached/sin_cached
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/rotary_embedding_cache_precompute
+- id: infer_skill_quant_scale_question
+  query: W8A8 gate_up 到 down 的 SwiGLU 量化 scale 怎么传
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+- id: infer_skill_quant_scale_symbol
+  query: _forward_w8a8int8
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+- id: infer_skill_quant_benefit_question
+  query: 量化权重变小但仍然 OOM 收益如何分账
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+- id: infer_skill_quant_benefit_symbol
+  query: W_quant = W_bf16
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+- id: infer_skill_profiling_collect_question
+  query: Recipes profiler Level1 PipeUtilization 和 shape 采集
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_profiling_collect_symbol
+  query: active=3、skip_first=3
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_perf_layout_question
+  query: msprof op_summary 与 ascend_pt 目录怎么找
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_artifact_layouts
+- id: infer_skill_perf_layout_symbol
+  query: mindstudio_profiler_output
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_artifact_layouts
+- id: infer_skill_perf_fields_question
+  query: 多流有不同 Stream ID 怎样证明真的重叠
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_perf_fields_symbol
+  query: aiv_vector_fops
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_profiling_schedule_question
+  query: Profiler 停在 RECORD trace JSON 被截断
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+- id: infer_skill_profiling_schedule_symbol
+  query: 'Incorrect schedule: Stop profiler while current state is RECORD'
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+- id: infer_skill_profiling_parse_question
+  query: KernelViewParser run failed 没有 CSV 换本地盘解析
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/performance/profiler_csv_parse_failure
+- id: infer_skill_profiling_parse_symbol
+  query: torch_npu.profiler.profiler.analyse
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/performance/profiler_csv_parse_failure
+- id: infer_skill_profiling_compile_question
+  query: 第一个 Decode 特别慢 profiling 采到首次编译
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/performance/profiler_first_compile_pollution
+- id: infer_skill_profiling_compile_symbol
+  query: step_trace_time.csv
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/performance/profiler_first_compile_pollution
+- id: infer_skill_runtime_cpu_question
+  query: 模型构造 HCCL init 后 CPU 很忙 HBM 不增长
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+- id: infer_skill_runtime_cpu_symbol
+  query: no_init_weights
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+- id: infer_skill_precision_triage_question
+  query: MoE 输出接近零 packed checkpoint 权重没加载
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_precision_triage_symbol
+  query: zero/copy expert
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_kvcache_versions
+  query: FA v1 v2 scale softmax_scale 参数映射
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_kvcache_mask
+  query: 标准 TND Decode 滑窗 sparse_mode mask
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_kvcache_lengths
+  query: TND Query 累计长度 Decode 分页 KV 普通长度
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_kvcache_paged
+  query: Paged GQA cache shape 五维 NZ MLA
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_precision_fa
+  query: Decode mask 不能一律清空 MTP 因果
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+- id: infer_skill_graph_options
+  query: npugraph_ex options force_eager frozen_parameter 配置
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_graph_dynamic
+  query: Decode enable_dynamic_graph 默认和长度 list 重编译
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_graph_precision
+  query: 图模式精度 backend aot_eager 冻结非连续权重
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_multi_hunyuan
+  query: HunyuanImage share_mlp_stream 初始化注入
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/multi_stream_optimization_workflow
+- id: infer_skill_multi_patch
+  query: Qwen3 Next DeePEP shared_expert_stream patch
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/moe_shared_expert_decode_dual_stream
+- id: infer_skill_multi_indexer
+  query: Indexer Prolog Decode Q weights 多流事件
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+- id: infer_skill_multi_offload
+  query: V3.2 Offload Prefill D2H 事件 持久槽
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
+- id: infer_skill_multi_microbatch
+  query: Prefill micro batch 双流 MoE 流水
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+- id: infer_skill_multi_core
+  query: LongCat 多流 控核 enable_multi_streams
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: infer_skill_multi_afd
+  query: LongCat AFD Send Recv 流 配对
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/cases/longcat_a3_afd_stream_pairing
+- id: infer_skill_prefetch_values
+  query: LongCat 权重预取 18 36 7 MiB
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: infer_skill_prefetch_gmm
+  query: LongCat GMM1 GMM2 预取字节预算
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: infer_skill_runtime_mc2
+  query: A2 MC2 每 rank 专家数 24 回退
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/mc2_fused_comm_op_compatibility_fallback
+- id: infer_skill_runtime_hccl
+  query: HCCL timeout rank 先失败 OOM
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+- id: infer_skill_runtime_vocab
+  query: vocab lmhead TP padding 权重切分越界
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/shard_local_index_vocab_padding_mtp_layer
+- id: infer_skill_precision_tolerance
+  query: 算子精度 BF16 相对误差 统一容差
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_precision_dp_tokens
+  query: DP 独立请求 广播 next_token 精度
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_quant_postload
+  query: post load smooth_scales NZ 顺序 W8A8
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+- id: infer_skill_quant_c8
+  query: C8 MLA cache scale prolog 写入 反量化
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/mla_c8_int8_kv_cache_op_wiring
+- id: infer_skill_prefetch_npugraph
+  query: LongCat 权重预取 18 MiB
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        execution_mode:
+        - npugraph_ex
+        framework:
+        - cann_executor
+        model_features:
+          all_of:
+          - mla
+        objective:
+        - tpot
+  expected_scope_states:
+    model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch: match
+- id: infer_skill_profiling_a2
+  query: Profiler Level1 PipeUtilization record_shapes
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    match: text
+    k: 5
+    type: guides
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_quant_a2
+  query: _forward_w8a8int8
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+- id: infer_skill_unscoped_unknown
+  query: mindstudio_profiler_output
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_artifact_layouts
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+  expected_scope_states:
+    model/inference/guides/optimization/npu_profiling_artifact_layouts: unknown
+- id: infer_skill_profiling_310p_excluded
+  query: PipeUtilization
+  filters:
+    domain: model
+    technology: inference
+    platform: 310p
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_quant_310p_excluded
+  query: _forward_w8a8int8
+  filters:
+    domain: model
+    technology: inference
+    platform: 310p
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+- id: infer_skill_prefetch_a2_excluded
+  query: 18 MiB
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: infer_skill_prefetch_prefill_conflict
+  query: 18 MiB
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - prefill
+  expected_scope_excluded:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: infer_skill_quant_sglang_conflict
+  query: _forward_w8a8int8
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - sglang
+  expected_scope_excluded:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+- id: infer_skill_migrator_sglang_conflict
+  query: ForwardMetaData 与加载钩子
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/guides/bringup/cann_executor_model_onboarding
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - sglang
+  expected_scope_excluded:
+  - model/inference/guides/bringup/cann_executor_model_onboarding
+- id: infer_skill_runbook_profile_excluded
+  query: ModuleNotFoundError
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+    type: guides
+  excluded:
+  - model/inference/runbooks/runtime/model_package_namespace_shadowing
+- id: infer_skill_legacy_kvp_default_excluded
+  query: KVP
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/concepts/parallelism/kvp
+- id: infer_skill_multi_core_deprecated_excluded
+  query: 多流控核
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  excluded:
+  - model/inference/optimizations/cases/moe_multi_stream_limit_core_num
+- id: infer_skill_migrator_import_question_unfiltered
+  query: 模型目录启动找不到同级模型 Python 导入包遮蔽
+  filters:
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/model_package_namespace_shadowing
+- id: infer_skill_perf_layout_question_unfiltered
+  query: msprof op_summary 与 ascend_pt 目录怎么找
+  filters:
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_artifact_layouts
+- id: infer_skill_prefetch_values_unfiltered
+  query: LongCat 权重预取 18 36 7 MiB
+  filters:
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: infer_skill_review_onboarding
+  query: 模型接入 forward_metadata 字段
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/bringup/cann_executor_model_onboarding
+    - model/inference/concepts/frameworks/cann_executor
+    - model/inference/concepts/techniques/packed_sequence_metadata
+- id: infer_skill_review_import
+  query: 自建 infer.sh 找不到 models 包
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/model_package_namespace_shadowing
+- id: infer_skill_review_postload
+  query: GroupedMatmul Dim 1 mismatch
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_review_dp_buffer
+  query: row_idx_decode 全局 batch
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+- id: infer_skill_review_parallel_config
+  query: Qwen3-MoE 16TP 128EP 配置
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/deployment/parallel_reference_config_selection
+    - model/inference/guides/models/qwen3_moe_deployment
+- id: infer_skill_review_parallel_boundary
+  query: 不同 TP 模块 交换激活
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/integration/parallel_groups_and_weight_shards
+    - model/inference/optimizations/rules/local_tp_memory_heavy_projections
+- id: infer_skill_review_mla_fusion
+  query: MLA normal absorb 选择
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/integration/attention_fusion_chain_selection
+    - model/inference/optimizations/rules/mla_weight_absorption_latent_kv
+    - model/inference/concepts/modules/mla
+- id: infer_skill_review_rope
+  query: RoPE 位置表 重复生成
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/rotary_embedding_cache_precompute
+- id: infer_skill_review_swiglu
+  query: npu_dequant_swiglu_quant smooth_scales
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+- id: infer_skill_review_benefit
+  query: W8A8 量化 显存不降
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+- id: infer_skill_review_profile_fields
+  query: enable_profiler 只有9列
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+    - model/inference/runbooks/performance/profiler_csv_parse_failure
+- id: infer_skill_review_schedule
+  query: wait warmup active 收尾
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+- id: infer_skill_review_layout
+  query: msprof PROF目录 设备 rank
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_artifact_layouts
+- id: infer_skill_review_metrics
+  query: PipeUtilization aic_mte2_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/kernel_details_field_interpretation
+    - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_review_parse
+  query: trace_view 截断 CSV为空
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/performance/profiler_csv_parse_failure
+    - model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+- id: infer_skill_review_multi
+  query: 多流 副流 没有收益
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/multi_stream_optimization_workflow
+    - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+    - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_review_prefetch
+  query: 18MB 预取 LongCat
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+    - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+- id: infer_skill_review_cpu
+  query: HCCL 初始化 CPU100
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+- id: infer_skill_review_expert_load
+  query: 专家权重没有加载 输出0
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/precision/inference_precision_symptom_triage
+    - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_review_graph
+  query: frozen_parameter 非连续权重
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+    - model/inference/runbooks/runtime/ge_graph_moe_gate_router_weight_layout
+- id: infer_skill_review_masked_row
+  query: inner_precise 全遮蔽行
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+    - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_review_bsh_single
+  query: BSH Q_S=1 sparse_mode pre_tokens
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+    - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_repair_dense_prefill
+  query: Qwen Dense Prefill actual_seq_kvlen 普通长度
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_repair_moe_float8
+  query: Qwen3-MoE float8 Decode sparse_mode atten_mask
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_repair_inner_precise_a2
+  query: inner_precise 全遮蔽行
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_repair_bsh_a2
+  query: BSH Q_S=1 sparse_mode pre_tokens
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_repair_postload_unfiltered
+  query: GroupedMatmul Dim 1 mismatch
+  filters:
+    match: text
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_repair_parallel_unfiltered
+  query: 不同 TP 模块 交换激活
+  filters:
+    match: text
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_repair_quant_unfiltered
+  query: W8A8 量化 显存不降
+  filters:
+    match: text
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+- id: infer_skill_repair_postload_debugging
+  query: GroupedMatmul Dim 1 mismatch
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    task: debugging
+    type: runbooks
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_repair_superkernel_scope
+  query: SuperKernel scope 范围 流 编译
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/superkernel_decode_ge_graph_fusion_scope
+- id: infer_skill_repair_paged_address
+  query: block_table slot_mapping 物理 block
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/kv_cache_manager
+- id: infer_skill_repair_profiling_sglang
+  query: Level1 PipeUtilization
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - sglang
+  expected_scope_states:
+    model/inference/guides/optimization/npu_profiling_collection_and_metrics: unknown
+- id: infer_skill_repair_profiling_vllm
+  query: Level1 PipeUtilization
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - vllm
+  expected_scope_states:
+    model/inference/guides/optimization/npu_profiling_collection_and_metrics: unknown
+- id: infer_skill_repair_prefetch_order
+  query: 权重预取 带宽窗口 缓存空间 消费依赖
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+- id: infer_skill_complete_review_registration
+  query: 新模型注册到 Executor
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/bringup/cann_executor_model_onboarding
+    - model/inference/concepts/frameworks/cann_executor
+- id: infer_skill_complete_review_packed_logits
+  query: 变长 batch logits 最后一个 token
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/bringup/cann_executor_model_onboarding
+    - model/inference/concepts/techniques/packed_sequence_metadata
+- id: infer_skill_complete_review_import_error
+  query: No module named models.gpt_oss
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/runtime/model_package_namespace_shadowing
+- id: infer_skill_complete_review_gmm_dims
+  query: GroupedMatmul 2816 1408
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_complete_review_dp_buffer
+  query: DP buffer 长度越界
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+- id: infer_skill_complete_review_parallel_glm
+  query: GLM-5 Prefill CP 配置
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_review_weight_shards
+  query: TP 和 EP 权重切分配置变了
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/integration/parallel_groups_and_weight_shards
+    - model/inference/guides/deployment/quant_weight_conversion_path_selection
+    - model/inference/concepts/techniques/online_weight_split
+- id: infer_skill_complete_review_row_reduce
+  query: RowParallelLinear 输出没有归约
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_complete_review_qwen_lengths
+  query: TND actual_seq_kvlen Qwen Prefill
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/concepts/kernels/fused_infer_attention_score
+    - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+- id: infer_skill_complete_review_sliding
+  query: 滑窗 Decode pre_tokens
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_complete_review_rope
+  query: RoPE 每层重复算 cos sin
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/integration/rotary_embedding_cache_precompute
+- id: infer_skill_complete_review_fusion
+  query: GQA MLA Indexer 融合路径
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/integration/attention_fusion_chain_selection
+- id: infer_skill_complete_review_smooth
+  query: down_proj smooth_scales dtype
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/integration/w8a8_mlp_and_moe_scale_flow
+    - model/inference/runbooks/runtime/moe_post_load_hook_missing
+- id: infer_skill_complete_review_quant_overhead
+  query: 量化后额外 dynamic quant 很慢
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+- id: infer_skill_complete_review_profiler_basic
+  query: Profiler 只生成基本计数
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+    - model/inference/runbooks/performance/profiler_csv_parse_failure
+- id: infer_skill_complete_review_profiler_wait
+  query: wait=2 warmup=2 active=3 step 次数
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+- id: infer_skill_complete_review_profiler_parser
+  query: KernelViewParser run failed CSV
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/performance/profiler_csv_parse_failure
+- id: infer_skill_complete_review_profiler_pid
+  query: ascend_pt 目录 PID 对应 rank
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/npu_profiling_artifact_layouts
+- id: infer_skill_complete_review_graph_frozen
+  query: npugraph_ex 关闭冻结参数
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_complete_review_prefetch_mb
+  query: LongCat 预取 36 MB
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: infer_skill_complete_review_prefetch_gmm
+  query: 预取 GMM1 int8 每专家字节
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+    - model/inference/optimizations/rules/decode_weight_prefetch_ordering
+- id: infer_skill_complete_review_cpu_stall
+  query: HCCL init 完成后不出 logits CPU高
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+- id: infer_skill_complete_review_rank_oom
+  query: 多卡某个rank先 OOM 其它卡超时
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+- id: infer_skill_complete_review_vocab
+  query: embedding index out of range lmhead TP
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/runtime/shard_local_index_vocab_padding_mtp_layer
+- id: infer_skill_complete_review_packed_expert
+  query: MoE 输出为零 packed expert
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_complete_review_identity
+  query: identity expert 重复加权
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_complete_review_bf16_zero
+  query: BF16 比对 零值 相对误差
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_complete_review_stream_event
+  query: record_stream Event 有什么区别
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_review_core_config
+  query: enable_multi_streams 两路 12 24
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: infer_skill_complete_review_microbatch
+  query: Prefill microbatch 两路 MoE
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+    - model/inference/concepts/techniques/moe_multi_stream
+- id: infer_skill_complete_review_indexer_event
+  query: Indexer Prolog 等待事件
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/cases/indexer_prolog_streams_fixed_implementation
+- id: infer_skill_complete_review_offload_event
+  query: Offload D2H Prefill 事件
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/optimizations/cases/deepseek_v32_offload_stream_events
+- id: infer_skill_complete_review_hunyuan
+  query: HunyuanImage shared expert Stream
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/guides/optimization/multi_stream_optimization_workflow
+- id: infer_skill_complete_review_core_npugraph_scope
+  query: LongCat npugraph_ex 双流控核
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        execution_mode:
+        - npugraph_ex
+        model_features:
+          all_of:
+          - moe
+        objective:
+        - tpot
+  expected_scope_states:
+    model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance: match
+- id: infer_skill_complete_review_symbol_ENABLE_DYNAMIC_SHAPE_MULTI_STREAM
+  query: ENABLE_DYNAMIC_SHAPE_MULTI_STREAM
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_review_symbol_enable_single_stream
+  query: enable_single_stream
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_review_symbol_enable_inner_parallel
+  query: enable_inner_parallel
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_review_symbol_li_cache_quant_mode
+  query: li_cache_quant_mode
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_complete_short_rope
+  query: RoPE 缓存
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/rotary_embedding_cache_precompute
+- id: infer_skill_complete_short_profiler
+  query: Profiler 基础指标
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_complete_core_eager_excluded
+  query: LongCat 双流控核
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        phase:
+        - decode
+        execution_mode:
+        - eager
+        model_features:
+          all_of:
+          - moe
+        objective:
+        - tpot
+  expected_scope_excluded:
+  - model/inference/optimizations/rules/decode_multi_stream_overlap_core_balance
+- id: infer_skill_complete_defer_mla_shapes
+  query: MLA rope 512 128 64
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+- id: infer_skill_complete_defer_debug_probe
+  query: save_npugraph_tensor
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_complete_defer_determinism_env
+  query: CLOSE_MATMUL_K_SHIFT
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_complete_defer_fa_checker
+  query: debug_fa_all_params
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+- id: infer_skill_complete_defer_history_numbers
+  query: Mamba cache 512 workaround
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected_any:
+  - - model/inference/runbooks/precision/inference_precision_symptom_triage
+    - model/inference/runbooks/precision/precision_mamba_gdn_linear_attention
+- id: infer_skill_complete_multi_ge_params
+  query: ENABLE_DYNAMIC_SHAPE_MULTI_STREAM
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_multi_ge_limits
+  query: GE 算子级 全局 控核 优先级
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_multi_npugraph_limits
+  query: npugraph_ex 控核 静态 Kernel 8.5
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_quant_contract
+  query: CompressedTensorsConfig.from_config
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+- id: infer_skill_complete_quant_li
+  query: li_cache_quant_mode
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_complete_profiler_lifecycle
+  query: ProfilerManager set_status check_if_update
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_complete_profiler_fields_exact
+  query: aiv_mte3_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_config_complete
+  query: Kimi pd Prefill Decode YAML
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_hf_config
+  query: rope_parameters auto_map
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/bringup/cann_executor_model_onboarding
+- id: infer_skill_complete_runtime_checkpoints
+  query: monitored_barrier
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+- id: infer_skill_complete_runtime_stale_processes
+  query: 残留进程 HCCL 卡住
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+- id: infer_skill_complete_cache_api
+  query: ModelCacheInfo.layer_infos
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/kv_cache_manager
+- id: infer_skill_complete_field_0
+  query: kernel_details Step Id
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_1
+  query: Device_id
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_2
+  query: kernel_details Model ID
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_3
+  query: kernel_details Task ID
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_4
+  query: kernel_details Stream ID
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_5
+  query: kernel_details Name
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_6
+  query: kernel_details Type
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_7
+  query: kernel_details OP State
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_8
+  query: kernel_details Accelerator Core
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_9
+  query: kernel_details Start Time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_10
+  query: kernel_details Duration(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_11
+  query: kernel_details Wait Time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_12
+  query: kernel_details HF32 Eligible
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_13
+  query: kernel_details Input Shapes
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_14
+  query: kernel_details Output Shapes
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_15
+  query: kernel_details Input Data Types
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_16
+  query: kernel_details Output Data Types
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_17
+  query: kernel_details Input Formats
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_18
+  query: kernel_details Output Formats
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_19
+  query: kernel_details Context ID
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_20
+  query: aicore_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_21
+  query: aic_total_cycles
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_22
+  query: aic_mac_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_23
+  query: aic_mac_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_24
+  query: aic_scalar_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_25
+  query: aic_scalar_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_26
+  query: aic_mte1_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_27
+  query: aic_mte1_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_28
+  query: aic_mte2_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_29
+  query: aic_mte2_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_30
+  query: aic_fixpipe_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_31
+  query: aic_fixpipe_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_32
+  query: aic_icache_miss_rate
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_33
+  query: cube_utilization(%)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_34
+  query: aic_mac_fp16_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_35
+  query: aic_mac_int8_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_36
+  query: aic_cube_fops
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_37
+  query: aiv_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_38
+  query: aiv_total_cycles
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_39
+  query: aiv_vec_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_40
+  query: aiv_vec_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_41
+  query: aiv_scalar_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_42
+  query: aiv_scalar_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_43
+  query: aiv_mte2_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_44
+  query: aiv_mte2_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_45
+  query: aiv_mte3_time(us)
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_46
+  query: aiv_mte3_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_47
+  query: aiv_icache_miss_rate
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_48
+  query: aiv_vec_fp32_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_49
+  query: aiv_vec_fp16_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_50
+  query: aiv_vec_int32_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_51
+  query: aiv_vec_misc_ratio
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_52
+  query: aiv_vector_fops
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_config_0
+  query: decode_r1_rank_128_128ep_a8w8.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_1
+  query: decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_2
+  query: decode_r1_rank_16_16ep_a8w8.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_3
+  query: deepseek_v3.2_exp_rank_128_128ep_decode_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_4
+  query: deepseek_v3.2_exp_rank_128_128ep_w8a8c8_decode_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_5
+  query: glm_5_rank_128_128ep_w8a8_decode_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_6
+  query: decode.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_7
+  query: longcat_flash_densetp8_ep128_gegraph_mtp_eplb_w8a8.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_8
+  query: qwen3_235b_128ep.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_9
+  query: decode_r1_rank_16_16tp_a8w8.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_10
+  query: qwen3_235b_16tp.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_11
+  query: gpt_oss_120b_8tp.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_12
+  query: gpt_oss_20b.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_13
+  query: longcat_flash_densetp8_ep32.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_14
+  query: longcat_flash_densetp8_ep32_gegraph_mtp.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_15
+  query: qwen3_235b_attn4tp8dp.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_16
+  query: prefill_k2_rank_32_32sp_32tp_32ep_a8w8.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_17
+  query: prefill_r1_rank_32_32dp_32ep_a8w8.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_18
+  query: deepseek_v3.2_exp_rank_64_64ep_prefill_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_19
+  query: deepseek_v3.2_exp_rank_64_64ep_w8a8c8_prefill_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_20
+  query: glm_5_rank_64_64ep_w8a8_prefill_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_21
+  query: prefill.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_22
+  query: deepseek_v3.2_exp_rank_128_128ep_w8a8c8_offload_benchmark.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_config_23
+  query: decode_r1_rank_128_128ep_a8w8c8_mtp_longseq.yaml
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_ge_single
+  query: enable_single_stream 多流冲突
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_ge_inner
+  query: enable_inner_parallel
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_ge_stream_priority
+  query: stream_priority
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_ge_global
+  query: config.ge_config.aicore_num
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_native_limit
+  query: torch.npu.npugraph_ex.scope.limit_core_num
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_old_stream_limit
+  query: torch.npu.set_stream_limit
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_complete_cp_scale
+  query: LI CP key scale restore_indices
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_complete_li_cache
+  query: indexer_key_scale_cache
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_complete_li_noquant
+  query: GLM LI 无 quant_config
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_complete_li_hadamard
+  query: LI Hadamard query_dequant_scale
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_complete_ignore_scale
+  query: compressed-tensors ignore weight_scale
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+- id: infer_skill_complete_manager_map
+  query: ATTN_TYPE_MANAGER_MAP
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/kv_cache_manager
+- id: infer_skill_complete_swapped
+  query: torch_npu.empty_with_swapped_memory
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/kv_cache_manager
+- id: infer_skill_complete_prefetch_api
+  query: torch_npu.npu_prefetch
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/concepts/techniques/weight_prefetch
+- id: infer_skill_complete_run_eagerly
+  query: config.debug.run_eagerly
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/torchair
+- id: infer_skill_complete_sampling
+  query: temperature=0 仍不确定
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_complete_parallel_history
+  query: 并行配置 通信占比 阈值
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_complete_parallel_batch
+  query: B_local DP 本地 batch
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_final_graph_recompile_limit
+  query: hit recompile_limit actual_seq_lengths_kv 每步变化
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_final_standalone_process_group
+  query: 独立 Runner dist.init_process_group ParallelContext
+  filters: &id001
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected: &id002
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_final_expert_tokens_dp_shape
+  query: npu_moe_compute_expert_tokens shape 错
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+- id: infer_skill_final_standalone_framework_unknown
+  query: 独立 Runner dist.init_process_group ParallelContext
+  filters: *id001
+  expected: *id002
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - sglang
+  expected_scope_states:
+    model/inference/guides/integration/parallel_groups_and_weight_shards: unknown
+- id: infer_skill_complete_field_53
+  query: kernel_details Block Dim
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_54
+  query: kernel_details Block Num
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_55
+  query: kernel_details Mix Block Dim
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_complete_field_56
+  query: kernel_details Mix Block Num
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_final_task_type_0
+  query: kernel_details Type AI_CORE
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_final_task_type_1
+  query: kernel_details Type AI_CPU
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_final_task_type_2
+  query: kernel_details Type HCCL
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_final_task_type_3
+  query: kernel_details Type MIX_AIC
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_final_task_type_4
+  query: kernel_details Type MIX_AIV
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_final_task_type_5
+  query: kernel_details Type FFTS_PLUS
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_final_task_type_6
+  query: kernel_details Type DVPP
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_r3_profiler_finish
+  query: Profiler active=3 只调用三次 step 够不够
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/performance/profiler_schedule_incomplete_trace
+- id: infer_skill_r3_compile_window
+  query: 首个 decode 编译耗时混进性能采样
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/performance/profiler_first_compile_pollution
+- id: infer_skill_r3_rank_mapping
+  query: profiling 目录的 pid device_id 怎么对应 rank
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/npu_profiling_artifact_layouts
+- id: infer_skill_r3_parse_permission
+  query: Profiler 解析报 Permission denied
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/performance/profiler_csv_parse_failure
+- id: infer_skill_r3_shapes_missing
+  query: CSV 没有 Input Shapes 怎么采集
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_r3_metrics_missing
+  query: 采样没有 AI Core 指标 只有计数
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/npu_profiling_collection_and_metrics
+- id: infer_skill_r3_fia_lengths
+  query: 不等长请求 TND Prefill KV 长度传累加还是原值
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/concepts/kernels/fused_infer_attention_score
+- id: infer_skill_r3_li_scale_cp
+  query: CP key scale all_gather 后 token 顺序
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_r3_li_fp8
+  query: GLM LI int8 float8 模式怎么选择
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_r3_li_symbol_a3
+  query: li_cache_quant_mode
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/lightning_indexer_quantization_scale_cache
+- id: infer_skill_r3_li_symbol_950
+  query: li_cache_quant_mode
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: '950'
+  expected:
+  - model/inference/concepts/quantization/li_cache_quantization_mode_contract
+- id: infer_skill_r3_li_alias_950
+  query: past_key_scales_indexer
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: '950'
+  expected:
+  - model/inference/concepts/quantization/li_cache_quantization_mode_contract
+- id: infer_skill_r3_quant_nested
+  query: 量化配置在 text_config 还是 quantization_config 里读取
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+- id: infer_skill_r3_quant_ignore
+  query: compressed-tensors ignore 层是否还要 weight_scale
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+- id: infer_skill_r3_quant_benefit
+  query: W8A8 权重减半 峰值显存却没下降
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/optimizations/rules/quantization_deployment_benefit_accounting
+- id: infer_skill_r3_onboard_config
+  query: HF Config 缺 rope_parameters 字段怎么接入
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/bringup/cann_executor_model_onboarding
+- id: infer_skill_r3_onboard_init
+  query: 加载权重前 CPU 一直初始化 embedding
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+- id: infer_skill_r3_vocab
+  query: 词表比 lm_head 大 TP 切分越界
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/shard_local_index_vocab_padding_mtp_layer
+- id: infer_skill_r3_row_reduce
+  query: RowParallelLinear 会自动 all_reduce 吗
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_r3_standalone
+  query: 独立推理 Runner 多卡通信组谁负责初始化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_r3_mode_dynamic
+  query: GE 动态 shape 显式多流 标记优先级
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_r3_core_threads
+  query: npugraph_ex 多线程设置同一条流核数
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: infer_skill_r3_graph_contiguous
+  query: frozen_parameter 权重不连续 图模式精度差
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_r3_hccl_barrier
+  query: HCCL 组能用 monitored_barrier 找掉队 rank 吗
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+- id: infer_skill_r3_hccl_stale
+  query: 推理停止后设备还有旧进程 HCCL 卡住
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/hccl_timeout_secondary_to_rank_failure_oom
+- id: infer_skill_r3_opstate
+  query: OP State 不是 pass 是精度检查失败吗
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_r3_task_type
+  query: Accelerator Core COMMUNICATION 和 Type HCCL 区别
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_r3_kimi_pd
+  query: Kimi PD prefill cp_size 和 o_proj_tp_size
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_r3_dp_buffer
+  query: DP 本地 batch 和 expert_count 缓存形状不匹配
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/moe_dp_rank_buffer_sizing
+- id: infer_skill_r3_rope
+  query: RoPE cos sin 每层重复算 如何缓存
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/rotary_embedding_cache_precompute
+- id: infer_skill_r3_matmul_shift
+  query: CLOSE_MATMUL_K_SHIFT
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/precision/inference_precision_symptom_triage
+- id: infer_skill_r3_save_tensor
+  query: save_npugraph_tensor
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: infer_skill_r3_prefetch
+  query: LongCat 预取字节预算 不能超过权重大小
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/optimizations/cases/longcat_a3_decode_weight_prefetch
+- id: infer_skill_r3_microbatch
+  query: Prefill 两个 microbatch 通信计算流水
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/prefill_micro_batch_dual_stream_moe_overlap
+- id: infer_skill_r3_nested_literal
+  query: text_config
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/compressed_tensors_runtime_loading_contract
+- id: infer_skill_r3_kimi_short
+  query: Kimi PD
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_r3_kimi_cp
+  query: Kimi prefill cp_size
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/deployment/parallel_reference_config_selection
+- id: infer_skill_r3_compile_short
+  query: 首次 Decode 编译采样
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/performance/profiler_first_compile_pollution
+- id: infer_skill_r3_cpu_short
+  query: CPU 初始化 Embedding
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/runbooks/runtime/model_constructor_cpu_initialization_stall
+- id: infer_skill_r3_state_literal
+  query: OP State
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/kernel_details_field_interpretation
+- id: infer_skill_r3_li_950_short
+  query: GLM LI
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: '950'
+  expected:
+  - model/inference/concepts/quantization/li_cache_quantization_mode_contract
+- id: infer_skill_r3_api_lookup
+  query: torch_npu 官方文档索引
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/integration/torch_npu_api_selection
+- id: infer_skill_r3_li_mode_950_scope
+  query: GLM LI 950 float8 模式
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: '950'
+  expected:
+  - model/inference/concepts/quantization/li_cache_quantization_mode_contract
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        framework:
+        - cann_executor
+- id: infer_skill_r3_sk_scope
+  query: SuperKernel 跨方法范围 静态层循环
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/superkernel_scope_analysis_and_validation
+- id: infer_skill_r3_sk_validate
+  query: SuperKernel 基线 中位数 预热
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/guides/optimization/superkernel_scope_analysis_and_validation
+- id: infer_skill_r3_api_0_a2
+  query: torch_npu.empty_with_swapped_memory
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/empty_with_swapped_memory
+- id: infer_skill_r3_api_0_a3
+  query: torch_npu.empty_with_swapped_memory
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/empty_with_swapped_memory
+- id: infer_skill_r3_api_1_a2
+  query: torch_npu.erase_stream
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/erase_stream
+- id: infer_skill_r3_api_2_a2
+  query: torch.npu.get_device_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/get_device_limit
+- id: infer_skill_r3_api_2_a3
+  query: torch.npu.get_device_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/get_device_limit
+- id: infer_skill_r3_api_3_a2
+  query: torch.npu.get_stream_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/get_stream_limit
+- id: infer_skill_r3_api_3_a3
+  query: torch.npu.get_stream_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/get_stream_limit
+- id: infer_skill_r3_api_4_a2
+  query: torch_npu.matmul_checksum
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/matmul_checksum
+- id: infer_skill_r3_api_5_a2
+  query: torch_npu.npu_advance_step_flashattn
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_advance_step_flashattn
+- id: infer_skill_r3_api_5_a3
+  query: torch_npu.npu_advance_step_flashattn
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_advance_step_flashattn
+- id: infer_skill_r3_api_6_a2
+  query: torch_npu.npu_all_gather_base_mm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_all_gather_base_mm
+- id: infer_skill_r3_api_6_a3
+  query: torch_npu.npu_all_gather_base_mm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_all_gather_base_mm
+- id: infer_skill_r3_api_7_a3
+  query: torch_npu.npu_alltoallv_gmm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_alltoallv_gmm
+- id: infer_skill_r3_api_8_a2
+  query: torch_npu.npu_anti_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_anti_quant
+- id: infer_skill_r3_api_8_a3
+  query: torch_npu.npu_anti_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_anti_quant
+- id: infer_skill_r3_api_9_a2
+  query: torch_npu.npu_convert_weight_to_int4pack
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_convert_weight_to_int4pack
+- id: infer_skill_r3_api_9_a3
+  query: torch_npu.npu_convert_weight_to_int4pack
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_convert_weight_to_int4pack
+- id: infer_skill_r3_api_11_a2
+  query: torch_npu.npu_dequant_swiglu_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_dequant_swiglu_quant
+- id: infer_skill_r3_api_11_a3
+  query: torch_npu.npu_dequant_swiglu_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dequant_swiglu_quant
+- id: infer_skill_r3_api_12_a2
+  query: torch_npu.npu_dynamic_block_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_block_quant
+- id: infer_skill_r3_api_12_a3
+  query: torch_npu.npu_dynamic_block_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_block_quant
+- id: infer_skill_r3_api_13_a2
+  query: torch_npu.npu_dynamic_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant
+- id: infer_skill_r3_api_13_a3
+  query: torch_npu.npu_dynamic_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant
+- id: infer_skill_r3_api_14_a2
+  query: torch_npu.npu_dynamic_quant_asymmetric
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant_asymmetric
+- id: infer_skill_r3_api_14_a3
+  query: torch_npu.npu_dynamic_quant_asymmetric
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant_asymmetric
+- id: infer_skill_r3_api_15_a2
+  query: torch_npu.npu_fast_gelu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_fast_gelu
+- id: infer_skill_r3_api_15_a3
+  query: torch_npu.npu_fast_gelu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_fast_gelu
+- id: infer_skill_r3_api_16_a2
+  query: torch_npu.npu_ffn
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_ffn
+- id: infer_skill_r3_api_16_a3
+  query: torch_npu.npu_ffn
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ffn
+- id: infer_skill_r3_api_17_a2
+  query: torch_npu.npu_fused_infer_attention_score
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_infer_attention_score
+- id: infer_skill_r3_api_17_a3
+  query: torch_npu.npu_fused_infer_attention_score
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_infer_attention_score
+- id: infer_skill_r3_api_18_a2
+  query: torch_npu.npu_fused_infer_attention_score_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_infer_attention_score_v2
+- id: infer_skill_r3_api_18_a3
+  query: torch_npu.npu_fused_infer_attention_score_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_infer_attention_score_v2
+- id: infer_skill_r3_api_19_a2
+  query: torch_npu.npu_fusion_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_fusion_attention
+- id: infer_skill_r3_api_20_a2
+  query: torch_npu.npu_gather_sparse_index
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_gather_sparse_index
+- id: infer_skill_r3_api_20_a3
+  query: torch_npu.npu_gather_sparse_index
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gather_sparse_index
+- id: infer_skill_r3_api_21_a2
+  query: torch_npu.npu_gelu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_gelu
+- id: infer_skill_r3_api_22_a2
+  query: torch_npu.npu_gelu_mul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_gelu_mul
+- id: infer_skill_r3_api_22_a3
+  query: torch_npu.npu_gelu_mul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gelu_mul
+- id: infer_skill_r3_api_23_a3
+  query: torch_npu.npu_gmm_alltoallv
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gmm_alltoallv
+- id: infer_skill_r3_api_24_a2
+  query: torch_npu.npu_group_norm_silu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_group_norm_silu
+- id: infer_skill_r3_api_25_a2
+  query: torch_npu.npu_group_norm_swish
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_group_norm_swish
+- id: infer_skill_r3_api_25_a3
+  query: torch_npu.npu_group_norm_swish
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_group_norm_swish
+- id: infer_skill_r3_api_26_a2
+  query: torch_npu.npu_group_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_group_quant
+- id: infer_skill_r3_api_26_a3
+  query: torch_npu.npu_group_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_group_quant
+- id: infer_skill_r3_api_27_a2
+  query: torch_npu.npu_grouped_matmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_grouped_matmul
+- id: infer_skill_r3_api_27_a3
+  query: torch_npu.npu_grouped_matmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_grouped_matmul
+- id: infer_skill_r3_api_28_a2
+  query: torch_npu.npu_grouped_matmul_swiglu_quant_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_grouped_matmul_swiglu_quant_v2
+- id: infer_skill_r3_api_28_a3
+  query: torch_npu.npu_grouped_matmul_swiglu_quant_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_grouped_matmul_swiglu_quant_v2
+- id: infer_skill_r3_api_29_a2
+  query: torch_npu.npu_incre_flash_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_incre_flash_attention
+- id: infer_skill_r3_api_30_a2
+  query: torch_npu.npu_interleave_rope
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_interleave_rope
+- id: infer_skill_r3_api_30_a3
+  query: torch_npu.npu_interleave_rope
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_interleave_rope
+- id: infer_skill_r3_api_31_a2
+  query: torch_npu.npu_kv_quant_sparse_flash_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_kv_quant_sparse_flash_attention
+- id: infer_skill_r3_api_31_a3
+  query: torch_npu.npu_kv_quant_sparse_flash_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_kv_quant_sparse_flash_attention
+- id: infer_skill_r3_api_32_a2
+  query: torch_npu.npu_kv_rmsnorm_rope_cache
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_kv_rmsnorm_rope_cache
+- id: infer_skill_r3_api_32_a3
+  query: torch_npu.npu_kv_rmsnorm_rope_cache
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_kv_rmsnorm_rope_cache
+- id: infer_skill_r3_api_33_a2
+  query: torch_npu.npu_lightning_indexer
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_lightning_indexer
+- id: infer_skill_r3_api_33_a3
+  query: torch_npu.npu_lightning_indexer
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_lightning_indexer
+- id: infer_skill_r3_api_34_a2
+  query: torch_npu.npu_mla_prolog
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog
+- id: infer_skill_r3_api_34_a3
+  query: torch_npu.npu_mla_prolog
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog
+- id: infer_skill_r3_api_35_a2
+  query: torch_npu.npu_mla_prolog_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog_v2
+- id: infer_skill_r3_api_35_a3
+  query: torch_npu.npu_mla_prolog_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog_v2
+- id: infer_skill_r3_api_36_a2
+  query: torch_npu.npu_mm_all_reduce_base
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_mm_all_reduce_base
+- id: infer_skill_r3_api_37_a2
+  query: torch_npu.npu_mm_reduce_scatter_base
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_mm_reduce_scatter_base
+- id: infer_skill_r3_api_37_a3
+  query: torch_npu.npu_mm_reduce_scatter_base
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mm_reduce_scatter_base
+- id: infer_skill_r3_api_38_a2
+  query: torch_npu.npu_moe_compute_expert_tokens
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_compute_expert_tokens
+- id: infer_skill_r3_api_39_a2
+  query: torch_npu.npu_moe_distribute_combine
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine
+- id: infer_skill_r3_api_39_a3
+  query: torch_npu.npu_moe_distribute_combine
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine
+- id: infer_skill_r3_api_40_a3
+  query: torch_npu.npu_moe_distribute_combine_add_rms_norm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine_add_rms_norm
+- id: infer_skill_r3_api_41_a2
+  query: torch_npu.npu_moe_distribute_combine_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine_v2
+- id: infer_skill_r3_api_41_a3
+  query: torch_npu.npu_moe_distribute_combine_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine_v2
+- id: infer_skill_r3_api_42_a2
+  query: torch_npu.npu_moe_distribute_dispatch
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch
+- id: infer_skill_r3_api_42_a3
+  query: torch_npu.npu_moe_distribute_dispatch
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch
+- id: infer_skill_r3_api_43_a2
+  query: torch_npu.npu_moe_distribute_dispatch_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch_v2
+- id: infer_skill_r3_api_43_a3
+  query: torch_npu.npu_moe_distribute_dispatch_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch_v2
+- id: infer_skill_r3_api_44_a2
+  query: torch_npu.npu_moe_finalize_routing
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_finalize_routing
+- id: infer_skill_r3_api_45_a2
+  query: torch_npu.npu_moe_gating_top_k
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_gating_top_k
+- id: infer_skill_r3_api_45_a3
+  query: torch_npu.npu_moe_gating_top_k
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_gating_top_k
+- id: infer_skill_r3_api_46_a2
+  query: torch_npu.npu_moe_gating_top_k_softmax
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_gating_top_k_softmax
+- id: infer_skill_r3_api_46_a3
+  query: torch_npu.npu_moe_gating_top_k_softmax
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_gating_top_k_softmax
+- id: infer_skill_r3_api_47_a2
+  query: torch_npu.npu_moe_init_routing
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_init_routing
+- id: infer_skill_r3_api_48_a2
+  query: torch_npu.npu_moe_init_routing_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_init_routing_v2
+- id: infer_skill_r3_api_48_a3
+  query: torch_npu.npu_moe_init_routing_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_init_routing_v2
+- id: infer_skill_r3_api_49_a2
+  query: torch_npu.npu_moe_re_routing
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_re_routing
+- id: infer_skill_r3_api_49_a3
+  query: torch_npu.npu_moe_re_routing
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_re_routing
+- id: infer_skill_r3_api_50_a3
+  query: torch_npu.npu_moe_update_expert
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_update_expert
+- id: infer_skill_r3_api_51_a2
+  query: torch_npu.npu_prefetch
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_prefetch
+- id: infer_skill_r3_api_52_a2
+  query: torch_npu.npu_prompt_flash_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_prompt_flash_attention
+- id: infer_skill_r3_api_52_a3
+  query: torch_npu.npu_prompt_flash_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_prompt_flash_attention
+- id: infer_skill_r3_api_53_a2
+  query: torch_npu.npu_quant_lightning_indexer
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_lightning_indexer
+- id: infer_skill_r3_api_53_a3
+  query: torch_npu.npu_quant_lightning_indexer
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_lightning_indexer
+- id: infer_skill_r3_api_54_a2
+  query: torch_npu.npu_quant_matmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_matmul
+- id: infer_skill_r3_api_54_a3
+  query: torch_npu.npu_quant_matmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_matmul
+- id: infer_skill_r3_api_55_a2
+  query: torch_npu.npu_quant_matmul_reduce_sum
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_matmul_reduce_sum
+- id: infer_skill_r3_api_55_a3
+  query: torch_npu.npu_quant_matmul_reduce_sum
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_matmul_reduce_sum
+- id: infer_skill_r3_api_56_a2
+  query: torch_npu.npu_quant_scatter
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_scatter
+- id: infer_skill_r3_api_57_a2
+  query: torch_npu.npu_quant_scatter_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_scatter_
+- id: infer_skill_r3_api_58_a2
+  query: torch_npu.npu_quantize
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quantize
+- id: infer_skill_r3_api_58_a3
+  query: torch_npu.npu_quantize
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quantize
+- id: infer_skill_r3_api_59_a2
+  query: torch_npu.npu_recurrent_gated_delta_rule
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_recurrent_gated_delta_rule
+- id: infer_skill_r3_api_59_a3
+  query: torch_npu.npu_recurrent_gated_delta_rule
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_recurrent_gated_delta_rule
+- id: infer_skill_r3_api_60_a2
+  query: torch_npu.npu_rotary_mul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_rotary_mul
+- id: infer_skill_r3_api_60_a3
+  query: torch_npu.npu_rotary_mul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rotary_mul
+- id: infer_skill_r3_api_61_a2
+  query: torch_npu.npu_scaled_masked_softmax
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_scaled_masked_softmax
+- id: infer_skill_r3_api_61_a3
+  query: torch_npu.npu_scaled_masked_softmax
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scaled_masked_softmax
+- id: infer_skill_r3_api_62_a2
+  query: torch_npu.npu_scatter_nd_update
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_nd_update
+- id: infer_skill_r3_api_62_a3
+  query: torch_npu.npu_scatter_nd_update
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_nd_update
+- id: infer_skill_r3_api_63_a2
+  query: torch_npu.npu_scatter_nd_update_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_nd_update_
+- id: infer_skill_r3_api_63_a3
+  query: torch_npu.npu_scatter_nd_update_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_nd_update_
+- id: infer_skill_r3_api_64_a2
+  query: torch_npu.npu_scatter_pa_kv_cache
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_pa_kv_cache
+- id: infer_skill_r3_api_64_a3
+  query: torch_npu.npu_scatter_pa_kv_cache
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_pa_kv_cache
+- id: infer_skill_r3_api_65_a2
+  query: torch_npu.npu_sim_exponential_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_sim_exponential_
+- id: infer_skill_r3_api_65_a3
+  query: torch_npu.npu_sim_exponential_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sim_exponential_
+- id: infer_skill_r3_api_66_a2
+  query: torch_npu.npu_sparse_flash_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_sparse_flash_attention
+- id: infer_skill_r3_api_66_a3
+  query: torch_npu.npu_sparse_flash_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sparse_flash_attention
+- id: infer_skill_r3_api_68_a2
+  query: torch_npu.npu_swiglu_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_swiglu_quant
+- id: infer_skill_r3_api_68_a3
+  query: torch_npu.npu_swiglu_quant
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_swiglu_quant
+- id: infer_skill_r3_api_69_a2
+  query: torch_npu.npu_top_k_top_p
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_top_k_top_p
+- id: infer_skill_r3_api_69_a3
+  query: torch_npu.npu_top_k_top_p
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_top_k_top_p
+- id: infer_skill_r3_api_70_a2
+  query: torch_npu.npu_top_k_top_p_sample
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_top_k_top_p_sample
+- id: infer_skill_r3_api_70_a3
+  query: torch_npu.npu_top_k_top_p_sample
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_top_k_top_p_sample
+- id: infer_skill_r3_api_71_a2
+  query: torch_npu.npu_trans_quant_param
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_trans_quant_param
+- id: infer_skill_r3_api_71_a3
+  query: torch_npu.npu_trans_quant_param
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_trans_quant_param
+- id: infer_skill_r3_api_72_a2
+  query: torch_npu.npu_transpose_batchmatmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose_batchmatmul
+- id: infer_skill_r3_api_72_a3
+  query: torch_npu.npu_transpose_batchmatmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose_batchmatmul
+- id: infer_skill_r3_api_73_a2
+  query: torch_npu.npu_weight_quant_batchmatmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_weight_quant_batchmatmul
+- id: infer_skill_r3_api_73_a3
+  query: torch_npu.npu_weight_quant_batchmatmul
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_weight_quant_batchmatmul
+- id: infer_skill_r3_api_74_a2
+  query: torch.npu.reset_stream_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/reset_stream_limit
+- id: infer_skill_r3_api_74_a3
+  query: torch.npu.reset_stream_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/reset_stream_limit
+- id: infer_skill_r3_api_75_a2
+  query: torch_npu.scatter_update
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/scatter_update
+- id: infer_skill_r3_api_75_a3
+  query: torch_npu.scatter_update
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/scatter_update
+- id: infer_skill_r3_api_76_a2
+  query: torch_npu.scatter_update_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/scatter_update_
+- id: infer_skill_r3_api_76_a3
+  query: torch_npu.scatter_update_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/scatter_update_
+- id: infer_skill_r3_api_77_a2
+  query: torch.npu.set_device_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/set_device_limit
+- id: infer_skill_r3_api_77_a3
+  query: torch.npu.set_device_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/set_device_limit
+- id: infer_skill_r3_api_78_a2
+  query: torch.npu.set_stream_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/set_stream_limit
+- id: infer_skill_r3_api_78_a3
+  query: torch.npu.set_stream_limit
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/set_stream_limit
+- id: infer_skill_r3_api_80_a2
+  query: torch_npu.copy_memory_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/copy_memory_
+- id: infer_skill_r3_api_80_a3
+  query: torch_npu.copy_memory_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/copy_memory_
+- id: infer_skill_r3_api_81_a2
+  query: torch_npu.empty_with_format
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/empty_with_format
+- id: infer_skill_r3_api_81_a3
+  query: torch_npu.empty_with_format
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/empty_with_format
+- id: infer_skill_r3_api_82_a2
+  query: torch_npu.fast_gelu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/fast_gelu
+- id: infer_skill_r3_api_82_a3
+  query: torch_npu.fast_gelu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/fast_gelu
+- id: infer_skill_r3_api_83_a2
+  query: torch_npu.npu_alloc_float_status
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_alloc_float_status
+- id: infer_skill_r3_api_83_a3
+  query: torch_npu.npu_alloc_float_status
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_alloc_float_status
+- id: infer_skill_r3_api_84_a2
+  query: torch_npu.npu_anchor_response_flags
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_anchor_response_flags
+- id: infer_skill_r3_api_84_a3
+  query: torch_npu.npu_anchor_response_flags
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_anchor_response_flags
+- id: infer_skill_r3_api_86_unlocated
+  query: torch_npu.npu_batch_nms
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    status: draft
+    include_unlocated: true
+    type: apis
+  expected:
+  - model/inference/apis/torch_npu/npu_batch_nms
+- id: infer_skill_r3_api_88_a2
+  query: torch_npu.npu_bmmV2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_bmm_v2
+- id: infer_skill_r3_api_88_a3
+  query: torch_npu.npu_bmmV2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_bmm_v2
+- id: infer_skill_r3_api_89_a2
+  query: torch_npu.npu_bounding_box_decode
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_bounding_box_decode
+- id: infer_skill_r3_api_89_a3
+  query: torch_npu.npu_bounding_box_decode
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_bounding_box_decode
+- id: infer_skill_r3_api_91_a2
+  query: torch_npu.npu_broadcast
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_broadcast
+- id: infer_skill_r3_api_91_a3
+  query: torch_npu.npu_broadcast
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_broadcast
+- id: infer_skill_r3_api_92_a2
+  query: torch_npu.npu_ciou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_ciou
+- id: infer_skill_r3_api_92_a3
+  query: torch_npu.npu_ciou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ciou
+- id: infer_skill_r3_api_93_a2
+  query: torch_npu.npu_clear_float_status
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_clear_float_status
+- id: infer_skill_r3_api_93_a3
+  query: torch_npu.npu_clear_float_status
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_clear_float_status
+- id: infer_skill_r3_api_94_a2
+  query: torch_npu.npu_confusion_transpose
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_confusion_transpose
+- id: infer_skill_r3_api_94_a3
+  query: torch_npu.npu_confusion_transpose
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_confusion_transpose
+- id: infer_skill_r3_api_95_a2
+  query: torch_npu.npu_conv2d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_conv2d
+- id: infer_skill_r3_api_95_a3
+  query: torch_npu.npu_conv2d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_conv2d
+- id: infer_skill_r3_api_96_a2
+  query: torch_npu.npu_conv3d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_conv3d
+- id: infer_skill_r3_api_96_a3
+  query: torch_npu.npu_conv3d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_conv3d
+- id: infer_skill_r3_api_97_a2
+  query: torch_npu.npu_conv_transpose2d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_conv_transpose2d
+- id: infer_skill_r3_api_97_a3
+  query: torch_npu.npu_conv_transpose2d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_conv_transpose2d
+- id: infer_skill_r3_api_98_a2
+  query: torch_npu.npu_convolution
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_convolution
+- id: infer_skill_r3_api_98_a3
+  query: torch_npu.npu_convolution
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_convolution
+- id: infer_skill_r3_api_99_a2
+  query: torch_npu.npu_convolution_transpose
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_convolution_transpose
+- id: infer_skill_r3_api_99_a3
+  query: torch_npu.npu_convolution_transpose
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_convolution_transpose
+- id: infer_skill_r3_api_100_a2
+  query: torch_npu.npu_deformable_conv2d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_deformable_conv2d
+- id: infer_skill_r3_api_100_a3
+  query: torch_npu.npu_deformable_conv2d
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_deformable_conv2d
+- id: infer_skill_r3_api_101_a2
+  query: torch_npu.npu_diou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_diou
+- id: infer_skill_r3_api_101_a3
+  query: torch_npu.npu_diou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_diou
+- id: infer_skill_r3_api_103_a2
+  query: torch_npu.npu_dtype_cast
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_dtype_cast
+- id: infer_skill_r3_api_103_a3
+  query: torch_npu.npu_dtype_cast
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dtype_cast
+- id: infer_skill_r3_api_104_a2
+  query: torch_npu.npu_format_cast
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_format_cast
+- id: infer_skill_r3_api_104_a3
+  query: torch_npu.npu_format_cast
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_format_cast
+- id: infer_skill_r3_api_105_a2
+  query: torch_npu.npu_format_cast_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_format_cast_
+- id: infer_skill_r3_api_105_a3
+  query: torch_npu.npu_format_cast_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_format_cast_
+- id: infer_skill_r3_api_106_unlocated
+  query: torch_npu.npu_fused_attention_score
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    status: draft
+    include_unlocated: true
+    type: apis
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_attention_score
+- id: infer_skill_r3_api_107_a2
+  query: torch_npu.npu_get_float_status
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_get_float_status
+- id: infer_skill_r3_api_107_a3
+  query: torch_npu.npu_get_float_status
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_get_float_status
+- id: infer_skill_r3_api_108_a2
+  query: torch_npu.npu_giou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_giou
+- id: infer_skill_r3_api_108_a3
+  query: torch_npu.npu_giou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_giou
+- id: infer_skill_r3_api_110_a2
+  query: torch_npu.npu_gru
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_gru
+- id: infer_skill_r3_api_110_a3
+  query: torch_npu.npu_gru
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gru
+- id: infer_skill_r3_api_111_a2
+  query: torch_npu.npu_indexing
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_indexing
+- id: infer_skill_r3_api_111_a3
+  query: torch_npu.npu_indexing
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_indexing
+- id: infer_skill_r3_api_112_a2
+  query: torch_npu.npu_iou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_iou
+- id: infer_skill_r3_api_112_a3
+  query: torch_npu.npu_iou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_iou
+- id: infer_skill_r3_api_113_a2
+  query: torch_npu.npu_layer_norm_eval
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_layer_norm_eval
+- id: infer_skill_r3_api_113_a3
+  query: torch_npu.npu_layer_norm_eval
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_layer_norm_eval
+- id: infer_skill_r3_api_114_a2
+  query: torch_npu.npu_linear
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_linear
+- id: infer_skill_r3_api_114_a3
+  query: torch_npu.npu_linear
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_linear
+- id: infer_skill_r3_api_115_a2
+  query: torch_npu.npu_lstm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_lstm
+- id: infer_skill_r3_api_115_a3
+  query: torch_npu.npu_lstm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_lstm
+- id: infer_skill_r3_api_116_a2
+  query: torch_npu.npu_max
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_max
+- id: infer_skill_r3_api_116_a3
+  query: torch_npu.npu_max
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_max
+- id: infer_skill_r3_api_117_a2
+  query: torch_npu.npu_min
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_min
+- id: infer_skill_r3_api_117_a3
+  query: torch_npu.npu_min
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_min
+- id: infer_skill_r3_api_118_a2
+  query: torch_npu.npu_mish
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_mish
+- id: infer_skill_r3_api_118_a3
+  query: torch_npu.npu_mish
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mish
+- id: infer_skill_r3_api_119_a3
+  query: torch_npu.npu_mla_prolog_v3
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog_v3
+- id: infer_skill_r3_api_120_a2
+  query: torch_npu.npu_multi_head_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_multi_head_attention
+- id: infer_skill_r3_api_120_a3
+  query: torch_npu.npu_multi_head_attention
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_multi_head_attention
+- id: infer_skill_r3_api_121_a2
+  query: torch_npu.npu_nms_rotated
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_rotated
+- id: infer_skill_r3_api_121_a3
+  query: torch_npu.npu_nms_rotated
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_rotated
+- id: infer_skill_r3_api_122_a2
+  query: torch_npu.npu_nms_v4
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_v4
+- id: infer_skill_r3_api_122_a3
+  query: torch_npu.npu_nms_v4
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_v4
+- id: infer_skill_r3_api_123_a2
+  query: torch_npu.npu_nms_with_mask
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_with_mask
+- id: infer_skill_r3_api_123_a3
+  query: torch_npu.npu_nms_with_mask
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_with_mask
+- id: infer_skill_r3_api_124_a2
+  query: torch_npu.npu_one_hot
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_one_hot
+- id: infer_skill_r3_api_124_a3
+  query: torch_npu.npu_one_hot
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_one_hot
+- id: infer_skill_r3_api_125_a2
+  query: torch_npu.npu_pad
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_pad
+- id: infer_skill_r3_api_125_a3
+  query: torch_npu.npu_pad
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_pad
+- id: infer_skill_r3_api_126_a2
+  query: torch_npu.npu_ps_roi_pooling
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_ps_roi_pooling
+- id: infer_skill_r3_api_126_a3
+  query: torch_npu.npu_ps_roi_pooling
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ps_roi_pooling
+- id: infer_skill_r3_api_127_a2
+  query: torch_npu.npu_ptiou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_ptiou
+- id: infer_skill_r3_api_127_a3
+  query: torch_npu.npu_ptiou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ptiou
+- id: infer_skill_r3_api_128_a2
+  query: torch_npu.npu_random_choice_with_mask
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_random_choice_with_mask
+- id: infer_skill_r3_api_128_a3
+  query: torch_npu.npu_random_choice_with_mask
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_random_choice_with_mask
+- id: infer_skill_r3_api_129_a2
+  query: torch_npu.npu_reshape
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_reshape
+- id: infer_skill_r3_api_129_a3
+  query: torch_npu.npu_reshape
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_reshape
+- id: infer_skill_r3_api_130_a2
+  query: torch_npu.npu_rms_norm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_rms_norm
+- id: infer_skill_r3_api_130_a3
+  query: torch_npu.npu_rms_norm
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rms_norm
+- id: infer_skill_r3_api_131_a2
+  query: torch_npu.npu_roi_align
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_roi_align
+- id: infer_skill_r3_api_131_a3
+  query: torch_npu.npu_roi_align
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_roi_align
+- id: infer_skill_r3_api_132_a2
+  query: torch_npu.npu_rotated_iou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_rotated_iou
+- id: infer_skill_r3_api_132_a3
+  query: torch_npu.npu_rotated_iou
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rotated_iou
+- id: infer_skill_r3_api_133_a2
+  query: torch_npu.npu_rotated_overlaps
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_rotated_overlaps
+- id: infer_skill_r3_api_133_a3
+  query: torch_npu.npu_rotated_overlaps
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rotated_overlaps
+- id: infer_skill_r3_api_134_a2
+  query: torch_npu.npu_sign_bits_pack
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_pack
+- id: infer_skill_r3_api_134_a3
+  query: torch_npu.npu_sign_bits_pack
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_pack
+- id: infer_skill_r3_api_135_a2
+  query: torch_npu.npu_sign_bits_unpack
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_unpack
+- id: infer_skill_r3_api_135_a3
+  query: torch_npu.npu_sign_bits_unpack
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_unpack
+- id: infer_skill_r3_api_136_a2
+  query: torch_npu.npu_silu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_silu
+- id: infer_skill_r3_api_136_a3
+  query: torch_npu.npu_silu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_silu
+- id: infer_skill_r3_api_137_a2
+  query: torch_npu.npu_slice
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_slice
+- id: infer_skill_r3_api_137_a3
+  query: torch_npu.npu_slice
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_slice
+- id: infer_skill_r3_api_139_a2
+  query: torch_npu.npu_sort_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_sort_v2
+- id: infer_skill_r3_api_139_a3
+  query: torch_npu.npu_sort_v2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sort_v2
+- id: infer_skill_r3_api_140_a2
+  query: torch_npu.npu_swiglu
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_swiglu
+- id: infer_skill_r3_api_141_a2
+  query: torch_npu.npu_transpose
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose
+- id: infer_skill_r3_api_141_a3
+  query: torch_npu.npu_transpose
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose
+- id: infer_skill_r3_api_143_a2
+  query: torch_npu.one_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/one_
+- id: infer_skill_r3_api_143_a3
+  query: torch_npu.one_
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/one_
+- id: infer_skill_r3_api_capability_npu_anti_quant
+  query: 整数权重 反量化 scale offset 浮点
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_anti_quant
+- id: infer_skill_r3_api_global_npu_anti_quant
+  query: torch_npu.npu_anti_quant
+  filters:
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_anti_quant
+- id: infer_skill_r3_api_capability_npu_trans_quant_param
+  query: scale float32 编码 int64 量化参数
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_trans_quant_param
+- id: infer_skill_r3_api_global_npu_trans_quant_param
+  query: torch_npu.npu_trans_quant_param
+  filters:
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_trans_quant_param
+- id: infer_skill_r3_api_capability_npu_dynamic_quant_asymmetric
+  query: 动态非对称量化 返回 scale offset
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant_asymmetric
+- id: infer_skill_r3_api_global_npu_dynamic_quant_asymmetric
+  query: torch_npu.npu_dynamic_quant_asymmetric
+  filters:
+    match: literal
+    k: 5
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant_asymmetric
+- id: infer_skill_r3_api_legacy_excluded_npu_batch_nms
+  query: torch_npu.npu_batch_nms
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/apis/torch_npu/npu_batch_nms
+- id: infer_skill_r3_api_legacy_excluded_npu_fused_attention_score
+  query: torch_npu.npu_fused_attention_score
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: literal
+    k: 5
+  excluded:
+  - model/inference/apis/torch_npu/npu_fused_attention_score
+- id: infer_skill_r3_api_feature_fast_gelu
+  query: FakeTensor torch_npu.fast_gelu
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/fast_gelu
+- id: infer_skill_r3_api_feature_npu_bmm_v2
+  query: FakeTensor torch_npu.npu_bmmV2
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_bmm_v2
+- id: infer_skill_r3_api_feature_npu_dtype_cast
+  query: FakeTensor torch_npu.npu_dtype_cast
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_dtype_cast
+- id: infer_skill_r3_api_feature_npu_transpose
+  query: FakeTensor torch_npu.npu_transpose
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose
+- id: infer_skill_r3_api_feature_npu_sign_bits_pack
+  query: 符号位 小端 uint8 打包
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_pack
+- id: infer_skill_r3_api_feature_npu_sign_bits_unpack
+  query: 符号位 小端 uint8 解包
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_unpack
+- id: infer_skill_r4_capability_0
+  query: NPU 设备标记 host 内存张量
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/empty_with_swapped_memory
+- id: infer_skill_r4_capability_1
+  query: record_stream 移除流使用标记
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/erase_stream
+- id: infer_skill_r4_capability_2
+  query: 获取设备资源限制
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/get_device_limit
+- id: infer_skill_r4_capability_3
+  query: 获取流资源限制
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/get_stream_limit
+- id: infer_skill_r4_capability_4
+  query: 矩阵乘 AI Core 硬件校验
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/matmul_checksum
+- id: infer_skill_r4_capability_5
+  query: vLLM 每步原地更新 slot_mapping
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_advance_step_flashattn
+- id: infer_skill_r4_capability_6
+  query: AllGather 矩阵乘 通算流水融合
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_all_gather_base_mm
+- id: infer_skill_r4_capability_7
+  query: AlltoAllv GMM 先通信后计算
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_alltoallv_gmm
+- id: infer_skill_r4_capability_8
+  query: 整数权重反量化 浮点恢复
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_anti_quant
+- id: infer_skill_r4_capability_9
+  query: int4 权重交叠打包
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_convert_weight_to_int4pack
+- id: infer_skill_r4_capability_11
+  query: 反量化 SwiGLU 再量化 分组
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dequant_swiglu_quant
+- id: infer_skill_r4_capability_12
+  query: 逐块动态量化 row_block_size
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_block_quant
+- id: infer_skill_r4_capability_13
+  query: 逐 token 对称动态量化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant
+- id: infer_skill_r4_capability_14
+  query: 动态非对称量化 scale offset
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dynamic_quant_asymmetric
+- id: infer_skill_r4_capability_15
+  query: FastGelu 逐元素激活
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_fast_gelu
+- id: infer_skill_r4_capability_16
+  query: FFN expert_tokens 专家分组
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ffn
+- id: infer_skill_r4_capability_17
+  query: FlashAttention query S 分支选择
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_infer_attention_score
+- id: infer_skill_r4_capability_18
+  query: FA v2 system prefix 左 padding 边界
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_infer_attention_score_v2
+- id: infer_skill_r4_capability_19
+  query: 融合 Attention Score mask softmax
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_fusion_attention
+- id: infer_skill_r4_capability_20
+  query: 二维张量稀疏索引按行取数
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gather_sparse_index
+- id: infer_skill_r4_capability_21
+  query: 高斯误差线性单元激活
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_gelu
+- id: infer_skill_r4_capability_22
+  query: GELU 乘法融合 尾轴32B对齐
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gelu_mul
+- id: infer_skill_r4_capability_23
+  query: GMM AlltoAllv 先计算后通信
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gmm_alltoallv
+- id: infer_skill_r4_capability_24
+  query: GroupNorm SiLU 统计输出
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_group_norm_silu
+- id: infer_skill_r4_capability_25
+  query: GroupNorm Swish 统计输出
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_group_norm_swish
+- id: infer_skill_r4_capability_26
+  query: 张量分组量化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_group_quant
+- id: infer_skill_r4_capability_27
+  query: 相似形状矩阵 分组批量乘法
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_grouped_matmul
+- id: infer_skill_r4_capability_28
+  query: 分组矩阵乘 SwiGLU 量化融合
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_grouped_matmul_swiglu_quant_v2
+- id: infer_skill_r4_capability_29
+  query: 增量注意力 历史KV
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_incre_flash_attention
+- id: infer_skill_r4_capability_30
+  query: 单输入交错旋转位置编码
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_interleave_rope
+- id: infer_skill_r4_capability_31
+  query: 稀疏注意力 KV tile128 量化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_kv_quant_sparse_flash_attention
+- id: infer_skill_r4_capability_32
+  query: RMSNorm RoPE KVCache 散点更新融合
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_kv_rmsnorm_rope_cache
+- id: infer_skill_r4_capability_33
+  query: 稀疏 token TopK 位置索引
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_lightning_indexer
+- id: infer_skill_r4_capability_34
+  query: MLA 推理前处理
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog
+- id: infer_skill_r4_capability_35
+  query: MLA Prolog 五路前处理
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog_v2
+- id: infer_skill_r4_capability_36
+  query: 矩阵乘 AllReduce 通算融合
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_mm_all_reduce_base
+- id: infer_skill_r4_capability_37
+  query: reduce_scatter pertoken量化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mm_reduce_scatter_base
+- id: infer_skill_r4_capability_38
+  query: MoE 二分查找 专家末行
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_compute_expert_tokens
+- id: infer_skill_r4_capability_39
+  query: MoE 回收 ReduceScatterV AlltoAllv
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine
+- id: infer_skill_r4_capability_40
+  query: MoE 回收 残差 RMSNorm 融合
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine_add_rms_norm
+- id: infer_skill_r4_capability_41
+  query: MoE v2 派发回收配对
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_combine_v2
+- id: infer_skill_r4_capability_42
+  query: MoE 派发 EP TP 通信顺序
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch
+- id: infer_skill_r4_capability_43
+  query: MoE v2 派发 回收归一化配对
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch_v2
+- id: infer_skill_r4_capability_44
+  query: MoE FFN 输出合并
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_finalize_routing
+- id: infer_skill_r4_capability_45
+  query: MoE 分组 Sigmoid Softmax 专家TopK
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_gating_top_k
+- id: infer_skill_r4_capability_46
+  query: MoE Softmax 后 TopK
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_gating_top_k_softmax
+- id: infer_skill_r4_capability_47
+  query: MoE 路由初始化 gating结果
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_init_routing
+- id: infer_skill_r4_capability_48
+  query: MoE 路由初始化 动态量化模式
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_init_routing_v2
+- id: infer_skill_r4_capability_49
+  query: AllToAll 后 按专家重排token
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_re_routing
+- id: infer_skill_r4_capability_50
+  query: MoE 负载均衡 专家剪枝
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_update_expert
+- id: infer_skill_r4_capability_51
+  query: L2 权重预取 MatMul 依赖窗口
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_prefetch
+- id: infer_skill_r4_capability_52
+  query: Prompt 全量注意力
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_prompt_flash_attention
+- id: infer_skill_r4_capability_53
+  query: SFA 存8算8 稀疏token索引
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_lightning_indexer
+- id: infer_skill_r4_capability_54
+  query: 量化矩阵乘 二至六维
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_matmul
+- id: infer_skill_r4_capability_55
+  query: 分组量化矩阵乘 求和归约
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_matmul_reduce_sum
+- id: infer_skill_r4_capability_56
+  query: 量化散点更新 保留原输入
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_scatter
+- id: infer_skill_r4_capability_57
+  query: 量化散点更新 原地修改
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_quant_scatter_
+- id: infer_skill_r4_capability_58
+  query: 输入张量量化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_quantize
+- id: infer_skill_r4_capability_59
+  query: RGDR 变步长线性注意力
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_recurrent_gated_delta_rule
+- id: infer_skill_r4_capability_60
+  query: RoPE 二维平面旋转位置编码
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rotary_mul
+- id: infer_skill_r4_capability_61
+  query: 缩放 mask 后 Softmax
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scaled_masked_softmax
+- id: infer_skill_r4_capability_62
+  query: 多维索引散点写入新张量
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_nd_update
+- id: infer_skill_r4_capability_63
+  query: 多维索引散点原地更新
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_nd_update_
+- id: infer_skill_r4_capability_64
+  query: KVCache 指定位置 写入key value
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_scatter_pa_kv_cache
+- id: infer_skill_r4_capability_65
+  query: 指数分布随机数 原地填充
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sim_exponential_
+- id: infer_skill_r4_capability_66
+  query: SFA 长序列 稀疏离散访存
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sparse_flash_attention
+- id: infer_skill_r4_capability_68
+  query: SwiGLU int4 int8 动静态分组量化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_swiglu_quant
+- id: infer_skill_r4_capability_69
+  query: logits top-k top-p 过滤
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_top_k_top_p
+- id: infer_skill_r4_capability_70
+  query: TopK TopP 指数采样 输出分布
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_top_k_top_p_sample
+- id: infer_skill_r4_capability_71
+  query: float32 scale 位域编码 int64
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_trans_quant_param
+- id: infer_skill_r4_capability_72
+  query: 批量矩阵乘 三维转置
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose_batchmatmul
+- id: infer_skill_r4_capability_73
+  query: 权重量化矩阵乘 pertensor pergroup
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_weight_quant_batchmatmul
+- id: infer_skill_r4_capability_74
+  query: 重置指定流资源 默认核数
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/reset_stream_limit
+- id: infer_skill_r4_capability_75
+  query: 按轴索引散点更新 保留原数据
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/scatter_update
+- id: infer_skill_r4_capability_76
+  query: 按轴索引散点更新 改变原数据
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/scatter_update_
+- id: infer_skill_r4_capability_77
+  query: 进程 设备 Cube Vector 核数设置
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/set_device_limit
+- id: infer_skill_r4_capability_78
+  query: 设置指定流设备资源限制
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/set_stream_limit
+- id: infer_skill_r4_capability_80
+  query: 张量内存复制 原地返回目标
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/copy_memory_
+- id: infer_skill_r4_capability_81
+  query: 指定格式 未初始化张量
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/empty_with_format
+- id: infer_skill_r4_capability_82
+  query: FastGelu FakeTensor
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/fast_gelu
+- id: infer_skill_r4_capability_83
+  query: 分配浮点溢出状态张量
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_alloc_float_status
+- id: infer_skill_r4_capability_84
+  query: 特征图 锚点响应标志
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_anchor_response_flags
+- id: infer_skill_r4_capability_86
+  query: 批量NMS 检测框 类别得分
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    include_unlocated: true
+    status: draft
+  expected:
+  - model/inference/apis/torch_npu/npu_batch_nms
+- id: infer_skill_r4_capability_88
+  query: 批量矩阵乘 FakeTensor
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_bmm_v2
+- id: infer_skill_r4_capability_89
+  query: Faster R-CNN 候选框解码
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_bounding_box_decode
+- id: infer_skill_r4_capability_91
+  query: 张量广播 连续视图
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_broadcast
+- id: infer_skill_r4_capability_92
+  query: CIoU DIoU 惩罚项
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ciou
+- id: infer_skill_r4_capability_93
+  query: 清除浮点溢出状态
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_clear_float_status
+- id: infer_skill_r4_capability_94
+  query: reshape transpose 次序联合变换
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_confusion_transpose
+- id: infer_skill_r4_capability_95
+  query: 二维卷积 图像平面
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_conv2d
+- id: infer_skill_r4_capability_96
+  query: 三维卷积 体数据
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_conv3d
+- id: infer_skill_r4_capability_97
+  query: 二维反卷积
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_conv_transpose2d
+- id: infer_skill_r4_capability_98
+  query: 二维三维通用卷积
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_convolution
+- id: infer_skill_r4_capability_99
+  query: 通用转置卷积 反卷积
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_convolution_transpose
+- id: infer_skill_r4_capability_100
+  query: 偏移采样 可变形卷积
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_deformable_conv2d
+- id: infer_skill_r4_capability_101
+  query: DIoU 框距离 交并比
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_diou
+- id: infer_skill_r4_capability_103
+  query: dtype 转换 FakeTensor
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_dtype_cast
+- id: infer_skill_r4_capability_104
+  query: 张量格式转换 返回新张量
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_format_cast
+- id: infer_skill_r4_capability_105
+  query: 张量格式转换 原地
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_format_cast_
+- id: infer_skill_r4_capability_106
+  query: 旧版 Attention Score 融合链
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    include_unlocated: true
+    status: draft
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_attention_score
+- id: infer_skill_r4_capability_107
+  query: 读取浮点溢出状态结果
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_get_float_status
+- id: infer_skill_r4_capability_108
+  query: GIoU 最小包围面积修正
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_giou
+- id: infer_skill_r4_capability_110
+  query: DynamicGRUV2
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_gru
+- id: infer_skill_r4_capability_111
+  query: begin end strides 步长切片
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_indexing
+- id: infer_skill_r4_capability_112
+  query: IoU IoF 真值预测框
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_iou
+- id: infer_skill_r4_capability_113
+  query: layer_norm 推理替换
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_layer_norm_eval
+- id: infer_skill_r4_capability_114
+  query: 线性投影 矩阵乘
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_linear
+- id: infer_skill_r4_capability_115
+  query: DynamicRNN
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_lstm
+- id: infer_skill_r4_capability_116
+  query: 最大值 dim 归约
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_max
+- id: infer_skill_r4_capability_117
+  query: 最小值 dim 归约
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_min
+- id: infer_skill_r4_capability_118
+  query: Mish softplus 激活
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mish
+- id: infer_skill_r4_capability_119
+  query: MLA Prolog 四条并行路径
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_mla_prolog_v3
+- id: infer_skill_r4_capability_120
+  query: Transformer 多头注意力投影融合
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_multi_head_attention
+- id: infer_skill_r4_capability_121
+  query: 旋转框 NMS 分数降序
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_rotated
+- id: infer_skill_r4_capability_122
+  query: NMS V4 分数降序
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_v4
+- id: infer_skill_r4_capability_123
+  query: NMS 有效标志 mask
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_nms_with_mask
+- id: infer_skill_r4_capability_124
+  query: one-hot on_value off_value
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_one_hot
+- id: infer_skill_r4_capability_125
+  query: 张量边界填充 pad
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_pad
+- id: infer_skill_r4_capability_126
+  query: Position Sensitive ROI Pooling
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ps_roi_pooling
+- id: infer_skill_r4_capability_127
+  query: 候选框 IoU IoF 度量
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_ptiou
+- id: infer_skill_r4_capability_128
+  query: 非零元素位置 随机抽样
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_random_choice_with_mask
+- id: infer_skill_r4_capability_129
+  query: reshape 形状改变 数据不变
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_reshape
+- id: infer_skill_r4_capability_130
+  query: RMSNorm 不减均值
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rms_norm
+- id: infer_skill_r4_capability_131
+  query: Faster R-CNN ROI Align 采样
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_roi_align
+- id: infer_skill_r4_capability_132
+  query: 旋转框 IoU
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rotated_iou
+- id: infer_skill_r4_capability_133
+  query: 旋转框 重叠面积
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_rotated_overlaps
+- id: infer_skill_r4_capability_134
+  query: 符号位 每字节八位 小端打包
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_pack
+- id: infer_skill_r4_capability_135
+  query: 符号位 小端展开 浮点符号
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sign_bits_unpack
+- id: infer_skill_r4_capability_136
+  query: Swish sigmoid 门控激活
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_silu
+- id: infer_skill_r4_capability_137
+  query: 张量起点范围切片
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_slice
+- id: infer_skill_r4_capability_139
+  query: 排序 不返回索引 默认末维
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_sort_v2
+- id: infer_skill_r4_capability_140
+  query: Swish 门控线性单元
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a2
+  expected:
+  - model/inference/apis/torch_npu/npu_swiglu
+- id: infer_skill_r4_capability_141
+  query: permute 连续张量 FakeTensor
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose
+- id: infer_skill_r4_capability_143
+  query: 张量原地填充 常数1
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+  expected:
+  - model/inference/apis/torch_npu/one_
+- id: infer_skill_r4_dynamicrnn
+  query: DynamicRNN
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+    type: apis
+  expected:
+  - model/inference/apis/torch_npu/npu_lstm
+- id: infer_skill_r4_dynamicgruv2
+  query: DynamicGRUV2
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+    type: apis
+  expected:
+  - model/inference/apis/torch_npu/npu_gru
+- id: infer_skill_r4_rgdr
+  query: RGDR
+  filters:
+    match: literal
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+    type: apis
+  expected:
+  - model/inference/apis/torch_npu/npu_recurrent_gated_delta_rule
+- id: infer_skill_r4_quant_reduce_scatter
+  query: reduce_scatter pertoken量化
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+    type: apis
+  expected:
+  - model/inference/apis/torch_npu/npu_mm_reduce_scatter_base
+- id: infer_skill_r4_transpose_rank3
+  query: 批量矩阵乘 三维转置
+  filters:
+    match: text
+    k: 5
+    domain: model
+    technology: inference
+    platform: a3
+    type: apis
+  expected:
+  - model/inference/apis/torch_npu/npu_transpose_batchmatmul
+- id: infer_skill_pr248_moe_quant_mode_a2
+  query: MoE routing dispatch quant_mode 编码
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    type: guides
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_pr248_routing_quant_mode_a2
+  query: npu_moe_init_routing_v2 quant_mode
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    type: apis
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_init_routing_v2
+- id: infer_skill_pr248_dispatch_quant_mode_a2
+  query: npu_moe_distribute_dispatch_v2 quant_mode
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    type: apis
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch_v2
+- id: infer_skill_pr248_cache_layout_a2
+  query: kv_len_offset 连续缓存 分页
+  filters:
+    domain: model
+    technology: inference
+    platform: a2
+    type: runbooks
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls
+- id: infer_skill_pr248_moe_quant_mode_a3
+  query: MoE routing dispatch quant_mode 编码
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    type: guides
+    match: text
+    k: 5
+  expected:
+  - model/inference/guides/integration/parallel_groups_and_weight_shards
+- id: infer_skill_pr248_routing_quant_mode_a3
+  query: npu_moe_init_routing_v2 quant_mode
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    type: apis
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_init_routing_v2
+- id: infer_skill_pr248_dispatch_quant_mode_a3
+  query: npu_moe_distribute_dispatch_v2 quant_mode
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    type: apis
+    match: text
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_moe_distribute_dispatch_v2
+- id: infer_skill_pr248_cache_layout_a3
+  query: kv_len_offset 连续缓存 分页
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    type: runbooks
+    match: text
+    k: 5
+  expected:
+  - model/inference/runbooks/precision/precision_kvcache_fa_fusion_pitfalls

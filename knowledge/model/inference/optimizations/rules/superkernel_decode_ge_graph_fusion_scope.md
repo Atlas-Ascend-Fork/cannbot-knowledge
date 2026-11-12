@@ -13,7 +13,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash/models/modeling_longcat_flash.py
   role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-29T15:24:40Z'
+updated_at: '2026-11-10T03:40:06Z'
 platforms:
 - a3
 scope:
@@ -62,3 +62,5 @@ scope:
 ## 回退与适用边界
 
 保存原配置，按案例的真实开关关闭 SuperKernel 并重核编译产物、缓存和输出，不把直接切 eager 等同于只关闭一个优化。当前 LongCat SuperKernel 只接受 GE，npugraph_ex/eager 会被校验拒绝；其他模型按自己的入口核对。
+
+- [范围分析与受控验证](../../guides/optimization/superkernel_scope_analysis_and_validation.md)

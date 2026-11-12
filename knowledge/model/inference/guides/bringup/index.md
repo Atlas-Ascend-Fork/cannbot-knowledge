@@ -35,3 +35,5 @@
 - [vLLM Ascend运行控制回归：平台门禁、调度、图、诊断与构建工具矩阵](vllm_ascend_runtime_control_test_matrix.md)：为平台能力、scheduler、图编译、runtime config/guard、CPU绑定、构建缓存与性能工具选择固定UT；定位异常、状态恢复、缓冲身份和产物完整性，保留CPU mock及工具自测与NPU/业务证据之间的边界。
 - [vLLM Ascend 测试证据选择：CPU、NPU、精准CI与文档用例](vllm_ascend_test_evidence_selection.md)：按固定上游测试指南区分mock、真实设备、E2E和性能证据，核对精准选择与runner路由、缩层随机权重、文档固定代码块及实际触发方式。 补充 /e2e 的派发鉴权、双版本、skip/accuracy 路由及贡献交付边界。
 - [vLLM Ascend调优配方：投机K、专家重排与量化校准证据](vllm_ascend_tuning_recipe_calibration_contract.md)：区分离线goodput最优K、示例EPLB规划、llm-compressor校准/动态量化和发布recipe硬件声明，核对测量输入、conditional概率口径、checkpoint目标与版本化部署边界。
+
+- [CANN Executor 模型接入：注册、ForwardMetaData 与加载钩子](cann_executor_model_onboarding.md)：新模型接入 Executor：注册与加载钩子、ForwardMetaData、变长 batch 的 packed logits、Prefill 每请求最后一个 token、缓存声明和 YAML 配置。
