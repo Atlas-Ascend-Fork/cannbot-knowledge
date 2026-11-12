@@ -228,4 +228,4 @@
 - [V220 上合并冗余的核内 V 管线 PipeBarrier](p_p253_coalesce_intra_pipe_v_barriers_v220.md)：在已验证的 V220（arch22）路径上合并冗余的核内 PipeBarrier<PIPE_V> 调用，同时保留每一个跨管线同步点。原 legacy 锚 P-P253（冲突 ID P-P92）。
 
 - [指令模型](instruction_model/index.md)：在 Ascend 950PR/950DT 上按接口、类型和工作量选取单指令理论并行度，核对单双发模式及端口约束；每 VL 换算和循环合成成本是附加假设下的参考，不构成实际耗时界限，瓶颈须实测。另覆盖 SIMT 单指令理论吞吐口径与固定单次 Mmad shape 的 Cube 分形对齐、头开销模型；低档接口只是待测瓶颈候选，Cube 折算不代表整个实现的上界或跨方案收益。
-- [OpsTune 调优知识](opstune/index.md)：分层瓶颈判定规则语义（L0-L3 四层 24 条，含反证与阈值溯源）。迁入自 asc-tools tool-ops-tune 固定提交 14714fd，规则 YAML 机器真源留工具仓。
+- [OpsTune 调优知识](opstune/index.md)：分层瓶颈判定规则语义（L0-L3 四层 24 条，含反证与阈值溯源）与优化机制卡（流水/搬运/API/存储层次/Tiling/MC²/RegBase VF）。迁入自 asc-tools tool-ops-tune 固定提交 14714fd，规则 YAML 机器真源留工具仓。
