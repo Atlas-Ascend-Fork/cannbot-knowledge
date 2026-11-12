@@ -9,4 +9,4 @@
 - [Runbooks](runbooks/index.md)：从开发轨迹沉淀的编译、精度、性能与工程实战知识。
 - [算子](operators/index.md)：Ascend C 算子的 ACLNN 完整链路与 Direct Invoke 路线知识。
 - [优化方法](optimizations/index.md)：跨算子可复用的优化方法、触发条件、收益来源与失效边界（含反模式与判定准则）。
-- [算子调试](debugging/index.md)：按问题域组织的调试总纲——编译失败、Host Runtime、多卡通信、AI Core Error 与精度偏差的分诊流程与判定纪律（runtime 分域首批迁入，其余分域按批次增补）。
+- [算子调试](debugging/index.md)：按问题域组织的调试总纲——编译失败、Host Runtime、多卡通信、AI Core Error 与精度偏差的分诊流程与判定纪律（compile 与 runtime 分域已迁入，其余分域按批次增补）。
