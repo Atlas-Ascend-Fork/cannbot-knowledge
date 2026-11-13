@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "FA BSND 布局重构：预分头 Reshape 用 3×GatherV2(rank-0 标量索引, axis=2) 直切 q/k/v，吸收双 Transpose（SplitV 动态输出路线不可用）",
-  "description": "消除 attention 两侧 Transpose 族（iter3 合计约 455us/8.1%）的 GE 内存图改法：从预分头 Reshape [B,S,3,H,D] 用 3 个 GatherV2(标量索引, axis=2) 一步直切 q/k/v [B,S,H,D]（BSND 输入布局），FA(BSND) 输出直连尾 Reshape。OperatorFactory 创建的 SplitV 工厂节点无静态输出锚点、UpdateOutputDesc 也无法扩展动态输出，SplitV+SqueezeV3 路线不可采用。落地后 avg 5.845→5.653ms（-3.3%）、verify 与 BNSD 逐位一致。",
+  "description": "消除 attention 两侧 Transpose 族（iter3 合计约 455us/8.1%）的 GE 内存图改法：从预分头 Reshape [B,S,3,H,D] 用 3 个 GatherV2(标量索引, axis=2) 一步直切 q/k/v [B,S,H,D]（BSND 输入布局），FA(BSND) 输出直连尾 Reshape。OperatorFactory 创建的 SplitV 工厂节点无静态输出锚点、UpdateOutputDesc 也无法扩展动态输出，SplitV+SqueezeV3 路线不可采用。落地后 avg 5.845→5.653ms（-3.3%）、verify PASS，最大误差与 BNSD 的记录相同（未直接逐元素比较两版输出）。",
   "tags": [
     "task.implementation",
     "topic.compilation",
@@ -12,13 +12,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "910"
   ]
 }
 ---
-
 # FA BSND 布局重构：预分头 Reshape 用 3×GatherV2(rank-0 标量索引, axis=2) 直切 q/k/v，吸收双 Transpose（SplitV 动态输出路线不可用）
 
 ## 适用场景
@@ -122,7 +121,7 @@ OperatorFactory 工厂创建的 SplitV 节点没有静态输出锚点：`AddData
 
 结论三（逐字）：
 
-第 5 轮双门禁通过：BSND 重构后 verify max_abs=0.00126459 与 R4（BNSD）逐位一致（GatherV2 标量切片等价），同口径 avg 5.845→5.653ms（-3.3%）。
+第 5 轮双门禁通过：BSND 重构后 verify PASS、max_abs=0.00126459，与 R4（BNSD）记录的最大误差相同；该摘要指标不证明两版输出逐位一致，同口径 avg 5.845→5.653ms（-3.3%）。
 
 （基线信号：事件 792 avg 5.845ms；候选信号：事件 906 iter=1000 avg 5.653ms。均为单次 1000-iter 运行。）
 - 事件 910：iter4 msprof 画像确认 Transpose 族消失（族表中无 Transpose 行）、`other:FAbsnd_#_g#` 72.4 实例 397.3us/iter。

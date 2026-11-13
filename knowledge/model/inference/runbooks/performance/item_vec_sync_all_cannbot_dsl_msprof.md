@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-09T09:37:53Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
 # 源码级每 item 一次 vec_sync_all() 关闭 cannbot-dsl 0.7.0 跨流水同步缺口（msprof task-time 实测代价 0~1.4%、生产 prefill 热路径 0.0%）
 
 ## 适用场景
@@ -64,7 +63,7 @@ cs 预载（bulk/gather 两分支）之后、cube K-loop 之前插入：
 
 **代价测量方法**（msprof task-time，与仓内 `perf_compare_mx.py` 同款）：
 - A/B 模块由正则从上船样例剥离 WORKAROUND 块生成：`ab/fused_{bf16,mx}_{fixed,nosync}.py`，逐字节相同、仅差一条 `vec_sync_all()`（C 1243）；
-- msprof 逐 kernel 精确计时，排除 ~0.9ms host launch 开销与共享设备干扰：
+- msprof 逐 kernel 精确计时，避免把约 0.9ms host launch 耗时混入 kernel 时长；共享设备争用仍可能改变 kernel 时间，交替与中位数只能降低部分影响：
 
 ```
 msprof --task-time=on --ai-core=on python perf_sync_msprof.py --runner --variant nosync --op mx --mode prefill --m 2048 --repeat 3
@@ -113,7 +112,7 @@ _RACE_NUM_TOKENS = 2048  # 8 pairs x 10 units = 80 items > 32 AIC blocks
 
 - 修复位点正确性：单屏障二分证明 `asc_sync()`（= `vec_sync_all()` 降级产物）是全核屏障、item 循环内任意位置都能关闭竞态窗口，故选在 cs 预载后、cube K-loop 前——此时屏障与 Cube 侧 8 轮 K-loop 的 MMAD 流水重叠，AIV epilogue 本就不是关键路径；这解释了大 M 反而零成本（M=16500 时每 AIV block ~20 个 item）而 M=2048（每 block 仅 2-3 个 item、尾部波次效应主导）也只有 0.4µs（+0.8%，接近 msprof 计时分辨率）。
 - decode 路径本无槽位复用、不需要该屏障，+1.4%（0.1µs）属无害冗余。
-- 对比修复路线：`CANNBOTDSL_BARALL=1` 是编译期全局保守屏障（毕昇 `-cce-aicore-sync-bar-all`），交错 A/B 中恒为最慢组（best 1.210-1.290ms vs plain 0.899-1.211ms；早期跨进程单次测量 +1.2%——共享设备上两种口径不一致，故以单进程交错与 msprof task-time 为准）。`vmem_bar`/`vec_sync_pipe/notify/wait` 等更细粒度原语未逐一验证定位效果，源码级 `vec_sync_all()` 是实测充分且成本最低的方案。
+- 对比修复路线：`CANNBOTDSL_BARALL=1` 是编译期全局保守屏障（毕昇 `-cce-aicore-sync-bar-all`），交错 A/B 中恒为最慢组（best 1.210-1.290ms vs plain 0.899-1.211ms；早期跨进程单次测量 +1.2%——共享设备上两种口径不一致，故以单进程交错与 msprof task-time 为准）。`vmem_bar`/`vec_sync_pipe/notify/wait` 等更细粒度原语未逐一验证定位效果，源码级 `vec_sync_all()` 是本次验证有效且观测成本较低的方案；未比较所有细粒度方案，不能认定成本最低。
 - 未验证推断：屏障"被 Cube 侧 MMAD 完全掩盖"是结构性解释（单次会话观测的合理解释，未做波形级验证）。
 
 ## 验证信号

@@ -1,8 +1,8 @@
 ---
 {
   "type": "Runbook",
-  "title": "npu_clipped_swiglu(alpha=1, bias=0, interleaved=False) 精确等价 clamp-before-silu 的非对称截断 SwiGLU（Step3/HYV4 风格 _apply_gate）",
-  "description": "npu_clipped_swiglu 以 alpha=1.0、bias=0.0、interleaved=False、limit=截断值调用时与 HF 风格 _apply_gate（gate.clamp(max=limit) 后 silu、up.clamp(±limit)）在 fp32 下逐位相等、bf16 下 ≤1 ULP；CANN 官方公式 A.clamp(min=None,max=limit)、B.clamp(-limit,limit)、y=A*sigmoid(alpha*A)*(B+bias) 与该非对称语义完全一致，gate 分支不做下界截断（gate<−15 区域输出 ~3.5e-9 吻合）。",
+  "title": "npu_clipped_swiglu 的非对称截断参数映射与 Step3/HYV4 样本精度验证",
+  "description": "npu_clipped_swiglu 以 alpha=1.0、bias=0.0、interleaved=False、limit=截断值调用时与 HF 风格 _apply_gate（gate.clamp(max=limit) 后 silu、up.clamp(±limit)）在 所测 fp32 样本逐位相等；bf16 样本 max_abs=0.5，不能由该探针证明全域 ≤1 ULP；CANN 官方公式 A.clamp(min=None,max=limit)、B.clamp(-limit,limit)、y=A*sigmoid(alpha*A)*(B+bias) 与该非对称语义完全一致，gate 分支不做下界截断（gate<−15 区域输出 ~3.5e-9 吻合）。",
   "tags": [
     "task.implementation",
     "topic.precision",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
-# npu_clipped_swiglu(alpha=1, bias=0, interleaved=False) 精确等价 clamp-before-silu 的非对称截断 SwiGLU（Step3/HYV4 风格 _apply_gate）
+# npu_clipped_swiglu 的非对称截断参数映射与 Step3/HYV4 样本精度验证
 
 ## 适用场景
 
@@ -75,7 +74,7 @@ for dt in (torch.float32, torch.bfloat16):
 
 ## 机制与判别
 
-- 结论一（等价性）：npu_clipped_swiglu(x, dim=-1, alpha=1.0, limit=10.0, bias=0.0, interleaved=False) 与 F.silu(gate.clamp(min=None,max=10.0))*up.clamp(-10.0,10.0) 在 fp32 下逐位相等（maxabs=0.000e+00、bits_equal=True），bf16 下 maxabs=5.000e-01（≤1 ULP，max_ulp=0.99）。锚点：来源记录 事件 159（探针命令）；信号：事件 160（`torch.float32 maxabs=0.000e+00 max_ulp=0.00 bits_equal= True` / `torch.bfloat16 maxabs=5.000e-01 max_ulp=0.99 bits_equal= False`）。
+- 结论一（等价性）：npu_clipped_swiglu(x, dim=-1, alpha=1.0, limit=10.0, bias=0.0, interleaved=False) 与 F.silu(gate.clamp(min=None,max=10.0))*up.clamp(-10.0,10.0) 在本次 fp32 采样输入上逐位相等（maxabs=0.000e+00、bits_equal=True），所测 bf16 样本 maxabs=5.000e-01（日志 max_ulp=0.99 实际按 abs(ref)*2^-7 归一化，并非精确 ULP 距离）。锚点：来源记录 事件 159（探针命令）；信号：事件 160（`torch.float32 maxabs=0.000e+00 max_ulp=0.00 bits_equal= True` / `torch.bfloat16 maxabs=5.000e-01 max_ulp=0.99 bits_equal= False`）。
 - 结论二（非对称语义）：非对称截断语义吻合：gate 分支仅上界截断（无下界），gate<−15 区域 fused 输出 ~3.47e-9 与参考一致，与 CANN 官方公式 A = A.clamp(min=None, max=limit) 精确对应。锚点：来源记录 事件 106（官方 docstring）；信号：事件 160（`gate<-15 count 400 ref/fused sample 3.471985809966327e-09 3.471985809966327e-09`，fp32/bf16 两行均吻合）。官方公式原文（事件 106）：
 - 结论三（规模观测）：单算子规模（256×1536，bf16，输入 ×3.0 覆盖截断区）cos=0.99999619、maxdiff=5.000e-01（bf16 大值 1 ULP 量级）；接入 MoE experts 整链路后模块级 cos 0.99998295–0.99998409。锚点：来源记录 事件 211；信号：同事件 + 来源记录 事件 143（`fusion_modules.json` moe_experts_decode/prefill）。
 
@@ -88,7 +87,7 @@ for dt in (torch.float32, torch.bfloat16):
 11748:                                                                 y = y_glu * (B + bias)
 ```
 
-判别要点：文档默认参数是 `alpha=1.702, limit=7.0, bias=1.0, interleaved=True`（gpt_oss 风格），直接按默认调用不等价；必须显式传 `alpha=1.0、bias=0.0、interleaved=False` 才落到 Step3/HYV4 的 `silu(clamp(gate))*clamp(up)` 语义。可区分验证手段即上述 fp32 逐位比较 + gate 负区探针（若算子做了双侧对称 clamp，gate<−limit 区域输出会被截成 0 而非 ~1e-9 量级，实测两者吻合排除该可能）。
+判别要点：文档默认参数是 `alpha=1.702, limit=7.0, bias=1.0, interleaved=True`（gpt_oss 风格），直接按默认调用不等价；必须显式传 `alpha=1.0、bias=0.0、interleaved=False` 才落到 Step3/HYV4 的 `silu(clamp(gate))*clamp(up)` 语义。可区分验证手段即上述 fp32 逐位比较 + gate 负区探针（若 gate 做了双侧 clamp，负区参考会变为 silu(-limit)*clamp(up)，通常不为0，并会与不做下界截断的参考不同，本次负区样本与无下界截断参考吻合，支持文档中的非对称语义）。
 
 ## 验证信号
 
@@ -102,7 +101,7 @@ for dt in (torch.float32, torch.bfloat16):
 ## 适用与失效边界
 
 - 参数映射前提：目标语义必须确实是「clamp 在 silu 之前 + gate 仅上界 + up 双侧 + 无 +1 偏置 + 前后切分」；gpt_oss 交织布局（interleaved=True 默认）或 gelu 语义不适用。
-- bf16 下 maxdiff 可达 0.5（大值 1 ULP），对逐位一致口径不满足；fp32 逐位成立。若精度口径要求逐位，需 fp32 或保留手写实现。
+- bf16 下 maxdiff 可达 0.5（本样本绝对误差；日志未计算精确 ULP 距离），对逐位一致口径不满足；本次 fp32 样本逐位成立，不保证所有输入。若精度口径要求逐位，需按实际输入域重测，不能仅凭本探针承诺 fp32 路径全域逐位相等。
 - docstring 支持型号列表未含 ascend950，本卡结论以「kernel 目录存在 + 运行时数值复核」为准；换芯片/升级 CANN 需重跑上述 fp32 逐位探针。
 - 输入 x 要求连续（docstring：不支持非连续 Tensor）——GMM 输出本身连续，直接串接成立；若上游产出非连续视图需先 `.contiguous()`。
 - `npu_clipped_swiglu` 的 `group_index` 参数可对 GMM 输出做按组截断（Sum(group_index) 过滤 pre 轴），本组来源观测未使用该能力，未验证。

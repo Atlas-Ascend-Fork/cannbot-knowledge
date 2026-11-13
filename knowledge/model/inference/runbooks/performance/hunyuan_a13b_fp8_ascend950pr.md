@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "Hunyuan-A13B FP8 在 Ascend950PR 上 A1–A5+M1–M3 融合算子全链路替换与端到端验证",
-  "description": "在 torch_npu 2.12.0 + CANN 9.1.0 + Ascend950PR_9589 单卡上，把 Hunyuan-A13B-Instruct-FP8（W8A8 静态 per-tensor）的 Attention 子链路（A1 npu_add_rms_norm / A2、A4 npu_rms_norm / A3 npu_apply_rotary_pos_emb TND / A5 npu_quantize）与 MoE（M1 npu_moe_gating_top_k_softmax → M2 npu_moe_init_routing_v2 + FP8 npu_grouped_matmul + npu_moe_finalize_routing / M3 npu_swiglu）全量替换 dense 计算，专家权重加载后一次性重排为 w13[E,H,2I]/w2[E,I,H] grouped-matmul 布局。逐模块等价（A1 added 与 A5 逐位一致，其余 max_abs ≤ 0.03125）、CPU 黄金参考对齐 cosine 0.99989 且贪心 token 全匹配、3 条不等长 packed 多 batch 与 solo 一致；batch 1 / 21-token prefill / 8-token 输出负载下 Prefill 1923.02→176.33 ms、Decode 均值 1740.72→110.18 ms（reviewer 独立复核）。",
+  "description": "在 torch_npu 2.12.0 + CANN 9.1.0 + Ascend950PR_9589 单卡上，把 Hunyuan-A13B-Instruct-FP8（W8A8 静态 per-tensor）的 Attention 子链路（A1 npu_add_rms_norm / A2、A4 npu_rms_norm / A3 npu_apply_rotary_pos_emb TND / A5 npu_quantize）与 MoE（M1 npu_moe_gating_top_k_softmax → M2 npu_moe_init_routing_v2 + FP8 npu_grouped_matmul + npu_moe_finalize_routing / M3 npu_swiglu）全量替换 dense 计算，专家权重加载后一次性重排为 w13[E,H,2I]/w2[E,I,H] grouped-matmul 布局。逐模块等价（A1 added 与 A5 逐位一致，其余 max_abs ≤ 0.03125）、CPU 黄金参考对齐 cosine 0.99989 且贪心 token 全匹配、3 条不等长 packed 多 batch 与 solo 一致；batch 1 / 21-token prefill / 8-token 输出负载下 Prefill 1923.02→176.33 ms、Decode 7 步均值 1748.09→110.18 ms（reviewer 独立复核）。",
   "tags": [
     "task.implementation",
     "topic.model_serving",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # Hunyuan-A13B FP8 在 Ascend950PR 上 A1–A5+M1–M3 融合算子全链路替换与端到端验证
 
 ## 适用场景
@@ -30,7 +29,7 @@
 
 ## 触发与观测
 
-- 基线（阶段 2 FA 后、阶段 3 前）：`agentic/baseline/baseline_metadata.json` 记录 batch 1 负载 Prefill 1923.02 ms、Decode 均值 1740.72 ms；analyzer 定位根因为 MoE dense dispatch——每层固定计算 `64 × expert_capacity` 行专家 MLP，decode（S=1）时 capacity 下限 = topk = 8 → 512 行/层、有效仅 8 行，约 64× 冗余。
+- 基线（阶段 2 FA 后、阶段 3 前）：`agentic/baseline/baseline_metadata.json` 记录 batch 1 负载 Prefill 1923.02 ms、Decode 采集脚本均值 1740.72 ms（剔除首个 decode；同日志完整 7 步均值为 1748.09 ms）；analyzer 定位根因为 MoE dense dispatch——每层固定计算 `64 × expert_capacity` 行专家 MLP，decode（S=1）时 capacity 下限 = topk = 8 → 512 行/层、有效仅 8 行，约 64× 冗余。
 - 算子可用性客观核查（analyzer，设备上 `hasattr(torch_npu, op)` 全 True）：`npu_rms_norm`/`npu_add_rms_norm`/`npu_apply_rotary_pos_emb`/`npu_swiglu`/`npu_moe_gating_top_k_softmax`/`npu_moe_init_routing_v2`/`npu_grouped_matmul`/`npu_moe_finalize_routing`/`npu_quantize` 等均存在。
 - 替换后整链路（implementer 自验证 + reviewer 独立复核）端到端观测：`bash infer.sh` 输出正常（`<answer> Paris. </answer>`，可读、不重复、非全零、不提前 EOS）。
 
@@ -118,10 +117,10 @@ M1+M2+M3 fused 前向核心（`HunYuanMoE._fused_forward`，逐字）：
 
 ## 验证信号
 
-（平台：Ascend950PR_9589 单卡 / torch_npu 2.12.0 / CANN 9.1.0；性能均为 warm-up 后单次观测或 7 步均值，基线与候选负载完全一致）
+（平台：Ascend950PR_9589 单卡 / torch_npu 2.12.0 / CANN 9.1.0；性能均为 warm-up 后单次观测或 7 步均值，负载配置一致；Decode 比较统一采用完整 7 步均值）
 
 - c1：Hunyuan-A13B-Instruct-FP8 单卡 eager、batch 1、21-token prefill、8-token 输出负载下，A1–A5+M1–M3 全融合使 Prefill 耗时 1923.02 ms 降至 176.33 ms（reviewer 独立复测，单次观测）。〔基线 signals：来源记录#53（baseline_metadata.json）；候选 signals：来源记录#165（logs/reviewer_stage3_infer.log）〕
-- c2：同负载下 Decode 单步均值由 1740.72 ms 降至 110.18 ms（reviewer 复测 7 步均值：110.20/110.91/109.90/109.79/110.79/110.09/109.56 ms）。
+- c2：同负载下 Decode 完整 7 步均值由 1748.09 ms 降至 110.18 ms（reviewer 复测 7 步均值：110.20/110.91/109.90/109.79/110.79/110.09/109.56 ms）。
 - c3：组级消融归因（同会话同负载、整组开关粒度）：仅阶段 2 FA（f0_m0）Prefill 1780.01 ms；加 A1–A5（f1_m0）1551.41 ms；加 M1–M3（f0_m1）214.85 ms；全融合 176.33 ms——Prefill 收益主要来自 M1–M3 MoE 稀疏化，A1–A5 小算子组贡献次要。〔signals：来源记录#214〕
 - c4：融合后 NPU FP8 前向与 CPU BF16 黄金参考对齐：prefill logits 余弦 0.99989（替换前基线 0.99985），贪心生成 token 完全一致（token_match=true、无首个分歧步），prefill top10 重叠 9/10。〔signals：来源记录#120〕
 - c5：逐模块替换前后对比（替换前 eager vs 替换后融合，NPU 同权重）：A1 残差 added 逐位一致、A5 激活量化逐位一致、A3 RoPE max_abs=0.015625、A2/A4 RMSNorm max_abs=0.03125、M3 SwiGLU max_abs=0.015625、M1–M3 MoE（S=1/7/40）max_abs≤0.0024 且 mean_rel≤0.006。〔signals：来源记录#149〕

@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "torch fallback bridge 捕获 python_error 时 what() 为空吞掉真实错误：需在 std::exception catch 内 GIL+PyErr_Fetch 提取 pending Python 异常文本，catch pybind11::error_already_set 不命中",
-  "description": "fx_converter 的 AbiRunDeferred 对 deferred torch fallback 失败只打印空消息（\"deferred aten.bitwise_and failed: \"），真实 Python 异常被吞。加 typeid 后显示异常类型为 mangled 名 12python_error 且 what() 仍为空；专门 catch pybind11::error_already_set 并提取 e.value() 不命中，可判别该异常把信息留在 pending Python 异常里而非 C++ what()。修复是在 std::exception catch 内 gil_scoped_acquire + PyErr_Occurred/PyErr_Fetch/PyObject_Str(value)/PyErr_Restore，错误消息随即完整显示 \"[py] RunOpApiV2:...SUSPECT REMOTE ERROR, error code is 507057\"，并据此确认设备侧错误发生在更早的 kernel（launch blocking 下在下一个 launch 的 sync 处浮现）。",
+  "description": "fx_converter 的 AbiRunDeferred 对 deferred torch fallback 失败只打印空消息（\"deferred aten.bitwise_and failed: \"），真实 Python 异常被吞。加 typeid 后显示异常类型为 mangled 名 12python_error 且 what() 仍为空；专门 catch pybind11::error_already_set 并提取 e.value() 不命中，可判别该异常把信息留在 pending Python 异常里而非 C++ what()。修复是在 std::exception catch 内 gil_scoped_acquire + PyErr_Occurred/PyErr_Fetch/PyObject_Str(value)/PyErr_Restore，错误消息随即完整显示 \"[py] RunOpApiV2:...SUSPECT REMOTE ERROR, error code is 507057\"，并暴露设备错误507057；故障kernel与错误上报位置是否一致仍需定位。",
   "tags": [
     "task.debugging",
     "topic.graph_execution"
@@ -10,13 +10,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "910"
   ]
 }
 ---
-
 # torch fallback bridge 捕获 python_error 时 what() 为空吞掉真实错误：需在 std::exception catch 内 GIL+PyErr_Fetch 提取 pending Python 异常文本，catch pybind11::error_already_set 不命中
 
 ## 适用场景
@@ -84,9 +83,9 @@
 
 - 结论：AbiRunDeferred 失败日志只有 "deferred aten.bitwise_and failed: "，消息为空（od -c 证实 'failed: \n' 之后无任何内容），真实 Python 异常被 C++ catch 吞掉，无法据此定位根因。
 - 结论：在 catch 中加 typeid(e).name() 后异常类型显示为 mangled 名 '12python_error' 且 what() 仍为空；专门 catch pybind11::error_already_set 并提取 e.value() 的 repr 不命中（消息仍走 std::exception 分支且为空），可判别该异常不是 error_already_set，而是携带空 what()、把信息留在 pending Python 异常里的类型。
-- 判别要点：pybind11 的 Python 错误经 callBoxed 传入 C++ 后以 `python_error` 类型（继承 std::exception、what() 为空）抛出，错误详情保存在解释器的 pending Python 异常（PyErr 状态）中；因此唯一可靠的提取位置是**持有 GIL 时**用 PyErr_Fetch 读出再 PyErr_Restore 还原。catch error_already_set 是无效路线（本轨迹实测不命中，事件 2518→2525）。
-- 结论：在 std::exception catch 内先 gil_scoped_acquire，再 PyErr_Occurred/PyErr_Fetch/PyObject_Str(value)/PyErr_Restore 提取 pending Python 异常文本后，错误消息变为 "[py] RunOpApiV2:torch_npu/csrc/framework/OpCommand.cpp:270 NPU function error: SUSPECT REMOTE ERROR, error code is 507057"，据此确认设备侧错误发生在更早的 kernel（ASCEND_LAUNCH_BLOCKING 下在下一个 launch 的 sync 处以无关 op 的异常浮现）。
-- 附加判别价值：揭示出的 `[py]` 消息还说明 ASCEND_LAUNCH_BLOCKING=1 时设备侧错误会在**下一个** launch 的同步点以无关算子（此处 bitwise_and）的 Python 异常形式浮现——报错算子不一定是故障 kernel（事件 2573 的判读）。
+- 判别要点：该链路经callBoxed进入C++后观察到名为 `12python_error` 的std::exception子类，其确切定义和来源没有溯源，不能归属为pybind11的通用异常类型。本次在持有GIL时读取pending PyErr并还原后提取到错误文本；这是一条在该链路得到日志验证的诊断路线。专门catch error_already_set本次未命中，不表示其他链路也不会命中。
+- 结论：在 std::exception catch 内先 gil_scoped_acquire，再 PyErr_Occurred/PyErr_Fetch/PyObject_Str(value)/PyErr_Restore 提取 pending Python 异常文本后，错误消息变为 "[py] RunOpApiV2:torch_npu/csrc/framework/OpCommand.cpp:270 NPU function error: SUSPECT REMOTE ERROR, error code is 507057"，该文本暴露了507057设备错误；报错点可能只是异步错误的上报位置，故障kernel及其提交顺序仍需设备日志定位。
+- 附加判别价值：不要仅凭bitwise_and是异常上报点就认定其kernel有错。当前日志不足以确定故障发生在第几个launch，更不能把“下一个launch才上报”概括为ASCEND_LAUNCH_BLOCKING的通用行为。
 
 ## 验证信号
 
@@ -96,7 +95,7 @@
 
 ## 适用与失效边界
 
-- 适用：任何 pybind11 嵌入的 C++ ABI 边界把 Python 异常转成空 what() 的 std::exception 子类（mangled 名含 `python_error`）的场景；症状是跨边界错误消息为空。
-- 失效边界：仅当 PyErr 状态确实有 pending 异常时文本非空（PyErr_Occurred 为假时 detail 仍为空）；GIL 必须已释放（gil_scoped_acquire 可重入）且调用线程可获取 GIL；PyErr_Fetch 后必须 PyErr_Restore，否则吞掉 pending 状态影响上层。
+- 适用：已确认存在pending Python异常、但C++ catch只收到空what()的ABI链路；应先核对具体异常类型和所有权，不能按类型名推广到所有pybind11嵌入场景；症状是跨边界错误消息为空。
+- 失效边界：仅当 PyErr 状态确实有 pending 异常时文本非空（PyErr_Occurred 为假时 detail 仍为空）；读取/还原PyErr时调用线程必须持有GIL，且当前调用上下文允许安全获取GIL；不是要求进入catch前必须已释放GIL；PyErr_Fetch 后必须 PyErr_Restore，否则吞掉 pending 状态影响上层。
 - 无效路线明确标注：catch pybind11::error_already_set + e.value() repr（事件 2518，实测不命中，不可采用）；typeid 路线只能拿到类型名拿不到文本。
-- 回退条件：若上游 bridge 改为 error_already_set 直传或 what() 携带文本，此提取可简化；PyErr_Restore 保证了不改变解释器异常语义，可长期保留。
+- 回退条件：若上游 bridge 改为 error_already_set 直传或 what() 携带文本，此提取可简化；保留pending状态的意图需与上层错误传播契约一起验证；不能仅凭一次日志成功认定所有异常路径长期安全。

@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T10:09:23Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
 # gpt_oss 离线接入 LongBench 踩坑修复：datasets 缓存目录执行导致 `__file__` 相对路径失效（data/data 双层路径）
 
 ## 适用场景
@@ -87,7 +86,7 @@ datasets.exceptions.DatasetGenerationError: An error occurred while generating t
 - 结论 1：gpt_oss 离线接入 LongBench 时，datasets 库（3.6.0）会把 LongBench.py 拷贝到 `${HF_CACHE_ROOT}/modules/datasets_modules/datasets/LongBench/<hash>/` 缓存目录后执行，脚本内基于 `__file__` 的相对 data 目录失效（`__file__` 指向缓存目录），叠加 `os.path.join(data_dir, "data", ...)` 后形成 `data/data/narrativeqa.jsonl` 双层路径，触发 FileNotFoundError，并被包装为 `DatasetGenerationError` 抛出。
   - 证据：观测来源 2 T 182（缓存目录路径 + 双层 data 的 FileNotFoundError 原文）；T 178 / 观测来源 1 T 178（首次运行即失败于数据集生成阶段）。
   - 判别：报错路径前缀 `${HF_CACHE_ROOT}/modules/...` 与用户配置的仓库路径无关，可直接区分"数据文件缺失"（用户目录下确实存在 dataset/LongBench/data/narrativeqa.jsonl，拷贝自 ${LOCAL_PATH_3}）与"脚本执行目录漂移"（缓存机制）两种解释——观测支持后者。
-- 结论 2：修复为把 `_split_generators` 的 data_dir 改为数据集所在绝对路径（并去掉 data/data 双层拼接）；修复后 `load_dataset` 生成成功（`Generating test split: 200 examples`，观测来源 2 T 192），gpt_oss_120b_8tp 样例重跑 PASS（8 rank 正常完成、LongBench narrativeqa 首条样本输出正确摘要），观测来源 1 修复后同样重跑成功。
+- 结论 2：修复为把 `_split_generators` 的 data_dir 改为数据集所在绝对路径（并去掉 data/data 双层拼接）；修复后 `load_dataset` 生成成功（`Generating test split: 200 examples`，观测来源 2 T 192），gpt_oss_120b_8tp 样例重跑 PASS（8 rank 正常完成、LongBench narrativeqa 首条样本返回摘要文本（仅确认加载与执行完成，未做摘要精度评分）），观测来源 1 修复后同样重跑成功。
   - 修后验证信号：观测来源 2 T 192（数据集生成 200 examples）、T 196（120B 重跑 decode 序列正常，A 198 确认 decode 平均 44.98ms）；观测来源 1 T 189（120B 重跑成功，decode 平均 44.62 ms/token）。
 - 关联约束（诊断）：README 第 99 行仅说"在LongBench.py中修改数据集加载路径"，未说明必须绝对路径与缓存机制——两条轨迹在同一点独立踩坑（各 1 次），说明该指引不充分。
 

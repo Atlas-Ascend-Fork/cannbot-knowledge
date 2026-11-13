@@ -10,13 +10,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
 # 按算子收集 torchair AutoFuse 融合算子的 kernel.so/wrapper.so（扩展 AscendcBackend.compile_kernel 落盘钩子）
 
 ## 适用场景
@@ -30,7 +29,7 @@
 ## 触发与观测
 
 - 需求（事件 474）：把 torchair AutoFuse 融合生成的算子 .so 保存到指定文件。
-- 现状（事件 480，客观）：.so 固定落在 inductor 缓存 `$${LOCAL_PATH_1}<autofused_xxx_md5>/<tiling_hash>/{kernel.so, wrapper.so, asc_kernel.py}`（launch_compile.sh 已设 `TORCHINDUCTOR_CACHE_DIR=${LOCAL_PATH_2}`），没有单独控制 .so 落盘位置的开关；改该变量只能整体换缓存位置、且按 tiling hash 组织，不是干净的按算子收集。
+- 现状（事件 480，客观）：.so 固定落在 inductor 缓存 `${LOCAL_PATH_1}/<autofused_xxx_md5>/<tiling_hash>/{kernel.so, wrapper.so, asc_kernel.py}`（launch_compile.sh 已设 `TORCHINDUCTOR_CACHE_DIR=${LOCAL_PATH_2}`），没有单独控制 .so 落盘位置的开关；改该变量只能整体换缓存位置、且按 tiling hash 组织，不是干净的按算子收集。
 
 ## 探针与操作
 

@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "DeepSeek-V4.1 _write_attention_cache 的 reference/auto 回退是静默空写死分支（KV cache 写被无声丢弃）",
-  "description": "vllm-ascend DeepSeek-V4.1 的 dsa_v41.py 中 _write_attention_cache 默认 backend=\"reference\"，而 reference 分支实现（_native_pack_rows + _scatter_rows）在 849-851 行已被整段注释，backend=\"auto\" 时融合算子异常被吞后直接返回而未写入任何数据。当前 5 处调用均显式传 backend=\"native\"（失败会 raise），线上未触发；但任何新增调用点使用默认参数或 \"auto\" 时，融合算子一旦抛错（shape 不匹配、CANN 版本差异），KV 将被静默跳过，该层注意力读到全零/陈旧 KV，输出错误且难以定位，正是\"精度波动\"式症状。两条独立审查轨迹均发现此问题。",
+  "description": "DeepSeek-V4.1 的 _write_attention_cache 默认 backend=\"reference\"，该路径无有效实现，非空输入也直接返回。backend=\"auto\" 时 native 调用成功会写入并返回 \"native\"；异常时被吞掉并返回 \"reference\"，但没有有效回退，异常前是否部分写入未确认。当前5处调用显式使用 \"native\"，并非当前部署已观察到的静默故障；新增默认/auto调用存在潜在风险。",
   "tags": [
     "task.debugging",
     "topic.precision",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
 # DeepSeek-V4.1 _write_attention_cache 的 reference/auto 回退是静默空写死分支（KV cache 写被无声丢弃）
 
 ## 适用场景
@@ -29,7 +28,7 @@
 
 ## 触发与观测
 
-触发 = 任何新增调用点以默认参数（backend="reference"）或 "auto" 调用 `_write_attention_cache`，且融合算子 `kv_compress_epilog_v2` 抛出异常（如 shape 不匹配、CANN 版本差异）。
+触发分两类（values 行数 >0）：使用默认 backend="reference" 时直接走空实现；使用 "auto" 时先调用融合算子，成功会写入并返回 "native"，异常则被吞掉且没有有效回退。异常前是否已发生部分写入未确认。
 
 审查观测到的客观代码事实（事件 17，dsa_v41.py 全文读取 833-882 行，逐字）：
 
@@ -116,13 +115,13 @@ git log -p 09220f435~1..HEAD -- vllm_ascend/attention/dsa_v41.py | grep -n "_sca
 
 ## 机制与判别
 
-结论 1：_write_attention_cache 默认 backend="reference"，而 reference 分支实现（_native_pack_rows + _scatter_rows）在 849-851 行已被整段注释；任何以 "reference"/"auto" 调用的路径都完全不写 KV cache 并返回成功。
+结论 1：_write_attention_cache 默认 backend="reference"，而 reference 分支实现（_native_pack_rows + _scatter_rows）在 849-851 行已被整段注释；非空 values 在 "reference" 路径不执行写入即返回 "reference"；"auto" 成功时执行 native 写入，只有异常回退分支缺失有效写入保证。
 - 证据：事件 17 逐字代码（840 行默认值、849-851 行注释、882 行 `return "reference"`）。
 
-结论 2：backend="auto" 时融合算子异常被吞掉后直接返回而未写入任何数据；当前 5 处调用（dsa_v41.py:902/921/929/1090 与 dspark.py:230）均显式传 backend="native"（失败会 raise），线上未触发，属新增调用点/默认参数场景的地雷。
+结论 2：backend="auto" 时融合算子异常被吞掉后返回 "reference" 且无有效回退；异常前可能未写入或已部分写入，轨迹未确认；当前 5 处调用（dsa_v41.py:902/921/929/1090 与 dspark.py:230）均显式传 backend="native"（失败会 raise），线上未触发，属新增调用点/默认参数场景的地雷。
 - 证据：事件 304（当前调用点逐字）+ 两份审查报告（事件 279/437）的调用点清单。
 - 可区分解释分支：
-  - 新调用点用默认参数或 "auto" + 融合算子抛错 → KV 被静默跳过，该层注意力读到全零/陈旧 KV → 输出错误且难以定位，正是"精度波动"式症状（静默劣化）。
+  - 新调用点用默认参数或 "auto" + 融合算子抛错 → 缺少有效 KV 写入保证，该层可能读到全零、陈旧或部分更新的 KV → 输出错误且难以定位，正是"精度波动"式症状（静默劣化）。
   - 现有 5 处 native 调用点出错 → 异常 re-raise → 响亮崩溃（不是静默）。
 - 未验证推断：`_native_pack_rows`/`_scatter_rows`（750-831 行）当前成为死代码；未来 CANN 小版本对 `kv_compress_epilog_v2` ABI 的变化是否会被 auto 吞掉取决于算子抛错与否，轨迹内未验证。
 
@@ -138,5 +137,5 @@ git log -p 09220f435~1..HEAD -- vllm_ascend/attention/dsa_v41.py | grep -n "_sca
 - 适用：releases/v0.27.1rc 区间内所有使用 `_write_attention_cache` 的代码维护/新增调用点场景；风险面是"新增调用未显式传 backend"或"传 auto"。
 - 不适用：当前已部署代码路径（5 处调用全 native，失败即 raise，不会静默丢写）。
 - 版本边界：922433912 注释掉 reference 小算子实现但保留回退结构，是本死分支的成因；后续版本若恢复 reference 实现则本条失效。
-- 停止/回退条件：一旦在日志中看到该函数返回 "reference"（或新增调用点无显式 backend 参数），应立即视为 KV 未写入排查项。
+- 停止/回退条件：非空 values 调用若返回 "reference"（或新增调用点无显式 backend 参数），应视为缺少有效写入保证的排查项；零行输入的提前返回无需写入，不据此判故障。
 - 修复方向（未验证）：删除 "reference"/"auto" 死分支与注释代码，只保留 native + 显式 raise；或恢复一个真正可用的 reference 实现。

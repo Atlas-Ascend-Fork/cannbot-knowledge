@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "GE 执行图中间态 FreeMemory 双重释放致非确定性 SIGBUS：WirePendingFrees 按 root alloc 去重并关闭图内中间态 frees 改由 executor 池回收",
-  "description": "gert::kernel::FreeMemory 内虚函数调用跳转 0x1 造成非确定性 SIGBUS（gdb 栈 #0 0x1 → FreeMemory → SequentialExecuteWithCallback）。根因一：alias/view 结果可为同一 root AllocMemory 挂多个 FreeMemory，第二次 Free 在已析构的 GertMemBlock 上调用；根因二：fallback 输出内存由 torch 侧持有，图内 FreeMemory 与 FreeArgsGuarder 双重释放（torch 引用计数/GC 时机决定谁先，故非确定性）。仅去掉 fallback 图内 frees 会引入异步 UAF（不可采用）。最终修复：WirePendingFrees 用 freed_allocs 集合去重 + 关闭图内中间态 frees 改由 executor 池回收；落地后 rerun9 无宿主崩溃、271 个 AF kernel 全部执行。",
+  "description": "gert::kernel::FreeMemory 内虚函数调用跳转 0x1 造成非确定性 SIGBUS（gdb 栈 #0 0x1 → FreeMemory → SequentialExecuteWithCallback）。根因一：alias/view 结果可为同一 root AllocMemory 挂多个 FreeMemory，第二次 Free 在已析构的 GertMemBlock 上调用；根因二：fallback 输出内存由 torch 侧持有，图内 FreeMemory 与 FreeArgsGuarder 双重释放（torch 引用计数/GC 时机决定谁先，故非确定性）。仅去掉 fallback 图内 frees 会引入异步 UAF（不可采用）。最终修复：WirePendingFrees 用 freed_allocs 集合去重 + 关闭图内中间态 frees 改由 executor 池回收；落地后 rerun9 无宿主崩溃、记录到271次 AF kernel launch，运行仍以507057结束。",
   "tags": [
     "task.debugging",
     "topic.graph_execution"
@@ -10,13 +10,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "910"
   ]
 }
 ---
-
 # GE 执行图中间态 FreeMemory 双重释放致非确定性 SIGBUS：WirePendingFrees 按 root alloc 去重并关闭图内中间态 frees 改由 executor 池回收
 
 ## 适用场景
@@ -91,17 +90,17 @@ void WirePendingFrees(std::unordered_map<std::string, PendingFree> *pending_free
 
 - 结论：gert::kernel::FreeMemory 的虚函数调用跳转 0x1 导致非确定性 SIGBUS（gdb 栈：#0 0x1、#1 gert::kernel::FreeMemory、#2 SequentialExecuteWithCallback、#3 ModelV2Runner::Execute）；alias/view 结果可为同一 root AllocMemory 挂多个 FreeMemory，第二次 Free 在已析构的 GertMemBlock 上做虚函数调用。
 - 双重所有者判别（事件 2231/2248）：fallback 算子输出由 torch 侧持有（bridge 分配），converter 又为其挂图内 FreeMemory → torch GC/引用计数释放 + 图内释放 = 双重释放；释放先后由 torch 引用计数/GC 时机决定 → 完美解释非确定性（第二个释放者拿到已析构的 GertMemBlock → 虚表垃圾 → SIGBUS）。
-- 结论：把 fallback 输出的 mem_to_free 置空（不挂图内 FreeMemory）后 SIGBUS 消失、948 个 FreeMemory 正常执行，证实双重释放；但该做法会引入异步 UAF（FreeArgsGuarder 在 host 侧 launch 后立即释放 torch 张量而设备侧 kernel 未执行 → MTE），不能作为最终修复，实验改动已还原。
-- 结论：最终修复为 WirePendingFrees 以 freed_allocs 集合对 AllocMemory 去重（每个 alloc 只挂一个 FreeMemory），并关闭图内中间态 frees 改由 executor 池/图销毁回收；该修复与 AdoptedDrainGuard 同步修复等共同落地后，rerun9 无宿主崩溃、271 个 AF kernel 全部 launch。
-- 未验证推断：去重（事件 2928）与关闭 frees（事件 2948）两步的独立贡献未分别验证（最终 rerun9 为联合状态）；"executor 池回收"的内存正确性依赖 GE 侧既有机制，轨迹内只验证了"无宿主崩溃 + 全图执行完成"。
+- 结论：把 fallback 输出的 mem_to_free 置空（不挂图内 FreeMemory）后 SIGBUS 消失、948 个 FreeMemory 正常执行，支持双重释放假设，但未独立证明全部所有权关系；但该做法会引入异步 UAF（FreeArgsGuarder 在 host 侧 launch 后立即释放 torch 张量而设备侧 kernel 未执行 → MTE），不能作为最终修复，实验改动已还原。
+- 结论：最终修复为 WirePendingFrees 以 freed_allocs 集合对 AllocMemory 去重（每个 alloc 只挂一个 FreeMemory），并关闭图内中间态 frees 改由 executor 池/图销毁回收；该修复与 AdoptedDrainGuard 入口同步尝试（该尝试未闭合本次图执行与drain的顺序）等共同落地后，rerun9 无宿主崩溃、271 个 AF kernel 全部 launch。
+- 未验证推断：去重（事件 2928）与关闭 frees（事件 2948）两步的独立贡献未分别验证（最终 rerun9 为联合状态）；"executor 池回收"的内存正确性依赖 GE 侧既有机制，轨迹内仅观察到该次联合运行无宿主崩溃及271次launch记录；这不证明全部kernel已完成或内存生命周期正确。
 
 ## 验证信号
 
-- 事件 2258（判别实验，单次 gdb 运行）：无 SIGBUS，进程以 npuSynchronizeDevice RuntimeError 收敛（SUSPECT REMOTE ERROR 507057）——双重释放理论证实。
-- 事件 2261：FreeMemDiag 计 948 条正常执行（free 路径整体健康）。
-- 事件 3212（rerun9，最终联合状态）：`grep -ac "AFLaunchDiag"` = 271（271 个 AF kernel 全部 launch），aicore error `pc start: 0x124400333e28` 恒定（确定性 MTE 为独立遗留，非本缺陷）。
+- 事件 2258（判别实验，单次 gdb 运行）：无 SIGBUS，进程以 npuSynchronizeDevice RuntimeError 收敛（SUSPECT REMOTE ERROR 507057）——支持双重释放假设，设备错误仍存在。
+- 事件 2261：FreeMemDiag 计 948 条正常执行（记录了这些FreeMemory路径执行，不能外推整体回收正确）。
+- 事件 3212（rerun9，最终联合状态）：`grep -ac "AFLaunchDiag"` = 271（271 个 AF kernel 全部 launch），aicore error `pc start: 0x124400333e28` 恒定（仍有设备错误；是否与释放路径独立需继续定位）。
 - 事件 3209（rerun9）：进程以 Python 异常（SUSPECT REMOTE ERROR @ npuSynchronizeDevice）结束，无 Bus error/core dumped。
-- 证据等级：910B3 + CANN 9.2.0 + 私有 fxrt/GE 构建的运行日志观测；判别实验单次、最终状态单次（rerun9）；**混杂变量**——最终 rerun9 同时包含 AdoptedDrainGuard 同步修复（事件 2705）与 bridge 异常提取（事件 2564），无宿主崩溃不能单独归因本修复。
+- 证据等级：910B3 + CANN 9.2.0 + 私有 fxrt/GE 构建的运行日志观测；判别实验单次、最终状态单次（rerun9）；**混杂变量**——最终 rerun9 同时包含 AdoptedDrainGuard 入口同步尝试（该尝试未闭合本次图执行与drain的顺序）（事件 2705）与 bridge 异常提取（事件 2564），无宿主崩溃不能单独归因本修复。
 
 ## 适用与失效边界
 

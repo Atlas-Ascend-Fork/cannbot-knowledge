@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "FlashAttentionScore 融合 pass 的算子签名适配修复：headNum nullptr 报错定位到 head_num 属性名与 attention_out 输出端口 3",
-  "description": "GE 图融合 pass 创建 FlashAttentionScore 节点时沿用 PromptFlashAttention 的属性名（num_heads/pre_tokens）会在 infershape 阶段报 headNum is nullptr!。依据 aic-ascend910_93-ops-info-transformer.json 修正为 head_num/pre_tockens/next_tockens（CANN 原文拼写），锚点消费者改接输出端口 3（attention_out）后 24 层融合成功：verify max_abs=0.00148183 与不融合基线几乎逐位一致，同口径 avg 11.77→9.45ms（-19.7%）。",
+  "description": "GE 图融合 pass 创建 FlashAttentionScore 节点时沿用 PromptFlashAttention 的属性名（num_heads/pre_tokens）会在 infershape 阶段报 headNum is nullptr!。依据 aic-ascend910_93-ops-info-transformer.json 修正为 head_num/pre_tockens/next_tockens（CANN 原文拼写），锚点消费者改接输出端口 3（attention_out）后 24 层融合成功：verify max_abs=0.00148183 与不融合基线对 golden 的最大误差接近，同口径 avg 11.77→9.45ms（-19.7%）。",
   "tags": [
     "task.debugging",
     "topic.compilation",
@@ -12,13 +12,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "910"
   ]
 }
 ---
-
 # FlashAttentionScore 融合 pass 的算子签名适配修复：headNum nullptr 报错定位到 head_num 属性名与 attention_out 输出端口 3
 
 ## 适用场景
@@ -100,7 +99,7 @@ FlashAttentionScore 的必填属性名为 `head_num`（非 num_heads）、`pre_t
 
 结论二（逐字）：
 
-M400 第 1 轮双门禁通过：24 层 attention 链融合为 FlashAttentionScore（fp32/BNSD，q/k/v 直连 SqueezeV3 输出）后 verify PASS（max_abs=0.00148183，与不融合基线 0.00148179 几乎逐位一致）；GE_FA_FUSION_PASS= 空值关闭后回归 verify PASS（max_abs=0.00148179，与基线逐位一致）。
+M400 第 1 轮双门禁通过：24 层 attention 链融合为 FlashAttentionScore（fp32/BNSD，q/k/v 直连 SqueezeV3 输出）后 verify PASS（max_abs=0.00148183，对 golden 的最大误差与不融合基线 0.00148179 接近）；GE_FA_FUSION_PASS= 空值关闭后回归 verify PASS（max_abs=0.00148179，与基线记录的最大误差相同；未直接比较两版输出数组）。
 
 ## 验证信号
 
@@ -108,7 +107,7 @@ M400 第 1 轮双门禁通过：24 层 attention 链融合为 FlashAttentionScor
 - 事件 567/571：ops-info 属性名与输入/输出签名（CANN 9.1.0 安装目录 JSON 实测）。
 - 事件 581：修复后 24 层融合成功、推理 success（单次运行）。
 - 事件 588/592：干净闭环 verify PASS，max_abs=0.00148183（门禁 rtol=1e-2/atol=2e-3）。
-- 事件 599：GE_FA_FUSION_PASS= 空值 off-switch 回归 verify PASS，max_abs=0.00148179，与基线逐位一致。
+- 事件 599：GE_FA_FUSION_PASS= 空值 off-switch 回归 verify PASS，max_abs=0.00148179，与基线记录的最大误差相同；未直接比较两版输出数组。
 - 性能（同会话同口径、fp32 对 fp32、单次 circle=1000）：
 
 结论三（逐字）：

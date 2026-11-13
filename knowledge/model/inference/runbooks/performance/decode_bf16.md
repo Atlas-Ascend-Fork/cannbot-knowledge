@@ -1,8 +1,8 @@
 ---
 {
   "type": "Runbook",
-  "title": "decode 时延瓶颈判别：单因子 bf16 实验证伪“计算受限”假瓶颈（真因为任务碎片固定开销）",
-  "description": "Ascend950PR_9589 上 pangu_2_6B fp32 bs=1 decode 的 P1 剖析显示 matmul 占设备时间 88.9%，看似计算受限；但单因子全模型 bf16 实验后 TPOT 持平（29.797 vs 29.433ms，恶化 1.2% 噪声带内），证伪 C4 假设。真因是每步约 711 个算子任务 × ~40µs 固定开销（C6 碎片化），并由 QKV 融合减任务数实测 TPOT -6.6% 正向佐证。给出阈值化判别手册与单因子探针流程。",
+  "title": "小 batch decode 的 bf16 负结果与任务下发开销排查",
+  "description": "Ascend950PR_9589 上 pangu_2_6B fp32 bs=1 decode 的 matmul 占设备时间 88.9%，全模型 bf16 后 TPOT 为 29.797ms，fp32 基线为 29.433ms，未观察到时延收益；显存峰值约减半。后续 QKV 融合观测到 TPOT 下降 6.6%，支持继续排查任务下发与执行粒度，但两项实验不能证明固定开销是唯一瓶颈。",
   "tags": [
     "task.debugging",
     "topic.model_serving"
@@ -10,14 +10,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
-# decode 时延瓶颈判别：单因子 bf16 实验证伪“计算受限”假瓶颈（真因为任务碎片固定开销）
+# 小 batch decode 的 bf16 负结果与任务下发开销排查
 
 ## 适用场景
 
@@ -35,7 +34,7 @@
 - 端到端 TPOT 中位数 29.433ms（事件 675）远高于设备每步有效执行时间——设备时间与端到端时延之间的缺口指向下发/固定开销。
 - host 侧 trace 仅 cpu_op(25980)/dequeue(3504)/enqueue(3504) 三类 X 事件，无设备 kernel cat（事件 721）；enqueue 3504/6 步 = 584 任务/步，top 算子下发计数约 711/步，越过 C6 阈值（>500）。
 
-结论（触发判）：在 pangu_2_6B fp32 bs=1 decode 的 P1 剖析中，matmul 类合计占设备时间 88.9%（aclnnAddmm_MatMulV3Common_MatMulV3 1152 次/47.12ms 居设备侧 Top-1），而端到端 TPOT 中位数 29.433ms 远高于设备每步有效执行时间——单看 matmul 占比会把瓶颈误判为计算受限（C4）。
+结论（触发判）：在 pangu_2_6B fp32 bs=1 decode 的 P1 剖析中，matmul 类合计占设备时间 88.9%（aclnnAddmm_MatMulV3Common_MatMulV3 1152 次/47.12ms 居设备侧 Top-1），而端到端 TPOT 中位数 29.433ms 远高于设备每步有效执行时间——单看 matmul 占比不足以确认计算受限。
 
 ## 探针与操作
 
@@ -49,11 +48,11 @@
 . ${WORK_ROOT}/mia/scripts/setup_env.sh && cd ${WORK_ROOT} && venv/bin/python mia/scripts/bench.py task-workspace/models/pangu_2_6B npu npu-c1b-bf16 --prompt-id s03 --rounds 10 --warmup 3 --dtype bf16 --note "candidate C1b" 2>&1 | grep -vE "Warning|warn|GenerationMixin|owner|👉|auto class|related|trust_remote_code|jieba|prefix|Loading" | tail -24
 ```
 
-第三步：判读——TPOT 显著下降 → C4 实锤，保留精度转换路线；TPOT 持平（噪声带内）→ C4 证伪，主因转向 C6（任务数 × 固定开销），改走减任务数路线（融合/图模式）。
+第三步：判读——TPOT 下降可支持在当前负载继续评估 bf16；没有收益则记录该路线的负结果，并检查 host 下发、同步、设备占用和 dtype 路径差异。dtype 切换同时影响算力、流量和算子实现，任何一个结果都不足以单独确认或排除某类瓶颈。
 
 第四步：用“减任务数”候选做正向验证（QKV 融合，见 [GPT-2 系模型 QKV 三投影融合单 GEMM（保留 custom_query 末层）的 decode 加速](gpt_qkv_gemm_custom_query_decode.md)）。
 
-诊断手册阈值（diagnose.py 内置 RUNBOOK，事件 275 原文逐字）：
+来源诊断脚本的启发式阈值（不是实测定律或根因验收门限；下列代码保留来源形式，仅用于列出待检查方向）：
 
 ```
 # 诊断手册（阈值=知识库 runbook 卡的机器可读投影；本种子库为最小内置集）
@@ -77,24 +76,16 @@ RUNBOOK = [
 
 可区分解释分支：
 
-- 分支 A（C4 计算受限 / C2 带宽受限）：bf16 使权重流量减半、bf16 有效算力更高 → TPOT 应显著下降。
-- 分支 B（C6 任务碎片固定开销）：每步约 711 个算子任务 × ~40µs 固定开销 ≈ 28ms 主导 → dtype 不改变任务数，TPOT 应持平。
+- 假设 A：降低精度减少当前关键路径的计算或访存时间，可能使 TPOT 下降；具体收益取决算子实现、利用率和其他开销。
+- 假设 B：任务下发、同步或执行粒度限制了 dtype 转换收益。任务数较多与端到端/设备时间差提供排查线索，但没有逐任务延迟分解，不能把 TPOT 除以任务数当作已测固定开销。
 
-实测落入分支 B（事件 778：TPOT 中位 29.797ms、TTFT 中位 31.13ms、峰值 4.973GB；对照事件 675：TPOT 29.433ms、峰值 9.994GB）。
+实测 bf16 没有观察到时延收益（事件 778：TPOT 中位 29.797ms、TTFT 中位 31.13ms、峰值 4.973GB；对照事件 675：TPOT 29.433ms、峰值 9.994GB）。
 
-结论（探针判）：单因子 bf16 探针证伪计算受限假设：全模型 bf16 后 TPOT 中位数 29.797ms vs fp32 基线 29.433ms（恶化 1.2%，噪声带内不计收益），时延不随权重流量与算力精度变化。
+结论（探针判）：本负载全模型 bf16 后 TPOT 中位数为 29.797ms，fp32 基线为 29.433ms（约 +1.2%，来源约定不计为可靠差异），没有取得时延收益；峰值显存由 9.994GB 降至 4.973GB。
 
-谱系记录（事件 781 命令原文逐字，C1b 记 rejected 并留因，同时登记 C2 融合候选及其 CostModel 上界）：
+后续 QKV 融合在相同负载下观测到 TPOT 27.477ms（较 fp32 基线下降约 6.6%）。31 层投影由每层 3 次变为 1 次，理论减少 62 次线性投影调用；实际设备 kernel 数和逐任务开销未重新统计。融合还会改变 GEMM 形状与存储行为，因此该结果支持评估执行粒度，不能单独证明收益全部来自固定 launch 开销。
 
-```
-cd ${WORK_ROOT} && venv/bin/python mia/scripts/candidates.py task-workspace/models/pangu_2_6B set --id C1b-full-bf16 --status rejected --precision "L0 8/8 PASS cos>=0.999993 (profile/precision_l0/L0_report_bf16.json)" --perf "tpot 29.80ms vs C0 29.43ms (-1.2%, 噪声带内不计收益); peak_mem 9.99→4.97GB (-50%)" --reason "时延目标未达: fp32 decode 已贴权重流带宽地板, bf16 减半权重流不再受益; 每步 711 算子×~40us 固定开销主导 → 真因 C6 非 C4; 显存收益真实, 留作显存受限场景选项" && venv/bin/python mia/scripts/candidates.py task-workspace/models/pangu_2_6B add --id C2-qkv-fuse --parent C0-pure-device-move --domain S3 --change "QKV 三投影融合: [3x2560,2560] 单 GEMM 替代 3xaddmm (每步 192→160 个 GEMM 任务)" --status proposed --reason "诊断 run1: op_count/step=711, C6 碎片化为主因; S3 减少任务数; CostModel: 每任务固定开销~40us×32层×2次削减≈13% TPOT 上界"
-```
-
-正向佐证：QKV 融合把每步 GEMM 任务从 192 减到 160，TPOT 实测 27.477ms（-6.6%，事件 820），与“减任务数”模型方向一致（边际约 31µs/任务）。
-
-结论（判别判）：真因判定为任务碎片固定开销（C6）：谱系将 C1b 记为 rejected 并留因（每步 711 算子×~40us 固定开销主导 → 真因 C6 非 C4）；随后 QKV 融合减少每步任务数实测 TPOT -6.6%（27.477ms），与该归因方向一致。
-
-未验证推断（诚实标注）：~40µs/任务的固定开销是谱系推断值（由 bf16 无效与融合收益两次实验反推），未做逐任务延迟分解实测；“fp32 decode 已贴权重流带宽地板”是解释性表述，未实测带宽利用率（无 P2 级带宽数据）。
+来源曾提出约 40µs/任务的成本模型及权重带宽地板解释，两者均缺乏直接测量，本卡不将其采纳为已验证根因或性能上界。
 
 ## 验证信号
 
@@ -107,5 +98,5 @@ cd ${WORK_ROOT} && venv/bin/python mia/scripts/candidates.py task-workspace/mode
 
 - 适用：eager、bs=1/小 batch decode、任务数多（>500/步）且设备利用率低（设备时间远小于 TPOT）的 NPU 推理场景。
 - 失效/不适用：prefill 或大批量（算力/带宽真正主导）时 bf16 仍可能有效——本轨迹未测；固定开销数值随 CANN/驱动/调度器版本漂移，跨版本须重跑判别实验；多卡/通信受限场景另需 C1 判别（host_dev_ratio 等）。
-- 停止/回退规则：若 bf16 探针显示 TPOT 显著下降（超噪声带），则 C4 成立，应保留精度转换路线并撤销“碎片开销主导”结论。
+- 停止/回退规则：若 bf16 探针显示可靠收益，在精度门禁通过后继续该路线；若没有收益，保留负结果并对其他候选做独立测量。不要由单项 dtype 实验直接决定根因。
 - 单因子纪律：判别结论只在“除 dtype 外一切不变”时成立；若同时改了融合/图模式等多个因子，结论不可归因。

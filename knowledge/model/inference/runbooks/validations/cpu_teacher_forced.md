@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "无权重模型迁移的 CPU 黄金基线与 teacher-forced 一致性验证方法",
-  "description": "离线无官方权重的模型迁移可用固定种子随机初始化做粗粒度 CPU↔NPU 一致性验证：CPU golden 与 NPU 侧调用同一 build_model 复现相同权重，比对 prefill logits（cosine/top-k）。随机权重下自由 greedy decode 约 3 token 后必然分叉，须改用 teacher-forced（把 CPU token 轨迹逐个喂回 NPU）比较逐步 logits。先跑小配置冒烟再跑全量可低成本暴露适配错误。",
+  "description": "离线无官方权重的模型迁移可用固定种子随机初始化做粗粒度 CPU↔NPU 一致性验证：CPU golden 与 NPU 侧调用同一 build_model 复现相同权重，比对 prefill logits（cosine/top-k）。本例随机权重下自由 greedy decode 在前 3 token 后分叉，须改用 teacher-forced（把 CPU token 轨迹逐个喂回 NPU）比较逐步 logits。先跑小配置冒烟再跑全量可低成本暴露适配错误。",
   "tags": [
     "task.implementation",
     "task.testing",
@@ -12,13 +12,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # 无权重模型迁移的 CPU 黄金基线与 teacher-forced 一致性验证方法
 
 ## 适用场景
@@ -32,7 +31,7 @@
 
 - 触发：任务要求「随机权重需可从同一固定种子在 CPU/NPU 上复现，保证粗粒度精度对齐可做」，且精度无绝对值意义、仅做粗粒度 CPU↔NPU 一致性验证。
 - 观测（事件 215）：NPU prefill logits 对 CPU golden——cosine 0.999971、max abs diff 0.011826、top-1 一致（101453）、top-10 重叠 10/10；自由 greedy decode 仅前 3 token 一致（3/8），随后 NPU 分叉为 `[...76480, 76480, 76480, 76480]`。
-- 观测（事件 253）：引入 teacher-forced 对照后，per-step cosine 0.996914–0.999977、argmax 6/7——分叉来自 argmax 平票/近票，而非算子算错。
+- 观测（事件 253）：引入 teacher-forced 对照后，per-step cosine 0.996914–0.999977、argmax 6/7——两侧在相同输入轨迹下仍有小幅数值差异；近票 argmax 是待核对解释，不能仅据高 cosine 排除算子或状态错误。
 
 ## 探针与操作
 
@@ -84,13 +83,13 @@ def build_model(config, seed=DEFAULT_SEED, dtype=torch.bfloat16):
             tf_cos.append(round(float(torch.nn.functional.cosine_similarity(out, ref, dim=0)), 6))
 ```
 
-失败路线（不可采用）：用**自由 greedy decode 的 token 一致率**判定 NPU 正确性——随机权重下必然在前几步分叉，会把正确的适配误判为失败。
+失败路线（不可采用）：用**自由 greedy decode 的 token 一致率**判定 NPU 正确性——自由序列一旦分叉，后续 logits 还混入不同输入和缓存历史的影响；只看该比率难以定位原因。是否允许 token 分叉须由任务精度契约决定，不能自动豁免。
 
 ## 机制与判别
 
 - 无官方权重的模型可用固定种子随机初始化权重做粗粒度 CPU↔NPU 一致性验证：CPU golden 与 NPU 侧各自调用同一 build_model（torch.manual_seed → 构造 → init_weights → cast_model_dtype）复现出相同权重，NPU prefill logits 对 CPU golden cosine 0.999971、top-1 一致、top-10 重叠 10/10、max abs diff 0.011826。
-- 随机权重下自由 greedy decode 只保证前 3 个 token 一致（3/8），随后因 logits 接近与 bf16 数值差异分叉；判定一致性应改用 teacher-forced（把 CPU token 轨迹逐个喂回 NPU）比较逐步 logits，实测 per-step cosine ≥ 0.996914、argmax 6/7。
-- 判别逻辑：prefill cosine + top-k 重叠验证「计算图整体正确」；teacher-forced per-step cosine 验证「逐步 decode 算术正确」；自由 decode 分叉只能证明「argmax 对近票敏感」，不是失败判据。两者结合可区分「数值漂移」（cos 略低但仍 ~1）与「实现错误」（cos 崩塌，如 mask 极性写反时 cos≈0）。
+- 本例自由 greedy decode 前 3 个 token 一致（3/8），随后分叉；具体翻转原因未通过逐步 margin 和中间张量充分隔离。可补充 teacher-forced（把 CPU token 轨迹逐个喂回 NPU）比较逐步 logits，实测 per-step cosine ≥ 0.996914、argmax 6/7。
+- 判别逻辑：prefill cosine/top-k 与 teacher-forced per-step cosine 是已测样本上的粗粒度一致性信号，不能证明整个计算图或所有 decode 算术正确。固定输入轨迹有助于区分输入分叉带来的差异与同输入下的差异；高 cosine 也可能掩盖局部错误，需结合误差分布、关键节点和任务验收。
 - 全量 golden 之前先用小配置冒烟（2 层、hidden 64、vocab 1000），CPU 与 NPU 各 decode 3 步 token 完全一致（201/61/169）后再跑 6B 全量，可低成本暴露适配错误。
 
 ## 验证信号
@@ -107,7 +106,7 @@ def build_model(config, seed=DEFAULT_SEED, dtype=torch.bfloat16):
 - 适用：无权重（或权重不可得）的模型移植/算子替换的粗粒度验证；CPU 侧黄金可长期落盘复用。
 - 失效/风险：
   - 随机权重 + 近票 logits 下，任何指标都不携带绝对精度意义；阈值只能用「同量级漂移」（如 cosine ≥ 0.99、top-k 大体重叠）而非绝对值。
-  - 自由 greedy decode token 一致率不能作为通过/失败判据（会误报）；必须 teacher-force。
+  - 自由 greedy decode token 一致率与 teacher-forced logits 回答不同问题，应共同报告；是否将 token 分叉作为失败由目标精度契约决定。
   - teacher-forced 只覆盖被喂轨迹的逐步算术，不覆盖「NPU 自身生成轨迹上的 KV 写入正确性」——后者需结合确定性重跑（同 token 序列逐位一致）佐证。
   - 冒烟配置与全量配置的维度差异意味着冒烟通过 ≠ 全量通过（本例冒烟后全量一次通过，但不构成保证）。
   - 权重/结构/tokenizer 变更会改变 RNG 消耗与 token 轨迹，golden 需重建；tokenizer 为兜底 byte-BPE（无语义），仅保证确定性。

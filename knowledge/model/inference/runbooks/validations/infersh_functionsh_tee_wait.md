@@ -1,7 +1,7 @@
 ---
 {
   "type": "Runbook",
-  "title": "infer.sh 推理失败时退出码恒为 0（function.sh tee 管道与 wait 不透传子进程退出码）",
+  "title": "infer.sh 多 rank 推理失败退出码未透传：tee 管道与无参数 wait",
   "description": "cann-recipes-infer 统一入口 function.sh 将各 rank 的 python 子进程放入后台（rank0 经 tee 管道、其余经重定向），循环后执行无参数 wait，子进程异常退出不影响脚本退出码。deepseek_v4 六个约束负向用例日志均含明确报错但外层 EXIT_CODE=0，与成功运行（同样 0）不可区分，CI 依赖 $? 判级会误判。",
   "tags": [
     "task.debugging",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
-# infer.sh 推理失败时退出码恒为 0（function.sh tee 管道与 wait 不透传子进程退出码）
+# infer.sh 多 rank 推理失败退出码未透传：tee 管道与无参数 wait
 
 ## 适用场景
 
@@ -78,10 +77,10 @@ docker exec cann_recipes_infer_dsv4_bak_1014 bash -l -c "cd ${RECIPES_ROOT} && b
 
 - 结论 1：deepseek_v4 约束负向用例（ct1-ct6 共 6 例）推理日志均含明确报错，但 infer.sh 外层退出码全部为 0（`EXIT_CODE=0`）；同一镜像、同一入口下主样例成功运行同样返回 0，失败与成功在退出码维度不可区分。
   - 信号：来源记录 T 167/T 179/T 183/T 187/T 190/T 194（失败 6 例）、T 148（成功对照）；来源记录 T 166/T 173（失败 2 例）。
-- 结论 2：机制为 function.sh 将每个 rank 的 python 子进程放入后台（rank0 经 `2>&1 | tee ... &` 管道、其余 rank 经 `&> ... &` 重定向），循环结束后执行无参数的 `wait`；无 pipefail 时 rank0 管道的退出码取 tee 的 0，无参数 `wait` 也不透传任何子进程退出码，因此脚本整体退出码与子进程成败解耦，恒为 0。
+- 结论 2：机制为 function.sh 将每个 rank 的 python 子进程放入后台（rank0 经 `2>&1 | tee ... &` 管道、其余 rank 经 `&> ... &` 重定向），循环结束后执行无参数的 `wait`；无 pipefail 时 rank0 管道的退出码取 tee 的 0，无参数 `wait` 也不透传任何子进程退出码，因此正常等待结束时不能由该路径透传各 rank 的失败；本例失败用例外层均为 0。信号中断、启动失败或其他脚本分支的退出行为未穷尽，不将“恒为 0”外推到所有情形。
   - 机制锚点：来源记录 T 112（function.sh 行 321-328 原文）。
   - 判别：若仅有 rank0 的 tee 管道吞码，则 `LAUNCH_MODE` 分支下所有 rank 走 `&>` 重定向时应能透传失败；但实测重定向分支下同样 `EXIT_CODE=0`（6 例均覆盖多 rank 场景），支持"`wait`（无参数）+ 后台任务整体不透传"为统一根因，`tee` 吞码仅为 rank0 路径的叠加因素。此判别基于原文结构与退出码观测，未对 function.sh 做修改实验。
-- 未验证推断（轨迹内未实施修复）：`set -o pipefail` + `wait $pid; exit $?` 显式透传可修复该问题；两条轨迹报告均如此建议，未验证。
+- 未验证推断（轨迹内未实施修复）：为每个 rank 后台任务（包括 rank0 的整条管道）记录 PID，开启适当的 `pipefail` 并逐个 `wait`，汇总任一非零状态后向外返回；只等待一个 PID 仍可能漏掉其他 rank 失败。该方案需单独实现并用不同 rank 失败的负向用例验证，轨迹内尚未实施。
 
 ## 验证信号
 

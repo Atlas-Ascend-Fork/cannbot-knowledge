@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-09T09:37:53Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
 # gpt_oss exe_mode=ge_graph 违反"仅支持 eager"约束时报 TorchDynamo 深层错误（与根因脱节）
 
 ## 适用场景
@@ -103,7 +102,7 @@ scheduler_config:
   - 信号：来源记录 T 221（完整报错原文）、T 220/C 209（探针）；来源记录 T 239（warm-up 阶段崩溃堆栈）、T 243（同型堆栈）、T 246（InternalTorchDynamoError 原文）。
 - 结论 2：报错脱节的根因是两级白名单不一致——框架级白名单（上述 inference_config.py:220-223 原文）不感知模型差异，gpt_oss 模型侧又没有 check_model_settings 之类的模型级 exe_mode 拦截；对照 deepseek_v4：同样设 exe_mode=ge_graph（且 enable_static_kernel=False 避开 config 级 static_kernel 校验）时，deepseek_v4 在模型级 `check_model_settings` 明确拒绝（`[rank0]: ValueError: exe_mode='ge_graph' does not supported!`，来源记录 T 270），报错直接指向约束本身。
   - 信号：来源记录 T 270（ct5_exe_mode_gegraph 负向用例）。
-  - 判别：同为"ge_graph 越界"，gpt_oss 报 TorchDynamo 内部错误（无法定位约束）、deepseek_v4 报模型级 ValueError（可直接定位约束）——差异不在 torch/dynamo 版本，而在模型级是否存在 exe_mode 校验；两模型在同仓库、同统一入口下行为不同支持该判别。
+  - 判别：同为"ge_graph 越界"，gpt_oss 报 TorchDynamo 内部错误（无法定位约束）、deepseek_v4 报模型级 ValueError（可直接定位约束）——模型级校验差异可以解释失败反馈发生在哪一层；两次环境的 torch/dynamo 版本不同，未做同版本隔离，不能据此排除版本因素对深层符号错误的影响。
 - 未验证推断（轨迹内未实施修复）：在 gpt_oss 模型加载时增加模型级校验（如 `ValueError: gpt_oss only supports exe_mode='eager', got 'ge_graph'`）可在权重加载前快速失败；两条轨迹报告均如此建议，未验证。
 
 ## 验证信号

@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
 # vllm-ascend sleep/wake 后 MoE HCCL 组引用失效（draft MC2 dispatcher 不刷新 + MegaMoE 对称缓冲区持旧句柄）
 
 ## 适用场景
@@ -177,5 +176,5 @@ grep -n "refresh_moe_hccl_groups\|_MoECommMethods" vllm_ascend/device_allocator/
 - 适用：开启 Level-2 sleep/wake 的 vllm-ascend DeepSeek-V4.1 部署，且含 dspark draft（拓扑异于 target）或 FUSED_MC2/MegaMoE。
 - 不适用：不含 sleep/wake 周期的长稳流程（此时应优先排查 Mooncake 接收字典泄漏与 pinned 内存 churn）。
 - 版本边界：baebb4dda 引入 draft 拓扑分桶（mc2_draft 组）后本缺口成立；`_MoECommMethodsByTopology` 注册表本身无泄漏（仅刷新缺口）。
-- 停止/回退条件：若 wake 后 draft 通信即挂死（响亮失败），可快速确认 P1-6；若仅数据错乱则表现为静默精度劣化，需用通信计数/日志定位。
+- 停止/回退条件：若wake后draft通信挂死或精度异常，只能支持sleep/wake相关方向。需核对wake前后dispatcher通信名、实际进程组身份与刷新覆盖，并排查其他通信失败；症状本身不能确认唯一根因。
 - 修复方向（未验证）：`refresh_moe_hccl_groups` 同时遍历 `_MoECommMethodsByTopology` 的所有 bucket；wake 时清除 `_MEGA_MOE_BUFFER_STATE_ATTR`/`mega_moe_symm_buffer` 缓存并重建。

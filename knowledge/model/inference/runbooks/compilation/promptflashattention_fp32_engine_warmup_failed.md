@@ -12,13 +12,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "910"
   ]
 }
 ---
-
 # PromptFlashAttention 在 910_93 无 fp32 engine：Failed to SelectEngine 的判别与 FlashAttentionScore 改选
 
 ## 适用场景
@@ -95,4 +94,4 @@ FlashAttentionScore 在同一 opp 目录下存在 q/k/v=fp32 的 binList 条目�
 - 结论绑定 CANN 9.1.0 的 ascend910_93 kernel config 实测；CANN 版本或 SoC 目录变化后须重跑本探针（一条 python 命令即可）。
 - 仅判别「算子库是否有对应 dtype 的 bin」，不覆盖 shape/布局/属性不匹配导致的其它 SelectEngine 失败形态。
 - fp16/bf16/int8 图不受此限制，PFA 本身可用（M200 路径，助手自述）。
-- 若图两侧可接受插入 Cast（等价改写），PFA + Cast 亦是备选路线，但会引入 Cast 开销且本轨迹未实测。
+- 若业务接受降精度并能通过完整精度门禁，图两侧插入 Cast 后使用 PFA 可作为待测方案；FP32→FP16/BF16 会引入舍入误差，不能视为无条件等价改写，且本轨迹未实测。

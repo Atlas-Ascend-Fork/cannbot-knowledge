@@ -12,13 +12,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "910"
   ]
 }
 ---
-
 # LayerScale 常量折叠进 proj/fc2 权重：Mul(Add(MatMul(x,W),b),ls)→W·ls/b·ls 原地改写 Const（GE parser 将 MatMul 映射为 BatchMatMulV2）
 
 ## 适用场景
@@ -140,4 +139,4 @@ LS 折叠 pass 在循环里误用 `return fail(...)` 会使首个不匹配的 Mu
 - `return fail()` vs `continue` 是所有「图遍历 + 部分匹配」pass 的通用陷阱：单个节点不匹配应跳过而非中止。
 - 精度边界：fp16 下折叠改变权重缩放顺序，max_abs 由 1.26e-3 升至 1.51e-3（仍过 atol=2e-3 门禁）；对更紧门禁需评估。
 - 收益条件：LayerScale Mul 在融合 LN 后变为独立 kernel 时收益明确（本例 48 Mul ≈283us，折叠净收益 -5.0%）；若 Mul 已被其它融合吸收则收益有限。
-- 回退条件：GE_LS_FOLD_PASS=（空值关闭）；全关配置回归与基线口径逐位一致（事件 977）。
+- 回退条件：GE_LS_FOLD_PASS=（空值关闭）；全关配置回归 verify PASS，max_abs=0.00148197（事件 977）；这不是与原基线输出的逐位比较。

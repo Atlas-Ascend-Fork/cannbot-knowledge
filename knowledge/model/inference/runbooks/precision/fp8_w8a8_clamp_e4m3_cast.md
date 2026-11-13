@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "FP8 W8A8 静态激活量化前必须 clamp(-448, 448)：E4M3 越界 cast 产生 NaN",
-  "description": "Hunyuan-A13B-Instruct-FP8（W8A8，checkpoint 自带静态 per-tensor input_scale/weight_scale）在 NPU 上用 npu_quant_matmul 做激活量化时，PyTorch 对 >448 的值直接 .to(float8_e4m3fn) 会得到 NaN 而非饱和；激活先除以 input_scale 再 cast 前必须 clamp(-448,448)，否则量化激活出现 NaN、输出全 NaN。clamp 后单层误差 max 0.0596 / 平均相对约 2.6%，全模型与 CPU BF16 黄金参考贪心 token 完全一致、prefill logits 余弦 0.99985。",
+  "description": "Hunyuan-A13B-Instruct-FP8（W8A8，checkpoint 自带静态 per-tensor input_scale/weight_scale）在 NPU 上用 npu_quant_matmul 做激活量化时，本环境探针中 500、1000、-1000、1e5 直接 .to(float8_e4m3fn) 得到 NaN，不能依赖该 cast 自动饱和；激活先除以 input_scale 再 cast 前必须 clamp(-448,448)，否则量化激活出现 NaN、输出全 NaN。clamp 后单层误差 max 0.0596 / 平均绝对误差/参考平均幅度约 2.6%，全模型与 CPU BF16 黄金参考贪心 token 完全一致、prefill logits 余弦 0.99985。",
   "tags": [
     "task.debugging",
     "topic.precision",
@@ -12,13 +12,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # FP8 W8A8 静态激活量化前必须 clamp(-448, 448)：E4M3 越界 cast 产生 NaN
 
 ## 适用场景
@@ -80,14 +79,14 @@ out=torch_npu.npu_quant_matmul(xq,Wt,scale,output_dtype=torch.bfloat16).cpu()
 84:             )
 ```
 
-其中 `FP8_MAX = 448.0`（E4M3 最大常规值）。失败路线（不可采用）：不 clamp 直接 `.to(torch.float8_e4m3fn)`——越界元素变 NaN 并污染整个 matmul 结果；也不能省略激活 scale（`no-actscale max diff 13819.59375`，误差爆炸）。
+其中 `FP8_MAX = 448.0`（E4M3 最大常规值）。失败路线（不可采用）：不 clamp 直接 `.to(torch.float8_e4m3fn)`——越界 cast 可产生 NaN 并传播到 matmul 输出；影响范围取决于越界元素位置；也不能省略激活 scale（`no-actscale max diff 13819.59375`，误差爆炸）。
 
 ## 机制与判别
 
-- 结论 a1：PyTorch 对超出 E4M3 表示范围（>448）的数值直接执行 .to(torch.float8_e4m3fn) 会得到 NaN 而非饱和截断，NPU 与 CPU 行为一致（500.0、1000.0、-1000.0、1e5 均转出 nan，448.0 以内正常）。（证据：探针事件 280，结果事件 281）
-- 结论 a2：激活按 checkpoint 静态 input_scale 量化前必须先 clamp(-448,448)：不 clamp 时量化后激活出现 nan、单层输出 max abs diff 为 nan；clamp 后单层 q_proj 的 npu_quant_matmul 与 BF16 反量化参考 max diff 0.0596、平均相对误差约 2.6%（单层、单次观测）。（证据：事件 273/277 失败态，事件 285 修复态 `maxdiff 0.0595703125 meandiff 0.0063459924422204494 ref absmean 0.2442949414253235` / `rel 0.025976765900850296`）
+- 结论 a1：本环境对 500.0、1000.0、-1000.0、1e5 直接执行 .to(torch.float8_e4m3fn) 得到 NaN，NPU 与 CPU 采样行为一致；未采样紧邻 448 的舍入临界点，不能断言所有绝对值刚大于 448 的数都立即为 NaN（本次采样中 0、1、100、448 可得到有限结果）。（证据：探针事件 280，结果事件 281）
+- 结论 a2：激活按 checkpoint 静态 input_scale 量化前必须先 clamp(-448,448)：不 clamp 时量化后激活出现 nan、单层输出 max abs diff 为 nan；clamp 后单层 q_proj 的 npu_quant_matmul 与 BF16 反量化参考 max diff 0.0596、平均绝对误差与参考平均幅度之比约 2.6%（单层、单次观测）。（证据：事件 273/277 失败态，事件 285 修复态 `maxdiff 0.0595703125 meandiff 0.0063459924422204494 ref absmean 0.2442949414253235` / `rel 0.025976765900850296`）
 - 结论 a3：全模型按 clamp + npu_quant_matmul(xq, W[in,out], input_scale*weight_scale) 实现后，与 CPU BF16 黄金参考贪心 token 完全一致 [27, 9399, 397, 60704]、prefill logits 余弦 0.99985、top-10 全命中（token_match=true，first_divergence_step=null）。（证据：事件 659 `agentic/golden/npu_vs_cpu.json`）
-- 可区分解释：输出全 NaN 且 ref 本身正常 → 量化输入越界（本问题）；仅个别 token 错 → scale 组合/语义问题；`no-actscale` 巨大误差 → 漏乘 input_scale。clamp 引入的是有界饱和误差（单层 rel ~2.6%），与"NaN 污染"可区分。
+- 可区分解释：输出全 NaN 且 ref 本身正常 → 量化输入越界（本问题）；仅个别 token 错 → scale 组合/语义问题；`no-actscale` 巨大误差 → 漏乘 input_scale。clamp 引入的是有界饱和误差（单层 mean(abs_error)/mean(abs_reference) ~2.6%），与"NaN 污染"可区分。
 - 未验证推断：clamp 对最终精度的影响仅通过贪心 token 一致 + 余弦 0.99985 间接评估，未做逐层误差传播分析。
 
 ## 验证信号

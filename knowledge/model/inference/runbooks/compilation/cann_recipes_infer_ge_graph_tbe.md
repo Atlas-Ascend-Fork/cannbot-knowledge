@@ -10,13 +10,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-09T09:37:53Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
 # A3+CANN 9.2.0 上 cann-recipes-infer ge_graph 图编译 TBE tiling 失败（E90003/ERR03005）的判别探针与 eager 回退
 
 ## 适用场景
@@ -88,7 +87,7 @@ print(\"eager aclnnRmsNorm OK:\", out[0].shape)
 \"' 2>&1 | tail -3
 ```
 
-判别探针：同环境用 eager 路径执行同 shape 的 torch_npu.npu_rms_norm（(1,1,128) bf16）返回「eager aclnnRmsNorm OK: torch.Size([1, 1, 128])」，证明失败仅限 GE/TBE 图编译链路（tiling/单算子重编译），算子 aclnn 执行路径本身可用
+判别探针：同环境用 eager 路径执行同 shape 的 torch_npu.npu_rms_norm（(1,1,128) bf16）返回「eager aclnnRmsNorm OK: torch.Size([1, 1, 128])」，确认该单算子的 eager aclnn 路径可执行，而已观测失败发生在 GE/TBE 图编译阶段；这不等同于定位整个模型的唯一根因
 
 **eager 回退（可用路线）**：对失败样例的 YAML 做临时副本，仅把 exe_mode 改为 eager（原样例不动，测试后删除副本）：
 
@@ -112,13 +111,13 @@ deepseek_r1 轨迹对 CANN 9.0.0 的尝试同样失败于 torch_npu 2.10 与 9.0
 
 **可区分的解释分支与判别证据**：
 
-- 分支 A「模型/仓库代码缺陷」——被排除：同一 deepseek_r1 CI 用例在 2026-09-23、同一 CANN 9.2.0 上有成功记录（输出 `main and MTP model average inference time cost is 124.50 ms`，日志及后续失败时间线见本卡 [deepseek_r1 历史回归证据](#deepseek_r1-历史回归证据)）；eager 同权重同并行跑通；四条轨迹跨 3 个模型、跨 4 天复现，仓库与 upstream 同步。
-- 分支 B「torch_npu 版本问题」——被排除：torch_npu 2.10.0.post7.dev 与 2.8.0.post4（README 要求）在 CANN 9.2.0 上同样失败，三轮环境对照及导入失败原文见本卡 [版本组合边界](#版本组合边界)。
+- 分支 A「图模式下的模型/仓库代码缺陷」——尚未完全排除：同一 deepseek_r1 CI 用例在 2026-09-23、同一 CANN 9.2.0 上有成功记录（输出 `main and MTP model average inference time cost is 124.50 ms`，日志及后续失败时间线见本卡 [deepseek_r1 历史回归证据](#deepseek_r1-历史回归证据)）；eager 同权重同并行跑通；四条轨迹跨 3 个模型、跨 4 天复现，支持优先排查共同图编译环境，但 eager 成功不保证 ge_graph 路径正确，历史成功也不是当前代码和环境的受控对照。
+- 分支 B「torch_npu/CANN 版本兼容性」——仍需排查：torch_npu 2.10.0.post7.dev 与 2.8.0.post4（README 要求）在 CANN 9.2.0 上同样失败，三轮环境对照及导入失败原文见本卡 [版本组合边界](#版本组合边界)。
 - 分支 C「CANN 9.2.0 + torch 2.10 栈的 ge_graph 编译回归（环境组合边界）」——当前最优解释：与 README 推荐组合（CANN 9.0.0/9.1.0 + torch_npu v26.x + PyTorch 2.7/2.8）不符的环境上，TBE tiling 模板约束失败必现；0924 更换 nightly 后该 CI 用例从「偶发成功」转为「持续失败」也支持环境栈回归。未能在推荐组合上完成正向验证（本机 cann-9.0.0 缺组件），故「CANN 9.0.0/9.1.0 下 ge_graph 正常」仍是假设而非结论。
 
 ### 版本组合边界
 
-三轮环境对比：torch 2.10.0 + torch_npu 2.10.0.post7.dev20261016 + CANN 9.2.0 与 torch 2.8.0 + torch_npu 2.8.0.post4（README 要求的 v26.0.0）+ CANN 9.2.0 在同一 RmsNorm tiling 位置失败，失败与 torch_npu 版本无关；README 要求的 CANN 9.0.0 组合在本机不可搭建——torch_npu 2.8.0.post4 的 libtorch_npu.so 动态依赖 libom2_executor.so，该库仅存在于 cann-9.2.0 而 cann-9.0.0 安装中没有（ImportError: libom2_executor.so: cannot open shared object file: No such file or directory）
+三轮环境对比：torch 2.10.0 + torch_npu 2.10.0.post7.dev20261016 + CANN 9.2.0 与 torch 2.8.0 + torch_npu 2.8.0.post4（README 要求的 v26.0.0）+ CANN 9.2.0 在同一 RmsNorm tiling 位置失败，切换这两组 torch/torch_npu 版本均未消除失败，不能据此证明版本无关；README 要求的 CANN 9.0.0 组合在本机不可搭建——torch_npu 2.8.0.post4 的 libtorch_npu.so 动态依赖 libom2_executor.so，该库仅存在于 cann-9.2.0 而 cann-9.0.0 安装中没有（ImportError: libom2_executor.so: cannot open shared object file: No such file or directory）
 
 cann-9.0.0 + torch_npu 2.8.0.post4 组合失败的逐字证据（干净 env -i 环境）与库搜索结果：
 
@@ -134,7 +133,7 @@ ImportError: libom2_executor.so: cannot open shared object file: No such file or
 
 ### deepseek_r1 历史回归证据
 
-历史回归判别（deepseek_r1 CI 用例 ci/decode_r1_rank_16_16ep_a8w8c8_mtp）：同一用例 2026-09-23 在同一 cann-9.2.0 上成功（main and MTP model average inference time cost is 124.50 ms），2026-09-24 02:47 环境重装 torch_npu nightly 2.10.0.post7.dev20260924 后每次运行均以相同 E90003 失败（历史 22 个运行目录仅 0923 一个 ok=1）；同环境 npugraph_ex 样例（含 MlaPrologV3 融合算子）完全正常，样例 1/2 运行窗口设备端零错误——判定为环境栈（torch_npu nightly + CANN 9.2.0）ge_graph 编译回归而非仓库代码缺陷
+历史回归判别（deepseek_r1 CI 用例 ci/decode_r1_rank_16_16ep_a8w8c8_mtp）：同一用例 2026-09-23 在同一 cann-9.2.0 上成功（main and MTP model average inference time cost is 124.50 ms），2026-09-24 02:47 环境重装 torch_npu nightly 2.10.0.post7.dev20260924 后每次运行均以相同 E90003 失败（历史 22 个运行目录仅 0923 一个 ok=1）；同环境 npugraph_ex 样例（含 MlaPrologV3 融合算子）完全正常，样例 1/2 运行窗口设备端零错误——优先怀疑环境栈（torch_npu nightly + CANN 9.2.0）的 ge_graph 编译回归；尚未用固定仓库提交和健康版本组合隔离验证，不能排除图模式代码或共同依赖问题
 
 历史运行清点与成功记录（逐字）：
 
@@ -173,7 +172,7 @@ cann-9.2.0
 ## 适用与失效边界
 
 - 适用：A3（910_9362）+ CANN 9.2.0 + torch 2.10/torch_npu 2.10 dev 栈上，cann-recipes-infer ge_graph 样例在 decode 图编译阶段以 E90003/ERR03005（error code 1343225857）失败时的定界与回退。
-- 回退条件与代价：exe_mode 改 eager 可恢复功能（本组来源观测 4 轨迹全部验证），但失去图模式性能收益，且本文档不给出 eager vs ge_graph 的性能结论（后者无成功数据）；deepseek_r1 轨迹显示 npugraph_ex 是另一条可用路线（该模型样例）。
+- 回退条件与代价：exe_mode 改 eager 可恢复功能（本组来源观测 4 轨迹全部验证），但不再使用该图模式；图模式收益在本环境未成功测量，且本文档不给出 eager vs ge_graph 的性能结论（后者无成功数据）；deepseek_r1 轨迹显示 npugraph_ex 是另一条可用路线（该模型样例）。
 - 停止/排查顺序建议：先跑 eager 最小算子复现（区分编译链 vs 执行链）→ 再比对 README 版本要求与 `CANN version.info`、torch/torch_npu 版本 → 若需正向验证 README 组合，先确认 CANN 安装完整性（libom2_executor.so 等 torch_npu 链接依赖），避免混载多版本 CANN 库路径（会以 libaihac_ir.so undefined symbol 形式报错）。
 - 失效边界：
   - 本组来源观测未在 CANN 9.0.0/9.1.0 + torch_npu v26.x 推荐组合上完成正向验证，「推荐组合下 ge_graph 正常」是假设；复测时应先确认 CANN 安装完整（含 torch_npu 依赖库）。

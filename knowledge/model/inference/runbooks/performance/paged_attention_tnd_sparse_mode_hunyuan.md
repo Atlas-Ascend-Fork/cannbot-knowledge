@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # 独立部署 Paged Attention + FA v2（TND + sparse_mode=3）改造模板与验证基线（Hunyuan-A13B-Instruct-FP8）
 
 ## 适用场景
@@ -53,14 +52,14 @@ oref = ref_attn(q, k, v)
 print("prefill direct max diff:", (o.float() - oref.float()).abs().max().item())
 ```
 
-Decode paged 分支（先 `npu_scatter_nd_update_` 写入再经 block_table 读取，事件 142，逐字）：
+Decode paged 分支（先 `npu_scatter_nd_update_` 写入再经 block_table 读取）。下例把来源的 `view(NB * BS, BS, -1)` 等价写成 `flatten(2)`，明确从实际 `[total_blocks, BS, NKV, D]` 缓存得到 `[total_blocks, BS, NKV*D]`，避免混淆来源探针过量分配的块数；这项表述修订未重新上板验证：
 
 ```
 torch_npu.npu_scatter_nd_update_(k_cache.view(-1, NKV, D), torch.tensor([[5]], device=dev), kd.view(-1, NKV, D))
 torch_npu.npu_scatter_nd_update_(v_cache.view(-1, NKV, D), torch.tensor([[5]], device=dev), vd.view(-1, NKV, D))
 
 od, _ = torch.ops.npu.npu_fused_infer_attention_score_v2(
-    qd, k_cache.view(NB * BS, BS, -1), v_cache.view(NB * BS, BS, -1),
+    qd, k_cache.flatten(2), v_cache.flatten(2),
     num_query_heads=NH, num_key_value_heads=NKV,
     softmax_scale=1.0 / math.sqrt(D), input_layout="TND", sparse_mode=3,
     atten_mask=mask,

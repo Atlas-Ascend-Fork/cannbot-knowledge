@@ -1,8 +1,8 @@
 ---
 {
   "type": "Runbook",
-  "title": "DeepSeek-V4.1 私有环 SWA 前缀命中时 bounded-replay 热身行窗口截断导致环形 KV 系统性偏差",
-  "description": "vllm-ascend releases/v0.27.1rc 的 DeepSeek-V4.1 适配中，私有环 SWA 平面不做前缀缓存；前缀命中后调度侧回退一个窗口重放 [H−W, H)，但 dsa_v41.py:243 对 bounded replay 行置 history_len=0，重放段除最后一行外真实 SWA 窗口被截断，写入 ring 的 KV 系统性偏差并被后续约 W 个 decode 步读取。触发条件是 P 节点/standalone/抢占恢复的任何本地前缀命中，与是否命中缓存相关，表现为间歇性精度波动；PD 的 D 节点导入路径不受影响。",
+  "title": "DeepSeek-V4.1 私有环 SWA bounded replay 的历史窗口截断风险（静态审查）",
+  "description": "vllm-ascend 的 bounded-replay 行设 history_len=0。若实际重放起点大于0且未恢复所需历史，前部热身行可能缺少窗口上下文，并影响后续层 KV；本轨迹只完成代码审查，未运行精度消融。重放起点还受 max(0,...) 和块对齐影响，短前缀从0重算不属于同一缺口。D 节点不执行该本地重放分支，但导入窗口完整不保证 P 侧 KV 数值无偏。",
   "tags": [
     "task.debugging",
     "topic.precision",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
-# DeepSeek-V4.1 私有环 SWA 前缀命中时 bounded-replay 热身行窗口截断导致环形 KV 系统性偏差
+# DeepSeek-V4.1 私有环 SWA bounded replay 的历史窗口截断风险（静态审查）
 
 ## 适用场景
 
@@ -31,7 +30,7 @@
 
 ## 触发与观测
 
-触发 = 生产症状"精度波动"（用户叙述，事件 2）+ 代码路径"任何本地前缀命中后的 bounded replay"。审查（只读，未修改文件）观测到的客观代码事实（事件 352，grep 输出，仓库 ${LOCAL_PATH_1}）：
+排查入口 = 生产症状“精度波动”（用户叙述，事件 2）+ 本地前缀命中后的 bounded replay；是否满足历史缺失条件仍需核查。审查（只读，未修改文件）观测到的客观代码事实（事件 352，grep 输出，仓库 ${LOCAL_PATH_1}）：
 
 ```
 243:        history_len = 0 if row in bounded_replay_rows else min(window_size - 1, confirmed)
@@ -89,15 +88,15 @@ grep -n "history_len = 0 if row in bounded_replay_rows" vllm_ascend/attention/ds
 
 ## 机制与判别
 
-结论 1：私有环 SWA 平面前缀命中后重放区间 [H−W, H) 的热身行 history_len=0，绝对位置 p 的真实窗口 [p−W+1, p] 中低于 H−W 的部分不在 workspace 中被截断，仅最后一行 (H−1) 窗口完整。
+结论 1（静态条件分析）：令实际重放起点 s=max(0,H−bounded_replay_tokens) 向下对齐到块边界。仅在 s>0 且未恢复 s 以前所需历史时，[s,H) 前部热身行 history_len=0，绝对位置 p 的真实窗口 [p−W+1, p] 中低于 s 的部分可能不在 workspace 中；当恰重放 W 行时最后一行 (H−1) 的局部窗口才完整。s=0 的短前缀可从序列开头重算，不能泛称所有前缀命中都有同样缺口。
 - 证据：dsa_v41.py:243（事件 352 逐字）+ compute_prefix_bounded_replay_start（事件 45 逐字）+ 报告引文（事件 367）。
 - 机制：私有环 SWA 平面不做前缀缓存（新请求分配新的 ring）；重放 [H−W, H) 时 `history_len=0`，FA 只能看到重放段自身，workspace 内窗口被 clamp 到本地坐标。
 
-结论 2：重放段第 1 层之后各层的 KV 写入 ring 并被后续约 W 个 decode 步读取，构成与是否命中缓存相关的间歇性精度劣化来源；触发条件是 P 节点/standalone/抢占恢复的任何本地前缀命中，PD 的 D 节点导入路径不受影响（P 侧传完整窗口）。
+结论 2（未验证风险）：若截断影响热身行的 hidden，后续层写入 ring 的 KV 也可能偏离完整重算；具体影响幅度和后续 decode 传播范围未数值验证。风险针对 P 节点/standalone/抢占恢复中满足上述历史缺失条件的本地重放。D 节点导入不经过同一本地重放分支，但若 P 侧 KV 已偏离，传输完整窗口并不能保证端到端数值正确。
 - 可区分解释分支：
   - 若精度劣化与"是否命中前缀缓存"相关、随负载波动（间歇性）→ 指向本机制（P1-1）。
   - 若劣化随运行时间单调加剧（长稳形态）→ 更指向 sleep/wake 后 HCCL 组失效或 Mooncake 接收字典泄漏等慢性机制（同一报告的 P1-6/P1-7/P2-8 排序更高）。
-  - D 节点导入路径不受影响可作为判别实验：只在 P 节点/standalone 复现的劣化支持本机制。
+  - 应分别比较 P 侧重算 KV 与 D 侧导入 KV；节点角色差异只能提供线索，不能独立排除本机制。
 - 未验证推断：影响幅度与"后续约 W 个 decode 步读取偏差 KV"的量化关系是代码级推理，轨迹内未运行数值验证。
 
 ## 验证信号
@@ -110,7 +109,7 @@ grep -n "history_len = 0 if row in bounded_replay_rows" vllm_ascend/attention/ds
 ## 适用与失效边界
 
 - 适用：DeepSeek-V4.1 私有环池（private circle pool）开启 + 本地前缀命中/抢占恢复场景；P 节点与 standalone。
-- 不适用/不受影响：PD 部署中 D 节点的 KV 导入路径（P 侧传完整窗口）。
+- 直接机制边界：PD 部署中 D 节点的导入路径不执行该本地重放；仍需核对 P 侧传来 KV 的数值正确性。
 - 版本边界：结论针对 releases/v0.27.1rc 的 09220f435~1..HEAD 区间；e4e6b0e97 声称修复的精度问题已被 7f8cab566 重构（device 侧 ring 表重建）替代，但该重构不改变本条的窗口截断几何。
-- 停止/回退条件：若分层消融显示劣化与缓存命中率无关，或 D 节点也能复现，应转向长稳类根因（HCCL 生命周期、内存泄漏）。
-- 修复方向（未验证）：前缀命中回退两个窗口（2W）或恢复 ring 中上一个请求可复用的窗口数据，保证重放行窗口完整。
+- 停止/回退条件：若分层消融显示劣化与缓存命中率无关，可扩大排查到 HCCL 生命周期、内存泄漏等方向；D 节点复现时先核对导入 KV 是否已在 P 侧偏离，不能仅凭节点角色排除此风险。
+- 修复方向（未验证）：前缀命中回退两个窗口（2W）或恢复 ring 中上一个请求可复用的窗口数据，作为待测方案，并核对多层依赖下是否真正恢复了所需上下文；不能仅凭回退 2W 保证整网等价。

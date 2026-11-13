@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "inductor_npu_ext 放开 sigmoid_backward decompose 白名单并双环境同步验证",
-  "description": "在 inductor_npu_ext 的 decomposition.py `_whitelist_decompositions()` 无条件追加 sigmoid_backward 与 conj_physical 两个 keep 行，使 aten.sigmoid_backward 经 torch.compile(ascendc) 分解为 sub+mul×2 并与前后 elementwise 算子融合为单 kernel；前置核对分解链子算子已在 lowering 白名单且 AF v1 Sub/Mul 支持 fp16/fp32。实测于 Ascend910（A3）：2 个新增 smoke 用例在 torch 2.9 与 torch 2.12（同步 site-packages 副本：备份+编辑+py_compile+重跑）双环境通过，LowerSummary 全 Lowered 无 Fallback。",
+  "description": "在 inductor_npu_ext 的 decomposition.py `_whitelist_decompositions()` 无条件追加 sigmoid_backward 与 conj_physical 两个 keep 行，使 aten.sigmoid_backward 经 torch.compile(ascendc) 分解为 sub+mul×2 并与前后 elementwise 进入融合 lowering 路径（设备 kernel 次数未核对）；前置核对分解链子算子已在 lowering 白名单且 AF v1 Sub/Mul 支持 fp16/fp32。实测于 Ascend910（A3）：2 个新增 smoke 用例在 torch 2.9 与 torch 2.12（同步 site-packages 副本：备份+编辑+py_compile+重跑）双环境通过，LowerSummary 全 Lowered 无 Fallback。",
   "tags": [
     "task.implementation",
     "topic.compilation"
@@ -10,13 +10,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "910"
   ]
 }
 ---
-
 # inductor_npu_ext 放开 sigmoid_backward decompose 白名单并同步双 torch 环境（Ascend910 实测）
 
 > 来源轨迹：来源记录（事件号见文中 event N）
@@ -99,13 +98,13 @@ ${LOCAL_PATH_5}                            {{"T", TensorType{DT_INT16, DT_INT32,
 
 ## 机制与判别
 
-- 结论 c1：在 inductor_npu_ext 的 `_whitelist_decompositions()` 中无条件追加 `keep |= _packet_overloads(aten.sigmoid_backward)` 与 `keep |= _packet_overloads(aten.conj_physical)` 后，Ascend910（A3，current_soc=2）上 torch.compile(ascendc 后端) 将 aten.sigmoid_backward 分解为 aten.sub.Tensor + aten.mul.Tensor×2（fp16/bf16 经 pw_cast_for_opmath 附带 prims.convert_element_type 进出 fp32，conj_physical 对实数 dtype 为 no-op 在链中消除），LowerSummary 全部 Lowered、无 Fallback，并与前后 elementwise 算子融合为单 kernel（kernel 名 autofused_sigmoid_backward_* / autofused_add_mul_sigmoid_backward_*）
+- 结论 c1：在 inductor_npu_ext 的 `_whitelist_decompositions()` 中无条件追加 `keep |= _packet_overloads(aten.sigmoid_backward)` 与 `keep |= _packet_overloads(aten.conj_physical)` 后，Ascend910（A3，current_soc=2）上 torch.compile(ascendc 后端) 将 aten.sigmoid_backward 分解为 aten.sub.Tensor + aten.mul.Tensor×2（fp16/bf16 经 pw_cast_for_opmath 附带 prims.convert_element_type 进出 fp32，conj_physical 对实数 dtype 为 no-op 在链中消除），LowerSummary 全部 Lowered、无 Fallback，并与前后 elementwise 进入融合 lowering 路径（设备 kernel 次数未核对）（kernel 名 autofused_sigmoid_backward_* / autofused_add_mul_sigmoid_backward_*）
   - 证据链：make_fx 链路（event 165/173）→ 原型运行 LowerSummary（event 192：`Lowered 4x aten.sub.Tensor`、`Lowered 8x aten.mul.Tensor`、`Lowered 4x/2x/2x/1x prims.convert_element_type.default`、`Lowered 1x aten.add.Tensor`，无任何 Fallback 行；kernel 名 `autofused_add_mul_sigmoid_backward_e935...`）→ 重跑复核（event 196，`== basic torch.float32/float16: PASS precision`）→ smoke 2 用例 OK（event 215）。
 - 结论 c2：该 hunk 必须同步到运行时实际加载的 torch_npu 安装包副本：torch 2.12 环境（yrk_torch_212_py313/torch_npu 2.12.0.post3）同步前 grep sigmoid_backward 计数为 0，经备份（${LOCAL_PATH_6}）、编辑、py_compile 后重跑 2 个 smoke 用例通过（Ran 2 tests ... OK），与 torch 2.9 环境（yrk_torch29_py312/torch_npu 2.9.0.post9）形成双版本一致看护
   - 证据链：event 235（计数 0 + current_soc: 2）→ event 250（backup created）→ event 253（Edit applied）→ event 256（py_compile OK + `Ran 2 tests in 3.242s / OK`）。
 - 可区分解释与未验证推断：
   - torch 2.9 安装包副本已含相同 hunk（event 130/135），说明该改动此前已以安装包先行存在；本轨迹将其落回源仓库并补齐 2.12 环境。哪个是权威首提交无法追溯（该目录 `git log` 报 fatal: not a git repository，event 39/41）。
-  - "融合为单 kernel"的判据是 LowerSummary 无 Fallback + kernel 名 `autofused_*`（event 192/196）与 asc_graph.py 标记统计（event 203：`8 ascir.ops.Sub`、`18 ascir.ops.Mul`、`42 ascir.ops.Cast`、`2 ascir.ops.Add`），未做逐 kernel 计数核对，也未做性能对比。
+  - 融合路径的观察依据是 LowerSummary 无 Fallback + kernel 名 `autofused_*`；两者本身不能证明恰好一次设备 kernel 执行，仍需逐 launch 计数（event 192/196）与 asc_graph.py 标记统计（event 203：`8 ascir.ops.Sub`、`18 ascir.ops.Mul`、`42 ascir.ops.Cast`、`2 ascir.ops.Add`），未做逐 kernel 计数核对，也未做性能对比。
   - 未验证：A2/A5 SoC 实机行为（仅静态依据 AF v1/v2 TensorType 推断）；fp64 等其他 dtype；动态 shape 场景；与 GE 后端路径的差异。
 
 ## 验证信号

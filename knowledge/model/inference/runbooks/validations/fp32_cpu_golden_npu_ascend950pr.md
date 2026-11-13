@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # fp32 纯设备迁移 + CPU golden L0 余弦门禁的 NPU 迁移验证模式（Ascend950PR aclnn-only 环境装配）
 
 ## 适用场景
@@ -75,7 +74,7 @@ export ASCEND_OPP_PATH="$MIA_ROOT/cann950ops/cann-9.1.0/opp"               # 950
 export LD_LIBRARY_PATH="$MIA_ROOT/cann950ops/cann-9.1.0/lib64:$ASCEND_HOME_PATH/x86_64-linux/lib64:/usr/local/Ascend/driver/lib64/common:/usr/local/Ascend/driver/lib64/driver:${LD_LIBRARY_PATH:-}"
 ```
 
-L0 门禁核心逻辑（事件 258 写入的 precision_l0.py 关键段原文逐字）：
+L0 门禁逻辑示意：来源会取两路词表长度的最小值后截断比较，可能掩盖词表/模型不匹配。下例补充完整 shape 和有限性检查；这是审查时的门禁修订，未在目标设备重新运行，不冒充来源已验证实现：
 
 ```
     rows, hard_fail = [], False
@@ -85,7 +84,11 @@ L0 门禁核心逻辑（事件 258 写入的 precision_l0.py 关键段原文逐�
         input_ids, out_ids, text, logits_first, _ = mc.greedy_generate(
             model, tok, item["prompt"])
         g_logits = torch.from_numpy(np.load(os.path.join(gdir, g["logits_file"])))
-        n = min(g_logits.shape[-1], logits_first.shape[-1])
+        if g_logits.shape != logits_first.shape:
+            raise ValueError("golden/current logits shape mismatch")
+        if not bool(torch.isfinite(g_logits).all()) or not bool(torch.isfinite(logits_first).all()):
+            raise ValueError("non-finite logits")
+        n = g_logits.shape[-1]
         cos = mc.cosine(g_logits[..., :n], logits_first[..., :n])
         mae = mc.max_abs_err(g_logits[..., :n].numpy(), logits_first[..., :n].numpy())
         re_ = mc.rel_err(g_logits[..., :n].numpy(), logits_first[..., :n].numpy())
@@ -107,7 +110,7 @@ L0 门禁核心逻辑（事件 258 写入的 precision_l0.py 关键段原文逐�
 
 ## 机制与判别
 
-- golden 优先级取舍：本环境无 GPU → golden = CPU eager fp32（次优选择，任务契约显式声明该偏差）；golden 正确性用模型卡公开预期输出交叉验证（s03 逐字一致）。
+- golden 优先级取舍：本环境无 GPU → golden = CPU eager fp32（本任务采用的独立参考；其可靠性取决模型/算子语义和验证覆盖，不能按设备类型判定优劣）；golden 正确性用模型卡公开预期输出交叉验证（s03 逐字一致）。
 - 门禁判据：`cos >= tol(0.999) 且 readable >= 0.95` 才 pass；吐字不可读（NaN/乱码/空）= 硬 FAIL 不可降级；文本不一致不硬 FAIL 但必须留痕——s06 因近并列 argmax 翻转文本不一致即属此类（余弦仍 1.000000）。
 - transformers 4.46 加载 4.13 时代自定义类的两个地雷及绕法（本轨迹实际执行）：tokenizer 机制不兼容（'bool' object is not callable）→ 自实现 sentencepiece+jieba 等价薄封装；AutoModel config_class 注册失败 → importlib 直接构造 + load_state_dict 严格校验（missing/unexpected 均断言为空）。
 - `torch.where` 掩码语义在本 SoC fp32 下无异常（cos=1.000000 实测），GPT-2 式 tril uint8 buffer 随模型迁移到 NPU 正常。
@@ -130,4 +133,4 @@ L0 门禁核心逻辑（事件 258 写入的 precision_l0.py 关键段原文逐�
 - npu-smi CLI 静默失败时用 acl 运行时直查（aclrtGetDeviceCount/aclrtGetSocName/aclrtGetMemInfo）替代，勿因 CLI 异常误判无卡。
 - L0 仅 8 条自建 prompt、16 token 续写，是冒烟级门禁；量化/大改动后仍需 L1/L2 与逐层定位（本轨迹未执行，列为未竟）。
 - bf16 化时 eager attention 的 -1e4 masked_bias dtype 转换路径是首要排查点（本轨迹 bf16 L0 也通过，但 mae 从 ~3e-5 升至 ~0.1）。
-- CPU golden 与 NPU 的差异以余弦容差（0.999）+ 硬 FAIL 可读性双门槛控制；若追求更强保真须 GPU golden。
+- CPU golden 与 NPU 的差异以余弦容差（0.999）+ 硬 FAIL 可读性双门槛控制；更强验收还需核对 tokenizer/词表、逐层数值与真实任务指标；其他设备参考可作为额外交叉验证，不天然优于 CPU。

@@ -1,8 +1,8 @@
 ---
 {
   "type": "Runbook",
-  "title": "DeepSeek-V4.1 indexer/compressor 权重精度降级（665d5c0a5：bf16 权重乘法与 FP32→BF16 投影权重）引入精度波动",
-  "description": "vllm-ascend DeepSeek-V4.1 适配中，提交 665d5c0a5 将 indexer 的 head 权重乘法从 weights.float() * weights_scale 改为 bf16 tensor 直接乘（bf16 结果），softmax 前权重先在 bf16 舍入；ratio=2 compressor 的 wkv/wgate 构造为 FP32 但 process_weights_after_loading 加载后统一转 BF16，与 README 声明的 C2 保留 FP32 投影计算矛盾。相邻分数接近时 indexer top-k 选择可能翻转，产生随批量/量化噪声的非确定性稀疏索引差异并放大为输出波动；C2 层（2/8/14）压缩 KV 表示质量受投影精度影响。两条独立审查轨迹分别从不同侧面发现该问题。",
+  "title": "DeepSeek-V4.1 indexer/compressor 的 BF16 权重路径与 FP32 声明不一致：静态精度风险",
+  "description": "只读代码审查发现 indexer 权重乘法由 weights.float()*scale 改为 BF16 乘法，ratio=2 compressor 加载后也统一将投影权重转 BF16，与 README 的 FP32 声明不一致。可确认 dtype 路径与舍入位置发生变化；top-k 翻转、输出质量变化和生产精度波动的因果关系均未数值验证。BF16 舍入是确定性过程，不单独证明跨批次非确定性；checkpoint dtype 与算子 ABI 仍需确认。",
   "tags": [
     "task.debugging",
     "topic.precision",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
-# DeepSeek-V4.1 indexer/compressor 权重精度降级（665d5c0a5：bf16 权重乘法与 FP32→BF16 投影权重）引入精度波动
+# DeepSeek-V4.1 indexer/compressor 的 BF16 权重路径与 FP32 声明不一致：静态精度风险
 
 ## 适用场景
 
@@ -29,7 +28,7 @@
 
 ## 触发与观测
 
-触发 = 所有 DeepSeek-V4.1 前向都会经过 indexer 权重乘法与 C2 compressor 投影；影响面是 indexer top-k 选择的确定性与 C2 层（2/8/14）压缩 KV 的表示质量。
+触发 = 所有 DeepSeek-V4.1 前向都会经过 indexer 权重乘法与 C2 compressor 投影；待评估影响为 indexer top-k 选择与 C2 层（2/8/14）压缩 KV 的表示质量；本轨迹未运行消融。
 
 审查观测到的客观代码事实：
 
@@ -88,18 +87,18 @@ git show 665d5c0a5 --stat | head -30; echo =====; git show 665d5c0a5 -- vllm_asc
 
 以及读取 `vllm_ascend/models/deepseek_v41/compressor.py`（95-134 行）与 `indexer.py`（138-179 行）当前态。
 
-本条为只读审查发现，未实施修复；"恢复先 .float() 再乘 scale（一行改动，无性能代价——后续本来就是 fp32 消费）"与"确认 CANN compressor_v2 的 ABI 是否强制 bf16 权重"的修复方向均未经验证。
+本条为只读审查发现，未实施修复；"恢复先 .float() 再乘 scale（一行改动，性能代价未测——后续虽以 fp32 消费，新增转换仍可能有开销）"与"确认 CANN compressor_v2 的 ABI 是否强制 bf16 权重"的修复方向均未经验证。
 
 ## 机制与判别
 
-结论 1：665d5c0a5 将 indexer 权重乘法从 weights.float() * self.weights_scale 改为 weights * self.weights_scale（bf16 tensor × python float → bf16 结果），softmax 融合前的 head 权重先在 bf16 中舍入再上采，属确定性精度损失。
+结论 1：665d5c0a5 将 indexer 权重乘法从 weights.float() * self.weights_scale 改为 weights * self.weights_scale（bf16 tensor × python float → bf16 结果），softmax 融合前的 head 权重先在 bf16 中舍入再上采，改变舍入位置，在不能精确表示时产生确定性数值差异。
 - 证据：事件 82（diff 逐字）+ 事件 27（当前态 164-165 行逐字）。
 
 结论 2：ratio=2 compressor 的 wkv/wgate 构造为 FP32，但 process_weights_after_loading 加载后统一 .to(torch.bfloat16)，与 README "C2 retains the existing FP32 projection weights and computation ... State remains FP32, including values that BF16 would round away" 的声明矛盾；checkpoint dtype 未在轨迹内确认。
 - 证据：事件 26（129-134 行逐字）+ 事件 138（README 188-193 行逐字）。
 - 判别：若 checkpoint 的 compressor.wkv/wgate 本为 BF16，则 fp32→bf16 往返无损，风险仅在融合算子内部累加精度；若 checkpoint 为 FP32 权重，则是有意的精度削减（提交链：30c0c0a6d "convert V4.1 compressor and indexer matmul weights to NZ format" → 571c907f7 "skip NZ for ratio=2 compressor weights, add model-level process_weights hook"）。
 
-结论 3：indexer 打分在相邻分数接近时 top-k 选择可能翻转，随批量/量化噪声出现非确定性稀疏索引差异并放大为输出波动；C2 层（2/8/14）压缩 KV 表示质量受投影精度影响——两者均为代码级推断，轨迹内未做消融验证。
+结论 3：indexer 打分在相邻分数接近时 top-k 选择可能翻转，在输入或批次执行数值变化时可能影响稀疏索引并放大到输出；固定输入下的 bf16 舍入本身不等于非确定性；C2 层（2/8/14）压缩 KV 表示质量受投影精度影响——两者均为代码级推断，轨迹内未做消融验证。
 - 可区分解释分支：
   - 波动若集中于长上下文检索任务且分层消融显示 C2 层（2/8/14）敏感 → 指向 compressor 投影精度（结论 2）。
   - 波动若表现为稀疏索引（TopK 选择）随批量组成非确定变化 → 指向 indexer bf16 乘法（结论 1）。

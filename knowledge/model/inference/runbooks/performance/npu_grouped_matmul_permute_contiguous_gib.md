@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "npu_grouped_matmul 直接消费 permute(0,2,1) 非连续转置视图，免除 [E,K,N] 专家权重的 contiguous 拷贝（约 10 GiB/4 层）",
-  "description": "MoE 专家权重转置为 [E,K,N] 时无需 .contiguous() 拷贝：npu_grouped_matmul 直接接受 permute(0,2,1) 非连续视图，数值与 contiguous 拷贝完全一致（两者均 cos=0.999998）、单层融合链路时延相同（T=13: 0.732 vs 0.735 ms），L=4（3 个稀疏层）额外显存从 9.99 GiB 降至 0.04 GiB，避免逐层双份专家权重。",
+  "description": "MoE 专家权重转置为 [E,K,N] 时无需 .contiguous() 拷贝：npu_grouped_matmul 直接接受 permute(0,2,1) 非连续视图，对同一 fp32 参考的汇总误差指标与 contiguous 拷贝相同（两者均 cos=0.999998；未直接逐元素对拍两路输出）、单层融合链路时延相同（T=13: 0.732 vs 0.735 ms），L=4（3 个稀疏层）额外显存从 9.99 GiB 降至 0.04 GiB，避免逐层双份专家权重。",
   "tags": [
     "task.implementation",
     "topic.model_serving",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # npu_grouped_matmul 直接消费 permute(0,2,1) 非连续转置视图，免除 [E,K,N] 专家权重的 contiguous 拷贝（约 10 GiB/4 层）
 
 ## 适用场景
@@ -88,9 +87,9 @@ def bench(fn,n=30):
 
 ## 机制与判别
 
-- 结论一（数值/时延等价）：npu_grouped_matmul 接受 permute(0,2,1) 非连续转置视图：与 .contiguous() 拷贝数值一致（contig 与 noncontig 均 cos=0.999998、maxdiff=1.9037e-02），单层 MoE 融合链路时延相同（T=1: 0.359/0.352 ms、T=13: 0.732/0.735 ms）。锚点：来源记录 事件 226（探针命令）；信号：事件 223（`contig: ok contig=True cos=0.999998 maxdiff=1.9037e-02` / `noncontig: ok contig=False cos=0.999998 maxdiff=1.9037e-02`，小尺寸 E=8 对照 fp32 参考）与事件 227（`T=1: contig=0.359 ms view=0.352 ms` / `T=13: contig=0.732 ms view=0.735 ms`，真实尺寸 E=256）。
+- 结论一（数值/时延等价）：npu_grouped_matmul 接受 permute(0,2,1) 非连续转置视图：与 .contiguous() 拷贝对同一 fp32 参考的汇总指标一致（contig 与 noncontig 均 cos=0.999998、maxdiff=1.9037e-02），不能由两个汇总值推出两路输出逐位一致，单层 MoE 融合链路时延相同（T=1: 0.359/0.352 ms、T=13: 0.732/0.735 ms）。锚点：来源记录 事件 226（探针命令）；信号：事件 223（`contig: ok contig=True cos=0.999998 maxdiff=1.9037e-02` / `noncontig: ok contig=False cos=0.999998 maxdiff=1.9037e-02`，小尺寸 E=8 对照 fp32 参考）与事件 227（`T=1: contig=0.359 ms view=0.352 ms` / `T=13: contig=0.732 ms view=0.735 ms`，真实尺寸 E=256）。
 - 结论二（显存收益）：改用非连续视图后，L=4（3 个稀疏层）GMM 权重额外显存从 9.99 GiB 降至 0.04 GiB（permute 为零拷贝视图，data_ptr 与原参数共享）。锚点：来源记录 事件 230（实现切换 edit）；信号：事件 246（`gmm_transpose_extra_gib: 0.04`）、事件 219（对照 9.99 GiB）、来源记录 事件 218（`gate_up view: True contig: False (256, 2816, 1536)` / `down view: True contig: False (256, 768, 2816)`，data_ptr 共享复核）。
-- 可区分解释：非连续视图被算子正确消费而非静默错读——若视图 stride 被误解，contig 与 noncontig 的 cos/maxdiff 不会同时等于 0.999998/1.9037e-02（两者对同一 fp32 参考偏差一致）；时延无回退说明算子内部未做隐式拷贝补偿（否则 view 应慢于 contig）。
+- 可区分解释：非连续视图被算子正确消费而非静默错读——两路对同一参考的汇总误差接近，支持该视图在本例可用，但汇总指标不足以排除所有 stride 误读；时延相近也不能证明算子内部没有隐式转换或拷贝。已确认的是显式权重副本被移除、视图 data_ptr 与参数共享，以及显存探针的下降。
 - 未验证推断：非连续视图在其它 CANN 版本/芯片上是否仍成立（implementer 自列 reviewer 检查项 2；reviewer 在同一环境复核通过，未跨版本验证）。
 
 ## 验证信号

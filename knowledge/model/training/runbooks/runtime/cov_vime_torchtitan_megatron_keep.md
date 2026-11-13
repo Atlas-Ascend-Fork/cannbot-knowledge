@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
 # KL-Cov 策略损失移植 vime（torchtitan/megatron 双后端）与 --keep-old-actor 生效前提
 
 ## 适用场景
@@ -138,7 +137,7 @@ export TB_KL_COV_RATIO="${TB_KL_COV_RATIO:-2e-3}" TB_KL_COV_COEF="${TB_KL_COV_CO
 
 **结论 c3**：实机 27 步（单次观测，Qwen3.5-4B、torchtitan、TP=4/DP=1、NPU、ratio=2e-3/coef=1.0/keep-old-actor）中该 loss 管道未崩溃且 TB 指标落盘：kl_cov 第 1 步=0、随后 4.1e-5→6.8e-5、峰值 8.3e-4 后回落至 1e-4~2.5e-4 震荡；注意该运行使用的是初版实现（协方差选择位置有误，见姊妹卡 [KL-Cov 单 response 微批中心化退化：step 级选择 mask 实现及验证边界](cov_grpo_response_step.md)），指标链路有效不等于选择正确。（数据来源：用户在训练机导出的 TensorBoard 三列数据——reward/kl_cov/entropy，事件 1090，非本会话内工具结果。）
 
-**结论 c4**：TB 中 kl_cov 是摊到全部 token 的平均惩罚（被选中率稀释约 500 倍），换算选中 token 漂移需除以 pg_clipfrac（该模式下 pg_clipfrac 复用为被惩罚 token 占比，应恒 ≈ ratio）；kl_cov/clipfrac ≈ 0.05~0.1 nats 属论文工作区量级，线性持续增长不封顶提示 old_actor 轮转失效、中途掉回 0 提示参考分布失效。换算公式 `kl_cov = β × 选中率 × E_selected[|Δlogp|]`（事件 877）；`analyze_train_util.py` 的 loss 组成段（解析 `train metrics @ rollout_id=N: {...}` 行，派生 `选中 token 平均惩罚 β·|Δ| = kl_cov/clipfrac`）已用合成日志端到端验证（事件 913/916：mean 0.024 / p50 0.030 nats 的派生计算正确）。
+**结论 c4**：TB 中 kl_cov 是摊到全部 token 的平均惩罚（被选中率稀释约 500 倍），换算选中 token 漂移需除以 pg_clipfrac（该模式下 pg_clipfrac 复用为被惩罚 token 占比，应恒 ≈ ratio）；这项派生值没有在本任务建立通用正常区间；增长或归零只能作为检查旧权重、数据和 mask 的线索，不能独立判定轮转或参考分布失效。换算公式 `kl_cov = β × 选中率 × E_selected[|Δlogp|]`（事件 877）；`analyze_train_util.py` 的 loss 组成段（解析 `train metrics @ rollout_id=N: {...}` 行，派生 `选中 token 平均惩罚 β·|Δ| = kl_cov/clipfrac`）已用合成日志端到端验证（事件 913/916：mean 0.024 / p50 0.030 nats 的派生计算正确）。
 
 未验证推断：vime async 每批 1 次 optimizer step 的单步锚定比论文每 rollout 8 次 minibatch 更新的批内锚定弱，预期效果是"熵下降明显变缓"而非拉平（事件 1239）——待实机重启验证。
 
@@ -154,7 +153,7 @@ export TB_KL_COV_RATIO="${TB_KL_COV_RATIO:-2e-3}" TB_KL_COV_COEF="${TB_KL_COV_CO
 
 - 生效前提：`--keep-old-actor`（async 单步更新下否则惩罚恒 0）；GRPO/整条共享 advantage 的估计器；`loss_type=policy_loss`。与 `--use-kl-loss`/`--kl-coef`/gspo/opsm 互斥（启动时断言拦截）。
 - 该模式下 PPO clip 被整体移除（verl 语义），`--eps-clip*` 惰性；稳定性依赖小 LR + grad clip。
-- 初版实现的选择位置缺陷（GRPO 单 response 微批下协方差退化）已由 6c32d0d3 修复——若在其它框架移植，需检查"选择粒度 vs advantage 粒度"是否匹配（详见姊妹卡 [KL-Cov 单 response 微批中心化退化：step 级选择 mask 实现及验证边界](cov_grpo_response_step.md)）。
+- 初版实现的选择粒度退化（GRPO 单 response 微批下协方差为零）在 6c32d0d3 中改为本 rank step 级选择；该调整只验证了索引分桶与静态链路，修订后的实机训练效果尚未验证——若在其它框架移植，需检查"选择粒度 vs advantage 粒度"是否匹配（详见姊妹卡 [KL-Cov 单 response 微批中心化退化：step 级选择 mask 实现及验证边界](cov_grpo_response_step.md)）。
 - replay/debug 模式下 weight 轮转不执行，惩罚锚定语义退化为"replay 起点策略"。
-- microbatch 局部 top-k 有 `max(1, int(N*ratio))` 保底：microbatch 有效 token 太少时 ratio 失真；想让 ratio 精确生效，单 microbatch 有效 token ≥1e4 为好（事件 215）。
-- 停止/回退条件：TB `kl_cov` 恒为 0 → 惩罚未生效（检查 keep-old-actor 与轮转日志 `grep "updating model queue" train.log`）；熵仍下降 → 先加 ratio 再加 coef；reward 明显回落 → 减 ratio。
+- microbatch 局部 top-k 有 `max(1, int(N*ratio))` 保底：microbatch 有效 token 太少时 ratio 失真；有效选中率应按实际 k/n 报告；取整误差取决于 n×ratio，不能用固定 token 数保证精确。当前 step 级实现还需记录 CP 长度不匹配而排除的样本。
+- 停止/回退条件：TB `kl_cov` 持续为 0 时，检查 old/new logprob、选中 mask、权重轮转及指标分母；首步为零本身可符合设计。熵或 reward 变化不足以单独决定 ratio/coef 的调整，需固定其他条件做训练对照。本轨迹没有验证调参处置规则。

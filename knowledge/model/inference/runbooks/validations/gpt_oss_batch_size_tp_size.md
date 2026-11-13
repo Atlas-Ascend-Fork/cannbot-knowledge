@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "gpt_oss 声明类约束无校验：batch_size=2 被静默接受、tp_size 不一致被静默重解释",
-  "description": "gpt_oss README 声明仅支持 batch_size=1、YAML 注释要求三个 tp_size 相同，但两者均无校验：batch_size=2 全程无 ERROR/WARNING 被静默接受（default 数据集被 Pad 逻辑复制最后一条 prompt 填充、仅 1 个请求输出；LongBench 下双请求真实执行且输出正确），tp_size 不一致被静默重解释为 MoE EP 并行（moe_ep_size=2）正常运行。配置语义静默偏移，文档声明不可信。",
+  "description": "gpt_oss README 声明仅支持 batch_size=1、YAML 注释要求三个 tp_size 相同，但两者均无校验：batch_size=2 全程无 ERROR/WARNING 被静默接受（default 数据集被 Pad 逻辑复制最后一条 prompt 填充、仅 1 个请求输出；LongBench 下双请求真实执行且输出可读（未做任务精度验收）），tp_size 不一致被静默重解释为 MoE EP 并行（moe_ep_size=2）正常运行。配置语义静默偏移，文档声明不可信。",
   "tags": [
     "task.debugging",
     "task.testing",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
 # gpt_oss 声明类约束无校验：batch_size=2 被静默接受、tp_size 不一致被静默重解释
 
 ## 适用场景
@@ -51,7 +50,7 @@ T 254 | 1
 T 284 | ParallelConfig(world_size=2, global_rank=0, local_rank=0, attn_tp_size=2, attn_dp_size=1, offline_prefill_dp_group_size=1, cp_prefill_dp_size=1, embed_tp_size=1, embed_dp_size=2, moe_tp_size=1, moe_ep_size=2, lmhead_tp_size=2, dense_tp_size=1, shared_tp_size=1, o_proj_tp_size=1, cp_size=1)
 Request 0: outputs: analysisThe user says: "An attention function can be described as mapping a query and a out
 ```
-（实际生效配置被重解释为 moe_ep_size=2、embed_dp_size=2，且双 rank 运行成功、输出正常。）
+（实际配置保留 moe_tp_size=1，并派生 moe_ep_size=2、embed_dp_size=2，且双 rank 运行成功、输出正常。）
 
 ## 探针与操作
 
@@ -109,9 +108,9 @@ scheduler_config:
 
 - 结论 1：gpt_oss README 声明"目前仅支持prompt的batch_size为1"，但 batch_size=2 被静默接受，全程无任何 ERROR/WARNING，运行正常完成——该约束未在框架或模型层实现校验。
   - 信号：来源记录 T 250/T 254（default）、T 273（LongBench）；来源记录 T 225/T 229/T 233（default）、T 256（LongBench）。
-- 结论 2：default 数据集（仅 1 条内置 prompt）下 batch_size=2 由调度器把最后一条 prompt 复制填充到 batch_size（T 262 行 160-164 的 Pad 逻辑），结果只按 original_request_count 输出 1 个请求，填充请求的结果被丢弃——表现为"batch=2 配置、1 个请求输出"；LongBench（多样本）下 batch_size=2 真实执行 2 个请求且两个输出内容各自正确（不同书籍样本分别正确摘要），decode 平均 30.75 ms（来源记录 T 273）/30.41 ms（来源记录 T 256）。
+- 结论 2：default 数据集（仅 1 条内置 prompt）下 batch_size=2 由调度器把最后一条 prompt 复制填充到 batch_size（T 262 行 160-164 的 Pad 逻辑），结果只按 original_request_count 输出 1 个请求，填充请求的结果被丢弃——表现为"batch=2 配置、1 个请求输出"；LongBench（多样本）下 batch_size=2 真实执行 2 个请求且两个请求均返回与各自样本相关的摘要文本；未通过 golden 或任务评分验证摘要正确性，decode 平均 30.75 ms（来源记录 T 273）/30.41 ms（来源记录 T 256）。
   - 判别：该填充机制说明 batch_size 语义为"调度器批量填充目标"，default 数据集下的"仅 1 输出"不是 batch 失效而是数据集只有 1 条 prompt；两个数据集的行为差异可区分"约束生效但静默降级"与"约束完全未实现"两个解释分支——观测（无任何提示、LongBench 真实双请求正常）支持后者。
-- 结论 3：attn/moe/lmhead tp_size 不一致（注释要求相同）时被静默重解释为 TP+EP 混合并行（ParallelConfig 实际 moe_ep_size=2、embed_dp_size=2），双 rank 运行成功、输出正确，无任何提示——并行策略语义被静默改写，用户预期的 MoE TP 变为 MoE EP。
+- 结论 3：attn/moe/lmhead tp_size 不一致（注释要求相同）时被静默重解释为 TP+EP 混合并行（ParallelConfig 实际 moe_ep_size=2、embed_dp_size=2），双 rank 运行成功、输出可读（未做任务精度验收），无任何提示——框架自动派生 EP 参与并行，但没有改变用户显式指定的 moe_tp_size=1。可确认的是行为与 YAML 的同值注释不一致，不能据此认定已有 TP 值被覆盖。
   - 信号：来源记录 T 277（无报错输出）、T 284（实际生效 ParallelConfig）；来源记录 T 277（tc_unequal_tp world_size=2, attn_tp=2 正常完成，decode 平均 34.62 ms）。
 - 未验证推断：batch>1 的限制可能适用于其他模型规格（如 120B）或其他执行模式，本组来源观测仅在 20B eager 下验证；tp 静默重解释的性能/显存影响未量化。
 

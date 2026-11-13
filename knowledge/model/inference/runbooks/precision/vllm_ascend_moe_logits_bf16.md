@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "vllm-ascend MoE 路由 logits 切 bf16 时的 MoeGatingTopK bias dtype 硬约束与休眠 Parameter 重赋值缺陷",
-  "description": "把 MoE router gate 输出从 fp32 改为 bf16 时，MoeGatingTopK 的 tiling 校验要求 bias dtype 严格等于输入 x dtype，而 K3 的 e_score_correction_bias 是 fp32 Parameter；fused_topk_router.py 原有 L143-144 的原地重赋值既是逐 forward 新 Cast 来源，又是休眠的 nn.Parameter 重赋值 TypeError 缺陷。修复为一次性按 dtype 缓存（_bias_cast_cache），fp32 路径行为逐字节惰性。判别分支含 A3（csrc 算子，仓内可验证 DT_BF16）与 A5（torch_npu 内置算子，仓内不可验证）。",
+  "description": "把 MoE router gate 输出从 fp32 改为 bf16 时，MoeGatingTopK 的 tiling 校验要求 bias dtype 严格等于输入 x dtype，而 K3 的 e_score_correction_bias 是 fp32 Parameter；fused_topk_router.py 原有 L143-144 的原地重赋值在 bias 为注册 Parameter 且 dtype 首次不同时可能触发 TypeError；普通 Tensor 若成功重赋，之后 dtype 相同不会每步重复 Cast。代码修复采用按 dtype 缓存（_bias_cast_cache），以避免“只用局部变量转换”方案可能新增的每步 Cast；该轨迹无设备运行验证。判别分支含 A3（csrc 算子，仓内可验证 DT_BF16）与 A5（torch_npu 内置算子，仓内不可验证）。",
   "tags": [
     "task.debugging",
     "topic.precision",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
 # vllm-ascend MoE 路由 logits 切 bf16 时的 MoeGatingTopK bias dtype 硬约束与休眠 Parameter 重赋值缺陷
 
 ## 适用场景
@@ -73,7 +72,7 @@
 1630:     return adaptor_by_family[get_current_hardware_profile().device_adaptor_family]
 ```
 
-操作（修复，随 bf16 gate 改动成套提交）：把逐 forward 的原地重赋值改为"首次转换 + 按 dtype 缓存"，调用点改用 `bias_opt`（C474/C477）。核心实现（C474 逐字）：
+操作（修复，随 bf16 gate 改动成套提交）：把条件性的原地重赋值改为"首次转换 + 按 dtype 缓存"，调用点改用 `bias_opt`（C474/C477）。核心实现（C474 逐字）：
 
 ```
     def _bias_for_logits_dtype(self, logits_dtype: torch.dtype) -> torch.Tensor | None:
@@ -97,12 +96,14 @@
         return cached
 ```
 
+上述历史代码注释中“原地重赋会每步新增 Cast”的说法不准确：普通 Tensor 成功重赋后 dtype 已匹配，后续不会重复转换；注册 Parameter 则可能在首次重赋时报错。每步重复 Cast 是仅改为局部变量但不缓存时的潜在代价。
+
 调用点（C477 逐字要点）：`bias_opt = self._bias_for_logits_dtype(router_logits.dtype)`，再以 `bias_opt=bias_opt` 传入 `DeviceOperator.moe_gating_top_k`。
 
 ## 机制与判别
 
 1. 休眠缺陷：**fused_topk_router.py 原有 L143-144 对 self.e_score_correction_bias 的原地重赋值是休眠缺陷：fp32 logits 时 dtype 恒等从不执行；bf16 logits 首次触发时，若该属性是注册进 nn.Module 的 nn.Parameter，重赋普通 Tensor 会抛 TypeError。** 该路径在 fp32 时代从不执行（所有 logits 均 fp32、dtype 恒等），bug 一直休眠；旁证：同文件 hash 分支早已改用局部变量的安全写法。
-2. 缓存设计的双重动机：**修复采用 _bias_for_logits_dtype 一次性按 dtype 缓存转换（_bias_cast_cache），稳态 forward（含 ACLGraph 捕获）不引入 bias Cast；fp32 logits 时 bias 原样返回，与旧代码逐字节一致、纯惰性。**若只改局部变量不做缓存，92 层 MoE 每步各多一次小 Cast，部分抵消删除大 Cast 的收益；缓存后 warmup dummy run 先于 ACLGraph 捕获，稳态图中无 bias Cast。
+2. 缓存设计的双重动机：**修复采用 _bias_for_logits_dtype 一次性按 dtype 缓存转换（_bias_cast_cache），在 bias 静态、warmup 已填充缓存且 dtype 不变的前提下，设计上可避免后续 bias Cast；轨迹未设备验证该稳态图；fp32 logits 时 bias 原样返回，与旧代码逐字节一致、纯惰性。**若只改局部变量不做缓存，92 层 MoE 每步各多一次小 Cast，部分抵消删除大 Cast 的收益；缓存转换需在 ACLGraph 捕获前的 warmup 完成；本轨迹未提供捕获产物或稳态图验证。
 3. 可区分的解释分支（按报错特征判别）：
    - 运行时报 `bias dtype ... not equal x dtype ...`（GRAPH_FAILED）→ bias 未适配：bf16 logits 配 fp32 bias 直入算子，说明调用方仍传原 Parameter。
    - Python 侧 `TypeError: cannot assign ... as parameter` → 踩中休眠的原地重赋值缺陷（L143-144 首次真正执行）。
@@ -124,7 +125,7 @@
 1004:         )
 ```
 
-A5 的间接可行证据：仓内 csrc 算子从同族 CANN kernel 移植、注册 FP16/FP32/BF16 三种；A5 手动 renorm 对 bf16 无影响。但这些只是间接证据，不构成验证。
+A5 的间接可行证据：仓内 csrc 算子从同族 CANN kernel 移植、注册 FP16/FP32/BF16 三种；A5 手动 renorm 的 bf16 数值影响也未实测。这些信息不构成 bf16 支持或等价性的验证。
 
 ## 验证信号
 

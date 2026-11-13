@@ -1,8 +1,8 @@
 ---
 {
   "type": "Runbook",
-  "title": "A3 MegaMoE 在 P/PD-mixed 节点 max_recv_token_num 取配置值仅告警（静默精度劣化敞口）",
-  "description": "vllm-ascend DeepSeek-V4.1 的 moe_comm_method.py 中，decode-only 节点 max_recv_token_num 用绝对安全上界（num_max_tokens_per_rank × ep_world_size × min(topk, expert_per_rank)），而 P/PD-mixed 节点直接取 get_ascend_config().mega_moe_max_tokens 配置值并仅 logger.warning_once。专家负载倾斜时本 rank 实际接收 token 可超配置值，MegaMoE 溢出后静默精度劣化；PD-mixed 生产（同时做长 prefill）是最易触发场景。这是 bca6b8ff8 修复只覆盖 kv_transfer_config is None 分支后残留的风险敞口。",
+  "title": "A3 MegaMoE 在 P/PD-mixed 节点 max_recv_token_num 取配置值仅告警（接收容量配置风险（静态审查））",
+  "description": "vllm-ascend DeepSeek-V4.1 的 moe_comm_method.py 中，decode-only 节点 max_recv_token_num 用绝对安全上界（num_max_tokens_per_rank × ep_world_size × min(topk, expert_per_rank)），而 P/PD-mixed 节点直接取 get_ascend_config().mega_moe_max_tokens 配置值并仅 logger.warning_once。专家负载倾斜时本 rank 实际接收 token 可超配置值，若实际接收量超过容量，存在精度劣化风险；具体溢出行为本轨迹未实测；PD-mixed 生产（同时做长 prefill）是最易触发场景。这是 bca6b8ff8 修复只覆盖 kv_transfer_config is None 分支后残留的风险敞口。",
   "tags": [
     "task.debugging",
     "topic.precision",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
-# A3 MegaMoE 在 P/PD-mixed 节点 max_recv_token_num 取配置值仅告警（静默精度劣化敞口）
+# A3 MegaMoE 在 P/PD-mixed 节点 max_recv_token_num 取配置值仅告警（接收容量配置风险（静态审查））
 
 ## 适用场景
 
@@ -81,7 +80,7 @@ grep -n "max_recv_token_num = get_ascend_config().mega_moe_max_tokens" vllm_asce
 结论 1：decode-only 节点 max_recv_token_num 用 absolute_safe_max_recv_token_num（num_max_tokens_per_rank × ep_world_size × min(num_topk, expert_per_rank)），P/PD-mixed 节点直接取 get_ascend_config().mega_moe_max_tokens 并仅 logger.warning_once。
 - 证据：事件 28 逐字代码（415-444 行）；日志文案自身即承认"precision degradation will occur"。
 
-结论 2：专家负载倾斜时本 rank 实际接收 token 可超配置值，MegaMoE 溢出后静默精度劣化；这是 bca6b8ff8 "Fix A5 MegaMoE buffer sizing for PD-mixed mode" 只修 kv_transfer_config is None 分支后残留的风险敞口（代码级推断）。
+结论 2：专家负载倾斜时本 rank 实际接收 token 可超配置值，若实际接收量超过容量，存在精度劣化风险；具体溢出行为本轨迹未实测；这是 bca6b8ff8 "Fix A5 MegaMoE buffer sizing for PD-mixed mode" 只修 kv_transfer_config is None 分支后残留的风险敞口（代码级推断）。
 - 可区分解释分支：
   - PD-mixed 节点出现与专家负载分布相关的精度劣化、decode-only 节点正常 → 指向本条（配置值 vs 安全上界的差异）。
   - 劣化与节点角色无关、随时间加剧 → 指向 sleep/wake HCCL 或慢性泄漏类根因。

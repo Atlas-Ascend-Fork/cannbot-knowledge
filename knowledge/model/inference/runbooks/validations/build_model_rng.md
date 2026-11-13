@@ -12,13 +12,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # 独立部署随机权重推理复现性修复：建模收敛到单一 build_model 统一 RNG 消耗顺序
 
 ## 适用场景
@@ -92,8 +91,8 @@ grep -E "generated_token_ids|Request 0: outputs|prefill is" logs/repro_runA.log 
 
 ## 机制与判别
 
-- 机制：随机初始化权重的逐位一致性由 **RNG 消耗顺序** 决定——`torch.manual_seed(seed)` → 构造（每个 `nn.Parameter` 按注册顺序消耗随机数）→ `init_weights`（重采样）→ `cast_model_dtype`。任何一处顺序漂移或多一次 RNG 消耗都会静默产生不同权重。`.to(device)` 不消耗 RNG，因此放在最后是安全的。
-- 判别：两次运行 `generated_token_ids` 逐位一致（事件 122/125）只能证明「同一二进制内确定性」；与 `npu_vs_cpu.json` 中 NPU greedy tokens 完全一致、且与重跑的 CPU↔NPU 一致性指标不变（事件 149），共同证明权重与 golden 逐位对齐。若只有逐位一致而无 golden 对齐，需怀疑两边都在用「另一个（相同的错误）种子」。
+- 机制：随机初始化权重的逐位一致性由 **RNG 消耗顺序** 决定——`torch.manual_seed(seed)` → 构造（构造与初始化函数中的采样操作按实际执行顺序消耗随机数（`nn.Parameter` 包装本身不必消耗 RNG））→ `init_weights`（重采样）→ `cast_model_dtype`。任何一处顺序漂移或多一次 RNG 消耗都会静默产生不同权重。`.to(device)` 不消耗 RNG，因此放在最后是安全的。
+- 判别：两次运行 `generated_token_ids` 逐位一致（事件 122/125）只能证明「同一二进制内确定性」；与 `npu_vs_cpu.json` 中 NPU greedy tokens 完全一致、且与重跑的 CPU↔NPU 一致性指标不变（事件 149），共同支持该建模路径的可复现性和粗粒度 golden 对齐；没有逐参数比较或 state_dict 哈希，不能据此证明全部权重逐位相同。若只有逐位一致而无 golden 对齐，需怀疑两边都在用「另一个（相同的错误）种子」。
 - 未验证推断：`warmup + 正式两次 model_generate` 不引入非确定性（warmup 不改权重、不落 RNG 到 cache）——本轨迹以两次 infer.sh 输出一致间接支持，未单独做 RNG 状态断言。
 
 ## 验证信号
@@ -109,7 +108,7 @@ grep -E "generated_token_ids|Request 0: outputs|prefill is" logs/repro_runA.log 
 - 适用：所有「无 checkpoint、固定种子随机初始化」的部署/验证链路（CPU golden、NPU runner、compare 工具共享同一建模实现）。
 - 失效/风险：
   - 一旦引入真实权重加载（`from_pretrained`），本机制不适用（不再消耗 RNG 建模）。
-  - 任何在 `build_model` 之外新增的 RNG 消耗（如随机 mask、dropout 未关）都会破坏逐位一致性，需保持「建模单点」纪律。
+  - 需要控制设定种子之后、参与建模或被比较前向过程的 RNG 消耗；种子重置之前的消耗会被重置，不能一概称为破坏一致性。随机 mask、未关闭的 dropout 等也应按实际执行顺序核对。
   - 多进程/多卡各自建 RNG 流时需显式 per-rank seed，本轨迹未覆盖。
   - torch/模型结构变更会改变 RNG 消耗序列，golden 产物（`cpu_golden.pt`）需随之重建。
 - 回退：保留修复前的三段式建模即可回到旧行为（不推荐，输出不可复现）。

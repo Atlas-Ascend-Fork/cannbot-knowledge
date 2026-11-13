@@ -11,5 +11,5 @@ okf_version: "0.2"
 - [工具知识](tools/index.md)：CANN 工具的使用契约、产物结构与结论边界入口。
 - [算子知识](ops/index.md)：按 DSL 隔离的算子知识入口。
 - [图知识](graph/index.md)：图领域知识入口。
-- [模型知识](model/index.md)：共 890 张知识卡，分布在 4 个子目录（embodied、inference、spatial 等）。
+- [模型知识](model/index.md)：共 1890 张知识卡，分布在 4 个子目录（embodied、inference、spatial 等）。
 - [Runtime 知识](runtime/index.md)：CANN Runtime API 及 CUDA 到 CANN 候选接口映射的知识入口。

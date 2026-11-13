@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
 # 长序列 Prefill 场景的确定性恰好 2048 token 输入构造：词边界裁剪保留 BOS + prompt 内嵌 YAML 单命令复现
 
 ## 适用场景
@@ -106,8 +105,8 @@ yaml-derived len 2048 matches recorded: True
 ## 机制与判别
 
 - 截断语义：Runner 的 `input_truncated_len` 取 chat 模板化序列的**末尾** N 个 token（`seq[-N:]`），因此任何超出目标长度的 prompt 都会丢头部 token（含 BOS 与正文开头）；对长上下文评测而言尾部信息保留是合理的，但"恰好 N"的场景语义要求要么显式接受丢 BOS，要么把模板化长度精确压到 N。
-- 命中机制：英文文本词≈1~2 token，逐词裁剪时 token 数单调不增且粒度足够细，在有限窗口（0..40 词）内能命中精确值；字符级裁剪同样可行（实测 trim 53 chars 命中 2048）但会截断在词中间，词边界裁剪可读性更好。
-- 判别数据：首版（截断法）first_token_id=1455 vs 终版（词边界命中法）first_token_id=127958（即 `<|startoftext|>` BOS），同一 `last_token_id=397`（生成提示结束 token），证明差异唯一来源于是否触发截断。
+- 命中机制：英文文本词≈1~2 token，本段固定文本与模板的逐词候选实测可命中目标；不能把 token 数随删词单调变化或有限窗口必可达作为通用 tokenizer 性质；字符级裁剪同样可行（实测 trim 53 chars 命中 2048）但会截断在词中间，词边界裁剪可读性更好。
+- 判别数据：首版（截断法）first_token_id=1455 vs 终版（词边界命中法）first_token_id=127958（即 `<|startoftext|>` BOS），同一 `last_token_id=397`（生成提示结束 token），支持终版未触发截断且保留 BOS；文本本身也经裁剪，不能称为只有截断开关一个变量。
 - 交付物齐全性：`py_compile` 通过（COMPILE_OK）；YAML（12497 字节，prompt 内嵌）、prompt 原文（11209 字节）、token ids JSON（20357 字节，n=2048、min 11、max 127962）均落盘。
 - 未验证推断：NPU 侧运行行为未验证（环境无 NPU）；runner `ATTN_MASK_LEN=2048` 与 Decode 段 kv_len 最大 2055 之间可能存在 FA atten_mask 尺寸越界，属待 NPU 恢复后验证的风险项，不构成本模式的结论。
 

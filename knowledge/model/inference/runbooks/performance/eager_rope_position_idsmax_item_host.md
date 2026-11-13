@@ -1,7 +1,7 @@
 ---
 {
   "type": "Runbook",
-  "title": "eager 下每层 RoPE 的 position_ids.max().item() 触发 32 次 host-device 同步导致 Decode 回退约 230 ms/步",
+  "title": "eager RoPE 重复计算与 host 取值同步嫌疑：上移计算后 Decode 时延恢复",
   "description": "Hunyuan-A13B（32 层）Paged Attention + FA v2 改造的首版把 RoPE cos/sin 计算留在每层 HunYuanAttention 内（含 int(position_ids.max().item())），Decode 单步从基线 ~1741 ms 回退到 ~1957–1990 ms。把 cos/sin 上移到 HunYuanModel.forward、每步只算一次并透传各层后，Decode 回到 ~1727 ms、Prefill 1721 ms，回退消除。归因（32 次/步 host-device 同步打断 eager 异步流水）为实施者机制假设，未经 profiler 直接佐证。",
   "tags": [
     "task.debugging",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-03T12:00:00Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
-# eager 下每层 RoPE 的 position_ids.max().item() 触发 32 次 host-device 同步导致 Decode 回退约 230 ms/步
+# eager RoPE 重复计算与 host 取值同步嫌疑：上移计算后 Decode 时延恢复
 
 ## 适用场景
 

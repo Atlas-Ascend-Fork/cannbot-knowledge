@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "ds41 融合算子替换移植进 vllm-ascend rfc 的 A3/A5 设备门控模式",
-  "description": "把 dsnext 的 ds41 wheel 融合算子（indexer_prologue_k、compressor_v2、npu_hc_pre_v2/mhc_post、kv_compress_epilog_v2、npu_rms_norm、QLI/QSLI/MQSMLA 经 packaged_attention 换源）替换进 vllm-ascend rfc 分支的 DeepSeek V4.1 A5 路径后，A3 环境因无 custom_ops wheel 在 vLLM 子进程模型注册表检查即失败。门控模式：模块级 wheel 导入 try/except + _DS41_WHEEL_OPS 标志；层内 self._ds41_wheel_ops = _DS41_WHEEL_OPS and uses_a5_packed_cache()（compressor 侧 _fused）运行时分流；调用方按 packed_cache_ops 分流并恢复 A3 eager 回退路径（in-tree npu_hc_pre_v3/npu_hc_post、Triton pool_projected_eager）。A5 门控分支与已通过逐层探针精度对比（索引 100% exact、greedy 文本一致）的替换版本逐字相同；A3/A5 双平台验证完成后作为 replace dsv4.1 op 系列提交。",
+  "description": "ds41 wheel 融合算子替换进入 DeepSeek V4.1 A5 路径后，A3 因缺少wheel在模型注册检查失败。轨迹增加模块级可选导入与平台/能力门控，恢复A3回退路径。已有静态检查与启动推进信号；A3最终验证完成来自用户确认，A5有门控前的逐层探针对照。新门控后的完整双平台部署及精度回归没有独立日志，不能因分支文本相同而省略。",
   "tags": [
     "task.implementation",
     "topic.graph_execution",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
 # ds41 融合算子替换移植进 vllm-ascend rfc 的 A3/A5 设备门控模式
 
 ## 适用场景
@@ -181,13 +180,13 @@ compressor 融合路径的内部自洽守卫（事件 1139）：
 
 结论 3（A5 等价性）：
 
-门控后的 A5 分支执行的代码与已通过逐层探针精度对比的替换版本逐字相同——QLI_OUT 304/304、QSLI_OUT 1024/1024、IDX_SELECT_POST 1328/1328 全部 exact，两次 greedy 生成文本一致——因此 A5 侧无需重新验证。
+门控后的 A5 分支与此前替换版本文本相同。此前逐层探针有 QLI_OUT 304/304、QSLI_OUT 1024/1024、IDX_SELECT_POST 1328/1328 exact 及两次greedy文本一致的记录；这是门控前的支持证据，不能代替新增导入/平台门控后的部署与精度回归。
 
 判别依据：门控 edit 只是在已验证代码外包裹 if/else，`_ds41_wheel_ops=True` 分支即原替换版本（事件 1144 论证）；替换版本的精度对比在先前的逐层探针实验中闭合：`QLI_OUT`/`QSLI_OUT`/`IDX_SELECT_POST` 100% exact、`SMLA_META_CONSUME` 100% exact（metadata blob 逐位相同，证实 ds41 与 packaged 为同代 kernel）、dummy 阶段 `SMLA_OUT` 94% exact、两次 greedy 生成文本完全一致（事件 982/1011 对比表 + 事件 1013 判定报告）；mHC v2/v3 是唯一算法级差异源（元素级漂移最高 ~10%，被 cache 量化与 greedy 裕度吸收）。混杂条件说明：两轮探针运行的 KV cache 池块数不同（71035 vs 71111，融合栈显存足迹略小所致），cache 类张量的逐字节对比被池尺寸差异屏蔽，判读以索引/输出探针为准。
 
 结论 4（交付状态）：
 
-A3 与 A5 双平台验证完成（用户确认），替换与门控已作为 replace dsv4.1 op 系列提交入库。
+用户确认A3验证完成，替换与门控已提交。现有证据等级应分开记录：静态检查、启动阶段推进、先前A5对照及用户反馈；不能把它们合称为新门控完整双平台客观验收。
 
 ## 验证信号
 

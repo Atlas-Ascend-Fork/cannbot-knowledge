@@ -1,8 +1,8 @@
 ---
 {
   "type": "Runbook",
-  "title": "gpt_oss PD 在线分离启动失败诊断：驱动不支持 memfabric 传输引擎，worker 静默秒死且真实崩溃日志在仓库根 res/ 目录",
-  "description": "在 16 卡 Atlas A3（Ascend 910_9362）+ CANN 9.2.0 上启动 cann-recipes-infer gpt_oss 在线 PD 分离推理时，prefill/decode worker 子进程在向父进程报告 ready 之前即崩溃，父进程 pipe.recv() 只抛 EOFError，nohup 日志与 log_server.log 均无 worker 崩溃栈。真实崩溃日志位于仓库根 res/<日期>/<角色>/<角色>_node0/log_0.log，内容显示权重加载、warmup、create_config_store 均成功后，HYBM 层报 \"the current version of ascend driver does not support mf!\"，最终 transfer_engine.initialize() 抛 \"Ascend transfer engine init returned -1\"，根因是昇腾驱动版本不支持 memfabric（mf）传输引擎，属环境硬阻塞；mooncake 备选后端因 /etc/hixlep 无端点文件同样不可用。",
+  "title": "gpt_oss PD worker 启动失败：从根 res 日志定位 HYBM 驱动版本预检与 memfabric 初始化错误",
+  "description": "cann-recipes-infer gpt_oss在线PD分离中，worker在ready前退出，父进程仅报EOFError。真实worker栈位于仓库根res目录，显示HYBM先无法确定驱动版本，随后报告不支持mf，最终transfer_engine.initialize返回-1。可确认传输引擎初始化被阻塞；由于未采集驱动号与最低版本，尚不能区分固有不兼容、版本读取失败或其他环境问题。",
   "tags": [
     "task.debugging",
     "topic.graph_execution",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
-# gpt_oss PD 在线分离启动失败诊断：驱动不支持 memfabric 传输引擎，worker 静默秒死且真实崩溃日志在仓库根 res/ 目录
+# gpt_oss PD worker 启动失败：从根 res 日志定位 HYBM 驱动版本预检与 memfabric 初始化错误
 
 ## 适用场景
 
@@ -92,7 +91,7 @@ ${RECIPES_ROOT}/res/20261013/gpt_oss_decode/decode_node0/log_0.log
 ${RECIPES_ROOT}/res/20261013/gpt_oss_prefill/prefill_node0/log_0.log
 ```
 
-真实崩溃日志位于仓库根 res/<日期>/<角色>/<角色>_node0/log_0.log（WorkerManager 的 log_dir 取 os.getcwd()+RES_PATH 相对路径），日志显示权重加载与 warmup 均成功、create_config_store ok 之后 hybm_init 报 "the current version of ascend driver does not support mf!"，最终 transfer_engine.initialize() 抛 "Ascend transfer engine init returned -1"——根因是当前昇腾驱动版本不支持 memfabric（mf）传输引擎，属环境限制而非模型/框架代码缺陷。
+真实崩溃日志位于仓库根 `res/<日期>/<角色>/<角色>_node0/log_0.log`。权重加载与warmup之后，日志先出现 `Failed to determine driver version`，再报告 `the current version of ascend driver does not support mf!`，最终引擎初始化返回-1。可定位到HYBM版本预检/传输初始化失败；这没有证明已知驱动版本低于支持下限，也未排除版本读取或安装环境问题。
 
 ## 机制与判别
 
@@ -146,7 +145,7 @@ mooncake 备选后端同样不可用：worker_main 要求 /etc/hixlep/ub_endpoin
 
 日志为什么"消失"：worker 的 `log_0.log` 由 `_redirect_worker_stdio`（os.dup2）写入 `WorkerManager` 的 `log_dir = os.getcwd() + RES_PATH`，RES_PATH 是相对路径（如 `res/20261013/gpt_oss_prefill/prefill_node0`），而 server 进程 cwd 是仓库根，因此落在仓库根 res/ 而不是 `models/gpt_oss/res/`；同时 function.sh 对 server/router 用 `2>&1 > "${WORK_DIR}/${RES_PATH}/log_server.log"` 的重定向顺序（stderr 先指向旧 stdout，再重定向 stdout 到文件），导致 uvicorn/server 的 stderr（含大部分日志）进了 nohup 父日志，`log_server.log` 为空。
 
-fork+import 最小复现正常（子进程 exitcode 0 并回送 ready）、前台直跑 worker（disagg_config=None）可完成权重加载、warmup 并发出 ready，且同时段 NPU 设备端日志除 hybm 外 0 ERROR，说明 NPU 与模型路径本身正常，失败被隔离在 KV 传输引擎初始化一层；在此驱动环境上应快速判定 PD 不可测，不要继续做代码级调试。
+fork+import 最小复现正常（子进程 exitcode 0 并回送 ready）、前台直跑 worker（disagg_config=None）可完成权重加载、warmup 并发出 ready，且同时段 NPU 设备端日志除 hybm 外 0 ERROR，支持失败发生在KV传输引擎初始化阶段，而非本次非PD模型启动。下一步应读取实际驱动信息并核对版本预检失败原因，不能直接判定所有PD后端或模型路径均正常。
 
 ## 验证信号
 
@@ -166,10 +165,10 @@ fork+import 最小复现正常（子进程 exitcode 0 并回送 ready）、前�
 
 ## 适用与失效边界
 
-- 适用：cann-recipes-infer 在线 PD 分离 + memfabric 后端 + 驱动不支持 mf 的环境（症状：router 活、worker 秒死、父进程 EOFError、log_server.log 空）。
+- 适用：cann-recipes-infer 在线 PD 分离 + memfabric 后端 + HYBM版本预检/初始化失败的环境（症状：router 活、worker 秒死、父进程 EOFError、log_server.log 空）。
 - 失效/不适用：
-  - 若驱动支持 mf，本诊断不适用；此时 EOFError 应优先看仓库根 res/ 的 log_0.log 找其他崩溃栈。
+  - 若未出现同一HYBM错误链， EOFError 应优先看仓库根 res/ 的 log_0.log 找其他崩溃栈。
   - 若 /etc/hixlep 下存在 ub_endpoint_npu_*.json，可尝试 `--engine-backend mooncake` 绕过 memfabric（本轨迹未验证 mooncake 可用环境的成功率，属推断）。
   - "升级驱动可恢复"是基于 hybm 错误信息（"the current version of ascend driver does not support mf!"）的合理推断，本轨迹未实测升级后的行为，亦未采集驱动版本号与 memfabric 所需最低版本。
-- 停止条件：看到 `hybm_init ... does not support mf!` / `Ascend transfer engine init returned -1` 且 /etc/hixlep 无端点文件，即可判定 PD 在线模式在本机环境硬阻塞，转离线模式或换环境；不要反复重试或改模型代码。
+- 处置边界：出现同一错误链时，先查HYBM无法读取驱动版本的原因与依赖兼容性；若当前环境暂不能提供可用传输后端，可先用已验证的非PD路径。未完成版本/环境核对前，不把升级驱动或切后端写成已验证修复。
 - 诊断顺序建议：先 `find <repo根> -name "log_0.log" -newermt <启动时间>` 找真实 worker 日志，再读驱动层 ERROR，最后才考虑前台直跑复现。

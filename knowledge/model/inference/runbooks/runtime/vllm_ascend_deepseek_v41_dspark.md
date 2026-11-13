@@ -1,8 +1,8 @@
 ---
 {
   "type": "Runbook",
-  "title": "vllm-ascend DeepSeek-V4.1 dspark 长稳压测接受率衰减到 0 与回答截断的根因诊断规则（PD 分离 + 双 ACL graph）",
-  "description": "针对 PD 分离（Mooncake）+ decode 侧主模型/dspark draft 双 ACL graph 长稳压测中 dspark 接受率逐渐衰减到 0、回答截断的症状，给出审查级多根因诊断规则：候选根因按置信度排序为（1）部署二进制缺 c60545866（draft 纯 SWA 层误用 YaRN 插值 RoPE）或 72521a79c（indexer topk 过滤被注释）两个新修复；（2）draft 私有环跨请求 KV 残留（PD 下 draft SWA KV 冷窗口 + 环分配复用不清零，随请求 churn 单调放大）；（3）V4.1 draft 因果窗口语义偏差（cad.causal 在 dsa_v41 无消费者，恒走因果窗口，每步静态拉低接受率）。诊断规则给出区分三者的探针与对照实验，以及激活边界（私有环机制依赖 VLLM_ASCEND_ENABLE_PRIVATE_CIRCLE_POOL=1，envs.py 重复 key 使默认值为 0）。全部结论为只读代码审查级，轨迹内无运行时验证。",
+  "title": "vllm-ascend DeepSeek-V4.1 DSpark 长稳接受率下降与回答截断：静态审查的候选机制和待验对照",
+  "description": "针对PD分离与双ACL graph下接受率下降、回答截断的用户反馈，静态审查核对历史RoPE/indexer修复、私有环激活条件与draft窗口语义。轨迹没有运行时复现或精度/接受率指标，不能证明根因排序或截断与接受率共因；单请求及私有环开关对照均为未执行建议。",
   "tags": [
     "task.debugging",
     "topic.graph_execution",
@@ -11,14 +11,13 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "agnostic"
   ]
 }
 ---
-
-# vllm-ascend DeepSeek-V4.1 dspark 长稳压测接受率衰减到 0 与回答截断的根因诊断规则（PD 分离 + 双 ACL graph）
+# vllm-ascend DeepSeek-V4.1 DSpark 长稳接受率下降与回答截断：静态审查的候选机制和待验对照
 
 ## 适用场景
 
@@ -39,9 +38,9 @@
 
 核心机制结论（审查级）：
 
-> PD 分离下 dspark draft 私有环跨请求 KV 残留机制：draft 的 SWA KV 只在请求到达 decode 实例后逐步积累（dspark_proposer.py:304-305 每步只写本步 scheduled 的 verify tokens），私有环按 allocation 句柄复用槽位且分配回收不清零，新请求前约一个窗口长度的 decode 步内 draft 注意力窗口可读到上一个请求残留的语义性 KV，请求 churn 越密集平均接受率衰减越严重；该机制是长稳压测接受率衰减到 0 的候选根因（审查级结论，轨迹内未运行时验证）。
+> PD 分离下 dspark draft 私有环跨请求 KV 残留机制：draft 的 SWA KV 只在请求到达 decode 实例后逐步积累（dspark_proposer.py:304-305 每步只写本步 scheduled 的 verify tokens），私有环按 allocation 句柄复用槽位且分配回收不清零，新请求前约一个窗口长度的 decode 步内 draft 注意力窗口可读到上一个请求残留的语义性 KV，请求churn是否使平均接受率下降需运行验证；该机制是长稳压测接受率衰减到 0 的候选根因（审查级结论，轨迹内未运行时验证）。
 
-> 回答截断机理：接受率衰减到 0 使单步吞吐坍塌，客户端超时/取消表现为不完整回答；截断与接受率衰减是同一根因的两个面，而非独立的输出处理 bug（审查级推断，未运行时验证）。
+> 回答截断的待验解释：吞吐下降可能增加超时/取消风险，但轨迹没有请求finish_reason、取消记录或客户端时限信号。不能把截断排他归因于接受率下降；仍需检查长度限制、超时取消及输出处理。
 
 逐字客观观测（工具结果，均来自代码读取 / git 考古）：
 
@@ -110,18 +109,18 @@ dspark_proposer.py:304-305（来源记录 事件 8，dspark_proposer.py 全文�
 
 本卡的诊断规则按以下顺序执行（均为审查会话中实际执行过的只读探针或提出的验证实验；**注意：验证实验为研究结论，未执行**）：
 
-1. 【已执行】部署版本考古：`git show c60545866`、`git show 72521a79c`（来源记录 事件 85/88）——核对两个"直接造成接受率衰减形状"的修复是否在产线二进制内。
+1. 【已执行】部署版本考古：`git show c60545866`、`git show 72521a79c`（来源记录 事件 85/88）——核对这两个与draft RoPE/indexer相关的历史修复是否在产线二进制内。
 2. 【已执行】消费者考古：`grep -n "\.causal" vllm_ascend/attention/dsa_v41.py`（事件 458/459，输出为空）；`grep -rn "get_draft_attn_causal" vllm_ascend/ --include=*.py`（事件 454/455，命中仅 kimi_k3_dspark.py 与 dspark_proposer.py）；`grep -n "VLLM_ASCEND_ENABLE_PRIVATE_CIRCLE_POOL" vllm_ascend/`（主控会话事件 90/91，15+ 消费点）。
 3. 【未执行，审查建议】确认产线二进制包含 `c60545866`、`72521a79c`、`f13966829`、`51d65bc82`、`650f8578b`。
-4. 【未执行，审查建议】单请求、输出 ≥2000 token、无并发压测：若接受率稳定 → 排除版本缺失/因果窗口类，指向环残留（churn 依赖）。
-5. 【未执行，审查建议】相同压测、显式 `VLLM_ASCEND_ENABLE_PRIVATE_CIRCLE_POOL=0`（若内存允许）对照：若衰减消失 → 锁定环残留机制。
+4. 【未执行，审查建议】单请求、输出 ≥2000 token、无并发压测：若接受率稳定，可支持并发/churn相关方向，但仍需控制上下文长度、采样与缓存状态，不能排除版本缺失或因果窗口问题。
+5. 【未执行，审查建议】相同压测、显式 `VLLM_ASCEND_ENABLE_PRIVATE_CIRCLE_POOL=0`（若内存允许）对照：若衰减消失，可支持私有环相关路径；该开关影响多处执行与分配，尚不能锁定为残留KV这一具体机制。
 6. 【未执行，审查建议】打开 `[spec/dfx] rejection_sampler done` DEBUG 日志按请求年龄段分桶统计接受率，区分"新请求差、老请求好"（环残留）与"所有请求随步数变差"（版本缺失/因果窗口/漂移类）。注意：该日志探针的存在性（rejection_sampler.py:300-331）为审查报告引用，本轨迹未读取该文件核实。
 
 ## 机制与判别
 
 ### 机制一（候选根因 #1，需先核实）：部署二进制缺两个 9 月下旬修复
 
-> 部署版本优先核查：c60545866（draft 纯 SWA 层误继承 YaRN 插值 RoPE，commit 记录实测 pos0 76% 衰减到 pos4 25%）与 72521a79c（indexer topk 过滤 prepare_indexer_indices 被注释，长上下文下 target 稀疏注意力读到未按位置过滤的错误块）均于 2026-09-21~23 才合入；若压测二进制早于这两个修复，接受率随请求内长度衰减与输出劣化的形状与生产现象直接吻合——排查第一步是核对部署二进制版本。
+> 部署版本优先核查：c60545866（draft 纯 SWA 层误继承 YaRN 插值 RoPE，commit 记录投机块内位置pos0的接受率76%、pos4为25%）与 72521a79c（indexer topk 过滤 prepare_indexer_indices 被注释，长上下文下 target 稀疏注意力读到未按位置过滤的错误块）均于 2026-09-21~23 才合入；若压测二进制缺这些修复，应优先核对其适用条件；但块内位置pos0/pos4的统计不同于同一位置随上下文长度或墙钟时间衰减，不能直接当成生产长稳现象的证明——排查第一步是核对部署二进制版本。
 
 c60545866 提交信息原文（事件 85，节选）：
 
@@ -165,7 +164,7 @@ c60545866 提交信息原文（事件 85，节选）：
 +        return selected, candidate_indices, candidate_lengths
 ```
 
-判别：这两个 bug 的症状形状与生产现象高度一致（72521a79c 尤其随上下文增长恶化，压测请求普遍逼近 150K）；若二进制已含两者，则该机制排除。
+判别：先核对实际部署版本是否包含修复，并确认受影响的RoPE/indexer路径是否启用。c60545866的pos0→pos4是投机块内位置统计，未证明长稳时间衰减；包含修复可排除这两个已知旧缺陷原样存在，但不能排除其他版本或路径问题。
 
 ### 机制二（候选根因 #2，中高置信）：draft 私有环跨请求残留 + PD 冷窗口
 
@@ -227,7 +226,7 @@ V4 对照路径（dsa_v1.py:347-383，事件 140）——文档字符串与整�
 - `grep -rn "get_draft_attn_causal" vllm_ascend/ --include=*.py` → 仅命中 `vllm_ascend/models/kimi_k3_dspark.py:276`（定义）与 `vllm_ascend/spec_decode/dspark_proposer.py:390/392/526/527`（消费）；deepseek_v41 模型目录无定义。
 - `grep -n "\.causal" vllm_ascend/attention/dsa_v41.py` → **无输出**（事件 459）；主控会话独立核实：causal 字段只在 dsa_v41.py:418（定义）与 2331（`causal=getattr(common, "causal", True)` 透传）出现，窗口构造逻辑恒为因果窗口，"draft 非因果语义确实未生效，该发现成立"。
 
-判别：该机制与机制一/二叠加后把热身期接受率直接打到近 0，也是 c60545866 修复后 pos0 仍可能偏低的原因；其作用不随时间变化（每步静态），因此"衰减到 0"的动态形状主要由机制一/二贡献。
+判别：因果窗口差异是需要与训练语义/参考实现核对的代码观察，其对接受率的影响幅度、与其他机制的叠加及动态变化均未测量，不能推定它把接受率打到近0或确定长稳贡献排序。
 
 ### 未验证推断与混杂
 
@@ -262,4 +261,4 @@ V4 对照路径（dsa_v1.py:347-383，事件 140）——文档字符串与整�
   - 机制三适用于 V4.1 draft builder（DeepseekV41MetadataBuilder）；V4/dsa_v1 路径（AscendDSAMetadataBuilder + build_dspark_swa_indices）语义正确，不适用。
   - 本卡结论未在 NPU 上运行验证；在接受率分桶实验给出"新请求差老请求好"或"所有请求随步数变差"的证据前，根因排序应视为待验证假设。
   - 若后续版本已重构 dspark_proposer/dsa_v41 的窗口构造或私有环分配（如 wzc 分支 `win_*`→`ori_*` ABI 改名），行号与机制需按新代码重新核对。
-- 停止/回退条件：探针 1（版本核对）命中缺失修复 → cherry-pick 后重测即可结案；探针 4/5 显示衰减与 churn/私有环无关 → 放弃机制二，转向漂移类因子（候选 [ACL graph 捕获地址固化纪律：draft 图捕获必须绑定每步刷新的持久 buffer，临时张量致回放读垃圾、接受率坍塌到 ~1/B](../compilation/acl_graph_draft_buffer.md) 的地址固化/同步类）。
+- 停止/回退条件：发现部署缺修复后，只能在控制变量重测并核对接受率、精度与请求完成原因后决定是否结案。单请求或私有环开关对照仅用于支持/削弱假设，不足以独自排除同步、地址稳定性、版本或输出路径问题。

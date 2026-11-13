@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # 五类 torch_npu 融合算子对 FP8 GQA MoE 模型（Ascend950PR/torch_npu 2.12.0）的实测不适配边界
 
 ## 适用场景
@@ -89,7 +88,7 @@ Norm OK err 0.0
 - `npu_kv_rmsnorm_rope_cache(_v2)`：语义面向 MLA latent 的 RMSNorm→RoPE→写 cache；Hunyuan 是 RoPE→per-head QK RMSNorm→写 cache，顺序与归一化对象都不同，融合会造成语义错误。
 - `npu_scatter_pa_kv_cache`：cache_mode 枚举仅 None/Norm/PA_NZ（PA_ND 报 Invalid_Argument）；默认 PA_NZ 对末维 128 元素（bf16，lastDimSize=256 字节）的 cache 触发「the last dim of key cache must be 32 Byte」约束——即该默认模式对常规 `[.., num_kv_heads, head_dim]` 布局不可用；None/'Norm' 模式可用且与 `npu_scatter_nd_update_` 逐位一致（err 0.0）。本模型阶段 2 已用 `npu_scatter_nd_update_` 写 cache，无需替换。
 - MC2 dispatch/combine：语义绑定 EP 并行（跨卡 token 派发/聚合），单卡无 EP 场景无意义。
-- 未验证推断：`npu_scatter_pa_kv_cache` 末维 32 Byte 约束的精确判读（要求 32 字节或 32 字节对齐）未进一步实验，仅确认该调用组合报错；若 cache 布局改为满足约束的形态（如末维恰为 32 字节倍数/特定压缩布局），PA_NZ 是否可用未验证。
+- 未验证推断：`npu_scatter_pa_kv_cache` 末维 32 Byte 约束的精确判读（要求 32 字节或 32 字节对齐）未进一步实验，仅确认该调用组合报错；若 cache 布局改为满足约束的形态（需核对完整 PA_NZ 布局；本例 256B 已是 32B 的倍数，仅增加对齐或 padding 不能证明满足要求），PA_NZ 是否可用未验证。
 
 ## 验证信号
 

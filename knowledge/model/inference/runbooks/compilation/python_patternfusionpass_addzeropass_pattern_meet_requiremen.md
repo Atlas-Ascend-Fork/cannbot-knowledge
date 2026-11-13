@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "GE Python PatternFusionPass AddZeroPass：@pattern 表达式与 meet_requirements 按 dtype 判零消除 Add(x,0)（离线 OM 与在线 torchair 双路验证）",
-  "description": "在 CANN 9.3.0（Ascend910_9362）上用纯 Python PatternFusionPass 消除恒等 Add(x,0)：@pattern 表达式 inputs[0]+0 描述 Data+Const→Add 拓扑，meet_requirements 读 Const.value 按 dtype 判零（DT_FLOAT 容差 1e-6 / DT_DOUBLE 容差 1e-15 / DT_INT32 精确 0），replacement 透传 inputs[0]。DUMP_GE_GRAPH dump 对比确认 6→4 节点、ATC fusion_result match=1 effect=1；非零常量（1.0）保持原图且编译继续（match=1 effect=0）；自建 ACL runner 离线 OM 与在线 torchair（复用未修改网络脚本）整网输出 baseline vs optimized 均逐位一致。仅 DT_FLOAT 判零分支实测。",
+  "description": "在 CANN 9.3.0（Ascend910_9362）上用纯 Python PatternFusionPass 消除恒等 Add(x,0)：@pattern 表达式 inputs[0]+0 描述 Data+Const→Add 拓扑，meet_requirements 读 Const.value 按 dtype 判零（DT_FLOAT 容差 1e-6 / DT_DOUBLE 容差 1e-15 / DT_INT32 精确 0），replacement 透传 inputs[0]。DUMP_GE_GRAPH dump 对比确认 6→4 节点、ATC fusion_result match=1 effect=1；非零常量（1.0）保持原图且编译继续（match=1 effect=0）；自建 ACL runner 离线 OM 与在线 torchair（复用未修改网络脚本）整网输出 baseline vs optimized 均逐位一致。仅 DT_FLOAT 判零分支实测；1e-7 非零值也会被历史主 pass 消除，容差版本不保证严格恒等语义。",
   "tags": [
     "task.implementation",
     "topic.compilation"
@@ -10,13 +10,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "a3"
   ]
 }
 ---
-
 # GE Python PatternFusionPass AddZeroPass：@pattern 表达式与 meet_requirements 按 dtype 判零消除 Add(x,0)（离线 OM 与在线 torchair 双路验证）
 
 ## 适用场景
@@ -27,7 +26,7 @@
 
 ## 触发与观测
 
-优化目标与判定基准：正例 dump 中 `Add0` 消失；非零常量时必须保持原图且编译继续。
+优化目标与判定基准：精确零正例的 dump 中 `Add0` 消失，常量 1.0 负例保持原图且编译继续。下面的历史主 pass 使用浮点容差，1e-7 等近零非零值也会被消除，不能满足“所有非零常量均保留”的严格语义。
 
 pyatc 正例日志（`pyatc.stdout.log`，事件 219 逐字）：
 
@@ -214,7 +213,7 @@ python3 "$SKILL_ROOT/scripts/run_om.py" \
 
 在 CANN 9.3.0（Ascend910_9362）上，Python `PatternFusionPass` 用 `@pattern` 表达式 `inputs[0] + 0` 匹配 `Data + Const -> Add` 拓扑、`meet_requirements` 读 `Const.value` 按 dtype 判零、`replacement` 透传 `inputs[0]`，可在 `BEFORE_INFER_SHAPE` 阶段消除 DT_FLOAT 的 `Add(x, 0.0)`（dump 6→4 节点，fusion_result match_times=1 effect_times=1）；判零代码同时实现 DT_FLOAT 容差 1e-6 / DT_DOUBLE 容差 1e-15 / DT_INT32 精确 0 三档，本轨迹仅实测 DT_FLOAT 分支。
 
-证据链：pattern 命中（事件 219 日志）→ 图变换（事件 233 dump 对比：`add_zero`+`zero_const` 消失、`add_y` 改吃 `x:0`）→ 官方计数（事件 316 fusion_result：`PythonAddZeroPass: match=1 effect=1`）→ 整网输出一致（事件 350/365/423）。可区分解释：输出一致既可能因 pass 恒等消除、也可能因两侧编译链差异抵消——对照证据显示两侧 atc 默认链同等启用 fp16 UB 融合（`TbeEltwiseCastFusionPass effect=1` 两侧一致），且在线路径输出与 numpy FP32 `x+y` 最大绝对误差为 0.0，支持『pass 为纯恒等消除』的解释；离线 OM 输出与 numpy fp32 的约 1.6e-4 差异两侧相同，与本 pass 无关（此归因为推断，判定依据是同管线内逐位一致）。
+证据链：pattern 命中（事件 219 日志）→ 图变换（事件 233 dump 对比：`add_zero`+`zero_const` 消失、`add_y` 改吃 `x:0`）→ 官方计数（事件 316 fusion_result：`PythonAddZeroPass: match=1 effect=1`）→ 整网输出一致（事件 350/365/423）。可区分解释：输出一致既可能因 pass 恒等消除、也可能因两侧编译链差异抵消——对照证据显示两侧 atc 默认链同等启用 fp16 UB 融合（`TbeEltwiseCastFusionPass effect=1` 两侧一致），且在线路径输出与 numpy FP32 `x+y` 最大绝对误差为 0.0，支持本次精确零样本的输出等价；不能证明容差范围内的非零常量消除仍为恒等改写；离线 OM 输出与 numpy fp32 的约 1.6e-4 差异两侧相同，与本 pass 无关（此归因为推断，判定依据是同管线内逐位一致）。
 
 非零常量（Const=1.0）时 `meet_requirements` 返回 False，dump 图保持原状且编译继续（fusion_result match_times=1 effect_times=0）。
 
@@ -236,6 +235,9 @@ python3 "$SKILL_ROOT/scripts/run_om.py" \
 - 结构性收益（L0 图层，非端到端性能）：删 1 Add + 1 Const + 1 中间 Tensor、零新增节点；L1/msprof 未运行，无时延/吞吐数据（2x2 模型不具性能代表性）。
 
 ## 适用与失效边界
+
+- 精确 `Add(x,0)` 才是本卡已验证的恒等消除样例。历史代码对 DT_FLOAT 使用 1e-6、DT_DOUBLE 使用 1e-15 容差，会把近零非零加法改为透传；这属于近似优化，误差是否可接受须由业务预算和精度验证决定。
+- 需要严格保留非零常量时，采用 [严格常量值匹配](patternmatcherconfigbuilderenable_const_value_match_const.md)，并直接核对真实常量值。当前版本 `Tensor.data` 对 1e-7 存在回读成 0.0 的观测，不能仅把本地比较改为 `== 0` 就声称已解决序列化精度问题。
 
 - 判零分支中 `DT_DOUBLE`（容差 1e-15）与 `DT_INT32`（精确 0）未在本轨迹实测（fixture 均为 DT_FLOAT）；跨 dtype 常量是否进入该 pattern 未验证，采用前需自测。
 - `Tensor.data` 回读存在字符串序列化精度损失（见[CANN 9.3.0 ge Python Tensor.data 字符串序列化回读精度有限：用 dump value_data 原始字节复核图内常量真值](cann_python_tensordata_dump_value_data.md)）：依赖 `Tensor.data` 做精确值（而非容差）判断的守卫会被显示值误导；本 pass 的 1e-6 容差判零在本观测范围内不受影响。

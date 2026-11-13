@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "全模型 bf16 转换不改善 bs=1 decode 时延（显存减半成立）",
-  "description": "pangu_2_6B fp32 迁移 Ascend950PR_9589 后的常规第一候选（全模型 .to(bf16) 含 KV cache）被实验证伪时延收益：L0 精度门禁 8/8 PASS（cos≥0.999993），但 TPOT 中位 29.797ms vs fp32 基线 29.433ms（恶化 1.2%，噪声带内不计收益）；显存峰值 9.99→4.97GB（-50%）真实。失败条件明确：任务碎片固定开销主导的 bs=1 eager decode。",
+  "description": "pangu_2_6B fp32 迁移 Ascend950PR_9589 后的常规第一候选（全模型 .to(bf16) 含 KV cache）被实验证伪时延收益：L0 精度门禁 8/8 PASS（cos≥0.999993），但 TPOT 中位 29.797ms vs fp32 基线 29.433ms（恶化 1.2%，噪声带内不计收益）；显存峰值 9.99→4.97GB（-50%）真实。该时延否定结果仅覆盖本模型的 bs=1 eager decode；任务调度固定开销主导是与后续融合观测相符的解释，未单独隔离测量。",
   "tags": [
     "task.debugging",
     "topic.precision",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # 全模型 bf16 转换不改善 bs=1 decode 时延（显存减半成立）
 
 ## 适用场景
@@ -55,7 +54,7 @@ cd ${WORK_ROOT} && venv/bin/python mia/scripts/candidates.py task-workspace/mode
 
 ## 机制与判别
 
-- 为什么无时延收益（轨迹内推断，方向被后续融合实验佐证）：bs=1 decode 的时延地板 = 每步约 711 个算子任务 × ~40µs 固定开销 ≈ 28ms；bf16 只减半权重流量、不减任务数，故 TPOT 不动（判别实验详见 [decode 时延瓶颈判别：单因子 bf16 实验证伪“计算受限”假瓶颈（真因为任务碎片固定开销）](../performance/decode_bf16.md)）。
+- 无时延收益的候选解释（轨迹内推断，后续融合实验提供旁证，未隔离验证）：轨迹用每步约 711 个算子任务 × 假设每任务约 40µs 得到约 28ms 的估算；该估算并非独立测得的时延地板；bf16 减少权重流量但不减少任务数，与 TPOT 未改善的观测相符；这不能单独证明固定开销是唯一瓶颈（判别实验详见 [decode 的 bf16 对照实验与任务调度开销假设](../performance/decode_bf16.md)）。
 - 精度代价真实但可控：cos 从 1.000000 降到 0.999993–0.999996，mae 从 ~3e-5 升到 ~0.1；eager attention 的 -1e4 masked_bias dtype 转换路径是 bf16 化的首要排查点（本例未触发 FAIL）。
 - 与 C1a（autocast 仅包 matmul）的关系：C1b 已证伪时延收益，C1a 依赖同判别逻辑，降优先级未执行（谱系留 proposed 未竟）。
 
@@ -75,7 +74,7 @@ cd ${WORK_ROOT} && venv/bin/python mia/scripts/candidates.py task-workspace/mode
 
 ## 适用与失效边界
 
-- 明确失败条件：bs=1、eager、任务碎片固定开销主导（每步任务数 >500 且设备利用率低）的 decode 场景，bf16 转换不给时延收益。
+- 本例未获得时延收益的条件：pangu_2_6B、bs=1、eager、prompt 17 token、生成 16 token、本文软硬件版本。每步约 711 个任务是该样本的画像，不能推广成任务数 >500 时 bf16 均无收益的通用门槛。
 - 仍值得采用的条件：显存受限（峰值 -50%）、或算力/带宽主导的负载（prefill、大 batch——本轨迹未测，不外推）、或配合图模式后固定开销不再是地板时（未验证，属假设）。
 - 版本敏感：固定开销与 aclnn 调度随 CANN/驱动漂移，跨版本须重跑“C4/C6 判别实验”再决定。
 - 回退路径：保留 fp32（本轨迹 promoted 链 = fp32 + qkv-fuse）；若为显存采用 bf16，须过 L0 门禁并关注 masked_bias 路径的 mae 变化。

@@ -2,7 +2,7 @@
 {
   "type": "Runbook",
   "title": "HYV4 五点 torch_npu 融合替换（MoE init_routing_v2→grouped_matmul→clipped_swiglu→grouped_matmul→finalize_routing 等）的模块级/整网验证与同会话 A/B 性能",
-  "description": "将 HYV4Experts 逐专家 Python 循环替换为 npu_moe_init_routing_v2→npu_grouped_matmul→npu_clipped_swiglu→npu_grouped_matmul→npu_moe_finalize_routing 链路，并以 npu_moe_gating_top_k、npu_rms_norm、合并 gate_up+npu_swiglu、npu_rotary_mul(half) 替换 router/RMSNorm/MLP/RoPE，每点独立开关可回退。模块级 cos≥0.99998（router 索引逐位一致），整网 Paged 默认路径全开 prefill cos 0.999912 且 greedy token 与阶段 0 eager 基线逐位一致；同会话 A/B（reps=16 中位数）prefill 242.745→28.721 ms、decode 58.104→20.751 ms。",
+  "description": "将 HYV4Experts 逐专家 Python 循环替换为 npu_moe_init_routing_v2→npu_grouped_matmul→npu_clipped_swiglu→npu_grouped_matmul→npu_moe_finalize_routing 链路，并以 npu_moe_gating_top_k、npu_rms_norm、合并 gate_up+npu_swiglu、npu_rotary_mul(half) 替换 router/RMSNorm/MLP/RoPE，每点独立开关可回退。模块级 cos≥0.99998（router 专家索引集合一致），整网 Paged 默认路径全开 prefill cos 0.999912 且 greedy token 与阶段 0 eager 基线逐位一致；同会话 A/B（reps=16 中位数）prefill 242.745→28.721 ms、decode 58.104→20.751 ms。",
   "tags": [
     "task.implementation",
     "topic.model_serving",
@@ -11,13 +11,12 @@
   "status": "draft",
   "sources": [],
   "created_at": "2026-11-03T12:00:00Z",
-  "updated_at": "2026-11-06T09:40:40Z",
+  "updated_at": "2026-11-12T11:53:46Z",
   "platforms": [
     "950"
   ]
 }
 ---
-
 # HYV4 五点 torch_npu 融合替换（MoE init_routing_v2→grouped_matmul→clipped_swiglu→grouped_matmul→finalize_routing 等）的模块级/整网验证与同会话 A/B 性能
 
 ## 适用场景
@@ -107,7 +106,7 @@ MoE experts 融合链路核心实现（`models/modeling_hy_v4.py`，最终状态
 
 ## 机制与判别
 
-- 模块级精度（真实维度，阈值 cos≥0.9999）：MoE experts decode cos 0.99998409 / prefill 0.99998295；router 索引集合逐位一致、权重 maxdiff 5.96e-8；RMSNorm cos 0.99999624；MLP shared-768 0.99999344 / dense-6912 0.99999356；RoPE 三路径 cos_q/cos_k 均 ≥0.999995。锚点：来源记录 事件 238（`agentic/golden/fusion_modules.json`）；信号：同事件 + reviewer 复跑 来源记录 事件 148（数字逐位一致）。
+- 模块级精度（真实维度，阈值 cos≥0.9999）：MoE experts decode cos 0.99998409 / prefill 0.99998295；router 专家索引集合一致、权重 maxdiff 5.96e-8；RMSNorm cos 0.99999624；MLP shared-768 0.99999344 / dense-6912 0.99999356；RoPE 三路径 cos_q/cos_k 均 ≥0.999995。锚点：来源记录 事件 238（`agentic/golden/fusion_modules.json`）；信号：同事件 + reviewer 复跑 来源记录 事件 148（数字逐位一致）。
 - 整网精度（Paged 默认路径，同会话 vs 未融合基线）：单点 prefill cos 0.999913–1.000002、argmax 全一致；全开 prefill cos 0.999912、decode cos_min 0.992923、argmax 一致。锚点：来源记录 事件 242；信号：事件 285（`fusion_network.json`）+ reviewer 复跑 来源记录 事件 164（数值逐位复现）。
 - 整网输出一致性：全融合默认 Paged 路径 greedy 输出 [101453, 58721, 70389, 70389, 76480, 76480, 76480, 76480] 与阶段 0 eager 基线逐位一致；HYV4_USE_FUSED_OPS=0 全关后逐位复现阶段 2 paged 基线 token [101453, 76480, 13901, 65000, 40554, 58506, 105246, 58506]。锚点：来源记录 事件 250、189；信号：同事件 + reviewer env 路径复跑 来源记录 事件 188。
 - 性能结论（同会话 A/B，模型只构建一次、reps=16、中位数）：同会话 A/B（模型只构建一次、reps=16、中位数）：五点全融合后 prefill 242.745→28.721 ms（约 8.5×）。锚点/信号：来源记录 事件 242（implementer，`fusion_network.json` timing_ms）；reviewer 独立复跑 来源记录 事件 164 得 211.188→22.337 ms（比值 0.1058，同一口径下复现）。
@@ -118,7 +117,7 @@ MoE experts 融合链路核心实现（`models/modeling_hy_v4.py`，最终状态
 
 以下均为本组来源观测轨迹内客观观测（平台 Ascend950PR_9589 单卡、bf16、seed=1234、batch=1、13 token prompt）：
 
-- 模块级：来源记录 事件 238 / 来源记录 事件 148（`fusion_modules.json` 数字逐位一致：moe_experts 0.99998409/0.99998295、router index_set_match true + 5.96e-8、rms_norm 0.99999624、mlp 0.99999344/0.99999356、rope 三路径 ≥0.999995）。
+- 模块级：来源记录 事件 238 / 来源记录 事件 148（`fusion_modules.json` 数字逐位一致：moe_experts 0.99998409/0.99998295、router index_set_match true（集合比较，不代表 top-k 排序逐元素相同） + 5.96e-8、rms_norm 0.99999624、mlp 0.99999344/0.99999356、rope 三路径 ≥0.999995）。
 - 整网精度：来源记录 事件 285（`fusion_network.json`）与 来源记录 事件 164（reviewer 独立复跑，paged 单点/all 数值逐位一致；eager all 0.996563 见 [随机权重网络上融合组合整网 logits 相关性下降（eager all 0.9966、argmax 翻转）的判别：组合探针定位 + 逐层 hidden 跟踪区分 bf16 传播放大与算子错误](../precision/logits_eager_argmax_hidden_bf16.md)）。
 - 端到端 token：${PRIVATE_CREDENTIAL_1} 事件 250（`bash infer.sh` 全融合：prefill 20.05 ms、decode 18.39–18.88 ms、token 逐位一致）；事件 189（master-off 逐位复现阶段 2 基线）；来源记录 事件 188（两条 env 路径 token 复现）。
 - 性能（同会话 A/B，reps=16 中位数）：来源记录 事件 242：prefill eager_fusion 242.745（min 210.883 / max 254.889）vs fused 28.721（min 21.389 / max 31.581），`fused_over_eager=0.1183`；decode 58.104（min 54.633 / max 63.394）vs 20.751（min 18.678 / max 21.305），`fused_over_eager=0.3571`。reviewer 复跑（来源记录 事件 164）：prefill 211.188→22.337（0.1058）、decode 56.392→19.525（0.3462）。两轮绝对值随宿主负载漂移（本机 loadavg 波动），比值稳定在 prefill ÷8.5–9.5 / decode ÷2.8–2.9。注意：绝对耗时只在该单卡宿主空闲窗口成立，跨时段比较不可用（阶段 2.5 已证跨时段比较是假象，见 `stage2_paged_metadata.json` 的 `_notes`）。
