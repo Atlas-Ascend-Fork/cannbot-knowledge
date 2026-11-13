@@ -33,6 +33,9 @@ stages:
     name: PreBuild
     jobs:
       JOB_pre:
+        permissions:
+          repository: read
+          id-token: write
         name: Test_PreBuild
         # Retained for CANN PR association and ci-pipeline-* label lifecycle.
         uses: cann/.gitcode/.gitcode/workflows/pre_action.yml@master
@@ -44,6 +47,9 @@ stages:
     name: KnowledgeCheck
     jobs:
       JOB_format:
+        permissions:
+          repository: read
+          id-token: write
         name: FormatCheck
         runs-on: ['self-hosted', 'arch=arm64', 'spec=large']
         container:
@@ -77,13 +83,20 @@ stages:
                 --output "$RESULT_DIR/format-check.json" \
                 --source-repo "$CHECKED_REPO" \
                 --source-sha "$MERGE_SHA"
+          -
+            name: oidc_auth
+            uses: huaweicloud-oidc-auth
+            with:
+              audience: ${{ secrets.audience }}
+              agency_urn: ${{ secrets.agency_urn }}
+              provider_urn: ${{ secrets.provider_urn }}
+              region: cn-north-4
+              duration: 3600
           - name: upload
             uses: obs-upload
             with:
               endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
               bucket: "ascend-ci"
-              access-key: ${{ secrets.AK }}
-              secret-key: ${{ secrets.SK }}
               artifact-path: |
                 ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/format/format-check.json
               object-prefix: ${{ env.obs_path }}/knowledge-check/${{ atomgit.workflow_run_id }}/format/
@@ -91,6 +104,9 @@ stages:
             continue-on-error: true
 
       JOB_graph:
+        permissions:
+          repository: read
+          id-token: write
         name: GraphCheck
         runs-on: ['self-hosted', 'arch=arm64', 'spec=large']
         container:
@@ -122,19 +138,29 @@ stages:
               bash .gitcode/scripts/knowledge_check.sh \
                 .gitcode/scripts/graph_check.py \
                 --output "$RESULT_DIR/graph.json"
+          -
+            name: oidc_auth
+            uses: huaweicloud-oidc-auth
+            with:
+              audience: ${{ secrets.audience }}
+              agency_urn: ${{ secrets.agency_urn }}
+              provider_urn: ${{ secrets.provider_urn }}
+              region: cn-north-4
+              duration: 3600
           - name: upload
             uses: obs-upload
             with:
               endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
               bucket: "ascend-ci"
-              access-key: ${{ secrets.AK }}
-              secret-key: ${{ secrets.SK }}
               artifact-path: |
                 ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/graph/graph.json
               object-prefix: ${{ env.obs_path }}/knowledge-check/${{ atomgit.workflow_run_id }}/graph/
             continue-on-error: true
 
       JOB_content:
+        permissions:
+          repository: read
+          id-token: write
         name: ContentCheck
         continue-on-error: true
         runs-on: ['self-hosted', 'arch=arm64', 'spec=large']
@@ -173,13 +199,20 @@ stages:
                 --output "$RESULT_DIR/content-check.json" \
                 --source-repo "$CHECKED_REPO" \
                 --source-sha "$MERGE_SHA"
+          -
+            name: oidc_auth
+            uses: huaweicloud-oidc-auth
+            with:
+              audience: ${{ secrets.audience }}
+              agency_urn: ${{ secrets.agency_urn }}
+              provider_urn: ${{ secrets.provider_urn }}
+              region: cn-north-4
+              duration: 3600
           - name: upload
             uses: obs-upload
             with:
               endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
               bucket: "ascend-ci"
-              access-key: ${{ secrets.AK }}
-              secret-key: ${{ secrets.SK }}
               artifact-path: |
                 ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/content/content-check.json
               object-prefix: ${{ env.obs_path }}/knowledge-check/${{ atomgit.workflow_run_id }}/content/
