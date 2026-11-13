@@ -31,3 +31,5 @@
 - [MX Matmul scale 驻留与预取权衡](mx_matmul_scale_residency_and_preload_tradeoffs.md)：保存量化scale块、L1倍率及预取规模的独立预算。
 
 - [Fixpipe 直达 UB 的镜像布局与复用槽合同](fixpipe_ub_mirror_and_slot_reuse_contract.md)：区分完整输出镜像和紧凑复用槽的地址、容量、路由及通知协议，约束 Cube/Vector 融合中的 GM 往返消除。
+
+- [Matmul tiling 形状与核数推导链（SetShape/SetSingleShape/GetBaseK/GetCoreNumAic）](tiling_shape_core_derivation_chain.md)：Matmul tiling 的跨 API 推导契约：平台核数查询（GetCoreNumAic）→ 总分块形状 SetShape 与单核形状 SetSingleShape 的维度区分 → GetBaseK 依赖形状先行的顺序契约 → K 分块数与尾块的模运算回退 → SetBlockDim/CalcTschBlockDim 核数落位；含 tiling 对象与 kernel 对象 SetShape 同名碰撞警示。

@@ -29,3 +29,5 @@
 - [向量谓词、标量数学与 Axpy 修改语义](vector_predicates_scalar_math_and_axpy_mutation.md)：保留专用指令选择，区分两种Select极性及浮点运算合同。
 
 - [Vector 效率的mask生命周期与归约接口形态](vector_efficiency_mask_lifecycle_and_reduction_api_shapes.md)：保留计数模式和融合，纠正单槽重复Alloc及伪标量归约调用。
+
+- [原子 GM 回写与事件边界契约（SetAtomicAdd/DisableDmaAtomic）](atomic_gm_writeback_event_contract.md)：多核向同一 GM 输出累加的回写契约：SetAtomicAdd<T> 是 UB/L0C→GM 通路的状态开关（影响后续所有搬出直至关闭），开启前按数据生产流水建立依赖（示例中为 V_MTE3 事件对，见骨架注释），累加段结束必须 DisableDmaAtomic 关闭（旧名 SetAtomicNone 已更名）；GM 不自动清零——从零求和时须在首个累加前完成清零，累加到已有结果时保留初值；原子解决写写冲突、事件/SyncAll 解决读写可见性，两类同步不可互替。
