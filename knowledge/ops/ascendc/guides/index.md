@@ -11,7 +11,7 @@
 - [AscendC SIMD Development Reference](simd_development_reference.md)：AscendC SIMD 开发参考，主张 arch35/A5 上多算子计算链默认走 Reg 类 API（Regbase）而非 Membase LocalTensor（后者每步 UB 往返加 PipeBarrier，实测拖累可达数十倍）；另含量化 kernel 常用 SIMD API 与 MXFP4 范式。
 - [technical appendix](technical_appendix/index.md)：共 8 张知识卡，分布在 2 个子目录（concepts_and_terms、cpp_standard_support）。
 
-- [regbase](regbase/index.md)：共 34 张知识卡（如 RegBase API 的操作数、掩码与存储合同、AscArange：固定 reference 调用约束、asc_bfloat162e1m2x2 (废弃)：固定 reference 调用约束 等）。
+- [regbase](regbase/index.md)：共 35 张知识卡（如 RegBase API 的操作数、掩码与存储合同、AscArange：固定 reference 调用约束、asc_bfloat162e1m2x2 (废弃)：固定 reference 调用约束 等）。
 
 - [blaze](blaze/index.md)：共 21 张知识卡（如 Blaze 硬件基形与运行期尾块范围的区别、权重反量化的 Cast 顺序与 V→C 释放关系、Blaze 逐元素 Epilogue 的广播映射与加载边界 等）。
 - [catlass](catlass/index.md)：共 17 张知识卡（如 CATLASS FA 接口映射及参考配方冲突、CATLASS 编译架构与启动资源合同、CATLASS 的 Tile、Block 与 Kernel 组件契约 等）。
@@ -19,15 +19,15 @@
 - [memory](memory/index.md)：共 25 张知识卡（如 对齐单位、布局行距与填充值、BF16 别名缓冲与平台采样路径、Ascend C 缓冲所有权、流水交接与槽位布局 等）。
 - [moe](moe/index.md)：共 19 张知识卡（如 MoE Dispatch 与 Combine 的元数据对应关系、MoE 容量公式与路由假设、MoE Combine 的可选路径与量化角色 等）。
 - [reductions](reductions/index.md)：共 34 张知识卡（如 归约算法选择与数值边界、归约轴映射与全载、分载设计、Blaze Pure Reduce 的 partial 状态与模板缺口 等）。
-- [vector](vector/index.md)：共 19 张知识卡（如 Ascend C API 家族与存储位置决定的搬运、原子 GM 回写与事件边界契约（SetAtomicAdd/DisableDmaAtomic）、字节 Mask、Bit Mask 与数值谓词 等）。
+- [vector](vector/index.md)：共 20 张知识卡（如 Ascend C API 家族与存储位置决定的搬运、原子 GM 回写与事件边界契约（SetAtomicAdd/DisableDmaAtomic）、字节 Mask、Bit Mask 与数值谓词 等）。
 
 - [layouts](layouts/index.md)：共 34 张知识卡（如 广播 Mask 极性、步长与暂存复用、重排路线启发式与连续搬运证据、Gather 尾轴模式与有符号索引规范化 等）。
 - [shmem](shmem/index.md)：共 31 张知识卡（如 Blaze Heavy Kernel 覆盖与性能条件、Blaze-SHMEM Host Bootstrap 生命周期与失败传播、Blaze 本地 MX 模板的 L1 尺度窗口与事件 等）。
 - [synchronization](synchronization/index.md)：共 22 张知识卡（如 向量递推中的真实依赖与别名冲突、APACE ReduceScatter 时序与通知计数、原子模式切换与首次覆盖顺序 等）。
-- [torch extensions](torch_extensions/index.md)：共 9 张知识卡（如 PyTorch 自定义 ACLNN 算子的四层接口契约、ACLNN 扩展辅助层的符号解析与异步资源生命周期、PyTorch Ascend C 扩展的编译单元与启动 ABI 等）。
+- [torch extensions](torch_extensions/index.md)：共 10 张知识卡（如 PyTorch 自定义 ACLNN 算子的四层接口契约、ACLNN 扩展辅助层的符号解析与异步资源生命周期、PyTorch Ascend C 扩展的编译单元与启动 ABI 等）。
 
 - [communications](communications/index.md)：共 29 张知识卡（如 APACE AllGather 预触发与 scale 等待边界、APACE AllGather 三区与输出归属、APACE AllToAll Matmul 的全局与局部坐标 等）。
-- [matmul](matmul/index.md)：共 21 张知识卡（如 异步 Matmul 的结果空间与完成等待、Matmul 基本块流量模型与输出对齐、Batch/Group Matmul 分区身份与分支顺序 等）。
+- [matmul](matmul/index.md)：共 25 张知识卡（如 异步 Matmul 的结果空间与完成等待、Matmul 基本块流量模型与输出对齐、Batch/Group Matmul 分区身份与分支顺序 等）。
 - [sorting](sorting/index.md)：共 9 张知识卡（如 排序聚合同索引更新的排列与所有权、硬件排序的行边界、索引与 Padding、多核排序的分层归并与工作区交接 等）。
 
 - [simt](simt/index.md)：共 10 张知识卡（如 SIMT API 迁移的签名、lane 与版本边界、SIMT 调试上下文与缓存可见性、SIMT 调试输出的资源与执行影响 等）。

@@ -33,3 +33,8 @@
 - [Fixpipe 直达 UB 的镜像布局与复用槽合同](fixpipe_ub_mirror_and_slot_reuse_contract.md)：区分完整输出镜像和紧凑复用槽的地址、容量、路由及通知协议，约束 Cube/Vector 融合中的 GM 往返消除。
 
 - [Matmul tiling 形状与核数推导链（SetShape/SetSingleShape/GetBaseK/GetCoreNumAic）](tiling_shape_core_derivation_chain.md)：Matmul tiling 的跨 API 推导契约：平台核数查询（GetCoreNumAic）→ 总分块形状 SetShape 与单核形状 SetSingleShape 的维度区分 → GetBaseK 依赖形状先行的顺序契约 → K 分块数与尾块的模运算回退 → SetBlockDim/CalcTschBlockDim 核数落位；含 tiling 对象与 kernel 对象 SetShape 同名碰撞警示。
+
+- [经典 Cube 搬运流水全链与 LocalMemAllocator/TBuf 两种内存分配形式](classic_cube_pipeline_two_forms.md)：Cube 核数据流水全链：TPosition 定位的 L1/L0A/L0B/L0C 分级分配、DataCopy(Nd2Nz) GM→L1、LoadData L1→L0（2201 与 3510 变体差异）、Mmad 计算与 Fixpipe 回写，SetFlag/WaitFlag 串联 MTE2_MTE1/MTE1_M/M_FIX 流水依赖；覆盖经典 TBuf 与静态 Tensor LocalMemAllocator 两种内存分配形式。
+- [Cube+Vector 融合范式：CrossCore 通信与激活衔接](cube_vector_fusion_pattern.md)：__mix__ 混合核编程范式：AIC 侧跑 Cube 搬运流水（Nd2Nz→LoadData→Mmad→Fixpipe）产出 tile 后 CrossCoreSetFlag 通知，AIV 侧 CrossCoreWaitFlag 等待后经 DataCopyPad 做 GM↔UB 激活计算；Cube:Vector 核数比 1:2 决定 GetBlockIdx 的映射关系。
+- [高阶 Matmul API 全链路骨架（host tiling 到 device 迭代）](high_level_matmul_full_chain.md)：Matmul 高阶 API 的完整组装链：host 侧 PlatformAscendCManager 取平台、MatmulApiTiling 逐项配置后生成 tiling；device 侧 TPipe 与 REGIST_MATMUL_OBJ 注册对象、SetTensorA/B/SetBias/SetTail 后 IterateAll 完成整矩阵迭代，含 MatmulConfig 自定义变体入口。
+- [静态 Tensor 范式 Cube 全链路（MakeTensor 布局驱动与 Mutex 流水互斥）](tensor_api_static_cube_full_chain.md)：tensor_api 静态 Cube 编程范式的完整组装链：InitSocState/GetBlockIdx 入口与多核分片，MakeMemPtr+MakeFrameLayout+MakeTensor 构造 GM/L1/L0A/L0B/L0C 分层张量，Slice+MakeCoord/MakeShape 切本核 tile，MakeCopy/MakeMmad 原子构造，Mutex::Lock/Unlock 按存储资源编排 MTE2/MTE1/M/FIX 四段流水，Mmad 首块初始化与累加语义，含尾块/多级缓冲/bias/在线反量化变体。

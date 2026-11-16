@@ -37,3 +37,5 @@
 - [AscUnsqueeze：固定 reference 调用约束](asc_unsqueeze_reference_contract.md)：固定 reference 的调用约束与版本边界。根据掩码对矢量数据进行解压缩，dst各元素值取决于mask中前序元素为1的数量
 - [AscUpdateMask：固定 reference 调用约束](asc_update_mask_reference_contract.md)：固定 reference 的调用约束与版本边界。根据元素个数生成mask并自动扣减当前向量处理单元元素数，支持b8、b16、b32位宽模式
 - [比较与选择：固定 reference 调用约束](compare_and_select_reference_contract.md)：固定 reference 的调用约束与版本边界。寄存器侧比较与选择类接口汇总，提供eq、ge、gt、le、lt、ne等逐元素比较及select、squeeze选择能力。
+
+- [RegBase 寄存器范式：load-compute-store 与掩码条件计算](reg_load_compute_store_pattern.md)：SIMD VF 寄存器级计算范式：外层向量核经 LocalMemAllocator 与事件同步完成 GM↔UB 搬运，asc_vf_call 进入 VF 函数后由 GetVecLen 定 repeat 粒度、MaskReg/RegTensor/UpdateMask/LoadAlign/StoreAlign 完成寄存器级 load-compute-store；含 Reg::Select 掩码条件计算变体。

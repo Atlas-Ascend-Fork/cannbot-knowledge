@@ -14,3 +14,5 @@
 - [直调对象库构建与 PyTorch 分发合同](direct_object_build_and_dispatch_contracts.md)：补充双编译链、ABI3 范围、Meta 分发与运行产物身份，限定骨架示例的可执行程度。
 
 - [注册 PyTorch 适配器的 Tensor 身份与异步所有权](registry_adapter_tensor_identity_and_async_ownership.md)：补全 Meta 与真实分发一致性、ACL 描述符、回调捕获和异常释放。
+
+- [PyTorch 接入的事件驱动 tile 流水（单组地址复用与四向事件）](pytorch_event_driven_tile_pipeline.md)：框架接入（pybind/torch_library）下的向量核 tile 流水：GetBlockNum/GetBlockIdx 分核后，x/y/z 各复用一块 UB（非双缓冲），V_MTE2/MTE2_V/V_MTE3/MTE3_V 四向事件驱动 tile 循环——循环前预授权事件，重叠发生在不同缓冲之间（x/y 搬入与上一 tile z 搬出），同缓冲的下一 tile 搬入必须等本 tile 计算释放；host 侧经 NPUStream 直发 kernel。
