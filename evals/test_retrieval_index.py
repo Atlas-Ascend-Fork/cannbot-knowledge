@@ -505,6 +505,251 @@ class RetrievalIndexTests(unittest.TestCase):
             self.assertIn("usage:", search_help.stdout)
             self.assertEqual("", search_help.stderr)
 
+    def test_search_ignores_platform_and_query_case(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            for name, platforms in (
+                ("a2_only", "a2"), ("a3_only", "a3"),
+                ("both", "a2, a3"), ("agnostic", "agnostic"),
+            ):
+                card = SYNTHETIC_CARD.replace(
+                    "Synthetic API contract", f"DataCopyPad {name}"
+                ).replace("platforms: [a2]", f"platforms: [{platforms}]")
+                card += "\nCall DataCopyPad with copy pad and get_swi_glu.\n"
+                (api_root / f"{name}.md").write_text(card, encoding="utf-8")
+
+            for tokenizer in ("v3", "subword"):
+                built = run_index(root, "build", "--tokenizer", tokenizer)
+                self.assertEqual(built.returncode, 0, built.stderr)
+
+                def search(query, platforms, match):
+                    command = [
+                        sys.executable, str(QUERY), "--knowledge-root", str(root),
+                        "search", "--query", query, "--technology", "ascendc",
+                        "--match", match,
+                    ]
+                    for platform in platforms:
+                        command.extend(["--platform", platform])
+                    completed = subprocess.run(
+                        command, check=False, text=True, capture_output=True,
+                    )
+                    self.assertEqual(completed.returncode, 0, completed.stderr)
+                    return json.loads(completed.stdout)
+
+                for match in ("text", "literal"):
+                    for query in ("DataCopyPad", "Copy Pad", "Get_Swi_Glu"):
+                        expected = search(query.lower(), ["a2"], match)
+                        self.assertEqual(3, expected["count"])
+                        for variant in (query, query.upper(), query.swapcase()):
+                            with self.subTest(tokenizer=tokenizer, match=match, query=variant):
+                                actual = search(variant, ["a2"], match)
+                                self.assertEqual(expected["results"], actual["results"])
+                                self.assertEqual(variant, actual["query"])
+                                self.assertEqual(variant, actual["request"]["query"])
+
+                    for platforms, names in (
+                        (["A2"], {"a2_only", "both", "agnostic"}),
+                        (["A3"], {"a3_only", "both", "agnostic"}),
+                        (["A2", "a3"], {"both", "agnostic"}),
+                    ):
+                        with self.subTest(tokenizer=tokenizer, match=match, platforms=platforms):
+                            normalized = [value.lower() for value in platforms]
+                            expected = search("DataCopyPad", normalized, match)
+                            actual = search("DataCopyPad", platforms, match)
+                            self.assertEqual(expected["results"], actual["results"])
+                            self.assertEqual(
+                                names, {item["path"].rsplit("/", 1)[-1] for item in actual["results"]}
+                            )
+                            self.assertEqual(expected["request"], actual["request"])
+                            self.assertEqual(expected["request_sha256"], actual["request_sha256"])
+
+                invalid = subprocess.run(
+                    [sys.executable, str(QUERY), "--knowledge-root", str(root),
+                     "search", "--query", "DataCopyPad", "--platform", "A2_TYPO"],
+                    check=False, text=True, capture_output=True,
+                )
+                self.assertEqual(2, invalid.returncode)
+                self.assertIn("unknown platforms", invalid.stderr)
+                self.assertEqual(json.loads(invalid.stdout), json.loads(invalid.stderr))
+
+    def test_case_insensitive_subword_search_keeps_split_only_cards(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            for name, title, body, platforms in (
+                ("split_title", "Data Copy Pad alignment", "Aligned transfers.", "a2"),
+                ("split_body", "Transfer guide", "Use data copy pad for aligned transfers.", "a2"),
+                ("other_platform", "Data Copy Pad on A3", "Aligned transfers.", "a3"),
+            ):
+                card = SYNTHETIC_CARD.replace("Synthetic API contract", title).replace(
+                    "platforms: [a2]", f"platforms: [{platforms}]"
+                ) + "\n" + body + "\n"
+                self.assertNotIn("datacopypad", card.lower())
+                (api_root / f"{name}.md").write_text(card, encoding="utf-8")
+            built = run_index(root, "build", "--tokenizer", "subword")
+            self.assertEqual(built.returncode, 0, built.stderr)
+            database = root / "artifacts/indexes/knowledge.sqlite3"
+            before = hashlib.sha256(database.read_bytes()).hexdigest()
+            expected = None
+            for query in ("DataCopyPad", "datacopypad", "DATACOPYPAD", "dAtAcOpYpAd"):
+                for match in ("text", "literal"):
+                    with self.subTest(query=query, match=match):
+                        completed = subprocess.run(
+                            [sys.executable, str(QUERY), "--knowledge-root", str(root),
+                             "search", "--query", query, "--technology", "ascendc",
+                             "--platform", "A2", "--match", match],
+                            check=False, text=True, capture_output=True,
+                        )
+                        self.assertEqual(completed.returncode, 0, completed.stderr)
+                        payload = json.loads(completed.stdout)
+                        results = payload["results"]
+                        if match == "literal":
+                            self.assertEqual([], results)
+                            continue
+                        self.assertEqual(
+                            {"split_title", "split_body"},
+                            {item["path"].rsplit("/", 1)[-1] for item in results},
+                        )
+                        self.assertEqual("Data Copy Pad alignment", results[0]["title"])
+                        self.assertTrue(all(item["score"] > 0 for item in results))
+                        if expected is None:
+                            expected = results
+                        else:
+                            self.assertEqual(expected, results)
+            self.assertEqual(before, hashlib.sha256(database.read_bytes()).hexdigest())
+
+    def test_subword_split_selection_uses_evidence_before_longer_words(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            for name, title in (
+                ("synthetic_api", "Data Copy Pad alignment"),
+                ("datacopy", "datacopy notes"),
+            ):
+                card = SYNTHETIC_CARD.replace("Synthetic API contract", title)
+                self.assertNotIn("datacopypad", card.lower())
+                (api_root / f"{name}.md").write_text(card, encoding="utf-8")
+            for second_distractor in (False, True):
+                if second_distractor:
+                    card = SYNTHETIC_CARD.replace("Synthetic API contract", "copypad notes")
+                    (api_root / "copypad.md").write_text(card, encoding="utf-8")
+                built = run_index(root, "build", "--tokenizer", "subword")
+                self.assertEqual(built.returncode, 0, built.stderr)
+                expected = None
+                for query in ("DataCopyPad", "datacopypad", "DATACOPYPAD"):
+                    with self.subTest(second_distractor=second_distractor, query=query):
+                        completed = subprocess.run(
+                            [sys.executable, str(QUERY), "--knowledge-root", str(root),
+                             "search", "--query", query, "--technology", "ascendc",
+                             "--platform", "A2", "--match", "text"],
+                            check=False, text=True, capture_output=True,
+                        )
+                        self.assertEqual(completed.returncode, 0, completed.stderr)
+                        results = json.loads(completed.stdout)["results"]
+                        self.assertEqual(["Data Copy Pad alignment"], [item["title"] for item in results])
+                        self.assertGreater(results[0]["score"], 0)
+                        if expected is None:
+                            expected = results
+                        else:
+                            self.assertEqual(expected, results)
+
+    def test_subword_expansion_requires_name_or_contiguous_phrase_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            for name, title in (
+                ("synthetic_api", "Black tensor layout"), ("bird", "Bird scheduling"),
+            ):
+                card = SYNTHETIC_CARD.replace("Synthetic API contract", title)
+                self.assertNotIn("blackbird", card.lower())
+                self.assertNotIn("black bird", card.lower())
+                (api_root / f"{name}.md").write_text(card, encoding="utf-8")
+
+            for evidence in (None, "Use BlackBird for named lookup.", "Use black bird for named lookup."):
+                if evidence is not None:
+                    card = SYNTHETIC_CARD.replace("Synthetic API contract", "Named lookup")
+                    card += "\n" + evidence + "\n"
+                    (api_root / "actual_name.md").write_text(card, encoding="utf-8")
+                built = run_index(root, "build", "--tokenizer", "subword")
+                self.assertEqual(built.returncode, 0, built.stderr)
+                expected = None
+                for query in ("blackbird", "Blackbird", "BLACKBIRD", "BlackBird"):
+                    for match in ("text", "literal"):
+                        with self.subTest(evidence=evidence, query=query, match=match):
+                            completed = subprocess.run(
+                                [sys.executable, str(QUERY), "--knowledge-root", str(root),
+                                 "search", "--query", query, "--technology", "ascendc",
+                                 "--platform", "A2", "--match", match],
+                                check=False, text=True, capture_output=True,
+                            )
+                            self.assertEqual(completed.returncode, 0, completed.stderr)
+                            results = json.loads(completed.stdout)["results"]
+                            if match == "literal":
+                                names = {"actual_name"} if evidence and "BlackBird" in evidence else set()
+                            else:
+                                names = {"synthetic_api", "bird", "actual_name"} if evidence else set()
+                            self.assertEqual(names, {
+                                item["path"].rsplit("/", 1)[-1] for item in results
+                            })
+                            if match == "text":
+                                if expected is None:
+                                    expected = results
+                                else:
+                                    self.assertEqual(expected, results)
+
+    def test_subword_name_recovery_preserves_accessors_and_complete_words(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            for name, title, body in (
+                ("arch", "GetCurNpuArch", "Architecture lookup."),
+                ("arch_split", "Cur Npu Arch details", "Architecture lookup."),
+                ("body_getter", "Version lookup", "Call GetSocVersion."),
+                ("soc_split", "Soc Version details", "Version lookup."),
+                ("data_copy", "DataCopy", "Copy lookup."),
+                ("split_copy_pad", "Data Copy Pad alignment", "Aligned transfers."),
+                ("getting", "Getting started", "Introduction."),
+                ("get", "Get ready", "Introduction."),
+                ("ting", "Ting notes", "Introduction."),
+                ("partial", "Alpha Beta", "Introduction."),
+            ):
+                card = SYNTHETIC_CARD.replace("Synthetic API contract", title) + "\n" + body + "\n"
+                (api_root / f"{name}.md").write_text(card, encoding="utf-8")
+            built = run_index(root, "build", "--tokenizer", "subword")
+            self.assertEqual(built.returncode, 0, built.stderr)
+            for query, expected_paths in (
+                ("GetCurNpuArch", {"arch", "arch_split"}),
+                ("GetSocVersion", {"body_getter", "soc_split"}),
+                ("DataCopyPad", {"data_copy", "split_copy_pad"}),
+                ("Getting", {"getting"}),
+                ("AlphaMissingBeta", set()),
+            ):
+                expected = None
+                for variant in (query, query.lower(), query.upper()):
+                    with self.subTest(query=variant):
+                        completed = subprocess.run(
+                            [sys.executable, str(QUERY), "--knowledge-root", str(root),
+                             "search", "--query", variant, "--technology", "ascendc",
+                             "--platform", "a2", "--match", "text"],
+                            check=False, text=True, capture_output=True,
+                        )
+                        self.assertEqual(completed.returncode, 0, completed.stderr)
+                        results = json.loads(completed.stdout)["results"]
+                        self.assertEqual(
+                            expected_paths,
+                            {item["path"].rsplit("/", 1)[-1] for item in results},
+                        )
+                        if expected is None:
+                            expected = results
+                        else:
+                            self.assertEqual(expected, results)
+
     def test_search_uses_project_default_platform_and_explicit_override(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             work = Path(temporary)
@@ -515,7 +760,7 @@ class RetrievalIndexTests(unittest.TestCase):
             (project / ".cannbot").mkdir()
             (project / ".cannbot/knowledge.env").write_text(
                 f'export CANNBOT_KNOWLEDGE_ROOT="{root}"\n'
-                "export CANNBOT_KNOWLEDGE_PLATFORM=a2\n",
+                "export CANNBOT_KNOWLEDGE_PLATFORM=A2\n",
                 encoding="utf-8",
             )
             built = run_index(root, "build")
@@ -545,7 +790,7 @@ class RetrievalIndexTests(unittest.TestCase):
             self.assertEqual(1, default_payload["count"])
 
             explicit = subprocess.run(
-                [*command, "--platform", "a3"],
+                [*command, "--platform", "A3"],
                 cwd=project,
                 env=environment,
                 check=False,
@@ -556,6 +801,16 @@ class RetrievalIndexTests(unittest.TestCase):
             explicit_payload = json.loads(explicit.stdout)
             self.assertEqual(["a3"], explicit_payload["request"]["platforms"])
             self.assertEqual(0, explicit_payload["count"])
+
+            environment["CANNBOT_KNOWLEDGE_PLATFORM"] = "A3"
+            from_environment = subprocess.run(
+                command, cwd=project, env=environment,
+                check=False, text=True, capture_output=True,
+            )
+            self.assertEqual(from_environment.returncode, 0, from_environment.stderr)
+            environment_payload = json.loads(from_environment.stdout)
+            self.assertEqual(["a3"], environment_payload["request"]["platforms"])
+            self.assertEqual(0, environment_payload["count"])
 
     def test_literal_search_prioritizes_title_and_includes_ordinary_links(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

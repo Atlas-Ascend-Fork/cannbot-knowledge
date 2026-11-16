@@ -12,10 +12,10 @@ import re
 import sqlite3
 import sys
 import tempfile
-from collections import Counter
+from collections import Counter, deque
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 from .root import repository_state, sha256_file
 
@@ -168,8 +168,151 @@ def token_counts(value: str, tokenizer: str = DEFAULT_TOKENIZER) -> Counter[str]
     raise ValueError(f"unknown tokenizer: {tokenizer}")
 
 
-def query_tokens(value: str, tokenizer: str = DEFAULT_TOKENIZER) -> list[str]:
-    return list(token_counts(value, tokenizer=tokenizer))
+def _word_segments(
+    word: str, vocabulary: set[str],
+    expand: Callable[[str], tuple[str, ...]],
+    has_phrase: Callable[[tuple[str, ...]], bool],
+) -> list[str]:
+    """Find an evidenced split, trying fewer, longer indexed words first."""
+    by_first: dict[str, list[str]] = {}
+    for piece in sorted(vocabulary, key=lambda value: (-len(value), value)):
+        if piece != word:
+            by_first.setdefault(piece[0], []).append(piece)
+    # Discard edges that cannot finish the joined name before reading evidence.
+    can_finish = {len(word)}
+    edges: dict[int, list[tuple[int, str]]] = {}
+    for offset in range(len(word) - 1, -1, -1):
+        for piece in by_first.get(word[offset], []):
+            end = offset + len(piece)
+            if end in can_finish and word.startswith(piece, offset):
+                edges.setdefault(offset, []).append((end, piece))
+                can_finish.add(offset)
+    if 0 not in can_finish:
+        return []
+    pending = deque([(0, ())])
+    seen = {(0, ())}
+    while pending:
+        offset, pieces = pending.popleft()
+        if offset == len(word):
+            return list(pieces)
+        for end, piece in edges.get(offset, []):
+            expanded = pieces + expand(piece)
+            state = (end, expanded)
+            if state not in seen:
+                seen.add(state)
+                # A complete supported phrase must also support every prefix.
+                # Merge equivalent paths instead of enumerating all splits.
+                if has_phrase(expanded):
+                    pending.append(state)
+    return []
+
+
+def _indexed_query_pieces(connection: sqlite3.Connection, words: set[str]) -> set[str]:
+    """Recover spelling from indexed metadata, then split unknown joined names."""
+    vocabulary = {
+        row[0]
+        for row in connection.execute(
+            """
+            SELECT term FROM (SELECT DISTINCT term FROM postings)
+            WHERE length(term) >= 2 AND instr(?, term) > 0
+            """,
+            (" ".join(sorted(words)),),
+        )
+        if re.fullmatch(r"[a-z0-9]+", row[0]) and re.search(r"[a-z]", row[0])
+    }
+    canonical: dict[str, list[str]] = {}
+    metadata_spellings = []
+    for row in connection.execute("SELECT metadata_json FROM documents ORDER BY doc_id"):
+        metadata = json.loads(row[0])
+        fields = (
+            metadata.get("title", ""), metadata.get("description", ""),
+            *metadata.get("tags", []), *metadata.get("aliases", []),
+        )
+        for field in fields:
+            metadata_spellings.append(" " + re.sub(r"[^a-z0-9]+", " ", field.lower()) + " ")
+            for raw in re.findall(r"[A-Za-z0-9]+", field or ""):
+                normalized = raw.lower()
+                if normalized not in vocabulary and normalized not in words:
+                    continue
+                pieces = [piece for piece in _word_pieces(raw) if piece != normalized]
+                if pieces:
+                    canonical.setdefault(normalized, pieces)
+
+    # Recover body-only names too, including accessor stems and identifiers
+    # followed by punctuation. A real split must have a proper indexed piece.
+    for word in sorted(words):
+        if word in canonical:
+            continue
+        proper = sorted(piece for piece in vocabulary if piece != word and piece in word)
+        if not proper:
+            continue
+        placeholders = ",".join("?" for _ in proper)
+        for row in connection.execute(
+            "SELECT body FROM documents WHERE doc_id IN "
+            "(SELECT doc_id FROM postings WHERE term >= ? AND term < ?) "
+            f"AND doc_id IN (SELECT doc_id FROM postings WHERE term IN ({placeholders})) "
+            "ORDER BY doc_id", (word, word + "\uffff", *proper),
+        ):
+            for raw in re.findall(r"[A-Za-z0-9]+", row[0]):
+                if raw.lower() == word:
+                    pieces = [piece for piece in _word_pieces(raw) if piece != word]
+                    if pieces:
+                        canonical.setdefault(word, pieces)
+                        break
+            if word in canonical:
+                break
+
+    metadata_text = "\n".join(metadata_spellings)
+    expansions: dict[str, tuple[str, ...]] = {}
+    phrase_evidence: dict[tuple[str, ...], bool] = {}
+
+    def expand(word: str) -> tuple[str, ...]:
+        if word in expansions:
+            return expansions[word]
+        pending = [word]
+        pieces = []
+        while pending:
+            piece = pending.pop()
+            if piece in canonical:
+                pending.extend(reversed(canonical[piece]))
+            else:
+                pieces.append(piece)
+        expansions[word] = tuple(pieces)
+        return expansions[word]
+
+    def has_phrase(pieces: tuple[str, ...]) -> bool:
+        if pieces not in phrase_evidence:
+            phrase = " ".join(pieces)
+            phrase_evidence[pieces] = (
+                f" {phrase} " in metadata_text or bool(phrase_matches(connection, phrase))
+            )
+        return phrase_evidence[pieces]
+
+    result: set[str] = set()
+    for word in sorted(words):
+        pieces = (
+            expand(word) if word in canonical
+            else _word_segments(word, vocabulary, expand, has_phrase)
+        )
+        result.update(pieces)
+    return result
+
+
+def query_tokens(
+    value: str, tokenizer: str = DEFAULT_TOKENIZER,
+    *, connection: sqlite3.Connection | None = None,
+) -> list[str]:
+    if tokenizer != TOKENIZER_SUBWORD or connection is None:
+        return list(token_counts(value, tokenizer=tokenizer))
+    normalized = value.lower()
+    result = set(token_counts(normalized, tokenizer=tokenizer))
+    words = {
+        word for word in re.findall(r"[a-z0-9]{4,}", normalized)
+        if re.search(r"[a-z]", word)
+    }
+    if words:
+        result.update(_indexed_query_pieces(connection, words))
+    return sorted(result)
 
 
 def searchable_body(body: str) -> str:

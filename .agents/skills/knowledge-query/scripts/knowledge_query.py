@@ -406,6 +406,7 @@ def search_candidates(
     root: Path, cards: list[IndexedCard], args: argparse.Namespace,
 ) -> tuple[dict[int, IndexedCard], str | None, Any]:
     """Share declared eligibility and Scope parsing without doing text ranking."""
+    args.platform = [platform.lower() for platform in args.platform]
     registries, profiles = load_governance(root)
     if args.card_type and args.card_type not in profiles:
         raise ValueError(f"unknown knowledge type: {args.card_type}")
@@ -462,7 +463,7 @@ def search_payload(
         tokenizer = index_tokenizer(index_metadata)
         raw_scores = posting_scores(
             connection,
-            query_tokens(args.query, tokenizer=tokenizer),
+            query_tokens(normalized_query, tokenizer=tokenizer, connection=connection),
             tokenizer=tokenizer,
         )
         for doc_id in phrase_ids:

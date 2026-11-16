@@ -71,12 +71,14 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 ### 过滤与匹配
 
 - 重复的 tag 和 platform 使用 AND。
+- platform 入参不区分大小写，显式参数和项目缺省值均在校验、过滤前转成注册的小写 ID；`A2` 与 `a2`、`A3` 与 `a3` 等价，输出及 receipt 中的平台值也使用小写。未知平台仍报错。
 - task 自动规范为 `task.*` 并校验 task 维度。
 - domain、route、platform、tag 和跨技术端点必须注册；Profile 必须受支持。
 - 普通搜索必须有目标 platform，可显式传 `--platform`，或由 `CANNBOT_KNOWLEDGE_PLATFORM` 提供缺省值。`--technology platforms` 可在映射产品平台时不传；未定位 draft 使用 `--include-unlocated --status draft|all`，且不能同时传 platform。
 - `--include-shared` 只与具体 technology 一起使用，并只附加同领域 shared。
 - Search 当前不提供 CANN 版本过滤；版本字段仍可随命中返回，具体适用边界由正文核对。
 - `text` 对 title、description、tags/aliases 和正文加权；`literal` 要求完整查询串出现在这些字段中，并按精确标题、标题片段、摘要、正文的顺序降权。普通正文链接与其他正文一起进入索引，不按专用关系块标记排除内容。
+- `text` 和 `literal` 的 query 匹配均不区分大小写，同一 query 的大小写变体返回相同命中、评分与顺序，输出和 receipt 中的 query 仍保留调用方原文。v3 保持原有小写分词；subword 使用规范化名称读取索引中的原始名称写法，或通过已有词项的完整分解恢复驼峰拆词。所有仅靠词表分解得到的扩展都必须有连续拆开写法的证据；首选拆分缺少证据时继续检查其他可行候选，不因词表新增较长片段而丢弃已有证据的拆分。完整词未收录时也不能仅凭分散片段猜出新名称；真实名称拆词可直接复用。只有 `Data Copy Pad` 写法的卡片仍可被 `DataCopyPad`、`datacopypad`、`DATACOPYPAD` 的 text 查询召回；只有分散 `black` / `bird` 的卡片不会被 `blackbird` 猜拆召回。literal 不扩展拆开写法。该过程只读已有索引，不修改索引结构或版本。
 - 默认 status 为 `stable`，limit 必须大于零。
 
 ### 显式场景 Scope
