@@ -192,3 +192,4 @@
 - [用独立探针算子验证 m200 上的 K16 立方几何](standalone_probe_kernel_cube_geometry.md)：在改主 kernel 之前，用 torch.ops 探针逐模式验证 [64,16] B 槽 Nd2Nz + k=16 Mmad 是否可用，避免在形状假设上返工。
 - [向量指令按行发散改为行块化，仅限等长逐元素链](vector_row_loop_block_batching_equal_length.md)：每行 5 条向量指令、64 行下来一段因子构建要 320 次调用；把 64 行合成 2×32 行块可降到 10 次，但只在“所有操作数等长、无标量参照”的纯逐元素链上安全。
 - [负结果：m200 的向量转置不能替代立方转置取操作数](whole_block_transpose_stays_on_cube.md)：Transpose 只吃连续 16×16 tile、v4dtrans 输出交错、BinaryRepeatParams 行广播被忽略——整块 [64,64] 转置仍应交给立方。
+- [墙钟比 kernel 慢 10 倍：按算子拆账，别猜 host 物化](per_operator_kernel_details_accounting_before_optimizing.md)：端到端墙钟约为自研 kernel 的 10 倍时，把这 9 成差额归因于 host 侧标量物化只是猜测；逐算子拆账显示大头是 host 预处理链引入的元级小算子。

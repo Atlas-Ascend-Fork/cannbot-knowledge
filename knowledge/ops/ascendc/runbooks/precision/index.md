@@ -499,3 +499,6 @@
 - [TBuf 切片越界 2KB 污染相邻 S 镜像行块](ub_shared_tbuf_slice_capacity_undercount.md)：多个逻辑张量用切片共用一个大 TBuf 时，容量按元素总数手算写错 4×128 元素，尾切片越界 2KB 写进相邻 TBuf 的首 8 行，表现为该区出现 1.25~1.45 的伪浮点。
 - [向量算子 calCount 是平铺元素数，短操作数切片被越读](vector_calcount_flat_count_short_operand_overread.md)：AscendC 向量 API 的 calCount 是对基址的平铺元素计数，128 元素的 LocalTensor 切片配 cnt=2048 会静默越读相邻 UB；判别方法=逐参数核对 cnt 与物理长度。
 - [整块 Select 的掩码必须连续位打包](whole_tile_select_mask_granularity_m200.md)：Select 的 selMask 是位打包的（每元素 1 bit）；逐行 Compare 的结果按 64B 行距摆放时，整块 Select 会连续读 count/8 字节并跨过行间隔，读到陈旧位而错位。掩码连续打包时，整块 Select 在 310P 上 count 512~4096 实测全对。
+
+- [带数上限撞顶时末带跨度过大，f16 因子直接爆掉](band_partition_cap_is_correctness_parameter.md)：强门控用例需要约 16 个带，带数上限常量撞顶后末带跨 55 log2，2^±28 超出 f16；抬上限并用 ring 槽即可不增 scratch。
+- [标量 GetValue 读不到 MTE3 写的 UB（op30 语境，最小探针不可复现）](scalar_read_cannot_see_mte3_ub_write.md)：op30 实内核中 UB→UB DataCopy（MTE3 写）后的标量 GetValue 即使加了 PIPE_ALL 也读到 0，改成 V 管道 Adds(+0) 后可见；干净最小探针不可复现——属 op30 语境观察而非 310P 固定语义，稳妥写法仍是 V 物化/消掉标量读。
