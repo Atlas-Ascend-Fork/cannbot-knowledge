@@ -27,11 +27,11 @@ Softmax 将实值向量归一化为概率分布：`softmax(x)_i = exp(x_i) / Σ 
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| 标准 Softmax (inner dim) | exp_softmax_inner_002 | 30% | Online max+sum 单趟 |
-| 非 inner dim | exp_softmax_non_inner_001 | 25% | 外层维度归约，转置处理 |
-| Online Softmax (Attention) | exp_softmax_online_001 | 50% | 运行 m/l 迭代更新 |
-| LogSoftmax 前向 | exp_log_softmax_001 | 30% | max+sum → log-sum-exp 单核 |
-| Softmax 反向 | exp_softmax_backward_001 | 25% | `p * (dy - dot(p, dy))` |
+| 标准 Softmax (inner dim) | [exp_softmax_inner_002](../../optimizations/experiences/softmax_experiences.md#exp_softmax_inner_002) | 30% | Online max+sum 单趟 |
+| 非 inner dim | [exp_softmax_non_inner_001](../../optimizations/experiences/softmax_experiences.md#exp_softmax_non_inner_001) | 25% | 外层维度归约，转置处理 |
+| Online Softmax (Attention) | [exp_softmax_online_001](../../optimizations/experiences/softmax_experiences.md#exp_softmax_online_001) | 50% | 运行 m/l 迭代更新 |
+| LogSoftmax 前向 | [exp_log_softmax_001](../../optimizations/experiences/softmax_experiences.md#exp_log_softmax_001) | 30% | max+sum → log-sum-exp 单核 |
+| Softmax 反向 | [exp_softmax_backward_001](../../optimizations/experiences/softmax_experiences.md#exp_softmax_backward_001) | 25% | `p * (dy - dot(p, dy))` |
 
 ## 关键技术
 

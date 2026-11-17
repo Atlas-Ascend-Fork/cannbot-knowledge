@@ -185,7 +185,7 @@ tl.store(out_s_ptr + row_idx + r1, (max_abs / 127.0) + r1 * 0.0)
 | opt_iter_10（框架外 weight-stationary N_M_SUB=2 双 kernel） | 60/60 | 0.8604x | ↓ | 修复 constexpr 假分支竞态后正确，但 B 搬运无实际节省 + int8 fractal 利用下降，见失败表 |
 | **opt_iter_11（#2 下探 BLOCK_M=64 到 avg_m≥48 带）** | 60/60 | **1.3202x** | ↑ | **终态 best**：tile 数≥cube_cores 守卫下减半中型 shape weight 搬运量（case 48/46/45/58/39 -9~36%），0 回归超 10% |
 | opt_iter_12（框架外 tile 顺序 m_group 主序 → weight L2 复用） | 60/60 | 0.9770x | ↓ | 破坏 x 复用 + weight 超 L2 不命中 + MTE2 ND2NZ 粒度下降，见失败表 |
-| opt_iter_13（KKB exp_perf_012：存活 mask i32→fp32 比较转换） | 60/60 | 不可用 | ↓↓↓ | K1 fp32 行 mask aicore 挂死；K2 fp32 half mask 非 2 幂 case 14× 变慢，见失败表 |
+| opt_iter_13（KKB [exp_perf_012](../../optimizations/experiences/general_perf_experiences.md#exp_perf_012)：存活 mask i32→fp32 比较转换） | 60/60 | 不可用 | ↓↓↓ | K1 fp32 行 mask aicore 挂死；K2 fp32 half mask 非 2 幂 case 14× 变慢，见失败表 |
 
 **有效优化点**:
 1. **persistent 单 launch + meta int64 打包单次 H2D + group_list 单次 D2H**（0.7978→1.0965，+37.4%）
@@ -208,8 +208,8 @@ tl.store(out_s_ptr + row_idx + r1, (max_abs / 127.0) + r1 * 0.0)
 | BLOCK_K=512 | 编译硬失败 | UB 192KB 溢出（L1.6） |
 | weight-stationary（M 方向 weight 复用，N_M_SUB=2 双 kernel） | 0.8604x ↓↓ | 修复 constexpr 假分支竞态后正确，但 M 复用权重搬运无实际节省 + 每 program 变稀疏的 int8 fractal 装载效率下降，B 搬运仍是瓶颈 |
 | tile 遍历 m_group 主序（相邻 program 共享 weight 走 L2） | 0.9770x ↓ | 破坏原 n_block 主序的 x 复用（x 流量与 weight 同量级）；weight 470MB 远超 L2，grid-stride 使 program 跨 bn 处理不连续列 → MTE2 ND2NZ 大块转换效率下降（同 opt_iter_8 BN 粒度教训） |
-| **i32→fp32 存活 mask 转换（KKB exp_perf_012，Cube row_hi mask）** | aicore 挂死 | triton_ascend 后端对 fp32 派生 load/store mask 生成损坏 MTE 任务描述符：K1 Cube kernel 永不完成（507014 watchdog），进程死后 aicore 仍 99% 空转卡死整块 device |
-| **i32→fp32 存活 mask 转换（KKB exp_perf_012，AIV half-width mask）** | 14× 变慢 | K2 非 2 幂 HALF_N case（13/60）speedup 塌到 0.04-0.07（K2 单次 forward ~4s）；i32 比较虽"标量降级"却是后端处理良好的路径。结论：fp32 mask 转换在本算子双向失效，勿在 mask 上使用 exp_perf_012 |
+| **i32→fp32 存活 mask 转换（KKB [exp_perf_012](../../optimizations/experiences/general_perf_experiences.md#exp_perf_012)，Cube row_hi mask）** | aicore 挂死 | triton_ascend 后端对 fp32 派生 load/store mask 生成损坏 MTE 任务描述符：K1 Cube kernel 永不完成（507014 watchdog），进程死后 aicore 仍 99% 空转卡死整块 device |
+| **i32→fp32 存活 mask 转换（KKB [exp_perf_012](../../optimizations/experiences/general_perf_experiences.md#exp_perf_012)，AIV half-width mask）** | 14× 变慢 | K2 非 2 幂 HALF_N case（13/60）speedup 塌到 0.04-0.07（K2 单次 forward ~4s）；i32 比较虽"标量降级"却是后端处理良好的路径。结论：fp32 mask 转换在本算子双向失效，勿在 mask 上使用 [exp_perf_012](../../optimizations/experiences/general_perf_experiences.md#exp_perf_012) |
 
 **关键结论**:
 1. **host 调度是 grouped 变长分组的第一瓶颈**：per-expert launch + 逐次 D2H 使 speedup 随 E 单调恶化（E=8 时 0.472x）；persistent + meta 打包一步修复（+37.4%）。
@@ -218,7 +218,7 @@ tl.store(out_s_ptr + row_idx + r1, (max_abs / 127.0) + r1 * 0.0)
 4. **§4 的解耦/N-strip 经验对本算子不适用**：dequant 已在 K1 epilogue 单次执行（无跨 M-tile 重复 dequant 问题）；workspace/N-strip 与 expert 变长分组边界冲突，K1/K2 融合类方向全部实测劣化。
 5. **benchmark 环境污染判定法（共享 NPU 服务器必读）**：framework（sha256 冻结的 PyTorch 参考）延迟漂移 >50% 即为争用铁证（framework 代码不变，波动只能来自环境）；impl 绝对延迟 per-case 对比不受 framework 噪声影响，可作交叉验证。被污染的 run 必须重测，不可用修正值充当官方结果。
 6. **数值链 bit 级对齐是 60/60 的前提**：两级 fp16 舍入点 + 手写 sigmoid + round-half-away-from-zero + int32 clip（与 §3 同源）；任何"等价改写"（libdevice sigmoid、移动舍入点）都会破坏对齐。
-7. **fp32 mask 转换（exp_perf_012）在本算子双向失效**：Cube load/store mask 转 fp32 → aicore 挂死（损坏 MTE 任务描述符，kernel 永不完成，507014 watchdog，进程死后 aicore 仍 99% 空转卡死整块 device）；AIV mask 转 fp32 → 非 2 幂 case 14× 变慢（speedup 0.04-0.07）。i32 比较虽"标量降级"却是后端处理良好的路径。**该 KKB 技术仅适用于纯向量算术路径，不适用于 mask 生成**。
+7. **fp32 mask 转换（[exp_perf_012](../../optimizations/experiences/general_perf_experiences.md#exp_perf_012)）在本算子双向失效**：Cube load/store mask 转 fp32 → aicore 挂死（损坏 MTE 任务描述符，kernel 永不完成，507014 watchdog，进程死后 aicore 仍 99% 空转卡死整块 device）；AIV mask 转 fp32 → 非 2 幂 case 14× 变慢（speedup 0.04-0.07）。i32 比较虽"标量降级"却是后端处理良好的路径。**该 KKB 技术仅适用于纯向量算术路径，不适用于 mask 生成**。
 8. **挂死 kernel 的隔离方法论**：verify 60/60 全灭且报 `aicore timeout 507014` 时，先隔离 impl 单 kernel 复现（impl forward → framework forward → sync 的 verify 忠实驱动）；挂死是 Cube 还是 AIV 用单点变体二分（`iso/k1only.py` / `iso/k2only.py`）。挂死会污染 device 整块卡死（进程死但 aicore 空转），**必须换空闲 device（`ASCEND_RT_VISIBLE_DEVICES=<id>`，verify.py 固定 `torch.device("npu")` 取可见首卡）重测**，否则后续所有 benchmark 全灭误判为代码 bug。
 
 ### §3.5 常见陷阱与避免方法
@@ -239,7 +239,7 @@ tl.store(out_s_ptr + row_idx + r1, (max_abs / 127.0) + r1 * 0.0)
 | BM=128/BN=128 方形 tile（纸面装载比更优） | int8 fractal 装载下 BN 减半使 B 装载趟数翻倍；avg_m 门控挡不住 m_e 不均的 padding 浪费（0.9301x） | 保持 BN=256 宽 tile + BM≤64 分档 (L2.2) |
 | libdevice sigmoid / 移动 fp16 舍入点 | 硬件 sigmoid 舍入行为不同；舍入点位置变化破坏 bit 级对齐 | 数值链冻结 (L1.7，同 §3) |
 | 把共享服务器 benchmark 的病态 case 当代码 bug | 环境争用使 1-5 个 case 病态（framework 也同步漂移） | framework（冻结参考）漂移 >50% 即判污染，重测；impl 绝对延迟交叉验证 (§3.4 结论 5) |
-| 存活 mask 转 fp32（i32→fp32 比较） | Cube mask aicore 挂死 / AIV mask 14× 变慢 | mask 保持 i32（后端良好路径）；exp_perf_012 仅限纯向量算术 (§3.4 结论 7) |
+| 存活 mask 转 fp32（i32→fp32 比较） | Cube mask aicore 挂死 / AIV mask 14× 变慢 | mask 保持 i32（后端良好路径）；[exp_perf_012](../../optimizations/experiences/general_perf_experiences.md#exp_perf_012) 仅限纯向量算术 (§3.4 结论 7) |
 | device 挂死后继续在同一 device 上 benchmark | 挂死 kernel 污染整块 device（aicore 99% 空转），后续全灭误判代码 bug | 换空闲 device（`ASCEND_RT_VISIBLE_DEVICES=<id>`）重测 (§3.4 结论 8) |
 
 ### §3.6 历史方案（早期 3-kernel 串行，已被 §3.1-§3.5 取代，仅供复盘）

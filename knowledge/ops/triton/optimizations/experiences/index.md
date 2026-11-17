@@ -58,4 +58,4 @@ KDA 反向标量高                → ssm_experiences (i64→i32, block_ptr→�
 exp 溢出 / NaN                → general_stability_experiences
 ```
 
-全量经验索引（303 条 YAML）存于源插件仓库 `knowledge/raw/experiences/_index.yaml`，未随本次搬入。
+全量经验索引（303 条 YAML）存于源插件仓库 `knowledge/raw/experiences/_index.yaml`。本仓已在各聚合卡为 117 条被引用经验建立 `### exp_<经验ID>` 锚点（89 条 YAML + 28 条 wiki-only），其余 YAML 经验待消费时增量迁移。

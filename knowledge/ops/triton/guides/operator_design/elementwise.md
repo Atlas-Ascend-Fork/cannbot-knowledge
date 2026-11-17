@@ -27,22 +27,22 @@ platforms: [a2, a3]
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| 大张量向量化 | exp_elem_vec_001 | 30% | BLOCK_SIZE=1024/2048 |
-| 非连续内存 | exp_elem_vec_002 | 15% | 先 `.contiguous()` |
-| 自适应块大小 | exp_elem_vec_003 | 20% | autotune {256,512,1024,2048,4096} |
-| 指令级并行 | exp_elem_vec_005 | 20% | for-loop tiling 多小 tile |
-| int64 比较 | exp_elem_vec_006 | 25% | int64→fp32 |
-| 激活+量化 | exp_elem_fusion_004 | 30% | 单 kernel 融合 |
-| 激活紧跟 matmul | exp_elem_fusion_001 | 35% | 内联进 matmul 内核 |
+| 大张量向量化 | [exp_elem_vec_001](../../optimizations/experiences/misc_experiences.md#exp_elem_vec_001) | 30% | BLOCK_SIZE=1024/2048 |
+| 非连续内存 | [exp_elem_vec_002](../../optimizations/experiences/misc_experiences.md#exp_elem_vec_002) | 15% | 先 `.contiguous()` |
+| 自适应块大小 | [exp_elem_vec_003](../../optimizations/experiences/misc_experiences.md#exp_elem_vec_003) | 20% | autotune {256,512,1024,2048,4096} |
+| 指令级并行 | [exp_elem_vec_005](../../optimizations/experiences/misc_experiences.md#exp_elem_vec_005) | 20% | for-loop tiling 多小 tile |
+| int64 比较 | [exp_elem_vec_006](../../optimizations/experiences/misc_experiences.md#exp_elem_vec_006) | 25% | int64→fp32 |
+| 激活+量化 | [exp_elem_fusion_004](../../optimizations/experiences/misc_experiences.md#exp_elem_fusion_004) | 30% | 单 kernel 融合 |
+| 激活紧跟 matmul | [exp_elem_fusion_001](../../optimizations/experiences/misc_experiences.md#exp_elem_fusion_001) | 35% | 内联进 matmul 内核 |
 
 ## 激活函数专项
 
 | 激活 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| SiLU | exp_silu_fwd_001 | 25% | 前向向量化 |
-| GELU | exp_gelu_fwd_001 | 25% | 前向向量化 |
-| SwiGLU | exp_swiglu_fwd_001 | 30% | 门控激活前向 |
-| SwiGLU+量化 | exp_swiglu_quant_001 | 35% | 激活+量化单核 |
+| SiLU | [exp_silu_fwd_001](../../optimizations/experiences/activation_experiences.md#exp_silu_fwd_001) | 25% | 前向向量化 |
+| GELU | [exp_gelu_fwd_001](../../optimizations/experiences/activation_experiences.md#exp_gelu_fwd_001) | 25% | 前向向量化 |
+| SwiGLU | [exp_swiglu_fwd_001](../../optimizations/experiences/activation_experiences.md#exp_swiglu_fwd_001) | 30% | 门控激活前向 |
+| SwiGLU+量化 | [exp_swiglu_quant_001](../../optimizations/experiences/activation_experiences.md#exp_swiglu_quant_001) | 35% | 激活+量化单核 |
 
 ## 关键技术
 

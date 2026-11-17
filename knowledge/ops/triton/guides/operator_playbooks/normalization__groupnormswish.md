@@ -444,7 +444,7 @@ if D > 16 and D < MAX_BLOCK and D % 16 != 0:
 
 #### 2026-09-03 复跑：Block Size Scaling 突破 1.235 平台（并列记录，新纪录 **1.2860x**）
 
-与上表并列的独立复跑（triton-op-generator，50/50 PASS，路径 `exp_groupnormswish_002_20260903`）：
+与上表并列的独立复跑（triton-op-generator，50/50 PASS）：
 
 | 版本 | 关键改动 | geomean | 关键结论 |
 |------|---------|---------|---------|

@@ -27,14 +27,14 @@ platforms: [a2]
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| 大矩阵标准 GEMM | exp_matmul_001 | 40% | L0 128³ Tiling + L0C 寄存器复用 |
-| 量化融合 | exp_matmul_002 | 35% | Cube fixpipe 量化 + 4× K 展开 |
-| 双转置 | exp_matmul_005 | 32% | M=256,K=256,N=128 专项配置 |
-| 对角 Tiling (M,N≥512) | exp_matmul_diag_tiling_001 | 25% | 对角核映射消除 bank conflict |
+| 大矩阵标准 GEMM | [exp_matmul_001](../../optimizations/experiences/matmul_experiences.md#exp_matmul_001) | 40% | L0 128³ Tiling + L0C 寄存器复用 |
+| 量化融合 | [exp_matmul_002](../../optimizations/experiences/matmul_experiences.md#exp_matmul_002) | 35% | Cube fixpipe 量化 + 4× K 展开 |
+| 双转置 | [exp_matmul_005](../../optimizations/experiences/matmul_experiences.md#exp_matmul_005) | 32% | M=256,K=256,N=128 专项配置 |
+| 对角 Tiling (M,N≥512) | [exp_matmul_diag_tiling_001](../../optimizations/experiences/matmul_experiences.md#exp_matmul_diag_tiling_001) | 25% | 对角核映射消除 bank conflict |
 | 小矩阵 (<128) | micro_tiling | 20% | 16×16×16 micro-tiling |
-| Persistent Kernel | exp_matmul_sched_003 | 25-35% | grid-stride 固定核数 |
-| Cube/Vector 异构流水 | exp_matmul_sched_004 | 30% | `dl.async_task` 并行 |
-| Grouped GEMM (MoE) | exp_matmul_sched_006 | 25% | work-stealing 均衡负载 |
+| Persistent Kernel | [exp_matmul_sched_003](../../optimizations/experiences/matmul_experiences.md#exp_matmul_sched_003) | 25-35% | grid-stride 固定核数 |
+| Cube/Vector 异构流水 | [exp_matmul_sched_004](../../optimizations/experiences/matmul_experiences.md#exp_matmul_sched_004) | 30% | `dl.async_task` 并行 |
+| Grouped GEMM (MoE) | [exp_matmul_sched_006](../../optimizations/experiences/matmul_experiences.md#exp_matmul_sched_006) | 25% | work-stealing 均衡负载 |
 
 ## 融合变体
 

@@ -25,9 +25,9 @@ Embedding 查找本质是不规则 gather：`y[i] = weight[index[i]]`，反向�
 
 | 场景 | 经验 ID | 关键技术 |
 |------|---------|----------|
-| Embedding 前向 | exp_embedding_001 | 2D tile (M×N)；软件流水线 num_stages；向量化加载 |
-| Embedding 反向 | exp_embedding_backward_001 | scatter-add 原子操作；按 index 排序提升连续性 |
-| 索引拷贝 | exp_idx_copy_001 | gather+copy，支持非连续索引批量拷贝 |
+| Embedding 前向 | [exp_embedding_001](../../optimizations/experiences/misc_experiences.md#exp_embedding_001) | 2D tile (M×N)；软件流水线 num_stages；向量化加载 |
+| Embedding 反向 | [exp_embedding_backward_001](../../optimizations/experiences/misc_experiences.md#exp_embedding_backward_001) | scatter-add 原子操作；按 index 排序提升连续性 |
+| 索引拷贝 | [exp_idx_copy_001](../../optimizations/experiences/misc_experiences.md#exp_idx_copy_001) | gather+copy，支持非连续索引批量拷贝 |
 
 ## 关键技术
 

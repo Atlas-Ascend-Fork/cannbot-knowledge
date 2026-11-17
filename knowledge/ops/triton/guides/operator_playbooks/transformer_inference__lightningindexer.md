@@ -86,7 +86,7 @@ platforms: ['950']
 #### L1.9 0.8x / 1.0x 目标在当前纯 Triton 约束下不可达
 
 - 已穷尽常规方向（host overhead、tile dispatch、device gather、lightweight topk、FND、block topk、radix 调参等）。
-- 当前纯 Triton 最佳为 **0.6152x**（exp_b_bf16_dot，54/54）。 report 中必须标注此天花板。
+- 当前纯 Triton 最佳为 **0.6152x**（b_bf16_dot，54/54）。 report 中必须标注此天花板。
 
 ### §6.2 Layer 2: 算法骨架（首次生成就要写对）
 
@@ -150,7 +150,7 @@ for task in grid:
 #### L3.2 bf16 dot + fp32 accumulate
 
 - load q/k as bf16，`tl.dot` 输出 fp32，再 relu / weighted sum。
-- 这是 exp_b_bf16_dot 的 baseline 配置，是当前最稳路径。
+- 这是 b_bf16_dot 的 baseline 配置，是当前最稳路径。
 
 #### L3.3 iterative top-k 模式（K 较小）
 

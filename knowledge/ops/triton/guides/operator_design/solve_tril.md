@@ -27,11 +27,11 @@ platforms: [a2, a3]
 
 | 场景 | 经验 ID | 关键技术 |
 |------|---------|----------|
-| 结构零元 mask 消除 | exp_solve_tril_001 | 利用矩阵结构删除 `tl.where` (1.33-1.87x) |
-| 寄存器预加载 | exp_solve_tril_002 | extract_slice 替代 HBM load |
-| Constexpr 双路径展开 | exp_solve_tril_003 | 完整 tile 编译期展开+边界 tile 运行时循环 |
-| 三层分级调度 | exp_solve_tril_004 | BT=16/32/64 分治架构 |
-| CANN 兼容审计 | exp_solve_tril_005 | 删除不兼容参数 |
+| 结构零元 mask 消除 | [exp_solve_tril_001](../../optimizations/experiences/misc_experiences.md#exp_solve_tril_001) | 利用矩阵结构删除 `tl.where` (1.33-1.87x) |
+| 寄存器预加载 | [exp_solve_tril_002](../../optimizations/experiences/misc_experiences.md#exp_solve_tril_002) | extract_slice 替代 HBM load |
+| Constexpr 双路径展开 | [exp_solve_tril_003](../../optimizations/experiences/misc_experiences.md#exp_solve_tril_003) | 完整 tile 编译期展开+边界 tile 运行时循环 |
+| 三层分级调度 | [exp_solve_tril_004](../../optimizations/experiences/misc_experiences.md#exp_solve_tril_004) | BT=16/32/64 分治架构 |
+| CANN 兼容审计 | [exp_solve_tril_005](../../optimizations/experiences/misc_experiences.md#exp_solve_tril_005) | 删除不兼容参数 |
 
 ## 关键技术
 

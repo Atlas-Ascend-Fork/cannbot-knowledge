@@ -26,11 +26,11 @@ Loss 函数将 logits 与 labels 对比计算标量损失及梯度。核心优�
 
 | 场景 | 经验 ID | 关键技术 |
 |------|---------|----------|
-| CE Loss 前向 | exp_celoss_fwd_001 | online log-softmax + NLL |
-| CE Loss 反向 | exp_celoss_bwd_001 | softmax - one_hot(label) 单步 grad |
-| Label-Smoothed CE | exp_ls_celoss_001 | (1-ε)·one_hot + ε/V uniform |
-| GRPO Loss | exp_grpo_loss_001 | 含 LogSumExp 归约的策略梯度 |
-| Entropy Loss | exp_entropy_loss_001 | H = -Σ p·log(p) KL 散度前驱 |
+| CE Loss 前向 | [exp_celoss_001](../../optimizations/experiences/misc_experiences.md#exp_celoss_001) | online log-softmax + NLL |
+| CE Loss 反向 | [exp_celoss_bwd_001](../../optimizations/experiences/misc_experiences.md#exp_celoss_bwd_001) | softmax - one_hot(label) 单步 grad |
+| Label-Smoothed CE | [exp_celoss_smooth_001](../../optimizations/experiences/misc_experiences.md#exp_celoss_smooth_001) | (1-ε)·one_hot + ε/V uniform |
+| GRPO Loss | [exp_grpo_loss_001](../../optimizations/experiences/misc_experiences.md#exp_grpo_loss_001) | 含 LogSumExp 归约的策略梯度 |
+| Entropy Loss | [exp_fused_entropy_001](../../optimizations/experiences/misc_experiences.md#exp_fused_entropy_001) | H = -Σ p·log(p) KL 散度前驱 |
 
 ## 关键技术
 

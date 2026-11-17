@@ -28,13 +28,13 @@ Attention 是 Transformer 架构的核心，计算 `softmax(QK^T/√d_k) @ V`。
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| 标准 Flash Attention (seq≥1024) | exp_fused_attention_002 | 50% | Online softmax, O(S) 内存 |
-| GQA/MQA 多头共享 | exp_flashattn_gqa_001 | 40% | SIMD index select 多头复用 |
-| Paged KV Cache（推理） | exp_paged_attn_flash_001 | 35% | Block Pointer 分页注意力 |
-| Split-K GQA（大 seq） | exp_flashattn_splitk_gqa_001 | 40% | Split-K + 分页 KV |
-| Ascend 双流水线 (seq≥2048) | exp_attn_ascend_dual_pipeline_001 | 45% | 双流水线软件流水 |
-| 稀疏 Attention (prefill) | exp_sparse_attn_topk_001 | 30% | top-k 稀疏 mask |
-| FP8 输入 | exp_attn_fp8_ub_slice_001 | 35% | UB 溢出分片处理 |
+| 标准 Flash Attention (seq≥1024) | [exp_fused_attention_002](../../optimizations/experiences/attention_experiences.md#exp_fused_attention_002) | 50% | Online softmax, O(S) 内存 |
+| GQA/MQA 多头共享 | [exp_flashattn_gqa_001](../../optimizations/experiences/attention_experiences.md#exp_flashattn_gqa_001) | 40% | SIMD index select 多头复用 |
+| Paged KV Cache（推理） | [exp_paged_attn_flash_001](../../optimizations/experiences/attention_experiences.md#exp_paged_attn_flash_001) | 35% | Block Pointer 分页注意力 |
+| Split-K GQA（大 seq） | [exp_flashattn_splitk_gqa_001](../../optimizations/experiences/attention_experiences.md#exp_flashattn_splitk_gqa_001) | 40% | Split-K + 分页 KV |
+| Ascend 双流水线 (seq≥2048) | [exp_attn_ascend_dual_pipeline_001](../../optimizations/experiences/attention_experiences.md#exp_attn_ascend_dual_pipeline_001) | 45% | 双流水线软件流水 |
+| 稀疏 Attention (prefill) | [exp_sparse_attn_topk_001](../../optimizations/experiences/attention_experiences.md#exp_sparse_attn_topk_001) | 30% | top-k 稀疏 mask |
+| FP8 输入 | [exp_attn_fp8_ub_slice_001](../../optimizations/experiences/attention_experiences.md#exp_attn_fp8_ub_slice_001) | 35% | UB 溢出分片处理 |
 
 ## 关键技术
 

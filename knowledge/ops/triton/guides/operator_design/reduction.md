@@ -27,14 +27,14 @@ platforms: [a2]
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| fp16 累加溢出 | exp_reduction_fp32_001 | 30% | fp32 累加器 |
-| logsumexp 稳定 | exp_reduction_logsumexp_001 | 35% | log-sum-exp trick（减 max） |
-| cross-entropy | exp_reduction_cross_entropy_001 | 30% | 融合 log-softmax + CE |
-| argmax+max 联合 | exp_reduction_argmax_001 | 25% | 单遍同时计算 |
-| 大 K (≥4096) Split-K | exp_splitk_reduction_001 | 35% | K 维按核划分 + atomic_add |
-| 两阶段方案 | exp_splitk_two_pass_001 | 40% | Phase1 部分和，Phase2 全局归约 |
-| 直方图 binning | exp_histogram_reduction_001 | 25% | 原子 binning + 寄存器局部聚合 |
-| 前缀扫描 cumsum | exp_cumsum_001 | 25% | scan primitive |
+| fp16 累加溢出 | [exp_reduction_fp32_001](../../optimizations/experiences/reduction_experiences.md#exp_reduction_fp32_001) | 30% | fp32 累加器 |
+| logsumexp 稳定 | [exp_reduction_logsumexp_001](../../optimizations/experiences/reduction_experiences.md#exp_reduction_logsumexp_001) | 35% | log-sum-exp trick（减 max） |
+| cross-entropy | [exp_reduction_cross_entropy_001](../../optimizations/experiences/reduction_experiences.md#exp_reduction_cross_entropy_001) | 30% | 融合 log-softmax + CE |
+| argmax+max 联合 | [exp_reduction_argmax_001](../../optimizations/experiences/reduction_experiences.md#exp_reduction_argmax_001) | 25% | 单遍同时计算 |
+| 大 K (≥4096) Split-K | [exp_splitk_reduction_001](../../optimizations/experiences/reduction_experiences.md#exp_splitk_reduction_001) | 35% | K 维按核划分 + atomic_add |
+| 两阶段方案 | [exp_splitk_two_pass_001](../../optimizations/experiences/reduction_experiences.md#exp_splitk_two_pass_001) | 40% | Phase1 部分和，Phase2 全局归约 |
+| 直方图 binning | [exp_histogram_reduction_001](../../optimizations/experiences/reduction_experiences.md#exp_histogram_reduction_001) | 25% | 原子 binning + 寄存器局部聚合 |
+| 前缀扫描 cumsum | [exp_cumsum_001](../../optimizations/experiences/reduction_experiences.md#exp_cumsum_001) | 25% | scan primitive |
 
 ## 关键技术
 

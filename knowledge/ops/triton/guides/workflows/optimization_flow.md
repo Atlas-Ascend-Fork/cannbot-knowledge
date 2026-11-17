@@ -47,8 +47,8 @@ Profile → Identify Bottleneck → Route to Experiences → Implement → Re-pr
 
 | 任务 | 经验 | 预期提升 | 关键技术 |
 |------|------|---------|---------|
-| 大矩阵 GEMM (M,N,K≥256) | exp_matmul_001 | +40% | L0 128³ tiling |
-| Flash Attention (seq≥1024) | exp_fused_attention_002 | +50% | Online softmax, O(S) |
+| 大矩阵 GEMM (M,N,K≥256) | [exp_matmul_001](../../optimizations/experiences/matmul_experiences.md#exp_matmul_001) | +40% | L0 128³ tiling |
+| Flash Attention (seq≥1024) | [exp_fused_attention_002](../../optimizations/experiences/attention_experiences.md#exp_fused_attention_002) | +50% | Online softmax, O(S) |
 | RMSNorm 大 hidden dim | 列分块 | +35% | Column blocking, two-pass |
 | MoE routing | binned dispatch | +35% | Binned expert dispatch |
 

@@ -26,20 +26,20 @@ SSM 以线性递推方式更新隐状态 `h_t = A·h_{t-1} + B·x_t`，复杂度
 
 | 场景 | 经验 ID | 关键技术 |
 |------|---------|----------|
-| Chunkwise 前向 | exp_chunk_fwd_001 | block_ptr tiling + gating masking |
-| Chunk CumSum | exp_chunk_cumsum_001 | 块内累积和 (gating 因子) |
-| Gated Delta | exp_chunk_gated_delta_001 | sigmoid gating + 状态更新 |
-| KKT 计算 | exp_chunk_kkt_001 | K·K^T 内积（状态压缩） |
-| Delta Rule (NPU) | exp_fused_delta_rule_npu_001 | sigmoid+softplus+delta rule 三合一 |
+| Chunkwise 前向 | [exp_chunk_fwd_001](../../optimizations/experiences/ssm_experiences.md#exp_chunk_fwd_001) | block_ptr tiling + gating masking |
+| Chunk CumSum | [exp_chunk_cumsum_001](../../optimizations/experiences/ssm_experiences.md#exp_chunk_cumsum_001) | 块内累积和 (gating 因子) |
+| Gated Delta | [exp_chunk_gated_delta_001](../../optimizations/experiences/ssm_experiences.md#exp_chunk_gated_delta_001) | sigmoid gating + 状态更新 |
+| KKT 计算 | [exp_chunk_kkt_001](../../optimizations/experiences/ssm_experiences.md#exp_chunk_kkt_001) | K·K^T 内积（状态压缩） |
+| Delta Rule (NPU) | [exp_fused_delta_rule_npu_001](../../optimizations/experiences/ssm_experiences.md#exp_fused_delta_rule_npu_001) | sigmoid+softplus+delta rule 三合一 |
 
 ## KDA 反向优化
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| 标量消除 | exp_kda_bwd_wy_scalar_opt_001 | 3.33x | i64→i32、i32→fp32、cdiv/min 消除 |
-| 结构优化 | exp_kda_bwd_wy_structure_opt_001 | 30% | Phase split、barrier 外提、LICM |
-| Intra 标量消除 | exp_kda_bwd_intra_scalar_opt_001 | 50% | block_ptr→手动指针、fp32 mask |
-| 标量循环 → tl.dot | exp_kda_bwd_scalar_loop_to_dot_001 | 40% | 对角块循环改矩阵乘 |
+| 标量消除 | [exp_kda_bwd_wy_scalar_opt_001](../../optimizations/experiences/ssm_experiences.md#exp_kda_bwd_wy_scalar_opt_001) | 3.33x | i64→i32、i32→fp32、cdiv/min 消除 |
+| 结构优化 | [exp_kda_bwd_wy_structure_opt_001](../../optimizations/experiences/ssm_experiences.md#exp_kda_bwd_wy_structure_opt_001) | 30% | Phase split、barrier 外提、LICM |
+| Intra 标量消除 | [exp_kda_bwd_intra_scalar_opt_001](../../optimizations/experiences/ssm_experiences.md#exp_kda_bwd_intra_scalar_opt_001) | 50% | block_ptr→手动指针、fp32 mask |
+| 标量循环 → tl.dot | [exp_kda_bwd_scalar_loop_to_dot_001](../../optimizations/experiences/ssm_experiences.md#exp_kda_bwd_scalar_loop_to_dot_001) | 40% | 对角块循环改矩阵乘 |
 
 ## 关键技术
 

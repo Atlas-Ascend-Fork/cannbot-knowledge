@@ -115,6 +115,6 @@ platforms: [a2]
 - **形态**：双路径 host 分派（GC-14）——无广播 18 case 走 flat 连续 kernel；32 个广播 case 走**行分组 2D persistent kernel**（`[BLOCK_ROWS, BLOCK_N]` tile），标量行解码（`(row//y_div) % y_mod`），逐元素索引纯加法（L1.1 合规）。
 - **结果**：50/50 精度通过（max_diff=0）；几何平均 **0.4854 → 0.6682×**（`speedup_vs_baseline` 1.377）。接近 fusion-search 冠军统一尺度 0.690×，确认该 op 天花板在 ~0.69×。
 - **关键杠杆确认**：广播 kernel 由「每 work-item 1 行」改「2D tile `[BLOCK_ROWS, BLOCK_N]`」（target ~2048 元素、BLOCK_ROWS≤32）对 23/50 case 大幅提升（小/中 2D 广播 case 2-4×，如 case12 0.53→2.11×）；但收紧 tile（target 1024、BLOCK_ROWS≤16）反而回退到 0.6259× → 本任务局部最优为 `2048/br≤32`。
-- **新陷阱**：host 侧 `col_stride`(0/1) 数值误当 `COL_BC` 布尔传入 kernel 会**反转列广播逻辑**（32/50 广播 case 精度失败，diff 1-6）。必须显式 `COL_BC=(col_stride==0)` 转换。详见 `general_debug/exp_debug_add_colbc_inversion_20260901.yaml`。
+- **新陷阱**：host 侧 `col_stride`(0/1) 数值误当 `COL_BC` 布尔传入 kernel 会**反转列广播逻辑**（32/50 广播 case 精度失败，diff 1-6）。必须显式 `COL_BC=(col_stride==0)` 转换。详见本次调试记录（未入库）。
 
 > **2026-09-03 复验更新（triton-op-generator rerun，并列记录）**：双路径同构实现（flat grid-stride + broadcast **2D 行 tile [BR, BN]**，BR×BN≈2048、BR≤32、BN=min(next_pow2(N),2048)，每 tile 内对 BR 行做标量行解码 `(rows//y_div)%y_mod`）50/50 PASS，几何平均 **0.4856 → 0.6916×**（speedup_vs_baseline 1.424）。2D 行 tile（替代逐 work-item 单行）是 broadcast 侧关键杠杆：多数 broadcast case 从 <0.4 抬到 0.5-0.7+（idx42 0.27→0.73、idx49 0.31→0.79）；微小内维 channel/plane broadcast（N≤64）仍偏慢（~0.04-0.17，launch/scheduling 主导）。flat 大 case 增掩码消除/大 BLOCK 是剩余低价值杠杆。与 HBM-bound 天花板 ~0.69 结论一致。

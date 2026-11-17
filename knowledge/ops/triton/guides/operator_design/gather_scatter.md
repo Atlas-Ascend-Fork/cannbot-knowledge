@@ -27,13 +27,13 @@ Gather（`output[i] = input[index[i]]`）和 Scatter（`output[index[i]] = input
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| 分散 scatter 原子冲突 | exp_gs_mem_001 | 25% | 寄存器局部聚合，单次 atomic write |
-| 小粒度 scatter | exp_gs_mem_002 | 30% | BLOCK_SIZE 元素向量操作 |
-| 不规则索引 | exp_gs_mem_004 | 25% | Block pointer 索引访问 |
-| 索引排序改善局部性 | exp_gs_mem_005 | 30% | scatter 前排序索引 |
-| MoE Binned Dispatch | exp_gs_bin_003 | 35% | 按 expert 分 bin 逐 bin 处理 |
-| Token 排列 | exp_gs_bin_004 | 25% | shuffle token 排列 |
-| Expert 负载均衡 | exp_gs_bin_005 | 30% | work-stealing |
+| 分散 scatter 原子冲突 | [exp_gs_mem_001](../../optimizations/experiences/gather_scatter_experiences.md#exp_gs_mem_001) | 25% | 寄存器局部聚合，单次 atomic write |
+| 小粒度 scatter | [exp_gs_mem_002](../../optimizations/experiences/gather_scatter_experiences.md#exp_gs_mem_002) | 30% | BLOCK_SIZE 元素向量操作 |
+| 不规则索引 | [exp_gs_mem_004](../../optimizations/experiences/gather_scatter_experiences.md#exp_gs_mem_004) | 25% | Block pointer 索引访问 |
+| 索引排序改善局部性 | [exp_gs_mem_005](../../optimizations/experiences/gather_scatter_experiences.md#exp_gs_mem_005) | 30% | scatter 前排序索引 |
+| MoE Binned Dispatch | [exp_gs_bin_003](../../optimizations/experiences/gather_scatter_experiences.md#exp_gs_bin_003) | 35% | 按 expert 分 bin 逐 bin 处理 |
+| Token 排列 | [exp_gs_bin_004](../../optimizations/experiences/gather_scatter_experiences.md#exp_gs_bin_004) | 25% | shuffle token 排列 |
+| Expert 负载均衡 | [exp_gs_bin_005](../../optimizations/experiences/gather_scatter_experiences.md#exp_gs_bin_005) | 30% | work-stealing |
 
 ## 关键技术
 

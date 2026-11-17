@@ -27,13 +27,13 @@ platforms: [a2]
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| Skip Add + RMSNorm | exp_fused_rms_norm_001 | 35% | 原地 residual 更新同时计算方差 |
-| Skip + LayerNorm | exp_fused_add_layernorm_001 | 30% | Skip+LN 融合单核 |
-| RMSNorm + RoPE | exp_fused_norm_rope_001 | 35% | Norm+RoPE 融合 |
-| QKV + Norm + RoPE | exp_fused_qkv_rmsnorm_rope_001 | 40% | QKV+Norm+RoPE 三合一 |
-| Gemma 风格 | exp_gemma_rmsnorm_001 | 35% | (1+weight) 融合归一化 |
-| GroupNorm | exp_groupnorm_001 | 25% | 分组归一化 |
-| Q/K 分别 Norm | exp_fused_split_qk_norm_001 | 35% | QK RMSNorm 单核融合 |
+| Skip Add + RMSNorm | [exp_fused_rms_norm_001](../../optimizations/experiences/normalization_experiences.md#exp_fused_rms_norm_001) | 35% | 原地 residual 更新同时计算方差 |
+| Skip + LayerNorm | [exp_fused_add_layernorm_001](../../optimizations/experiences/normalization_experiences.md#exp_fused_add_layernorm_001) | 30% | Skip+LN 融合单核 |
+| RMSNorm + RoPE | [exp_fused_norm_rope_001](../../optimizations/experiences/normalization_experiences.md#exp_fused_norm_rope_001) | 35% | Norm+RoPE 融合 |
+| QKV + Norm + RoPE | [exp_fused_qkv_rmsnorm_rope_001](../../optimizations/experiences/normalization_experiences.md#exp_fused_qkv_rmsnorm_rope_001) | 40% | QKV+Norm+RoPE 三合一 |
+| Gemma 风格 | [exp_gemma_rmsnorm_001](../../optimizations/experiences/matmul_experiences.md#exp_gemma_rmsnorm_001) | 35% | (1+weight) 融合归一化 |
+| GroupNorm | [exp_groupnorm_001](../../optimizations/experiences/normalization_experiences.md#exp_groupnorm_001) | 25% | 分组归一化 |
+| Q/K 分别 Norm | [exp_fused_split_qk_norm_001](../../optimizations/experiences/normalization_experiences.md#exp_fused_split_qk_norm_001) | 35% | QK RMSNorm 单核融合 |
 
 ## 关键技术
 

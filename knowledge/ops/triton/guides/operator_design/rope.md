@@ -25,15 +25,15 @@ RoPE 通过复数旋转实现位置编码，将 query/key 的每对相邻维度�
 
 | 场景 | 经验 ID | 提升 | 核心技术 |
 |------|---------|------|----------|
-| 标准 RoPE (hd≥64) | exp_rope_001 | 15% | cos/sin 复用+persistent grid-stride |
-| NPU 优化 (hd≥64) | exp_rope_npu_001 | 35% | cos/sin 复用+software pipeline+前后向共用 |
-| RoPE 前向 varlen | exp_rope_forward_001 | 25% | ALIGNED 路径+do_not_specialize |
-| RoPE 反向 varlen/KV | exp_rope_backward_001 | 25% | grid-stride+IS_VARLEN+HAS_KV_LENS |
-| Partial RoPE (Llama-3) | exp_partial_rope_001 | 25% | 跳过 NOPE_DIM+向量化前/后半 |
-| Qwen2-VL Multi-RoPE | exp_qwen2vl_mrope_001 | 25% | t/h/w 三维融合+head blocking |
-| Llama-4 NPU RoPE | exp_rope_llama4_npu_001 | 25% | UB tiling+FMA+interleaved |
-| SISO 布局 | exp_rope_siso_001 | 25% | 3D tiling+非交错向量化 |
-| Neox/非Neox 双路 | exp_triton_rope_001 | 25% | IS_NEOX_STYLE constexpr |
+| 标准 RoPE (hd≥64) | [exp_rope_001](../../optimizations/experiences/rope_experiences.md#exp_rope_001) | 15% | cos/sin 复用+persistent grid-stride |
+| NPU 优化 (hd≥64) | [exp_rope_npu_001](../../optimizations/experiences/rope_experiences.md#exp_rope_npu_001) | 35% | cos/sin 复用+software pipeline+前后向共用 |
+| RoPE 前向 varlen | [exp_rope_forward_001](../../optimizations/experiences/rope_experiences.md#exp_rope_forward_001) | 25% | ALIGNED 路径+do_not_specialize |
+| RoPE 反向 varlen/KV | [exp_rope_backward_001](../../optimizations/experiences/rope_experiences.md#exp_rope_backward_001) | 25% | grid-stride+IS_VARLEN+HAS_KV_LENS |
+| Partial RoPE (Llama-3) | [exp_partial_rope_001](../../optimizations/experiences/rope_experiences.md#exp_partial_rope_001) | 25% | 跳过 NOPE_DIM+向量化前/后半 |
+| Qwen2-VL Multi-RoPE | [exp_qwen2vl_mrope_001](../../optimizations/experiences/rope_experiences.md#exp_qwen2vl_mrope_001) | 25% | t/h/w 三维融合+head blocking |
+| Llama-4 NPU RoPE | [exp_rope_llama4_npu_001](../../optimizations/experiences/rope_experiences.md#exp_rope_llama4_npu_001) | 25% | UB tiling+FMA+interleaved |
+| SISO 布局 | [exp_rope_siso_001](../../optimizations/experiences/rope_experiences.md#exp_rope_siso_001) | 25% | 3D tiling+非交错向量化 |
+| Neox/非Neox 双路 | [exp_triton_rope_001](../../optimizations/experiences/rope_experiences.md#exp_triton_rope_001) | 25% | IS_NEOX_STYLE constexpr |
 
 ## 关键技术
 
