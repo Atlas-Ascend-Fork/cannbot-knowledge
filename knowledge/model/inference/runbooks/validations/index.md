@@ -41,3 +41,6 @@
 - [Qwen3 reasoning parser 回归门禁：字段拆分不等于最终答案通过](reasoning_parser_qwen3_storm_criterion_artifact.md)：来源把 reasoning 与 content 合并匹配后报告 20/20；这种判据可能让思考中出现正确词、最终答案却错误的样本通过。因此只保留字段/预算诊断，撤回据此证明 storm 正确率恢复的结论。
 - [TTK e2e 失败根因：bytenn_ops 命名空间映射错误致 API_PARSE_FAIL](ttk_e2e_bytenn_ops_namespace_golden_fix.md)：vLLM 容器内用 TTK 跑 bytenn_ops 自定义算子 rms_norm_cast 的 e2e 用例报 API_PARSE_FAIL。根因是 TTK 的 torch.ops 命名空间到 Python 包名映射错误。
 - [vLLM-Ascend msprof 三段式 profiling 的产物落点与在线解析卡滞处置](vllm_ascend_msprof_three_stage.md)：vLLM-Ascend msprof 三段式 profiling 的产物落点（<输出根>/trace/stage{0,1,2}_rank0/<hash>_ascend_pt/ASCEND_PROFILER_OUTPUT/）与在线解析卡滞处置（kill 后对 stage 目录走 torch_npu.profiler.profiler.analyse() 离线重解析）。
+
+- [覆写式 stage marker 的跨 launch 混合：间隙聚类与覆盖范围核对](b2b_stage_timing_span_cluster_extraction.md)：按 role/worker 对 marker 时间戳聚类可隔离跨 launch 残留，但所得窗口需清点 label，不能直接当端到端延迟。
+- [小专家数 MoE 基准：先核对实际 rank 负载与 gating 覆盖](gate_tile_n_gt_experts_rank0_exclusive_load.md)：均衡 fixture 的目标分布不能替代实际 routed counts；阶段时长偏斜和分块覆盖只作诊断线索，不能据此裁定实际路由或性能收益。

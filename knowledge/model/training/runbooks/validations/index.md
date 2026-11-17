@@ -7,3 +7,7 @@
 - [无 NPU 环境下 monkeypatch 假 torch_npu 验证 micro_pipeline_tp 融合算子入参的单元测试模式](fake_torch_npu_monkeypatch_micro_pipeline_tp_test.md)：torchtitan-npu micro_pipeline_tp 融合算子 PR 的无 NPU 回归验证模式，让 CPU 开发机也能锁定 NPU 融合算子的入参转发与 fail-fast 行为契约。
 - [Kimi K3 四融合算子 NPU smoke 精度测试落地（从配置提取 shape、逐输出逐梯度对比 + CPU FP64 oracle）与 quick shape 91 用例通过](kimi_k3_fused_ops_shape_inference_rel_l2_gates.md)：在 torchtitan-npu ops_test 分支落地 attn_res/conv1d/situ/kda 四融合算子的 NPU smoke 精度测试：从正式 DeepEP 配置动态提取 T=8192、R=131072、H=96 等参数推算单卡输入 shape，统一比较 forward、全部输入梯度和参数梯度，小形状用 CPU FP64 oracle；静态检查通过，服务器 quick shape 91 用例全部通过（生产 shape 仍需另行运行）。
 - [train/rollout logprob 差异回放测量链路：纯 .pt 回放机制确认与 --train-logprobs-only 干跑接线验证](train_rollout_logprob_diff_replay_measurement.md)：为定位 qwen3.5-9B 训练与推理 logprob 差异最大的环节，确认既有 replay-qwen35-9B-tbench-torchtitan.sh 为纯 .pt 回放（--load-debug-rollout-data 强制 debug_train_only，不启动 vLLM 引擎/沙箱/AgentENV，样本内 rollout_log_probs 为原始 run 落盘值），且训练侧已有 train_rollout_logprob_abs_diff 指标（CI 阈值 ≤0.1）。
+
+- [Checkpointing active 却不保存：检查独立的 load_only 短路开关](dsv4_dcp_hf_checkpoint_save_load_four_scenarios.md)：enable 与 load_only 是两个独立条件；示例默认 load_only 时，仅开启 enable 仍不会保存。保留此源码判据，不把其他未采纳场景的结果放入本卡。
+- [rebase 后核对 kernel 计数：先匹配设计代次与采样口径](profiling_kernel_count_recheck_after_rebase.md)：保留 POST-rebase 的逐算子计数与复采方法；旧设计的 PRE 汇总不与当前终态强行配成 A/B，计数相同也不能证明精度或总性能不回归。
+- [集成测试的验收边界：harness 检查退出码不等于独立数值对比](torchtitan_integration_test_exit_code_only.md)：所示 run_tests.py 失败分支检查子进程 returncode；局部源码和测试入口通过不足以确认是否有独立数值验收，需继续检查完整入口与子程序。

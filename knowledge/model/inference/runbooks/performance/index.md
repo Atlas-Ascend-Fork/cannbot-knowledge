@@ -54,3 +54,6 @@
 - [Qwen3.8 hybrid GDN 模型启用 prefix caching 零命中后回退](qwen3_8_hybrid_gdn_prefix_caching_zero_hits.md)：来源短提示负载启用 prefix caching 后服务正常，queries=3704、hits=0，随后回退。没有长共享前缀或缓存资格对照，不能据零命中认定 hybrid GDN/自定义 KV 布局语义不兼容，也未测量吞吐影响。
 - [Qwen3-8B 单卡 THP 开关的单次热运行对照与统计边界](qwen3_8b_thp_off_no_gain_single_card.md)：Qwen3-8B 单卡 BF16 热运行中，THP ON 的 Prefill/Decode 为 36.89/15.48ms，OFF 为 35.25/15.4936ms。OFF 相对 ON 的 Prefill 低约 4.45%、Decode 高约 0.09%；无多轮重复，不能认定显著收益或等效。
 - [replace_input_embeds 的 s2_all_image_blind_copy 存档部署与 bit-exact 验证流程](replace_input_embeds_image_blind_copy.md)：TileLang（tilelang-deepseek，默认 bisheng 后端）replace_input_embeds（图像 token embedding 替换，vllm-ascend image_embed_ops.py）优化的 s2_all_image_blind_copy 存档按「模板优先」部署到工程位并完成 bit-exact 验证：部署后工程位与归档副本 SHA256 逐字节一致，冷编译后 pytest 3/3 PASS（1024/4096/16384，torch.equal bit-exact 断言，未改测试阈值）。 知识形态：validated_pattern（implementation + 轨迹内实际完成的 bit-exact 验证）。
+
+- [torch 主机张量 madvise 返回 -1：先采集 errno 和 VMA 边界](madvise_hugepage_vma_boundary_einval_fix.md)：原记录只观察到 madvise 返回 -1，不能据此判定 EINVAL 或 VMA 越界根因。保留原始失败与 VMA 裁剪候选，提供明确标为后续采证的探针。
+- [mega_moe 内核打点：按角色、marker 和 worker 写入设备计数器](mega_moe_stage_timing_gm_instrumentation.md)：记录 get_system_cycle 与 scalar.store_bypass 的设备侧打点布局；时钟频率、扰动和跨 rank 对齐须单独核定。

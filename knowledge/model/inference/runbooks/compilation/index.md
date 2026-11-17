@@ -57,3 +57,9 @@
 - [Qwen3.5 导出报 PadV3 non-negative padding 的根因定位](qwen3_5_padv3_negative_padding_export.md)：Qwen3.5 导出报 PadV3 non-negative padding 的根因：负 pad 唯一来自 modeling_qwen3_5.py:490（pad=conv_kernel_size−prefill_seq_len，默认 4−32=−28），经 aten 映射透传后被 GE C++ builder 拒绝。
 - [torch extension 导入失败时的 device kernel 未定义符号判别](torch_extension_und_symbol_aclnn_dlsym.md)：torch extension 导入报告 kernel_fused_ar_mhc_post 未定义时，用动态符号表区分 UND 引用与定义。来源重编后导入和注册检查通过，但未公开完整修复 diff，也未验证算子数值前向。
 - [TorchAir dynamo_export(dynamic=True) 权重位置错位：Data-first 稳定排序 + specialize_float 修复](torchair_dynamic_export_weight_bake_reorder_fix.md)：动态 B/S 导出的 AIR 权重冻结错位：torchair 2.12.0 _convert_data_to_const 按位置（export_graph.op[i]）烘焙权重，动态路径 SymInt 抽取链（Shape/Const/Gather）使 op list 交错，把 Gather 擦成权重 Const、真实 pos/length Data 被擦掉。工程内修复：bind_converter 内调用 _reorder_data_nodes_first() 把 root Data 按 index 稳定前移（protobuf 原地 sort 保持 Tensor.node 引用），再以 specialize_float=True 阻止 86 个 Python float 提升为 f64 输入。
+
+- [hc_pre 返回契约不一致：单 Tensor 不能替代调用点要求的三元组](cant_unpack_tensor_32_rows_tuple_mismatch.md)：调用点需要 hidden_states、post、comb，而封装函数只返回 y。保留返回结构诊断与待验证修正，删除 eager 更宽松的错误解释。
+- [FXRT cold 缓存失败：比对副作用节点、生产者与 DCE 调用点](fxrt_cold_cache_mte_illegal_addr_edc_elision.md)：在相同 rank 对比图、生成代码和写入者，定位无谓词 DCE 可能移除 in-place HOP 的差异；修复后的设备闭环未完成。
+- [FXRT 缓存补丁未安装：核对模块导入链与实际部署版本](fxrt_compile_cache_bootstrap_never_runs.md)：模块末尾的 bootstrap 依赖模块被导入；排查时同时核对 worker 的包路径、初始化导入段和补丁标记，避免混用 fxrt_pkg 与 site-packages。
+- [FXRT warm guard 恢复失败：区分可重建对象与不可序列化占位](fxrt_warm_restore_guard_pybind_rebind_policy.md)：宽泛的 pybind 替换规则可能把 guard 需要的类型变成 _Missing；区分白名单重建、允许舍弃与拒绝，并把 CPU reducer 测试限定在实际覆盖范围。
+- [GMM1 双累加器预算反例：512 列 fp32 在 256KiB L0C 下已满](gmm1_vb_l0c_capacity_arithmetic_falsified.md)：在固定宽度 512、fp32 和 256KiB 预算下，128 行基线已占满，额外 16 行通道会超出 32KiB；该预算结论不等于其他循环结构不可行。
