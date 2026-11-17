@@ -1,16 +1,22 @@
 ---
 type: Optimization
-title: Result Tile Layout Alignment Pattern
+title: 结果 Tile 布局对齐
 description: 让计算结果 tile 的轴序与输出内存布局对齐，避免 store 期转置退化为标量逐元素写入。
-tags: [task.optimization, topic.data_movement.layout_transform]
+tags:
+- task.optimization
+- topic.data_movement.layout_transform
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/result-tile-layout-alignment.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/result-tile-layout-alignment.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Result Tile Layout Alignment Pattern
 
 ## Summary
@@ -40,8 +46,8 @@ directions accordingly) instead of paying a store-time transpose.
 
 ## Related Patterns
 
-- [cv-intermediate-tile-orientation](./cv_intermediate_tile_orientation.md): choose the orientation of a Cube-to-Vector intermediate, not the public output store.
-- [implicit-transpose-elimination](./implicit_transpose_elimination.md): fix GEMM operand physical layout rather than accumulator versus store shape.
+- [`cv-intermediate-tile-orientation`](cv_intermediate_tile_orientation.md): choose the orientation of a Cube-to-Vector intermediate, not the public output store.
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md): fix GEMM operand physical layout rather than accumulator versus store shape.
 
 ## What To Verify After Applying
 

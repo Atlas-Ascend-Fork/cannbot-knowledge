@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Shift Mask-Reduce to Load
+title: Shift Mask-Reduce 改直读
 description: 把 2D mask-and-reduce 构造的 shift/前驱路径改写为 base + arange - 1 的一维索引流直读。
-tags: [task.optimization, topic.compute.indexing, topic.implementation.masking]
+tags:
+- task.optimization
+- topic.compute.indexing
+- topic.implementation.masking
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/shift-mask-reduce-to-load.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/shift-mask-reduce-to-load.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Shift Mask-Reduce to Load
 
 ## Summary
@@ -120,7 +127,7 @@ shifted = current_operand * prev_upstream
 
 ## Related Patterns
 
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md): Split exact-tile hot paths from generic masked kernels when dispatch-time shape guards can prove there are no tail tiles, so Ascend lowering can avoid boundary-only masks, padding values, block-pointer `boundary_check`, and related control branches.
-- [algebraic-optimization](./algebraic_optimization.md): Apply mathematical identities and semantics-preserving rewrites to reduce redundant memory passes, full data scans, or live ranges before micro-tuning loads.
-- [intermediate-layout-copy-deletion](./intermediate_layout_copy_deletion.md): Avoid materializing tensors whose only purpose is to change logical layout, such as `permute`, `transpose`, `movedim`, `reshape`, `squeeze`, or `unsqueeze`, when the next step immediately copies, stores, reduces, gathers, or otherwise consumes the data.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md): Split exact-tile hot paths from generic masked kernels when dispatch-time shape guards can prove there are no tail tiles, so Ascend lowering can avoid boundary-only masks, padding values, block-pointer `boundary_check`, and related control branches.
+- [`algebraic-optimization`](algebraic_optimization.md): Apply mathematical identities and semantics-preserving rewrites to reduce redundant memory passes, full data scans, or live ranges before micro-tuning loads.
+- [`intermediate-layout-copy-deletion`](intermediate_layout_copy_deletion.md): Avoid materializing tensors whose only purpose is to change logical layout, such as `permute`, `transpose`, `movedim`, `reshape`, `squeeze`, or `unsqueeze`, when the next step immediately copies, stores, reduces, gathers, or otherwise consumes the data.

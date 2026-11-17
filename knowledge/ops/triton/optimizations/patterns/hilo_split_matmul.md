@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Hi/Lo Split Matmul (Split2 / Split3)
+title: Hi/Lo 分裂 Matmul
 description: 用取整 fp16 高位与残差部分逼近 fp32 操作数，以两到三个原生 fp16 tl.dot 组合出 fp32 累加结果。
-tags: [task.optimization, topic.precision, topic.compute.composite]
+tags:
+- task.optimization
+- topic.precision
+- topic.compute.composite
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/hilo-split-matmul.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/hilo-split-matmul.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Hi/Lo Split Matmul (Split2 / Split3)
 
 ## Summary
@@ -179,18 +186,18 @@ the cast buffer when it is hoisted to the host.
 
 ## Related Patterns
 
-- [dot-operand-precision-ablation](./dot_operand_precision_ablation.md): run the generic lower-precision operand ablation;
+- [`dot-operand-precision-ablation`](dot_operand_precision_ablation.md): run the generic lower-precision operand ablation;
   this card is the hi/lo compensation mechanism that makes it exact enough for
   fp32 semantics.
-- [reduction-axis-split-combine](./reduction_axis_split_combine.md): when a split passes algebra but fails
+- [`reduction-axis-split-combine`](reduction_axis_split_combine.md): when a split passes algebra but fails
   MERE at ~1 ulp, use this card for the per-slice PV rather than tuning split
   depth blindly.
-- [gather-then-dense-compute](../operator_optimization/device_side_gather.md) / [dense-substitution-fine-grained-sparse-attention](./dense_substitution_fine_grained_sparse_attention.md):
+- [`gather-then-dense-compute`](gather_then_dense_compute.md) / [`dense-substitution-fine-grained-sparse-attention`](dense_substitution_fine_grained_sparse_attention.md):
   densify and mask regrouping change probability rounding points; route a
   MERE-edge failure through the repair ladder above.
-- [large-tile-fit-enabling](./large_tile_fit_enabling.md): the tile unlock is often the enabling
+- [`large-tile-fit-enabling`](large_tile_fit_enabling.md): the tile unlock is often the enabling
   mechanism.
-- [attention-online-softmax-fusion](./attention_online_softmax_fusion.md): its native-dtype rounding variant carries the
+- [`attention-online-softmax-fusion`](attention_online_softmax_fusion.md): its native-dtype rounding variant carries the
   scores/weights rounding repair notes that apply when the split feeds a
   fused attention path.
 

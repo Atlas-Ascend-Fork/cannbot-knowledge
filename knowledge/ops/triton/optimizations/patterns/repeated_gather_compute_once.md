@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Repeated Gather Compute Once
+title: 重复 Gather 算一次
 description: 当索引缓冲重复选取同一元素且下游为多重集语义时，按去重元素计算一次，再用精确代数补偿恢复多重性。
-tags: [task.optimization, topic.compute.indexing, topic.compute.reduction]
+tags:
+- task.optimization
+- topic.compute.indexing
+- topic.compute.reduction
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/repeated-gather-compute-once.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/repeated-gather-compute-once.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Repeated Gather Compute Once
 
 ## Summary
@@ -108,11 +115,14 @@ specific downstream op before keeping the rewrite.
 - Duplicate rate on the real domain justifies the dedup scan; the scan itself is device-resident.
 - Selection/threshold stages operate on group masses or explicitly divide by `c_e` before restoring occurrence-level values; masked/tie behavior per element matches the multiset semantics within tolerance.
 - No semantic branch depends on occurrence ORDER (multiset semantics only).
-- Re-run the `tile-footprint-fitting` search after dedup: tiles that overflowed UB on the full multiset may fit on the deduplicated set.
+- Re-run the [`tile-footprint-fitting`](tile_footprint_fitting.md) search after dedup: tiles that overflowed UB on the full multiset may fit on the deduplicated set.
 
 ## Related Patterns
 
-- [algebraic-optimization](./algebraic_optimization.md): the general exact-reassociation frame this specializes.
-- [gather-then-dense-compute](../operator_optimization/device_side_gather.md): dedup shrinks the row set before densification.
-- [reduction-axis-split-combine](./reduction_axis_split_combine.md): orthogonal parallelization; counts survive the split.
+- [`algebraic-optimization`](algebraic_optimization.md): the general exact-reassociation frame this specializes.
+- [`gather-then-dense-compute`](gather_then_dense_compute.md): dedup shrinks the row set before densification.
+- [`reduction-axis-split-combine`](reduction_axis_split_combine.md): orthogonal parallelization; counts survive the split.
+
+## Related Knowledge
+
 - [现有知识：Device-side Gather 连续化](../operator_optimization/device_side_gather.md)

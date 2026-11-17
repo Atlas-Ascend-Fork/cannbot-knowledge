@@ -1,16 +1,21 @@
 ---
 type: Optimization
-title: Ascend 950 SIMT-Only Discrete Access Pattern
+title: 950 SIMT-only 离散访存
 description: Ascend 950 上以 force_simt_only=True 启动离散访存 UB staging kernel，并重调 num_warps 与 grid 分解。
-tags: [task.optimization, topic.data_movement.memory_access, topic.programming_model]
+tags:
+- task.optimization
+- topic.data_movement.memory_access
+- topic.programming_model
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/force-simt-only-discrete-access-950.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/force-simt-only-discrete-access-950.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: ['950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- '950'
 ---
+
 # Ascend 950 SIMT-Only Discrete Access Pattern
 
 ## Summary
@@ -176,7 +181,10 @@ make that explicit instead of leaving it implicit.
 
 ## Related Patterns
 
-- [logical-layout-tiling](./logical_layout_tiling.md): Use layout-aware tiles instead of per-lane div/mod coordinate decoding.
-- [simt-window-reduction-tuning](./simt_window_reduction_tuning.md) — Ascend 950 SIMT fixed-window reduction tuning (after SIMT is enabled): Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
-- [simt-window-divisor-formula](./simt_window_divisor_formula.md) — closed normalizer inner loop when clipped volume only: Use closed-form clipped bounds when full-window masked counting is costly.
+- [`logical-layout-tiling`](logical_layout_tiling.md): Use layout-aware tiles instead of per-lane div/mod coordinate decoding.
+- [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md) — Ascend 950 SIMT fixed-window reduction tuning (after SIMT is enabled): Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
+- [`simt-window-divisor-formula`](simt_window_divisor_formula.md) — closed normalizer inner loop when clipped volume only: Use closed-form clipped bounds when full-window masked counting is costly.
+
+## Related Knowledge
+
 - [现有知识：离散访存优化（gather_out_to_ub 接口）](../operator_optimization/discrete_memory_access.md)

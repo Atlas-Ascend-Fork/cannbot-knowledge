@@ -1,16 +1,22 @@
 ---
 type: Optimization
-title: Compiler And Lowering Hint Pattern
+title: 编译与下降提示
 description: kernel 结构稳定后，用编译提示传达指针数学无法安全推断的对齐与连续性事实，仅以证据保留。
-tags: [task.optimization, topic.compilation]
+tags:
+- task.optimization
+- topic.compilation
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/compile-hint-adding.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/compile-hint-adding.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Compiler And Lowering Hint Pattern
 
 ## Summary
@@ -114,5 +120,5 @@ kernel[grid](..., multibuffer=True,
 ```
 
 Include warmup so compile and autotune effects do not pollute timing, record
-the exact option set in the round summary, and prefer `autotune` when several
+the exact option set in the round summary, and prefer [`autotune`](autotune.md) when several
 launch or meta options interact.

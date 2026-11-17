@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Grid Flattening And UB Buffering Pattern
+title: Grid 摊平与 UB 批量搬运
 description: 把逻辑工作摊平到物理核并以更宽的 UB store 批量搬运小行传输，降低启动开销、提高单核工作密度。
-tags: [task.optimization, topic.parallelism, topic.data_movement.data_copy]
+tags:
+- task.optimization
+- topic.parallelism
+- topic.data_movement.data_copy
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/grid-flatten-and-ub-buffering.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/grid-flatten-and-ub-buffering.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Grid Flattening And UB Buffering Pattern
 
 ## Summary
@@ -155,8 +162,11 @@ experiment.
 
 ## Related Patterns
 
-- [host-launch-coalescing](./host_launch_coalescing.md): combine repeated wrapper launches into one device launch first when those launches, not per-launch mapping, define the bottleneck.
-- [engine-aware-grid-scheduling](./engine_aware_grid_scheduling.md): use when the main question is axis order, batch fill, persistence, or thin-axis serialization within one launch.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): widens row-wise work inside a program; complements this pattern, which flattens logical work onto physical cores and batches memory movement inside each core.
-- [autotune](../operator_optimization/autotune.md): combine only after the structural rewrite is correct; tune `TASKS_PER_CORE`, `BLOCK`, and `SUB_BLOCK_SIZE` separately enough to explain the result.
+- [`host-launch-coalescing`](host_launch_coalescing.md): combine repeated wrapper launches into one device launch first when those launches, not per-launch mapping, define the bottleneck.
+- [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md): use when the main question is axis order, batch fill, persistence, or thin-axis serialization within one launch.
+- [`program-multiple-rows`](program_multiple_rows.md): widens row-wise work inside a program; complements this pattern, which flattens logical work onto physical cores and batches memory movement inside each core.
+- [`autotune`](autotune.md): combine only after the structural rewrite is correct; tune `TASKS_PER_CORE`, `BLOCK`, and `SUB_BLOCK_SIZE` separately enough to explain the result.
+
+## Related Knowledge
+
 - [现有知识：Persistent Kernel 与 grid-stride](../techniques/persistent_kernels.md)

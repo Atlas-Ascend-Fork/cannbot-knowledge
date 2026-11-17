@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Mask-Only Affine Addressing
+title: 仅 Mask 仿射寻址
 description: 删除已带边界 mask 的访存指针表达式中的逐 lane 索引 clamp，保留原始仿射偏移，让谓词承担越界保护。
-tags: [task.optimization, topic.implementation.masking, topic.data_movement.memory_access]
+tags:
+- task.optimization
+- topic.implementation.masking
+- topic.data_movement.memory_access
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/mask-only-affine-addressing.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/mask-only-affine-addressing.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Mask-Only Affine Addressing
 
 ## Summary
@@ -36,9 +43,9 @@ though only the last iteration can be partial.
 
 - The clamp implements wraparound, replication, edge extension, or another real index mapping. That is algorithm semantics, not boundary protection, and removing it changes results.
 - The load or store has no mask and none can be added, so raw offsets would dereference out-of-range addresses.
-- The indices are genuinely data-dependent (`x[idx]` with runtime `idx`). The addresses cannot be made affine and no clamp removal helps; see `discrete-access-ub-staging`.
+- The indices are genuinely data-dependent (`x[idx]` with runtime `idx`). The addresses cannot be made affine and no clamp removal helps; see [`discrete-access-ub-staging`](discrete_access_ub_staging.md).
 - A local band can start at a negative logical coordinate. Clamp a scalar tile origin once per program instead and keep the exact semantic predicate for lanes near the band edge.
-- A consumer is intentionally mask-free. Use an initialized tile-aligned internal layout rather than reading invalid raw addresses; see `amortized-neutral-padding-layout`.
+- A consumer is intentionally mask-free. Use an initialized tile-aligned internal layout rather than reading invalid raw addresses; see [`amortized-neutral-padding-layout`](amortized_neutral_padding_layout.md).
 
 ## Signals
 
@@ -88,7 +95,7 @@ lanes are never dereferenced.
 Apply the rule kernel by kernel in hot-cost order rather than across the
 repository in one edit, so each removal can be measured against the previous
 kernel version on its own. Prefer this card over
-`exact-tile-no-boundary-fast-path` when both apply: that card removes the mask
+[`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md) when both apply: that card removes the mask
 itself and must prove divisibility, add a dispatch guard, and keep a fallback
 kernel, while this one keeps the mask, needs no guard, and works for every
 shape.
@@ -103,11 +110,14 @@ shape.
 
 ## Related Patterns
 
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md): the broader lowering-cleanup checklist this card was split out of; consult it for constexpr parameters, loop-carried pointer recurrences, modulo addressing, single-position `tl.where`, int32 vector arithmetic, and cumsum axis handling.
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md): removes the boundary predicate itself once divisibility is proven at dispatch; heavier than this card and conditional on shape.
-- [overlap-tail-load-mask-free](./overlap_tail_load_mask_free.md): covers a non-divisible length with two unmasked loads for idempotent reductions, and warns against reintroducing clamped indices in their place.
-- [discrete-access-ub-staging](./discrete_access_ub_staging.md): for genuinely data-dependent gathers, where the addresses cannot be made affine and staging is the correct answer.
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): an alternative compiler-facing representation when manual pointer expressions still lower into scalarized or fragmented memory operations.
-- [amortized-neutral-padding-layout](./amortized_neutral_padding_layout.md): introduce an initialized physical layout when repeated consumers need mask-free raw affine loads.
-- [ragged-tile-early-return](./ragged_tile_early_return.md): remove whole programs whose tiles lie outside a segment-local length, instead of repairing addressing for a program that still has live lanes.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md): the broader lowering-cleanup checklist this card was split out of; consult it for constexpr parameters, loop-carried pointer recurrences, modulo addressing, single-position `tl.where`, int32 vector arithmetic, and cumsum axis handling.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md): removes the boundary predicate itself once divisibility is proven at dispatch; heavier than this card and conditional on shape.
+- [`overlap-tail-load-mask-free`](overlap_tail_load_mask_free.md): covers a non-divisible length with two unmasked loads for idempotent reductions, and warns against reintroducing clamped indices in their place.
+- [`discrete-access-ub-staging`](discrete_access_ub_staging.md): for genuinely data-dependent gathers, where the addresses cannot be made affine and staging is the correct answer.
+- [`block-pointer-tiles`](block_pointer_tiles.md): an alternative compiler-facing representation when manual pointer expressions still lower into scalarized or fragmented memory operations.
+- [`amortized-neutral-padding-layout`](amortized_neutral_padding_layout.md): introduce an initialized physical layout when repeated consumers need mask-free raw affine loads.
+- [`ragged-tile-early-return`](ragged_tile_early_return.md): remove whole programs whose tiles lie outside a segment-local length, instead of repairing addressing for a program that still has live lanes.
+
+## Related Knowledge
+
 - [现有知识：消除冗余边界运算](../operator_optimization/redundant_boundary_operation.md)

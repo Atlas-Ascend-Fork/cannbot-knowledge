@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Dot Matmul Rewrite Pattern
+title: 手写循环改写 tl.dot Matmul
 description: 把手写 matmul 或 K 归约热循环改写为规则分块的 tl.dot matmul，使 kernel 结构匹配 Ascend Triton 的下降路径。
-tags: [task.optimization, topic.compute.composite, topic.programming_model]
+tags:
+- task.optimization
+- topic.compute.composite
+- topic.programming_model
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/dot-matmul-rewrite.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/dot-matmul-rewrite.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Dot Matmul Rewrite Pattern
 
 Use this reference when a Triton Ascend NPU kernel is logically matmul-like but the current hot loop is written as manual reduction code, row-wise multiply-plus-sum code, or scalar-heavy pointer math around the `K` axis.
@@ -37,8 +44,8 @@ Choose this pattern when the main problem is **kernel structure**. The question 
 
 - should this manual reduction loop become a regular tiled matmul at all
 
-If the kernel is already a reasonable tiled matmul and the remaining problem is memory/compute overlap, use `software-pipeline` instead.
-If the kernel is failing because tiles or intermediates are too large for UB, use `tile-footprint-fitting` instead.
+If the kernel is already a reasonable tiled matmul and the remaining problem is memory/compute overlap, use [`software-pipeline`](software_pipeline.md) instead.
+If the kernel is failing because tiles or intermediates are too large for UB, use [`tile-footprint-fitting`](tile_footprint_fitting.md) instead.
 
 ## Rewrite Goal
 
@@ -199,12 +206,10 @@ Record which shapes justify the specialization. Delete or demote experimental br
 
 ## Related Patterns
 
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): fix how a tile load/store is expressed; if a block-pointer rewrite removed one scalar address chain but the loop is still not a regular matmul, apply this card next.
-- [diagonal-block-traversal](../techniques/core_mapping.md) / [l2-stripe-capacity-tile-widening](./l2_stripe_capacity_tile_widening.md): once the tiled matmul is in place, these cover L2 locality — tile execution order and tile shape respectively.
-- [software-pipeline](./software_pipeline.md): use it after `dot-matmul-rewrite` when the tiled structure already exists but profiling still shows load-then-compute stalls.
-- [tile-footprint-fitting](../techniques/tiling.md): use it when the kernel already has the right tiled structure, but block size or intermediate footprint is still too large for UB.
-- [现有知识：MatMul 算子编码与优化](../operator_optimization/coding_matmul.md)
-
+- [`block-pointer-tiles`](block_pointer_tiles.md): fix how a tile load/store is expressed; if a block-pointer rewrite removed one scalar address chain but the loop is still not a regular matmul, apply this card next.
+- [`diagonal-block-traversal`](diagonal_block_traversal.md) / [`l2-stripe-capacity-tile-widening`](l2_stripe_capacity_tile_widening.md): once the tiled matmul is in place, these cover L2 locality — tile execution order and tile shape respectively.
+- [`software-pipeline`](software_pipeline.md): use it after `dot-matmul-rewrite` when the tiled structure already exists but profiling still shows load-then-compute stalls.
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): use it when the kernel already has the right tiled structure, but block size or intermediate footprint is still too large for UB.
 ## What To Verify After Applying
 
 - confirm logical `A`, `B`, and `C` shapes
@@ -215,3 +220,7 @@ Record which shapes justify the specialization. Delete or demote experimental br
 - if you specialize by `K`, validate each `K` branch and the generic fallback
 - benchmark against the previous implementation
 - record whether the win came from lower scalar pressure, better matmul lowering, or better epilogue amortization
+
+## Related Knowledge
+
+- [现有知识：MatMul 算子编码与优化](../operator_optimization/coding_matmul.md)

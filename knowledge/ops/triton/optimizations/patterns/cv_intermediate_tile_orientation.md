@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Cube-Vector Intermediate Tile Orientation
+title: CV 中间 Tile 朝向
 description: 为跨越 L0C 到 GM 供 Vector 消费的 Cube 中间矩形选择朝向，使其沿融合扫描轴构成规则 row-major tile。
-tags: [task.optimization, topic.data_movement.layout_transform, topic.programming_model]
+tags:
+- task.optimization
+- topic.data_movement.layout_transform
+- topic.programming_model
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/cv-intermediate-tile-orientation.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/cv-intermediate-tile-orientation.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Cube-Vector Intermediate Tile Orientation
 
 ## Summary
@@ -35,10 +42,10 @@ Cube-to-Vector transfer (fixpipe) or to Vector walking the transposed tile.
 
 ## Avoid When
 
-- The transpose is on the kernel's public output store rather than a Cube-to-Vector intermediate; use `result-tile-layout-alignment`.
-- The mismatch is a GEMM operand's physical storage versus the math layout; use `implicit-transpose-elimination`.
-- The candidate deletes, shares, or shortens Vector operations on an already-oriented tile; use `attention-intermediate-vector-work-reduction`.
-- The candidate changes Cube/Vector issue order, multibuffer depth, or compile-option pipelining; use `software-pipeline` or `cv-compile-option-ablation-950`.
+- The transpose is on the kernel's public output store rather than a Cube-to-Vector intermediate; use [`result-tile-layout-alignment`](result_tile_layout_alignment.md).
+- The mismatch is a GEMM operand's physical storage versus the math layout; use [`implicit-transpose-elimination`](implicit_transpose_elimination.md).
+- The candidate deletes, shares, or shortens Vector operations on an already-oriented tile; use [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md).
+- The candidate changes Cube/Vector issue order, multibuffer depth, or compile-option pipelining; use [`software-pipeline`](software_pipeline.md) or [`cv-compile-option-ablation-950`](cv_compile_option_ablation_950.md).
 - The intermediate is square and the consumer accesses both orientations equivalently, or compile legality admits only one tile shape. Equal extents alone do not prove equal access order or broadcasts.
 
 ## Signals
@@ -98,12 +105,11 @@ Prefer the second form when Vector owns the 256-row scan group and the Cube-to-V
 
 ## Related Patterns
 
-- [result-tile-layout-alignment](./result_tile_layout_alignment.md): align a kernel output accumulator with its public store layout, not a Cube-to-Vector intermediate.
-- [implicit-transpose-elimination](./implicit_transpose_elimination.md): fix GEMM operand physical layout and compiler-injected operand transposes.
-- [attention-intermediate-vector-work-reduction](./attention_intermediate_vector_work_reduction.md): shorten Vector work between Cube producer and Cube consumer after the tile orientation is chosen.
-- [software-pipeline](./software_pipeline.md): inspect generated buffering and overlap; do not treat orientation as a schedule rewrite.
-- [cv-compile-option-ablation-950](./cv_compile_option_ablation_950.md): ablate Ascend 950 Cube/Vector compile options independently of source tile axes.
-- [现有知识：CV 融合方法论](../operator_optimization/cv_fusion.md)
+- [`result-tile-layout-alignment`](result_tile_layout_alignment.md): align a kernel output accumulator with its public store layout, not a Cube-to-Vector intermediate.
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md): fix GEMM operand physical layout and compiler-injected operand transposes.
+- [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md): shorten Vector work between Cube producer and Cube consumer after the tile orientation is chosen.
+- [`software-pipeline`](software_pipeline.md): inspect generated buffering and overlap; do not treat orientation as a schedule rewrite.
+- [`cv-compile-option-ablation-950`](cv_compile_option_ablation_950.md): ablate Ascend 950 Cube/Vector compile options independently of source tile axes.
 
 ## What To Verify After Applying
 
@@ -113,3 +119,7 @@ Prefer the second form when Vector owns the 256-row scan group and the Cube-to-V
 - IR shows the claimed fixpipe tile shape change rather than only a source-level transpose.
 - Correctness holds on exact-tile fast paths and on any remaining masked tails.
 - Benchmarks improve on the targeted shapes; reject a flip that only moves cost onto consumer Cube transposes or UB spills.
+
+## Related Knowledge
+
+- [现有知识：CV 融合方法论](../operator_optimization/cv_fusion.md)

@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Scalar Latency Trap Removal Pattern
+title: 标量时延陷阱消除
 description: 移除阻塞 Vector 硬件利用率的标量化构造：多余标量控制流、循环携带指针递推、取模寻址、窄 mask 与向量路径上的 int64 运算。
-tags: [task.optimization, topic.programming_model, topic.compute.elementwise.arithmetic]
+tags:
+- task.optimization
+- topic.programming_model
+- topic.compute.elementwise.arithmetic
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/scalar-latency-trap-removal.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/scalar-latency-trap-removal.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Scalar Latency Trap Removal Pattern
 
 ## Summary
@@ -42,7 +49,7 @@ for k in tl.range(0, K, BLOCK_K):
 ### Profile
 
 - Degraded vector lowering usually shows up as a high `aiv_scalar_ratio`, or as vector time that cannot be explained by the arithmetic the source performs.
-- When a high `aiv_vec_ratio` coexists with idle Cube and MTE, inspect the instructions and addresses before routing to `mask-only-affine-addressing`. The same ratio can also come from ordinary elementwise or normalization work.
+- When a high `aiv_vec_ratio` coexists with idle Cube and MTE, inspect the instructions and addresses before routing to [`mask-only-affine-addressing`](mask_only_affine_addressing.md). The same ratio can also come from ordinary elementwise or normalization work.
 
 ### IR
 
@@ -99,7 +106,7 @@ vals = tl.load(x + offs, mask=mask, other=0.0)
 
 ### Rule: Delete redundant per-lane address clamps
 
-The full repair lives in `mask-only-affine-addressing`. When a per-lane `minimum`/`maximum` clamp exists only to keep masked boundary lanes in range, delete it and let the existing load/store predicate protect those lanes. That repair is bit-exact, needs no divisibility guard, and is usually the highest-yield item on this checklist, so check it first.
+The full repair lives in [`mask-only-affine-addressing`](mask_only_affine_addressing.md). When a per-lane `minimum`/`maximum` clamp exists only to keep masked boundary lanes in range, delete it and let the existing load/store predicate protect those lanes. That repair is bit-exact, needs no divisibility guard, and is usually the highest-yield item on this checklist, so check it first.
 
 ### Rule: Replace a single-lane `tl.where` with a targeted fix
 
@@ -153,12 +160,10 @@ prefix = tl.trans(tl.cumsum(tl.trans(values), axis=0))
 
 ## Related Patterns
 
-- [mask-only-affine-addressing](./mask_only_affine_addressing.md): the per-lane address clamp repair split out of this checklist; delete clamps from pointer expressions whose load or store already carries a boundary mask.
-- [strided-layout-reduction](./strided_layout_reduction.md): Avoid implementing a non-last-dimension single-axis reduction by first doing `movedim(...).contiguous()` or an equivalent layout copy to memory.
-- [tile-footprint-fitting](../techniques/tiling.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
-- [amortized-neutral-padding-layout](./amortized_neutral_padding_layout.md): introduce and cost an initialized physical layout when repeated consumers need mask-free raw affine loads.
-- [现有知识：标量降级规避](../techniques/scalar_degradation_avoidance.md)
-- [现有知识：Scalar 转 Vector 优化](../operator_optimization/scalar_to_vector.md)
+- [`mask-only-affine-addressing`](mask_only_affine_addressing.md): the per-lane address clamp repair split out of this checklist; delete clamps from pointer expressions whose load or store already carries a boundary mask.
+- [`strided-layout-reduction`](strided_layout_reduction.md): Avoid implementing a non-last-dimension single-axis reduction by first doing `movedim(...).contiguous()` or an equivalent layout copy to memory.
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
+- [`amortized-neutral-padding-layout`](amortized_neutral_padding_layout.md): introduce and cost an initialized physical layout when repeated consumers need mask-free raw affine loads.
 
 ## What To Verify After Applying
 
@@ -166,3 +171,8 @@ prefix = tl.trans(tl.cumsum(tl.trans(values), axis=0))
 - Run correctness before trusting performance.
 - Use the project benchmark and `compare-perf` authority for any claimed speedup.
 - If the repair changes specialization keys or host call signatures, verify all call sites.
+
+## Related Knowledge
+
+- [现有知识：标量降级规避](../techniques/scalar_degradation_avoidance.md)
+- [现有知识：Scalar 转 Vector 优化](../operator_optimization/scalar_to_vector.md)

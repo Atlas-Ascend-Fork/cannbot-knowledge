@@ -1,16 +1,22 @@
 ---
 type: Optimization
-title: i64/i32 Comparison Optimization Pattern
+title: i64/i32 比较向量化
 description: 把显式整数比较密集逻辑改写为 Ascend NPU 上更向量友好的形式，尤其当标量化比较阻塞快速掩码或选择时。
-tags: [task.optimization, topic.compute.elementwise.comparison_logic]
+tags:
+- task.optimization
+- topic.compute.elementwise.comparison_logic
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/vec-cmp.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/vec-cmp.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # i64/i32 Comparison Optimization Pattern
 
 ## Summary

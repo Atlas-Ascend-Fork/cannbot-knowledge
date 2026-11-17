@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: GQA/MQA KV-Shared Row Batching
+title: GQA/MQA KV 共享行批处理
 description: 把共享同一 KV head 的独立 query 行批入同一 program，使只读 K/V tile 每份只加载一次。
-tags: [task.optimization, topic.attention, topic.tiling]
+tags:
+- task.optimization
+- topic.attention
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/gqa-kv-shared-row-batching.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/gqa-kv-shared-row-batching.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # GQA/MQA KV-Shared Row Batching
 
 ## Summary
@@ -113,16 +120,15 @@ Retain the stage boundaries and group a small number of query heads only inside 
 
 Start with the smallest useful group, often two adjacent query heads, and mask the last group when `N_q` is not divisible by the group width. Recompute the live accumulator footprint and tile fit separately for QK and PV. A group size that helps a separate Cube stage can strongly regress a fused online path if it forces a smaller key tile or doubles the serialized Vector recurrence. This variant generalizes to sibling contractions with a shared read-only operand and disjoint outputs: batch only the consumer axis that creates real operand reuse, and keep per-consumer reduction or normalization state independent.
 
-Discipline: re-derive the folded or grouped configuration's fit with the operand precision that will actually run. A group width that overflows UB at fp32 operand precision can fit once matched lower-precision operands plus `hilo-split-matmul` shrink the footprint; re-run `large-tile-fit-enabling` instead of inheriting the earlier overflow verdict. Validate QK, normalization, and PV separately, and confirm the win by measurement on the operator's own shapes — the separate-stage variant and the fused online path respond differently to the same group width.
+Discipline: re-derive the folded or grouped configuration's fit with the operand precision that will actually run. A group width that overflows UB at fp32 operand precision can fit once matched lower-precision operands plus [`hilo-split-matmul`](hilo_split_matmul.md) shrink the footprint; re-run [`large-tile-fit-enabling`](large_tile_fit_enabling.md) instead of inheriting the earlier overflow verdict. Validate QK, normalization, and PV separately, and confirm the win by measurement on the operator's own shapes — the separate-stage variant and the fused online path respond differently to the same group width.
 
 ## Related Patterns
 
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): generic adjacent-row ownership and per-program reuse.
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): decide whether online fusion or retained separate stages provide the better schedule that fits.
-- [attention-intermediate-vector-work-reduction](./attention_intermediate_vector_work_reduction.md): account for the serialized normalization state that can make online head grouping regress.
-- [engine-aware-grid-scheduling](./engine_aware_grid_scheduling.md): map the grouped logical work after the ownership change is fixed.
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md): retain grouping only for validated query-depth, head-group, and tile-fit regimes.
-- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)
+- [`program-multiple-rows`](program_multiple_rows.md): generic adjacent-row ownership and per-program reuse.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): decide whether online fusion or retained separate stages provide the better schedule that fits.
+- [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md): account for the serialized normalization state that can make online head grouping regress.
+- [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md): map the grouped logical work after the ownership change is fixed.
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md): retain grouping only for validated query-depth, head-group, and tile-fit regimes.
 
 ## What To Verify After Applying
 
@@ -131,3 +137,7 @@ Discipline: re-derive the folded or grouped configuration's fit with the operand
 - Each row keeps independent score, max, sum, accumulator, and output semantics.
 - Group width, key tile, recurrence iterations, UB/accumulator footprint, program count, and total latency are reported for decode-folded, separate-stage, and rejected online-grouping candidates separately.
 - Generic per-head fallbacks cover large query depth, `G == 1`, live sets that do not fit, and regimes without reuse benefit.
+
+## Related Knowledge
+
+- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)

@@ -1,16 +1,21 @@
 ---
 type: Optimization
-title: SIMT Window Reduction Tuning
+title: SIMT 窗口归约调参
 description: 每个输出点映射到仿射布局固定输入窗口的 kernel 在 SIMT 路径上的调参方法论与反模式表。
-tags: [task.optimization, topic.compute.reduction, topic.performance.analysis]
+tags:
+- task.optimization
+- topic.compute.reduction
+- topic.performance.analysis
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/simt-window-reduction-tuning.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/simt-window-reduction-tuning.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: ['950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- '950'
 ---
+
 # SIMT Window Reduction Tuning
 
 ## Summary
@@ -116,7 +121,7 @@ Boundary path selection:
 | Normalizer / semantics | Preferred inner | Note |
 |------------------------|-----------------|------|
 | Include virtual pad in norm volume | full nest + **coord masks** + **one-shot norm** | normalizer below |
-| Clipped volume only (exclude pad from norm) | **clip-window** + closed-form volume | `simt-window-divisor-formula` |
+| Clipped volume only (exclude pad from norm) | **clip-window** + closed-form volume | [`simt-window-divisor-formula`](simt_window_divisor_formula.md) |
 | Dilation > 1 | coord masks only | no clip shortcut |
 | Heavy compare + half + pad | coord masks over clip | stack depth |
 | Compare + arg index | masks + fp32 compare + linear index | |
@@ -177,7 +182,7 @@ a fresh process and accept or reject each change by harness geomean.
 
 | Trigger | Anti-pattern |
 |---------|--------------|
-| Ascend 950 SIMT + overlapping W loads | inner-W slab gather (`window-slab-gather`) without re-proof |
+| Ascend 950 SIMT + overlapping W loads | inner-W slab gather ([`window-slab-gather`](window_slab_gather.md)) without re-proof |
 | Any | global interior/boundary **multi-launch** |
 | Small window_vol + low parallelism | forced row×col |
 | Any | in-kernel `tl.where(interior, …)` split |
@@ -190,7 +195,7 @@ a fresh process and accept or reject each change by harness geomean.
 
 ## Related Patterns
 
-- [force-simt-only-discrete-access-950](./force_simt_only_discrete_access_950.md) — enable SIMT
-- [logical-layout-tiling](./logical_layout_tiling.md) — outer flat index → layout tile
-- [simt-window-divisor-formula](./simt_window_divisor_formula.md) — closed normalizer inner loop
-- [window-slab-gather](./window_slab_gather.md) — inner-dim slab (usually not Ascend 950 SIMT)
+- [`force-simt-only-discrete-access-950`](force_simt_only_discrete_access_950.md) — enable SIMT
+- [`logical-layout-tiling`](logical_layout_tiling.md) — outer flat index → layout tile
+- [`simt-window-divisor-formula`](simt_window_divisor_formula.md) — closed normalizer inner loop
+- [`window-slab-gather`](window_slab_gather.md) — inner-dim slab (usually not Ascend 950 SIMT)

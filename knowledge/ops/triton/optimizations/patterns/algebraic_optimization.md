@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Algebraic optimization (pure math reformulation)
+title: 代数恒等改写
 description: 用数学恒等式与保语义改写削减冗余访存遍历、全量扫描与中间量，替换为可精确补偿的等价形式。
-tags: [task.optimization, topic.compute.elementwise.arithmetic, topic.compute.reduction]
+tags:
+- task.optimization
+- topic.compute.elementwise.arithmetic
+- topic.compute.reduction
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/algebraic-optimization.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/algebraic-optimization.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Algebraic optimization (pure math reformulation)
 
 ## Summary
@@ -31,7 +38,7 @@ autotune grids.
 
 ## Avoid When
 
-- The bottleneck is clearly **only** bad tile size or UB overflow with **no** redundant algorithmic passes (prefer `tile-footprint-fitting` or footprint patterns first).
+- The bottleneck is clearly **only** bad tile size or UB overflow with **no** redundant algorithmic passes (prefer [`tile-footprint-fitting`](tile_footprint_fitting.md) or footprint patterns first).
 - Custom Triton fusion is attempted before a simpler **host/graph reorder** is proven correct and cheaper end-to-end.
 - A nonlinear operation, observable rounding boundary, bias, mask, mutation, or
   additional consumer lies between contractions and prevents reassociation.
@@ -55,20 +62,20 @@ autotune grids.
 
 ## Related Patterns
 
-- [compute-once-share-via-gm](./compute_once_share_via_gm.md): consider GM publication only after mathematical simplification and on-chip reuse fail to remove repeated producer work.
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md): retain the original parenthesization for
+- [`compute-once-share-via-gm`](compute_once_share_via_gm.md): consider GM publication only after mathematical simplification and on-chip reuse fail to remove repeated producer work.
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md): retain the original parenthesization for
   dtype or shape regimes where floating-point reassociation misses the accuracy
   contract or performance regresses.
-- [dot-operand-precision-ablation](./dot_operand_precision_ablation.md): preserve and test operand-rounding boundaries
+- [`dot-operand-precision-ablation`](dot_operand_precision_ablation.md): preserve and test operand-rounding boundaries
   independently from the contraction order.
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): compare reassociation with fusion when
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): compare reassociation with fusion when
   both could remove the same intermediate.
-- [tile-footprint-fitting](../techniques/tiling.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
-- [software-pipeline](./software_pipeline.md): Inspect compiler-generated buffering and transfer-compute coordination in regular tiled loops.
-- [loop-invariant-hoisting](../operator_optimization/loop_invariant_hoisting.md): hoist loop-invariant closed-form subexpressions out of a hot loop — the generic fix for repeated recomputation of the same subexpression per iteration.
-- [intermediate-ub-overflow](./intermediate_ub_overflow.md)
-- [autotune](../operator_optimization/autotune.md): Use Triton-Ascend autotune as the default way to search split sizes, tile sizes, and selected compile options when the kernel structure is already reasonable and the main open question is parameter choice.
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
+- [`program-multiple-rows`](program_multiple_rows.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
+- [`software-pipeline`](software_pipeline.md): Inspect compiler-generated buffering and transfer-compute coordination in regular tiled loops.
+- [`loop-invariant-hoisting`](loop_invariant_hoisting.md): hoist loop-invariant closed-form subexpressions out of a hot loop — the generic fix for repeated recomputation of the same subexpression per iteration.
+- [`intermediate-ub-overflow`](intermediate_ub_overflow.md)
+- [`autotune`](autotune.md): tune tile and split parameters after the reassociated form is fixed, so the search sees the reduced dataflow.
 
 ## What To Verify After Applying
 
@@ -123,7 +130,7 @@ Single traversal:
 **Risks**
 
 - **Numerical**: \(S_2/n - \mu^2\) can be less stable than two-pass centered sums for extreme magnitudes; align with product numerics requirements.
-- **UB / registers**: holding both accumulators plus `x*x` may **raise peak UB** vs. one accumulator; co-tune with **`tile-footprint-fitting`** / **`program-multiple-rows`**.
+- **UB / registers**: holding both accumulators plus `x*x` may **raise peak UB** vs. one accumulator; co-tune with **[`tile-footprint-fitting`](tile_footprint_fitting.md)** / **[`program-multiple-rows`](program_multiple_rows.md)**.
 - **Alternatives**: **block-wise Welford merge** keeps a single pass but adds **merge arithmetic**; on some stacks it **does not** beat `S1+S2`—**benchmark**.
 
 **Verification**
@@ -510,11 +517,11 @@ fp32 rounding order of the accumulated weights changes.
 
 | Pattern | Interaction |
 |---------|-------------|
-| `tile-footprint-fitting` | Algebraic rewrites often change **tile live ranges**; UB limits may force **smaller** `BLOCK_*` after fusion. |
-| `program-multiple-rows` | More rows per program can **amortize** control overhead after you reduce passes—still subject to tile caps. |
-| `software-pipeline` | Use **after** the math structure is stable; pipeline does not remove an **extra full scan** by itself. |
-| `intermediate-ub-overflow` | If a fused algebraic path **spills UB**, stage with slices or revert a sub-expression. |
-| `autotune` | Tune between **algebraic variants** with **safety bounds** on tile sizes. |
+| [`tile-footprint-fitting`](tile_footprint_fitting.md) | Algebraic rewrites often change **tile live ranges**; UB limits may force **smaller** `BLOCK_*` after fusion. |
+| [`program-multiple-rows`](program_multiple_rows.md) | More rows per program can **amortize** control overhead after you reduce passes—still subject to tile caps. |
+| [`software-pipeline`](software_pipeline.md) | Use **after** the math structure is stable; pipeline does not remove an **extra full scan** by itself. |
+| [`intermediate-ub-overflow`](intermediate_ub_overflow.md) | If a fused algebraic path **spills UB**, stage with slices or revert a sub-expression. |
+| [`autotune`](autotune.md) | Tune between **algebraic variants** with **safety bounds** on tile sizes. |
 
 ---
 

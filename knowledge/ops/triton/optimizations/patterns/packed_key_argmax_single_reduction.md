@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Packed-Key Single Reduction for Extremum-with-Index
+title: 打包 Key 单次 Argmax 归约
 description: 把带首次出现位置的极值归约打包为单次 key 归约，或以 pair32/pair64 双归约规避慢的宽整数比较路径。
-tags: [task.optimization, topic.compute.reduction, topic.compute.ordering]
+tags:
+- task.optimization
+- topic.compute.reduction
+- topic.compute.ordering
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/packed-key-argmax-single-reduction.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/packed-key-argmax-single-reduction.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Packed-Key Single Reduction for Extremum-with-Index
 
 ## Summary
@@ -153,7 +160,10 @@ in one operation, not to add packing work inside a sequential scalar loop.
 
 ## Related Patterns
 
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md) — wide-integer ALU avoidance that motivates 32-bit keys.
-- [overlap-tail-load-mask-free](./overlap_tail_load_mask_free.md) — relies on the same position-aware tie-breaking to tolerate duplicate lanes.
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md) — mask elimination for the tiles feeding the reduction.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md) — wide-integer ALU avoidance that motivates 32-bit keys.
+- [`overlap-tail-load-mask-free`](overlap_tail_load_mask_free.md) — relies on the same position-aware tie-breaking to tolerate duplicate lanes.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md) — mask elimination for the tiles feeding the reduction.
+
+## Related Knowledge
+
 - [现有知识：Histogram-like / Small-Output-Table Reduction](../operator_optimization/histogram_like_table_reduction.md)

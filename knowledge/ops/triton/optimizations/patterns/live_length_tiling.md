@@ -1,17 +1,23 @@
 ---
 type: Optimization
-title: Live-Length Tiling
+title: 有效长度 Tiling
 description: 按各轴实际存活逻辑长度选择 tile 宽度，替代遗留最大值或一刀切 2 的幂规则，避免 masked 空车道主导工作量。
-tags: [task.optimization, topic.tiling]
+tags:
+- task.optimization
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/live-length-tiling.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/valid-length-tiling.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
-# Live-Length Tiling
+
+# Valid-Length Tiling
 
 ## Summary
 
@@ -19,7 +25,9 @@ Choose tile widths from the live logical length on each axis instead of a legacy
 
 ## Use When
 
-A kernel picks a `BLOCK_*` tile width from a fixed cap or `next_power_of_2()` while a mask protects a much smaller valid length:
+A kernel rounds the tile width up to a fixed bucket — typically a power of
+two or a hard-coded upper limit — while a mask protects a much smaller valid
+length:
 
 ```python
 BLOCK_H = next_power_of_2(width)   # e.g. 128 lanes for 80 valid
@@ -94,7 +102,10 @@ If one tile policy is only correct or profitable for certain shapes, encode that
 
 ## Related Patterns
 
-- [discrete-access-ub-staging](./discrete_access_ub_staging.md)
-- [tile-footprint-fitting](../techniques/tiling.md)
-- [ragged-tile-early-return](./ragged_tile_early_return.md)
+- [discrete-access-ub-staging.md](discrete_access_ub_staging.md)
+- [tiling.md](tile_footprint_fitting.md)
+- [ragged-tile-early-return.md](ragged_tile_early_return.md)
+
+## Related Knowledge
+
 - [现有知识：Block Size Scaling 优化模式](../operator_optimization/block_size_scaling.md)

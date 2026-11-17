@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Reduction Axis Split And Combine
+title: 归约轴拆分与合并
 description: 当非归约维 grid 无法填满核数时，把归约轴拆分到多个 program，各自产出部分归约状态再由轻量 combine 合并。
-tags: [task.optimization, topic.compute.reduction, topic.parallelism]
+tags:
+- task.optimization
+- topic.compute.reduction
+- topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/reduction-axis-split-combine.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/reduction-axis-split-combine.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Reduction Axis Split And Combine
 
 ## Summary
@@ -36,7 +43,7 @@ pays off.
 - The unsplit grid already fills the cores.
 - Splitting drops per-program work below the work floor.
 - The reduction has no cheap closed-form combine (e.g. order-sensitive recurrence without a compensating state).
-- The active contract pins per-slice quantization: splitting changes the quantization points and the merge is only associative, not bit-identical. Land the compensated precision layer first (`hilo-split-matmul`).
+- The active contract pins per-slice quantization: splitting changes the quantization points and the merge is only associative, not bit-identical. Land the compensated precision layer first ([`hilo-split-matmul`](hilo_split_matmul.md)).
 
 ## Signals
 
@@ -64,15 +71,18 @@ final = combine(partial_state[:, 0], partial_state[:, 1], ...)  # same algebra, 
 - Partial states are associative-mergeable and stored in fp32; combine order matches the reduction algebra.
 - Split depth respects the work floor and the concurrency cap.
 - Re-derive the split depth after any change to the consumer grid or operand
-  precision: head-side batching (`gqa-kv-shared-row-batching`) halves the base
+  precision: head-side batching ([`gqa-kv-shared-row-batching`](gqa_kv_shared_row_batching.md)) halves the base
   program count, so a split tuned before batching may stop firing or start a
   second program batch.
-- Numerics within tolerance of the unsplit form (online-softmax state merges are associative but not bit-identical). If the result fails, first identify whether the change came from reduction reassociation, state merging, or dot operand precision. Use `hilo-split-matmul` only when the evidence isolates dot precision as the cause; otherwise keep the unsplit fallback.
-- Partial state is extra live UB, so size the split jointly with the tile per `tile-footprint-fitting`.
+- Numerics within tolerance of the unsplit form (online-softmax state merges are associative but not bit-identical). If the result fails, first identify whether the change came from reduction reassociation, state merging, or dot operand precision. Use [`hilo-split-matmul`](hilo_split_matmul.md) only when the evidence isolates dot precision as the cause; otherwise keep the unsplit fallback.
+- Partial state is extra live UB, so size the split jointly with the tile per [`tile-footprint-fitting`](tile_footprint_fitting.md).
 
 ## Related Patterns
 
-- [dot-matmul-rewrite](./dot_matmul_rewrite.md): the unsplit reduction structure this pattern parallelizes.
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md): split depth is a shape-regime parameter.
-- [autotune](../operator_optimization/autotune.md): split factor is a tunable with the work floor as a bound.
+- [`dot-matmul-rewrite`](dot_matmul_rewrite.md): the unsplit reduction structure this pattern parallelizes.
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md): split depth is a shape-regime parameter.
+- [`autotune`](autotune.md): split factor is a tunable with the work floor as a bound.
+
+## Related Knowledge
+
 - [现有知识：分核优化](../operator_optimization/vector_core_partition.md)

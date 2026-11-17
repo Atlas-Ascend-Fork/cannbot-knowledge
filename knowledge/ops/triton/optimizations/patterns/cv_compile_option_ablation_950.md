@@ -1,16 +1,21 @@
 ---
 type: Optimization
-title: Ascend 950 CV Compile-Option Ablation And Scheduling Controls
+title: 950 CV 编译项消融
 description: Ascend 950 编译链上独立消融 Cube/Vector 流水、HFusion 向量化、多缓冲深度与 UB 块参数等调度控制项。
-tags: [task.optimization, topic.compilation, topic.implementation.pipeline]
+tags:
+- task.optimization
+- topic.compilation
+- topic.implementation.pipeline
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/cv-compile-option-ablation-950.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/cv-compile-option-ablation-950.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: ['950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- '950'
 ---
+
 # Ascend 950 CV Compile-Option Ablation And Scheduling Controls
 
 ## Summary

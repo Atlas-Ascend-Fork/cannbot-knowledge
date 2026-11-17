@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Contract-Gated Dot Operand Precision Ablation
+title: dot 操作数精度消融
 description: 在合约门控下独立消融 tl.dot 操作数的低精度形态，与累加器、递推、epilogue 和输出精度解耦评估。
-tags: [task.optimization, topic.precision, topic.compute.quantization]
+tags:
+- task.optimization
+- topic.precision
+- topic.compute.quantization
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/dot-operand-precision-ablation.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/dot-operand-precision-ablation.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Contract-Gated Dot Operand Precision Ablation
 
 ## Summary
@@ -116,7 +123,7 @@ existing pattern support a mixed pair.
 Freeze tile sizes, grid, masks, loop bounds, reduction order, algorithm,
 input data, output placement, and benchmark contract. If lower precision also
 unlocks a larger tile, first run the equal-tile control here, then use
-`large-tile-fit-enabling` to attribute the combined tile-fit effect.
+[`large-tile-fit-enabling`](large_tile_fit_enabling.md) to attribute the combined tile-fit effect.
 
 When possible, run a bidirectional control: lower the parent operands and
 restore higher-precision operands in the optimized structure. This catches
@@ -188,21 +195,19 @@ bound.
 
 ## Attention PV Specialization
 
-For online attention PV, the generic experiment becomes matched FP32 P/V versus matched lower-precision P/V with FP32 max, denominator, recurrence scaling, and accumulator. Probability cast location and denominator semantics are additional attention-specific variables: casting the exponent input, casting the `exp` result, and summing rounded versus unrounded probabilities are not equivalent. Use `attention-intermediate-vector-work-reduction` for those boundaries and validate sharp distributions and tiny probabilities explicitly.
+For online attention PV, the generic experiment becomes matched FP32 P/V versus matched lower-precision P/V with FP32 max, denominator, recurrence scaling, and accumulator. Probability cast location and denominator semantics are additional attention-specific variables: casting the exponent input, casting the `exp` result, and summing rounded versus unrounded probabilities are not equivalent. Use [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md) for those boundaries and validate sharp distributions and tiny probabilities explicitly.
 
 ## Related Patterns
 
-- [algebraic-optimization](./algebraic_optimization.md): keep reassociation and operand precision as separate
+- [`algebraic-optimization`](algebraic_optimization.md): keep reassociation and operand precision as separate
   experiments, then validate their composed rounding boundaries.
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md): retain the parent precision or
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md): retain the parent precision or
   accumulation order outside the semantic regimes proven safe.
-- [attention-intermediate-vector-work-reduction](./attention_intermediate_vector_work_reduction.md): apply attention-specific probability, recurrence, and cast-location checks around a PV precision candidate.
-- [dot-matmul-rewrite](./dot_matmul_rewrite.md): establish the regular tiled dot structure and a supported accumulator baseline.
-- [large-tile-fit-enabling](./large_tile_fit_enabling.md): separate an equal-tile operand-precision gain from a larger tile enabled by the precision change.
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): test kernel-output precision and external casts independently from dot operand precision.
-- [autotune](../operator_optimization/autotune.md): dispatch or tune validated operand-precision paths by shape without mixing correctness gates.
-- [现有知识：混合精度与精度验证](../techniques/data_type_precision.md)
-- [现有知识：matmul 链中间 buffer dtype](../operator_optimization/chained_matmul_buffer_dtype.md)
+- [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md): apply attention-specific probability, recurrence, and cast-location checks around a PV precision candidate.
+- [`dot-matmul-rewrite`](dot_matmul_rewrite.md): establish the regular tiled dot structure and a supported accumulator baseline.
+- [`large-tile-fit-enabling`](large_tile_fit_enabling.md): separate an equal-tile operand-precision gain from a larger tile enabled by the precision change.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): test kernel-output precision and external casts independently from dot operand precision.
+- [`autotune`](autotune.md): dispatch or tune validated operand-precision paths by shape without mixing correctness gates.
 
 ## What To Verify After Applying
 
@@ -214,3 +219,8 @@ For online attention PV, the generic experiment becomes matched FP32 P/V versus 
 - Repeated benchmarks show a stable improvement; noisy point estimates are not promoted.
 - IR or compiler evidence confirms the intended dot lowering rather than an unrelated code-generation change.
 - Every rejected regime has the original validated precision path or another explicit fallback.
+
+## Related Knowledge
+
+- [现有知识：混合精度与精度验证](../techniques/data_type_precision.md)
+- [现有知识：matmul 链中间 buffer dtype](../operator_optimization/chained_matmul_buffer_dtype.md)

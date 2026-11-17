@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Compute Shared Values Once and Store Them in GM
+title: 共享值算一次经 GM 分发
 description: 在受支持的 kernel 边界把昂贵共享值计算一次写入 GM，消费者按需读取，替代各 program 重复计算。
-tags: [task.optimization, topic.memory, topic.data_movement.data_copy]
+tags:
+- task.optimization
+- topic.memory
+- topic.data_movement.data_copy
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/compute-once-share-via-gm.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/compute-once-share-via-gm.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Compute Shared Values Once and Store Them in GM
 
 ## Summary
@@ -96,11 +103,11 @@ Publication is plausible only when `publication_cost < recompute_cost` after acc
 
 ## Related Patterns
 
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): choose grouping, ownership, and selected-value placement before accepting a GM boundary.
-- [algebraic-optimization](./algebraic_optimization.md): simplify or factor the producer before deciding that its result should be stored.
-- [loop-invariant-hoisting](../operator_optimization/loop_invariant_hoisting.md): keep invariants within one program when registers or UB can span their uses.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): change program ownership to create on-chip reuse before publishing through GM.
-- [attention-online-softmax-fusion](./attention_online_softmax_fusion.md): attention can expose large repeated producers, but full score/probability publication is a high-risk quadratic example rather than the scope of this generic pattern.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): choose grouping, ownership, and selected-value placement before accepting a GM boundary.
+- [`algebraic-optimization`](algebraic_optimization.md): simplify or factor the producer before deciding that its result should be stored.
+- [`loop-invariant-hoisting`](loop_invariant_hoisting.md): keep invariants within one program when registers or UB can span their uses.
+- [`program-multiple-rows`](program_multiple_rows.md): change program ownership to create on-chip reuse before publishing through GM.
+- [`attention-online-softmax-fusion`](attention_online_softmax_fusion.md): attention can expose large repeated producers, but full score/probability publication is a high-risk quadratic example rather than the scope of this generic pattern.
 ## What To Verify After Applying
 
 - Reference outputs, including dtype, rounding points, masks, NaN/Inf behavior, random-state behavior, layouts, and every externally visible output or byproduct.

@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Discrete Memory Access Staging Pattern
+title: 离散访存 UB Staging
 description: 先把连续区间整体搬入 UB，再用片上索引选取目标值，替代经离散索引直接读全局内存；固定通道 AoS 可转 SoA 连续读。
-tags: [task.optimization, topic.data_movement.memory_access, topic.memory]
+tags:
+- task.optimization
+- topic.data_movement.memory_access
+- topic.memory
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/discrete-access-ub-staging.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/discrete-access-ub-staging.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Discrete Memory Access Staging Pattern
 
 ## Summary
@@ -53,11 +60,9 @@ wrapper side pays for itself.
 
 ## Related Patterns
 
-- [live-length-tiling](./live_length_tiling.md): Choose tile widths from the live logical extent on each axis instead of a legacy maximum or blanket power-of-two rule, so masked lanes do not dominate loop trip counts, transfer work, or vector-path work.
-- [scattered-transfer-batching](./scattered_transfer_batching.md): When the kernel performs scatter/gather operations with non-contiguous memory access patterns, such as token rearrangement in MOE layers, sparse data processing, or any operation involving index-based data movement, use `extract_slice` or `insert_slice` to data reuse while minimizing expensive global memory transactions.
-- [tile-footprint-fitting](../techniques/tiling.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
-- [现有知识：离散访存优化（gather_out_to_ub 接口）](../operator_optimization/discrete_memory_access.md)
-
+- [`valid-length-tiling`](live_length_tiling.md): Choose tile widths from the live logical extent on each axis instead of a legacy maximum or blanket power-of-two rule, so masked lanes do not dominate loop trip counts, transfer work, or vector-path work.
+- [`scattered-transfer-batching`](scattered_transfer_batching.md): When the kernel performs scatter/gather operations with non-contiguous memory access patterns, such as token rearrangement in MOE layers, sparse data processing, or any operation involving index-based data movement, use `extract_slice` or `insert_slice` to data reuse while minimizing expensive global memory transactions.
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
 ## What To Verify After Applying
 
 - Verify the source array size is still reasonable for shared memory after the rewrite.
@@ -107,3 +112,7 @@ Guardrail: keep tiny indexed setup loads scalar. Ascend Triton lowering does
 not reliably support vector extraction such as `vec[0]` to split a loaded
 vector/tile — do not pack three scalar values into a vector only to extract
 the components again.
+
+## Related Knowledge
+
+- [现有知识：离散访存优化（gather_out_to_ub 接口）](../operator_optimization/discrete_memory_access.md)

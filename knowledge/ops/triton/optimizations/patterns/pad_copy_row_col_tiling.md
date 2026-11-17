@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Row–Column Tiling for Pad-Copy Kernels
+title: Pad-Copy 行列 Tiling
 description: 把按 numel(out) 展平的 1D pad-copy kernel 改写为行列分块形式，减少逐元素坐标重建的标量开销。
-tags: [task.optimization, topic.tiling, topic.data_movement.data_copy]
+tags:
+- task.optimization
+- topic.tiling
+- topic.data_movement.data_copy
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/pad-copy-row-col-tiling.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/pad-copy-row-col-tiling.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Row–Column Tiling for Pad-Copy Kernels
 
 ## Summary
@@ -47,7 +54,7 @@ lane instead of once per element, and the merged `valid` mask splits into
 
 ## Avoid When
 
-- The hot path is **gather/scatter** or **index-driven** discrete access (prefer `discrete-access-ub-staging`).
+- The hot path is **gather/scatter** or **index-driven** discrete access (prefer [`discrete-access-ub-staging`](discrete_access_ub_staging.md)).
 - **Dynamic `if`/`elif` on tile kind** inside the column loop is required without proof the backend lowers it safely—prefer a **uniform** column loop on Ascend unless validated.
 - **Interior-only** fast paths that **omit `col_mask`** on `tl.store` without proof for **tail** blocks (`out_dim_last % BLOCK_COLS != 0`).
 
@@ -128,12 +135,15 @@ wide regime always uses `fill_value`.
 
 ## Related Patterns
 
-- [logical-layout-tiling](./logical_layout_tiling.md): the generic version of the same flat-index + div/mod → structured-tiling restructure; this card adds the pad/copy-specific disciplines (uniform column loop, `col_mask` on every store, `BLOCK_COLS` tuning).
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): the same row-blocking technique applied to row-reduction kernels (LSE, norms, softmax statistics).
-- [tile-footprint-fitting](../techniques/tiling.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
-- [loop-invariant-hoisting](../operator_optimization/loop_invariant_hoisting.md): Apply **Loop-Invariant Code Motion (LICM)** to Triton kernels: move computations that do **not** depend on the loop induction variable out of the loop, so each iteration performs only the minimal work that truly varies.
-- [autotune](../operator_optimization/autotune.md): Use Triton-Ascend autotune as the default way to search split sizes, tile sizes, and selected compile options when the kernel structure is already reasonable and the main open question is parameter choice.
-- [compile-hint-adding](./compile_hint_adding.md): Use compiler hints when the structure is sound but lowering misses proven layout or alignment facts.
-- [vec-cmp](./vec_cmp.md): Rewrite explicit integer compare-heavy logic into a form that is more vector-friendly on Ascend NPU, especially when scalarized compares are blocking fast masking or selection.
+- [`logical-layout-tiling`](logical_layout_tiling.md): the generic version of the same flat-index + div/mod → structured-tiling restructure; this card adds the pad/copy-specific disciplines (uniform column loop, `col_mask` on every store, `BLOCK_COLS` tuning).
+- [`program-multiple-rows`](program_multiple_rows.md): the same row-blocking technique applied to row-reduction kernels (LSE, norms, softmax statistics).
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
+- [`program-multiple-rows`](program_multiple_rows.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
+- [`loop-invariant-hoisting`](loop_invariant_hoisting.md): Apply **Loop-Invariant Code Motion (LICM)** to Triton kernels: move computations that do **not** depend on the loop induction variable out of the loop, so each iteration performs only the minimal work that truly varies.
+- [`autotune`](autotune.md): tune the pad multiple and block width jointly once the padded form is in place.
+- [`compile-hint-adding`](compile_hint_adding.md): Use compiler hints when the structure is sound but lowering misses proven layout or alignment facts.
+- [`vec-cmp`](vec_cmp.md): Rewrite explicit integer compare-heavy logic into a form that is more vector-friendly on Ascend NPU, especially when scalarized compares are blocking fast masking or selection.
+
+## Related Knowledge
+
 - [现有知识：维度合并优化](../operator_optimization/dimension_merge.md)

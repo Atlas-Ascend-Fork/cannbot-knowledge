@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Overlap Tail Load for Idempotent Reductions
+title: 尾块重叠加载免 Mask
 description: 行/段幂等归约在 BLOCK < length ≤ 2·BLOCK 且不对齐时，重叠加载尾块并免 mask 合并计算。
-tags: [task.optimization, topic.compute.reduction, topic.implementation.masking]
+tags:
+- task.optimization
+- topic.compute.reduction
+- topic.implementation.masking
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/overlap-tail-load-mask-free.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/overlap-tail-load-mask-free.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Overlap Tail Load for Idempotent Reductions
 
 ## Summary
@@ -99,7 +106,7 @@ Data-dependent clamped addresses degrade the load into a gather on Ascend, so cl
 
 ## Related Patterns
 
-- [mask-only-affine-addressing](./mask_only_affine_addressing.md) — the correct repair when a clamp is already present; it keeps the mask and deletes only the clamp, which is bit-exact and works for non-idempotent reductions too.
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md) — divisibility-based mask elimination; overlap-load is the non-divisible-length counterpart for idempotent reductions.
-- [live-length-tiling](./live_length_tiling.md) — exact (possibly non-pow2) tile lengths when one tile suffices instead of two overlapping tiles.
-- [packed-key-argmax-single-reduction](./packed_key_argmax_single_reduction.md) — the position-aware tie-breaking that makes overlap duplicates harmless.
+- [`mask-only-affine-addressing`](mask_only_affine_addressing.md) — the correct repair when a clamp is already present; it keeps the mask and deletes only the clamp, which is bit-exact and works for non-idempotent reductions too.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md) — divisibility-based mask elimination; overlap-load is the non-divisible-length counterpart for idempotent reductions.
+- [`valid-length-tiling`](live_length_tiling.md) — exact (possibly non-pow2) tile lengths when one tile suffices instead of two overlapping tiles.
+- [`packed-key-argmax-single-reduction`](packed_key_argmax_single_reduction.md) — the position-aware tie-breaking that makes overlap duplicates harmless.

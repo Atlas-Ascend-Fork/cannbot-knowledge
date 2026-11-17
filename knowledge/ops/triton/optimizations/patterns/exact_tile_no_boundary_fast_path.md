@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Exact-Tile No-Boundary Fast Path
+title: 精确 Tile 无边界快路径
 description: 当派发期 shape 守卫能证明无尾 tile 时，把精确 tile 热路径从通用 masked kernel 中拆出，消除边界 mask 与控制分支。
-tags: [task.optimization, topic.implementation.masking, topic.tiling]
+tags:
+- task.optimization
+- topic.implementation.masking
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/exact-tile-no-boundary-fast-path.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/exact-tile-no-boundary-fast-path.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Exact-Tile No-Boundary Fast Path
 
 ## Summary
@@ -222,12 +229,15 @@ Splitting an aligned kernel out of a masked kernel removes boundary-check contro
 
 ## Related Patterns
 
-- [mask-only-affine-addressing](./mask_only_affine_addressing.md): Try this first when the masked path also carries per-lane clamps. Deleting the clamp while keeping the mask is bit-exact and needs no divisibility proof, dispatch guard, or fallback kernel, so it is strictly cheaper than splitting an exact-tile kernel.
-- [compile-hint-adding](./compile_hint_adding.md): Use compiler hints when the structure is sound but lowering misses proven layout or alignment facts.
-- [pad-copy-row-col-tiling](./pad_copy_row_col_tiling.md): Rewrite flat 1D copy kernels over `numel(out)` into row–column tiled form to reduce scalar overhead from per-element coordinate reconstruction on the last dimension.
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): Use `tl.make_block_ptr` as a compiler-facing representation candidate when source semantics define a regular multidimensional tile but IR suggests that manual pointer expressions lower into unexpectedly scalarized, fragmented, strided, or transpose-heavy memory operations.
-- [discrete-access-ub-staging](./discrete_access_ub_staging.md): Stage a contiguous range into the Unified Buffer first, then use on-chip indexing (`tl.gather` or equivalent) to select target values, rather than loading directly from global memory through discrete indices.
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
-- [amortized-neutral-padding-layout](./amortized_neutral_padding_layout.md): Introduce and cost a neutral-padded internal representation before this card removes boundary-only predicates from exact consumers.
+- [`mask-only-affine-addressing`](mask_only_affine_addressing.md): Try this first when the masked path also carries per-lane clamps. Deleting the clamp while keeping the mask is bit-exact and needs no divisibility proof, dispatch guard, or fallback kernel, so it is strictly cheaper than splitting an exact-tile kernel.
+- [`compile-hint-adding`](compile_hint_adding.md): Use compiler hints when the structure is sound but lowering misses proven layout or alignment facts.
+- [`pad-copy-row-col-tiling`](pad_copy_row_col_tiling.md): Rewrite flat 1D copy kernels over `numel(out)` into row–column tiled form to reduce scalar overhead from per-element coordinate reconstruction on the last dimension.
+- [`block-pointer-tiles`](block_pointer_tiles.md): Use `tl.make_block_ptr` as a compiler-facing representation candidate when source semantics define a regular multidimensional tile but IR suggests that manual pointer expressions lower into unexpectedly scalarized, fragmented, strided, or transpose-heavy memory operations.
+- [`discrete-access-ub-staging`](discrete_access_ub_staging.md): Stage a contiguous range into the Unified Buffer first, then use on-chip indexing (`tl.gather` or equivalent) to select target values, rather than loading directly from global memory through discrete indices.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
+- [`amortized-neutral-padding-layout`](amortized_neutral_padding_layout.md): Introduce and cost a neutral-padded internal representation before this card removes boundary-only predicates from exact consumers.
+
+## Related Knowledge
+
 - [现有知识：Grid 形状与多路径特化](../operator_optimization/grid_dispatch_specialization.md)
 - [现有知识：消除冗余边界运算](../operator_optimization/redundant_boundary_operation.md)

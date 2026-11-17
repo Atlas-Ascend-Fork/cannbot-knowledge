@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Attention Intermediate Vector Work Reduction
+title: Attention 中间 Vector 工作削减
 description: 缩短混合 attention kernel 中 Cube 生产者到 Vector 变换再到 Cube 消费者的串行路径，删除、共享或重塑中间 Vector 工作。
-tags: [task.optimization, topic.attention, topic.implementation.pipeline]
+tags:
+- task.optimization
+- topic.attention
+- topic.implementation.pipeline
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/attention-intermediate-vector-work-reduction.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/attention-intermediate-vector-work-reduction.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Attention Intermediate Vector Work Reduction
 
 ## Summary
@@ -30,11 +37,11 @@ result directly gates the downstream Cube consumer.
 
 ## Avoid When
 
-- The candidate removes fully invisible attention tiles or peels fully valid tiles; use `attention-visibility-mask-specialization`.
-- The rewrite is an ordinary algebraic identity without a measured Cube -> Vector -> Cube serial-path issue; use `algebraic-optimization`.
-- The decision is whether a producer should be fused, recomputed, stored, or moved across a kernel boundary; use `kernel-fusion-and-value-placement`.
-- The decision changes the complete `exp`/`log` versus `exp2`/`log2` convention; use `normalization-base-convention-ablation`.
-- The candidate only flips the Cube-produced intermediate from `[N, M]` to `[M, N]` so Vector sees a different L0C-to-GM orientation; use `cv-intermediate-tile-orientation`.
+- The candidate removes fully invisible attention tiles or peels fully valid tiles; use [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md).
+- The rewrite is an ordinary algebraic identity without a measured Cube -> Vector -> Cube serial-path issue; use [`algebraic-optimization`](algebraic_optimization.md).
+- The decision is whether a producer should be fused, recomputed, stored, or moved across a kernel boundary; use [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md).
+- The decision changes the complete `exp`/`log` versus `exp2`/`log2` convention; use [`normalization-base-convention-ablation`](normalization_base_convention_ablation.md).
+- The candidate only flips the Cube-produced intermediate from `[N, M]` to `[M, N]` so Vector sees a different L0C-to-GM orientation; use [`cv-intermediate-tile-orientation`](cv_intermediate_tile_orientation.md).
 - The kernel is pure Vector, the second Cube consumer is independent of the targeted Vector result, or memory transfer dominates the measured path.
 
 ## Signals
@@ -50,7 +57,7 @@ result directly gates the downstream Cube consumer.
 - Cube work appears on both sides of a substantial Vector interval and the downstream Cube phase waits for that interval.
 - Reducing only the intervening Vector expression count changes kernel latency or the Cube/Vector timeline without changing recurrence trips or transferred bytes.
 - Vector instruction, special-function, or synchronization cost grows with the score-tile shape on the serialized path.
-- Vector-dominant engine balance with an idle Cube and light transfer: e.g. `aiv_vec_ratio` ~0.89-0.97 together with `aic_mac_ratio` ~0.03-0.06 and `aic_mte2_ratio` <0.05, while achieved throughput sits far below the bandwidth floor. This localises the cost to a serialized Vector/staging path, but it does NOT say which Vector work is removable — validate with a complete-form candidate before attributing (see `gather-then-dense-compute`'s Pairing And Refutation Protocol).
+- Vector-dominant engine balance with an idle Cube and light transfer: e.g. `aiv_vec_ratio` ~0.89-0.97 together with `aic_mac_ratio` ~0.03-0.06 and `aic_mte2_ratio` <0.05, while achieved throughput sits far below the bandwidth floor. This localises the cost to a serialized Vector/staging path, but it does NOT say which Vector work is removable — validate with a complete-form candidate before attributing (see [`gather-then-dense-compute`](gather_then_dense_compute.md)'s Pairing And Refutation Protocol).
 
 ### IR
 
@@ -135,13 +142,13 @@ temporary live across the Cube/Vector transition.
 
 ### Lever: PV operand precision
 
-Route to `dot-operand-precision-ablation` first for the equal-work dtype
+Route to [`dot-operand-precision-ablation`](dot_operand_precision_ablation.md) first for the equal-work dtype
 control, then apply the attention-specific probability and recurrence checks
 below.
 
 ## Attention-Specific PV Precision Boundary
 
-Use `dot-operand-precision-ablation` for the generic matched-operand experiment, accumulator separation, bidirectional controls, and fallback rules. In online attention, additionally freeze max, denominator, recurrence scaling, exponential convention, mask paths, and output placement.
+Use [`dot-operand-precision-ablation`](dot_operand_precision_ablation.md) for the generic matched-operand experiment, accumulator separation, bidirectional controls, and fallback rules. In online attention, additionally freeze max, denominator, recurrence scaling, exponential convention, mask paths, and output placement.
 
 Probability cast location is part of the attention semantics. Casting the normalized exponent input before `tl.exp`, casting probabilities after `tl.exp`, and using rounded versus unrounded probabilities for the denominator are not equivalent. Isolate each form and validate sharp score distributions, tiny nonzero probabilities, long sequences, and scale extremes. FP32 accumulation cannot recover probabilities already rounded to zero.
 
@@ -157,14 +164,12 @@ Probability cast location is part of the attention semantics. Casting the normal
 
 ## Related Patterns
 
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md): delete invalid recurrence trips and peel mask-free valid tiles before optimizing remaining work.
-- [dot-operand-precision-ablation](./dot_operand_precision_ablation.md): run the generic matched lower-precision dot operand experiment with fixed work and a validated fallback.
-- [algebraic-optimization](./algebraic_optimization.md): handle general semantics-preserving math reformulations outside this mixed-engine serial path.
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): choose computation and storage boundaries.
-- [normalization-base-convention-ablation](./normalization_base_convention_ablation.md): ablate complete natural-base and base-2 normalization conventions.
-- [cv-intermediate-tile-orientation](./cv_intermediate_tile_orientation.md): choose `[M, N]` versus `[N, M]` for the Cube-to-Vector score tile before shortening Vector work on that tile.
-- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)
-- [现有知识：CV 融合方法论](../operator_optimization/cv_fusion.md)
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md): delete invalid recurrence trips and peel mask-free valid tiles before optimizing remaining work.
+- [`dot-operand-precision-ablation`](dot_operand_precision_ablation.md): run the generic matched lower-precision dot operand experiment with fixed work and a validated fallback.
+- [`algebraic-optimization`](algebraic_optimization.md): handle general semantics-preserving math reformulations outside this mixed-engine serial path.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): choose computation and storage boundaries.
+- [`normalization-base-convention-ablation`](normalization_base_convention_ablation.md): ablate complete natural-base and base-2 normalization conventions.
+- [`cv-intermediate-tile-orientation`](cv_intermediate_tile_orientation.md): choose `[M, N]` versus `[N, M]` for the Cube-to-Vector score tile before shortening Vector work on that tile.
 
 ## What To Verify After Applying
 
@@ -173,6 +178,11 @@ Probability cast location is part of the attention semantics. Casting the normal
 - IR evidence that the duplicate or sequential chain was removed rather than silently rematerialized.
 - Compiler-reported UB, spills, legal tile sizes, Cube scheduling, and the unchanged recurrence-trip count and transferred-byte baseline.
 - Benchmarks across important shapes; reject or gate candidates that only move cost or regress boundary paths.
-- For PV precision candidates, use `dot-operand-precision-ablation` and additionally hold masks, recurrence convention, denominator semantics, exponential convention, and output placement fixed.
+- For PV precision candidates, use [`dot-operand-precision-ablation`](dot_operand_precision_ablation.md) and additionally hold masks, recurrence convention, denominator semantics, exponential convention, and output placement fixed.
 - Validate extreme score ranges, tiny nonzero probabilities, multiple sequence lengths and scales, causal/noncausal modes, prefix 0/full/aligned/unaligned regimes, tails, and unequal Q/KV lengths where supported.
 - Prefer an independent high-precision reference and record error summaries, finite/NaN/Inf behavior, repeated timing stability, selected lowering, and the FP32 fallback boundary.
+
+## Related Knowledge
+
+- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)
+- [现有知识：CV 融合方法论](../operator_optimization/cv_fusion.md)

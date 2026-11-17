@@ -1,16 +1,24 @@
 ---
 type: Optimization
-title: Int8 Dot With Int32 Accumulator
+title: int8 tl.dot 与 int32 累加器
 description: int8 量化 GEMM 默认采用 int32 累加的原生 int8 tl.dot，UB 不足时降级 tile 几何而非回退加宽操作数。
-tags: [task.optimization, topic.precision, topic.compute.quantization, topic.tiling]
+tags:
+- task.optimization
+- topic.precision
+- topic.compute.quantization
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/int8-dot-int32-accumulator.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/int8-dot-int32-accumulator.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Int8 Dot With Int32 Accumulator
 
 ## Summary
@@ -38,7 +46,7 @@ path with half the operand footprint of the fp16-widened form.
 
 ## Avoid When
 
-- Inputs are not int8 by contract (then this becomes a `dot-operand-precision-ablation` ablation with a real accuracy contract).
+- Inputs are not int8 by contract (then this becomes a [`dot-operand-precision-ablation`](dot_operand_precision_ablation.md) ablation with a real accuracy contract).
 - The epilogue needs the fp32 accumulator to stay live across a long chain that cannot be restructured.
 - The target lowering lacks an int8 MMAD path (verify IR: expect xi8 MMAD + xi32 accumulator).
 
@@ -80,7 +88,7 @@ The int32-to-fp32 conversion happens once in the epilogue; scale, bias, pertoken
 
 ### Rule: Answer UB overflow by demoting tile geometry, not widening operands
 
-The i32 accumulator plus the conversion epilogue is a fixed UB cost that does **not** scale with K. When a wide tile overflows UB, demote one tile dimension and double the grid (e.g. 128x128 -> 64x128, or BN 256 -> 128) and keep the native int8 path. Falling back to fp16-widened dot forfeits the MMAD gain on the shapes that dominate runtime. A leaner epilogue can make a previously over-large tile fit, so retest the demotion point per kernel structure and size it jointly with the tile search per `tile-footprint-fitting`.
+The i32 accumulator plus the conversion epilogue is a fixed UB cost that does **not** scale with K. When a wide tile overflows UB, demote one tile dimension and double the grid (e.g. 128x128 -> 64x128, or BN 256 -> 128) and keep the native int8 path. Falling back to fp16-widened dot forfeits the MMAD gain on the shapes that dominate runtime. A leaner epilogue can make a previously over-large tile fit, so retest the demotion point per kernel structure and size it jointly with the tile search per [`tile-footprint-fitting`](tile_footprint_fitting.md).
 
 Discipline note: when you demote a tile, keep the int8 path and the epilogue fixed, and retest UB fit and accuracy before attempting any further tile change.
 

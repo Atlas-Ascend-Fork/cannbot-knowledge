@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Large-Tile Fit Enabling
+title: 大 Tile 适配解锁
 description: 当有价值的大 tile 因额外临时量无法通过 UB 规划时，把等价不变量计算移到更小输入上，以配对实验解锁大 tile。
-tags: [task.optimization, topic.memory, topic.tiling]
+tags:
+- task.optimization
+- topic.memory
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/large-tile-fit-enabling.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/large-tile-fit-enabling.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Large-Tile Fit Enabling
 
 ## Summary
@@ -88,15 +95,14 @@ fails while combined compiles and passes, classify the pre-scale as a
 **fit enabler** for the large tile — not an independent speedup; confirm the
 allocation or live-range change in IR when possible, and report the internal
 UB cause as unconfirmed when IR does not show it. If different shapes need
-different validated tiles, hand off to `tile-footprint-fitting` or `autotune`.
+different validated tiles, hand off to [`tile-footprint-fitting`](tile_footprint_fitting.md) or [`autotune`](autotune.md).
 
 ## Related Patterns
 
-- [tile-footprint-fitting](../techniques/tiling.md): choose and compare tile sizes after this card identifies a legal candidate.
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md): separate loop-work reduction from UB-fit effects.
-- [loop-invariant-hoisting](../operator_optimization/loop_invariant_hoisting.md): find invariant calculations that may be moved, without assuming a UB or performance benefit.
-- [l2-stripe-capacity-tile-widening](./l2_stripe_capacity_tile_widening.md): size the widened tile against L2 stripe capacity once this card has established that the candidate tile is legal.
-- [现有知识：三级 Tiling 层次与 UB 容量约束](../techniques/tiling.md)
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): choose and compare tile sizes after this card identifies a legal candidate.
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md): separate loop-work reduction from UB-fit effects.
+- [`loop-invariant-hoisting`](loop_invariant_hoisting.md): find invariant calculations that may be moved, without assuming a UB or performance benefit.
+- [`l2-stripe-capacity-tile-widening`](l2_stripe_capacity_tile_widening.md): size the widened tile against L2 stripe capacity once this card has established that the candidate tile is legal.
 
 ## What To Verify After Applying
 
@@ -106,3 +112,7 @@ different validated tiles, hand off to `tile-footprint-fitting` or `autotune`.
 - The source shapes explain why the moved operation is smaller, and IR confirms the suspected allocation or live-range change when available.
 - The candidate large tile compiles and passes correctness before performance is compared.
 - The final report distinguishes observed compile success from the unconfirmed internal reason for that success.
+
+## Related Knowledge
+
+- [现有知识：三级 Tiling 层次与 UB 容量约束](../techniques/tiling.md)

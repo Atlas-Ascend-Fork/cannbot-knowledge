@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Window Slab Gather
+title: 窗口长条 Gather
 description: 沿最内连续空间维的固定窗口归约先加载一个 W_SLAB 长条，再从长条内片上 gather 各窗口，消除逐窗口重复读。
-tags: [task.optimization, topic.data_movement.memory_access, topic.compute.reduction]
+tags:
+- task.optimization
+- topic.data_movement.memory_access
+- topic.compute.reduction
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/window-slab-gather.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/window-slab-gather.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Window Slab Gather
 
 ## Summary
@@ -45,13 +52,13 @@ from it on-chip, so overlapping columns are loaded once instead of
 
 ## Avoid When
 
-- **Ascend 950 SIMT fixed-window reduce (`force_simt_only=True`)** — see the **Anti-Patterns** table in **`simt-window-reduction-tuning`**; the gather can lose to SIMT flat/row×col + coordinate-mask paths, so require a matched target-harness comparison before applying W-slab here.
+- **Ascend 950 SIMT fixed-window reduce (`force_simt_only=True`)** — see the **Anti-Patterns** table in **[`simt-window-reduction-tuning`](simt_window_reduction_tuning.md)**; the gather can lose to SIMT flat/row×col + coordinate-mask paths, so require a matched target-harness comparison before applying W-slab here.
 - **`W_SLAB_LEN`** exceeds **UB / compiler** or **gather** limits—**reduce `BLOCK_OW`** or use **`USE_W_MASKED_SLAB`** / non-slab branches for that shape.
 - **Host predicates** for **`USE_W_SLAB_LOAD`** are wrong (windows not fully inside input, pad misclassified)—always **diff against the framework reference**.
 - **Tail tiles:** **`out_w % BLOCK_OW != 0`** requires **`ow_mask`** on **store** and usually **disables full-tile slab branches** unless tail handling is explicit.
 - **Max-like reductions** with **`return_indices`**, **dilation**, or extra validity state — W-slab may help **loads** only; compare/index update needs a separate design and full geomean proof.
 - **Layout** is not **W-contiguous** per row (fix with **`contiguous()`** or a different pattern).
-- **Ascend 950 SIMT discrete window reduce** — follow **`simt-window-reduction-tuning`** (single launch, feature-derived dispatch/inner path) before W-slab; use **`simt-window-divisor-formula`** only when normalizer uses **clipped volume only**, not as default for all pad cases.
+- **Ascend 950 SIMT discrete window reduce** — follow **[`simt-window-reduction-tuning`](simt_window_reduction_tuning.md)** (single launch, feature-derived dispatch/inner path) before W-slab; use **[`simt-window-divisor-formula`](simt_window_divisor_formula.md)** only when normalizer uses **clipped volume only**, not as default for all pad cases.
 - **One failed gather attempt** on device—treat as **implementation bug**, not "pattern invalid"; see **Failure Playbook** below before abandoning gather.
 
 ## Signals
@@ -113,11 +120,11 @@ Pick **`BLOCK_OW`** from **`out_w`** with a **small candidate list** (e.g. 128�
 - **2D:** **`(batch * channels * out_h, cdiv(out_w, BLOCK_OW))`** — one logical **`oh`** per **`program_id(0)`** row bundle.
 - **3D:** fold **`out_d * out_h`** into the row axis; the **W slab is unchanged**.
 - **Avoid** folding **many `oh` (or `od×oh`) into one program** while also expanding an **H-slab** loop unless IR/profile proves benefit—launch count drops but **per-program GM traffic** can explode.
-- Pair with **`program-multiple-rows`** when consecutive flat spatial rows can share enough setup to amortize slab overhead.
+- Pair with **[`program-multiple-rows`](program_multiple_rows.md)** when consecutive flat spatial rows can share enough setup to amortize slab overhead.
 
 ### Discipline note
 
-Do not mark this pattern "done" if the final kernel has **zero `tl.gather`** on the hot path, or if IR shows **`memref.copy`** loops without consumption. Interior/boundary output splitting can combine with slab on **non-SIMT** paths; on **Ascend 950 SIMT** prefer single-kernel `constexpr` branches over stacking region splits with slab (see the **Anti-Patterns** table in **`simt-window-reduction-tuning`**).
+Do not mark this pattern "done" if the final kernel has **zero `tl.gather`** on the hot path, or if IR shows **`memref.copy`** loops without consumption. Interior/boundary output splitting can combine with slab on **non-SIMT** paths; on **Ascend 950 SIMT** prefer single-kernel `constexpr` branches over stacking region splits with slab (see the **Anti-Patterns** table in **[`simt-window-reduction-tuning`](simt_window_reduction_tuning.md)**).
 
 ## Failure Playbook
 
@@ -134,11 +141,11 @@ Do not mark this pattern "done" if the final kernel has **zero `tl.gather`** on 
 ## Related Patterns
 
 - `gather-load`: Stage contiguous data in UB before applying indirect indexing or gather.
-- [discrete-access-ub-staging](./discrete_access_ub_staging.md): Stage a contiguous range into the Unified Buffer first, then use on-chip indexing (`tl.gather` or equivalent) to select target values, rather than loading directly from global memory through discrete indices.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md) (supporting lens for boundary math—not a substitute for W staging): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
-- [simt-window-reduction-tuning](./simt_window_reduction_tuning.md) — Ascend 950 SIMT fixed-window tuning (use before W-slab on `force_simt_only` paths): Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
-- [simt-window-divisor-formula](./simt_window_divisor_formula.md) — closed normalizer inner loop; not the default include-pad path on Ascend 950 SIMT: Use closed-form clipped bounds when full-window masked counting is costly.
+- [`discrete-access-ub-staging`](discrete_access_ub_staging.md): Stage a contiguous range into the Unified Buffer first, then use on-chip indexing (`tl.gather` or equivalent) to select target values, rather than loading directly from global memory through discrete indices.
+- [`program-multiple-rows`](program_multiple_rows.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md) (supporting lens for boundary math—not a substitute for W staging): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
+- [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md) — Ascend 950 SIMT fixed-window tuning (use before W-slab on `force_simt_only` paths): Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
+- [`simt-window-divisor-formula`](simt_window_divisor_formula.md) — closed normalizer inner loop; not the default include-pad path on Ascend 950 SIMT: Use closed-form clipped bounds when full-window masked counting is costly.
 
 ## What To Verify After Applying
 

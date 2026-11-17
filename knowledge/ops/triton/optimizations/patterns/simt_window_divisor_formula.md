@@ -1,16 +1,21 @@
 ---
 type: Optimization
-title: SIMT Window Divisor Formula
+title: SIMT 窗口除数闭式
 description: SIMT 路径上固定窗口归约的内层结构修复：按窗口边界推导除数闭式，替代全窗口 masked 计数。
-tags: [task.optimization, topic.compute.reduction, topic.programming_model]
+tags:
+- task.optimization
+- topic.compute.reduction
+- topic.programming_model
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/simt-window-divisor-formula.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/simt-window-divisor-formula.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: ['950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- '950'
 ---
+
 # SIMT Window Divisor Formula
 
 ## Summary
@@ -21,15 +26,15 @@ platforms: ['950']
 
 **Not op-specific** — applies whenever normalization uses **clipped tap volume** (exclude virtual pad from the normalizer). Pool-style `count_include_pad=False` is the canonical example.
 
-**Relationship to `simt-window-reduction-tuning`:** that card owns outer dispatch, interior fast path, and mask vs clip routing. Use **this card** when normalizer semantics are **closed volume** (`d_len × h_len × w_len` from clip bounds). When normalizer must **include virtual pad extent**, prefer coordinate-mask + one-shot normalizer in the tuning card — A/B on harness before assuming clip is faster.
+**Relationship to [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md):** that card owns outer dispatch, interior fast path, and mask vs clip routing. Use **this card** when normalizer semantics are **closed volume** (`d_len × h_len × w_len` from clip bounds). When normalizer must **include virtual pad extent**, prefer coordinate-mask + one-shot normalizer in the tuning card — A/B on harness before assuming clip is faster.
 
 ## Structural Repair Precedence
 
-1. **Outer structure**: flat `numel(out)` + hot-path coordinate decode → `logical-layout-tiling`.
-2. **Launch mode**: Ascend 950 scalar/index dominated → `force-simt-only-discrete-access-950`.
-3. **Dispatch / inner routing**: `simt-window-reduction-tuning` — single launch, flat/row×col, interior path, mask vs clip by semantics and stack_pressure.
+1. **Outer structure**: flat `numel(out)` + hot-path coordinate decode → [`logical-layout-tiling`](logical_layout_tiling.md).
+2. **Launch mode**: Ascend 950 scalar/index dominated → [`force-simt-only-discrete-access-950`](force_simt_only_discrete_access_950.md).
+3. **Dispatch / inner routing**: [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md) — single launch, flat/row×col, interior path, mask vs clip by semantics and stack_pressure.
 4. **Inner structure (this card)**: **closed normalizer** — clip bounds + closed-form volume; no per-tap counting.
-5. **Inner-W slab**: `window-slab-gather` on **non-SIMT** paths only when profile proves slab+gather wins.
+5. **Inner-W slab**: [`window-slab-gather`](window_slab_gather.md) on **non-SIMT** paths only when profile proves slab+gather wins.
 
 ## Use When
 
@@ -55,11 +60,11 @@ region — no per-element masks, no runtime counting.
 
 ## Avoid When
 
-- **SIMT is not enabled yet** — apply `force-simt-only-discrete-access-950` first on Ascend 950 instead of using this pattern as a pre-SIMT cleanup.
+- **SIMT is not enabled yet** — apply [`force-simt-only-discrete-access-950`](force_simt_only_discrete_access_950.md) first on Ascend 950 instead of using this pattern as a pre-SIMT cleanup.
 - The kernel is on an **HIVM W-slab** or other non-SIMT compile path where `force_simt_only` is off or incompatible.
 - Indices are value-dependent or the window is not a fixed affine span (true gather/scatter with irregular offsets).
 - The kernel is already dominated by Cube/matmul work; scalar window bookkeeping is not the bottleneck.
-- **Include-pad normalizer** is required — use coordinate-mask + one-shot normalizer (the interior/boundary path rule in `simt-window-reduction-tuning`) unless harness A/B proves clip wins.
+- **Include-pad normalizer** is required — use coordinate-mask + one-shot normalizer (the interior/boundary path rule in [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md)) unless harness A/B proves clip wins.
 - Applying clip-window would require dynamic loop trip counts per lane that the backend cannot lower safely, and the fallback kernel-index path is already fast enough on the current SIMT launch.
 - You are about to abandon or have not finished validating the SIMT-only launch (compile `507035` repair, correctness) — stabilize SIMT first.
 
@@ -163,7 +168,7 @@ when creating divisor tensors.
 |-----------|-------|--------|
 | Constant divisor | `padding=0`, window fully in bounds, include-pad, no override | `divisor = KERNEL_D*KERNEL_H*KERNEL_W` |
 | No length masks | same guard | drop `d_ok/h_ok/w_ok`; inner loads become unmasked |
-| Interior / boundary split | mixed tiles | single-kernel `constexpr` branches; do not add a global multi-launch on Ascend 950 SIMT (see `simt-window-reduction-tuning`) |
+| Interior / boundary split | mixed tiles | single-kernel `constexpr` branches; do not add a global multi-launch on Ascend 950 SIMT (see [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md)) |
 
 Discipline: keep `force_simt_only=True` unchanged through this inner repair
 unless compile or correctness forces a rollback. After the structural
@@ -192,11 +197,11 @@ separately before keeping the rewrite.
 
 ## Related Patterns
 
-- [logical-layout-tiling](./logical_layout_tiling.md) — outer output traversal / row-column tile before SIMT inner-window repair: Use layout-aware tiles instead of per-lane div/mod coordinate decoding.
-- [loop-invariant-hoisting](../operator_optimization/loop_invariant_hoisting.md) — hoist `x_base`, masks, and bounds; closed-form divisor is algebraic LICM plus counting elimination: Apply **Loop-Invariant Code Motion (LICM)** to Triton kernels: move computations that do **not** depend on the loop induction variable out of the loop, so each iteration performs only the minimal work that truly varies.
-- [force-simt-only-discrete-access-950](./force_simt_only_discrete_access_950.md) — **required predecessor** on Ascend 950: enable and validate SIMT-only launch before inner-window repair
-- [simt-window-reduction-tuning](./simt_window_reduction_tuning.md) — dispatch, interior path, mask vs clip routing: Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
-- [window-slab-gather](./window_slab_gather.md) — inner-W slab on **non-SIMT** paths: For **fixed-window reductions** along the **innermost contiguous spatial dimension** (NCHW-style: often **W**), load one **slab** of length **`W_SLAB_LEN = STRIDE_W * (BLOCK_OW - 1) + KERNEL_W`** at **`w_abs_min = ow_pid * BLOCK_OW * STRIDE_W - PAD_W`**, then **`tl.gather(slab, STRIDE_W * arange(BLOCK_OW) + kw)`** per **`kw`** instead of many **`start_w + kw`** masked loads.
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md) — drop `d_ok/h_ok/w_ok` when tile is fully interior: Split exact-tile hot paths from generic masked kernels when dispatch-time shape guards can prove there are no tail tiles, so Ascend lowering can avoid boundary-only masks, padding values, block-pointer `boundary_check`, and related control branches.
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md) — remove redundant `safe_*`, narrow masks, and unsupported APIs: Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
-- [algebraic-optimization](./algebraic_optimization.md) — closed-form divisor is an algebraic replacement for incremental counting: Apply mathematical identities and semantics-preserving rewrites to reduce redundant memory passes, full data scans, or live ranges before micro-tuning loads.
+- [`logical-layout-tiling`](logical_layout_tiling.md) — outer output traversal / row-column tile before SIMT inner-window repair: Use layout-aware tiles instead of per-lane div/mod coordinate decoding.
+- [`loop-invariant-hoisting`](loop_invariant_hoisting.md) — hoist `x_base`, masks, and bounds; closed-form divisor is algebraic LICM plus counting elimination: Apply **Loop-Invariant Code Motion (LICM)** to Triton kernels: move computations that do **not** depend on the loop induction variable out of the loop, so each iteration performs only the minimal work that truly varies.
+- [`force-simt-only-discrete-access-950`](force_simt_only_discrete_access_950.md) — **required predecessor** on Ascend 950: enable and validate SIMT-only launch before inner-window repair
+- [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md) — dispatch, interior path, mask vs clip routing: Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
+- [`window-slab-gather`](window_slab_gather.md) — inner-W slab on **non-SIMT** paths: For **fixed-window reductions** along the **innermost contiguous spatial dimension** (NCHW-style: often **W**), load one **slab** of length **`W_SLAB_LEN = STRIDE_W * (BLOCK_OW - 1) + KERNEL_W`** at **`w_abs_min = ow_pid * BLOCK_OW * STRIDE_W - PAD_W`**, then **`tl.gather(slab, STRIDE_W * arange(BLOCK_OW) + kw)`** per **`kw`** instead of many **`start_w + kw`** masked loads.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md) — drop `d_ok/h_ok/w_ok` when tile is fully interior: Split exact-tile hot paths from generic masked kernels when dispatch-time shape guards can prove there are no tail tiles, so Ascend lowering can avoid boundary-only masks, padding values, block-pointer `boundary_check`, and related control branches.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md) — remove redundant `safe_*`, narrow masks, and unsupported APIs: Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
+- [`algebraic-optimization`](algebraic_optimization.md) — closed-form divisor is an algebraic replacement for incremental counting: Apply mathematical identities and semantics-preserving rewrites to reduce redundant memory passes, full data scans, or live ranges before micro-tuning loads.

@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Host Launch Coalescing
+title: Host 侧 Launch 合并
 description: 把 Python/wrapper 循环对同一小 kernel 的重复 launch 合并为一次 device grid，由 program 自行解码段身份。
-tags: [task.optimization, topic.parallelism, topic.programming_model]
+tags:
+- task.optimization
+- topic.parallelism
+- topic.programming_model
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/host-launch-coalescing.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/host-launch-coalescing.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Host Launch Coalescing
 
 ## Summary
@@ -41,7 +48,7 @@ overhead.
 
 - The repeated calls invoke different algorithms, dtypes, compile-time configurations, or synchronization dependencies that cannot share one kernel contract.
 - Coalescing would create overlapping output ownership or require cross-segment ordering.
-- One launch already contains the complete logical work set; use `engine-aware-grid-scheduling` for mapping inside that launch.
+- One launch already contains the complete logical work set; use [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md) for mapping inside that launch.
 - Metadata and control cost dominates because there are very few launches or each launch already performs substantial work.
 
 ## Signals
@@ -125,14 +132,14 @@ A direct lookup table suits many tiny uneven segments; arithmetic decode suits e
 - Program-level no-work, such as a decoded item outside the logical count, can early-return.
 - Partial lanes and tail elements remain in an active program and use masks so loads and stores stay in bounds.
 
-Discipline: build the smallest coalesced candidate that changes only launch count — keep kernel math, tile size, dtype, and output semantics fixed. Measure metadata preparation, metadata loads, decode/control instructions, submitted program count, and total-operation latency on a shape set spanning one/few segments, many short segments, uneven ragged segments, and longer segments. If one coalesced launch is established but program mapping remains inefficient, explore axis order, program batches, persistence, or thin-axis serialization with `engine-aware-grid-scheduling` as a separate experiment.
+Discipline: build the smallest coalesced candidate that changes only launch count — keep kernel math, tile size, dtype, and output semantics fixed. Measure metadata preparation, metadata loads, decode/control instructions, submitted program count, and total-operation latency on a shape set spanning one/few segments, many short segments, uneven ragged segments, and longer segments. If one coalesced launch is established but program mapping remains inefficient, explore axis order, program batches, persistence, or thin-axis serialization with [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md) as a separate experiment.
 
 ## Related Patterns
 
-- [engine-aware-grid-scheduling](./engine_aware_grid_scheduling.md): map logical work into program order, program batches, or persistent loops after one launch defines the work set.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): increase adjacent row ownership within one program when row-wise programs are too thin.
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): represent an owned regular multidimensional transfer independently of launch coalescing.
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): compare coalescing with removing a wrapper launch through semantically valid fusion.
+- [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md): map logical work into program order, program batches, or persistent loops after one launch defines the work set.
+- [`program-multiple-rows`](program_multiple_rows.md): increase adjacent row ownership within one program when row-wise programs are too thin.
+- [`block-pointer-tiles`](block_pointer_tiles.md): represent an owned regular multidimensional transfer independently of launch coalescing.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): compare coalescing with removing a wrapper launch through semantically valid fusion.
 
 ## What To Verify After Applying
 

@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: 2D Window UB Staging
+title: 2D 窗口 UB Staging
 description: 2D 采样 kernel（resize/gather-window/pooling 类）为每个输出点读多个重叠输入样本时，先整行 staging 进 UB 再片上取样。
-tags: [task.optimization, topic.data_movement.memory_access, topic.memory]
+tags:
+- task.optimization
+- topic.data_movement.memory_access
+- topic.memory
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/window-2d-ub-staging.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/window-2d-ub-staging.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # 2D Window UB Staging
 
 ## Summary
@@ -36,7 +43,7 @@ into one contiguous copy.
 
 - One input sample per output and access is already row-contiguous — staging may not pay off.
 - Input layout is non-contiguous; a rectangular GM→UB copy is invalid without reordering first.
-- The profile is dominated by scalar control (select chains), not memory — see `scalar-latency-trap-removal`.
+- The profile is dominated by scalar control (select chains), not memory — see [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md).
 - A larger tile overflows UB or grows the staged block faster than it saves programs.
 
 ## Method
@@ -79,7 +86,7 @@ less GM→UB traffic. Keep the staged block within UB.
 
 If the memory path is clean but scalar select/polynomial chains still
 dominate (e.g. bicubic phase weights), hoist periodic weights to host tables
-or constexpr. See `scalar-latency-trap-removal`.
+or constexpr. See [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md).
 
 **Discipline:** change one lever at a time and verify each in IR and
 end-to-end timing.
@@ -103,8 +110,11 @@ dispatch conditions, block margins, and weight periodicity:
 
 ## Related Patterns
 
-- [window-slab-gather](./window_slab_gather.md): the same stage-then-gather idea for window reductions along the innermost dimension.
-- [discrete-access-ub-staging](./discrete_access_ub_staging.md): stage a contiguous range in UB, then select on-chip.
-- [pad-copy-row-col-tiling](./pad_copy_row_col_tiling.md): row-column tiled copy kernels.
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md): scalar-side cleanup after the memory path is clean.
+- [`window-slab-gather`](window_slab_gather.md): the same stage-then-gather idea for window reductions along the innermost dimension.
+- [`discrete-access-ub-staging`](discrete_access_ub_staging.md): stage a contiguous range in UB, then select on-chip.
+- [`pad-copy-row-col-tiling`](pad_copy_row_col_tiling.md): row-column tiled copy kernels.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md): scalar-side cleanup after the memory path is clean.
+
+## Related Knowledge
+
 - [现有知识：离散访存 UB staging 通用形态](./discrete_access_ub_staging.md)

@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Dense Substitution For Fine-Grained Sparse Attention
+title: 细粒度稀疏 Attention 稠密替代
 description: 当逐行任意索引选取的 KV 占比足够高时，用带散射 mask 的稠密计算替代细粒度稀疏 attention 选取。
-tags: [task.optimization, topic.attention, topic.compute.indexing]
+tags:
+- task.optimization
+- topic.attention
+- topic.compute.indexing
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/dense-substitution-fine-grained-sparse-attention.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/dense-substitution-fine-grained-sparse-attention.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Dense Substitution For Fine-Grained Sparse Attention
 
 ## Summary
@@ -76,7 +83,7 @@ committing; the boundary moves with S_q, topK, D, and dtype.
   post-quantization count weighting reproduces "each occurrence quantized once,
   then accumulated" bit-for-bit; it can leave bf16 output elements one ulp off
   and fail matched_ratio. Materialize the duplicates instead
-  (`repeated-gather-compute-once` only applies to block-level
+  ([`repeated-gather-compute-once`](repeated_gather_compute_once.md) only applies to block-level
   multiplicity where the count compensation is exact).
 
 ## Signals
@@ -101,13 +108,12 @@ committing; the boundary moves with S_q, topK, D, and dtype.
 
 ## Related Patterns
 
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md) (opposite direction: delete provably invalid
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md) (opposite direction: delete provably invalid
   tiles; use it when visibility is block-structured instead of random)
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md) (host discriminator for dense vs
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md) (host discriminator for dense vs
   gather path)
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md) (mask scatter is the cheap
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md) (mask scatter is the cheap
   materialization; the expensive K_sel one is what gets eliminated)
-- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)
 
 ## What To Verify After Applying
 
@@ -118,5 +124,9 @@ committing; the boundary moves with S_q, topK, D, and dtype.
   keep the gather fallback for small `S_q` and small `topK / S_kv`.
 - Failure routing: if the dense/regrouped path fails MERE/matched_ratio at
   about 1 ulp under a pure-fp32 reference, re-sync mask/expansion/quantization
-  semantics first, then use `hilo-split-matmul` for the fp32
+  semantics first, then use [`hilo-split-matmul`](hilo_split_matmul.md) for the fp32
   probability PV path.
+
+## Related Knowledge
+
+- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)

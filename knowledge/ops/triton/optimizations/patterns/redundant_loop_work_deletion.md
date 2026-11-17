@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Redundant-Loop Work Deletion
+title: 冗余循环工作删除
 description: 用按证明有用范围限界的循环取代全范围 tile 循环加内部有用性守卫，删除剩余无用 tile 的工作。
-tags: [task.optimization, topic.compute.reduction, topic.parallelism]
+tags:
+- task.optimization
+- topic.compute.reduction
+- topic.parallelism
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/redundant-loop-work-deletion.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/redundant-loop-work-deletion.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Redundant-Loop Work Deletion
 
 ## Summary
@@ -325,10 +332,10 @@ A negative result rejects the tested source form, tile, body, shape regime, comp
 
 ## Related Patterns
 
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md): derive attention-specific visibility frontiers and tile classes.
-- [large-tile-fit-enabling](./large_tile_fit_enabling.md): isolate tile, precision, and live-shape conditions that affect resource legality.
-- [engine-aware-grid-scheduling](./engine_aware_grid_scheduling.md): separate algorithmic-loop changes from launch and physical-core work distribution.
-- [ragged-tile-early-return](./ragged_tile_early_return.md): delete a whole program body whose tile lies outside a segment-local extent, rather than deleting invalid iterations inside one live program.
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md): derive attention-specific visibility frontiers and tile classes.
+- [`large-tile-fit-enabling`](large_tile_fit_enabling.md): isolate tile, precision, and live-shape conditions that affect resource legality.
+- [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md): separate algorithmic-loop changes from launch and physical-core work distribution.
+- [`ragged-tile-early-return`](ragged_tile_early_return.md): delete a whole program body whose tile lies outside a segment-local extent, rather than deleting invalid iterations inside one live program.
 
 ## What To Verify After Applying
 

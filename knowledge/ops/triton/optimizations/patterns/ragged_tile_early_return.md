@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Ragged Tile Early Return
+title: 参差 Tile 提前返回
 description: 当权威段元数据证明整个 program tile 落在有效矩形之外时，在 tile 内工作前提前返回。
-tags: [task.optimization, topic.tiling, topic.implementation.masking]
+tags:
+- task.optimization
+- topic.tiling
+- topic.implementation.masking
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/ragged-tile-early-return.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/ragged-tile-early-return.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Ragged Tile Early Return
 
 ## Summary
@@ -49,7 +56,7 @@ per-segment tiles.
 - Segment bounds are estimates, captured examples, or stale host constants
   rather than authoritative metadata for the current invocation.
 - The apparent waste is only inactive lanes inside otherwise useful programs;
-  use `live-length-tiling` or another boundary refinement instead.
+  use [`valid-length-tiling`](live_length_tiling.md) or another boundary refinement instead.
 - The expensive body is already control-dependent on a whole-tile predicate,
   or the launch already submits only live segment-local tiles.
 - Removing or compacting programs would eliminate independent work needed to
@@ -150,7 +157,7 @@ The guard removes tile-body cost but not launch and scalar-entry cost. Measure
 the low-risk body elision first, on the same tile and grid, so the result is
 attributable. Only if residual program submission or program-batch imbalance remains
 material, evaluate compact live-task mapping through
-`engine-aware-grid-scheduling` as a separate change.
+[`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md) as a separate change.
 
 ## Cost Model
 
@@ -166,7 +173,7 @@ The guard removes the body cost of `launched - live` programs, but it does not
 remove their launch and scalar-entry cost. First measure this low-risk body
 elision. If residual program submission or program-batch imbalance remains material,
 then evaluate compact live-task mapping through
-`engine-aware-grid-scheduling` as a separate change.
+[`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md) as a separate change.
 
 ## Failure Modes
 
@@ -178,17 +185,17 @@ then evaluate compact live-task mapping through
 
 ## Related Patterns
 
-- [engine-aware-grid-scheduling](./engine_aware_grid_scheduling.md): remove whole-invalid programs from the
+- [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md): remove whole-invalid programs from the
   submitted domain after entry elision establishes the opportunity.
-- [live-length-tiling](./live_length_tiling.md): reduce padded lanes inside tiles that still
+- [`valid-length-tiling`](live_length_tiling.md): reduce padded lanes inside tiles that still
   intersect the live length.
-- [redundant-loop-work-deletion](./redundant_loop_work_deletion.md): delete invalid loop iterations inside
+- [`redundant-loop-work-deletion`](redundant_loop_work_deletion.md): delete invalid loop iterations inside
   one live program rather than deleting a whole program body.
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md): derive semantic visibility for attention tiles;
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md): derive semantic visibility for attention tiles;
   this card applies to segment-local geometric emptiness in any ragged grid.
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md): retain the padded fallback when the
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md): retain the padded fallback when the
   guard or compact mapping is profitable only in a causal shape regime.
-- [mask-only-affine-addressing](./mask_only_affine_addressing.md): apply only when IR proves regular addressing
+- [`mask-only-affine-addressing`](mask_only_affine_addressing.md): apply only when IR proves regular addressing
   was lowered to indirect access; regular affine IR is a non-match.
 
 ## What To Verify After Applying

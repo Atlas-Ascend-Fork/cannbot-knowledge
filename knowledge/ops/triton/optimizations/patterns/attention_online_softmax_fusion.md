@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Attention Online Softmax Fusion
+title: Attention 在线 Softmax 融合
 description: 把 QK、mask/softmax、PV 分阶段的 attention 合并为单 kernel 在线 softmax 递推，含 native-dtype 舍入复现的两遍形式。
-tags: [task.optimization, topic.attention, topic.compute.normalization]
+tags:
+- task.optimization
+- topic.attention
+- topic.compute.normalization
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/attention-online-softmax-fusion.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/attention-online-softmax-fusion.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Attention Online Softmax Fusion
 
 ## Summary
@@ -28,7 +35,7 @@ matmul, a softmax, and a value-aggregation (PV) matmul visible as distinct
 launches in the profile — and the score or probability tensors passed between
 them exist only to connect the stages. Fusing the stages into one kernel must
 be legal and worthwhile (that decision belongs to
-`kernel-fusion-and-value-placement`); this card supplies the
+[`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md)); this card supplies the
 attention-specific online-recurrence construction.
 
 ## Avoid When
@@ -49,7 +56,7 @@ attention-specific online-recurrence construction.
 
 ## Constructing The Online Recurrence
 
-After `kernel-fusion-and-value-placement` selects a legal grouping
+After [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md) selects a legal grouping
 candidate, replace the staged QK -> masked-softmax -> probability-times-value
 chain with one kernel where each program owns a query tile and runs an online
 softmax recurrence over the key tiles visible to it. This card owns the
@@ -83,7 +90,7 @@ Construction notes, in skeleton order:
   lengths, and coordinate offsets to the public policy. Tile-align the union
   outward, but retain the exact per-element predicate on partial first, last,
   diagonal, sequence-tail, or sparse blocks. To delete provably invisible
-  tiles from the loop domain, use `attention-visibility-mask-specialization`.
+  tiles from the loop domain, use [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md).
 - **State and numerics** (`m_i`, `l_i`, `acc` in the skeleton): carry the
   running maximum, denominator, and value accumulator in FP32. Every visited
   tile updates with masked probability zero on invisible lanes. A row with no
@@ -96,7 +103,7 @@ Construction notes, in skeleton order:
   dot, so retain logical validity and initialize every physically loadable
   padded lane.
 - **Operand feeding** (the loads inside the loop): feed q/k/v tiles as
-  descriptor loads per `block-pointer-tiles`; masked per-row SIMT
+  descriptor loads per [`block-pointer-tiles`](block_pointer_tiles.md); masked per-row SIMT
   gathers measure far slower and erase the fusion gain. Strided or subsampled
   layouts are not an excuse for SIMT — decompose them into affine
   residue-class views first (see that card).
@@ -116,14 +123,12 @@ When the reference stores scores or probabilities in fp16/bf16 without an fp32 u
 
 ## Related Patterns
 
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): decide whether the measured QK-softmax-value boundaries should be crossed before applying this card's construction.
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md): prune invisible and fully valid key tiles inside the resulting recurrence when the visibility policy permits it.
-- [attention-intermediate-vector-work-reduction](./attention_intermediate_vector_work_reduction.md): shorten the remaining serialized Cube producer -> Vector transformation -> Cube consumer path in the fused kernel.
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): operand-feeding mechanism for the recurrence's q/k/v tiles; SIMT gathers erase the fusion gain.
-- [normalization-base-convention-ablation](./normalization_base_convention_ablation.md): ablate complete natural-base and base-2 normalization conventions for the recurrence.
-- [large-tile-fit-enabling](./large_tile_fit_enabling.md): evaluate a wider key tile together with precision or live-shape enablers.
-- [现有知识：在线算法概念（running max/sum）](../techniques/online_algorithms.md)
-- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): decide whether the measured QK-softmax-value boundaries should be crossed before applying this card's construction.
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md): prune invisible and fully valid key tiles inside the resulting recurrence when the visibility policy permits it.
+- [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md): shorten the remaining serialized Cube producer -> Vector transformation -> Cube consumer path in the fused kernel.
+- [`block-pointer-tiles`](block_pointer_tiles.md): operand-feeding mechanism for the recurrence's q/k/v tiles; SIMT gathers erase the fusion gain.
+- [`normalization-base-convention-ablation`](normalization_base_convention_ablation.md): ablate complete natural-base and base-2 normalization conventions for the recurrence.
+- [`large-tile-fit-enabling`](large_tile_fit_enabling.md): evaluate a wider key tile together with precision or live-shape enablers.
 
 ## What To Verify After Applying
 
@@ -131,3 +136,8 @@ When the reference stores scores or probabilities in fp16/bf16 without an fp32 u
 - Confirm deleted score/probability tensors have no external users and their allocations, stores, reloads, and launches disappear from the measured path.
 - Compare fused, partially fused, and retained staged variants by total-operation latency across support-width, dtype, head-dimension, and program-batch regimes.
 - Record target/compiler identity and test repeated runs for determinism; if a target-specific compiler failure or nondeterminism is found, keep its reproducer in a decision record and retain only the general fallback rule here.
+
+## Related Knowledge
+
+- [现有知识：在线算法概念（running max/sum）](../techniques/online_algorithms.md)
+- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)

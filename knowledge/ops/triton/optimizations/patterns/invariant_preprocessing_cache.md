@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Invariant Preprocessing Cache
+title: 不变量预处理缓存
 description: 在缓存身份、失效、所有权与容量合约下，跨算子调用复用纯预处理结果。
-tags: [task.optimization, topic.memory, topic.implementation.memory_management]
+tags:
+- task.optimization
+- topic.memory
+- topic.implementation.memory_management
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/invariant-preprocessing-cache.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/invariant-preprocessing-cache.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Invariant Preprocessing Cache
 
 ## Summary
@@ -125,12 +132,12 @@ keep an uncached path for fresh or uncacheable sources.
 
 ## Related Patterns
 
-- [loop-invariant-hoisting](../operator_optimization/loop_invariant_hoisting.md): repeated work inside one kernel loop.
-- [compute-once-share-via-gm](./compute_once_share_via_gm.md): reuse across programs within one invocation.
-- [amortized-neutral-padding-layout](./amortized_neutral_padding_layout.md): the padded representation and its neutral-value semantics.
-- [implicit-transpose-elimination](./implicit_transpose_elimination.md) and [intermediate-layout-copy-deletion](./intermediate_layout_copy_deletion.md): the selected physical layout.
-- [common-input-projection-packing](./common_input_projection_packing.md)
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md)
+- [`loop-invariant-hoisting`](loop_invariant_hoisting.md): repeated work inside one kernel loop.
+- [`compute-once-share-via-gm`](compute_once_share_via_gm.md): reuse across programs within one invocation.
+- [`amortized-neutral-padding-layout`](amortized_neutral_padding_layout.md): the padded representation and its neutral-value semantics.
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md) and [`intermediate-layout-copy-deletion`](intermediate_layout_copy_deletion.md): the selected physical layout.
+- [`common-input-projection-packing`](common_input_projection_packing.md)
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md)
 
 ## What To Verify After Applying
 

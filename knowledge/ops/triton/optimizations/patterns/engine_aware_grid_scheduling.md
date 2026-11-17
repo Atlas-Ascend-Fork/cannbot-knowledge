@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Engine-Aware Grid Scheduling
+title: 引擎感知 Grid 调度
 description: 把单次 launch 内的逻辑工作映射为 program 顺序、紧凑活跃任务域、program batch、persistent 步进循环或有界串行轴。
-tags: [task.optimization, topic.parallelism, topic.tiling]
+tags:
+- task.optimization
+- topic.parallelism
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/engine-aware-grid-scheduling.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/engine-aware-grid-scheduling.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Engine-Aware Grid Scheduling
 
 ## Summary
@@ -19,10 +26,9 @@ Map logical work already contained in one device launch into program order, a co
 
 ## Use When
 
-A kernel already covers all of its logical work in one launch — if a host
-loop launches it once per segment, apply `host-launch-coalescing` first — and
-you suspect the program-to-core mapping wastes resources while the per-tile
-work itself is fine.
+The program-to-core mapping of a single launch looks wasteful. If a host
+loop calls the kernel once per segment, apply [`host-launch-coalescing`](host_launch_coalescing.md)
+first.
 
 One or more of these situations holds:
 
@@ -153,7 +159,7 @@ This trades parallelism for more work per program. It can produce longer program
 
 ### Candidate: Compact a ragged rectangular grid into live tasks
 
-After `ragged-tile-early-return` proves that whole-invalid tiles are
+After [`ragged-tile-early-return`](ragged_tile_early_return.md) proves that whole-invalid tiles are
 common and safely removable, test whether submitting only live tiles also
 recovers meaningful launch, decode, or scheduling cost. Derive each segment's live
 tile count from authoritative runtime metadata and define a bijection between a
@@ -177,15 +183,13 @@ for causally defined regimes with a complete-operation win.
 
 ## Related Patterns
 
-- [host-launch-coalescing](./host_launch_coalescing.md): form one device launch from repeated wrapper launches before tuning its internal mapping.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): change adjacent-row ownership and work per program; it does not require persistence.
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): choose regular transfer representation independently from grid ownership and mapping.
-- [large-tile-fit-enabling](./large_tile_fit_enabling.md): isolate a compiler allocation or larger-tile effect enabled by persistence.
-- [l2-stripe-capacity-tile-widening](./l2_stripe_capacity_tile_widening.md): change the tile aspect ratio when the bottleneck is L2 stripe capacity rather than program mapping; this card keeps tile math fixed, that card changes it.
-- [ragged-tile-early-return](./ragged_tile_early_return.md): first remove the body of whole-invalid programs without changing the launch mapping; compact the grid only when the residual submitted-program cost remains material.
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md): recalculate logical work and variance after removing invisible attention regions.
-- [现有知识：Core 映射策略](../techniques/core_mapping.md)
-- [现有知识：Persistent Kernel 与 grid-stride](../techniques/persistent_kernels.md)
+- [`host-launch-coalescing`](host_launch_coalescing.md): form one device launch from repeated wrapper launches before tuning its internal mapping.
+- [`program-multiple-rows`](program_multiple_rows.md): change adjacent-row ownership and work per program; it does not require persistence.
+- [`block-pointer-tiles`](block_pointer_tiles.md): choose regular transfer representation independently from grid ownership and mapping.
+- [`large-tile-fit-enabling`](large_tile_fit_enabling.md): isolate a compiler allocation or larger-tile effect enabled by persistence.
+- [`l2-stripe-capacity-tile-widening`](l2_stripe_capacity_tile_widening.md): change the tile aspect ratio when the bottleneck is L2 stripe capacity rather than program mapping; this card keeps tile math fixed, that card changes it.
+- [`ragged-tile-early-return`](ragged_tile_early_return.md): first remove the body of whole-invalid programs without changing the launch mapping; compact the grid only when the residual submitted-program cost remains material.
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md): recalculate logical work and variance after removing invisible attention regions.
 
 ## What To Verify After Applying
 
@@ -196,3 +200,8 @@ for causally defined regimes with a complete-operation win.
 - For serialized axes, test several axis sizes and record lost parallelism, program duration, code size/unrolling, and DMA concurrency.
 - For compact ragged mappings, verify that runtime-derived task ranges cover every live tile exactly once, that mismatched metadata reaches the rectangular fallback, and that no captured length table silently defines correctness.
 - Accept by correctness and canonical latency; batch arithmetic, allocation changes, or profiler ratios alone do not prove a benefit.
+
+## Related Knowledge
+
+- [现有知识：Core 映射策略](../techniques/core_mapping.md)
+- [现有知识：Persistent Kernel 与 grid-stride](../techniques/persistent_kernels.md)

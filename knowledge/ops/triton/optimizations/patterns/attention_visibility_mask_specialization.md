@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Attention Visibility Mask Specialization
+title: Attention 可见性 Mask 特化
 description: 按可见性策略（causal/window/prefix/ragged/block-sparse）对 key tile 分类，从递推域中删除不可见与完全有效的 tile。
-tags: [task.optimization, topic.attention, topic.implementation.masking]
+tags:
+- task.optimization
+- topic.attention
+- topic.implementation.masking
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/attention-visibility-mask-specialization.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/attention-visibility-mask-specialization.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Attention Visibility Mask Specialization
 
 ## Summary
@@ -43,7 +50,7 @@ whole key sequence.
 ## Avoid When
 
 - Visibility cannot be proven from the public attention policy and runtime metadata.
-- Every key tile is partially valid, leaving no deletable region; if the call still exchanges score/probability tensors between stages, `attention-online-softmax-fusion` may apply instead.
+- Every key tile is partially valid, leaving no deletable region; if the call still exchanges score/probability tensors between stages, [`attention-online-softmax-fusion`](attention_online_softmax_fusion.md) may apply instead.
 
 ## Signals
 
@@ -234,30 +241,33 @@ dominates; always prefer the smallest covering `BAND` and the largest row
 block that fits the budget.  If a wide key tile must be loaded in a direct
 transposed orientation to fit the buffer, expect a single strided gather
 that can cost more than the staging it saves (see
-`implicit-transpose-elimination`).
+[`implicit-transpose-elimination`](implicit_transpose_elimination.md)).
 
 ### Discipline
 
 - Benchmark fully invisible suffix deletion before fully valid peeling; these are separate transformations even though both use the same visibility proof.
-- Use `redundant-loop-work-deletion` to decide whether expressing full-valid and boundary regions as separate recurrence loops is profitable.
+- Use [`redundant-loop-work-deletion`](redundant_loop_work_deletion.md) to decide whether expressing full-valid and boundary regions as separate recurrence loops is profitable.
 - Compare two bounded `BLOCK_N` values while holding `BLOCK_M`, precision, recurrence convention, and all other arithmetic fixed. Preserve a shape fallback for one-iteration or compiler-illegal regimes.
 - Record deleted iterations and mask-free fully valid iterations separately by shape.
 
 ## Related Patterns
 
-- [attention-online-softmax-fusion](./attention_online_softmax_fusion.md): if the call still exchanges score/probability tensors between QK, softmax, and PV stages, fuse into an online recurrence first.
-- [redundant-loop-work-deletion](./redundant_loop_work_deletion.md): evaluate loop bounds and multi-region recurrence lowering, including tile/body coupling and the required controlled ablations.
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md): specialize boundary-only predicates after semantic visibility is preserved.
-- [large-tile-fit-enabling](./large_tile_fit_enabling.md): evaluate a wider key tile together with precision or live-shape enablers.
-- [attention-intermediate-vector-work-reduction](./attention_intermediate_vector_work_reduction.md): shorten the remaining serialized Cube producer -> Vector transformation -> Cube consumer path after deleting recurrence work.
-- [ragged-tile-early-return](./ragged_tile_early_return.md): geometric segment-local emptiness in any ragged grid, independent of attention visibility frontiers.
-- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)
+- [`attention-online-softmax-fusion`](attention_online_softmax_fusion.md): if the call still exchanges score/probability tensors between QK, softmax, and PV stages, fuse into an online recurrence first.
+- [`redundant-loop-work-deletion`](redundant_loop_work_deletion.md): evaluate loop bounds and multi-region recurrence lowering, including tile/body coupling and the required controlled ablations.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md): specialize boundary-only predicates after semantic visibility is preserved.
+- [`large-tile-fit-enabling`](large_tile_fit_enabling.md): evaluate a wider key tile together with precision or live-shape enablers.
+- [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md): shorten the remaining serialized Cube producer -> Vector transformation -> Cube consumer path after deleting recurrence work.
+- [`ragged-tile-early-return`](ragged_tile_early_return.md): geometric segment-local emptiness in any ragged grid, independent of attention visibility frontiers.
 
 ## What To Verify After Applying
 
 - Validate causal, prefix, target, window, and ragged regimes at aligned and unaligned frontiers, including empty and short regions.
 - Check finite outputs and tolerance when `valid_k_extent <= BLOCK_N` and whenever recurrence order changes.
 - Confirm fully invalid tiles perform no recurrence update and the boundary path preserves the original predicate.
-- Use `redundant-loop-work-deletion` for controlled loop/body attribution when peeling creates multiple recurrence regions.
+- Use [`redundant-loop-work-deletion`](redundant_loop_work_deletion.md) for controlled loop/body attribution when peeling creates multiple recurrence regions.
 - Compare kernel and total-operation latency, recurrence iterations, peeled iterations, and deletion-versus-peeling attribution by shape.
 - Record target/compiler identity and test short dynamic-loop iteration counts and repeated runs for determinism. If a target-specific compiler failure or nondeterminism is found, keep its reproducer in a decision record and retain only the general fallback rule here.
+
+## Related Knowledge
+
+- [现有知识：Attention 优化经验聚合](../experiences/attention_experiences.md)

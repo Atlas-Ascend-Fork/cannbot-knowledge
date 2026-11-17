@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Direct Strided-Layout Reduction Pattern
+title: 步长布局直接归约
 description: 非末维单轴归约避免先做 movedim+contiguous 布局拷贝，对连续输入直接按步长访存归约。
-tags: [task.optimization, topic.compute.reduction, topic.data_movement.layout_transform]
+tags:
+- task.optimization
+- topic.compute.reduction
+- topic.data_movement.layout_transform
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/strided-layout-reduction.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/strided-layout-reduction.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Direct Strided-Layout Reduction Pattern
 
 ## Summary
@@ -106,7 +113,7 @@ Change one thing at a time and keep the rewrite only if the copy disappears from
 
 ## Related Patterns
 
-- [implicit-transpose-elimination](./implicit_transpose_elimination.md): Eliminate implicit transpose-style access on Ascend NPU by ensuring operands are in the physical layout the kernel needs, avoiding compiler-injected layout transforms.
-- [tile-footprint-fitting](../techniques/tiling.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
-- [software-pipeline](./software_pipeline.md): Inspect compiler-generated buffering and transfer-compute coordination in regular tiled loops.
-- [autotune](../operator_optimization/autotune.md): Use Triton-Ascend autotune as the default way to search split sizes, tile sizes, and selected compile options when the kernel structure is already reasonable and the main open question is parameter choice.
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md): Eliminate implicit transpose-style access on Ascend NPU by ensuring operands are in the physical layout the kernel needs, avoiding compiler-injected layout transforms.
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
+- [`software-pipeline`](software_pipeline.md): Inspect compiler-generated buffering and transfer-compute coordination in regular tiled loops.
+- [`autotune`](autotune.md): retune the split factor and tile sizes after the layout choice is fixed.

@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Compiler-Aware Software Pipelining
+title: 编译器感知软件流水
 description: 检查编译器生成的缓冲与搬运-计算协同，把手动 carry 或文本 prefetch 当作调度消融，仅在证据支持时保留。
-tags: [task.optimization, topic.implementation.pipeline, topic.data_movement.memory_access]
+tags:
+- task.optimization
+- topic.implementation.pipeline
+- topic.data_movement.memory_access
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/software-pipeline.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/software-pipeline.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Compiler-Aware Software Pipelining
 
 ## Summary
@@ -107,7 +114,7 @@ IR-generated stream merely to introduce block pointers.
 ```
 
 This control exposes a regular recurrence for compiler analysis. Any benefit
-from transfer shape or access dimensionality belongs to `block-pointer-tiles`
+from transfer shape or access dimensionality belongs to [`block-pointer-tiles`](block_pointer_tiles.md)
 and must be attributed separately.
 
 ### Candidate: Manual carry as a scheduling ablation
@@ -162,12 +169,11 @@ tile.
 
 ## Related Patterns
 
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): owns transfer-shape and access-dimensionality effects.
-- [dot-matmul-rewrite](./dot_matmul_rewrite.md): owns conversion to regular tiled `tl.dot` structure.
-- [tile-footprint-fitting](../techniques/tiling.md): owns tile footprint and usable-UB fit.
-- [large-tile-fit-enabling](./large_tile_fit_enabling.md): separates scheduling effects from tile or fit changes.
-- [engine-aware-grid-scheduling](./engine_aware_grid_scheduling.md): separates per-program overlap from grid and transfer-concurrency effects.
-- [现有知识：multibuffer=True 与手动双缓冲实操](../operator_optimization/multibuffer_and_double_buffering.md)
+- [`block-pointer-tiles`](block_pointer_tiles.md): owns transfer-shape and access-dimensionality effects.
+- [`dot-matmul-rewrite`](dot_matmul_rewrite.md): owns conversion to regular tiled `tl.dot` structure.
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): owns tile footprint and usable-UB fit.
+- [`large-tile-fit-enabling`](large_tile_fit_enabling.md): separates scheduling effects from tile or fit changes.
+- [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md): separates per-program overlap from grid and transfer-concurrency effects.
 
 ## What To Verify After Applying
 
@@ -177,3 +183,7 @@ tile.
 - Compiler-reported usable UB includes generated/manual buffers, accumulators, temporaries, and spills without nominal-capacity shortcuts.
 - Mapped MTE and Cube/Vector intervals support the accepted overlap attribution.
 - Repeated canonical benchmarks show an attributable improvement over the regular-streaming control.
+
+## Related Knowledge
+
+- [现有知识：multibuffer=True 与手动双缓冲实操](../operator_optimization/multibuffer_and_double_buffering.md)

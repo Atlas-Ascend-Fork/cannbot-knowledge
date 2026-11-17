@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Logical-Layout Tiling Pattern
+title: 逻辑布局 Tiling
 description: 当逻辑操作是仿射数据搬运时，用布局感知的多维 tile 取代标量密集的 1D 线性索引遍历。
-tags: [task.optimization, topic.tiling, topic.data_movement.layout_transform]
+tags:
+- task.optimization
+- topic.tiling
+- topic.data_movement.layout_transform
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/logical-layout-tiling.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/logical-layout-tiling.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Logical-Layout Tiling Pattern
 
 ## Summary
@@ -181,11 +188,11 @@ Discipline note: `tl.make_block_ptr` metadata is not a dependable affine-address
 ## Related Patterns
 
 - `layout-store-and-block-pointers`: Use block pointers when regular tiles lower as fragmented or scalar transfers.
-- [pad-copy-row-col-tiling](./pad_copy_row_col_tiling.md): Rewrite flat 1D copy kernels over `numel(out)` into row–column tiled form to reduce scalar overhead from per-element coordinate reconstruction on the last dimension.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
-- [tile-footprint-fitting](../techniques/tiling.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
-- [scalar-latency-trap-removal](./scalar_latency_trap_removal.md): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
+- [`pad-copy-row-col-tiling`](pad_copy_row_col_tiling.md): Rewrite flat 1D copy kernels over `numel(out)` into row–column tiled form to reduce scalar overhead from per-element coordinate reconstruction on the last dimension.
+- [`program-multiple-rows`](program_multiple_rows.md): Amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
+- [`tile-footprint-fitting`](tile_footprint_fitting.md): Reduce per-program working-set size through hierarchical or sub-block tiling, keeping live data within UB capacity.
+- [`scalar-latency-trap-removal`](scalar_latency_trap_removal.md): Remove scalarizing constructs that block vector hardware utilization on Ascend NPU, including unnecessary scalar control flow, loop-carried pointer recurrences, modulo addressing, narrow masks, and int64 arithmetic on vector paths.
 - `gather-load`: Stage contiguous data in UB before applying indirect indexing or gather.
-- [discrete-access-ub-staging](./discrete_access_ub_staging.md): Stage a contiguous range into the Unified Buffer first, then use on-chip indexing (`tl.gather` or equivalent) to select target values, rather than loading directly from global memory through discrete indices.
-- [simt-window-reduction-tuning](./simt_window_reduction_tuning.md) — outer dispatch and inner-path routing on Ascend 950 SIMT fixed-window reduces: Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
-- [simt-window-divisor-formula](./simt_window_divisor_formula.md) — closed normalizer inner window loop after outer tiling: Use closed-form clipped bounds when full-window masked counting is costly.
+- [`discrete-access-ub-staging`](discrete_access_ub_staging.md): Stage a contiguous range into the Unified Buffer first, then use on-chip indexing (`tl.gather` or equivalent) to select target values, rather than loading directly from global memory through discrete indices.
+- [`simt-window-reduction-tuning`](simt_window_reduction_tuning.md) — outer dispatch and inner-path routing on Ascend 950 SIMT fixed-window reduces: Use for Ascend 950 SIMT fixed-window reductions after enabling SIMT launch mode.
+- [`simt-window-divisor-formula`](simt_window_divisor_formula.md) — closed normalizer inner window loop after outer tiling: Use closed-form clipped bounds when full-window masked counting is costly.

@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Amortized Neutral-Padded Internal Layout
+title: 摊销式中性 Padding 内部布局
 description: 为内部张量引入 tile 对齐的物理维度与中性填充值，把一次性 padding 代价摊销到多次消费中。
-tags: [task.optimization, topic.tiling, topic.data_movement.layout_transform]
+tags:
+- task.optimization
+- topic.tiling
+- topic.data_movement.layout_transform
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/amortized-neutral-padding-layout.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/amortized-neutral-padding-layout.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Amortized Neutral-Padded Internal Layout
 
 ## Summary
@@ -81,7 +88,7 @@ target.
 
 ## Variant: Zero-Pad A Contraction Dimension To Unmask Hot-Loop Loads
 
-When IR shows that the active compiler lowers a masked `tl.load` to a conditional fill-plus-copy path and that path is costly, zero-pad the contraction or reduction dimension to a multiple instead of carrying a tail mask on every iteration: pad the activation buffer with zeros and pad the weight matrix with zero columns. Padded lanes then contribute exact zeros, every hot-path load becomes unmasked, and only the store keeps an output-bound mask (plus an optional channel-tail mask for the output rows). This works for non-idempotent reductions and contractions where the overlap-load trick (`overlap-tail-load-mask-free`) does not apply.
+When IR shows that the active compiler lowers a masked `tl.load` to a conditional fill-plus-copy path and that path is costly, zero-pad the contraction or reduction dimension to a multiple instead of carrying a tail mask on every iteration: pad the activation buffer with zeros and pad the weight matrix with zero columns. Padded lanes then contribute exact zeros, every hot-path load becomes unmasked, and only the store keeps an output-bound mask (plus an optional channel-tail mask for the output rows). This works for non-idempotent reductions and contractions where the overlap-load trick ([`overlap-tail-load-mask-free`](overlap_tail_load_mask_free.md)) does not apply.
 
 Rules:
 
@@ -102,12 +109,12 @@ Candidate families include irregular Linear/GEMM panels reused across output til
 ## Pattern Ownership
 
 - This card owns the decision to introduce and cost an internal neutral-padded physical representation.
-- `exact-tile-no-boundary-fast-path` owns deleting boundary-only predicates after the padded physical extents make exact coverage provable.
-- `intermediate-layout-copy-deletion` owns avoiding a separate layout bridge by changing producer stores or consumer indexing.
-- `pad-copy-row-col-tiling` owns efficient implementation of an unavoidable standalone constant-pad copy.
-- `implicit-transpose-elimination` owns physical dot-operand orientation and cached prearrangement of invariant operands.
-- `live-length-tiling` owns the competing strategy of shrinking work to the live extent.
-- `kernel-fusion-and-value-placement` owns launch grouping; a shared padded boundary does not imply fusion.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md) owns deleting boundary-only predicates after the padded physical extents make exact coverage provable.
+- [`intermediate-layout-copy-deletion`](intermediate_layout_copy_deletion.md) owns avoiding a separate layout bridge by changing producer stores or consumer indexing.
+- [`pad-copy-row-col-tiling`](pad_copy_row_col_tiling.md) owns efficient implementation of an unavoidable standalone constant-pad copy.
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md) owns physical dot-operand orientation and cached prearrangement of invariant operands.
+- [`valid-length-tiling`](live_length_tiling.md) owns the competing strategy of shrinking work to the live extent.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md) owns launch grouping; a shared padded boundary does not imply fusion.
 
 ## What To Verify After Applying
 
@@ -120,10 +127,13 @@ Candidate families include irregular Linear/GEMM panels reused across output til
 
 ## Related Patterns
 
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md)
-- [intermediate-layout-copy-deletion](./intermediate_layout_copy_deletion.md)
-- [pad-copy-row-col-tiling](./pad_copy_row_col_tiling.md)
-- [implicit-transpose-elimination](./implicit_transpose_elimination.md)
-- [live-length-tiling](./live_length_tiling.md)
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md)
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md)
+- [`intermediate-layout-copy-deletion`](intermediate_layout_copy_deletion.md)
+- [`pad-copy-row-col-tiling`](pad_copy_row_col_tiling.md)
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md)
+- [`valid-length-tiling`](live_length_tiling.md)
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md)
+
+## Related Knowledge
+
 - [现有知识：care_padding：padding 填充行为与并行度影响](../techniques/care_padding.md)

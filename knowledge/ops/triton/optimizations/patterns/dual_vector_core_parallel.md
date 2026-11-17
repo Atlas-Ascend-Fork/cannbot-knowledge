@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Dual Vector-Core Parallel Pattern
+title: 双 Vector 核并行
 description: 用 tl.parallel 让同一 AI Core 的两个 Vector 核同时执行任务，提高 Vector 侧并行度。
-tags: [task.optimization, topic.parallelism, topic.programming_model]
+tags:
+- task.optimization
+- topic.parallelism
+- topic.programming_model
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/dual-vector-core-parallel.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/dual-vector-core-parallel.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Dual Vector-Core Parallel Pattern
 
 ## Summary

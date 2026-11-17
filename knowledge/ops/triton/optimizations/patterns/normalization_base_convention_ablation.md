@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Normalization Base Convention Ablation
+title: 归一化底数约定消融
 description: 把自然底与 base-2 两套完整指数归一化实现作为整体约定消融，保持标量数学与向量路径语义一致。
-tags: [task.optimization, topic.compute.normalization, topic.precision]
+tags:
+- task.optimization
+- topic.compute.normalization
+- topic.precision
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/normalization-base-convention-ablation.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/normalization-base-convention-ablation.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Normalization Base Convention Ablation
 
 ## Summary
@@ -145,10 +152,9 @@ bottleneck.
 
 ## Related Patterns
 
-- [attention-intermediate-vector-work-reduction](./attention_intermediate_vector_work_reduction.md): reduce other serialized Vector transformations between Cube producer and consumer while holding the math convention fixed.
-- [algebraic-optimization](./algebraic_optimization.md): handle identities not requiring a complete normalization-base state contract.
-- [attention-visibility-mask-specialization](./attention_visibility_mask_specialization.md): remove invalid attention recurrence work without changing normalization convention.
-- [现有知识：归一化优化经验聚合](../experiences/normalization_experiences.md)
+- [`attention-intermediate-vector-work-reduction`](attention_intermediate_vector_work_reduction.md): reduce other serialized Vector transformations between Cube producer and consumer while holding the math convention fixed.
+- [`algebraic-optimization`](algebraic_optimization.md): handle identities not requiring a complete normalization-base state contract.
+- [`attention-visibility-mask-specialization`](attention_visibility_mask_specialization.md): remove invalid attention recurrence work without changing normalization convention.
 
 ## What To Verify After Applying
 
@@ -158,3 +164,7 @@ bottleneck.
 - Profile evidence for the special-function chain, IR evidence for the intended intrinsic and conversion sequence, and benchmarks for kernel and total-operation latency.
 - Equal work, precision, tile configuration, recurrence iterations, and scale placement—or explicit separate attribution when one must differ.
 - If there is no repeatable gain, retain the safer or established convention and pivot rather than forcing the change.
+
+## Related Knowledge
+
+- [现有知识：归一化优化经验聚合](../experiences/normalization_experiences.md)

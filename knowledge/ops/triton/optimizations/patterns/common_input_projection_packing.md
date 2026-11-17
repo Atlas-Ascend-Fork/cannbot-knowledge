@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Combine Linear Projections That Read the Same Input
+title: 同输入线性投影合并
 description: 把消费同一输入的兄弟仿射投影合并为一次更宽的收缩或共调度收缩，复用彼此的输入读取。
-tags: [task.optimization, topic.compute.composite, topic.data_movement.data_copy]
+tags:
+- task.optimization
+- topic.compute.composite
+- topic.data_movement.data_copy
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/common-input-projection-packing.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/common-input-projection-packing.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Combine Linear Projections That Read the Same Input
 
 ## Summary
@@ -140,19 +147,19 @@ The same structure appears in gated feed-forward blocks, recurrent/state-space g
 
 ## Pattern Ownership
 
-- `kernel-fusion-and-value-placement` owns the decision to group sibling nodes and the general legality/profitability gate.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md) owns the decision to group sibling nodes and the general legality/profitability gate.
 - This card owns the common-input affine implementation after sibling grouping is selected: packed versus co-scheduled contraction form, parameter packing, output-axis partitioning, and the regular-versus-segmented epilogue ladder.
-- `host-launch-coalescing` owns repeated submission of unchanged logical kernels; it does not share one contraction's input traversal.
-- `intermediate-layout-copy-deletion` owns deletion of affine layout bridges at the selected output boundary.
+- [`host-launch-coalescing`](host_launch_coalescing.md) owns repeated submission of unchanged logical kernels; it does not share one contraction's input traversal.
+- [`intermediate-layout-copy-deletion`](intermediate_layout_copy_deletion.md) owns deletion of affine layout bridges at the selected output boundary.
 
 ## Related Patterns
 
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md)
-- [intermediate-layout-copy-deletion](./intermediate_layout_copy_deletion.md)
-- [implicit-transpose-elimination](./implicit_transpose_elimination.md)
-- [amortized-neutral-padding-layout](./amortized_neutral_padding_layout.md)
-- [shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md)
-- [dot-matmul-rewrite](./dot_matmul_rewrite.md)
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md)
+- [`intermediate-layout-copy-deletion`](intermediate_layout_copy_deletion.md)
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md)
+- [`amortized-neutral-padding-layout`](amortized_neutral_padding_layout.md)
+- [`shape-specialized-dispatch`](shape_specialized_dispatch.md)
+- [`dot-matmul-rewrite`](dot_matmul_rewrite.md)
 
 ## What To Verify After Applying
 

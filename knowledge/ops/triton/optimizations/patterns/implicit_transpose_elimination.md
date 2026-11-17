@@ -1,16 +1,22 @@
 ---
 type: Optimization
-title: Implicit Transpose Elimination Pattern
+title: 隐式 Transpose 消除
 description: 让操作数以 Cube 需要的物理布局进入 kernel，或把不可避免的转置放到最便宜的算子与路径上，消除编译器注入的布局变换。
-tags: [task.optimization, topic.data_movement.layout_transform]
+tags:
+- task.optimization
+- topic.data_movement.layout_transform
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/implicit-transpose-elimination.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/implicit-transpose-elimination.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Implicit Transpose Elimination Pattern
 
 ## Summary
@@ -219,14 +225,17 @@ loses.
 
 ## Related Patterns
 
-- Complements **[software-pipeline](./software_pipeline.md)**: this pattern fixes operand layout; pipeline fixes overlap.
-- Complements **[tile-footprint-fitting](../techniques/tiling.md)**: layout fix can enable better tiling outcomes.
-- Distinct from **[cv-intermediate-tile-orientation](./cv_intermediate_tile_orientation.md)**: this pattern fixes GEMM operand storage; that pattern flips Cube-to-Vector intermediate tiles such as `[N, M]` versus `[M, N]` score layouts.
-- Compose with **[block-pointer-tiles](../techniques/memory_access_optimization.md)** only after testing which dot
+- Complements **[`software-pipeline`](software_pipeline.md)**: this pattern fixes operand layout; pipeline fixes overlap.
+- Complements **[`tile-footprint-fitting`](tile_footprint_fitting.md)**: layout fix can enable better tiling outcomes.
+- Distinct from **[`cv-intermediate-tile-orientation`](cv_intermediate_tile_orientation.md)**: this pattern fixes GEMM operand storage; that pattern flips Cube-to-Vector intermediate tiles such as `[N, M]` versus `[M, N]` score layouts.
+- Compose with **[`block-pointer-tiles`](block_pointer_tiles.md)** only after testing which dot
   operand can consume the regular block-pointer tile without a costly logical
   transpose.
-- Use **[shape-specialized-dispatch](../operator_optimization/grid_dispatch_specialization.md)** when transpose ownership has a
+- Use **[`shape-specialized-dispatch`](shape_specialized_dispatch.md)** when transpose ownership has a
   stable, causally explained split across shapes.
-- Often a prerequisite before **[autotune](../operator_optimization/autotune.md)**: tuning on a structurally suboptimal implicit-transpose layout may mislead.
+- Often a prerequisite before **[`autotune`](autotune.md)**: tuning on a structurally suboptimal implicit-transpose layout may mislead.
+
+## Related Knowledge
+
 - [现有知识：转置类 matmul 算子优化](../operator_optimization/matmul_transpose.md)
 - [现有知识：Permute / Layout-transform 优化](../operator_optimization/permute_layout_transform.md)

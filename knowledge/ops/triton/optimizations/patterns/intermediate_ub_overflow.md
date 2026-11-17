@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: Intermediate UB Overflow
+title: 中间量 UB 溢出分片
 description: 当中间张量与输入输出合计超出 UB 时，沿一轴以 extract_slice/insert_slice 分片处理，任意时刻仅一个分片存活。
-tags: [task.optimization, topic.memory, topic.tiling]
+tags:
+- task.optimization
+- topic.memory
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/intermediate-ub-overflow.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/intermediate-ub-overflow.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Intermediate UB Overflow
 
 ## Summary

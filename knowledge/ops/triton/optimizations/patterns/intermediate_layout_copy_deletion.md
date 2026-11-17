@@ -1,16 +1,22 @@
 ---
 type: Optimization
-title: Avoid Intermediate Layout Copies
+title: 删除中间布局拷贝
 description: 删除仅为改变布局而分配填充的中间张量，由生产者直写目标布局或消费者以显式步长读取。
-tags: [task.optimization, topic.data_movement.layout_transform]
+tags:
+- task.optimization
+- topic.data_movement.layout_transform
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/intermediate-layout-copy-deletion.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/intermediate-layout-copy-deletion.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # Avoid Intermediate Layout Copies
 
 ## Summary
@@ -165,13 +171,16 @@ Discipline note: a new layout is not automatically better. Compare producer stor
 
 This card owns deletion of an affine layout-only global-memory bridge by changing producer stores or consumer indexing; route neighboring decisions as follows.
 
-- [kernel-fusion-and-value-placement](./kernel_fusion_and_value_placement.md): owns launch grouping, recomputation, ownership, and retained-boundary decisions.
-- [implicit-transpose-elimination](./implicit_transpose_elimination.md): owns physical GEMM operand orientation and cached prearrangement of invariant operands, avoiding compiler-injected layout transforms.
-- [strided-layout-reduction](./strided_layout_reduction.md): avoid implementing a non-last-dimension single-axis reduction by first doing `movedim(...).contiguous()` or an equivalent layout copy.
-- [block-pointer-tiles](../techniques/memory_access_optimization.md): use `tl.make_block_ptr` as a compiler-facing representation candidate when source semantics define a regular multidimensional tile but IR suggests that manual pointer expressions lower into unexpectedly scalarized, fragmented, strided, or transpose-heavy memory operations.
-- [pad-copy-row-col-tiling](./pad_copy_row_col_tiling.md): rewrite flat 1D copy kernels over `numel(out)` into row–column tiled form to reduce scalar overhead from per-element coordinate reconstruction on the last dimension.
-- [program-multiple-rows](../techniques/tiling_and_grid_910_95.md): amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
-- [amortized-neutral-padding-layout](./amortized_neutral_padding_layout.md): introduce and cost a neutral-padded physical representation when it amortizes boundary work across repeated consumers.
-- [exact-tile-no-boundary-fast-path](./exact_tile_no_boundary_fast_path.md): remove boundary-only predicates after the selected physical layout proves exact coverage.
-- [common-input-projection-packing](./common_input_projection_packing.md): evaluate regular packed output, consumer-native segmented stores, and partial sibling groups when several affine projections share an input.
+- [`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md): owns launch grouping, recomputation, ownership, and retained-boundary decisions.
+- [`implicit-transpose-elimination`](implicit_transpose_elimination.md): owns physical GEMM operand orientation and cached prearrangement of invariant operands, avoiding compiler-injected layout transforms.
+- [`strided-layout-reduction`](strided_layout_reduction.md): avoid implementing a non-last-dimension single-axis reduction by first doing `movedim(...).contiguous()` or an equivalent layout copy.
+- [`block-pointer-tiles`](block_pointer_tiles.md): use `tl.make_block_ptr` as a compiler-facing representation candidate when source semantics define a regular multidimensional tile but IR suggests that manual pointer expressions lower into unexpectedly scalarized, fragmented, strided, or transpose-heavy memory operations.
+- [`pad-copy-row-col-tiling`](pad_copy_row_col_tiling.md): rewrite flat 1D copy kernels over `numel(out)` into row–column tiled form to reduce scalar overhead from per-element coordinate reconstruction on the last dimension.
+- [`program-multiple-rows`](program_multiple_rows.md): amortize per-program fixed costs and improve vector-friendly batching for **row-reduction or row-wise fused kernels** by mapping **multiple rows** to one Triton `program_id` via `BLOCK_M > 1`, instead of one row per program.
+- [`amortized-neutral-padding-layout`](amortized_neutral_padding_layout.md): introduce and cost a neutral-padded physical representation when it amortizes boundary work across repeated consumers.
+- [`exact-tile-no-boundary-fast-path`](exact_tile_no_boundary_fast_path.md): remove boundary-only predicates after the selected physical layout proves exact coverage.
+- [`common-input-projection-packing`](common_input_projection_packing.md): evaluate regular packed output, consumer-native segmented stores, and partial sibling groups when several affine projections share an input.
+
+## Related Knowledge
+
 - [现有知识：Permute / Layout-transform 优化](../operator_optimization/permute_layout_transform.md)

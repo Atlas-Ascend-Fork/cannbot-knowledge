@@ -1,16 +1,23 @@
 ---
 type: Optimization
-title: L2 Stripe-Capacity Tile Widening
+title: L2 条带容量 Tile 加宽
 description: 当 GEMM 类 kernel 每 program batch 的长轴操作数切片超出 L2 容量导致吞吐坍塌时，加宽 tile 降低重读次数。
-tags: [task.optimization, topic.memory, topic.tiling]
+tags:
+- task.optimization
+- topic.memory
+- topic.tiling
 status: stable
 sources:
-- resource: https://gitcode.com/AgenticCompiler/BiShengKernelAgent/blob/21053d2fd6e8d7bb885dec66d887dd9e75014c5f/skills/triton/triton-npu-optimize-knowledge/references/patterns/l2-stripe-capacity-tile-widening.md
+- resource: https://gitcode.com/nitrocoldbrew20/triton-npu-patterns/blob/a31bf998b0998c4d49ed2729c197fb4d801ae7d1/patterns/l2-stripe-capacity-tile-widening.md
   role: primary
 created_at: '2026-10-15T02:12:54Z'
-updated_at: '2026-10-15T02:12:54Z'
-platforms: [a2, a3, '950']
+updated_at: '2026-11-17T03:37:03Z'
+platforms:
+- a2
+- a3
+- '950'
 ---
+
 # L2 Stripe-Capacity Tile Widening
 
 ## Summary
@@ -38,7 +45,7 @@ until it is comparable to or larger than L2.
 
 ## Avoid When
 
-- UB planning rejects the widened tile — the lever trades UB for L2 reuse; if the wider tile does not fit, apply `large-tile-fit-enabling` or change program order (`diagonal-block-traversal`, `engine-aware-grid-scheduling`) instead.
+- UB planning rejects the widened tile — the lever trades UB for L2 reuse; if the wider tile does not fit, apply [`large-tile-fit-enabling`](large_tile_fit_enabling.md) or change program order ([`diagonal-block-traversal`](diagonal_block_traversal.md), [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md)) instead.
 - Widening shrinks the grid below the physical core count (small M): the kernel becomes latency-bound and loses more from idle cores than it gains from L2 reuse.
 
 ## Signals
@@ -79,7 +86,7 @@ bandwidth-bound and gain less.
 ### Rule: Check the hard constraints after each widening step
 
 Two constraints bound the lever: UB planning must still succeed for the wider
-tile (if not, see `large-tile-fit-enabling`), and the grid must stay at or
+tile (if not, see [`large-tile-fit-enabling`](large_tile_fit_enabling.md)), and the grid must stay at or
 above the physical core count at the smallest benchmark shape — otherwise
 idle cores cost more than L2 reuse gains.
 
@@ -87,28 +94,31 @@ idle cores cost more than L2 reuse gains.
 
 Keep the kernel body, traversal order, and `BLOCK_K` byte-identical so the
 first comparison isolates the tile effect; compose with
-`diagonal-block-traversal` or grouped order only afterwards. The rewrite
+[`diagonal-block-traversal`](diagonal_block_traversal.md) or grouped order only afterwards. The rewrite
 changes only which output elements a program computes, so results are
 bit-exact for a fixed `BLOCK_K`; a numerical diff after this change means
 something else moved.
 
-This card is the tile-shape half of the L2 problem; `diagonal-block-traversal`
+This card is the tile-shape half of the L2 problem; [`diagonal-block-traversal`](diagonal_block_traversal.md)
 is the program-order half. The two compose: tile aspect ratio bounds the
 total re-read count, traversal order bounds the per-batch footprint. If even
 the widened tile cannot close the gap to a tuned reference implementation on
 the same shapes, the residual gap is the decision input for offloading the
-stage (`kernel-fusion-and-value-placement`), not a reason to keep tuning.
+stage ([`kernel-fusion-and-value-placement`](kernel_fusion_and_value_placement.md)), not a reason to keep tuning.
 
 ## Related Patterns
 
-- [diagonal-block-traversal](../techniques/core_mapping.md): program-order remap for L2 locality and bank conflicts — the orthogonal half.
-- `tiling` and [large-tile-fit-enabling](./large_tile_fit_enabling.md): UB-side capacity and whether the widened tile fits.
-- [engine-aware-grid-scheduling](./engine_aware_grid_scheduling.md): per-batch mapping; keep tile math fixed there, change it here.
-- [现有知识：Bank Conflict 消除](../techniques/bank_conflict.md)
-- [现有知识：Core 映射策略](../techniques/core_mapping.md)
+- [`diagonal-block-traversal`](diagonal_block_traversal.md): program-order remap for L2 locality and bank conflicts — the orthogonal half.
+- `tiling` and [`large-tile-fit-enabling`](large_tile_fit_enabling.md): UB-side capacity and whether the widened tile fits.
+- [`engine-aware-grid-scheduling`](engine_aware_grid_scheduling.md): per-batch mapping; keep tile math fixed there, change it here.
 
 ## What To Verify After Applying
 
 - Correctness on masked tails introduced by the new tile shape.
 - Throughput on the previously collapsing shapes, plus a regression check on the moderate shapes the old tile was tuned for.
 - Grid size still >= physical core count at the smallest benchmark shape.
+
+## Related Knowledge
+
+- [现有知识：Bank Conflict 消除](../techniques/bank_conflict.md)
+- [现有知识：Core 映射策略](../techniques/core_mapping.md)
