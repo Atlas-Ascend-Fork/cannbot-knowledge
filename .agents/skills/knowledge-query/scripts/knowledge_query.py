@@ -41,6 +41,7 @@ from retrieval.root import (  # noqa: E402
 
 sys.dont_write_bytecode = True
 SEARCH_SCHEMA = "knowledge-search.v5"
+BILINGUAL_SEARCH_SCHEMA = "knowledge-search.v6"
 RECEIPT_SCHEMA = "cannbot-knowledge-search.v3"
 FILTER_FIELDS = (
     "domain",
@@ -300,7 +301,7 @@ def request_payload(args: argparse.Namespace, mapped_task: str | None) -> dict[s
         filters["scope"] = args.scope
     if getattr(args, "all_platforms", False):
         filters["all_platforms"] = True
-    return {
+    payload = {
         "query": args.query,
         "decision": args.decision,
         "match": args.match,
@@ -308,6 +309,10 @@ def request_payload(args: argparse.Namespace, mapped_task: str | None) -> dict[s
         "filters": filters,
         "limit": args.limit,
     }
+    alt_query = getattr(args, "alt_query", None)
+    if alt_query is not None:
+        payload["alt_query"] = alt_query
+    return payload
 
 
 def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
@@ -347,6 +352,11 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
     match = request.get("match")
     if match not in {"text", "literal"}:
         raise ValueError("receipt request.match must be text or literal")
+    alt_query = request.get("alt_query")
+    if alt_query is not None and (not isinstance(alt_query, str) or not alt_query.strip()):
+        raise ValueError("receipt request.alt_query must be null or a non-empty string")
+    if alt_query is not None and match != "text":
+        raise ValueError("receipt request.alt_query requires request.match to be text")
     status = filters.get("status")
     if status not in {"stable", "draft", "deprecated", "all"}:
         raise ValueError("receipt request.status is invalid")
@@ -378,6 +388,7 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
     return argparse.Namespace(
         command="search",
         query=query,
+        alt_query=alt_query,
         decision=decision,
         domain=filters["domain"],
         technology=filters["technology"],
@@ -443,35 +454,16 @@ def search_candidates(
     return eligible, mapped_task, scope_registry
 
 
-def search_payload(
-    root: Path,
-    cards: list[IndexedCard],
-    index_metadata: dict[str, Any],
-    connection,
+def rank_scores(
+    raw_scores: dict[int, float],
+    eligible: dict[int, IndexedCard],
+    scope_registry,
     args: argparse.Namespace,
-    *,
-    include_current_repository: bool,
-) -> dict[str, Any]:
-    eligible, mapped_task, scope_registry = search_candidates(root, cards, args)
-    normalized_query = args.query.lower().strip()
-    if not normalized_query:
-        raise ValueError("--query must not be empty")
-    if args.match == "literal":
-        raw_scores = literal_scores(connection, normalized_query)
-    else:
-        phrase_ids = phrase_matches(connection, normalized_query)
-        tokenizer = index_tokenizer(index_metadata)
-        raw_scores = posting_scores(
-            connection,
-            query_tokens(normalized_query, tokenizer=tokenizer, connection=connection),
-            tokenizer=tokenizer,
-        )
-        for doc_id in phrase_ids:
-            raw_scores[doc_id] = raw_scores.get(doc_id, 0.0) + 4.0
-
+) -> tuple[list[tuple[float, IndexedCard]], dict[int, dict[str, Any]], list[dict[str, Any]]]:
+    """Apply Scope filtering, trust-tier weighting and the shared sort key."""
     ranked: list[tuple[float, IndexedCard]] = []
     scope_matches: dict[int, dict[str, Any]] = {}
-    scope_conflicts = []
+    scope_conflicts: list[dict[str, Any]] = []
     for doc_id, score in raw_scores.items():
         card = eligible.get(doc_id)
         if card is None or score <= 0:
@@ -493,47 +485,206 @@ def search_payload(
         0 if scope_registry is None or scope_matches[item[1].doc_id]["state"] == "match" else 1,
         item[1].path,
     ))
-    ranked = ranked[: args.limit]
+    return ranked, scope_matches, scope_conflicts
 
+
+def text_query_scores(
+    connection,
+    index_metadata: dict[str, Any],
+    eligible: dict[int, IndexedCard],
+    scope_registry,
+    args: argparse.Namespace,
+    query_text: str,
+) -> tuple[list[tuple[float, IndexedCard]], dict[int, dict[str, Any]], list[dict[str, Any]]]:
+    """Rank one text query against the shared eligible set without applying the limit."""
+    normalized_query = query_text.lower().strip()
+    phrase_ids = phrase_matches(connection, normalized_query)
+    tokenizer = index_tokenizer(index_metadata)
+    raw_scores = posting_scores(
+        connection,
+        query_tokens(normalized_query, tokenizer=tokenizer, connection=connection),
+        tokenizer=tokenizer,
+    )
+    for doc_id in phrase_ids:
+        raw_scores[doc_id] = raw_scores.get(doc_id, 0.0) + 4.0
+    return rank_scores(raw_scores, eligible, scope_registry, args)
+
+
+def result_entry(
+    rank: int,
+    score: float,
+    card: IndexedCard,
+    root: Path,
+    args: argparse.Namespace,
+    scope_state: dict[str, Any] | None,
+) -> dict[str, Any]:
+    metadata = card.metadata
+    result = {
+        "rank": rank,
+        "score": score,
+        "match_basis": args.match,
+        "path": card.path,
+        "local_path": str(root / card.relative_path),
+        "card_lines": card.card_lines,
+        "card_sha256": card.card_sha256,
+        "title": metadata.get("title"),
+        "description": metadata.get("description"),
+        "domain": card.domain,
+        "technology": card.technology,
+        "type": metadata.get("type"),
+        "profile": card.profile,
+        "status": metadata.get("status"),
+        "trust_tier": trust_tier(metadata),
+        "platforms": metadata.get("platforms"),
+        "tags": metadata.get("tags"),
+        "sources": metadata.get("sources", [])[:2],
+        "created_at": metadata.get("created_at"),
+        "updated_at": metadata.get("updated_at"),
+    }
+    for field in (
+        "cann_versions",
+        "aliases",
+        "verified",
+        "source_technology",
+        "target_technology",
+        "replaced_by",
+        "scope",
+    ):
+        if field in metadata:
+            result[field] = metadata[field]
+    if scope_state is not None:
+        result["scope_match"] = scope_state
+    return result
+
+
+def bilingual_rank_fusion(
+    ranked_original: list[tuple[float, IndexedCard]],
+    ranked_alt: list[tuple[float, IndexedCard]],
+) -> list[dict[str, Any]]:
+    """Interleave two full rankings by rank without summing raw scores.
+
+    Positions alternate original-first (original #1, alt #1, original #2, ...);
+    a card already taken keeps its earliest position and later legs skip it.
+    Each entry records its per-leg rank and raw score for audit.
+    """
+    details: dict[int, dict[str, Any]] = {}
+    for leg, ranked in (("original", ranked_original), ("alt", ranked_alt)):
+        for position, (score, card) in enumerate(ranked, start=1):
+            entry = details.setdefault(
+                card.doc_id, {"card": card, "ranks": {}, "scores": {}}
+            )
+            entry["ranks"][leg] = position
+            entry["scores"][leg] = score
+    ordered: list[dict[str, Any]] = []
+    included: set[int] = set()
+    for position in range(max(len(ranked_original), len(ranked_alt))):
+        for ranked in (ranked_original, ranked_alt):
+            if position >= len(ranked):
+                continue
+            card = ranked[position][1]
+            if card.doc_id in included:
+                continue
+            included.add(card.doc_id)
+            ordered.append(details[card.doc_id])
+    return ordered
+
+
+def search_payload(
+    root: Path,
+    cards: list[IndexedCard],
+    index_metadata: dict[str, Any],
+    connection,
+    args: argparse.Namespace,
+    *,
+    include_current_repository: bool,
+) -> dict[str, Any]:
+    eligible, mapped_task, scope_registry = search_candidates(root, cards, args)
+    normalized_query = args.query.lower().strip()
+    if not normalized_query:
+        raise ValueError("--query must not be empty")
+    alt_query = getattr(args, "alt_query", None)
+    bilingual = alt_query is not None
+    if bilingual:
+        normalized_alt = alt_query.lower().strip()
+        if args.match != "text":
+            raise ValueError(
+                "--alt-query requires --match text; literal queries must not be rewritten"
+            )
+        if not normalized_alt:
+            raise ValueError("--alt-query must not be empty")
+        if normalized_alt == normalized_query:
+            raise ValueError("--alt-query must differ from --query")
+
+    scope_matches: dict[int, dict[str, Any]] = {}
+    scope_conflicts: list[dict[str, Any]] = []
     results = []
-    for rank, (score, card) in enumerate(ranked, start=1):
-        metadata = card.metadata
-        result = {
-            "rank": rank,
-            "score": round(score, 3),
-            "match_basis": args.match,
-            "path": card.path,
-            "local_path": str(root / card.relative_path),
-            "card_lines": card.card_lines,
-            "card_sha256": card.card_sha256,
-            "title": metadata.get("title"),
-            "description": metadata.get("description"),
-            "domain": card.domain,
-            "technology": card.technology,
-            "type": metadata.get("type"),
-            "profile": card.profile,
-            "status": metadata.get("status"),
-            "trust_tier": trust_tier(metadata),
-            "platforms": metadata.get("platforms"),
-            "tags": metadata.get("tags"),
-            "sources": metadata.get("sources", [])[:2],
-            "created_at": metadata.get("created_at"),
-            "updated_at": metadata.get("updated_at"),
-        }
-        for field in (
-            "cann_versions",
-            "aliases",
-            "verified",
-            "source_technology",
-            "target_technology",
-            "replaced_by",
-            "scope",
+    if bilingual:
+        ranked_original, matches_original, conflicts_original = text_query_scores(
+            connection, index_metadata, eligible, scope_registry, args, args.query
+        )
+        ranked_alt, matches_alt, conflicts_alt = text_query_scores(
+            connection, index_metadata, eligible, scope_registry, args, alt_query
+        )
+        scope_matches = {**matches_original, **matches_alt}
+        seen_conflicts = set()
+        for conflict in sorted(
+            conflicts_original + conflicts_alt, key=lambda item: item["path"]
         ):
-            if field in metadata:
-                result[field] = metadata[field]
-        if scope_registry is not None:
-            result["scope_match"] = scope_matches[card.doc_id]
-        results.append(result)
+            if conflict["path"] not in seen_conflicts:
+                seen_conflicts.add(conflict["path"])
+                scope_conflicts.append(conflict)
+        fused = bilingual_rank_fusion(ranked_original, ranked_alt)[: args.limit]
+        for rank, entry in enumerate(fused, start=1):
+            card = entry["card"]
+            best_leg = min(entry["ranks"], key=lambda leg: entry["ranks"][leg])
+            result = result_entry(
+                rank,
+                round(entry["scores"][best_leg], 3),
+                card,
+                root,
+                args,
+                scope_matches.get(card.doc_id) if scope_registry is not None else None,
+            )
+            result["bilingual"] = {
+                "original_rank": entry["ranks"].get("original"),
+                "alt_rank": entry["ranks"].get("alt"),
+                "score_leg": best_leg,
+                "original_score": (
+                    round(entry["scores"]["original"], 3)
+                    if "original" in entry["scores"]
+                    else None
+                ),
+                "alt_score": (
+                    round(entry["scores"]["alt"], 3)
+                    if "alt" in entry["scores"]
+                    else None
+                ),
+            }
+            results.append(result)
+    else:
+        if args.match == "literal":
+            ranked, scope_matches, scope_conflicts = rank_scores(
+                literal_scores(connection, normalized_query),
+                eligible,
+                scope_registry,
+                args,
+            )
+        else:
+            ranked, scope_matches, scope_conflicts = text_query_scores(
+                connection, index_metadata, eligible, scope_registry, args, args.query
+            )
+        ranked = ranked[: args.limit]
+        for rank, (score, card) in enumerate(ranked, start=1):
+            results.append(
+                result_entry(
+                    rank,
+                    round(score, 3),
+                    card,
+                    root,
+                    args,
+                    scope_matches.get(card.doc_id) if scope_registry is not None else None,
+                )
+            )
 
     request = request_payload(args, mapped_task)
     request_sha256 = canonical_json_sha256(request)
@@ -543,7 +694,7 @@ def search_payload(
         include_current_repository=include_current_repository,
     )
     payload = {
-        "schema_version": SEARCH_SCHEMA,
+        "schema_version": BILINGUAL_SEARCH_SCHEMA if bilingual else SEARCH_SCHEMA,
         "request_sha256": request_sha256,
         "request": request,
         "query": args.query,
@@ -555,6 +706,14 @@ def search_payload(
         "results": results,
         "hits": results,
     }
+    if bilingual:
+        payload["alt_query"] = alt_query
+        payload["fusion"] = {
+            "method": "rank-interleave",
+            "order": ["original", "alt"],
+            "original_hits": len(ranked_original),
+            "alt_hits": len(ranked_alt),
+        }
     if scope_registry is not None:
         payload["scope_filter"] = {
             "enabled": True,
@@ -602,6 +761,12 @@ def search(
             print(f"  path: {hit['path']}")
             print(f"  local_path: {hit['local_path']} ({hit['card_lines']} lines)")
             print(f"  description: {hit['description']}")
+            if "bilingual" in hit:
+                print(
+                    "  bilingual: "
+                    f"original rank {hit['bilingual']['original_rank']}, "
+                    f"alt rank {hit['bilingual']['alt_rank']}"
+                )
             if "scope_match" in hit:
                 print(f"  scope_match: {hit['scope_match']['state']}")
                 if hit["scope_match"]["state"] == "unknown":
@@ -652,6 +817,13 @@ def build_parser() -> argparse.ArgumentParser:
         default="stable",
     )
     search_cmd.add_argument("--match", choices=["text", "literal"], default="text")
+    search_cmd.add_argument(
+        "--alt-query",
+        help=(
+            "Optional alternate-language query for bilingual dual search; requires "
+            "--match text, shares all filters and Scope, interleaves per-leg ranks"
+        ),
+    )
     search_cmd.add_argument("-k", "--k", "--limit", dest="limit", type=int, default=10)
     output = search_cmd.add_mutually_exclusive_group()
     output.add_argument("--json", action="store_true", help="JSON is the default")

@@ -1,0 +1,129 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software: you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You should not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+# 双搜（--alt-query）定向验收：独立于通用质量门槛运行，任何漏召回都直接失败，
+# 不进入 Recall/MRR 聚合豁免。效果对照（同一查询集单搜 vs 双搜）记录在 Issue #19 / PR !275。
+# expected_scope_excluded_exact 断言双搜合并后的完整冲突清单：数量、重复与漏报均不得漂移。
+cases:
+- id: bilingual_zh_en_welford_primitives
+  description: 纯中文查询经英文改写腿召回英文 Optimization 卡；同过滤条件两路按名次交错融合。
+  source:
+    kind: manual
+    part_id: bilingual_dual_search_20261114
+  query: 在线均值方差原语替代手写循环
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+    alt_query: arch35 WelfordUpdate WelfordFinalize replace hand-rolled mean variance loops
+  expected:
+  - ops/ascendc/optimizations/ol_135_arch35_welford_mean_var_primitives
+- id: bilingual_en_zh_multimodal_training
+  description: 英文查询经中文改写腿提升中文 Concept 卡名次；验证 model 域与 agnostic 平台过滤在双搜下保持。
+  source:
+    kind: manual
+    part_id: bilingual_dual_search_20261114
+  query: multimodal diffusion video generation training frozen text encoder
+  filters:
+    domain: model
+    technology: training
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+    alt_query: 多模态生成训练 扩散 视频图像生成 冻结文本编码器
+  expected:
+  - model/training/concepts/modules/multimodal_dit_vae_train
+- id: bilingual_mixed_identifier_preserved
+  description: 中英混合查询保留 DataCopyPad 精确标识符；改写腿不翻译 API 名，家族卡仍可召回。
+  source:
+    kind: manual
+    part_id: bilingual_dual_search_20261114
+  query: DataCopyPad 非对齐拷贝约束
+  filters:
+    domain: ops
+    technology: ascendc
+    type: apis
+    platform:
+    - a2
+    status: stable
+    match: text
+    k: 5
+    alt_query: DataCopyPad unaligned copy constraints
+  expected_any:
+  - - ops/ascendc/apis/simd_api/basic_api/cube_compute_isasi/cube_compute_load/data_copy_pad_ub_to_l1
+    - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm
+    - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub
+- id: bilingual_literal_never_rewritten
+  description: literal 精确匹配禁止携带改写查询，结构化报错并保持退出码 2。
+  source:
+    kind: manual
+    part_id: bilingual_dual_search_20261114
+  query: DataCopyPad 非对齐
+  filters:
+    domain: ops
+    technology: ascendc
+    type: apis
+    platform:
+    - a2
+    status: stable
+    match: literal
+    alt_query: DataCopyPad unaligned
+  expected_error: --alt-query requires --match text
+- id: bilingual_alt_must_differ
+  description: 改写查询与原查询规范化后相同即拒绝，避免无效双搜。
+  source:
+    kind: manual
+    part_id: bilingual_dual_search_20261114
+  query: welford update
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+    alt_query: Welford Update
+  expected_error: --alt-query must differ from --query
+- id: bilingual_scope_conflict_audit_merges_once
+  description: 双搜与单腿的 Scope 冲突审计口径一致；双腿均命中的冲突卡在 excluded 中各只记一次，count 不重复累计。
+  source:
+    kind: manual
+    part_id: bilingual_dual_search_20261114
+  query: PD 分离 在线部署
+  filters:
+    domain: model
+    technology: inference
+    platform:
+    - a3
+    status: stable
+    match: text
+    k: 5
+    alt_query: prefill decode disaggregation online deployment
+  scope:
+    schema: model.inference.v1
+    any_of:
+    - all_of:
+        serving_mode:
+        - offline
+  expected:
+  - model/inference/optimizations/rules/pd_kv_transfer_timeout_from_hccl_rdma_budget
+  expected_scope_states:
+    model/inference/optimizations/rules/pd_kv_transfer_timeout_from_hccl_rdma_budget: unknown
+  expected_scope_excluded_exact:
+  - model/inference/concepts/frameworks/online_pd_inference
+  - model/inference/optimizations/rules/multi_instance_online_master_addr
+  - model/inference/optimizations/rules/online_decode_kv_admission_retraction

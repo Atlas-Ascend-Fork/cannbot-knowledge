@@ -12,7 +12,9 @@
 """Run retrieval cases against knowledge-query.
 
 Cases may supply a structured ``scope`` and assert returned machine states via
-``expected_scope_states`` or audited conflicts via ``expected_scope_excluded``.
+``expected_scope_states``, audited conflicts via ``expected_scope_excluded``, or
+the complete sorted conflict list via ``expected_scope_excluded_exact`` (which
+also catches duplicated or missing audit entries in multi-leg searches).
 These assertions verify the retrieval contract, not human applicability labels.
 The original case file and quality thresholds remain the default.
 Optional preflight checks expected-card eligibility before running or scoring
@@ -260,6 +262,7 @@ def run_cases(
         scoped = "scope" in case
         scope_states = case.get("expected_scope_states", {})
         scope_excluded = case.get("expected_scope_excluded", [])
+        scope_excluded_exact = case.get("expected_scope_excluded_exact")
         if not isinstance(scope_states, dict) or any(
             not isinstance(path, str) or not path
             or not isinstance(state, str) or state not in {"match", "unknown"}
@@ -270,7 +273,12 @@ def run_cases(
             not isinstance(path, str) or not path for path in scope_excluded
         ):
             raise ValueError("expected_scope_excluded must be a list of Concept IDs")
-        if (scope_states or scope_excluded) and not scoped:
+        if scope_excluded_exact is not None and (
+            not isinstance(scope_excluded_exact, list)
+            or any(not isinstance(path, str) or not path for path in scope_excluded_exact)
+        ):
+            raise ValueError("expected_scope_excluded_exact must be a list of Concept IDs")
+        if (scope_states or scope_excluded or scope_excluded_exact is not None) and not scoped:
             raise ValueError("Scope assertions require an explicit case.scope")
         command.extend(query_arguments(case))
         started = time.perf_counter()
@@ -323,6 +331,13 @@ def run_cases(
                 actual = scope_state(excluded_items.get(path))
                 if path in hits or actual != "conflict":
                     scope_errors.append(f"{path}: expected audited conflict exclusion")
+            if scope_excluded_exact is not None:
+                actual_excluded = [item["path"] for item in exclusions]
+                if actual_excluded != scope_excluded_exact:
+                    scope_errors.append(
+                        f"exact excluded mismatch: expected {scope_excluded_exact}, "
+                        f"got {actual_excluded}"
+                    )
         missing = [group for group in groups if not hits.intersection(group)]
         leaked = set(case.get("excluded", [])) & hits
         expected_found += len(groups) - len(missing)

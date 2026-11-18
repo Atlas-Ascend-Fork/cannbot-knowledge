@@ -55,7 +55,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> discover 
 
 ```bash
 python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
-  --query <text> [--domain ops] [--technology ascendc] [--type apis] \
+  --query <text> [--alt-query <另一语言短改写>] [--domain ops] [--technology ascendc] [--type apis] \
   [--task implementation] [--tag topic.data_movement] \
   --platform a2 [--include-shared] \
   [--source-technology triton] [--target-technology ascendc] \
@@ -111,6 +111,13 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 ```
 
 显式增加 `--domain graph --technology torch_compile` 或 `--domain common --technology toolchains` 时，对应模型规范卡必须仍被排除；这是过滤契约，不是卡片缺失。回归 `ascend_community_cases.yaml` 分别保留受限查询的排除断言、上述不预设领域的命中断言，以及正确模型领域的原有命中用例。
+### 可选中英双搜
+
+`--alt-query` 提供可选双搜：调用方保留原查询并生成另一语言的简短改写，脚本以**完全相同的过滤条件与 Scope** 跑两趟完整文本检索，按各自名次交错融合（原查询优先：original #1、alt #1、original #2……；两趟都命中的卡片按路径去重，保留更早位次），不叠加两趟的原始分数。原查询第 r 名在融合后最多退到 2r-1，改写腿头部候选必进前二。
+
+约束：仅支持 `--match text`，`literal` 精确标识符与错误码查询不得翻译改写；改写与原查询规范化后必须不同；改写中的 API 名、错误码、芯片型号、代码符号和数值应原样保留。改写由调用方（如 Agent）生成，脚本不联网、不翻译。
+
+输出 schema 升级为 `knowledge-search.v6`（不带 `--alt-query` 时保持 v5，行为与请求指纹完全不变）：顶层新增 `alt_query` 与 `fusion`（融合方法、顺序与 `original_hits` / `alt_hits` 两腿命中数，改写腿零命中可直接从 `alt_hits: 0` 识别而非静默降级）；每个命中新增 `bilingual`（`original_rank` / `alt_rank` 及各自原始得分，未出现的腿为 null；`score_leg` 标注 `score` 取自哪一腿）。`rank` / `count` 为融合后语义，`score` 取名次更优一趟的原始得分；v6 的 `results` 按 `rank` 排序，`score` 不再保证与名次同序，调用方不得按 `score` 重排。Receipt 与请求指纹记录原查询、改写查询、各自名次与合并结果，重放使用同一契约。双搜按需启用、非默认流程；是否设为默认待独立评测（Issue #19）。
 
 ### 显式场景 Scope
 

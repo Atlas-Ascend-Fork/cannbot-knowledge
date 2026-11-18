@@ -24,15 +24,20 @@ from retrieval.root import (  # noqa: E402
     resolve_root,
     sha256_file,
 )
-from knowledge_query import search_args_from_request, search_payload  # noqa: E402
+from knowledge_query import (  # noqa: E402
+    BILINGUAL_SEARCH_SCHEMA,
+    RECEIPT_SCHEMA,
+    SEARCH_SCHEMA,
+    search_args_from_request,
+    search_payload,
+)
 
 
 sys.dont_write_bytecode = True
 STATE_SCHEMA = "cannbot-retrieval-state.v1"
 REVIEW_SCHEMA = "cannbot-retrieval-review.v1"
 READY_SCHEMA = "cannbot-retrieval-ready.v1"
-RECEIPT_SCHEMA = "cannbot-knowledge-search.v3"
-SEARCH_SCHEMA = "knowledge-search.v5"
+RESULT_SCHEMAS = (SEARCH_SCHEMA, BILINGUAL_SEARCH_SCHEMA)
 DECISION_STATUSES = {"covered", "conflicting", "insufficient", "gap"}
 CURRENT_INDEX_FIELDS = (
     "schema_version",
@@ -47,10 +52,13 @@ REPLAY_FIELDS = (
     "request_sha256",
     "request",
     "query",
+    "alt_query",
+    "fusion",
     "match",
     "filters",
     "limit",
     "count",
+    "scope_filter",
     "results",
     "hits",
 )
@@ -195,11 +203,11 @@ def validate_state(
             if not isinstance(result, dict):
                 audit.error("receipt.result", receipt_location + ".result", "must be an object")
                 result = {}
-            if result.get("schema_version") != SEARCH_SCHEMA:
+            if result.get("schema_version") not in RESULT_SCHEMAS:
                 audit.error(
                     "receipt.result_schema",
                     receipt_location + ".result.schema_version",
-                    f"expected {SEARCH_SCHEMA}",
+                    f"expected one of {', '.join(RESULT_SCHEMAS)}",
                 )
             if result.get("request") != request:
                 audit.error(

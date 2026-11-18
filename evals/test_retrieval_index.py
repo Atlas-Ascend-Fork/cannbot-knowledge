@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import io
 import json
 import os
@@ -1753,6 +1754,408 @@ class RuntimeQueryTests(unittest.TestCase):
                 rejected = RetrievalAuditTests.validate_state(self.root, state_path)
                 self.assertEqual(1, rejected.returncode)
                 self.assertIn(expected_error, {item["code"] for item in json.loads(rejected.stdout)["errors"]})
+
+
+class BilingualSearchTests(unittest.TestCase):
+    ZH_QUERY = "均值 方差 原语 手写 循环"
+    EN_ALT = "welford mean variance primitives replace hand rolled loops"
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.work = Path(temporary.name)
+        self.root = self.work / "repository"
+        make_root(self.root)
+        api_root = self.root / "knowledge/ops/ascendc/apis"
+        cards = (
+            (
+                "zh_mean_variance",
+                "均值 方差 原语 优化",
+                "在线 均值 方差 计算与 手写 循环 替代",
+                "均值 方差 原语 正文。手写 循环 可以被 原语 替代。",
+            ),
+            (
+                "en_welford_primitives",
+                "welford mean variance primitives",
+                "replace hand rolled loops with welford primitives",
+                "welford primitives body text about mean variance accumulation.",
+            ),
+            (
+                "shared_both_legs",
+                "welford mean variance 均值 方差",
+                "welford primitives plus 均值 方差 对照",
+                "welford primitives body also mentions 均值 方差 terms.",
+            ),
+        )
+        for name, title, description, body in cards:
+            (api_root / f"{name}.md").write_text(
+                SYNTHETIC_CARD.replace("Synthetic API contract", title)
+                .replace(
+                    "Deterministic API fixture for retrieval tests.",
+                    description,
+                )
+                .replace(
+                    "This fixture verifies indexed API lookup and audit behavior without depending on\nrepository knowledge cards.",
+                    body,
+                ),
+                encoding="utf-8",
+            )
+        built = run_index(self.root, "build")
+        self.assertEqual(0, built.returncode, built.stderr)
+        self.environment = dict(os.environ)
+        self.environment.pop("CANNBOT_KNOWLEDGE_PLATFORM", None)
+        self.environment.pop("CANNBOT_KNOWLEDGE_ROOT", None)
+
+    def query(
+        self, *arguments: str, query_text: str = ZH_QUERY, alt_query: str | None = None
+    ) -> subprocess.CompletedProcess[str]:
+        command = [
+            sys.executable, str(QUERY), "--knowledge-root", str(self.root), "search",
+            "--query", query_text, "--match", "text", "--technology", "ascendc",
+            "--platform", "a2", "--status", "stable", "-k", "10", *arguments,
+        ]
+        if alt_query is not None:
+            command += ["--alt-query", alt_query]
+        return subprocess.run(
+            command, cwd=self.root, env=self.environment,
+            check=False, text=True, capture_output=True,
+        )
+
+    def test_bilingual_interleaves_legs_and_records_ranks(self) -> None:
+        result = self.query(alt_query=self.EN_ALT)
+        self.assertEqual(0, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual("knowledge-search.v6", payload["schema_version"])
+        self.assertEqual(self.EN_ALT, payload["alt_query"])
+        self.assertEqual(
+            {
+                "method": "rank-interleave",
+                "order": ["original", "alt"],
+                "original_hits": 2,
+                "alt_hits": 2,
+            },
+            payload["fusion"],
+        )
+        paths = [hit["path"] for hit in payload["results"]]
+        self.assertEqual("ops/ascendc/apis/zh_mean_variance", paths[0])
+        self.assertEqual("ops/ascendc/apis/en_welford_primitives", paths[1])
+        en_hit = payload["results"][1]
+        self.assertIsNone(en_hit["bilingual"]["original_rank"])
+        self.assertIsNone(en_hit["bilingual"]["original_score"])
+        self.assertEqual(1, en_hit["bilingual"]["alt_rank"])
+        self.assertIsNotNone(en_hit["bilingual"]["alt_score"])
+        self.assertEqual("alt", en_hit["bilingual"]["score_leg"])
+        self.assertEqual(self.EN_ALT, payload["request"]["alt_query"])
+
+    def test_bilingual_dedupes_card_present_in_both_legs(self) -> None:
+        result = self.query(alt_query=self.EN_ALT)
+        self.assertEqual(0, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        paths = [hit["path"] for hit in payload["results"]]
+        self.assertEqual(1, paths.count("ops/ascendc/apis/shared_both_legs"))
+        shared = next(
+            hit for hit in payload["results"]
+            if hit["path"] == "ops/ascendc/apis/shared_both_legs"
+        )
+        self.assertIsNotNone(shared["bilingual"]["original_rank"])
+        self.assertIsNotNone(shared["bilingual"]["alt_rank"])
+        self.assertEqual(
+            2 * shared["bilingual"]["original_rank"] - 1,
+            shared["rank"],
+        )
+
+    def test_bilingual_limit_applies_after_fusion(self) -> None:
+        result = self.query("-k", "1", alt_query=self.EN_ALT)
+        self.assertEqual(0, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(1, payload["count"])
+        self.assertEqual("ops/ascendc/apis/zh_mean_variance", payload["results"][0]["path"])
+
+    def test_default_search_omits_bilingual_fields(self) -> None:
+        result = self.query()
+        self.assertEqual(0, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual("knowledge-search.v5", payload["schema_version"])
+        self.assertNotIn("alt_query", payload)
+        self.assertNotIn("fusion", payload)
+        self.assertNotIn("alt_query", payload["request"])
+        for hit in payload["results"]:
+            self.assertNotIn("bilingual", hit)
+        default_paths = [hit["path"] for hit in payload["results"]]
+        self.assertEqual("ops/ascendc/apis/zh_mean_variance", default_paths[0])
+
+    def test_alt_query_rejects_literal_match(self) -> None:
+        result = self.query("--match", "literal", alt_query=self.EN_ALT)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("--alt-query requires --match text", result.stderr)
+
+    def test_alt_query_must_differ_from_query(self) -> None:
+        for alt, expected_error in (
+            ("均值 方差 原语 手写 循环", "--alt-query must differ from --query"),
+            ("  ", "--alt-query must not be empty"),
+            ("均值 方差 原语 手写 循环 ", "--alt-query must differ from --query"),
+        ):
+            with self.subTest(alt=alt):
+                result = self.query(alt_query=alt)
+                self.assertEqual(2, result.returncode)
+                self.assertIn(expected_error, result.stderr)
+
+    def test_bilingual_receipt_replays_deterministically(self) -> None:
+        receipt_path = self.work / "bilingual-receipt.json"
+        result = self.query("--receipt", str(receipt_path), alt_query=self.EN_ALT)
+        self.assertEqual(0, result.returncode, result.stderr)
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        self.assertEqual(self.EN_ALT, receipt["request"]["alt_query"])
+
+        spec = importlib.util.spec_from_file_location("bilingual_query", QUERY)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        connection, index_metadata = module.open_index(self.root)
+        self.addCleanup(connection.close)
+        cards = module.load_cards(connection)
+        args = module.search_args_from_request(receipt["request"])
+        replayed = module.search_payload(
+            self.root, cards, index_metadata, connection, args,
+            include_current_repository=False,
+        )
+        self.assertEqual(receipt["result"]["request_sha256"], replayed["request_sha256"])
+        self.assertEqual(receipt["result"]["alt_query"], replayed["alt_query"])
+        self.assertEqual(receipt["result"]["fusion"], replayed["fusion"])
+
+        def replay_view(entry: dict) -> dict:
+            return {
+                key: entry.get(key)
+                for key in ("path", "rank", "score", "bilingual", "scope_match")
+            }
+
+        # local_path embeds the OS-dependent absolute fixture path; only the
+        # replay-relevant fields are compared so the case stays portable.
+        self.assertEqual(
+            [replay_view(hit) for hit in receipt["result"]["results"]],
+            [replay_view(hit) for hit in replayed["results"]],
+        )
+        for hit in replayed["results"]:
+            self.assertEqual(
+                {"original_rank", "alt_rank", "score_leg", "original_score", "alt_score"},
+                set(hit["bilingual"]),
+            )
+
+    def test_bilingual_receipt_state_ready(self) -> None:
+        """A v6 bilingual receipt must pass retrieval_state validation end to end."""
+        receipt_path = self.work / "bilingual-state-receipt.json"
+        result = self.query(
+            "--decision", "bilingual-recall",
+            "--receipt", str(receipt_path),
+            alt_query=self.EN_ALT,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        self.assertEqual("knowledge-search.v6", receipt["result"]["schema_version"])
+        hit = receipt["result"]["results"][0]
+        state_path = self.work / "retrieval_state.json"
+        state_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "cannbot-retrieval-state.v1",
+                    "target": {"entity": "均值 方差", "platforms": ["a2"]},
+                    "decisions": [
+                        {
+                            "id": "bilingual-recall",
+                            "question": "Which card covers the query?",
+                            "status": "covered",
+                            "receipts": [str(receipt_path)],
+                            "evidence": [
+                                {"path": hit["path"], "card_sha256": hit["card_sha256"]}
+                            ],
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        validate_state = subprocess.run(
+            [
+                sys.executable, str(STATE), str(state_path),
+                "--knowledge-root", str(self.root), "--require-ready",
+            ],
+            check=False, text=True, capture_output=True,
+        )
+        self.assertEqual(0, validate_state.returncode, validate_state.stdout)
+        report = json.loads(validate_state.stdout)
+        self.assertEqual([], report["errors"])
+        self.assertTrue(report["ready"])
+
+
+class BilingualScopeSearchTests(unittest.TestCase):
+    """Bilingual search must merge Scope audits across legs without duplication."""
+
+    ZH_QUERY = "均值 方差 原语 手写 循环"
+    EN_ALT = "welford mean variance primitives replace hand rolled loops"
+    SCOPE = {"schema": "model.inference.v1", "any_of": [{"all_of": {"phase": ["prefill"]}}]}
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.work = Path(temporary.name)
+        self.root = self.work / "repository"
+        make_root(self.root)
+        cards_dir = self.root / "knowledge/model/inference/optimizations"
+        cards_dir.mkdir(parents=True)
+        definitions = {
+            "scope_conflict_decode": (
+                "双语冲突 welford 均值 方差",
+                "conflict card body with welford mean variance 均值 方差 terms.",
+                {"phase": ["decode"]},
+            ),
+            "scope_match_prefill": (
+                "双语匹配 welford 均值 方差",
+                "match card body with welford mean variance 均值 方差 terms.",
+                {"phase": ["prefill"]},
+            ),
+            "scope_unknown_zh": (
+                "未知范围 均值 方差 原语",
+                "unknown card body only 均值 方差 原语 手写 循环 terms.",
+                None,
+            ),
+        }
+        for slug, (title, body, declaration) in definitions.items():
+            metadata = {
+                "type": "Optimization",
+                "title": title,
+                "description": "Bilingual Scope fixture for dual search tests.",
+                "tags": ["task.optimization", "topic.graph_execution"],
+                "status": "stable",
+                "sources": [{"resource": "https://example.com/cann/synthetic-api", "role": "primary"}],
+                "created_at": "2026-08-18T00:00:00Z",
+                "updated_at": "2026-08-18T00:00:00Z",
+                "platforms": ["a3"],
+            }
+            if declaration is not None:
+                metadata["scope"] = {"schema": "model.inference.v1", "any_of": [{"all_of": declaration}]}
+            (cards_dir / f"{slug}.md").write_text(
+                "---\n" + json.dumps(metadata, ensure_ascii=False) + "\n---\n\n# " + title + "\n\n" + body + "\n",
+                encoding="utf-8",
+            )
+        built = run_index(self.root, "build")
+        self.assertEqual(0, built.returncode, built.stderr)
+        self.environment = dict(os.environ)
+        self.environment.pop("CANNBOT_KNOWLEDGE_PLATFORM", None)
+        self.environment.pop("CANNBOT_KNOWLEDGE_ROOT", None)
+
+    def query(self, *arguments: str, alt_query: str | None = None) -> subprocess.CompletedProcess[str]:
+        command = [
+            sys.executable, str(QUERY), "--knowledge-root", str(self.root), "search",
+            "--query", self.ZH_QUERY, "--match", "text", "--technology", "inference",
+            "--platform", "a3", "--status", "stable", "-k", "10",
+            "--scope-json", json.dumps(self.SCOPE, ensure_ascii=False), *arguments,
+        ]
+        if alt_query is not None:
+            command += ["--alt-query", alt_query]
+        return subprocess.run(
+            command, cwd=self.root, env=self.environment,
+            check=False, text=True, capture_output=True,
+        )
+
+    def test_bilingual_scope_merges_conflicts_once_and_keeps_states(self) -> None:
+        dual = self.query(alt_query=self.EN_ALT)
+        self.assertEqual(0, dual.returncode, dual.stderr)
+        payload = json.loads(dual.stdout)
+        self.assertEqual("knowledge-search.v6", payload["schema_version"])
+        self.assertTrue(payload["scope_filter"]["enabled"])
+        # The conflicting card matches both legs; the merged audit must list it once.
+        excluded_paths = [item["path"] for item in payload["scope_filter"]["excluded"]]
+        self.assertEqual(
+            ["model/inference/optimizations/scope_conflict_decode"], excluded_paths
+        )
+        self.assertEqual(1, payload["scope_filter"]["excluded_count"])
+        self.assertEqual(
+            "conflict", payload["scope_filter"]["excluded"][0]["scope_match"]["state"]
+        )
+        self.assertEqual(
+            {"method": "rank-interleave", "order": ["original", "alt"], "original_hits": 2, "alt_hits": 1},
+            payload["fusion"],
+        )
+        hits = {hit["path"]: hit for hit in payload["results"]}
+        self.assertNotIn("model/inference/optimizations/scope_conflict_decode", hits)
+        self.assertEqual("match", hits["model/inference/optimizations/scope_match_prefill"]["scope_match"]["state"])
+        self.assertEqual("unknown", hits["model/inference/optimizations/scope_unknown_zh"]["scope_match"]["state"])
+
+        # The single-leg run must report the identical exclusion audit.
+        single = self.query()
+        self.assertEqual(0, single.returncode, single.stderr)
+        single_payload = json.loads(single.stdout)
+        self.assertEqual(
+            single_payload["scope_filter"]["excluded"],
+            payload["scope_filter"]["excluded"],
+        )
+        self.assertEqual(
+            single_payload["scope_filter"]["excluded_count"],
+            payload["scope_filter"]["excluded_count"],
+        )
+
+    def test_scope_audit_is_part_of_v6_receipt_replay(self) -> None:
+        """Tampering with or dropping the merged Scope audit must fail replay."""
+        receipt_path = self.work / "bilingual-scope-receipt.json"
+        result = self.query(
+            "--decision", "scope-replay",
+            "--receipt", str(receipt_path),
+            alt_query=self.EN_ALT,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        self.assertEqual(1, receipt["result"]["scope_filter"]["excluded_count"])
+
+        state_path = self.work / "retrieval_state.json"
+        hit = receipt["result"]["results"][0]
+        state_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "cannbot-retrieval-state.v1",
+                    "target": {"entity": "均值 方差", "platforms": ["a3"]},
+                    "decisions": [
+                        {
+                            "id": "scope-replay",
+                            "question": "Which card covers the query?",
+                            "status": "covered",
+                            "receipts": [str(receipt_path)],
+                            "evidence": [
+                                {"path": hit["path"], "card_sha256": hit["card_sha256"]}
+                            ],
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        def validate() -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [
+                    sys.executable, str(STATE), str(state_path),
+                    "--knowledge-root", str(self.root), "--require-ready",
+                ],
+                check=False, text=True, capture_output=True,
+            )
+
+        original = validate()
+        self.assertEqual(0, original.returncode, original.stdout)
+
+        tampered = json.loads(receipt_path.read_text(encoding="utf-8"))
+        tampered["result"]["scope_filter"]["excluded"] = []
+        tampered["result"]["scope_filter"]["excluded_count"] = 0
+        receipt_path.write_text(json.dumps(tampered, ensure_ascii=False), encoding="utf-8")
+        emptied = validate()
+        self.assertEqual(1, emptied.returncode)
+        self.assertIn("scope_filter", emptied.stdout)
+
+        tampered = json.loads(receipt_path.read_text(encoding="utf-8"))
+        del tampered["result"]["scope_filter"]
+        receipt_path.write_text(json.dumps(tampered, ensure_ascii=False), encoding="utf-8")
+        dropped = validate()
+        self.assertEqual(1, dropped.returncode)
+        self.assertIn("scope_filter", dropped.stdout)
 
 
 if __name__ == "__main__":
