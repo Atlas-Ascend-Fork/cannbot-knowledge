@@ -6,6 +6,8 @@
 
 Ascend C API 使用相邻 `ascendc-api-knowledge-query` 的专用消费流程，不在两个模式间重复跳转。以下路线也适用于其他 technology 的 API。
 
+执行前先按主 Skill 确认领域归属；只有主题意图、尚未确认规范位置时，先按 [CLI 领域选择](../../references/cli.md#领域选择与归属补查)查询，不预设 domain/technology。以下零命中补搜在已确认范围内进行，不自动放宽用户明确指定的边界。
+
 1. 用准确 API 名或连续报错短语做 literal 查询；只有能力描述时用 text。不要把“API 名 + 分散参数 + 自然语言问题”拼成必须连续出现的 literal。查询目标 technology 的 `apis`，主查询始终绑定 platform；命中后按正文核对已知 CANN version。
 2. 精确 API 名在主查询零命中时，立即发起独立补搜：移除 platform，增加 `--include-unlocated --status draft --type apis --match literal`。补搜命中只表示存在平台未定位的 API 草稿，不保证来自官方来源；必须从正文和实际来源确认目标平台，不能与主查询共用 receipt 或直接视为可用。
 3. 阅读选中卡的完整 Frontmatter 和正文，按缺口先追踪正文/相关中的已有链接；需要调用形态时看同 technology 的 `operators` 或已有 `examples`，需要使用步骤/机制时看 `guides`、`concepts`，失败经验看 `runbooks`。先确认这些 Profile 有实际覆盖，不反复查询空分类。

@@ -80,6 +80,10 @@ def normalized_fact_text(text):
 
 def api_source_fact_errors(row, body):
     """Check independently curated source clauses against the technical body."""
+    # Keep the independently reviewed 7.3.0 clauses bound to their version.
+    legacy = "\n## 已有 OpPlugin 7.3.0 文档与版本边界"
+    if legacy in body:
+        body = body.split(legacy, 1)[1]
     content = normalized_fact_text(body.split("\n## Evidence", 1)[0])
     return [
         (fact["source_excerpt"], term)
@@ -441,6 +445,12 @@ class InferenceSkillMigrationCoverage(unittest.TestCase):
         self.assertEqual(144, len(rows))
         self.assertEqual(144, len({row["api"] for row in rows}))
         cases = {case["id"]: case for case in self.cases}
+        platform_evidence = yaml.safe_load((ROOT / "evals/ascend_framework_platform_evidence.yaml").read_text())["overlays"]
+        version_cases = {
+            case["id"]: case for case in yaml.safe_load(
+                (ROOT / "evals/ascend_framework_version_cases.yaml").read_text()
+            )["cases"]
+        }
         allowed_exclusions = {"torch_npu." + name for name in (
             "_npu_dropout", "npu_apply_adam", "npu_bert_apply_adam",
             "npu_grid_assign_positive", "npu_sparse_lightning_indexer_grad_kl_loss",
@@ -462,7 +472,20 @@ class InferenceSkillMigrationCoverage(unittest.TestCase):
                 metadata, body = card(row["target"])
                 self.assertEqual("API", metadata["type"])
                 self.assertEqual(row["status"], metadata["status"])
-                self.assertEqual(row["platforms"], metadata["platforms"])
+                # The inventory describes 7.3.0. A later fixed document can
+                # extend discovery only with separately reviewed product evidence.
+                active = {}
+                for platform, evidence in platform_evidence.get(row["api"], {}).get("additional_platforms", {}).items():
+                    binding = {"resource": evidence["source_doc"], "role": evidence["source_role"]}
+                    if binding in metadata["sources"]:
+                        active[platform] = evidence
+                        self.assertRegex(evidence["source_doc"], r"/blob/[0-9a-f]{40}/docs/")
+                        self.assertEqual({"a2": "910b", "a3": "A3", "950": "950", "310p": "310p"}[platform], evidence["support_tag"])
+                        case = version_cases[evidence["retrieval_case"]]
+                        self.assertEqual([row["target"]], case["expected"])
+                        self.assertEqual(platform, case["filters"]["platform"])
+                        self.assertEqual(row["api"], case["query"])
+                self.assertEqual(set(row["platforms"]) | set(active), set(metadata["platforms"]))
                 self.assertEqual(row["source_doc"], metadata["sources"][0]["resource"])
                 self.assertEqual("primary", metadata["sources"][0]["role"])
                 content = body.split("\n## Evidence", 1)[0]

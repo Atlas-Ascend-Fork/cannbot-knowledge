@@ -14,6 +14,7 @@ Runtime API 推荐先按下节进入专用 Skill；下述普通 Query 路径继�
 - 明确一个要回答的判断（decision），保留目标实体、准确 API 名或首发错误信号。复杂任务拆分判断，不把实现、调试和性能问题塞入一条 query。
 - 先确定**任务目标平台**，不是默认采用 Agent 所在机器。只有型号、SocVersion、架构宏或配置时，读取[平台识别](references/platform-identification.md)；存在歧义或冲突时先确认，不猜测或移除平台条件。安装项目可在 `.cannbot/knowledge.env` 配置 `CANNBOT_KNOWLEDGE_PLATFORM` 作为缺省平台，省略 `--platform` 时由脚本回退到该值；任务目标与缺省值不一致时必须显式传 `--platform`。
 - 明确必要的 domain、technology 与路径 Profile。只增加已知且有助区分的过滤项，不为了“最窄”叠满 task/tag；多个 tag 和 platform 都是 AND。共同适用知识用多平台过滤，平台差异分开查询。
+- domain/technology 是规范卡位置的精确过滤，不是问题意图的别名。只有“图编译”“工具链”等主题而未确认归属时，先不加这两项过滤，再据命中路径收窄；用户明确指定的领域或技术边界必须保留。框架知识的归属和补查示例见 [CLI 领域选择](references/cli.md#领域选择与归属补查)。
 - Scope 可选，按任务领域选择已注册 Schema，只填写已确认且有过滤价值的部分条件，不要求卡片或查询补齐所有维度，不套用其他领域字段；推断仅作文本线索，不静默构造硬过滤。Scope 只排除明确冲突，未知项仍可相关；选卡时核对返回的分支和待确认前提，不能把召回或 `match` 当成收益已验证。语法、否定条件的卡片/查询准入与返回解释见 CLI。
 - 从自然语言整理 Scope 时按[查询与证据工作流](references/query-workflows.md#自然语言到查询-scope)区分明确条件、推断和未知；必要时询问会影响结论的缺失前提，再决定是否提交结构化过滤。
 - 首次进入一个知识仓时运行 `discover`，区分真实覆盖与注册/占位目录；同一轮任务、同一知识根且索引指纹未变时复用结果。它的各维度计数不证明某个组合已有覆盖。
@@ -86,7 +87,8 @@ python3 <skill-dir>/scripts/knowledge_query.py search \
 以下为普通 Query 规则；Runtime 准确接口名的跨平台诊断复查由专用 Skill 约束，不扩展到其他领域。
 
 - 先区分错误与零命中：退出码 `2` 是参数/索引/输入错误，应处理明确原因或报告阻塞；退出码 `0` 且无结果才是有效零命中。
-- **精确 API 名在目标平台 stable 查询零命中时**，立即独立补搜未定位 draft：保留 API 名与 domain/technology，使用 `--type apis --match literal --include-unlocated --status draft`，不带 platform。它只提供平台待核验线索，不能混入原平台结果、共用 receipt 或代替最初的平台识别。
+- 若未找到可用于回答的证据，且 domain/technology 只是 Agent 从主题推断的分类，可先撤销这些分类推断，保持查询实体、目标平台及其他已确认条件独立补查；根据命中路径确认归属后重新收窄。用户明确指定的过滤不自动放宽，普通导航链接也不会扩大主 Query 的搜索范围。
+- **精确 API 名在已确认领域、目标平台 stable 查询零命中时**，立即独立补搜未定位 draft：保留 API 名与已确认的 domain/technology，使用 `--type apis --match literal --include-unlocated --status draft`，不带 platform。它只提供平台待核验线索，不能混入原平台结果、共用 receipt 或代替最初的平台识别。
 - 普通补搜保持已确定的目标平台和技术边界，只改变一个有依据的角度：准确标识 → 参数/错误信号，接口 → 使用指南/算子调用，现象 → 已验证修复。可移除没有证据支持的可选 tag/task，或选择更合适的 Profile；不要先放宽到所有技术、所有状态。
 - 有名字空间或成员限定符但卡片只记短名时，可按短名补搜，再用声明验证家族；不能把短名的任意命中都算目标 API。
 - 补搜无新增证据、来源仍冲突、目标仍不明确或预算已到时，给出已有结论与具体缺口。零命中不证明 API 或能力不存在；命中也不等于当前问题已覆盖。

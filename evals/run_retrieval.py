@@ -17,6 +17,8 @@ These assertions verify the retrieval contract, not human applicability labels.
 The original case file and quality thresholds remain the default.
 Optional preflight checks expected-card eligibility before running or scoring
 queries. It checks declared filters, not semantic correctness or text ranking.
+Optional platform overlays enable cases only when their canonical cards bind the
+declared fixed document and source role; enabled cases run the same real queries.
 """
 
 from __future__ import annotations
@@ -36,6 +38,69 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 QUERY = ROOT / ".agents/skills/knowledge-query/scripts/knowledge_query.py"
 CASES = ROOT / "evals/retrieval_cases.yaml"
+
+
+def select_platform_overlay_cases(data: dict, evidence: dict, roots: dict[str, Path]) -> tuple[dict, dict]:
+    """Select source-bound cases without hiding platform or ranking regressions."""
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from governance.contracts.knowledge import split_frontmatter
+
+    cases, overlays = data.get("cases"), evidence.get("overlays") if isinstance(evidence, dict) else None
+    if not isinstance(cases, list) or not isinstance(overlays, dict):
+        raise ValueError("platform overlays require a cases list and an overlays object")
+    schema = json.loads((ROOT / "governance/schemas/frontmatter.schema.json").read_text())
+    roles = schema["properties"]["sources"]["items"]["properties"]["role"]["enum"]
+    bindings = {}
+    for api, overlay in overlays.items():
+        platforms = overlay.get("additional_platforms") if isinstance(overlay, dict) else None
+        if not isinstance(api, str) or not api or not isinstance(platforms, dict) or not platforms:
+            raise ValueError("each platform overlay requires an API and additional_platforms")
+        for platform, binding in platforms.items():
+            if not isinstance(binding, dict) or not isinstance(platform, str) or not platform:
+                raise ValueError("invalid platform overlay binding")
+            case_id, resource, role = (binding.get(key) for key in ("retrieval_case", "source_doc", "source_role"))
+            if not isinstance(case_id, str) or not case_id or case_id in bindings:
+                raise ValueError("platform overlays require unique nonempty retrieval_case ids")
+            if not isinstance(resource, str) or not resource or role not in roles:
+                raise ValueError("platform overlays require a source_doc and valid source_role")
+            bindings[case_id] = (api, platform, {"resource": resource, "role": role})
+    selected, skipped, seen = [], [], set()
+    for case in cases:
+        case_id = case.get("id") if isinstance(case, dict) else None
+        if not isinstance(case_id, str) or not case_id or case_id in seen or case_id not in bindings:
+            raise ValueError("platform cases require unique ids mapped by the overlays")
+        seen.add(case_id)
+        api, platform, binding = bindings[case_id]
+        expected, filters = case.get("expected"), case.get("filters")
+        if (case.get("query") != api or not isinstance(filters, dict) or filters.get("platform") != platform
+                or not isinstance(expected, list) or len(expected) != 1 or not isinstance(expected[0], str) or not expected[0]):
+            raise ValueError(f"platform case must match its API, platform and canonical card: {case_id}")
+        corpus = str(case.get("corpus", "repository"))
+        if corpus not in roots:
+            raise ValueError(f"unknown retrieval corpus: {corpus}")
+        knowledge = (roots[corpus] / "knowledge").resolve()
+        concept = Path(expected[0])
+        card = (knowledge / (expected[0] + ".md")).resolve()
+        if concept.is_absolute() or ".." in concept.parts or not card.is_relative_to(knowledge):
+            raise ValueError(f"platform case card must stay inside the knowledge root: {case_id}")
+        enabled = False
+        if card.exists():
+            metadata, _ = split_frontmatter(card.read_text(encoding="utf-8"))
+            sources = metadata.get("sources") if metadata is not None else None
+            if not isinstance(sources, list) or any(
+                not isinstance(source, dict) or not isinstance(source.get("resource"), str)
+                or ("role" in source and source["role"] not in roles) for source in sources
+            ):
+                raise ValueError(f"platform case card requires valid sources: {case_id}")
+            enabled = binding in sources
+        if enabled:
+            selected.append(case)
+        else:
+            skipped.append(case_id)
+    if seen != bindings.keys():
+        raise ValueError("platform overlays reference missing retrieval cases")
+    return {**data, "cases": selected}, {"enabled": [case["id"] for case in selected], "skipped": skipped, "total": len(cases)}
 
 
 def query_arguments(case: dict) -> list[str]:
@@ -350,6 +415,7 @@ def run_cases(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cases", type=Path, default=CASES, help="Optional retrieval case file; defaults to the existing corpus.")
+    parser.add_argument("--platform-overlays", type=Path, help="Run only cases whose canonical cards bind the overlay's fixed document and source role.")
     parser.add_argument(
         "--quality-gate",
         action="store_true",
@@ -365,6 +431,10 @@ def main() -> int:
             raise ValueError("retrieval case file must contain an object")
         if args.preflight_only and args.quality_gate:
             raise ValueError("--preflight-only does not run the quality gate")
+        if args.platform_overlays:
+            evidence = yaml.safe_load(args.platform_overlays.read_text(encoding="utf-8"))
+            data, activation = select_platform_overlay_cases(data, evidence, {"repository": ROOT})
+            print(f"PLATFORM_OVERLAYS enabled={len(activation['enabled'])} skipped={len(activation['skipped'])} total={activation['total']}")
         if args.preflight or args.preflight_only:
             report = preflight_cases(data, {"repository": ROOT})
             print(json.dumps(report, ensure_ascii=False, indent=2))

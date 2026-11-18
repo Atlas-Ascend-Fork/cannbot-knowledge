@@ -1,0 +1,441 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+# Product support tags independently checked against the fixed source documents.
+overlays:
+  torch_npu.npu_alltoallv_gmm:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_alltoallv_gmm.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_alltoallv_gmm_950
+  torch_npu.npu_anti_quant:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_anti_quant.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_anti_quant_950
+  torch_npu.npu_convert_weight_to_int4pack:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_convert_weight_to_int4pack.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_convert_weight_to_int4pack_950
+  torch_npu.npu_dequant_swiglu_quant:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_dequant_swiglu_quant.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_dequant_swiglu_quant_950
+  torch_npu.npu_dynamic_block_quant:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_dynamic_block_quant.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_dynamic_block_quant_950
+  torch_npu.npu_dynamic_quant:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_dynamic_quant.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_dynamic_quant_950
+  torch_npu.npu_dynamic_quant_asymmetric:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_dynamic_quant_asymmetric.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_dynamic_quant_asymmetric_950
+  torch_npu.npu_fast_gelu:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fast_gelu.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_fast_gelu_950
+  torch_npu.npu_fused_infer_attention_score:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_fused_infer_attention_score_950
+  torch_npu.npu_fused_infer_attention_score_v2:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score_v2.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_fused_infer_attention_score_v2_950
+  torch_npu.npu_gather_sparse_index:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_gather_sparse_index.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_gather_sparse_index_950
+  torch_npu.npu_gelu:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_gelu.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_gelu_950
+  torch_npu.npu_gelu_mul:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_gelu_mul.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_gelu_mul_950
+  torch_npu.npu_gmm_alltoallv:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_gmm_alltoallv.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_gmm_alltoallv_950
+  torch_npu.npu_group_norm_silu:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_group_norm_silu.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_group_norm_silu_950
+  torch_npu.npu_grouped_matmul:
+    additional_platforms:
+      310p:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_grouped_matmul.md
+        source_role: constraint
+        support_tag: 310p
+        retrieval_case: ascend_fixed_version_npu_grouped_matmul_310p
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_grouped_matmul.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_grouped_matmul_950
+  torch_npu.npu_grouped_matmul_swiglu_quant_v2:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_grouped_matmul_swiglu_quant_v2.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_grouped_matmul_swiglu_quant_v2_950
+  torch_npu.npu_incre_flash_attention:
+    additional_platforms:
+      310p:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_incre_flash_attention.md
+        source_role: primary
+        support_tag: 310p
+        retrieval_case: ascend_fixed_version_npu_incre_flash_attention_310p
+  torch_npu.npu_interleave_rope:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_interleave_rope.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_interleave_rope_950
+  torch_npu.npu_kv_quant_sparse_flash_attention:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_kv_quant_sparse_flash_attention.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_kv_quant_sparse_flash_attention_950
+  torch_npu.npu_kv_rmsnorm_rope_cache:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_kv_rmsnorm_rope_cache.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_kv_rmsnorm_rope_cache_950
+  torch_npu.npu_lightning_indexer:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_lightning_indexer.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_lightning_indexer_950
+  torch_npu.npu_mla_prolog_v3:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_mla_prolog_v3.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_mla_prolog_v3_950
+      a2:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_mla_prolog_v3.md
+        source_role: constraint
+        support_tag: 910b
+        retrieval_case: ascend_fixed_version_npu_mla_prolog_v3_a2
+  torch_npu.npu_mm_all_reduce_base:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_mm_all_reduce_base.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_mm_all_reduce_base_950
+  torch_npu.npu_moe_compute_expert_tokens:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_compute_expert_tokens.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_compute_expert_tokens_950
+  torch_npu.npu_moe_distribute_combine:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_distribute_combine.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_distribute_combine_950
+  torch_npu.npu_moe_distribute_combine_add_rms_norm:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_distribute_combine_add_rms_norm.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_distribute_combine_add_rms_norm_950
+  torch_npu.npu_moe_distribute_combine_v2:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_distribute_combine_v2.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_distribute_combine_v2_950
+  torch_npu.npu_moe_distribute_dispatch:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_distribute_dispatch.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_distribute_dispatch_950
+  torch_npu.npu_moe_distribute_dispatch_v2:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_distribute_dispatch_v2.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_distribute_dispatch_v2_950
+  torch_npu.npu_moe_finalize_routing:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_finalize_routing.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_finalize_routing_950
+  torch_npu.npu_moe_gating_top_k:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_gating_top_k.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_gating_top_k_950
+  torch_npu.npu_moe_gating_top_k_softmax:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_gating_top_k_softmax.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_gating_top_k_softmax_950
+  torch_npu.npu_moe_init_routing:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_init_routing.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_init_routing_950
+      a3:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_init_routing.md
+        source_role: constraint
+        support_tag: A3
+        retrieval_case: ascend_fixed_version_npu_moe_init_routing_a3
+  torch_npu.npu_moe_init_routing_v2:
+    additional_platforms:
+      310p:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_init_routing_v2.md
+        source_role: constraint
+        support_tag: 310p
+        retrieval_case: ascend_fixed_version_npu_moe_init_routing_v2_310p
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_init_routing_v2.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_init_routing_v2_950
+  torch_npu.npu_moe_update_expert:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_moe_update_expert.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_moe_update_expert_950
+  torch_npu.npu_prefetch:
+    additional_platforms:
+      a3:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_prefetch.md
+        source_role: constraint
+        support_tag: A3
+        retrieval_case: ascend_fixed_version_npu_prefetch_a3
+  torch_npu.npu_prompt_flash_attention:
+    additional_platforms:
+      310p:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_prompt_flash_attention.md
+        source_role: primary
+        support_tag: 310p
+        retrieval_case: ascend_fixed_version_npu_prompt_flash_attention_310p
+  torch_npu.npu_quant_lightning_indexer:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_quant_lightning_indexer.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_quant_lightning_indexer_950
+  torch_npu.npu_quant_matmul:
+    additional_platforms:
+      310p:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_quant_matmul.md
+        source_role: constraint
+        support_tag: 310p
+        retrieval_case: ascend_fixed_version_npu_quant_matmul_310p
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_quant_matmul.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_quant_matmul_950
+  torch_npu.npu_quant_scatter:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_quant_scatter.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_quant_scatter_950
+  torch_npu.npu_quantize:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_quantize.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_quantize_950
+  torch_npu.npu_recurrent_gated_delta_rule:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_recurrent_gated_delta_rule.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_recurrent_gated_delta_rule_950
+  torch_npu.npu_rotary_mul:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_rotary_mul.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_rotary_mul_950
+  torch_npu.npu_scatter_nd_update:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_scatter_nd_update.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_scatter_nd_update_950
+  torch_npu.npu_scatter_nd_update_:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_scatter_nd_update_.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_scatter_nd_update__950
+  torch_npu.npu_scatter_pa_kv_cache:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_scatter_pa_kv_cache.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_scatter_pa_kv_cache_950
+  torch_npu.npu_sparse_flash_attention:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_sparse_flash_attention.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_sparse_flash_attention_950
+  torch_npu.npu_swiglu_quant:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_swiglu_quant.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_swiglu_quant_950
+  torch_npu.npu_top_k_top_p:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_top_k_top_p.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_top_k_top_p_950
+  torch_npu.npu_trans_quant_param:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_trans_quant_param.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_trans_quant_param_950
+  torch_npu.npu_transpose_batchmatmul:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_transpose_batchmatmul.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_transpose_batchmatmul_950
+  torch_npu.npu_weight_quant_batchmatmul:
+    additional_platforms:
+      310p:
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_weight_quant_batchmatmul.md
+        source_role: primary
+        support_tag: 310p
+        retrieval_case: ascend_fixed_version_npu_weight_quant_batchmatmul_310p
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_weight_quant_batchmatmul.md
+        source_role: primary
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_npu_weight_quant_batchmatmul_950
+  torch_npu.scatter_update:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-scatter_update.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_scatter_update_950
+  torch_npu.matmul_checksum:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-matmul_checksum.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_matmul_checksum_950
+  torch_npu.empty_with_swapped_memory:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-empty_with_swapped_memory.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_empty_with_swapped_memory_950
+  torch_npu.erase_stream:
+    additional_platforms:
+      '950':
+        source_doc: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-erase_stream.md
+        source_role: constraint
+        support_tag: '950'
+        retrieval_case: ascend_fixed_version_erase_stream_950

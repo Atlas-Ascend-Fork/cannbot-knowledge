@@ -41,6 +41,8 @@ python3 evals/run_retrieval.py --quality-gate
 python3 evals/run_retrieval.py --cases evals/model_inference_scope_cases.yaml
 python3 evals/run_retrieval.py --cases evals/inference_skill_migration_cases.yaml
 python3 evals/run_retrieval.py --cases evals/runtime_api_selection_cases.yaml
+python3 evals/run_retrieval.py --cases evals/ascend_framework_version_cases.yaml \
+  --platform-overlays evals/ascend_framework_platform_evidence.yaml
 python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/ops-knowledge-trace-ingest/scripts -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/model-knowledge-trace-ingest/scripts -p 'test_*.py'

@@ -81,6 +81,37 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 - `text` 和 `literal` 的 query 匹配均不区分大小写，同一 query 的大小写变体返回相同命中、评分与顺序，输出和 receipt 中的 query 仍保留调用方原文。v3 保持原有小写分词；subword 使用规范化名称读取索引中的原始名称写法，或通过已有词项的完整分解恢复驼峰拆词。所有仅靠词表分解得到的扩展都必须有连续拆开写法的证据；首选拆分缺少证据时继续检查其他可行候选，不因词表新增较长片段而丢弃已有证据的拆分。完整词未收录时也不能仅凭分散片段猜出新名称；真实名称拆词可直接复用。只有 `Data Copy Pad` 写法的卡片仍可被 `DataCopyPad`、`datacopypad`、`DATACOPYPAD` 的 text 查询召回；只有分散 `black` / `bird` 的卡片不会被 `blackbird` 猜拆召回。literal 不扩展拆开写法。该过程只读已有索引，不修改索引结构或版本。
 - 默认 status 为 `stable`，limit 必须大于零。
 
+### 领域选择与归属补查
+
+`--domain` 和 `--technology` 精确筛选卡片的物理归属；它们不是意图路由或同义词扩展。`index.md` 的普通导航链接只帮助阅读，不参与搜索路由。不要仅因问题包含“图编译”就加 `--domain graph`，或仅因包含“软件环境”就加 `--domain common`。
+
+Ascend 框架模型相关知识的规范位置如下，同一主题只维护一份卡：
+
+| 查询主题 | 规范位置 |
+|---|---|
+| TorchNPU、TorchAir、OpPlugin 的模型接口、编译优化和框架配套 | `model/inference` 或 `model/training`，按任务与卡片职责选择 |
+| TorchAir GE 编译缓存接口 | `model/inference/apis/torchair/ge_cache_compile` |
+| Ascend 框架软件栈版本与固定来源基线 | `model/inference/concepts/frameworks/ascend_software_stack_baselines` |
+
+`graph` 保留图技术本体和独立引擎知识，`common` 保留公共平台与工具链知识；不因相同主题词自动包含上述模型框架卡。具体覆盖仍用 `discover` 和真实命中核对，不把注册目录当作已有覆盖。
+
+Agent 按以下顺序选择过滤：
+
+1. 用户已明确限定领域或技术时保持该限制；查不到规范卡应说明范围内未命中，不自动跨域。
+2. 只有主题意图、尚未确认卡片归属时，保留查询实体和目标平台，先不加 domain/technology。若先前加的是 Agent 自行推断的分类，且结果不足以回答，也可撤销这些推断另发查询；用户确认的其他条件及 Scope 语义不变，不借补查绕过错误。
+3. 根据返回的路径确认归属，再带正确的 domain/technology 收窄并阅读全文。例如下述两个主题均可用 `--domain model --technology inference` 继续核对。没有证据时再按正常零命中流程补搜，不改变状态、平台或技术适用性。
+
+以下以已确认 `a3` 为验收平台示范不预设领域的两条查询：
+
+```bash
+python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
+  --query "torchair GE cache_compile" --type apis --platform a3 -k 5
+python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
+  --query "软件栈 TorchNPU 产品版本 安装包版本" --type concepts --platform a3 -k 5
+```
+
+显式增加 `--domain graph --technology torch_compile` 或 `--domain common --technology toolchains` 时，对应模型规范卡必须仍被排除；这是过滤契约，不是卡片缺失。回归 `ascend_community_cases.yaml` 分别保留受限查询的排除断言、上述不预设领域的命中断言，以及正确模型领域的原有命中用例。
+
 ### 显式场景 Scope
 
 `--scope-file` 读取 JSON/YAML 文件，`--scope-json` 接收同样结构的对象文本；两者互斥。输入是 Scope 对象本身，不再包一层 `scope`。显式提交表示调用方已核对条件；脚本仅做 Registry 别名归一化，不从自然语言推断执行模式、模型特征或数值阈值。

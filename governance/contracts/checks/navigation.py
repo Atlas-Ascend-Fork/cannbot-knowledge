@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -279,6 +280,8 @@ def has_knowledge_content(contract: Contract, directory: Path) -> bool:
 
 def validate_index_links(contract: Contract, index: Path) -> list[Issue]:
     text = index.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    knowledge_root = (contract.root / "knowledge").resolve()
     expected: set[Path] = set()
     for child in index.parent.iterdir():
         if child.name == "index.md":
@@ -296,7 +299,19 @@ def validate_index_links(contract: Contract, index: Path) -> list[Issue]:
         contract.root / "knowledge",
     ):
         actual.append((target, target_text, line))
-        if target not in expected:
+        # A separate prose paragraph may point to canonical knowledge elsewhere.
+        # Directory-list entries still have to name direct children.
+        paragraph_reference = (
+            (line == 1 or not lines[line - 2].strip())
+            and not lines[line - 1][0].isspace()
+            and not re.match(
+                r"(?:#{1,6}(?:\s|$)|>|[-+*]\s|\d+[.)]\s)", lines[line - 1]
+            )
+            and target.is_relative_to(knowledge_root)
+            and target.suffix == ".md"
+            and target.is_file()
+        )
+        if target not in expected and not paragraph_reference:
             issues.append(
                 Issue(
                     "index.non_direct",

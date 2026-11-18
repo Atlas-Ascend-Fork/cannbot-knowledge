@@ -311,6 +311,60 @@ class RouteContractTests(unittest.TestCase):
     def test_current_index_tree_is_complete(self) -> None:
         self.assertEqual(self.contract.validate_index_tree(), [])
 
+    def test_index_paragraph_links_reach_canonical_bundle_entries(self) -> None:
+        from governance.contracts.checks.navigation import validate_index_links
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            directory = root / "knowledge/graph"
+            directory.mkdir(parents=True)
+            target = root / "knowledge/model/inference"
+            target.mkdir(parents=True)
+            (target / "index.md").write_text("# 模型推理\n")
+            (target / "backend.md").write_text("# 后端\n")
+            index = directory / "index.md"
+            for destination in ("index.md", "backend.md"):
+                with self.subTest(destination=destination):
+                    index.write_text(
+                        "# 图知识\n\n相关入口："
+                        f"[模型知识](../model/inference/{destination})。\n"
+                    )
+                    self.assertEqual([], validate_index_links(Contract(root), index))
+
+    def test_index_related_links_keep_directory_and_bundle_boundaries(self) -> None:
+        from governance.contracts.checks.navigation import validate_index_links
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            directory = root / "knowledge/graph"
+            directory.mkdir(parents=True)
+            target = root / "knowledge/model/inference/index.md"
+            target.parent.mkdir(parents=True)
+            target.write_text("# 模型推理\n")
+            (root / "README.md").write_text("# 仓库说明\n")
+            index = directory / "index.md"
+            for paragraph in (
+                "- [模型知识](../model/inference/index.md)",
+                "1. [模型知识](../model/inference/index.md)",
+                "## [模型知识](../model/inference/index.md)",
+                "  相关：[模型知识](../model/inference/index.md)",
+                "- 导航\n相关：[模型知识](../model/inference/index.md)",
+                "相关：[仓外说明](../../README.md)",
+                "相关：[失效入口](../model/inference/missing.md)",
+            ):
+                with self.subTest(paragraph=paragraph):
+                    index.write_text(f"# 图知识\n\n{paragraph}\n")
+                    codes = {issue.code for issue in validate_index_links(Contract(root), index)}
+                    self.assertIn("index.non_direct", codes)
+            child = directory / "ge"
+            child.mkdir()
+            (child / "index.md").write_text("# GE\n")
+            index.write_text("# 图知识\n\n相关：[模型知识](../model/inference/index.md)。\n")
+            codes = {issue.code for issue in validate_index_links(Contract(root), index)}
+            self.assertIn("index.unlisted", codes)
+
     def test_registered_structure_is_materialized(self) -> None:
         expected = {
             "knowledge/common",

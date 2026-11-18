@@ -12,6 +12,7 @@ cann-docs-raw/
 /cann-ops-raw/
 /cann-runtime-raw/
 /cann-recipes-raw/
+/cann-frameworks-raw/
 local-tools/
 .scratch/
 .claude/worktrees/

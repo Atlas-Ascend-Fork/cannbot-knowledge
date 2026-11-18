@@ -1,0 +1,341 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+# Version-specific discovery; these cases do not establish runtime compatibility.
+cases:
+- id: ascend_fixed_version_npu_alltoallv_gmm_950
+  query: torch_npu.npu_alltoallv_gmm
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_alltoallv_gmm]
+
+- id: ascend_fixed_version_npu_anti_quant_950
+  query: torch_npu.npu_anti_quant
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_anti_quant]
+
+- id: ascend_fixed_version_npu_convert_weight_to_int4pack_950
+  query: torch_npu.npu_convert_weight_to_int4pack
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_convert_weight_to_int4pack]
+
+- id: ascend_fixed_version_npu_dequant_swiglu_quant_950
+  query: torch_npu.npu_dequant_swiglu_quant
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_dequant_swiglu_quant]
+
+- id: ascend_fixed_version_npu_dynamic_block_quant_950
+  query: torch_npu.npu_dynamic_block_quant
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_dynamic_block_quant]
+
+- id: ascend_fixed_version_npu_dynamic_quant_950
+  query: torch_npu.npu_dynamic_quant
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_dynamic_quant]
+
+- id: ascend_fixed_version_npu_dynamic_quant_asymmetric_950
+  query: torch_npu.npu_dynamic_quant_asymmetric
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_dynamic_quant_asymmetric]
+
+- id: ascend_fixed_version_npu_fast_gelu_950
+  query: torch_npu.npu_fast_gelu
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_fast_gelu]
+
+- id: ascend_fixed_version_npu_fused_infer_attention_score_950
+  query: torch_npu.npu_fused_infer_attention_score
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_fused_infer_attention_score]
+
+- id: ascend_fixed_version_npu_fused_infer_attention_score_v2_950
+  query: torch_npu.npu_fused_infer_attention_score_v2
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_fused_infer_attention_score_v2]
+
+- id: ascend_fixed_version_npu_gather_sparse_index_950
+  query: torch_npu.npu_gather_sparse_index
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_gather_sparse_index]
+
+- id: ascend_fixed_version_npu_gelu_950
+  query: torch_npu.npu_gelu
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_gelu]
+
+- id: ascend_fixed_version_npu_gelu_mul_950
+  query: torch_npu.npu_gelu_mul
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_gelu_mul]
+
+- id: ascend_fixed_version_npu_gmm_alltoallv_950
+  query: torch_npu.npu_gmm_alltoallv
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_gmm_alltoallv]
+
+- id: ascend_fixed_version_npu_group_norm_silu_950
+  query: torch_npu.npu_group_norm_silu
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_group_norm_silu]
+
+- id: ascend_fixed_version_npu_grouped_matmul_310p
+  query: torch_npu.npu_grouped_matmul
+  filters: {domain: model, technology: inference, type: apis, platform: 310p, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_grouped_matmul]
+
+- id: ascend_fixed_version_npu_grouped_matmul_950
+  query: torch_npu.npu_grouped_matmul
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_grouped_matmul]
+
+- id: ascend_fixed_version_npu_grouped_matmul_swiglu_quant_v2_950
+  query: torch_npu.npu_grouped_matmul_swiglu_quant_v2
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_grouped_matmul_swiglu_quant_v2]
+
+- id: ascend_fixed_version_npu_incre_flash_attention_310p
+  query: torch_npu.npu_incre_flash_attention
+  filters: {domain: model, technology: inference, type: apis, platform: 310p, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_incre_flash_attention]
+
+- id: ascend_fixed_version_npu_interleave_rope_950
+  query: torch_npu.npu_interleave_rope
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_interleave_rope]
+
+- id: ascend_fixed_version_npu_kv_quant_sparse_flash_attention_950
+  query: torch_npu.npu_kv_quant_sparse_flash_attention
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_kv_quant_sparse_flash_attention]
+
+- id: ascend_fixed_version_npu_kv_rmsnorm_rope_cache_950
+  query: torch_npu.npu_kv_rmsnorm_rope_cache
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_kv_rmsnorm_rope_cache]
+
+- id: ascend_fixed_version_npu_lightning_indexer_950
+  query: torch_npu.npu_lightning_indexer
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_lightning_indexer]
+
+- id: ascend_fixed_version_npu_mla_prolog_v3_950
+  query: torch_npu.npu_mla_prolog_v3
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_mla_prolog_v3]
+
+- id: ascend_fixed_version_npu_mla_prolog_v3_a2
+  query: torch_npu.npu_mla_prolog_v3
+  filters: {domain: model, technology: inference, type: apis, platform: a2, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_mla_prolog_v3]
+
+- id: ascend_fixed_version_npu_mm_all_reduce_base_950
+  query: torch_npu.npu_mm_all_reduce_base
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_mm_all_reduce_base]
+
+- id: ascend_fixed_version_npu_moe_compute_expert_tokens_950
+  query: torch_npu.npu_moe_compute_expert_tokens
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_compute_expert_tokens]
+
+- id: ascend_fixed_version_npu_moe_distribute_combine_950
+  query: torch_npu.npu_moe_distribute_combine
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_distribute_combine]
+
+- id: ascend_fixed_version_npu_moe_distribute_combine_add_rms_norm_950
+  query: torch_npu.npu_moe_distribute_combine_add_rms_norm
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_distribute_combine_add_rms_norm]
+
+- id: ascend_fixed_version_npu_moe_distribute_combine_v2_950
+  query: torch_npu.npu_moe_distribute_combine_v2
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_distribute_combine_v2]
+
+- id: ascend_fixed_version_npu_moe_distribute_dispatch_950
+  query: torch_npu.npu_moe_distribute_dispatch
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_distribute_dispatch]
+
+- id: ascend_fixed_version_npu_moe_distribute_dispatch_v2_950
+  query: torch_npu.npu_moe_distribute_dispatch_v2
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_distribute_dispatch_v2]
+
+- id: ascend_fixed_version_npu_moe_finalize_routing_950
+  query: torch_npu.npu_moe_finalize_routing
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_finalize_routing]
+
+- id: ascend_fixed_version_npu_moe_gating_top_k_950
+  query: torch_npu.npu_moe_gating_top_k
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_gating_top_k]
+
+- id: ascend_fixed_version_npu_moe_gating_top_k_softmax_950
+  query: torch_npu.npu_moe_gating_top_k_softmax
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_gating_top_k_softmax]
+
+- id: ascend_fixed_version_npu_moe_init_routing_950
+  query: torch_npu.npu_moe_init_routing
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_init_routing]
+
+- id: ascend_fixed_version_npu_moe_init_routing_a3
+  query: torch_npu.npu_moe_init_routing
+  filters: {domain: model, technology: inference, type: apis, platform: a3, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_init_routing]
+
+- id: ascend_fixed_version_npu_moe_init_routing_v2_310p
+  query: torch_npu.npu_moe_init_routing_v2
+  filters: {domain: model, technology: inference, type: apis, platform: 310p, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_init_routing_v2]
+
+- id: ascend_fixed_version_npu_moe_init_routing_v2_950
+  query: torch_npu.npu_moe_init_routing_v2
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_init_routing_v2]
+
+- id: ascend_fixed_version_npu_moe_update_expert_950
+  query: torch_npu.npu_moe_update_expert
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_moe_update_expert]
+
+- id: ascend_fixed_version_npu_prefetch_a3
+  query: torch_npu.npu_prefetch
+  filters: {domain: model, technology: inference, type: apis, platform: a3, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_prefetch]
+
+- id: ascend_fixed_version_npu_prompt_flash_attention_310p
+  query: torch_npu.npu_prompt_flash_attention
+  filters: {domain: model, technology: inference, type: apis, platform: 310p, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_prompt_flash_attention]
+
+- id: ascend_fixed_version_npu_quant_lightning_indexer_950
+  query: torch_npu.npu_quant_lightning_indexer
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_quant_lightning_indexer]
+
+- id: ascend_fixed_version_npu_quant_matmul_310p
+  query: torch_npu.npu_quant_matmul
+  filters: {domain: model, technology: inference, type: apis, platform: 310p, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_quant_matmul]
+
+- id: ascend_fixed_version_npu_quant_matmul_950
+  query: torch_npu.npu_quant_matmul
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_quant_matmul]
+
+- id: ascend_fixed_version_npu_quant_scatter_950
+  query: torch_npu.npu_quant_scatter
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_quant_scatter]
+
+- id: ascend_fixed_version_npu_quantize_950
+  query: torch_npu.npu_quantize
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_quantize]
+
+- id: ascend_fixed_version_npu_recurrent_gated_delta_rule_950
+  query: torch_npu.npu_recurrent_gated_delta_rule
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_recurrent_gated_delta_rule]
+
+- id: ascend_fixed_version_npu_rotary_mul_950
+  query: torch_npu.npu_rotary_mul
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_rotary_mul]
+
+- id: ascend_fixed_version_npu_scatter_nd_update_950
+  query: torch_npu.npu_scatter_nd_update
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_scatter_nd_update]
+
+- id: ascend_fixed_version_npu_scatter_nd_update__950
+  query: torch_npu.npu_scatter_nd_update_
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_scatter_nd_update_]
+
+- id: ascend_fixed_version_npu_scatter_pa_kv_cache_950
+  query: torch_npu.npu_scatter_pa_kv_cache
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_scatter_pa_kv_cache]
+
+- id: ascend_fixed_version_npu_sparse_flash_attention_950
+  query: torch_npu.npu_sparse_flash_attention
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_sparse_flash_attention]
+
+- id: ascend_fixed_version_npu_swiglu_quant_950
+  query: torch_npu.npu_swiglu_quant
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_swiglu_quant]
+
+- id: ascend_fixed_version_npu_top_k_top_p_950
+  query: torch_npu.npu_top_k_top_p
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_top_k_top_p]
+
+- id: ascend_fixed_version_npu_trans_quant_param_950
+  query: torch_npu.npu_trans_quant_param
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_trans_quant_param]
+
+- id: ascend_fixed_version_npu_transpose_batchmatmul_950
+  query: torch_npu.npu_transpose_batchmatmul
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_transpose_batchmatmul]
+
+- id: ascend_fixed_version_npu_weight_quant_batchmatmul_310p
+  query: torch_npu.npu_weight_quant_batchmatmul
+  filters: {domain: model, technology: inference, type: apis, platform: 310p, match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_weight_quant_batchmatmul]
+
+- id: ascend_fixed_version_npu_weight_quant_batchmatmul_950
+  query: torch_npu.npu_weight_quant_batchmatmul
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/npu_weight_quant_batchmatmul]
+
+- id: ascend_fixed_version_scatter_update_950
+  query: torch_npu.scatter_update
+  filters: {domain: model, technology: inference, type: apis, platform: '950', match: literal, k: 5}
+  expected: [model/inference/apis/torch_npu/scatter_update]
+- id: ascend_fixed_version_matmul_checksum_950
+  query: torch_npu.matmul_checksum
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: '950'
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/matmul_checksum
+- id: ascend_fixed_version_empty_with_swapped_memory_950
+  query: torch_npu.empty_with_swapped_memory
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: '950'
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/empty_with_swapped_memory
+- id: ascend_fixed_version_erase_stream_950
+  query: torch_npu.erase_stream
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: '950'
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/erase_stream

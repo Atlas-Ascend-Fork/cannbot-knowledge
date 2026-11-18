@@ -14,7 +14,9 @@
 
 四个算子仓的 Git 根统一为 `cann-ops-raw/ascendc/<仓库名>/`，提交快照放在其 `<40位commit>/` 下。完整根路径用于来源匹配，不能只取路径第一段；恢复时拒绝根本身或任一祖先为软链接。目录迁移必须保持 repository/revision/文件不变，并同步 Frontmatter、正文及 API 自动导航中的源码链接；本地旧索引和图谱审计不得冒充已更新结果。
 
-模型 Recipes 及其依赖来源统一放在 `cann-recipes-raw/<仓库名>/<40位commit>/`。当前登记推理、训练、具身智能和空间智能四个仓库，以及卡片引用的 TorchTitan-NPU、MindSpeed 系列依赖；具体来源 ID、规范仓库名和允许版本读取 Registry，不从目录名猜测。模型来源每仓仅登记一个升级时核验的默认分支最新提交，所有相关卡片和图片使用同一版本；升级前阅读旧卡和最新来源，按当前实现重写失效配置、故障与性能断言，补充新增能力。无法由当前来源支持的历史断言不能冒充当前结论，原文保留在 Git 历史与审计中。PR、Issue 保持规范远程 URL，不转换成源码文件。
+`cann-recipes-raw/` 下登记的模型 Recipes 及其依赖来源放在 `cann-recipes-raw/<仓库名>/<40位commit>/`。当前登记推理、训练、具身智能和空间智能四个仓库，以及卡片引用的 TorchTitan-NPU、MindSpeed 系列依赖；具体来源 ID、规范仓库名和允许版本读取 Registry，不从目录名猜测。模型来源每仓仅登记一个升级时核验的默认分支最新提交，所有相关卡片和图片使用同一版本；升级前阅读旧卡和最新来源，按当前实现重写失效配置、故障与性能断言，补充新增能力。无法由当前来源支持的历史断言不能冒充当前结论，原文保留在 Git 历史与审计中。PR、Issue 保持规范远程 URL，不转换成源码文件。
+
+Ascend/pytorch、torchair、op-plugin 使用独立的 `cann-frameworks-raw/<仓库名>/<40位commit>/`，允许保留知识卡实际引用的发布与主线提交，具体值读取 Registry 的 `local_sources`。沿用本节的 `fetch/verify --source` 恢复和复核；版本范围、子模块指向和配套证据在知识正文说明，不由多个来源提交推定组合兼容。
 
 ```bash
 python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> fetch

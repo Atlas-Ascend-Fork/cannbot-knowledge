@@ -266,6 +266,33 @@ local_sources:
     repository: https://gitcode.com/Ascend/MindSpeed-Bridge
     revisions:
     - f74d52a8a318c4594202ccdcf96a615b1f2d32da
+  ascend_pytorch:
+    description: 按发布软件栈和主线候选分别固定的 TorchNPU 框架来源
+    kind: git
+    root: cann-frameworks-raw/pytorch
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/pytorch
+    revisions:
+    - ac0e1564ca6ffb00c1f4fb834fc4b41a601862bf
+    - f3ecfe4a7ef7395754da7ca2e35661a7132b519b
+  ascend_torchair:
+    description: 按软件栈固定的 TorchAir GE 与 npugraph_ex 图编译来源
+    kind: git
+    root: cann-frameworks-raw/torchair
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/torchair
+    revisions:
+    - 7c6c754bed00c86ffaaa2a45cb7ac2724f058013
+    - 92e1e967bd35ebc37a442b4a969730bf3cf77a3c
+  ascend_op_plugin:
+    description: TorchNPU 发布版子模块与主线候选的 OpPlugin 算子适配来源
+    kind: git
+    root: cann-frameworks-raw/op-plugin
+    fetch_script: get_resources.sh
+    repository: https://gitcode.com/Ascend/op-plugin
+    revisions:
+    - d84e9b1d6a558e5f27973cd4329f62968e46fdda
+    - dedc316708372c9a8bfde4527abd2a94b74840f5
   cann_docs_raw:
     description: 从官方持续更新归档恢复的 Ascend C 文档
     root: cann-docs-raw
