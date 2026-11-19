@@ -19,7 +19,7 @@ RUN apt-get update \
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN pip install --no-cache-dir --index-url "${PIP_INDEX_URL}" \
-        "mcp>=2,<3" "uvicorn>=0.23,<1" "pyyaml>=6,<7" \
+        "mcp>=2,<3" "uvicorn>=0.23,<1" "pyyaml>=6,<7" "httpx>=0.27,<1" \
     && chmod 0755 /usr/local/bin/docker-entrypoint.sh
 
 ENV CANNBOT_MCP_HOST=0.0.0.0 \
@@ -28,6 +28,17 @@ ENV CANNBOT_MCP_HOST=0.0.0.0 \
     CANNBOT_MCP_LOG_DIR=/data/logs \
     CANNBOT_MCP_SUBPROC_TIMEOUT=60 \
     PYTHONDONTWRITEBYTECODE=1
+
+# The nested index volume mounts at /data/repo/artifacts, under the
+# read-only repo bind. On Docker 29.x the snapshotter applies the :ro bind
+# BEFORE nested volume mounts, so it cannot mkdirat the mountpoint on the
+# read-only layer even though this image layer already contains the
+# directory — container creation still fails. The deployer must therefore
+# pre-create artifacts/ in the host checkout (it is gitignored, a fresh
+# clone does not carry it): `mkdir -p <repo>/artifacts` before the first
+# `docker compose up`. See DOCKER.md 三步部署. /data/logs and /data/auth
+# have no parent bind and are created here safely.
+RUN mkdir -p /data/repo/artifacts /data/logs /data/auth
 
 EXPOSE 8090
 

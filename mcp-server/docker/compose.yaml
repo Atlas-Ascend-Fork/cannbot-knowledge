@@ -25,9 +25,12 @@ services:
       - ${KNOWLEDGE_ROOT:-../..}:/data/repo:ro
       - cannbot-mcp-index:/data/repo/artifacts
       - cannbot-mcp-logs:/data/logs
+      - cannbot-mcp-auth:/data/auth
 
 volumes:
   cannbot-mcp-index:
     name: cannbot-mcp-index
   cannbot-mcp-logs:
     name: cannbot-mcp-logs
+  cannbot-mcp-auth:
+    name: cannbot-mcp-auth

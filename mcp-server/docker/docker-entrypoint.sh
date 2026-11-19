@@ -15,6 +15,18 @@ set -euo pipefail
 
 REPO_ROOT="${CANNBOT_KNOWLEDGE_ROOT:-/data/repo}"
 LOG_DIR="${CANNBOT_MCP_LOG_DIR:-/data/logs}"
+# Auth state (device/authcode sessions, API keys, the signing key, the
+# StateStore sqlite) must survive container restarts: pin it to the auth
+# volume instead of the container-local HOME, which is wiped on recreate.
+# CANNBOT_MCP_AUTH_SECRET (tokens.env) takes precedence when set; with it,
+# the signing key is env-derived and tokens survive even image rebuilds.
+AUTH_DIR="${CANNBOT_MCP_AUTH_DIR:-/data/auth}"
+# The JWT signing key (auth.key) is written under Path.home(); setpriv only
+# changes the uid, not HOME, so without pinning it the server would try
+# /root/.local/... as uid 1000, fail, and fall back to an ephemeral key —
+# every restart would invalidate all issued tokens. Pin HOME inside the
+# auth volume so the key file persists with it.
+RUN_HOME="${AUTH_DIR}/home"
 INDEX_CLI="${REPO_ROOT}/.agents/skills/knowledge-query/scripts/knowledge_index.py"
 SERVER="${REPO_ROOT}/mcp-server/server.py"
 ARTIFACTS_DIR="${REPO_ROOT}/artifacts"
@@ -27,7 +39,7 @@ if [ ! -d "${REPO_ROOT}/knowledge" ] || [ -z "$(ls -A "${REPO_ROOT}/knowledge")"
     exit 1
 fi
 
-mkdir -p "${LOG_DIR}" "${ARTIFACTS_DIR}"
+mkdir -p "${LOG_DIR}" "${ARTIFACTS_DIR}" "${AUTH_DIR}" "${RUN_HOME}"
 rm -f "${ARTIFACTS_DIR}/indexes/"*.tmp
 
 if [ ! -f "${INDEX_FILE}" ] || ! python3 "${INDEX_CLI}" --knowledge-root "${REPO_ROOT}" verify >/dev/null 2>&1; then
@@ -35,8 +47,10 @@ if [ ! -f "${INDEX_FILE}" ] || ! python3 "${INDEX_CLI}" --knowledge-root "${REPO
     python3 "${INDEX_CLI}" --knowledge-root "${REPO_ROOT}" build
 fi
 
-chown -R "${RUN_UID}:${RUN_GID}" "${LOG_DIR}" "${ARTIFACTS_DIR}"
+chown -R "${RUN_UID}:${RUN_GID}" "${LOG_DIR}" "${ARTIFACTS_DIR}" "${AUTH_DIR}"
+export CANNBOT_MCP_AUTH_DB="${CANNBOT_MCP_AUTH_DB:-${AUTH_DIR}/auth.db}"
 
 echo "[docker-entrypoint] starting cannbot-knowledge mcp server (uid ${RUN_UID})" >&2
 exec setpriv --reuid="${RUN_UID}" --regid="${RUN_GID}" --clear-groups \
+    env HOME="${RUN_HOME}" \
     python3 "${SERVER}" --transport http

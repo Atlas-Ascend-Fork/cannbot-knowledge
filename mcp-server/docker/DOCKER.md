@@ -23,7 +23,13 @@
 
 ### 1. 生成令牌文件 tokens.env
 
-HTTP 模式必填，格式与 [README.md](../README.md) 的 Streamable HTTP 一节一致（`token:label` 逗号分隔）：
+静态令牌现为可选引导通道（详见 [README.md](../README.md) 四轨认证一节）。最简部署可以直接建空文件跳过本步，用户经 OAuth 接入、机器经自服务 API Key 接入：
+
+```bash
+touch tokens.env
+```
+
+需要静态引导令牌时（首次部署引导/应急通道，`token:label` 逗号分隔）：
 
 ```bash
 # 单人（无需宿主 Python）
@@ -39,8 +45,11 @@ for i in $(seq 1 50); do printf 'cbk_%s:user%02d\n' "$(openssl rand -hex 32)" "$
 ### 2. 启动
 
 ```bash
+mkdir -p "${KNOWLEDGE_ROOT:-../..}/artifacts"   # 索引卷挂载点，须在宿主检出的仓库内预建
 docker compose up -d --build
 ```
+
+> 检索索引卷挂在 `:ro` 知识仓 bind 之下的 `artifacts/`；该目录被 gitignore，全新克隆不带它，而 Docker 29.x 在只读层上无法为嵌套卷创建挂载点，缺这一步 `up` 会报 `mkdirat ... artifacts: read-only file system`。已有 `artifacts/` 的旧部署无需关心。
 
 首次启动包含构建镜像与容器内构建检索索引（约 1~3 分钟），进度用 `docker compose logs -f cannbot-mcp` 观察，出现 `starting cannbot-knowledge mcp server` 即就绪。
 
@@ -64,10 +73,12 @@ curl -s -X POST http://127.0.0.1:8090/mcp \
 cannbot-knowledge 检出 ──(bind, :ro)──►  /data/repo        知识卡+治理+脚本，只读
 Docker 卷 cannbot-mcp-index ──────────►  /data/repo/artifacts   检索索引（容器内构建）
 Docker 卷 cannbot-mcp-logs  ──────────►  /data/logs        JSONL 调用日志
+Docker 卷 cannbot-mcp-auth  ──────────►  /data/auth        认证状态（会话/API key/签名密钥/StateStore）
 宿主机 8090 ◄───────────────────────────  0.0.0.0:8090      MCP HTTP 端点
 ```
 
 - **知识仓只读**：`/data/repo` 以 `:ro` 挂载，容器内任何进程写入（`artifacts` 卷除外）都会得到 `Read-only file system`。这把服务器"对知识仓严格只读"的代码约束在系统层面再锁一次。
+- **认证状态持久化**：entrypoint 把 `CANNBOT_MCP_AUTH_DB` 固定到 `/data/auth` 卷（设备码/授权码会话、API key 库、StateStore、`auth.key` 签名密钥都在该目录），容器重建/重启后已签发令牌与已生成 API key 全部存活。未配置该卷时状态会落进容器层，重建即丢——不要删这个挂载。密钥轮换或在镜像重建间保持令牌有效：在 `tokens.env` 显式设置 `CANNBOT_MCP_AUTH_SECRET`（env 优先于 key 文件）。
 - **docker-entrypoint.sh**（每次容器启动执行）：校验 `knowledge/` 非空（防止挂错目录后静默服务空库）→ 索引缺失或与知识卡不一致（宿主机 `git pull` 过）时在容器内重建，重建与查询均只使用镜像内置依赖（PyYAML、git——git 用于记录索引与查询的 commit provenance）→ 修正日志与索引卷属主 → 以 `setpriv` 降权到 uid 1000 启动服务器。任何一步失败容器即退出，由重启策略退避重试——服务保持 fail-closed，绝不用过期索引对外作答。
 - **init: true**：容器内微型 init 进程收割僵尸进程；`search`/`discover` 每次调用经 subprocess fork 子进程，长期运行需要兜底。
 - **restart: unless-stopped**：Docker daemon 重启、宿主机重启、进程崩溃都自动拉起；只有手动 `docker stop` 过才不拉。
@@ -165,10 +176,12 @@ sudo python3 mcp-server/analyze_logs.py --days 30 \
 | 现象 | 原因与处理 |
 |---|---|
 | `up` 报 `env file ... not found` | 先按三步部署生成 `tokens.env` |
+| `up` 报 `mkdirat .../artifacts: read-only file system` | 宿主检出缺少索引卷挂载点目录，按三步部署第 2 步先 `mkdir -p <仓库>/artifacts` |
 | 镜像构建阶段极慢或超时 | 官方 PyPI 不可达/过慢。在 `mcp-server/docker/.env` 配置 `PIP_INDEX_URL` 为可达镜像源（见配置表）后重新 `docker compose up -d --build` |
 | 容器反复重启 | `docker compose logs`：多为索引构建失败（知识卡或治理文件损坏），修复仓库后重启自动恢复；fail-closed 是预期行为 |
 | 启动日志 `knowledge/ is missing or empty` | `KNOWLEDGE_ROOT` 指到了错误目录，entrypoint 显式拒绝启动，避免静默服务空知识库 |
 | 查询返回 stale/missing 索引类错误 | 正处于重启重建窗口，等待完成；持续出现则查 `docker compose logs` |
+| 升级后 `/oauth/device/*`、`/activate`、`/api/keys` 返回 404 | `tokens.env` 里设置了 `CANNBOT_MCP_AUTH_SERVER=off`：该开关现在端到端关闭自建授权服务器（签发端点与 `/mcp` 对自签 JWT/API Key 的验收一并关闭），如需设备码/授权码登录请移除该开关；`CANNBOT_MCP_GITCODE_VERIFY` 只关 GitCode 验证轨，不受影响 |
 | 端口占用 | 改 `compose.yaml` 的 `ports` 左值为其他宿主端口 |
 | `up` 报容器名 `cannbot-mcp` 冲突 | 本机曾用其他目录/项目名部署过：`docker rm cannbot-mcp`（必要时 `docker network rm <旧项目名>_default`）后重试，卷与数据不受影响 |
 | `permission denied ... docker.sock` | `sudo usermod -aG docker <user>` 后重新登录 |

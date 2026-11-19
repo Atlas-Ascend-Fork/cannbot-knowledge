@@ -44,20 +44,26 @@ uv --directory mcp-server run server.py
 ### Streamable HTTP（团队共享）
 
 ```bash
-export CANNBOT_MCP_TOKENS="cbk_<token1>:zhangsan,cbk_<token2>:lisi,cbk_<token3>"   # token:label 逗号分隔；裸令牌=匿名
+# 静态令牌现为可选引导通道；机器接入推荐自服务 API Key（见下）
+export CANNBOT_MCP_TOKENS="cbk_<token1>:zhangsan"   # 可省略
 uv --directory mcp-server run server.py --transport http
 ```
 
 - 端点 `POST /mcp`，stateless Streamable HTTP（无会话粘滞）；
 - 无认证探活端点 `GET /health`：固定返回 `{"status":"ok"}`，供 K8s/APISIX 等编排系统健康检查；不参与认证、限流与调用日志，业务级健康（索引与检索链路）仍用 `discover` 工具验证；
-- 令牌清单为空时进程拒绝启动（退出码 2）；
-- 每令牌滑动窗口限流默认关闭（`0`）；设置 `CANNBOT_MCP_RATE_LIMIT=N` 启用，超限 429 + `Retry-After`；
+- **四轨认证**：静态令牌（`CANNBOT_MCP_TOKENS`，引导通道）、GitCode OAuth/PAT 令牌、自建授权服务器签发的 JWT（设备码/授权码流程，人类用户）、自服务 API Key（机器身份，见下）；任一通过即可，都失败 401。凭证按类型分流：`cbk_live_` 前缀只走本地 API Key 校验、本服务自签 JWT（载荷带 `typ` 标记）只走本地验签，两者**永不外发** GitCode；其余不透明令牌走 GitCode 验证轨，失败不回退；
+- `GET /.well-known/oauth-protected-resource`（含 `/mcp` 后缀变体）：RFC 9728 受保护资源元数据，`authorization_servers` 指向本服务自身的 `GET /.well-known/oauth-authorization-server`（RFC 8414）——GitCode 不提供 8414 文档（该路径返回 SPA HTML，客户端会 JSON 解析崩溃），故由本服务作为发现前端。自建授权服务器开启时 8414 描述本服务自身的端点（与 GitCode 验证轨开关无关）；`CANNBOT_MCP_AUTH_SERVER=off` 时退回转发 GitCode 的 authorize/token 端点（此时依赖 GitCode 验证轨）；两轨同时关闭时发现端点一并 404；
+- 静态令牌清单为空时进程正常启动（GitCode/自建授权默认开启）；静态清单、GitCode 验证、自建授权三者同时关闭才拒绝启动（退出码 2）；
+- 401 挑战头带 `resource_metadata` 指引（RFC 9728），客户端一步发现授权服务器；自签 JWT 带 `aud` 受众绑定并强校验（MCP 2026-07-28 规范 MUST 项，RFC 8707）；
+- 限流默认按 principal 记账（同一身份多把令牌合并窗口）；`CANNBOT_MCP_RATE_KEY=token` 恢复按令牌计数；`0` 关闭限流，超限 429 + `Retry-After`；
 - 认证失败按直连 IP 冷却：1 分钟内 10 次 401 → 封禁 5 分钟（不信任 `X-Forwarded-For`）；
 - HTTP 模式默认记调用日志。
 
-令牌生成：`python3 -c "import secrets; print('cbk_' + secrets.token_urlsafe(32))"`（≥32 字节熵）。
+**GitCode OAuth（人类用户）**：在 GitCode 上用本人账号授权后获得访问令牌，直接作为 `Authorization: Bearer` 使用，无需向运营方领静态令牌；服务端通过 GitCode 用户接口换取用户名记入调用日志 principal（结果缓存 60 秒）。令牌由 GitCode 发放（有效期以 GitCode 侧为准，通常 15 天）并自动续期；GitCode 侧撤销授权即失去访问权。GitCode 不支持 OAuth 动态客户端注册——完整浏览器授权前需先在 GitCode 注册 OAuth 应用并把 client_id 交给使用者（见 [MCP_CONFIG.md](MCP_CONFIG.md)）；注册完成前，GitCode 个人访问令牌（PAT）同样走这条验证轨，可作过渡接入方式。`CANNBOT_MCP_GITCODE_VERIFY=off` 可整体关闭 GitCode 轨（内网/网关不可达时临时回退纯静态令牌）。
 
-令牌生命周期：**轮换**——生成新令牌加入 `CANNBOT_MCP_TOKENS` 清单（新旧并存）并重启进程，通知使用者全部切换后再移除旧令牌、再次重启；**撤销**——从清单移除并重启即可，令牌只在运行中的进程内存与部署环境（env / tokens.env）里存在，无服务端落库；**泄露处置**——立即从清单移除并重启，检查调用日志中该 principal 的异常调用（日志记录 principal 与查询内容明文，见「调用日志与离线分析」）；已知边界：令牌明文存于环境变量（无 UI 做不到哈希落库），label 是凭证记账不是身份认证。
+**自服务 API Key（机器身份推荐方式）**：人类用户先走一次 OAuth（设备码或授权码流程）拿到 access JWT，然后调 `POST /api/keys`（`Authorization: Bearer <JWT>`，body `label=机器用途`）为自己生成一把只能访问本服务的机器令牌；响应中的完整 key（`cbk_live_` 前缀）仅返回一次，服务端只存 scrypt 哈希。机器拿这把 key 直接访问 `/mcp`，principal 记为 `owner/label`（审计能同时回答谁生成、哪台机器在用）。`GET /api/keys` 列表、`DELETE /api/keys?key_id=...` 撤销均由本人自助完成，无需管理员。每用户最多 10 把有效 key，撤销立即生效。相比直接把 GitCode PAT 塞给 CI：key 只能访问本服务（GitCode PAT 能操作你全部仓库）、可单独撤销、审计粒度到机器槽位。
+
+**静态令牌（引导/应急通道）**：首次部署尚未有人完成 OAuth 时、或 GitCode 不可达的应急场景，可用环境变量静态清单引导。生成：`python3 -c "import secrets; print('cbk_' + secrets.token_urlsafe(32))"`。轮换：新令牌加入清单（新旧并存）重启，使用者切换后移除旧令牌再重启；撤销：移除并重启。已知边界：令牌明文存于环境变量，label 是记账不是身份认证——长期机器接入请迁移到自服务 API Key。
 
 ### Docker（一键部署，团队共享）
 
@@ -73,10 +79,18 @@ uv --directory mcp-server run server.py --transport http
 | `CANNBOT_KNOWLEDGE_PLATFORM` | 空 | 缺省平台，与安装器 `.cannbot/knowledge.env` 对齐 |
 | `CANNBOT_MCP_TRANSPORT` | `stdio` | `stdio` / `http`（`--transport` 参数优先） |
 | `CANNBOT_MCP_HOST` / `CANNBOT_MCP_PORT` | `127.0.0.1` / `8090` | HTTP 模式绑定地址与端口 |
-| `CANNBOT_MCP_TOKENS` | 空 | HTTP 令牌清单，`token:label` 逗号分隔（裸令牌=匿名）；HTTP 模式必填，清单为空拒绝启动 |
-| `CANNBOT_MCP_RATE_LIMIT` | `0`（关闭） | 每令牌每分钟请求上限（滑动窗口）；`0` 关闭；超限 429 |
+| `CANNBOT_MCP_TOKENS` | 空 | 静态令牌清单（引导/应急通道），`token:label` 逗号分隔（裸令牌=匿名）；可为空（GitCode/自建授权默认开启时正常启动）；与 GitCode、自建授权同时关闭才拒绝启动 |
+| `CANNBOT_MCP_RATE_LIMIT` | `0`（关闭） | 每 principal 每分钟请求上限（滑动窗口）；`0` 关闭；超限 429 |
+| `CANNBOT_MCP_RATE_KEY` | `principal` | 限流计数键：`principal`（默认，按身份合并）或 `token`（旧的按令牌计数） |
+| `CANNBOT_MCP_GITCODE_VERIFY` | 开 | `off` 关闭 GitCode 验证轨（/mcp 不再外呼 GitCode 验证令牌）；自建授权服务器不受影响 |
+| `CANNBOT_MCP_AUTH_SERVER` | 开 | `off` 端到端关闭自建授权服务器：设备码/授权码/激活/`/api/keys` 端点全部 404，`/mcp` 不再接受自签 JWT 与自服务 API Key（只剩 GitCode 验证轨 + 静态令牌）；两轨都关时发现端点一并 404 |
+| `CANNBOT_MCP_GITCODE_API` | `https://api.gitcode.com` | GitCode 用户接口 base（内网代理部署可覆盖） |
+| `CANNBOT_MCP_OAUTH_CLIENT_ID` / `CANNBOT_MCP_OAUTH_CLIENT_SECRET` | 空 | 预注册 GitCode OAuth 应用凭证。仅服务端使用：作为设备码/授权码流程中 GitCode 登录腿的身份源，**绝不发给任何客户端**（`/register` 返回的是本服务公共客户端注册，无 secret）；未配置时授权页退回手填用户名（仅限可信网络引导部署） |
+| `CANNBOT_MCP_PUBLIC_URL` | 按 Host 头推断 | 元数据里声明的本服务对外 URL（生产域名与端口不匹配时必配；**多副本部署必须显式配置**——所有节点共享同一值，否则 JWT 的 `aud` 按各节点 Host 头各自推导、跨节点验证必然失败） |
+| `CANNBOT_MCP_STATE_BACKEND` | `sqlite` | 状态后端：`sqlite`（默认，零依赖单机）或 `redis`（多副本共享全部认证状态：设备码/授权码/PKCE/refresh 台账/限流/冷却） |
+| `CANNBOT_MCP_STATE_REDIS_URL` | 空 | `STATE_BACKEND=redis` 时的连接串（必填）；Redis 不可达时进程拒绝启动（fail-closed） |
 | `CANNBOT_MCP_LOG` / `CANNBOT_MCP_LOG_DIR` | `auto` / `~/.local/state/cannbot-knowledge/mcp` | 调用日志开关（`on`/`off`/`auto`，auto=HTTP 开、stdio 关）与目录 |
-| `CANNBOT_MCP_LOG_UPLOAD_REMOTE` | `https://gitcode.com/qixingkai/cannbot-knowledeg-log.git` | 日志自动上传远端仓；与 `LOG_UPLOAD_INTERVAL` 一起启用 |
+| `CANNBOT_MCP_LOG_UPLOAD_REMOTE` | 空（不启用） | 日志自动上传远端仓；与 `LOG_UPLOAD_INTERVAL` 一起启用，须显式配置 |
 | `CANNBOT_MCP_LOG_UPLOAD_INTERVAL` | `0`（关闭） | 自动上传间隔（秒）；仅 HTTP 且日志开启时生效，`0` 不启动上传线程 |
 | `CANNBOT_MCP_LOG_UPLOAD_BRANCH` | `main` | 自动上传目标分支 |
 | `CANNBOT_MCP_MAX_SUBPROCS` | CPU 核数 | search/discover 子进程并发信号量上限，超出排队 |
@@ -98,7 +112,7 @@ v2 调用行字段（"来源工具"列表示该键只在对应工具的行出现
 | `call_id` | str | 调用事件标识：每次调用随机生成一次的短十六进制串，同一调用行唯一稳定；多实例汇聚时同一行的完全重复副本按它幂等去重，旧行无此字段按缺失解析 | 全部 |
 | `boot_id` | str \| null | 进程启动标识：服务器进程启动时生成一次的随机短十六进制串，同一进程的所有调用行/事件行同值；用于多实例与 stdio 并发会话的行归组，旧行无此字段按缺失解析 | 全部 |
 | `transport` | str | `stdio` / `http` | 全部 |
-| `principal` | str \| null | 命中令牌的 label；匿名令牌与 stdio 为 null | 全部 |
+| `principal` | str \| null | 调用者身份：静态令牌为其 label（机器用途名）、GitCode OAuth 令牌为 GitCode 用户名；裸令牌与 stdio 为 null | 全部 |
 | `tool` | str | `discover` / `search` / `read_card` | 全部 |
 | `args` | object | 本次调用的工具参数原样 | 全部 |
 | `ok` | bool | 调用成功与否 | 全部 |
@@ -136,7 +150,7 @@ python3 mcp-server/analyze_logs.py --days 30 [--log-dir /path/a,/path/b] [--top 
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `CANNBOT_MCP_LOG_UPLOAD_REMOTE` | `https://gitcode.com/qixingkai/cannbot-knowledeg-log.git` | 上传目标仓 |
+| `CANNBOT_MCP_LOG_UPLOAD_REMOTE` | 空（不启用） | 上传目标仓，须显式配置 |
 | `CANNBOT_MCP_LOG_UPLOAD_INTERVAL` | `0`（关闭） | 上传间隔（秒），非 0 启用 |
 | `CANNBOT_MCP_LOG_UPLOAD_BRANCH` | `main` | 上传目标分支 |
 
@@ -158,7 +172,8 @@ python3 mcp-server/analyze_logs.py --days 30 [--log-dir /path/a,/path/b] [--top 
 
 - **零协调成立的理由**：服务 stateless（任意副本处理任意请求）；数据是纯 git 仓（clone + 建索引即完整分发）；SQLite 只读连接多进程/多机安全。实例间 commit 可短暂不一致——无害，每次响应自带索引 provenance。
 - **边界 1：日志分散**——各实例各写本地 JSONL，用 `analyze_logs.py --log-dir a,b,c` 多目录合并（`call_id` 参与幂等键去重，旧行按 `(ts, tool, principal, request_sha256)`）；或开启"日志自动上传"让各实例自动汇聚到同一仓（见上节），维护者 analyze 前先 `git pull`。
-- **边界 2：限流每台各限**——设 `CANNBOT_MCP_RATE_LIMIT=N` 后，N 次/分钟在 N 台实例上是"每台各 N"而非全局 N；子进程并发闸同理。需要全局限流时以 Redis 实现替换限流接口（接口已预留），或由前置 LB 统一执行。
+- ~~**边界 2：限流每台各限**~~（13c 已解除）：`STATE_BACKEND=redis` 时限流与 IP 冷却全局共享——limit=N 在 N 台实例上是全局 N。sqlite 单机后端仍是每进程各限。子进程并发闸仍为每台。
+- **多副本部署**：`CANNBOT_MCP_STATE_BACKEND=redis` + `CANNBOT_MCP_STATE_REDIS_URL` 使多节点共享**全部认证状态**（设备码/授权码/PKCE/refresh 台账/限流/IP 冷却）；三个必备项：①所有节点同一 `CANNBOT_MCP_AUTH_SECRET`（JWT 验签一致）；②所有节点同一 `CANNBOT_MCP_PUBLIC_URL`（aud 绑定一致）；③Redis 对所有节点可达且不可达时进程拒绝启动（fail-closed，不静默退化）。选 redis 后端需先 `pip install redis>=5`（默认部署无此依赖）。
 - **更新窗口约定**：维护者显式 `git pull` 后立即连续执行索引重建（`knowledge_index.py build`），再对外提供服务；pull 与重建之间服务保持 fail-closed 拒答（实测重建约 65s，该窗口内查询返回带修复指引的 tool error，不会读到新旧混合数据）。服务器自身绝不自动更新或重建。
 - **LB 建议（可选）**：Streamable HTTP stateless 下无需会话粘滞；按真实客户端 IP 的封禁/限流需在反代层配置（服务端只看直连地址，默认不信任 `X-Forwarded-For`）。
 

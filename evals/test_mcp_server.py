@@ -359,6 +359,13 @@ class HttpServer:
             "CANNBOT_MCP_TRANSPORT": "http",
             "CANNBOT_MCP_PORT": str(self.port),
             "CANNBOT_MCP_TOKENS": tokens,
+            # Auth state (cooldowns, sessions) is StateStore-backed
+            # and keyed off the auth-db directory; isolate per server
+            # instance so cooldown bans and rate windows do not leak
+            # between tests that share the class-level HOME_DIR.
+            "CANNBOT_MCP_AUTH_DB": str(
+                Path(tempfile.mkdtemp(prefix="cannbot-mcp-authdb-")) / "auth.db"
+            ),
         }
         if rate_limit is not None:
             environment["CANNBOT_MCP_RATE_LIMIT"] = str(rate_limit)
@@ -1041,6 +1048,11 @@ class HttpTransportTests(unittest.TestCase):
         shutil.rmtree(log_dir, ignore_errors=True)
 
     def test_empty_token_list_refuses_to_start(self) -> None:
+        # After the auth-upgrade work (self-service API keys,
+        # aud/static-degradation), an empty static list alone no longer
+        # refuses startup (API keys are the machine path now).
+        # Refusal needs ALL auth tracks off: static empty + GitCode verify
+        # off + AS off.
         process = subprocess.Popen(
             server_command(),
             stdin=subprocess.DEVNULL,
@@ -1053,11 +1065,62 @@ class HttpTransportTests(unittest.TestCase):
                 CANNBOT_MCP_TRANSPORT="http",
                 CANNBOT_MCP_PORT=str(free_port()),
                 CANNBOT_MCP_TOKENS="",
+                CANNBOT_MCP_GITCODE_VERIFY="off",
+                CANNBOT_MCP_AUTH_SERVER="off",
             ),
         )
         _out, err = process.communicate(timeout=60)
         self.assertNotEqual(0, process.returncode)
+        self.assertIn("no auth track is available", err)
         self.assertIn("CANNBOT_MCP_TOKENS", err)
+
+    def test_empty_token_list_with_tracks_on_starts(self) -> None:
+        # Empty static list but the dynamic tracks are on: starts fine and
+        # prints the self-service key guidance instead of refusing. The
+        # server keeps running (uvicorn serves), so the liveness proof is
+        # the /health endpoint answering, then we kill the process.
+        port = free_port()
+        stderr_file = tempfile.NamedTemporaryFile(
+            prefix="cannbot-mcp-tracks-stderr-", delete=False
+        )
+        process = subprocess.Popen(
+            server_command(),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=stderr_file,
+            text=True,
+            env=server_environment(
+                FIXTURE,
+                HOME_DIR,
+                CANNBOT_MCP_TRANSPORT="http",
+                CANNBOT_MCP_PORT=str(port),
+                CANNBOT_MCP_TOKENS="",
+            ),
+        )
+        try:
+            deadline = time.time() + 30
+            while time.time() < deadline:
+                if process.poll() is not None:
+                    stderr_file.close()
+                    self.fail(
+                        "server exited during startup: "
+                        + Path(stderr_file.name).read_text(encoding="utf-8")
+                    )
+                try:
+                    with urllib.request.urlopen(
+                        f"http://127.0.0.1:{port}/health", timeout=2
+                    ) as response:
+                        if response.status == 200:
+                            break
+                except (urllib.error.URLError, OSError):
+                    time.sleep(0.5)
+            else:
+                self.fail("server did not become healthy within 30s")
+        finally:
+            process.kill()
+            process.wait(timeout=10)
+            stderr_file.close()
+            os.unlink(stderr_file.name)
 
     def test_rate_limit_per_token(self) -> None:
         log_dir = Path(tempfile.mkdtemp(prefix="cannbot-mcp-rate-"))
@@ -1131,6 +1194,12 @@ class HttpTransportTests(unittest.TestCase):
         kernel answered RST, surfacing as ConnectionResetError while reading
         the response. Mirrors the drain-before-respond behaviour the rate
         limit branch already had.
+
+        The auth chain may await an outbound call (GitCode token
+        verification) before answering, so the client must NOT half-close
+        the write side before reading — a FIN while the app still holds the
+        response makes uvicorn discard it. The client keeps the write side
+        open and relies on the server closing after the response.
         """
 
         def raw_two_packet_post(
@@ -1147,19 +1216,27 @@ class HttpTransportTests(unittest.TestCase):
                 headers.append(f"Authorization: Bearer {authorization}")
             request = ("\r\n".join(headers) + "\r\n\r\n").encode("ascii")
             with socket.create_connection(("127.0.0.1", port), timeout=10) as sock:
+                sock.settimeout(30)
                 sock.sendall(request)
                 # Give the server time to answer the headers packet and close
                 # the connection before the body packet lands, pinning the
                 # race that produced intermittent resets with real clients.
                 time.sleep(0.1)
                 sock.sendall(body)
-                sock.shutdown(socket.SHUT_WR)
+                # NOTE: no shutdown(SHUT_WR) here — see the docstring: the
+                # auth chain may await an outbound verify, and a client FIN
+                # during that await makes uvicorn drop the response. The
+                # read loop ends on the server's response-side close
+                # (uvicorn answers auth failures with Connection: close);
+                # settimeout above bounds the wait in case it ever does not.
                 chunks: list[bytes] = []
                 while True:
                     try:
                         chunk = sock.recv(65536)
                     except ConnectionResetError:
                         self.fail("connection reset while reading auth-failure response")
+                    except socket.timeout:
+                        self.fail("server did not close the connection after the response")
                     if not chunk:
                         break
                     chunks.append(chunk)

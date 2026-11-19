@@ -33,8 +33,13 @@ K8s/APISIX 等编排系统另有**无认证探活端点** `GET /health`(固定�
 | 症状 | 原因 | 处置 |
 |---|---|---|
 | HTTP 401 | 令牌错误或未进入进程环境 | 在启动客户端的终端里 `echo ${CANNBOT_MCP_TOKEN:0:8}` 验证前 8 位;改完 bashrc 须开新终端或先 `source` |
+| OAuth 授权后仍 401 | GitCode 验证不可达或令牌无效(GitCode 侧已撤销授权) | 先确认 GitCode 可达(浏览器能登录);再在 GitCode 设置里检查应用授权状态;内网/网关故障期间可让部署方临时 `CANNBOT_MCP_GITCODE_VERIFY=off`(纯静态令牌模式),恢复后务必移除该变量 |
+| 客户端报 JSON 解析错误(如 `Unrecognized token '<'`)后授权流程无进展 | 客户端把 `authorization_servers` 指到的主机当授权服务器取 RFC 8414 元数据,该主机返回了 HTML 而非 JSON(GitCode 即如此);本服务的 9728 已指向自身 8414,出现此症状通常是网关/反代把 `/.well-known/` 路径改写到了别的页面 | 核对反代是否原样放行 `/.well-known/oauth-protected-resource` 与 `/.well-known/oauth-authorization-server`(含 `/mcp` 变体)两条路径;确认 `CANNBOT_MCP_PUBLIC_URL` 指向客户端实际可达的本服务地址 |
+| 客户端报 `Incompatible auth server: does not support dynamic client registration` | GitCode 不支持 OAuth 动态客户端注册(RFC 7591),客户端又没有预注册的 client_id | 在 GitCode 注册 OAuth 应用:登录后打开 **`https://gitcode.com/setting/oauth/create`**(设置 → OAuth 应用 → 创建),填应用名与回调地址(客户端本机回环,如 `http://127.0.0.1:19876/mcp/oauth/callback`),创建后把 client_id 填进客户端 MCP 配置(如 OpenCode/cannbot 的 `oauth.clientId`,应用列表在 `/setting/oauth`);应用注册完成前,可先用 GitCode PAT 作为 `Authorization: Bearer` 头直连 |
+| 客户端报元数据里授权服务器不可达 | 9728 的 `authorization_servers` 默认按 Host 头推导本服务地址,生产域名/端口与客户端所见不一致时推导错误 | 在服务端设置 `CANNBOT_MCP_PUBLIC_URL` 为客户端可达的对外地址(含协议与端口) |
+| 元数据端点 404 | `CANNBOT_MCP_GITCODE_VERIFY=off`(GitCode 轨被关闭,不广播 OAuth 声明) | 属预期行为;需要 OAuth 时移除该变量并重启 |
 | 401 十次后持续被拒(约 5 分钟) | 认证失败 IP 冷却:1 分钟内 10 次 401 触发封禁 | 等待 5 分钟或重启服务器;先修正令牌再重试,避免反复撞线 |
-| HTTP 429 | 触发每令牌限流(仅显式设置了 `CANNBOT_MCP_RATE_LIMIT` 时) | 按 `Retry-After` 头等待重试;默认限流关闭,出现 429 说明部署方显式启用了 |
+| HTTP 429 | 触发限流(仅显式设置了 `CANNBOT_MCP_RATE_LIMIT` 时;计数按 principal,同一身份多把令牌合并) | 按 `Retry-After` 头等待重试;默认限流关闭,出现 429 说明部署方显式启用了 |
 | 进程启动即退出(退出码 2) | HTTP 模式 `CANNBOT_MCP_TOKENS` 为空,拒绝启动 | 配置令牌清单后重启;生成:`python3 -c "import secrets; print('cbk_' + secrets.token_urlsafe(32))"` |
 
 ### 工具执行
