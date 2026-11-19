@@ -1,0 +1,161 @@
+# TorchAir模型开发指南
+
+汇集固定版本证据支持的模型相关知识；具体适用范围以卡片正文为准。
+
+- [集合通信入图：GE 支持范围、Send/Recv 与稳定拓扑](collective_communication_graph_contract.md)：在 Eager 通信成立后核对 GE 集合通信 Converter，说明 Send/Recv 的组成员和 StableRDFS、动态 shape 边界。
+- [dynamo_export：GE 离线导图、外置权重与部署路径](dynamo_export_offline_deployment.md)：串联 AIR 导出、权重路径、ATC 转换和多卡配置，明确整图及功能互斥。
+- [GE 编译调优：在线编译、优化级别、View 与 Tiling 下沉](ge_compile_optimization_controls.md)：按下发与编译瓶颈选择配置，记录 O1 例外、View 失效组合和 Tiling 下沉的版本约束。
+- [GE Converter 构图：TensorSpec、类型、常量与控制边](ge_converter_tensor_and_control_edges.md)：区分图 Tensor 与 Meta 描述，说明 Cast/Const/Clone 和 dependencies 对存储及执行次序的作用。
+- [GE 零交付件回调：布局、动态输出与进程边界](ge_custom_op_callback_boundaries.md)：区分 Python/C++/Triton 回调的类型和输出能力，明确布局不保真、连续化写回及编译产物不可跨进程迁移。
+- [GE RefData：原地输入、在线开关与离线默认](ge_refdata_and_mutated_inputs.md)：区分 RefData 与固定输入地址，说明在线/离线配置和动态分档互斥。
+- [GE 调度：通算并行、单流、拓扑顺序与静态子图阈值](ge_scheduling_and_static_partition.md)：说明 AllReduce 切分、单流禁用组合、通信顺序和动静子图阈值；隔离主线自动多流策略。
+- [GE 推导不一致：dtype、AllGather shape 与输出内存不足](ge_shape_dtype_failure_diagnosis.md)：从首个 Meta/GE 推导分歧定位 dtype、rank 和输出字节数，避免直接扩大输出缓冲区。
+- [图内多流依赖：GE record/wait 与 npugraph_ex Event](graph_multistream_dependencies.md)：按后端表达跨流顺序，区分执行同步和 record_stream 内存寿命，说明 Event 不能跨 graph break。
+- [图变换的存储语义：Noop、Cat与view原地恢复](graph_noop_cat_and_reinplace_passes.md)：保留文档平台范围，补完整独立包Cat预分配和三目标view原地恢复的源码条件与版本门控。
+- [npugraph_ex 捕获控制：次数上限、Eager 定界和跳过校验](npugraph_ex_capture_controls.md)：区分发布版已有的 fallback 控制与主线强制重捕获、unsafe 跳过检查的约束和优先级。
+- [条件图编译门控：分支Pass、函数化解包与别名检查](npugraph_ex_cond_compile_validation_and_unwrap.md)：核对独立npugraph_ex中cond包装识别、输入原地开关下的解包、变换后别名门控与生成代码结构检查。
+- [条件节点运行链：预热派发、统一输出缓冲与子图池](npugraph_ex_cond_dispatch_and_output_buffers.md)：区分cond预热和正式捕获，解释双IF子图、false输出拷贝及原生条件/流/内存池门槛。
+- [npugraph_ex流事件：前AOT降低、cond闭环与scope结构键](npugraph_ex_cond_stream_event_closure_and_scope_keys.md)：保留图降低与cond闭环，补完整tag字典、dispatcher/Functionalize、record_stream和双版通信依赖边界。
+- [npugraph_ex torch.cond：设备条件、分支输出与原地限制](npugraph_ex_conditional_capture.md)：记录主线条件捕获的版本、驱动、别名、多流与嵌套 mutation 失效边界。
+- [独立npugraph_ex资源scope：控核、确定性与静态编译门控](npugraph_ex_core_limit_stream_targets_and_static_kernel_gate.md)：连接完整scope入口、Eager get/set、编译标记与threadlocal属性栈，核对目标流恢复、确定性和共享静态编译门控。
+- [独立npugraph_ex的DLRM特定图改写与语义前提](npugraph_ex_dlrm_model_specific_rewrites.md)：完整记录DLRM模型特定的embedding、三角矩阵和预测层改写，明确未发现所查包的直接调用及参数保留边界。
+- [独立npugraph_ex通信：Gather与AllToAll的计数和回写](npugraph_ex_hcom_gather_alltoall_counts_and_copyback.md)：完整记录Gather和AllToAll的组标记、元素计数、Meta/运行差异、临时缓冲与copy回写。
+- [独立npugraph_ex通信：不均匀归约、Broadcast与点对点桥接](npugraph_ex_hcom_reduce_broadcast_and_p2p_bridges.md)：完整核对不均匀归约转换、Broadcast两版源和返回值、Send/Recv静态桥接与副作用。
+- [npugraph_ex 内存复用：图池、输入别名与输出保存](npugraph_ex_memory_pool_and_clone.md)：说明三种复用模式的优先级，区分 user/mutated/参数输入和 clone_output 的覆盖问题。
+- [独立npugraph_ex输出重建：弱引用、共享Storage与逐项克隆](npugraph_ex_output_reconstruction_and_storage_lifetime.md)：保留输出重建消费者，补完整双版元数据、格式、浅层重建、Dump及诊断helper边界。
+- [独立npugraph_ex原地化：别名、回写与多流检查](npugraph_ex_reinplace_alias_and_stream_checks.md)：完整区分输入回写与中间Tensor两条原地化算法，说明Meta、Storage、用户收集、版本流检查与失败后状态。
+- [独立npugraph_ex回放输入：固定缓冲与地址变更复制](npugraph_ex_replay_input_buffers_and_copy_paths.md)：核对capture时连续缓冲、参数和别名输入分类、逐次copy及storage基址比较，解释clone_input为何不是每步新建一套克隆。
+- [独立npugraph_ex缓存恢复：捕获键与首次运行成本](npugraph_ex_restored_capture_keys_and_first_call.md)：解释持久代码恢复后的进程内捕获实例、参数地址键、首次同步预热，以及容量已满时旧key重捕获也可能触发Eager回退。
+- [npugraph_ex独立包acl_graph与集成镜像的差异账](npugraph_ex_standalone_aclgraph_mirror_account.md)：以函数级 AST 比较对账独立包与集成 acl_graph.py 两固定版：发布近同构、主线配置键层分化与独立包独有段。
+- [独立npugraph_ex包的设计说明、Pattern与图元数据合同](npugraph_ex_standalone_design_contracts.md)：保留独立包设计，补完整模式注册、scope标签、事件路径分析与DEBUG结构统计，区分主线和发布实现。
+- [静态Kernel收集与筛选：临时捕获、去重和失败信号](npugraph_ex_static_kernel_dump_and_selection.md)：核对独立包dump流限核恢复、算子JSON选择与编译前已见集合，区分目录、选中项和成功工件。
+- [静态Kernel包生命周期：加载状态、隔离安装与清理](npugraph_ex_static_kernel_run_package_lifecycle.md)：区分run包需要编译或跳过的条件、安装状态与真实成功，并核对进程所有目录和广播选择路径。
+- [npugraph_ex SuperKernel 同步选项：Early-Start 与 ValueWait 融合](npugraph_ex_superkernel_sync_controls.md)：解释需算子内适配的提前启动、激进融合位掩码及多重匹配失败，不把配置存在视为同步正确。
+- [npugraph_ex任务更新的捕获、事件与重放流](npugraph_ex_task_update_capture_and_streams.md)：闭合workspace/out、task-group与Replay更新流，解释handle/event、限核、确定性及共享更新列表的边界。
+- [npugraph_ex动态任务更新规则与图key分工](npugraph_ex_task_update_rules_and_graph_keys.md)：核对Attention/ATB更新白名单、placeholder规则与cond索引，区分参数刷新和未更新符号进入捕获key。
+- [SuperKernel 异常定位：子算子符号、COND 与模型映射](superkernel_exception_localization.md)：区分 GE 与捕获后端异常日志，按 ModelIdIdx、scopeId 和 opId 定位子算子及同步区间。
+- [SuperKernel 融合诊断：实际范围、sk_meta 与切分原因](superkernel_fusion_diagnostics.md)：用实际 Kernel 与编译产物区分不可融合、Scope 切分及资源不足，分别检查两类后端。
+- [SuperKernel 性能劣化：区间耗时、DCCI 与多流串行化](superkernel_performance_diagnosis.md)：比较同范围 Device 时间而非累加多流算子，区分两后端 DCCI 匹配方式及缓存一致性语义。
+- [ACL缓存的FX图序列化：子模块状态与节点元数据边界](torchair_acl_fx_cache_serialization_and_graph_state.md)：对照独立与集成双版FX缓存，说明模块浅复制差异、节点元数据未显式保存、名称解析和追踪环境恢复。
+- [AddRMSNormCast融合的多输出与view守卫](torchair_add_rmsnorm_cast_pattern_outputs_and_guards.md)：补完整独立包双版Cast规则，保留八类搜索、输出重排、view检查和注册生命周期。
+- [AddRMSNorm量化融合的匹配守卫与输出重排](torchair_add_rmsnorm_quant_pattern_guards.md)：补完整独立包双版量化规则与注册差异，保留静态Meta、动态flatten及输出顺序边界。
+- [GE ATen 入图约束：精度、形状与前反向分别核对](torchair_aten_constraint_review.md)：从 ATen 清单提炼影响混合精度、池化、索引和优化器的参数限制，说明入图清单不能代替具体 overload 验证。
+- [cache_compile加载后的参数对象绑定与重建边界](torchair_cache_rebase_parameter_binding.md)：解释TorchAir持久缓存如何恢复代码、解析当前参数并在rebase时捕获Tensor引用，以及加载失败清理与版本检查的实际范围。
+- [cache_compile落盘资格、无梯度执行与重编译失效](torchair_cache_save_and_recompile_contract.md)：解释缓存miss后的完整图保存、no_grad和反向拒绝，定位重编译删除缓存、参数来源解析及两版异常处理差异。
+- [TorchAir 配置入口：GE CompilerConfig 与 npugraph_ex options](torchair_compiler_config_boundaries.md)：扩展两类配置入口的版本边界，核对集成赋值、叶子比较、类级options状态与分组序列化前的告警合同。
+- [配置驱动的graph break：字节码补丁与生命周期](torchair_configured_bytecode_graph_breaks.md)：按字节码hook说明配置解析、栈识别、共享处理器替换和环境配置生效时点。
+- [GE Converter 开发：覆盖场景、类型提升与动态形状](torchair_converter_implementation.md)：以 fx_summary 定位未注册、未支持和部分支持节点，明确 meta_outputs、dtype_promote 及动态符号的实现职责。
+- [TorchAir 控核与确定性：后端层次和版本差异](torchair_core_limits_and_determinism.md)：区分 GE 算子/全局控核与捕获流控核，说明静态 Kernel 优先级和主线确定性 scope。
+- [GE图编译选项、summary检查与编译成本](torchair_cpp_compile_options_and_summary.md)：解释MemoryPriority与零拷贝默认值、静态输出检查、future等待和图析构同步，区分编译日志与完整冷启动。
+- [GE动态C++执行器：Host搬运、冻结输入与输出所有权](torchair_cpp_dynamic_executor_inputs_and_output_ownership.md)：解释动态图每次输入更新和二维以上Host同步拷贝，区分预分配输出与GE内存转交，以及同一执行器的流限制。
+- [GE动态档位执行器：维度刷新、Host暂存与输出容量](torchair_cpp_multi_gear_io_and_capacity.md)：解释MutiGear如何复用静态分配与图实例，核对分档维度、私有格式、Host同步复制及实际输出shape和缓冲容量的区别。
+- [GE静态C++执行器：固定输出分配与Host同步边界](torchair_cpp_static_executor_host_outputs.md)：核对编译输出shape、预分配NPU和Host输出、每次DataPtr分配，以及主线和发布版Host输入适配的差异。
+- [TorchAir诊断与导出配置：对象及路径边界](torchair_diagnostic_export_config_objects_and_paths.md)：区分Debug路径拼接、Dump序列化创建目录与Export未冻结属性替换，连接主线Eager和导出入口并保留本地校验边界。
+- [FX编译管线：优化次序、AOT与执行回退](torchair_fx_compiler_pipeline.md)：按固定快照解释TorchAir后端入口、FX改写、GE/ACL构图、AOT分阶段包装和代码工件回退的实际条件。
+- [TorchAir FX Pass 与融合控制：变换层次及生效证据](torchair_fx_pass_and_fusion_controls.md)：区分自定义 AOT 后 Pass、GE 融合文件与 npugraph_ex Pattern 替换，避免误解 ALL 关闭语义。
+- [FX容器元数据：ValuePack配对与符号列表](torchair_fx_value_pack_metadata.md)：核对两版FX解释器的Meta/NPU值配对、字典取项、递归解包及符号列表条件，区分元数据计算和实际执行。
+- [GE逐点数学与激活：精度、反向和参数边界](torchair_ge_activation_lowering.md)：审阅42组逐点及激活转换，区分GELU近似参数、反向保存值、辅助buffer、输出别名和erfinv版本差异。
+- [GE AOE调优的原生调用与失败边界](torchair_ge_aoe_native_tuning_contract.md)：沿两版原生AOE调用区分初始化、调优Status、配置文件键与清理，解释Python计数不能证明优化成功。
+- [GE算术转换：类型提升与舍入边界](torchair_ge_arithmetic_lowering.md)：区分算术与选择转换的精度顺序、两版截断除法、符号与掩码补充入口及out别名缺口，逐项保留拒绝重载。
+- [GE Ascend IR诊断：符号输入重建与mock映射](torchair_ge_ascend_ir_diagnostics_and_mock_mapping.md)：解释内部ExportedProgram优化到Ascend IR的符号重建、临时图、converter与mock来源、输出映射及结果对象边界。
+- [GE自动函数化：视图重建、base复制与写回](torchair_ge_auto_functionalized_views.md)：区分两版自动函数化的布局相等、AsStrided与ViewCopy路线、ref输出查找、返回结构及主线内部mock边界。
+- [GE AutoFuse自动内存归属的配置链](torchair_ge_autofuse_memory_ownership_gate.md)：闭合AutoFuse双开关、CANN版本查询缓存与load注入到图内存基址分支，解释保守判定和I/O边界。
+- [GE批归一化：训练统计量、布局与梯度分支](torchair_ge_batch_norm_lowering.md)：核对两份固定TorchAir源码中BatchNorm训练推理、统计量顺序、布局标注、同步片段及部分梯度的构图边界。
+- [GE缓存生成kernel的首次检查与失败重建](torchair_ge_cached_kernel_first_run_contract.md)：区分普通GE执行器和持久化生成代码的初始化状态，说明一次性size/stride检查、配置回退及失败后重用边界。
+- [GE回调Schema：别名匹配、REG_OP与值依赖](torchair_ge_callback_schema_codegen.md)：核对主线自定义回调的类型分类、out/inplace别名、可选输入、标量Const、动态数量及普通Converter与执行层的分工。
+- [GE集合通信实现：计数、写回与版本边界](torchair_ge_collective_lowering.md)：保留GE计数与通信记录边界，补充发布量化Eager的world_size/H/BS门槛、RS扁平输出及FP4与Meta差异。
+- [GE比较与逻辑转换：混合类型和重载边界](torchair_ge_comparison_lowering.md)：比较13组Converter对输入公共类型、单侧Cast、bool运算和缺Meta的不同处理，限定准确重载与静态证据。
+- [GE复数与FFT：重建精度、轴和归一化](torchair_ge_complex_fft_lowering.md)：记录复数view重建、FFT轴和归一化路径及未消费的forward形参，避免把注册入口当作完整精度或别名保证。
+- [GE卷积：转置尺寸、梯度裁剪与量化描述符](torchair_ge_convolution_lowering.md)：补充QuantConv2D的ACLNN/旧ACL精度、成对HiF8提示、固定rint与Meta边界，保留原GE转置与梯度合同。
+- [GE C++回调：IR索引、Dispatcher与动态输出](torchair_ge_cpp_callback_codegen.md)：核对生成的C++ Execute类型映射、D2H标量、IR/物理索引、out作用域疑点及真实输出分配和异步回写。
+- [GE自定义激活：近似模式、门控与输入别名](torchair_ge_custom_activation_lowering.md)：核对NPU Gelu与门控融合的近似参数、前反向实参和FastGelu输入别名警告，区分ATen映射与自定义入口。
+- [GE自定义预编译：候选筛选、依赖缓存与动态库](torchair_ge_custom_prescan_compilation.md)：解释主线自定义算子预扫描到Schema注册、回调文件、Converter和g++加载的次序，区分跳过、失败与实际运行验收。
+- [GE类型转换与写回：FP4打包和描述符边界](torchair_ge_dtype_scatter_lowering.md)：区分新旧dtype转换、FP4展开打包、反向不对称、QuantMax描述符与ScatterList输入拷贝，覆盖op-plugin eager 侧 npu_scatter_list 实现层（逐项 clone 与 reduce=update 限制），保留准确版本边界。
+- [GE 动态形状：档位组合与 FA 静态下沉定界](torchair_ge_dynamic_shapes_and_fa_tiling.md)：说明 zip/product 的合法组合、FX 与 GE 静态性的区别及值依赖 FA 的下沉条件。
+- [GE EmbeddingBag：模式、索引与辅助输出](torchair_ge_embedding_bag_lowering.md)：区分两个EmbeddingBag入口的默认mode、INT32索引转换和参数透传，不继承普通Embedding的前向拒绝规则。
+- [GE导出拓扑模板：rank映射与部署占位值](torchair_ge_export_topology_templates.md)：核对两版关系与NUMA配置生成条件，保留全局rank零写入、通信组字符串及需要用户调整的节点设备网络占位值。
+- [GE导出权重工件：对象身份、常量替换与外置文件](torchair_ge_export_weight_identity_and_files.md)：解释权重id映射、含图体积的外置阈值、输入节点替换、文件写入和非原子导出边界。
+- [GE外部分配器：按流共享feature内存与释放时机](torchair_ge_external_allocator_feature_memory.md)：区分stream注册、固定和可刷新图内存、容量复用及引用计数，解释图销毁与NPU缓存分配器释放的边界。
+- [GE创建与初始化：生成精度、Fill及布局边界](torchair_ge_factory_lowering.md)：归并18组工厂转换，区分Range生成前后Cast、标量shape、Empty与零填充、默认dtype和stride存储约束。
+- [GE固定权重占位的运行期地址与存储绑定](torchair_ge_frozen_placeholder_runtime_binding.md)：解释ConstPlaceHolder从原FX输入取得地址、真实存储布局和字节数的时机，区分固定地址承诺与每次调用更新。
+- [GE图对象：上下文、输入登记与执行委托](torchair_ge_graph_lifecycle_inputs.md)：核对两版GeGraph所有权、默认图和名称、进程组记录恢复结构、输入getter及RNG与代码生成阶段的差异。
+- [GE索引与Scatter：掩码、累加及类型边界](torchair_ge_index_scatter_lowering.md)：归并索引、Embedding与SearchSorted转换，核对INT32/INT64处理、输入保护、掩码重载及前反向不同条件。
+- [GE输入重写：SymPack、RefData与权重占位](torchair_ge_input_rewrites.md)：说明两版GE符号输入合并、导出命名、RefData对象身份、固定权重占位和死输入重排的绑定条件。
+- [GE IR装配：可选项省略、输出层级与兼容查询](torchair_ge_ir_assembly_compatibility.md)：解释两版compat_ir的输入属性装配、IrDef可选项筛选、动态输出返回结构、缓存查询范围和失败后的图状态。
+- [GE发布快照稀疏量化注意力：Pioneer映射](torchair_ge_kv_quant_sparse_attention_lowering.md)：对照发布Pioneer的GE独立HiF8 Bitcast与Eager成对包装，补齐Q减RoPE输出分配及Meta/空Value边界。
+- [GE层组与RMS归一化：精度、融合和反向边界](torchair_ge_layer_group_rms_norm_lowering.md)：补充量化RMS反向的Eager/Meta类型与shape分配、显式None差异和普通autograd边界，保留层组/RMS的原GE合同。
+- [GE矩阵乘：系数融合、转置与量化边界](torchair_ge_matmul_lowering.md)：核对GE矩阵乘系数、转置和反向限制，并对照量化Matmul/GMM的Eager NZ分派、Meta输入和输出结构。
+- [GE元数据辅助：符号形状、占位与候选声明](torchair_ge_metadata_support_helpers.md)：全文核对TorchAir元数据辅助与Support类，区分占位结果、符号hint、容器版本差异、图诊断和候选声明的证据边界。
+- [GE多流依赖：延迟控制边与scope归属](torchair_ge_multistream_control_edges_and_scope_labels.md)：解释GE record/wait控制边的暂存与首次附加、scope嵌套标签选择，以及空Tensor快捷路径的实际版本差异。
+- [GE输出别名、符号结果与输入存储复用](torchair_ge_output_alias_and_input_reuse.md)：解释FX返回值如何从GE输出、输入视图和符号表达式重建，以及Assign输出绑定、CPU复用限制与非连续输入写回。
+- [GE填充与采样：列表改写、尺寸与梯度精度](torchair_ge_padding_sampling_lowering.md)：区分常量反射复制padding、Nearest尺寸转换和GridSampler模式及精度回转，记录未消费的scale与梯度mask。
+- [GE池化：除数、索引占位与版本分支](torchair_ge_pooling_lowering.md)：核对Adaptive与AvgPool前反向动态和除数差异、MaxPool索引占位及反向重算，并区分主线V3和发布V1分支。
+- [GE基础构图：Const存储、自动提升与属性上下文](torchair_ge_primitive_const_promotion.md)：区分Data/Cast描述、Const原始Storage与逻辑视图、有限自动提升、异常嵌套状态和诊断PythonCode的边界。
+- [GE Protobuf绑定：版本分支与序列化dtype域](torchair_ge_protobuf_binding_contract.md)：区分protobuf安装版本与既有绑定选择，记录Proto dtype准确编码和主线HIFLOAT4导出，不由枚举或导入推定完整兼容与设备支持。
+- [GE Python回调：标量ABI、签名与输出写回](torchair_ge_python_callback_codegen.md)：核对生成的Python Execute签名、runtime dtype与host标量读取、逻辑输出/out排列及按GE规格分配后的复制边界。
+- [GE量化矩阵乘改图：View、NZ与转置归一](torchair_ge_quant_matmul_graph_rewrites.md)：区分GroupedMatmul主线view/NZ检查和两版graph_pass量化转置路线，保留架构、scale、消费者与输入位置条件。
+- [GE归约与排序：空输入、精度与索引合同](torchair_ge_reduction_lowering.md)：归并13组转换的空Tensor、维度列表、标准差版本差异、归约前后Cast及排序索引顺序，保留准确拒绝重载。
+- [GE引用复制与副作用：消除条件和排序边界](torchair_ge_reference_copy_and_ordering.md)：核对硬编码ref映射、TensorMove/Assign删除门槛、输出输入索引疑点及限定副作用和Cmo的图内顺序。
+- [GE注册与内建转换：延迟加载及Lite覆盖](torchair_ge_registration_prims_lowering.md)：核对模块发现与延迟注册、内建和Prims的不同提升规则及主线Lite覆盖，记录量化矩阵乘未消费的转置等参数。
+- [GERNG与Dropout：种子、重放和分布参数](torchair_ge_rng_dropout_lowering.md)：审阅11组随机与Dropout转换、图RNG账本及checkpoint映射，区分显式Generator、分布参数、mask和高阶绑定缺口。
+- [GE旋转与KV缓存融合：函数化拷贝及输出顺序](torchair_ge_rope_cache_lowering.md)：核对RoPE量化的Eager/GE模式分歧、QKV缓存功能化整块拷贝、返回顺序、Meta占位与别名边界。
+- [GE运行期绑定与首次调用编译时序](torchair_ge_runtime_binding_and_first_call.md)：按两版执行器实现区分FX输入、GE输入、首次绑定、AOE和编译，说明事件日志计时的实际覆盖范围。
+- [GE全局选项与Session生命周期](torchair_ge_session_global_options_and_lifetime.md)：区分Python选项子集缓存、C++单例初始化与分层Finalize，解释配置修改和重新初始化的实际边界。
+- [GE切片与写回：动态边界和形状恢复](torchair_ge_slice_scatter_lowering.md)：归并8组切片与写回转换，区分Concat/Scatter分支、INT32终点、负轴、Empty梯度基底及ViewCopy布局。
+- [GESoftmax转换：前反向精度与安全边界](torchair_ge_softmax_lowering.md)：核对四组GE Softmax前反向、条件注册的safe入口和混合梯度判断，不以接口名字或声明样例认证运行支持。
+- [GE符号推导：表达式节点与自动形状规则](torchair_ge_symbolic_inference.md)：区分有限AST构图和自动_inference_rule生成，记录容器版本差异、符号覆盖门槛、ref传播和警告后返回的边界。
+- [GE Tensor元数据：dtype域、缓存与静态规格](torchair_ge_tensor_dtype_metadata.md)：区分图API、Proto、c10和Torch类型转换，记录两版低位/无符号映射、Tensor缓存及TensorSpec动态size边界。
+- [GE Triton HOP：路由身份、Grid与TMA合同](torchair_ge_triton_hop_contracts.md)：说明functional HOP的参数来源、默认值、克隆输出、进程侧表路由、Grid/TMA恢复和Python回调执行边界。
+- [GE转换占位：精确overload与版本拒绝边界](torchair_ge_unimplemented_overloads.md)：核对两版TorchAir的1020个准确overload占位，区分注册、命名接口兼容与实际GE转换，避免把内置壳误当算子支持。
+- [GE视图与复制：别名、布局及符号形状](torchair_ge_view_copy_lowering.md)：审阅24组视图和复制转换，区分Identity、Assign与搬运、Bitcast版本差异、转置快捷分支及Meta输出数量。
+- [GE View延迟物化：连续推导、符号与Scope](torchair_ge_view_materialization.md)：解释两版GE view辅助层的白名单、FakeTensor模拟、Reshape/Transpose物化、符号来源和连续判断静态边界。
+- [GE工作调度：上下文拷贝与组合参数](torchair_ge_worker_scheduler_lowering.md)：对照GE与Eager的上下文隔离，补充Worker token类型、八返回容量及Attention Combine层号Meta分歧。
+- [TorchAir gegraph_check 死锁检查工具链：首跑触发、任务过滤与向量时钟并发判定](torchair_gegraph_check_deadlock_toolchain.md)：补齐 config.debug.deadlock_check 的实现层证据：C++ 首跑钩子门控、过滤/对齐/死锁三工具的输入合同、AIVEC 核账与向量时钟并发判定及两版差异。
+- [TorchAir 入图失败：按 Eager、FX、Converter 与执行阶段定界](torchair_graph_failure_triage.md)：区分断图、Meta、函数化与缺少 Converter 的失败，按阶段选择日志和下一步检查。
+- [TorchAir分组配置：序列化与模式消费者](torchair_grouped_config_serialization_and_mode_consumers.md)：核对两固定版GE、实验、AOE、融合与Debug分组怎样输出local/global及被再次归一化，保留tiling归属和主线新字段差异。
+- [Inductor AscendC异步编译：私有产物、缓存与PCH](torchair_inductor_ascendc_async_cache_and_pch.md)：完整对照两版compiler提交和构建本地定义，核对按kernel锁、并行任务依赖、发布顺序、缓存身份与PCH回退。
+- [Inductor AscendC轴映射：规范轴、细化与访存顺序](torchair_inductor_ascendc_axis_mapping.md)：完整核对主线规范轴生成、静态拆分、广播映射与Store顺序证明，对照发布逐节点转置评分的不同实现。
+- [Inductor AscendC benchmark：检查对象、数值边界与性能口径](torchair_inductor_ascendc_benchmark_contract.md)：区分重编译FX检查与实际artifact采集，补充NaN/Inf、复数及聚合指标的局限。
+- [Inductor AscendC独立C Adapter：参数映射、校验与加载寿命](torchair_inductor_ascendc_c_adapter_abi.md)：完整核对主线生成的C ABI Adapter、int64到uint32 Tiling门控、Scalar payload、名字别名及嵌入式二进制路径。
+- [Inductor AscendC Cat与Gather：布局、归约与View准入](torchair_inductor_ascendc_cat_view_fusion.md)：保留Cat/View设计，并补完整Cat与Gather实际Lowering、FX/IR双层布局证明、多轴归约回退和共享分支物化。
+- [Inductor AscendC Codegen：图产物、双Launch与资源寿命](torchair_inductor_ascendc_codegen_contract.md)：保留Codegen设计，并完整对照两版生成实现的标量ABI、候选加载、队列工作区、资源限制和不同卸载合同。
+- [Inductor AscendC 控核：AF资源、Worker传递与缓存隔离](torchair_inductor_ascendc_device_limits.md)：界定set_device_limit在AF编译和运行中的注入范围，保留一次调用与失败后的状态边界。
+- [Inductor AscendC融合决策：CV、Cat与间接索引门控](torchair_inductor_ascendc_fusion_decisions.md)：完整审阅中央调度器的布局/依赖/广播约束、Triton否决旁路及版本差异，区分局部放行与最终融合。
+- [Inductor AscendC 图下沉：Tree、静态地址、代际与输出寿命](torchair_inductor_ascendc_graph_tree.md)：解释Inductor分区到NPUGraph Tree的复用边界，并核对设计与独立固定PyTorch源码的差异。
+- [Inductor AscendC IndexExpr：算术展开、范围证明与整数精度](torchair_inductor_ascendc_index_expr_lowering.md)：完整核对索引表达式的标量/Arange/向量分流，保留Remainder范围证明、Pow缩窄和divmod回写的真实条件。
+- [Inductor AscendC输入合同：布局检查与动态符号绑定](torchair_inductor_ascendc_input_layout_and_symbol_binding.md)：完整核对布局错误/调试日志、空Tensor和stride例外，以及关闭size_asserts时的输入符号与子图复合表达式绑定。
+- [Inductor AscendC布局与辅助合同：Loop、版本、打桩与文件](torchair_inductor_ascendc_layout_and_utility_contracts.md)：完整对照两版Loop/AscExpr与utils，核对字符串相等、可变布局、CANN门控、CPU打桩、权限和编译诊断的本地边界。
+- [Inductor AscendC本地IR：Load/Store、模板与Gather](torchair_inductor_ascendc_local_ir.md)：核对完整npu.py中的本地值复用、低精度转型、Cat/MM/BMM构图、间接索引拆解及视图变换实际边界。
+- [Inductor AscendC Lowering白名单：dtype登记与诊断统计](torchair_inductor_ascendc_lowering_dtype_registry.md)：完整归并250条ATen/Prims输入输出dtype登记，说明覆盖顺序、未知SoC、LowerSummary和NPU allfallback实际行为。
+- [Inductor AscendC矩阵Lowering：布局、Bias与高维回退](torchair_inductor_ascendc_matmul_lowering_contract.md)：完整核对mm/addmm/bmm/baddbmm的实际门控、零K、输入物化、Bias形状和reshape回退信息，区分模板与最终CV融合。
+- [TorchAir 实验 Inductor AscendC：版本、启用、缓存与排障](torchair_inductor_ascendc_package_and_debug.md)：区分固定发布快照的独立扩展与主线内置后端，记录调试开关、产物和分阶段故障定位。
+- [Inductor AscendC前后置FX改写：scatter_nd现代化、Pad消解与三组融合折叠](torchair_inductor_ascendc_pre_grad_fusion_passes.md)：逐条记录run_pre_grad_custom_pass与run_post_grad_custom_pre_pass的触发条件、改写形态与守卫，覆盖legacy scatter替换、pad+slice消除、embedding批量融合、GMM ReLU折入act_type和bmm+bias折入baddbmm。
+- [Inductor AscendC Profiler：队列内Range、形状与观测参数](torchair_inductor_ascendc_profiler_metadata.md)：保留Profiler设计并补完整元数据生成、pk符号收集、标量/别名方向以及rt下发的HostToDevice归因报告。
+- [Inductor AscendC标量图与操作映射：属性、缓存和真实缺口](torchair_inductor_ascendc_scalar_graph_and_ops.md)：完整对照两版ASCGraph、asc_ops与Overrides，区分图内标量、Host载体、文本CSE、操作转发和实际缺失实现。
+- [Inductor AscendC中央生成：转置CSE、模板回退与Wrapper](torchair_inductor_ascendc_schedule_codegen_wrapper.md)：完整核对两版npu.py构图、产物/调用生成、转置slot与流内CSE、原生矩阵回退及图分区更新计划边界。
+- [Inductor AscendC 静态TopN：候选、PGO子进程和缓存成本](torchair_inductor_ascendc_static_topn.md)：补齐静态TopN实际门槛、候选/交付件、缓存格式、Profiler子进程与失败状态，保留完整本地定义及外部运行边界。
+- [Inductor AscendC Wrapper：加载ABI、控核与调试状态](torchair_inductor_ascendc_wrapper_launch_abi.md)：完整核对两版运行包装和主线生成支持代码，区分标量载体、加载失败状态、控核注入、日志线程状态和CPU假对象。
+- [推理Dequant-SwiGLU：Meta类型与FP4承载形状差异](torchair_inference_dequant_swiglu_meta_and_packing.md)：核对独立npu_inference入口的激活轴、量化枚举及FP4 Meta形状与GE重打包，避免套用公共npu接口。
+- [推理组合量化矩阵乘：A8W4 Meta与参数消费边界](torchair_inference_fused_quant_matmul_contract.md)：区分npu_inference融合矩阵乘的A8W4提示检查、二维输出、Bitcast与未消费的分组/类型参数。
+- [npu_inference薄透传GE转换器：ToMe、InterleaveRope与KvRmsNormRopeCache](torchair_inference_thin_passthrough_converters.md)：记录TorchAir自定义npu_inference命名空间四个单GE节点转发转换器的参数映射、默认值与两pin形态，区分其与Meta重打包类入口的边界。
+- [INT8 NZ的CPU重排：准入、存储与同步成本](torchair_int8_nz_cpu_format_conversion.md)：解释主线INT8/c0=32的CPU重排、输出容量、同步H2D与stride/参数边界。
+- [集成ACL图生成代码：kernel首跑重建、用户流/事件字典与record/wait和控核改写](torchair_integrated_acl_codegen_kernel_first_run_and_runtime_hooks.md)：解释集成fx2acl转换器生成Python工件的装配顺序、kernel首跑的流与事件重建合同、forward行级改写规则及record/wait与控核调用改写，并核对主线与发布快照等价性。
+- [集成AclGraph构造契约与CacheInfo载入](torchair_integrated_aclgraph_cache_info_contract_and_load.md)：记录集成acl_graph.py的AclGraphCacheInfo数据类契约、pool校验与主线stream字符串占位、AclGraph.__init__成员布局、属性组、fx_run_eagerly直通、load字段拷贝与默认池，以及主线无调用点的check_all_sym_updated校验器。
+- [集成AclGraph捕获主体与重捕获准备](torchair_integrated_aclgraph_capture_body_and_recapture_prep.md)：记录集成acl_graph.py的compile_for_graph_key地址簿记与池状态复位、主线独有的_set_stream_limit恢复、capture输入/输出簿记主体、super kernel优化与debug dump，以及get_stale_list_from_weakref/reset_captured_graph生命周期。
+- [集成 AclGraph 的 Cat 消除：out 切片写入与改写边界](torchair_integrated_aclgraph_cat_out_slices.md)：解释集成Cat消除的实际开关、schema准入、共享输出分段写入、普通用户迁移和动态shape失败后的图状态。
+- [集成AclGraph动态workspace改写与符号shape构造](torchair_integrated_aclgraph_dynamic_workspace_and_shape_construction.md)：记录集成acl_graph.py的StaticWorkspaceReplaceFunc/UpdatedNodeInfo契约、construct_fx_node_shape四分支与eval+全局表达式缓存、workspace/out节点构造及replace_dynamic_workspace_ops改写边界，并闭合Cat卡遗留的外部shape构造器资格缺口。
+- [集成 TorchAir AclGraph：输入复制、重捕获与输出克隆](torchair_integrated_aclgraph_io_recapture_and_output_clone.md)：对照集成主线与发布的字符串配置消费、stream核数重捕获、直接Replay槽和四类输出返回，区分独立npugraph_ex及底层存储合同。
+- [集成AclGraph输出重建尾部与run_eagerly_compile](torchair_integrated_aclgraph_output_reconstruction_tail_and_eager_compile.md)：记录集成acl_graph.py的construct_outputs_based_on_ref存活引用快路径、set_to_original_state跨key陈旧复位、set_reconstructed_outputs_deleter共享存储与deleter注册、reconstruct_inputs，以及run_eagerly_compile的sym值门控静态kernel编译。
+- [集成AclConcreteGraph的输入解析、簿记与图键材料](torchair_integrated_aclgraph_parse_inputs_and_cache_keys.md)：记录集成fx2acl转换器AclConcreteGraph的初始化契约、parse_symlist/parse_input/parse_node/parse_output簿记、优化尾段的键材料提取顺序，以及主线与发布在非Tensor占位符记法上的真实差异。
+- [集成AclGraph utils：ReinplaceStreamChecker判据与重建/转储工具](torchair_integrated_aclgraph_reinplace_stream_checker_and_utils.md)：记录集成_acl_concrete_graph/utils.py的ReinplaceStreamChecker三入口判据（仅verify_nodes_on_same_stream、无事件保护）、用户收集范围、WeakRef/GraphMeta/重建工具与insert_save_npugraph_tensor的第二道门，并对照独立包同名检查器。
+- [集成 TorchAir AclGraph：任务更新规则与捕获交接边界](torchair_integrated_aclgraph_task_update_rules_and_handoff.md)：核对集成两版任务更新表、字典与None分析失败分支、当前图规则及生成到Replay的实际交接，限定独立包机制的复用范围。
+- [静态Kernel编译的两条实现：后端路由、dump与去重边界](torchair_integrated_and_standalone_static_kernel_consumers.md)：区分集成TorchAir与独立npugraph_ex的实际接线、Eager或捕获式dump、选项映射和编译前去重，避免跨路径套用缓存合同。
+- [集成TorchAir graph_pass：原地化与控核Pass的装配、门槛与两版差异](torchair_integrated_graph_pass_reinplace_and_core_limit.md)：记录集成路径fx2acl转换器对graph_pass各Pass的实际装配顺序与开关门槛、多输入原地化注册表、控核scope改写与静态Kernel冲突门，并区分主线与发布快照及独立npugraph_ex实现。
+- [集成TorchAir静态编译：Gloo组与跨rank状态同步](torchair_integrated_static_kernel_gloo_lifecycle.md)：核对集成两版静态编译的节点内Gloo探测、安装状态广播、编译同步和清理边界，定位首轮等待及跳过原因。
+- [集成 TorchAir 的流事件改写：命名空间、缓存与版本边界](torchair_integrated_stream_event_namespaces_and_cache.md)：对照集成流事件改写的高接口分支、npugraph_ex与air目标差异、实际事件缓存及默认流解析白名单，限定注册与运行证明。
+- [Joint图Attention、RMSNorm与RoPE替换的实际边界](torchair_joint_attention_rmsnorm_replacement_contract.md)：完整补独立包两版joint规则与RoPE注册，区分训练/推理、mask窗口、缓存和通用manager守卫。
+- [编译前Meta补丁：打包mask、空统计与全局FakeTensor规则](torchair_meta_fake_tensor_and_global_patch_lifecycle.md)：说明NPU编译Meta的打包mask与空统计、Div dtype补丁及全局一次安装的状态边界。
+- [TorchAir SuperKernel：GE 发布契约与主线捕获优化](torchair_superkernel_backend_contract.md)：区分 GE 静态 scope 与 npugraph_ex 捕获后融合、静态编译依赖和调试限制。
+- [通信跟踪映射：导入副作用与AllGather布局适配](torchair_traceable_collective_remap_lifecycle.md)：区分导入时remap表调整和旧手动补丁，记录两版覆盖策略、concat/stack回拷与uneven局部失败。
+- [转置BatchMatmul融合的实际匹配条件](torchair_transpose_batchmatmul_pattern_guards.md)：补完整独立包双版BMM转置规则，核对四类模式、128元素对齐、轴范围和真实注册状态。
+- [GE推理准备：模型权重私有格式与量化参数改写](torchair_weight_internal_format_preparation.md)：说明两版模型层权重与量化scale原位替换的类型门槛、递归及失败状态。

@@ -12,7 +12,7 @@ sources:
 - resource: cann-recipes-raw/torchtitan-npu/8a71d8940e877cc9f2e5f4b977b4f18d48539592/torchtitan_npu/extensions/torchtitan/tools/profiler.py
   role: implementation
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-10-29T15:24:42Z'
+updated_at: "2026-11-14T08:44:18Z"
 platforms:
 - agnostic
 ---
@@ -71,3 +71,5 @@ python3 scripts/parse_profiling_data.py path/to/save_traces_folder
 
 - [训练框架](../frameworks/torchtitan.md)
 - [训练 AutoFuse](autofuse_train.md)
+
+- [原生 TorchNPU Profiler 活动与步数调度](../../../inference/guides/optimization/torch_npu/torch_npu_profiler_capture_schedule.md)

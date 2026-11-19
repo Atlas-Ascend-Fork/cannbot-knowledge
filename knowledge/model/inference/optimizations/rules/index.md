@@ -117,7 +117,7 @@
 - [aclgraph decode 稳态期优化：warm-up 后 skip_guard_eval_unsafe 跳 guard 复评 + custom op reinplace 映射](aclgraph_decode_steady_state_skip_guard_reinplace.md)：已在 acl_graph（torch.compile + ACLGraph 捕获）跑通 decode、想再压 host 侧开销时的两项稳态优化。前提：exe_mode == "acl_graph" 且 torch.compile 编译路径生效的 decode；仅对非 warm-up 的稳态步开启——warm-up…
 - [C8 量化参数规则：绑定权重快照，离线预取与重新标定](c8_kv_scale_provenance_reuse_offline.md)：说明 C8 参数包与模型权重的绑定关系、受限网络下的预取方法，以及结构相似仍不能确认适用的边界。
 - [CFG 样本并行规则：比较双分支设备投入、通信与单步时延](cfg_parallel_sample_level_diffusion.md)：CFG样本并行设备/通信取舍；更新Wan默认CFG2×Ulysses4并区分来源性能表CFG1×Ulysses8。
-- [图模式多流跨流同步：GE 单流冲突、控制边与显式 Event](graph_mode_multi_stream_cross_stream_sync_api.md)：图模式多流并行的跨流同步：GE 控制边、wait_tensor 与 npugraph_ex Stream/Event、record/wait、record_stream；核对旧 aclgraph tagged-event 替代路径、enable_single_stream 单流冲突、动态开关、enable_inner_parallel 与控核版本边界。
+- [图模式多流跨流同步：GE 单流冲突、控制边与显式 Event](graph_mode_multi_stream_cross_stream_sync_api.md)：图模式多流并行的跨流同步：GE 控制边、wait_tensor 与 npugraph_ex Stream/Event、record/wait、record_stream；核对旧 aclgraph tagged-event 替代路径、enable_single_stream 单流冲突、动态开关、enable_inner_parallel 与控核版本边界。另说明npugraph_ex控核与CANN<=8.5.0静态Kernel编译的优先级。
 - [KV cache 卸载到 Host 内存：设备单层 temp + 专用流 D2H 重叠 + 逐层异步搬算掩盖](kvcache_offload_host_swap.md)：KV cache 卸载到 Host 内存：设备单层 temp + 专用流 D2H 重叠 + 逐层异步搬算掩盖。适用：KV cache 占设备内存最高、即使量化后长序列 / 大 batch 仍受限于设备内存、batch size 上不去（memory_bound）；结构如 mla Full KVCache 或分层管…
 - [多机/多进程 DP+EP MoE 推理的集合通信一致性对齐（phase 对齐 + 变长换定长）](multimachine_dp_ep_moe_collective_alignment.md)：多机/多进程 DP+EP MoE 推理的集合通信一致性对齐（phase 对齐 + 变长换定长）。MoE 模型多机 / 多进程 DP + EP 推理里，单进程组内多个 DP rank 各自持请求、又要在 MoE 层做跨 rank 集合通信。凡相互做 MoE 集合通信的 DP 进程，必须在同一状态下发起集合通信；一旦各进程按各自本地请求独立推进，请求数/token 数不整除进程数时进程会错开 → 集合通信不一致（对不齐 / 挂起）。有两处对齐要做。
 - [多卡 Ring/序列并行注意力用异步 all-gather + 本地 FA + LSE 合并掩盖 KV 通信](ring_attention_comm_compute_overlap_lse_merge.md)：多卡（ring_world_size > 1）Ring / Unified-SP（Ulysses + Ring 两级）序列并行做长序列注意力时，KV 需跨 ring rank 汇聚。经典 Ring Attention 用逐步 P2P（send/recv）在环内轮转 KV，通信与计算难以充分重叠、且被拆成 ring…
@@ -134,3 +134,6 @@
 - [量化权重变小仍 OOM：部署收益与峰值显存分账](quantization_deployment_benefit_accounting.md)：量化后额外 dynamic quant/dequant 开销变大、W8A8 显存不降或端到端变慢时，分账 FFN、KV、激活、workspace、通信与 host overhead，按相同部署条件验证。
 
 - [SGLang 昇腾优化规则与适用边界](sglang_ascend/index.md)：共 3 张知识卡（如 SGLang HiCache的MemFabric映射Host池与异步staging、SGLang稀疏KV卸载的模型准入与预算分离、SGLang KV静态预算与mem-fraction-static的正确调参方向）。
+
+- [frozen_parameter：固定权重输入地址的前提与转换顺序](frozen_parameter_address_contract.md)：区分 npugraph_ex 主线与 GE 发布版的固定地址入口，说明稳定地址、Parameter 转换顺序和离线导图互斥。
+- [npugraph_ex 静态 Kernel 编译：缓存条件与节点内协调](npugraph_ex_static_kernel_compile.md)：静态或少量 shape 场景的 static_kernel_compile 配置，说明 LOCAL_WORLD_SIZE、辅助 Gloo 组、Profiler 冲突与缓存匹配条件。

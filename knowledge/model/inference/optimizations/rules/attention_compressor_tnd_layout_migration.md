@@ -1,7 +1,10 @@
 ---
 type: Optimization
-title: 把注意力/compressor 算子迁到 TND packed-sequence 的调用约定（合轴 query、actual_seq_qlen、dequant_scale 同轴、按阶段切布局）
-description: 把注意力/compressor 算子迁到 TND packed-sequence 的调用约定（合轴 query、actual_seq_qlen、dequant_scale 同轴、按阶段切布局）。当仓/框架把注意力布局统一到 TND（token 打平的 packed-sequence）后，需要把某个仍走 BSND/BSH 的注意力或 KV 压缩算子迁上来。迁移不是改个 layout 字符串——有一组必须同步改的调用约定，漏一处就 shape 报错或数值错位。
+title: 把注意力/compressor 算子迁到 TND packed-sequence 的调用约定（合轴 query、actual_seq_qlen、dequant_scale
+  同轴、按阶段切布局）
+description: 把注意力/compressor 算子迁到 TND packed-sequence 的调用约定（合轴 query、actual_seq_qlen、dequant_scale
+  同轴、按阶段切布局）。当仓/框架把注意力布局统一到 TND（token 打平的 packed-sequence）后，需要把某个仍走 BSND/BSH 的注意力或
+  KV 压缩算子迁上来。迁移不是改个 layout 字符串——有一组必须同步改的调用约定，漏一处就 shape 报错或数值错位。
 tags:
 - task.optimization
 - topic.attention
@@ -13,8 +16,12 @@ sources:
   role: evidence
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/490
   role: evidence
+- resource: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score.md
+  role: constraint
+- resource: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score_v2.md
+  role: constraint
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-20T12:49:18Z'
+updated_at: '2026-11-09T09:42:58Z'
 platforms:
 - agnostic
 ---
@@ -33,7 +40,7 @@ platforms:
 - **必须提供按请求累积的 `actual_seq_qlen`**（TND 靠它切每请求边界）；
 - **C8 量化路径的 `dequant_scale_query` 要同轴合并**（与 query 同样合到 T 轴）；
 - **删除 FIA 之后原有的 `view(N, -1, kv_lora_rank)` 整形**——TND_NTD 输出已是 NTD，多余 view 会错位；
-- **算子版本**：只有 `npu_fused_infer_attention_score_v2` 支持 TND_NTD + `actual_seq_qlen`；仍在 v1 的路径需**先升到 v2**。
+- **算子版本**：该模型迁移使用v2的`actual_seq_qlen`及量化链；主线v1也列TND_NTD但参数名不同，不能把这条迁移经验解释为v1普遍不支持该布局。
 
 ## DSA compressor 按推理阶段切布局
 
@@ -61,8 +68,17 @@ DSA compressor 自定义算子（`torch.ops.custom.compressor` 及其 float8 KV 
 - TND packed-sequence 为何是仓级标准、BSND/1D shim 的约束见 [tnd-packed-sequence-standard-and-bsnd-shim](tnd_packed_sequence_standard_and_bsnd_shim.md)。
 - packed/microbatch 等长假设导致的 reshape 崩见 [tnd-packed-sequence-standard-and-bsnd-shim](tnd_packed_sequence_standard_and_bsnd_shim.md)。
 
+## 固定主线 API 的版本校正
+
+OpPlugin主线 `d84e9b1d6a558e5f27973cd4329f62968e46fdda` 的v1本身已列TND_NTD，参数名为actual_seq_lengths；v2的对应名字才是actual_seq_qlen。因此上文模型迁移必须使用v2的判断只针对其原先依赖的接口/量化链，不能写成v1普遍不支持TND_NTD。应按实际Query、量化参数、产品及该提交的约束选择；不能只为更改布局字符串盲目升级函数名。
+
+非PA packed长度为累计边界，PA的KV长度为各请求独立实际长度；输出轴与scale轴一起核对。[MLA与packed布局](../../guides/fia_mla_and_packed_layouts.md)保存主线API依据和未闭合的全量化组合，本次没有运行模型验证。
+
 ## Evidence
 
 - `diff 事实`（@f573e96）：FIA decode BSND_NBSD→TND_NTD 的合轴/actual_seq_qlen/dequant_scale 同轴/删 post-view/须 v2。
 - `diff 事实`（@8eae6f7）：compressor prefill-TND(cu_seqlens, (T,head_dim)) / decode-BSND((B,S,head_dim))，position_ids/rope/flatten 随布局。
 - 溯源下探：[cann-recipes-infer-pr-111-feat-modify-tnd](https://gitcode.com/cann/cann-recipes-infer/merge_requests/111)、[cann-recipes-infer-pr-490-dsv4-enable-bsh-format-for-compressor-in-decode-stage](https://gitcode.com/cann/cann-recipes-infer/merge_requests/490)
+- [增补固定来源](https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score.md)（constraint）
+
+- [增补固定来源](https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score_v2.md)（constraint）

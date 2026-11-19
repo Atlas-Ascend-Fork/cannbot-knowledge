@@ -50,7 +50,7 @@ sources:
 - resource: cann-recipes-raw/mindspeed-mm/0d2270c8ee178d7bfece88f356a5072bf8e2b3ed/docs/zh/guides/development/fsdp2_model_migration_guide.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-10-29T15:39:13Z'
+updated_at: '2026-11-09T02:16:45Z'
 platforms:
 - a3
 ---
@@ -197,3 +197,5 @@ flowchart LR
 - [训练 CP](custom_cp_dsa.md)
 - [MindSpeed-MM](../frameworks/mindspeed_mm.md)
 - [Swap Optimizer](../techniques/swap_optimizer.md)
+
+- [TorchNPU 基础 DDP/FSDP2 适配边界](../../guides/torch_npu_ddp_fsdp_adaptation.md)

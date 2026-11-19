@@ -37,3 +37,5 @@
 - [vLLM Ascend调优配方：投机K、专家重排与量化校准证据](vllm_ascend_tuning_recipe_calibration_contract.md)：区分离线goodput最优K、示例EPLB规划、llm-compressor校准/动态量化和发布recipe硬件声明，核对测量输入、conditional概率口径、checkpoint目标与版本化部署边界。
 
 - [CANN Executor 模型接入：注册、ForwardMetaData 与加载钩子](cann_executor_model_onboarding.md)：新模型接入 Executor：注册与加载钩子、ForwardMetaData、变长 batch 的 packed logits、Prefill 每请求最后一个 token、缓存声明和 YAML 配置。
+
+- [TorchNPU模型开发指南](torch_npu/index.md)：共 5 张知识卡（如 libtorch_npu构建与C++部署：ABI、链接和TorchScript产物、TorchNPU运行环境：pip、Docker与升级的版本约束、TorchNPU源码构建：工具链、增量编译与导入排障 等）。

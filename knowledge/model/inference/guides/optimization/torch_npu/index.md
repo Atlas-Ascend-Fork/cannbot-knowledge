@@ -1,0 +1,262 @@
+# TorchNPU模型开发指南
+
+汇集固定版本证据支持的模型相关知识；具体适用范围以卡片正文为准。
+
+- [Dynamo Guards 与后端：版本门槛和过滤失效边界](dynamo_guards_and_backend_boundaries.md)：区分前端重编译、Inductor 代码生成与 AOT Eager，明确过滤 Guard 不等于语义安全。
+- [Inductor编译模式选择：值与首次编译时机](inductor_npu_backend.md)：记录TORCHINDUCTOR_NPU_BACKEND的三种文档模式、A2/A3及950DT范围和Ascend C版本门槛。
+- [ShapeHandling配置与恢复：文档合同和源码差异](shape_handling.md)：记录分档参数、batch/sequence差别及包装和绑定不一致，保留为待确认草稿。
+- [950 随机数实现：legacy 列表与一致性优先级](torch_npu_950_legacy_randomness.md)：说明 randomness 的配置时机、API 范围与 CANN 门槛，区分随机实现兼容和数值确定性。
+- [ACLGraph update plan：Inductor 侧计划生成、replay 前校验与内置可更新算子面](torch_npu_aclgraph_update_plan_codegen_and_validation.md)：记录主线独有的 ACLGraph 更新计划生产门、schema 绑定与来源类型语义、校验错误矩阵、内置 handler 的可更新参数槽位，以及图树捕获/重放的消费接线。
+- [TorchNPU ACL Op 路线：编译缓存与组合连续化](torch_npu_aclop_cache_and_contiguous_views.md)：区分单算子编译磁盘缓存、aclop view 连续化和 GE/捕获图缓存的不同生效范围。
+- [TorchNPU aclop 输入转换与 host 传参：aclTensorDesc/aclDataBuffer 构造面](torch_npu_aclop_input_conversion_and_host_params.md)：固定主线源级核对 OpCmdHelper 六条转换路径：NPU 输入用 storage 维度与 npu_format_、host 输入用逻辑 sizes 加 placement、标量走 CopyScalarToDevice、输出同时携带 origin/当前格式。
+- [缓存分配器申请重试：GC同步、回收层次与OOM计数](torch_npu_allocator_retry_gc_and_oom.md)：追踪默认缓存分配器的缓存查找、GC、分级重试和预拒绝，区分实际同步及num_alloc_retries统计口径。
+- [缓存分配器跨流回收：事件完成、捕获延后与选块顺序](torch_npu_allocator_stream_reclaim_and_lazy_order.md)：解释FREE_REQUESTED到可复用缓存的事件链，区分lazy回收时机及主线/发布选块次序，避免把释放对象等同设备归还。
+- [AscendC 编译缓存：确定性有效等级与两层缓存字段](torch_npu_ascendc_deterministic_cache_identity.md)：解释后端激活如何给FX与AOTAutograd缓存细节加入NPU有效等级，并区分字段记录、图失效和模型数值保证。
+- [AscendC编译确定性Guard：有效等级检查与重编译边界](torch_npu_ascendc_dynamo_deterministic_level_guard.md)：追踪主线Inductor包装器安装Dynamo等级Guard的真实入口，区分TracingContext缺失、有效等级同步、缓存身份与已有捕获对象。
+- [ATB依赖入口：公共SDK声明、占位库与Python装载](torch_npu_atb_vendor_abi_and_python_loader.md)：闭合公共张量/图/Context/Operation声明与构建占位库，核对Python顶层装载、延迟补丁、错误保留和两版曝光API差异。
+- [torch_npu ATen 层 matmul bmmV2 分发与免拷贝 reshape](torch_npu_aten_matmul_bmmv2_dispatch_and_fast_reshape.md)：主线与发布两 pin 的 matmul→npu_bmmV2 fp16 门控分发规则、mv 后免拷贝 fast reshape 三条件与 get_storage_size 物理存储尺寸链；并给出 matmul_backward 的掩码/空输入语义：mask两假与undefined grad返回未定义对、零元素梯度为zeros_like分配、输入无原地改写（测试断言）。
+- [自动预编译缓存：序列化、Guard 放宽与正确性边界](torch_npu_automatic_precompile_cache.md)：说明 TORCH_CACHING_PRECOMPILE 的自动加载保存及不可序列化 Guard 过滤，不与 GE 函数缓存混同。
+- [Catlass 编译产物缓存：源码、命令、进程命中与动态库寿命](torch_npu_catlass_binary_cache_and_loading.md)：跟踪模型代码生成到Catlass二进制编译与.so加载，区分源去重、磁盘命中、进程映射和CppWrapper/AOT路径。
+- [Inductor Catlass 实际候选生成与 Epilogue 融合限制](torch_npu_catlass_candidate_and_epilogue_constraints.md)：从固定源码解释 Catlass 库发现、形状提示、候选去重截断及调度器的 Pointwise、快速融合与 EVG 门槛。
+- [Catlass GEMM codegen 本体：模板 kernel 签名与 workspace 双 pass、tile 自调生成器与 EVG Python 前端](torch_npu_catlass_gemm_codegen_and_evg.md)：记录主线 _inductor/codegen/catlass 的四个未映射文件：CATLASSTemplateKernel 的签名/布局参数/workspace 两次调用链、TileAutotune 按 L1/L0 预算生成 tile 候选的启发式、epilogue 转 EVG Python 表达的代码生成与外部 catlass_cppgen 的示例张量桥。
+- [TorchNPU 连续化：目标缓冲门控与描述符缓存](torch_npu_contiguous_descriptor_cache_and_clone_gate.md)：沿基础格式设备拷贝解释连续化选择、描述符缓存与实际搬运的区别，区分缓存命中、容量上限和 StrideCopy 回退；含 npu_stride_copy / npu_view_copy 实现层（≥256 stride 转置优化、<32B view_copy 回退与 pin 差、AclnnOnly 物化路径）。
+- [TorchNPU 连续化 pattern 识别算法族：slice/select/broadcast/indexing/reshape 与组合推断](torch_npu_contiguous_pattern_matcher_families.md)：逐 pattern 给出 can_use_* 识别门控、目标算子与 RECORD_FUNCTION 标记，区分真免拷贝（SetDesc/memRepoint）与换算子搬运，不把 pattern 命中当作零拷贝。
+- [TorchNPU CPU 绑核：NUMA、容器与每流队列限制](torch_npu_cpu_affinity.md)：说明粗细粒度绑核、force 的作用范围、NPU 亲和模式和线程竞争验证。
+- [TorchNPU 执行路径：CPU fallback 门控与兼容实现](torch_npu_cpu_fallback_and_compatible_impl.md)：区分已纳管 CPU 回退的禁止开关和底层算子实现选择，避免用开关宣称获得缺失的 NPU 能力；补主线源码级回退分类与Sparse CSR显式入口。
+- [TorchNPU IPC 共享与自定义分配器组合边界](torch_npu_custom_allocator_and_ipc.md)：区分 IPC 共享与替换分配器，记录 IPC 最低配套（spawn、HDK/CANN）与 950DT 边界，覆盖 _share_npu_/_new_shared_npu 源级 C++ 链的同步事件、引用计数与 limbo 语义。
+- [自定义算子接入 TaskQueue：宏、回调与异步资源寿命](torch_npu_custom_op_taskqueue_adaptation.md)：区分 aclnn 标准宏与 RunOpApiV2 底层接入，说明流转换、值捕获和原始指针的前提。
+- [TorchNPU DLPack 转换器：dtype/设备映射契约与子字节不对称边界](torch_npu_dlpack_convertor_dtype_and_device_mapping.md)：固定主线源级核对 DLConvertor 的 toDLPack/fromDLPack：dtype 编码映射与 float8/BComplex32/量化拒绝面、UInt1-7 整字节化、stride 归一化、kDLExtDev 设备映射及 from_blob 下游衔接。
+- [原生dtype转换的后端分配、同类型克隆与原地入口](torch_npu_dtype_cast_backend_allocation_and_aliases.md)：连接_npu_dtype_cast生成分派与ACL、OpAPI候选，说明同dtype clone请求、内部格式分配和连续empty的Storage申请，以及原地入口短路；并给出 _npu_dtype_cast_backward 组合式反向、框架消费面与跨仓所有权澄清。
+- [DVM融合区成本预测：构组、边界字节与实际融合差距](torch_npu_dvm_fusion_region_cost_prediction.md)：说明overlap可选DVM区域如何分组并覆盖节点估时，区分逻辑边界传输模型、默认带宽与真实融合/内存性能。
+- [DVM矩阵融合：epilogue门槛、BF16中间值与view边界](torch_npu_dvm_matmul_epilogue_precision_and_views.md)：追踪矩阵模板注册到pointwise融合与生成，区分950外部mm、内部BF16提升、转置识别和实际view-load资格。
+- [DVM融合执行：代码生成、FX回退与模板边界](torch_npu_dvm_mlir_codegen_and_fallback.md)：区分固定两版DVM的规则筛选、代码生成和FX导入，解释主线Triton混合边界、布局缓存身份及调试同步成本。
+- [dynamic_profile：热配置、显式触发与断点步数](torch_npu_dynamic_profiler.md)：说明三种启动路线、start_step、rank 过滤、start 文件路径和恢复训练的计数边界。
+- [Dynamo NPU流上下文：FX set_stream节点与handler安装](torch_npu_dynamo_stream_context_fx_set_stream.md)：沿主线NpuStreamContextVariable闭合current_stream代理、enter/exit的set_stream节点与退出恢复，核对NpuInterface流接口、current_stream handler的条件alias与发布版安装差异。
+- [Eager DVM归一化的统计、训练反向与输入准备](torch_npu_eager_dvm_batch_norm_statistics_and_backward.md)：聚合BatchNorm各入口的FP32准入、连续化、辅助输出、counts加权统计及原生归约与DVM反向组合。
+- [Eager DVM逐元素融合的类型、精度与回退条件](torch_npu_eager_dvm_elementwise_precision_and_fallback.md)：聚合Cast、算术、比较和激活的实际准入、公共类型及FP32计算，核对原地提交与GELU近似参数消费者。
+- [Eager DVM融合提交与输出分配重入](torch_npu_eager_dvm_flush_workspace_and_allocation_reentry.md)：连接kernel池、流切换、输出分配保护及TaskQueue两条codegen/workspace/launch顺序，说明正常清理与待验证失败路径。
+- [Eager DVM的Foreach规模门控与SwiGLU View输入](torch_npu_eager_dvm_foreach_and_swiglu_consumers.md)：核对Foreach列表规模、dtype与共享Storage回退，区分scalar-list例外，并解释SwiGLU双半区Load及FP32计算。
+- [Eager DVM矩阵乘与Sum的布局和提交条件](torch_npu_eager_dvm_matmul_and_sum_preparation.md)：解释矩阵布局识别、连续化与addmm epilogue，记录Sum的FP32准入、维度处理和out准备边界。
+- [Eager DVM融合的Tensor复用与别名边界](torch_npu_eager_dvm_metadata_alias_and_view_lifetime.md)：解释Storage上的融合值、Tensor与逻辑shape精确匹配、读写前flush、View输入存活及输出Store选择。
+- [Eager DVM环境解析、运行门控与Dump消费者](torch_npu_eager_dvm_native_flags_and_dump_consumers.md)：核对环境首token与内部选项解析、算子等级门控、调优和确定性读取时机，以及文本dump保存方式。
+- [Eager DVM存储层flush触发点：set_族换储、resize重分配与指针重定向](torch_npu_eager_dvm_storage_replacement_triggers.md)：固定主线三处storage层LazyFusionFlush触发（SetNpu/ResizeNpu.h/ChangeDataPtr）的门条件、发布负向与Storage.resize_钩子入口，闭合audit遗留的触发组合账。
+- [TorchNPU Eager DVM 融合：总开关、区间和提交边界](torch_npu_eager_lazy_fusion.md)：说明不经 torch.compile 的小算子融合、脚本开关与转储门实现层、环境变量实际解析面及进程级线程限制。
+- [TorchNPU错误定位：首错、分层错误码与Core证据](torch_npu_error_code_and_log_triage.md)：整理错误码结构、日志关联与崩溃取证，区分参数、底层调用和历史案例；整套定位路径缺少产品矩阵，保留草稿。
+- [Host扩展段保活与清缓存：事件队列和整段回收](torch_npu_expandable_host_event_lifetime_and_empty_cache.md)：解释Host expandable的记录流、延后复用与host_empty_cache消费者，保留查询异常、部分段和版本统计字段差异。
+- [实验FlexAttention：源码适配、梯度归属与稀疏元数据](torch_npu_experimental_flex_attention_source_adapter.md)：区分实验Triton与默认FlexAttention路线，解释AST结构计数、captured梯度/空块改写、模板渲染与原子compact offset。
+- [实验Triton后端激活：lowering保留、显式回退与全局配置](torch_npu_experimental_triton_activation_and_lowering_routes.md)：区分包导入与激活、生成/保留/显式回退三类列表、Bernoulli图捕获门槛、后置索引重绑及配置副作用。
+- [实验Triton自动调优缓存：候选身份、确定性与小尺寸补偿](torch_npu_experimental_triton_autotune_cache_identity_and_tile_consistency.md)：解释实验Triton候选extra_options身份、顺序敏感缓存、确定性禁缓存、原地元数据消费和小动态tile整组替换边界。
+- [实验Triton自动调优：计时口径、输入隔离与回退](torch_npu_experimental_triton_autotune_timing_and_input_isolation.md)：保存mspti与NPU event的真实单位、样本组织、输入克隆/重置范围及失败后回退，区分runnable与数值验收。
+- [实验Triton边界降精度：布局、副本缓存与输出回写](torch_npu_experimental_triton_boundary_downcast_and_writeback.md)：区分metadata指针改写、输入/可变/纯输出缓冲、重叠布局的存储跨度、弱引用缓存及图池绕过条件。
+- [实验Triton clone折叠：布局判定、转置救援与动态提示](torch_npu_experimental_triton_clone_fold_and_load_rescue.md)：保存连续尾段/救援成本、符号及提示投票、逐tile访存与UB估算、lazy回退和bet键边界。
+- [实验 Triton 组合 kernel：准入、成员身份与 tile 分派](torch_npu_experimental_triton_combo_admission_and_tile_dispatch.md)：保存静态同构逐元素组合的依赖/资源拒绝、slot重命名、单配置分派及普通生成回退和释放恢复边界。
+- [实验Triton候选编译：分层筛选、小block回退与异常边界](torch_npu_experimental_triton_compile_tiers_and_resource_fallback.md)：按真实分支记录实验Triton候选分层、小block扫描、异常跳过与编译选项覆盖的边界。
+- [实验 Triton embedding：寄存器行 gather 的准入与回退](torch_npu_experimental_triton_embedding_register_gather.md)：保存 embedding 的本地 SoC/config 门控、间接坐标与寄存器 gather 几何，区分节点长度、真实 tile、常量 offset 和外部 bound 合同。
+- [实验 Triton 融合限制：置换写出与读 buffer 数](torch_npu_experimental_triton_fusion_permuted_store_and_read_budget.md)：区分父类和template优先序、归约加置换写出检测、unique buffer名称读数阈值与真实load/布局/资源边界。
+- [实验Triton数学分解：GELU兼容模式、RMSNorm与Dropout掩码](torch_npu_experimental_triton_gelu_rmsnorm_dropout_rng_decompositions.md)：保存GELU/erf计算dtype和兼容选择、RMS归约/转回边界、dropout按shape选路及首Tensor RNG设备门槛。
+- [实验Triton启动：网格分支、动态尺寸缓存与ABI绑定](torch_npu_experimental_triton_grid_and_launcher_codegen.md)：按真实优先级保存组合核、recipe、标量归约与逐点网格策略，区分普通和静态启动器的参数绑定。
+- [实验Triton的int64：索引扩宽、数据降位与全局类型补丁](torch_npu_experimental_triton_int64_index_data_and_global_type_patches.md)：区分实验Triton地址i64扩宽、数据compute/value/store与RNG/宽常量标记，说明全局映射和非豁免降i32的真实范围。
+- [实验Triton整数往返消除：窗口追溯、值域与改图边界](torch_npu_experimental_triton_integer_roundtrip_elision_scope.md)：核对实验Triton整数往返消除的dtype与窗口门槛、未检查值域和改图/安装异常边界。
+- [实验Triton线性化header：分块、odometer与mask边界](torch_npu_experimental_triton_linearize_header_tile_odometer_mask.md)：核对贪心分块与unify开关、对齐、超大numel别名、odometer及实际mask转换和映射顺序。
+- [实验Triton循环合并与addmm融合安装边界](torch_npu_experimental_triton_loop_merge_and_addmm_fusion_install.md)：解释Max结构折叠的循环合并比较副本、返回索引合同与addmm pattern禁用的真实作用范围。
+- [实验Triton掩码索引：非负clamp的局部证明与省略条件](torch_npu_experimental_triton_masked_index_clamp_proof.md)：说明适用门槛、四种模式、结构轴和AST下界提取、仿射检查及counter，区分局部省略和完整访存验收。
+- [实验Triton数值helper：NaN、Bool与运行时替换](torch_npu_experimental_triton_numeric_helpers_and_nan_bool.md)：解释最终minimum定义、NaN选择、Bool比较、归约参数及修改runtime helper对象的实际接入边界。
+- [实验 Triton permute 归约加载：几何、UB 分块与回退边界](torch_npu_experimental_triton_permute_gather_rewrite.md)：说明跨步归约 load 的 gather/trans 准入、资源预算、静态单配置与动态 H 无 marker 重写，区分局部早退和未捕获异常。
+- [实验Triton逐元素候选：维度选路、搜索与过滤边界](torch_npu_experimental_triton_pointwise_candidate_filters.md)：区分实验Triton逐元素1D/2D/3D的开关与搜索列表、维度预算、均衡/UB近似及模块捕获配置的边界。
+- [实验Triton归约候选：默认公式、入口优先级与UB边界](torch_npu_experimental_triton_reduction_formula_and_entry_gates.md)：区分归约早退、r0_公式三分区、最小/均宽、UB近似与外部Config归一化的真实边界。
+- [实验Triton归约索引别名：依赖、可见性与延迟赋值](torch_npu_experimental_triton_reduction_index_alias_contract.md)：保存归约索引结构别名的依赖与scope检查、prefix合并、延迟赋值共享状态和最后打印的局部合同。
+- [实验 Triton 归约 padding：中性填充、SSA 事实与 where 删除](torch_npu_experimental_triton_reduction_padding_and_guard_elision.md)：保存逐 load 填充值选择、pad fact 的本地前提、mask 覆盖与累加器 guard 删除，以及 legacy 候选追加和未闭合数值边界。
+- [实验 Triton select-lane：扩大加载、寄存器切片与边界条件](torch_npu_experimental_triton_select_lane_load_rewrite.md)：说明非归约跨步 load 的结构记录、直接与间接内轴判定、select/strided-slice 发射和扩大读取边界，区分局部早退与编译回退。
+- [实验Triton高级索引：可分离index_select与子图分路](torch_npu_experimental_triton_separable_advanced_index.md)：保存连续1–2个索引的rank/列宽/广播准入、PointwiseSubgraph不同分路、原生fallback链及后置注册边界。
+- [实验 Triton 切片与短尾广播：实体化门槛、重入与回退](torch_npu_experimental_triton_slice_and_tail_broadcast_materialization.md)：说明unbacked切片准备、step非1的producer实体化、slice_scatter端点回退及短尾expand副本/no-fuse和捕获阈值的真实范围。
+- [实验Triton分解注册：softmax宽度路由与掩码语义前提](torch_npu_experimental_triton_softmax_decomposition_and_mask_domain.md)：保存共享表安装顺序、safe_softmax输入域、按归约宽度的raw节点路由和反向/折叠覆盖，区分分解命中与数值验收。
+- [实验Triton静态启动：准入、参数ABI与工件生命周期](torch_npu_experimental_triton_static_launch_contract.md)：解释静态/普通回退、API能力探测、constexpr过滤、metadata门槛、二进制持有与fast全局runner协议。
+- [torch_npu triton_experimental 静态/快速 launcher 测试契约：资格判定、工件适配、pickle 恢复、胜者卸载与标量 ABI](torch_npu_experimental_triton_static_launcher_tests.md)：记录主线 test/_inductor/triton_experimental 静态 launcher 集成测试（1553 行全文）、fast launcher 测试（520 行全文）与共享 utils（110 行全文）的测试侧契约：can_statically_launch 的钩子/运行时支持/workspace/用户自定义内核门、_arg_kind 标量映射、host args layout 与尾指针、npubin pickle 往返与缓存恢复、autotune 胜者卸载时序与拥有者生命周期、静态路径不构造普通 launcher 的正向证据、signed/unsigned/bool/float 标量 ABI 字面指纹、fast launcher 的构建克隆全局/失败不缓存/胜者替换/特殊调用旁路/降浮点包装、TASK_QUEUE_ENABLE=0/1 变体声明。
+- [实验Triton Python wrapper：分配、规划与原始流接入](torch_npu_experimental_triton_wrapper_allocation_and_device_stream.md)：核对主图/子图wrapper、workspace规划、NPU分配表达式、设备注册及raw stream导入选择的边界。
+- [外部内存进NPU Tensor：from_blob 工厂契约与 DLPack 入口改路由](torch_npu_external_memory_from_blob_and_dlpack.md)：固定 at_npu::native::from_blob 的设备一致性、deleter 所有权、存储构造与容量计算契约，以及 torch_npu 导入期对 to/from_dlpack 的补丁路由与静默回退边界。
+- [FAv3捕获分区：TND、dropout与版本条件](torch_npu_fav3_capture_partition_proxy.md)：解释固定主线default Triton对FAv3前反向的代理改写、CANN 9.1门槛和捕获分区边界，不把unsafe标记当成数值算法变化。
+- [FlexAttention eager autocast 补丁：注册链与设备校验替换](torch_npu_flex_attention_eager_autocast_patch.md)：闭合 patch_flexattention 的真实安装点、AutocastPrivateUse1 语义与 _validate_device 替换后果，区分 inductor 侧同名 patch。
+- [FlexAttention 前向实际选路：短 Query、GQA 与动态分派](torch_npu_flex_attention_forward_dispatch.md)：解释主线 lowering 的 decoding 优先级、mask-out 条件、Python-only 分派与实际 wrapper 检查，避免把配置或短序列当作命中证明。
+- [FlexAttention 掩码内存路径：条带构造、有界工作区与精确容量](torch_npu_flex_attention_mask_memory_paths.md)：区分BlockMask构造峰值与前向byte-mask分配，记录静态workspace门槛、预算不截断以及精确容量回退。
+- [TorchNPU FORCE_ACLNN_OP_LIST 与 NPU_FUZZY_COMPILE_BLACKLIST：名单解析与消费面](torch_npu_force_aclnn_and_fuzzy_jit_lists.md)：固定主线源级核对两个环境变量名单的逗号解析、单例集合语义、jit 默认关闭规则及消费面；FORCE_ACLNN 的消费发射点在本仓 torchnpugen 代码生成模板，生成物运行时路由在 pin 外。
+- [FXRT aclnn算子执行器：哈希缓存、可重复执行器与注册边界](torch_npu_fxrt_aclnn_executor_cache_and_op_registry.md)：记录FXRT Ascend算子经AclnnExecutor两段式下发opapi的机制、按元数据哈希的执行器LRU缓存、地址重绑定，以及FXRT_REG_OP注册表与CheckOpSupport白名单的回退边界。
+- [FXRT ATB算子桥接：变体包、操作缓存与310 SoC分派](torch_npu_fxrt_atb_operator_bridge.md)：记录FXRT经atb::infer接口桥接Ascend Transformer Boost算子的机制：仅连续Tensor的atb::Tensor转换、按流复用的ATB Context、FIFO容量控制的操作与workspace缓存、paged_attention/reshape_and_cache参数映射，以及Ascend310系列linear的ATB动态加载分派。
+- [FXRT融合内核接入：Inductor注册、mutation与布局ABI](torch_npu_fxrt_compiled_kernel_integration.md)：区分通用Python调用、DVM和AutoFuse原生路线，核对写入参数、固定布局、工作区及捕获组合，避免把接入代码当完整运行保证。
+- [FXRT前端降级：Schema匹配与算子语义边界](torch_npu_fxrt_frontend_lowering.md)：区分FXRT原生映射、custom/Python回退、索引分解和元数据适配，保留归约、归一化及动态符号的版本限制。
+- [FXRT硬件资源层：设备上下文、流/事件与动态内存池](torch_npu_fxrt_hardware_resource_and_memory_pool.md)：记录FXRT自带硬件抽象层的实际行为：DeviceContext按设备名+id缓存、AscendResManager的外部分配器优先与内存池回退、VMM/dvpp多后端适配、动态内存池的512B对齐与1G扩展单元、多流控制器的事件池，以及ACL符号dlopen解耦。
+- [FXRT IR导出与GE转换器：ABI边界、版本化导出合同与SymInt保持](torch_npu_fxrt_ir_export_and_ge_converter.md)：记录FXRT向GE系FX转换器导出图的两条路径：ir_graph_export的POD字典版本化合同（ABI0/ABI1永久边界）与fx_to_c_graph的C++ GraphExecutor构建（复用fx_backend钩子、不特化SymInt）。
+- [FXRT IR数据模型与TorchCall/符号算子：Schema别名ref对与防双释放](torch_npu_fxrt_ir_model_and_torch_call_ops.md)：记录FXRT C++ IR的Storage/view双形状与FRACTAL_NZ格式、OpTorchCall从torch schema别名注解推导ref对并拒绝未声明别名、custom_call名称偏移平移、CPU符号推形算子族，以及仅注册样例Pass的PassManager边界。
+- [FXRT原生集合通信：连续性、组句柄与状态传播](torch_npu_fxrt_native_collective_execution.md)：连接FXRT AllReduce和AllGather的推形、通信组缓存与HCCL调用，区分输入连续性、输出容量及返回状态和设备完成。
+- [FXRT量化/MoE/融合特例算子：NZ分支、版本探测与输出适配](torch_npu_fxrt_quant_moe_fused_specialized_ops.md)：记录FXRT中带独立前置约束的aclnn特例算子：W8A8量化matmul与NZ权重分支、MoE dispatch/combine的V2/V3/V4可用性探测、grouped_matmul与FIA的固定实参布局、linear的ND展平，以及inplace_copy/argsort/getitem_slice等的输入输出适配边界。
+- [FXRT推理运行时：独立后端、view回退与图执行边界](torch_npu_fxrt_runtime.md)：说明随TorchNPU发布的FXRT导入入口和局部实现，保留view禁用开关的实际生效范围与未闭合产品合同。
+- [FXRT view零拷贝与元数据算子：ref对、存储校验与连续性边界](torch_npu_fxrt_view_zero_copy_and_metadata_ops.md)：记录FXRT view算子族经UpdateTensorViewInfo复用输入Storage的零拷贝路径、CheckStorageMatch别名校验、empty_strided仅连续stride限制，以及reshape/alias等元数据算子的推形规则。
+- [torch_npu GIL桥：一次性注册与eager算子下发、懒初始化、Host释放的消费点](torch_npu_gil_bridge_hooks_and_eager_consumers.md)：记录PythonGilBridge/PythonGilAdapter的注册语义，eager ACLOps下发、首个算子懒初始化与Host分配器释放期间释放GIL的四个消费点，及主线桥式与发布内联宏的版本配对。
+- [Host编译：Clang配套与已废弃的BiSheng优化路线](torch_npu_host_clang_lto_pgo.md)：记录固定主线的Clang构建顺序及历史LTO/PGO流程；产品范围未闭合，保留为草稿。
+- [Host与NPU复制：non_blocking回退、生命周期和转换位置](torch_npu_host_device_copy_execution.md)：核对copy_的Host指针分类、主动同步与事件记录，说明主线和发布的H2D/D2H异dtype转换及临时存储差异。
+- [Inductor 融合精度检查：版本范围、阈值与诊断产物](torch_npu_inductor_accuracy_check.md)：说明 beta 检查工具只列 PyTorch 2.7.1/2.9.0，区分工具改变编译策略与模型正常运行性能。
+- [950DT AOTInductor部署：打包、Python与C++加载](torch_npu_inductor_aoti_deployment.md)：记录pt2产物、libtorch_npu依赖、动态形状和不叠加Catlass的边界；补两版C++运行时头表面与发布版外置内核执行链。
+- [ascend_npu_ir MLIR工具链：编译器驱动、缓存、torch_mlir桥接与C++绑定层](torch_npu_inductor_ascend_npu_ir_mlir_toolchain.md)：记录torch_npu._inductor.ascend_npu_ir包的静态结构：NpuMlirCompiler/AkgCompiler驱动、CacheManager文件缓存、MLIR/AKG代码生成与wrapper、npu_stream直接注册custom op、torch_mlir fx_importer桥接、PythonDispatcher补丁面，并包含csrc/inductor/mlir的C++绑定层（load_kernel_binary装载、common_launch/common_launch_dyn启动与tiling协议）。
+- [950 Inductor 矩阵乘调优：候选实现、Catlass 与 Epilogue](torch_npu_inductor_catlass_autotune.md)：区分编译模式和 GEMM 候选库，明确 Catlass 路径、算子列表、融合和测量的启用条件。
+- [950 Inductor 编译资源与 Pass 定界](torch_npu_inductor_compile_resources_and_passes.md)：区分编译子进程和预编译线程，说明 Pass 关闭、并行调度阈值及日志读取时机。
+- [Inductor配置与加载源码：解析差异和待确认产品范围](torch_npu_inductor_config_parsing.md)：保存固定配置及后端加载器的静态事实，区分注释、表达式、公共文档和未闭合的消费者/产品合同。
+- [950 Inductor 调优成本：CostModel 筛选与动态形状分组](torch_npu_inductor_costmodel_and_shape_groups.md)：说明候选预筛选失败回退、保留比例和分组 benchmark 的范围，避免把预测结果当作实测最优。
+- [Inductor动态形状：符号化、输入分档与分组调优](torch_npu_inductor_dynamic_shape_choices.md)：区分编译图复用、padding/split和Kernel候选复用，保留分档实现的待确认边界。
+- [Inductor FlexAttention：回调、BlockMask、GQA与反向](torch_npu_inductor_flex_attention.md)：记录950PR/DT与PyTorch2.13文档的掩码复用、辅助输出及梯度边界。
+- [950DT Inductor图改写：GEMM、转置与切片合并](torch_npu_inductor_fx_rewrite_conditions.md)：记录四个默认关闭的POST Pass、形态匹配、规模阈值和数值差异。
+- [TorchNPU Inductor Attention图桥的Meta、scale与Autograd边界](torch_npu_inductor_graph_attention_bridge.md)：区分图桥七Tensor返回、位置与关键字scale分支、Meta布局及Autograd参数槽差异。
+- [Inductor访存：间接索引、随路转置与地址复用](torch_npu_inductor_memory_lowering.md)：区分950DT离散访存模式、NDDMA默认和输入输出复用对multi-buffer的影响。
+- [950DT Inductor并行调度：CV分组、流依赖与策略接入](torch_npu_inductor_parallel_schedule.md)：记录推理和图下沉前提、分组日志、生成物与内部自定义策略接口。
+- [Planned Fast Launch：计划生命周期与禁止重放的异常边界](torch_npu_inductor_planned_fast_launch.md)：记录Python Wrapper加速条件、ABI、负缓存及回退；整套产品范围待确认。
+- [torch_npu Inductor runtime 缓存 autotune 补丁链与 FASTAUTOTUNE 调优](torch_npu_inductor_runtime_cached_autotune_patches_and_fasta.md)：记录主线 _inductor/runtime/ 运行时补丁包的安装链、cached_autotune 决策树、FASTAUTOTUNE（Expert/SampleStack）调优算法本体、tile 生成与符号分组门链，及与发布版扁平实现的接线差异。
+- [Inductor候选测量：输入重建、批profiling与异常分流](torch_npu_inductor_selector_input_preparation_and_batch_profiling.md)：跟踪候选输入storage重建、批profiling归因、同步与异常值，区分设备计时和选择合同。
+- [torch_npu Inductor 静态 aclnn kernel：私有开关、dump→op_compiler→安装→reselect→卸载](torch_npu_inductor_static_aclnn_kernel_lifecycle.md)：记录 _use_static_aclnn_kernel 私有开关的四个消费点、StaticKernelCompiler 生命周期与异常边界、安全路径检查、C++ dump/reselect 绑定语义，及主线 mlir logger 与 with_path 绑定的版本差异。
+- [torch_npu Inductor Triton matmul kernel 家族：注册门、模板选择栈与 tiling 生成](torch_npu_inductor_triton_matmul_kernel_family.md)：记录主线 _inductor/kernel/ 矩阵乘族的注册链（mm/addmm/bmm/grouped_mm/multi_slice_concat）、tuned_mm 的候选选择栈与四个 NPU Triton 模板门槛、_gen_tile_combos 与 optimize_tiling 的 aclnn 级 tiling 移植、bmm 退化分解与 multi_slice_concat 回退条件，及发布版无 kernel/ 目录的边界。
+- [TorchNPU InferFormat 维度启发式：5D/4D 基础格式推断与 NZ 降级](torch_npu_inferformat_dimension_heuristics.md)：固定 GuessBaseFormat/GuessStorageFormat/GuessFormatUnit 的维度规则、NZ dim<2 降级告警与 TransData 维度补齐，避免把格式猜测当作显式 cast 契约。
+- [TorchNPU 初始化：自动加载、HAL 检测与设备配置时机](torch_npu_initialization_and_device_detection.md)：区分导入注册、设备懒初始化和可用性检测，说明自动迁移、流池和模拟 capability 的失效边界。
+- [历史FrameworkPTAdapter发布说明的适用边界](torch_npu_legacy_adapter_release_boundaries.md)：保留旧Adapter特性时间线、FP16/格式/通信/Apex限制与中英文覆盖差异，防止套到当前版本；补发布快照导入期拦截链与Tensor.type重定向。
+- [TorchNPU旧接口迁移：废弃清单、形状接线与版本差异](torch_npu_legacy_api_migration.md)：区分固定发布和主线的计划废弃列表，保留替代方向、别名与形状约束及清单错误。
+- [C++调用Triton样例：嵌入Python依赖和grid求值边界](torch_npu_libtorch_triton_runtime.md)：区分C++ lambda grid不经Python与整体runtime仍嵌入解释器，保留版本、链接和误差输出的样例身份。
+- [TorchNPU 日志：模块级别、黑白名单与错误精简](torch_npu_log_filters_and_error_output.md)：说明新增模块的 TORCH_NPU_LOGS、子串过滤优先级和告警变量迁移，避免把日志缺失误判为未执行。
+- [torch_npu 主线 inductor autotune/codecache 测试契约：缓存工件计数、TuningProcess 设备表、配置哈希补丁与 profiler 会话互斥](torch_npu_main_inductor_autotune_codecache_tests.md)：记录主线 test/_inductor 中 autotune_codecache 族 7 个文件（共 691 行）的测试侧契约：caching_precompile 下 NPU 前反向恰好产出 2 个 autotune 工件而 CPU 为 0、五类缓存工件计数 save/load 对称、无工件重编译与 fail_on_recompile 下的 dynamo 计数、TuningProcessPool 设备表未被替换且 ASCEND_VISIBLE_DEVICES 保序收窄、patch_is_gpu 幂等、triton_config_to_hashable 递归冻结等价且三模块共享绑定、profiler 进程级单例下 batch/bandwidth 基准回落事件计时器、用户 triton.autotune 与 TMA 缺席断言。
+- [NPU Inductor代码生成IR层：扁平化索引、间接内存与批量融合调优](torch_npu_main_inductor_codegen_ir_extensions.md)：记录torch_npu._inductor对torch._inductor codegen IR的扩展面：flattened dims检测与重建、inductor_indirect_memory_mode、A5(950)专属线性化跳过、IndexputTemplate间接索引、kernel_analysis步长分析、Scheduler的L2敏感批量profiling、AOTI导出与shape_handling门面。
+- [torch_npu 主线 cpp wrapper 代码生成：CppWrapperNpu 类体的 CATLASS JIT 装载、参数结构体与锁/workspace 发射](torch_npu_main_inductor_cpp_wrapper_codegen_and_launch.md)：记录主线 _inductor/codegen/cpp_wrapper_npu.py 后半区（:522-1165 全读）：CppWrapperNpu(CppWrapperGpu) 的 torch_npu AOTI 头改写与延迟包装器替换、CATLASS kernel 的 JIT dlopen/dlsym 装载扩展与 extern "C" 冲突规避、aclrtSynchronizeStream 前置同步理由、codegen_tensor_item 的 fp16/bf16/bool 折算、generate_args_decl 的 packed 结构体布局、ffts 地址/workspace 网格缩放、Triton-Ascend 3.6 打包锁布局的有序/无序锁数学与 auto-blockify 夹紧、aclrtLaunchKernelWithHostArgs 的 SIMT 动态 UB 属性。
+- [torch_npu 主线 cpp wrapper 分组延迟调用：DeferredNpuTritonCallWrapper 的 plan 消费、组解析与变体发射](torch_npu_main_inductor_cpp_wrapper_deferred_grouped_launch.md)：记录主线 _inductor/codegen/cpp_wrapper_npu.py 前半区（:1-521 全读）：CudaKernelParamCache 运行期块参数临时剥除与 extra_launcher_args 数量契约、grouped_candidate_plan 的三个读取端（active variants/load_meta/cubin 文件集合）、特征输入外积表达式发射、桶梯 if/else-if 的混合进制 group_id 编码、resolve_grouped_runtime_block 的 ceildiv 链与 reachable 组 switch 分派、变体级 load/launch 发射与 AOT 嵌入装载差异。
+- [torch_npu 主线生成代码的装饰器发射与模块绑定：别名遮蔽、_get_heuristic、combo foreach 强制与 template 发射](torch_npu_main_inductor_decorator_emission_consumers.md)：记录主线 codegen 侧如何把五个 heuristics 入口写进生成代码并绑定到 torch_npu runtime 模块：NPUTritonKernel/NPUIndexTritonKernel 的 gen_common_triton_imports 模块别名遮蔽、_get_heuristic 三名选择与单 kernel 发射（tile_hint/reduction_hint/min_elem_per_thread 实参）、NPUComboKernel 的 foreach 强制与 jit_line 三分支、select_algorithm 的 template 发射（use_jit 门、无 filename、FixedGrid 与 aggresive_autotune 注入）、triton_experimental template 转发器与 fast_launch 补丁的边界。
+- [主线 DVM 测试族：融合触发条件、分解表消费、K=1 降级与图融合回退守卫](torch_npu_main_inductor_dvm_tests.md)：固定提交下 test/_inductor/dvm 六个测试文件揭示的 DVM 融合行为：int64/int32 规则差异、K=1 矩阵降 k.mul、rms_norm 经 dvm 分解表激活、DvmGraphFusionPatch 的动态图 stride 补丁守卫、FlexAttention 无可编译 choices 的当前态、npu_backend 编译选项路由。
+- [torch_npu 主线 inductor 动态形状分组测试契约：elementwise 负载分类、布局 kind 与 launch policy](torch_npu_main_inductor_dynamic_shapes_grouping_tests.md)：记录主线 test/_inductor/test_inductor_dynamic_shapes.py（314 行全文）的测试侧契约：group_workload 的 elementwise/None 分类（广播、独立 full、跨步重排均非 elementwise 但仍成组）、_pointwise_layout_kind 的 transpose/broadcast 判定与 _build_grouped_meta 的静态 split 轴/运行期块名/桶表（64-512 与 16-4096 两种）、默认 pointwise 特征按 vector core 推桶的公式、build_grouped_launch_policy 的静态块 grid_target=1 契约、_dynamic_pointwise_tiling_axis 单动态轴要求。
+- [torch_npu 主线 fasta_autotune 候选生成与批量测量：FastAConfig/TileConfig、FastATileGenerator 候选桶、BinaryBucket 与 profiler 统计](torch_npu_main_inductor_fasta_residual_segments.md)：记录主线 runtime/fasta_autotune.py 中 FASTA 主算法面之外的其余段：头部 imports、FastAConfig 与 TileConfig 数据面、FastATileGenerator.descend_split_tiling 的桶/子块枚举（Expert ceil-divide 与常规 core 扫描两套生成器、乘积枚举与 UB/核数过滤）、BinaryBucket 二分编译边界与 ProfileValue 排序数据类、benchmark_all_configs_with_std 中段的清 L2 批量 profiler 测量；主算法面归 FASTA 补丁链卡，两段拼合即为该文件全文。
+- [主线 FlexAttention NPU 模板族：包装上游模板、网格封顶与紧凑 mask 预处理](torch_npu_main_inductor_flex_attention_template_family.md)：固定提交下 _inductor/kernel/flexattention_template.py 1846 行全文本体：三上游模板同名重注册、14 个 NPU 模板与 grid 函数、编译选项预设、LSE log2 数值契约与 tasklist 拆分/归并源。
+- [主线 Inductor flex_attention 测试族：融合边界、kernel_options 传导与源码结构契约](torch_npu_main_inductor_flex_attention_tests.md)：固定提交下 test/_inductor 四个 flex_attention 运行/结构测试与 triton_experimental flex_attention 测试的断言契约，与既有 flex 实现面卡配对。
+- [主线 Inductor fx_passes 测试族：算子契约、动态形状开关、stack-sum/add-chain 数学事实与 pass 组装顺序](torch_npu_main_inductor_fx_pass_tests.md)：固定提交下 test/_inductor 八个 FX pass 测试文件中实现面卡未记录的测试侧契约：multi_slice_concat 算子/模板配置契约、NPU_INDUCTOR_DYNAMIC_FX_PASS 硬开关、stack_sum FP32 累加、remove_cast 与 multi_slice 的注册顺序断言、filter_masks 尺寸符号守卫。
+- [torch_npu 主线 runtime Grid 家族与 launcher 生成：profiler 计时工具、runtime block 网格与 exec 拼装](torch_npu_main_inductor_grid_and_launcher_generation.md)：记录主线 runtime/triton_heuristics.py 的 :106-730 与 :2017-2100 段：CompileThreadPool 与模块级 profiler 计时工具（read_device_time 均值口径、npu_profiler_session_active 探针）、GridNpu/GridExprNpu 的 runtime block 与分组网格路径、TritonCompileResultNpu.make_launcher 的 constexpr 字面量替换与 grouped 缺参校验、_NPUSkipPrecompilePlugin、NPUCachingAutotuner.__init__ 候选/变体状态、copy_args_to_cpu_if_needed 显存预算拷贝与 _interpret_args_grid 三分支；附发布版逐点差异锚。
+- [torch_npu 主线分组候选计划构造：triton_config_npu_index_grouped 与 launch policy 数学](torch_npu_main_inductor_grouped_config_and_launch_policy.md)：记录主线 runtime/triton_heuristics.py 的分组配置生成链：triton_config_npu_index 的 group_enabled 分发与 extra_launcher_args 拒绝、_triton_config_npu_index_grouped 的特征参数索引/代表 size hints 上的 legacy 候选生成/变体去重/policy 逐候选构造与计划装配、build_grouped_launch_policy 的主轴 tiling 分支与 split 分支（prior_programs、开桶核数目标、representative_numel+max_grid 规则）、resolve_grouped_runtime_block 的 ceildiv 块值数学。
+- [torch_npu 主线符号分组构造：_build_grouped_meta、分桶推导与代表形状纯函数](torch_npu_main_inductor_grouped_meta_construction.md)：记录主线 codegen/split_tiling.py 的 _build_grouped_meta 构造族：模板门、轴分类、桶边界常量与静态因子缩放、elementwise 负载的访问签名分类、GroupedKernelMeta 装配与降级函数；以及 runtime/symbolic_grouping.py 的代表形状纯函数（build_group_representatives 的 radix 解码与可达组、evaluate_grouped_benchmark_expr 小语言、payload 序列化严格性与零消费负证据）。
+- [torch_npu 主线 legacy 候选生成与五个装饰器入口](torch_npu_main_inductor_legacy_config_and_decorator_entries.md)：记录主线 runtime/triton_heuristics.py 的 _triton_config_npu_index_legacy 主体（fasta/TileGenerator 二选一、SIMD_SIMT_MIX 双遍 extend、零配置回退、split_axis/split_blocks 镜像注入、requires_no_linear_block_remap 重映射、set_reduction_runtime_blocks_to_numel 与 brutal_prune 收尾）与 pointwise/reduction/persistent_reduction/template/foreach 五个装饰器入口的参数、门槛与 HeuristicType 去向。
+- [torch_npu 主线 npu_compare 精度对拍与 _inductor/profiler.py：三后端对拍链、msprof 导出转换与 mspti 批量测量](torch_npu_main_inductor_npu_compare_and_profiler_tools.md)：记录主线独有的 npu_compare.py（300 行全文）与 _inductor/profiler.py（186 行全文）：compare_outputs/_report_mismatch 的容差与样本诊断、check_accuracy_triton 的 SymInt 标量配方反推与失败快照（不对拍后覆写输出）、MLIR/DVM 两条对拍链；SimpleProfilingAnalyzer 的 msprof.py 导出子进程与 op_summary→kernel_details.csv 表头转换、simple_trace_handler 失败回退、mspti_batch_benchmark 的 LD_PRELOAD 门槛与精确计数校验；附与发布版内联 check_accuracy 的语义差异锚（equal_nan、覆写副作用）。
+- [torch_npu 主线 precompile 管线：串/并行调度、TTIR 检查门、全败 UB 反馈与 save_npu_kernel 落盘](torch_npu_main_inductor_precompile_pipeline.md)：记录主线 runtime/triton_heuristics.py 的 :831-987 与 :1131-1415 段：_precompile_worker 的 template 串行门与 CompileThreadPool 并行、_make_ttir_module_from_cfg/_triton_make_ttir 的 TTIR-only 编译与调度器 make_ttir_for_check 每核检查门、_precompile_configs_with 全败 NoTritonConfigsError 与 ub_overflow_failures 反馈、UB 溢出一次性重试、_precompile_config 的 required_ub_bits 回填与 enable_auto_blockify、_make_launchers 变体刷新、save_npu_kernel 的 runtime_blocks 与 ttadapter IR 落盘；附发布版逐点差异锚。
+- [torch_npu 主线 inductor 规约/Welford 测试契约：VarMean 结构断言、NumelList 契约、连续 sum 布局、持久规约阈值、掩码与扫描代码生成](torch_npu_main_inductor_reduction_welford_tests.md)：记录主线 test/_inductor 中 welford_reduction_structure 族 13 个文件（共 1549 行）的测试侧契约：test_var_mean 的 9 组 run_and_get_code 结构断言（simd welford 单载入/无计数累加/尾掩码/动态图不回退 native layer_norm/复用输入原位变异）、NumelList 展平乘积比较与哈希、_use_contiguous_sum_layout 的打包形状、should_use_persistent_reduction 的 64 项 fp16 水位与 950 高负载阈值、掩码消去条件、associative_scan 的环载维与轴掩码、符号 stride 序比较的进程级恢复。
+- [torch_npu 主线 NPUCachingAutotuner 基准与候选选择：候选计划、prerun 预筛与批量测量回退链](torch_npu_main_inductor_runtime_benchmark_and_candidate_plan.md)：记录主线 runtime/triton_heuristics.py 中 NPUCachingAutotuner 的测量与选择面：build_candidate_plan 候选/变体数据模型与编译去重、_benchmark_candidate_entries 的 prerun 单次计时预筛（min_k=10/max_k=200/50ms 预算）、mspti→profiler 批量→单 bench 三级回退链、bench 的双 spill 阈值与 with_profiler 三态门、确定性归约跳过测量与单候选免测路径的缓存写入差异。
+- [torch_npu 主线 NPUCostModelAutotuner 与 NPUDebugAutotuner：costmodel 预筛选管线与带宽调试路径](torch_npu_main_inductor_runtime_costmodel_and_debug_autotuners.md)：记录主线 runtime/triton_heuristics.py 的两个决策类本体：NPUCostModelAutotuner 的 costmodel 预筛选管线（size_hints 兜底入参、TTIR 参数绑定构造、costmodel_bench 排序保留比例与空 ranking 保留原集、NoTritonConfigsError 回退编译）与 NPUDebugAutotuner 的带宽路径（benchmark_run 透传父类 run 形参、regex 名过滤、首测缓存与 select_algorithm isinstance 接线）；发布版对照与 costmodel 整体缺席负证据。
+- [主线 Inductor 调度/分区测试族：NPUCombinedScheduling 索引失败拆分、npu graph 分区语义与 overlap 计算节点清单](torch_npu_main_inductor_scheduling_partition_tests.md)：固定提交下 test/_inductor 七个调度/分区测试文件及其实现面：NPUCombinedScheduling 的 codegen_node 异常回退拆分与 benchmark 拒收语义（npu_combined_scheduling.py 245 行实现面）、graph_partition 的 npugraph 计数/自定义分区/内核无关路径、overlap 估时的六个注册计算算子包、流融合回归的跳过态。
+- [torch_npu 主线 inductor 调度器：Welford 节点调度、NumelList 分组、融合判定与候选 tiling](torch_npu_main_inductor_scheduling_welford_and_fusion.md)：记录主线 codegen/scheduling.py（1050 行全文）：_generate_npu_node_schedule 的主循环/规约闭合/切分点插入、enable_welford 三级门与原始 group extents 重算、group_fn NumelList、create_tiling 非折叠前缀、make_ttir_for_check 的 eval 与删缓存、can_fuse 的 flex/combo/tiling 防融合规则、define_kernel 缓存键与命名、benchmark_fused_nodes 的 .kernel_perf/spills/clone 开销扣除、candidate_tilings stride 打分。
+- [torch_npu 主线 split_tiling 常规轴选择：split/tiling/no_loop 原则、最低维推导与比较工具](torch_npu_main_inductor_split_tiling_axis_selection.md)：记录主线 codegen/split_tiling.py 的非分组选择面（分组构造族之外的常规选择面，与分组构造卡拼合即为该文件全文）：select_split_axis 的五条原则与停止条件（符号分组提前停、核数覆盖 80% 效率门、三轴上限、动态全规约保 grid==1）、select_tiling_axis 的低维/规约轴覆盖、select_no_loop_axis 的 4KB 阈值与动态轴排除、find_lowest_dimension 的全索引 stride-1 判定、should_outer_reduce_me 的 split_axis 类型改写、convert/less_than/great_than 的 backed_var 代换；附发布版 283 行简化版对照。
+- [torch_npu 主线 NPUSymbolicGroupedAutotuner：逐组调优、运行期组解析与 cpp wrapper 落盘](torch_npu_main_inductor_symbolic_grouped_autotuner.md)：记录主线 runtime/triton_heuristics.py 的分组运行期消费类 NPUSymbolicGroupedAutotuner：候选计划来自 inductor_meta 注入、按 bucketize radix 解析运行期 group_id、代表形状物化 benchmark 参数（含规约 kernel 的整数区间采样）、逐组筛选与三路测量链、_record_grouped_cpp_wrapper_plan 的 variant load_meta 落盘；及其与 cpp_wrapper_npu.py 的 plan 消费锚。
+- [主线 Inductor triton_experimental 测试族：严格模式回退登记、设备门与回归契约](torch_npu_main_inductor_te_backend_regression_tests.md)：固定提交下 te_* 回退族、GENERATE_LIST 面、native_dropout/RNG 设备门、int64 降位与 QR 布局等回归测试的断言契约，与既有实验 Triton 实现面卡配对。
+- [主线 Inductor 模板/precompile 杂项测试族：INDEX_DTYPE 选择、rtree 标量存储回归、BERT 守卫与复数转换](torch_npu_main_inductor_template_misc_tests.md)：固定提交下 test/_inductor 十一个模板/precompile 杂项测试文件的测试侧契约：NPUTritonTemplate 的 _write_index_dtype_define、triton_experimental r-tree 提升后的存储行重写、_npu_rsplit_outer 准入守卫与 dualview 折叠、复数 convert_element_type 与 aclnnIsClose 复数限制。
+- [TorchNPU 显存观测：allocated、reserved 与 npu-smi 的统计范围](torch_npu_memory_counters.md)：区分张量使用、缓存分配器和设备总占用，解释 empty_cache 后 npu-smi 仍有占用，避免把统计差异直接判为泄漏。
+- [TorchNPU 内存调试：禁用缓存、配额与预防式 OOM](torch_npu_memory_debug_and_rejection.md)：区分物理容量不足、进程配额和提前拒绝，说明计数器、自动快照缺失与关闭缓存的开销。
+- [torch_npu Meta注册链：npu_patch_meta安装、avoid_fallback与Inductor分解补丁](torch_npu_meta_registration_patch_chain.md)：记录两版npu_patch_meta安装点、Meta接管动作序列、注册清单与主线QR/SVD布局修复的版本边界。
+- [mspti 活动 Profiler 会话与 trace 元数据清洗补丁：libkineto 注册、采集排空与控制字符防护](torch_npu_mspti_activity_profiler_session_and_metadata_sanitizer.md)：记录主线独有的 libkineto IActivityProfiler 会话（PrivateUse1 注册、活动类型到 msptiKind 映射、缓冲采集、外部关联 flow 链接、停止排空）与 MsptiInterface 符号懒加载层、torch.profiler add_metadata 控制字符清洗 init patch 的完整行为。
+- [MSTX 打点：Host/Device 范围、ID 与 Domain 配对](torch_npu_mstx_ranges.md)：区分瞬时与范围事件，说明 stream 选择、域过滤和异步设备耗时的解读边界。
+- [TorchNPU原生分配器配置：解析状态、白名单与版本差异](torch_npu_native_allocator_config_parsing_and_runtime_allowlists.md)：对照两版完整配置类，区分环境与运行时白名单、状态重置、数值单位及扩展段能力探针顺序，并给出分配器消费面的文档/实现对照证据。
+- [TorchNPU异步Copy与Event的队列选择和参数所有权](torch_npu_native_async_copy_event_and_callback_ownership.md)：解释Copy与record/wait的直调和入队分支、批量元数据捕获、OPAPI V2参数移动及Host事件计数的准确含义。
+- [原生后端属性：支持清单、FFT缓存与NPU生效边界](torch_npu_native_backend_flags.md)：区分后端探测/设置与真实硬件能力，保留FFT计划缓存子项、benchmark_limit版本及TF32无效说明。
+- [原生编译与Export：入口清单和导出对象差异](torch_npu_native_compiler_export_scope.md)：区分compiler控制入口、export/signature辅助类和英文ExportedProgram不支持标记，避免推定完整后端兼容。
+- [原生设备与流迁移：NPU名称、查询和产品差异](torch_npu_native_device_stream_scope.md)：区分设备和流方法的产品范围，并记录950DT已列启动环境、读取时机及能力查询的兼容含义。
+- [TorchNPU原生Event的Host提交、IPC与外部流](torch_npu_native_event_host_submission_and_ipc.md)：区分record出队与设备完成，解释query、block、同步计时、IPC句柄和外部流门控的实际消费者，并给出 Python 构造面与 from_ipc_handle/elapsed_time 绑定契约。
+- [TorchNPU事件延迟销毁与分设备EventPool复用](torch_npu_native_event_reclamation_and_pooling.md)：解释Host记录和等待计数、FIFO回收门控、销毁线程池、IPC集合及按设备事件池的归还和清空边界。
+- [原生扩展与后端登记：构建入口和950DT限制](torch_npu_native_extension_backend_scope.md)：区分Cpp/CUDA扩展对象、load/load_inline产品表及PrivateUse1登记，不凭构建工具名推定NPU Kernel可用。
+- [TorchNPU原生FLOPs公式与Attention计数口径](torch_npu_native_flops_math_and_attention_counting_scope.md)：限定原生GEMM/卷积/Attention计数的数学实现、TND平均长度与Python/MSTX口径差异。
+- [原生FX与符号形状：FP32条目和方法级产品范围](torch_npu_native_fx_constraints.md)：区分Graph/Node/Tracer的类型表、950DT例外、实验性ShapeEnv及SymInt前提，不替代TorchAir Pass合同。
+- [入图与DTensor清单：逐接口交集和产品脚注](torch_npu_native_graph_dtensor_capabilities.md)：逐名比较两份固定清单，区分Eager、编译入图和分片能力，保留产品及版本限制。
+- [原生NPUGraph支持表：推理限定与方法级950DT范围](torch_npu_native_graph_support_scope.md)：区分底层图类、捕获重放方法和图池入口，不用Eager或编译后端能力覆盖原生支持清单。
+- [原生算子注册与Overrides：产品表和接入边界](torch_npu_native_library_overrides.md)：区分Library定义/实现、fallthrough的950DT限制与torch_function分发工具，不用注册入口代替完整编译或反向合同。
+- [原生NPU内存API：MemPool线程、快照与产品范围](torch_npu_native_memory_api_scope.md)：区分内存池与全局分配器、Host和设备统计，保留快照参数接线及导出可能触发Profiler的副作用。
+- [原生Monitor与TensorBoard：事件字段和记录类型边界](torch_npu_native_monitor_tensorboard_scope.md)：说明Monitor/ModuleTracker支持范围与SummaryWriter各参数dtype，避免由记录成功推断图执行和模型精度。
+- [原生ONNX：导出版本、Program子方法与CPU验证](torch_npu_native_onnx_scope.md)：区分旧导出入口、2.9迁移说明、ONNXProgram类与方法支持、差异直方图在CPU执行的边界，以及ONNX Scatter 导出映射 npu_scatter（ACE ArgMaxGrad 命令复用）。
+- [TorchNPU跨卡复制：P2P缓存、双向启用与流依赖](torch_npu_native_p2p_cache_and_cross_device_copy_barriers.md)：对照两版P2P控制器和D2D调用方，区分能力缓存、连接计数、警告标志与IPC事件或同步流屏障。
+- [原生torch.profiler的NPU兼容入口：指南与支持清单冲突](torch_npu_native_profiler_compatibility.md)：保留≥2.12原生NPU示例与events/key_averages明确排除的同提交差异，避免用示例覆盖支持矩阵。
+- [TorchNPU ReleaseQueue的按需线程与参数回收](torch_npu_native_release_queue_worker_lifecycle.md)：对照发布的立即启动与主线aclop触发，解释释放环形缓冲、失败同步回退和主队列退出后的资源阶段。
+- [TorchNPU原生Repository的环形队列、Host排空与错误状态](torch_npu_native_repository_ring_and_host_drain.md)：核对环形缓冲、eventfd生产消费协议、poll循环、GIL与DVM边界，区分Host提交结束和设备运行完成。
+- [原生随机数状态：命名空间与产品清单](torch_npu_native_rng_state_scope.md)：区分torch.random、xpu与mtia状态入口的版本支持，不推定CPU和NPU状态或跨产品随机序列等价。
+- [NPU Sanitizer：TORCH_NPU_SANITIZER 双模式流/算子检查与边界](torch_npu_native_sanitizer_stream_and_kernel_check.md)：记录 stream 模式数据竞争与 record_stream 缺失检测、kernel 模式 ACL 栈回溯的启用门槛、回调链、两版差异与成本，不把无报错当流语义正确的证明。
+- [原生Storage：类型视图、复制与950DT方法边界](torch_npu_native_storage_scope.md)：保留Typed/Untyped及量化Storage的类方法差异，结合NPU复制补丁说明共享存储与dtype角色。
+- [TorchNPU原生流池、身份校验与外部流登记](torch_npu_native_stream_pools_and_external_identity.md)：核对分设备线程本地当前流、池轮转和优先级映射，区分主线外部流登记、句柄反查及unpack校验，并给出 Python 构造面的参数路由与优先级查询拒绝。
+- [TorchNPU原生流的队列选择、排空与设备同步](torch_npu_native_stream_queue_drain_and_synchronization.md)：解释stream取柄的排队副作用、按流和默认Repository的入队选择，以及设备同步、恢复与控核状态边界。
+- [原生符号与编译入口：支持表和后端边界](torch_npu_native_symbolic_compile_scope.md)：核对SymInt/SymFloat子项与sym_ite产品范围，区分compile后端名称和完整动态图执行合同。
+- [Tensor创建与类型转换：方法级支持和产品例外](torch_npu_native_tensor_conversion_scope.md)：核对Tensor标量、元数据、创建及dtype/device转换入口，保留类与子方法的产品差异。
+- [原生Tensor元数据：memory_format与NPU布局边界](torch_npu_native_tensor_layout.md)：区分contiguous/preserve与不支持的channels_last，保留dtype/device/layout及finfo/iinfo/Size支持清单的粒度；并给出 tril/triu、fill_/zero_/fill_diagonal_、repeat 的实现层派发与宿主准备差异，以及工厂/创建 28 名（arange/eye/linspace/logspace.out/range/ones/zeros/stack/roll/flip/view_as_*）的手写 opapi、生成直发与 acl_op 回退差异。
+- [原生测试与基准工具：类型限制和测量范围](torch_npu_native_testing_benchmark_scope.md)：区分assert_close与旧assert_allclose的dtype/产品表，以及Timer和Callgrind的接口支持与NPU耗时证据。
+- [torch创建与默认类型：参数、设备和产品范围](torch_npu_native_torch_creation_scope.md)：区分函数创建入口与Tensor方法，记录asarray完整设备名、dtype版本变化和英文产品排除。
+- [torch 运行工具与模型获取打包：序列化、线程、Hub/Package 支持范围](torch_npu_native_torch_runtime_utilities.md)：汇总 torch.save/load 等运行工具与 torch.hub/model_zoo/package 的原生支持清单，保留产品差异、版本收录边界、序列化安全声明与 GPUDecoder 扩展环境条件。
+- [存量TorchScript：方法、dtype与设备迁移表差异](torch_npu_native_torchscript_legacy_scope.md)：保留固定2.7.1/2.9/2.10文档的旧JIT支持范围，区分ScriptModule子项、弃用提示和Mobile优化入口。
+- [TorchNPU Workspace快照：合成事件、统计口径与时间戳差异](torch_npu_native_workspace_snapshot_accounting_and_timestamps.md)：核对工作区history注册、快照合成、skip_actions与主线时钟转换，避免把保留块、逻辑使用和事件时间混为一谈。
+- [TorchNPU原生Workspace：按流缓存、扩容同步与释放入口](torch_npu_native_workspace_stream_cache_and_deleters.md)：追踪两版工作区分配器与Storage入口，区分按流复用、2MiB扩容、逻辑释放、强制无缓存及清池边界。
+- [NPUGraph对齐trace：依赖可视化与重建时间的边界](torch_npu_npugraph_aligned_trace_interpretation.md)：区分原始dump与派生trace的流合并、时间重建、控制配对和检查范围。
+- [NPUGraph私有池checkpoint：块状态恢复与Storage deleter迁移](torch_npu_npugraph_checkpoint_pool_state_and_storage_deleters.md)：解释Tree新录制前的allocator恢复消费者、原地址segment重建、Storage所有权迁移及校验发生在状态变更之后的边界。
+- [NPUGraph私有池：选池路由、共享引用与延迟回收](torch_npu_npugraph_private_pool_routing_and_lifetime.md)：对照两版原生图捕获链，区分路由撤销、图引用归零、缓存释放与池对象销毁，并说明scope优先级及失败清理边界。
+- [npugraphs Dynamo backend 接线与旧式 ACLGraph 捕获路径](torch_npu_npugraphs_backend_wiring_and_legacy_capture.md)：记录 utils/_graph_tree.py 的 backend 注册、inductor cudagraphify 替换双分支、四类跳过条件与 CPU 例外通道、旧式静态输入捕获实现，主线惰性接线与发布导入期接线的差异，以及 dynamo "npu"/"npugraph_ex" backend 注册、TorchAir 惰性 sys.modules 代理与错误重放。
+- [TorchNPU OOM 内存快照：历史、路径与版本限制](torch_npu_oom_memory_snapshot.md)：区分快照当前状态、历史事件和组件 CSV 的支持条件，保留每流队列触发限制。
+- [OpPlugin框架适配：版本注册、结构化生成与示例缺口](torch_npu_opplugin_adaptation.md)：区分版本化Schema、前反向绑定、NZ路由、Meta和实现交付，保留自定义add示例的梯度与Schema差异。
+- [TorchNPU输出准备的重叠检查、尺寸调整与格式回写](torch_npu_out_preparation_resize_and_overlap.md)：沿CheckOut和check_tensor说明out检查次序、is_same读写识别、两版resize差异与Sigmoid反向的格式临时及copy_回写。
+- [Inductor 并行调度消费者：分组回退、事件汇合与缓冲作用域](torch_npu_parallel_scheduler_consumer_constraints.md)：核对固定主线的 Python wrapper 门控、CV 分组阈值、环境字符串缺陷及完整的主从流事件和缓冲生成路径。
+- [Host锁页分配与注册：首次选路、能力回退和注销](torch_npu_pinned_host_registration_and_release.md)：追踪Host allocator注册及pin入口，说明pinned_mem_register的实际能力门控、按块注销、脚本侧npurt锁页链与裸运行时绑定边界。
+- [TorchNPU pinned memory：扩展段、注册与缓存阈值](torch_npu_pinned_memory_options.md)：区分 Host pinned memory 与 Device 分配器，说明后台 Event、host register 和两个大块阈值的版本及互斥。
+- [NPUPluggableAllocator：初始化前切换、回调 ABI 与能力边界](torch_npu_pluggable_allocator_lifecycle.md)：限定 A2/A3 的分配器接入，按真实绑定修正 free 回调参数数目，不推定 IPC 和图池自动兼容。
+- [TorchNPU进程线程归因：名称、触发点与计数边界](torch_npu_process_thread_attribution.md)：按运行阶段辨认框架、Runtime、通信和编译工作线程，保留环境依赖及文档固定数量的局限。
+- [TorchNPU Profiler的进程池、解析计划与完成标志](torch_npu_profiler_analysis_pool_parser_plan_and_done_marker.md)：记录解析池版本差异、完整parser配置和清理/完成标志的真实边界。
+- [TorchNPU Profiler的Attention、GEMM FLOPs估算与吞吐解释](torch_npu_profiler_attention_gemm_flops_estimates_and_throughput.md)：说明GEMM、GMM、Attention和BlockSparse理论计数与吞吐/MFU解释的边界。
+- [TorchNPU Profiler的CANN导出、分析、能力判定与产物等待](torch_npu_profiler_cann_export_analyze_and_timeline_readiness.md)：固定双版本CANN导出、分析返回码、环境检查、时间线轮询，以及msprof能力探测缓存与Feature字符串版本比较的实际边界。
+- [TorchNPU Profiler：采集活动、步数调度与离线解析](torch_npu_profiler_capture_schedule.md)：说明 CPU/NPU 活动、schedule 与 step 配对、调试开销和解析方式，区分快照与性能采集。
+- [Profiler 子线程采集：回调注册、设备与结束顺序](torch_npu_profiler_child_threads.md)：说明主 Profiler 不自动感知用户线程，要求每线程配对注册与独立采集选项。
+- [TorchNPU Profiler的配置装载、时钟校准与保留状态](torch_npu_profiler_configuration_clock_calibration_and_state.md)：区分计数转换、时钟来源、配置残留和Bean候选的双版本差异。
+- [TorchNPU Profiler 的 C++ 采集管线：绑定面、配置位图与数据接收器](torch_npu_profiler_cpp_pipeline.md)：固定 _profiler 绑定入口、NPU 观察者回调、ProfilerMgr 的 datatype_config 位图拼装、warmup/子线程/停止语义与三路数据接收器，区分采集侧 FeatureMgr 与解析侧 FeatureManager。
+- [Profiler指标CSV投影：字段顺序、共享表头与版本边界](torch_npu_profiler_csv_bean_projection_and_metric_boundaries.md)：说明各类Profiler统计Bean和IntegrateParser怎样透传CSV，区分字段投影、单位标签与尚未计算的性能指标。
+- [Profiler数据库装配：输入迁移、落库事务与部分失败](torch_npu_profiler_database_assembly_and_failure_boundaries.md)：梳理双版本DbParser调度、基础元数据和GC落表流程，并整合SQLite连接句柄、逐批提交、空结果歧义与句柄生命周期；区分解析成功、缺表、单项失败及文件迁移的实际边界。
+- [Profiler 数据库：框架关联、通信分析与时间单位](torch_npu_profiler_database_relations.md)：说明 STRING_IDS、PYTORCH_API、CONNECTION_IDS 和 analysis.db 的关键职责与缺失数据边界。
+- [Profiler数据库归因：框架连接、迭代窗口与通信矩阵](torch_npu_profiler_database_trace_and_communication_attribution.md)：解释两版本Host调用到任务的连接ID和线程筛选、step区间与通信聚合，避免名称/时间相近配对或误读汇总带宽。
+- [TorchNPU Profiler的文件格式、大小边界与部分写入](torch_npu_profiler_file_formats_limits_and_partial_writes.md)：记录读写格式、大小限制、二进制尾部和归档委托边界。
+- [TorchNPU Profiler的FLOPs Hook、注册与观测作用域](torch_npu_profiler_flops_hooks_registry_and_measurement_scope.md)：限定Python目标/既有别名覆盖、注册覆盖、重入和MSTX范围的诊断含义。
+- [Profiler框架记录解码：二进制布局、时钟校准与不完整数据](torch_npu_profiler_framework_bean_wire_formats.md)：核对Torch算子、队列标记、GC、Python追踪和参数记录的固定布局、关联字段与TLV/Binary解码边界。
+- [Profiler框架输入与关联：文件选择、队列、API和step边界](torch_npu_profiler_framework_trace_input_and_join_boundaries.md)：核对固定版本Fwk/CANN/Relation完整本地解析，解释文件选择、flow覆盖、前反向连接、MSTX分类及step首末桶边界。
+- [Profiler Host 诊断：GC 阈值、系统采样与缺失事件](torch_npu_profiler_gc_and_host_system.md)：按 GC、进程 CPU/内存、系统网络及 OSRT 分开采样，记录依赖和开关被回退的条件。
+- [Profiler 互连数据库：NIC/RoCE、HCCS 与 PCIe 采样口径](torch_npu_profiler_interconnect_database.md)：区分设备端口采样与 HCCL 算子统计，解释速率、累计计数、吞吐及 PCIe 时延单位。
+- [Profiler文本CSV：Kernel列选择、字符串归步与迭代输出边界](torch_npu_profiler_kernel_csv_and_text_step_boundaries.md)：核对两版Kernel CSV表头选择、字符串时间归步及Text step格式/哨兵/输出门控，避免把成功状态视作完整指标。
+- [Profiler 测量开销：启动步、解析步与共享存储落盘](torch_npu_profiler_measurement_overhead.md)：区分业务性能、观测初始化和落盘/解析成本，大集群先检查共享存储竞争与回调阻塞。
+- [Profiler 内存时间线与元数据：采集前提和统计归因](torch_npu_profiler_memory_and_metadata.md)：说明 memory timeline 开关、事件分类、设备选择和预置/动态元数据的不同时间点。
+- [Profiler内存Bean：原始字节、CSV单位与缺失值边界](torch_npu_profiler_memory_bean_units_and_defaults.md)：区分MemoryUse与GE/NPU内存记录的字节、KB、MB、时间单位以及None、零值、设备标签和转换错误。
+- [Profiler 内存数据库：分配、释放与流内归还时间](torch_npu_profiler_memory_database.md)：区分 MEMORY_RECORD 快照和 OP_MEMORY 生命周期，按组件、设备、流及字节数分析。
+- [Profiler内存数据流：schema匹配、可变输入与版本边界](torch_npu_profiler_memory_schema_and_dataflow_versions.md)：解释内存分析如何用已采参数匹配运行环境schema、聚合可变性并建立Tensor版本，区分未知、释放和真实分配。
+- [Profiler分类内存时间线：版本迁移、字节累计与导出差异](torch_npu_profiler_memory_timeline_event_accounting.md)：区分raw纳秒有符号事件与汇总微秒类别字节，解释PREEXISTING、版本迁移、前导零列和HTML独立分配器峰值。
+- [Profiler 指标选择：Level、AI Core PMU、L2 与算子属性](torch_npu_profiler_metrics_selection.md)：明确 Level 与指标的依赖，记录主线默认值差异，以及 Text/Db 和 op_attr 的能力检测。
+- [Profiler内存生命周期：指针配对、缺失释放与算子归属](torch_npu_profiler_op_memory_pairing_and_attribution.md)：追踪内存事件到operator_memory和OP_MEMORY的配组及队列归因，区分未知释放、统计槽位、设备/进程边界和单位。
+- [Profiler算子耗时解析：Host扣减、设备累加与队列关联](torch_npu_profiler_operator_time_attribution.md)：核对operator_details.csv的Self/Total算式、HostToDevice与队列映射，区分缺失关联、跨流重叠及两版线程匹配。
+- [Profiler组件内存合并：PTA、GE与分配释放配对](torch_npu_profiler_pta_ge_memory_merge.md)：补齐双版本MemoryDbParser的GE事件类型、按算子地址设备配对、未知释放及落表槽位，并保留PTA与GE的时序合并口径。
+- [Profiler事件重建：Python栈重放、参数解析与跨线程父子关系](torch_npu_profiler_python_replay_and_event_tree.md)：核对Python tracer重放和EventTree完整本地定义，区分缺失return、线程作用域、参数字符串错误与内存身份关联。
+- [Profiler迭代聚合：Text累加、Db区间并集与缺失边界](torch_npu_profiler_step_interval_aggregation.md)：补齐双版本完整DB聚合入口、区间对象与保存分支，保留归步、重叠/空闲/接收统计、对象共享及缺失数据边界。
+- [TorchNPU Profiler的任务依赖、IPC与失败状态](torch_npu_profiler_task_dependencies_ipc_and_failure_states.md)：区分任务依赖、三种执行模式、IPC输出和调度器失败收尾。
+- [Profiler内存身份关联：指针复用、分配周期与Tensor标签](torch_npu_profiler_tensor_storage_identity.md)：解释EventTree如何从指针/设备和释放事件生成allocation_id及tensor_id，区分TensorImpl、共享存储、Unknown与跨窗口身份。
+- [Profiler文本通信分析：分步、汇总比率与矩阵样本](torch_npu_profiler_text_communication_totals_and_matrix.md)：补齐文本通信JSON的输入、P2P名称分组、加和比率与未写回带宽，区分矩阵样本排序和真实吞吐。
+- [Profiler文本内存导出：共享状态、组件对象与版本边界](torch_npu_profiler_text_memory_export_state_and_component_boundaries.md)：补齐MemoryPrepare/View全链中的列表共享、祖先名前缀差异、非GE对象写CSV边界及空数据/部分输出，复用已有配组和总量算法。
+- [Profiler trace与折叠栈：flow筛选、追加协议和耗时单位](torch_npu_profiler_trace_append_and_collapsed_stack.md)：核对trace裁剪和待补尾JSON追加协议、flow缺失及CPU/NPU折叠栈的Self微秒统计与产物边界。
+- [Profiler trace编码与算子树：时间单位、flow身份和关联边界](torch_npu_profiler_trace_tree_and_event_encoding.md)：解释trace事件的微秒字段、三类flow身份、进程编码与算子树构造，避免把显示连线当作完整依赖或设备同步。
+- [TorchNPU26.1版本说明：能力变更、CANN门槛和兼容边界](torch_npu_release_26_1_constraints.md)：将同提交26.1发布说明与主线配套分开，记录接口变更分组、950DT限制及GDN异步资源修复的证据范围。
+- [torch_npu 发布版扁平 Inductor autotune 接线（npu_triton_heuristics 关键决策链）](torch_npu_release_flat_inductor_autotune_wiring.md)：记录发布 pin _inductor 扁平布局下 autotune 的安装点（_load_cached_autotuning/should_use_persistent_reduction/aggresive benchmark 替换）、cached_autotune 决策、生成代码 @npu_triton_heuristics 装饰器入口、triton_config_npu_index 与 codegen 版 TileGenerator，及与主线重构树的文件对照与覆盖边界。
+- [torch_npu 发布版 NPUCachingAutotuner 类体：Grid/launcher 生成、fx 调试回退与 run 决策树](torch_npu_release_flat_inductor_autotuner_class_body.md)：记录发布 pin npu_triton_heuristics.py 的 NPUCachingAutotuner 类体（全文 1397 逻辑行）：GridNpu 家族按 split_axis/split_blocks 算 grid、exec 生成 Python launcher、_make_launchers 全败 RuntimeError、save_npu_kernel 的 npubin 入 CudaKernelParamCache、bench 的 spill 罚与 rep=1、fx 图 dump/fallback_to_fx/check_accuracy/debug_kernel_in_run 四条调试链、maybe_run_debug 互斥优先级与 run() 决策树（launchers[0] 空表前置次序）；附 28 行 npu_triton_helpers shim 与主线 runtime 版对照（aclgraph 冲突抛错、check_accuracy 外移、force_fallback 配置整体缺席）。
+- [torch_npu 发布版 Inductor 分解注册的三处表面与主线公式级差异](torch_npu_release_flat_inductor_decomposition_surfaces.md)：记录发布 pin 分解注册的三个表面（后端分支互斥、表面可叠加）：default 分支 decomposition.py（erfc 的 1-exp 公式、native_dropout npu 路由）、mlir/dvm 插件 npu_decomp.py 模块级副作用（排除表、batch_norm py_impl、恒 tanh 的 gelu）、dvm/decomp.py patch_decomp，及主线整合为 per-backend registrar 后的 erfc/rms dgamma/gelu 近似族差异。
+- [torch_npu 发布版扁平 Inductor 设备算子覆写链（NewNPUDeviceOpOverrides 代码生成面）](torch_npu_release_flat_inductor_device_op_overrides.md)：记录发布 pin npu_device.py 两级注册链（torch_npu 导入基类→_inductor default 分支 New 类）与 12 个覆写方法的代码生成事实面：Python 原始流走仓内 Python 函数、AOTI device guard 未实现、kernel_driver 的 rt* C API 二进制装载与 stub 计数、CUDA 命名复用；对照主线 aclrt* 装载、NoWait 流与全后端无条件注册。
+- [torch_npu 发布版 Inductor fusion attention 图模式注册链（release-only register_fa_pass）](torch_npu_release_flat_inductor_fusion_attention_pattern.md)：记录发布 pin 扁平 npu_fusion_attention_graph.py 中 register_fa_pass 的 BNSD fp32 模式注册全链（joint_fwd_bwd/fwd_only、dropout 部分化、scale 流动）、与主线迁移版共享前缀的等价性验证，及主线删除该注册并改走 fav3 分区 pass 的负证据。
+- [torch_npu 发布版 Inductor lowering 白名单回退与 overload 覆写机制（lowering_op_list 的实际作用面）](torch_npu_release_flat_inductor_lowering_whitelist_fallback.md)：记录发布 pin 扁平 lowering.py 的"白名单外全部回退"机制：GENERATE_LIST/foreach 豁免/LOWERING_OVERLOAD_OP 先删后注册、make_reduction 的 kept_idx/reduced_idx 簿记及 kernel_analysis 消费、embedding 参数硬编码坑，与主线反转为显式 391 项 FALLBACK_LIST + allfallback 逃生门的对照。
+- [torch_npu 发布版 TileGenerator 裁剪决策链（descend_* 本体与两 pin 预算演进）](torch_npu_release_flat_inductor_tile_generator_descents.md)：记录发布 pin codegen/tile_generator.py 253 行全文本：字面 1024//dtype_bytes 停止预算、64KiB 候选上限、split 轴不 32 字节对齐、halve/quarter-step/last-split 三种下降策略与 persistent r 轴冻结、low_dim 20% 平衡护栏；对照主线 runtime 版 574 行的 ub_size/input_ptr_num/tiny_kernel/program_threshold 设备推导预算、递归多轴下降、multibuffer 与 SIMT num_warps 扫描、UB 溢出有界重试。
+- [TorchNPU 26.0.0发布版Inductor codegen包补丁面：设备映射、编译cflags与sizevars简化](torch_npu_release_inductor_codegen_patch_surface.md)：记录发布pin（f3ecfe4a）torch_npu/_inductor/codegen包导入时安装的monkey patch面：Reduction.num_splits与LoopBody索引改写、TritonScheduling/SIMDKernel接线、SizeVarAllocator.simplify简化、cpp_utils设备到kPrivateUse1映射与cpp_builder优化cflags替换，及与主线空壳/背移实现的版本分界。
+- [torch_npu 发布版 cpp wrapper 旧一代实现：延迟 Triton 调用、C2C 控制地址与 rtKernelLaunch（cpp_wrapper.py 863 行全文）](torch_npu_release_inductor_cpp_wrapper_legacy_codegen.md)：记录发布 pin 注册的 codegen/cpp_wrapper.py（863 行全文）：无基类 DeferredNpuTritonCallWrapper 的模板包装/等值 1 剔除/懒装载、CppWrapperNpu(CppWrapperCpu) 的 AOTI 头改写与 npu_block 对齐检查、generate_args_decl 的 int/float 变量槽、每发射 rtGetC2cCtrlAddr 与定长 NULL 前导 + rtKernelLaunch ABI——与主线 cpp_wrapper_npu.py 两代同名类的负向 rg 代差锚。
+- [torch_npu 发布版 SplitTiling 简化实现：split/tiling 选择器函数体、possible_need_permute 与最低维推导](torch_npu_release_inductor_split_tiling_functions.md)：记录发布 pin 独有的 codegen/split_tiling.py（283 行全文）：select_split_axis 的核数/三轴停止条件与两级回退、select_tiling_axis 的多规约停止与 80% 覆盖/permute/max_transpose_dims=2 门槛、should_outer_reduce_me 的 32768 高阶规约轴改写、find_lowest_dimension 的输入 LOAD 索引（含 STORE）收集与 stride-1 系数判定、convert 族用 var_to_val 代换——与主线版的代换键与消费时点差异。
+- [发布快照图接口：compile、FX、JIT、ONNX与export](torch_npu_release_native_graph_contracts.md)：保留torch.compile与torch.compiler不同状态，区分图工具可用、设备编译和模型导出。
+- [发布快照运行工具：CUDA映射、AMP、Storage与后端](torch_npu_release_native_runtime_contracts.md)：限定CUDA到NPU映射短名单、custom_fwd空白及存储/后端查询与执行的不同证据。
+- [发布快照原生Tensor与torch清单：dtype、形状和空白项](torch_npu_release_native_tensor_contracts.md)：保留发布API总表的四类型泛化限制及where、topk、sum差异，不套用主线逐参数支持表。
+- [发布快照工具清单：Profiler、基准、数据与打包](torch_npu_release_native_tools_contracts.md)：区分Profiler对象与方法、Callgrind统计与Timer及工具存在和模型性能验收。
+- [RNG状态保存与恢复：CPU快照、延迟设置和graphsafe共享](torch_npu_rng_snapshot_lazy_restore_and_graphsafe_aliases.md)：区分Host状态快照、初始化前延迟clone、捕获限制及graphsafe状态指针共享。
+- [Inductor 原生 C++ 启动与运行时基座：static launcher 装载发射、fast launch 计划、cxx20 builder 改写与 AOTI model_base](torch_npu_static_launcher_native_runtime_cpp.md)：记录主线独有的 static_launcher C++ 运行时（ABI 装包、二进制装载、双发射体、故意不卸载）、_FastNpuLauncher vectorcall、python_wrapper_fast_launch 计划体与发射器、triton_compat 的 C++17→C++20 builder 改写链及 aoti_runtime model_base.h 的 USE_NPU 条件基座。
+- [TorchNPU TaskQueue：下发级别与每流队列](torch_npu_taskqueue_delivery.md)：说明三级下发、独立 workspace 池、aclgraph 不兼容及每流队列的实验限制。
+- [TaskQueue 定位：异步栈偏移、队列清空与 Device 同步](torch_npu_taskqueue_error_and_flush.md)：区分 Host 下发完成和设备执行完成，说明 stream 查询隐式清空及 Event 不清空时的阻塞。
+- [TaskQueue模式执行：环境缓存、动态覆盖与宏选择](torch_npu_taskqueue_mode_execution.md)：追踪执行宏到OptionsManager的缓存链，区分环境初始化、主线动态模式和发布调用点缓存，避免把const差异当环境热更新；并给出EXEC宏内PTA执行计划缓存（hit_cache/hit_cache_v2）的准入、键构成与命中路径。
+- [TorchNPU类型准备：Iterator元数据与Sigmoid反向Cast消费者](torch_npu_tensor_iterator_type_inference_and_cast_consumers.md)：沿原生Sigmoid反向追踪公共dtype推断、out参与规则与OpCommand显式转换，区分a.sizes形状提示、真实申请和布局临时量。
+- [TorchNPU TorchBench基准：模式选择、计时窗口与汇总缺口](torch_npu_torchbench_measurement.md)：对照主线与发布版基准说明及局部实现，区分预置后端、同步时延、编译统计和CSV/Excel摘要的证据范围。
+- [transfer_to_npu 迁移 shim：patch 面、参数改写语义与边界](torch_npu_transfer_to_npu_shim_mechanism.md)：记录白名单式 CUDA→NPU 补丁的启用门槛、设备参数改写规则、第三方库包装与两版差异，不把白名单外接口当已迁移。
+- [Triton target 导入补丁：一次性 finder 与 wrapper 初始化消费链](torch_npu_triton_backend_target_import_patch.md)：解释主线 torch_npu 如何用一次性 meta-path finder 拦截 triton.backends.ascend.runtime.utils 的导入并在加载后注入 target，记录安装门槛、wrapper 构造消费点与发布 pin 缺失的版本边界。
+- [TorchAir 精度与性能定界：分层对照和有效观测](torchair_accuracy_and_performance_triage.md)：从 Eager、FX、GE 与捕获执行逐层定位，区分编译成本、稳态开销、融合和数据搬运。
+- [TorchAir GE 支持度与编译统计：导出结果的解释](torchair_converter_and_compile_statistics.md)：区分FX摘要的源码启发式与Fake计数、GE编译统计和实际执行，保留默认Eager回退及融合匹配/生效边界。
+- [TorchAir 数据 Dump：GE、FX Eager 与捕获图的配置差异](torchair_data_dump_modes.md)：区分实际 Tensor 与图结构导出，说明 JSON 配置优先级、范围并集、Watcher 和 original 模式。
+- [FX Eager数据Dump：采集覆盖、dtype转换与额外执行](torchair_fx_eager_dump_execution_and_coverage.md)：梳理TorchAir FX dumper入口与落盘消费者，说明Converter门控、位置参数覆盖、filter两次调用及部分文件不能证明完整采集。
+- [TorchAir 图异常定界：FX/GE 图导出与 run_eagerly](torchair_graph_dump_and_run_eagerly.md)：用图结构与 run_eagerly 分离图转换和执行异常，明确 GE 调试配置的生效范围以及导图产物含义。
+- [TorchAir 多流死锁检测：AIV 资源冲突与诊断边界](torchair_multistream_deadlock_check.md)：说明主线 GE/捕获后端的检测入口、动态限制和风险报告，避免视为自动修复。

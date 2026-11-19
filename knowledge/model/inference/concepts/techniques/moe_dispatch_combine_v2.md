@@ -22,7 +22,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/hccl_utils.py
   role: implementation
 created_at: '2026-05-31T00:00:00Z'
-updated_at: '2026-10-29T14:57:06Z'
+updated_at: '2026-11-09T02:16:45Z'
 platforms:
 - a2
 - a3
@@ -67,3 +67,5 @@ HCCL_BUFFSIZE不足时按真实提示调整并保持各rank一致；AIV是否有
 - [modeling_longcat_flash_lite.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/longcat_flash_lite/models/modeling_longcat_flash_lite.py)（implementation）
 - [modeling_deepseek.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/models/deepseek_v4/models/modeling_deepseek.py)（implementation）
 - [hccl_utils.py](../../../../../cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/utils/hccl_utils.py)（implementation）
+
+- [26.0 发布组合的 Dispatch/Combine v2 契约](../../guides/optimization/moe_dispatch_combine_v2_release_contract.md)

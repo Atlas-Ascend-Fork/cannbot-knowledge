@@ -1,7 +1,7 @@
 ---
 type: Optimization
 title: 图模式多流跨流同步：GE 单流冲突、控制边与显式 Event
-description: 图模式多流并行的跨流同步：GE 控制边、wait_tensor 与 npugraph_ex Stream/Event、record/wait、record_stream；核对旧 aclgraph tagged-event 替代路径、enable_single_stream 单流冲突、动态开关、enable_inner_parallel 与控核版本边界。
+description: "图模式多流并行的跨流同步：GE 控制边、wait_tensor 与 npugraph_ex Stream/Event、record/wait、record_stream；核对旧 aclgraph tagged-event 替代路径、enable_single_stream 单流冲突、动态开关、enable_inner_parallel 与控核版本边界。另说明npugraph_ex控核与CANN<=8.5.0静态Kernel编译的优先级。"
 tags:
 - task.debugging
 - topic.mixture_of_experts
@@ -26,7 +26,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/api-routing.md
   role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-11-10T02:01:56Z'
+updated_at: "2026-11-14T09:03:32Z"
 platforms:
 - agnostic
 ---
@@ -103,6 +103,12 @@ op_aicore_num 范围为 `[1,max_aicore]`，有独立 Vector Core 时 op_vectorco
 - [LongCat当前案例](../cases/longcat_a3_afd_stream_pairing.md)
 - [多流生命周期故障](../../runbooks/runtime/multistream_cross_stream_tensor_lifetime_clone.md)
 
+
+## 上游契约与版本核对
+
+本卡保留固定 Recipes 的模型调用与决策上下文。以下通用接口说明分别绑定其上游快照；阅读时核对运行版本，不能由模型调用证据推导主线与发布组合兼容。
+
+- [图内多流的上游表达合同](../../guides/optimization/torchair/graph_multistream_dependencies.md)
 
 ## Evidence
 

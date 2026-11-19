@@ -20,7 +20,7 @@ sources:
 - resource: https://www.hiascend.com/document/detail/zh/Pytorch/730/modthirdparty/torchairuseguide/torchair_00031.html
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-11-10T01:23:11Z'
+updated_at: "2026-11-14T08:44:18Z"
 platforms:
 - a3
 aliases:
@@ -54,6 +54,13 @@ R1等来源性能包含量化、并行和多项优化，不归因于TorchAir单�
 - [跨流同步](../../optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api.md)
 - [缓存规则](../../optimizations/rules/torchair_cache_compile_persisted_graph.md)
 
+
+## 上游契约与版本核对
+
+本卡保留固定 Recipes 的模型调用与决策上下文。以下通用接口说明分别绑定其上游快照；阅读时核对运行版本，不能由模型调用证据推导主线与发布组合兼容。
+
+- [图后端的通用职责与限制](torchair_backend_boundaries.md)
+- [软件栈版本与主线差异](ascend_software_stack_baselines.md)
 
 ## Evidence
 

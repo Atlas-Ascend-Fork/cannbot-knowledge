@@ -6,4 +6,4 @@
 
 - [术语表](glossaries/index.md)：共 2 张知识卡，覆盖 AscendC 存储/执行单元与 SIMT/RegBase 术语。
 
-- [工具链](toolchains/index.md)：共 1 张知识卡，分布在 1 个子目录（concepts）。
+- [工具链](toolchains/index.md)：架构编译目标、构建上下文、Ascend 软件栈基线及 TorchNPU Host 与内存配置。

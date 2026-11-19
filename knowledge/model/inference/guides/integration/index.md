@@ -213,3 +213,5 @@
 - [SGLang 内核库集成](sgl_kernel_npu/index.md)：共 11 张知识卡（如 DeepEP A2：单机与跨机通信的缓冲、量化与人工验收、DeepEP Buffer：通信组绑定、策略选择与事件兼容边界、SGLang Batch Invariant：外部算子包安装与懒加载依赖 等）。
 - [SGLang 昇腾注意力、图执行与扩散适配](sglang_ascend/index.md)：共 68 张知识卡（如 SGLang Ascend 注意力：GQA、MLA、DSA与阶段路由、SGLang Ascend DCP页交错与稀疏索引本地化、SGLang Ascend MLA DCP：局部attention与自然对数LSE合并 等）。
 - [SGLang 昇腾运行时、缓存与通信集成](sglang_ascend_runtime/index.md)：共 40 张知识卡（如 SGLang ACL Host回调辅助线程的订阅与退出边界、SGLang NPU Mamba状态布局与投机卷积窗口预算、SGLang Mamba与卷积状态的NPU HiCache搬运分支 等）。
+
+- [TorchAir模型开发指南](torchair/index.md)：围绕已有 Eager 算子明确 npugraph_ex 与 GE 的图适配步骤和验收证据，避免把可执行实现误当作入图完成。

@@ -20,7 +20,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/ops/ascendc/docs/custom-npu_gather_selection_kv_cache.md
   role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-10-29T14:47:07Z'
+updated_at: '2026-11-09T02:59:50Z'
 platforms:
 - a3
 ---
@@ -93,6 +93,10 @@ self.default_topk_indices # [batchseq, index_topk]
 # int8：full_k_rope 指向 offload_cache.empty_rope；后续 SFA 走 npu_kv_quant_sparse_flash_attention
 # 非 int8：full_k_rope 使用 k_pe；后续 k_pe = selection_k_rope.unsqueeze(2)
 ```
+
+## 配套接口契约
+
+[独立接口卡](../../apis/recipes_custom_ops/npu_gather_selection_kv_cache.md)集中说明四个 mutation 输入、普通与 functional 返回结构、shape/dtype 和分块限制；本卡继续负责模型中的 Offload 与跨步复用场景。
 
 ## Evidence
 

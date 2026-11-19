@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: 推理精度分诊：packed 专家权重、zero expert、容差与请求状态
-description: MoE 输出接近零时检查 packed checkpoint 专家权重加载；用 BF16 相对误差与算子容差、scale、请求状态和首差异证据定位精度问题。
+description: "MoE 输出接近零时检查 packed checkpoint 专家权重加载；用 BF16 相对误差与算子容差、scale、请求状态和首差异证据定位精度问题。temperature=0或固定种子不单独保证底层浮点归约一致。"
 tags:
 - task.debugging
 - topic.precision
@@ -19,7 +19,7 @@ sources:
 - resource: https://www.hiascend.com/document/detail/zh/mindstudio/80RC1/practicalcases/optimizationmodelinference/toolsample4_008.html
   role: supporting
 created_at: '2026-11-09T09:23:50Z'
-updated_at: '2026-11-10T01:23:11Z'
+updated_at: "2026-11-14T09:03:32Z"
 platforms:
 - agnostic
 aliases:
@@ -29,6 +29,8 @@ aliases:
 - CLOSE_MATMUL_K_SHIFT
 - 温度为零仍不确定
 - 调试 dump 改变现象
+- temperature=0
+
 ---
 
 # 推理精度分诊：packed 专家权重、zero expert、容差与请求状态

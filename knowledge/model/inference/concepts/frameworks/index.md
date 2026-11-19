@@ -23,3 +23,8 @@
 - [vLLM 多模态输入归一化（Multimodal Input Norm）：参数工厂与后端分派](vllm_multimodal_input_norm_contract.md)：解释 FusedMMInputNorm 的 rescale/mean/std 折叠、processor 配置回退、容差恒等判断、视觉 dtype 转换及 CUDA/XPU/OOT 分派，区分框架数学合同与具体后端执行和性能证据。
 
 - [SGLang 昇腾运行时平台概念](sglang_ascend_runtime/index.md)：说明NPUSRTPlatform的Ascend默认后端、Triton/图能力声明、固定零设备capability和峰值显存口径，区分软件接口与硬件验收。
+
+- [Ascend 软件栈版本基线：产品版本、安装包与源码提交](ascend_software_stack_baselines.md)：区分 TorchNPU 产品版本和安装包版本，固定 26.0.0／PyTorch 2.8 的文档配套与子模块来源，保留主线配套冲突及未验证项。
+- [NPUGraph 捕获重放：静态地址、输入拷贝与安全子图](npugraph_replay_address_contract.md)：说明底层 NPUGraph 重放与 torch.compile 后端的区别，固定地址输入更新和安全子图捕获的职责。
+- [TorchNPU框架层次：设备适配、执行路径与扩展依赖](torch_npu_framework_layers.md)：区分PyTorch分发、TorchNPU设备资源、CANN执行和外部扩展，限定架构图及生态能力概述的含义。
+- [TorchAir 两类图后端：GE 转换与 npugraph_ex 捕获边界](torchair_backend_boundaries.md)：按固定主线区分 GE Converter、npugraph_ex 捕获、Meta 与函数化职责，以及单进程单设备和旧 reduce-overhead 配置边界。

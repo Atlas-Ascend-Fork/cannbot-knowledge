@@ -1,0 +1,51 @@
+---
+type: Guide
+title: TorchNPU发布版FSDP2：反向收尾与AllGather输入拷贝
+description: 区分FSDP2基础NPU兼容补丁与增强缓存，说明反向等待、foreach输入准备和分区视图。
+tags:
+- task.optimization
+- topic.parallelism
+status: draft
+sources:
+- resource: https://gitcode.com/Ascend/pytorch/blob/f3ecfe4a7ef7395754da7ca2e35661a7132b519b/torch_npu/distributed/fsdp/_add_fsdp_patch.py
+  role: implementation
+- resource: https://gitcode.com/Ascend/pytorch/blob/f3ecfe4a7ef7395754da7ca2e35661a7132b519b/torch_npu/__init__.py
+  role: implementation
+created_at: '2026-11-11T07:38:29Z'
+updated_at: '2026-11-14T01:56:26Z'
+platforms: []
+---
+
+# TorchNPU发布版FSDP2：反向收尾与AllGather输入拷贝
+
+## 固定版本与基本补丁入口
+
+依据PyTorch仓发布快照`f3ecfe4a7ef7395754da7ca2e35661a7132b519b`的FSDP基础patch关键函数，以及torch_npu.__init__中的导入与_apply_class_patches调用点。该快照配套ascend_26_0_pt28的版本证据独立，不将这些私有实现回推主线或全部硬件。没有导入、安装patch、初始化进程组、运行训练/拷贝或设备实验，平台未知，保持draft。
+
+_apply_fsdp_patch直接替换FSDPParamGroup.finalize_backward、_fsdp_collectives._get_param_all_gather_inputs，以及torch.ops.fsdp.all_gather_copy_in和其default指向。所读bootstrap函数包含该调用，不在本文核对整个导入与运行时初始化。它与[增强缓存/重计算入口](torch_npu_fsdp_enhance_memory_and_recompute_hooks.md)不同：这个基础函数不设置_FSDP_ENHANCE_PATCH_APPLIED，也不等于_use_mem_cache已开启；不要把基本NPU兼容与可选缓存命中混为一个开关。
+
+## 收尾同时涉及Host同步和流依赖
+
+_patched_finalize_backward先调用_wait_for_post_backward；逐参数对非None的grad_offload_event执行synchronize后清空该引用。若仍有_all_gather_result，先让当前NPU流等待其中非None的all_gather_event；all_gather_work实际为distributed_c10d.Work时才调用work.wait，再清_all_gather_result。最后清_post_forward_indices。
+
+event.synchronize、current_stream.wait_event与Work.wait是三种不同调用点；不能将流上的等待指令统写成这里已Host同步所有设备工作，也不能用普通非Work占位推导一定调用work.wait。这个收尾处理了未配对unshard残留的本地路径，没有全局try/finally：较早等待抛异常时，后续清理可能未执行；本文未运行这些条件故障或验证全部跨流生命周期。
+
+## 输入准备的foreach快路径
+
+compiled_autograd_enabled成立时直接返回各param.all_gather_inputs，不在本helper走后续foreach准备。正常路径只有param_dtype非None、未offload_to_cpu，且_sharded_local_tensor没有fsdp_pre_all_gather属性的参数才进入快路径；这里检查属性是否存在，不调用它证明其值或类型。其它参数逐个取原all_gather_inputs。
+
+快路径根据ShardedState.SHARDED选择_sharded_param_data，否则取_sharded_post_forward_param_data，收集numel。在首个入选参数的device/param_dtype上一次分配总numel的flat Tensor，再按各份numel split；拷贝后的各split按原参数位置包成单元素列表。它试图减少逐参数准备/转换的Host开销，但没有在本组测出收益，也没有本地逐项验证所有输入device/dtype与首项一致。
+
+只有首个split与首个源Tensor的device相等才显式用torch._foreach_copy_(...,non_blocking=True)，否则不传该关键字。判断不是遍历每一对Tensor，更不等于数据在返回时已经完成；不能为追求异步而丢失源或目标存储寿命/消费依赖。compiled-autograd分支绕过这个准备循环，不代表别处的copy-in、通信或缓存全部跳过。
+
+## AllGather打包输入与大输出共享Storage
+
+_patched_all_gather_copy_in先由group_name解析组，向_patched_allocate_memory申请all_gather_input_numel×world_size元素；在该大输出中narrow出当前rank的区间，再按inp_split_sizes划成拷贝目的列表。在torch.no_grad下执行foreach_copy，是否显式non_blocking仍只比较首对device；没有在这里完成AllGather通信。
+
+返回(all_gather_input, all_gather_output)：前者是后者当前rank分区的view，不能把两返回当成独立数据缓冲或因返回两对象就重复释放底层存储。这里依赖有效rank/world_size/split与非空列表，没有为全部形状、长度和分区合法性补出完整入口防御。
+
+分配helper在from_process_group且backend支持tensor分配时优先backend.allocate_tensor；否则只有增强patch已安装且进程组临时_mem_cache_flag为真才取缓存，并先把该标志设False。基础路径本身不强迫缓存，缓存的WeakKeyDictionary/used标志和事件顺序仍见上述增强指南。本文只补真实调用链，不认证任何cache/offload/混精/重计算组合已经训练等价。
+
+## 接入验收
+
+固定FSDP2版本、compiled autograd、offload、param_dtype与自定义pre-all-gather条件，分别记录准备路径、源/目标设备与rank分区、等待和存储视图；比较数值、通信次数和峰值/稳态开销。基础支持范围继续按[DDP/FSDP接入指南](torch_npu_ddp_fsdp_adaptation.md)，不能由私有补丁存在扩展产品或所有精度组合。

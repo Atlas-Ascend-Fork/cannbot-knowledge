@@ -1,7 +1,10 @@
 ---
 type: Optimization
-title: 把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse_mode 选择 + 推理 FIA vs 训练 FA + GQA 头数
-description: 把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse_mode 选择 + 推理 FIA vs 训练 FA + GQA 头数。在昇腾上把各类注意力（含 attention sink、滑动窗口、全窗因果）落到融合算子时，优先整段映射到 FIA（npu_fused_infer_attention_score / _v2），用 sparse_mode + 入参承接各种注意力变体，而不是在 softmax 前后手拼逻辑。
+title: 把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse_mode 选择 + 推理 FIA vs 训练 FA +
+  GQA 头数
+description: 把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse_mode 选择 + 推理 FIA vs 训练
+  FA + GQA 头数。在昇腾上把各类注意力（含 attention sink、滑动窗口、全窗因果）落到融合算子时，优先整段映射到 FIA（npu_fused_infer_attention_score
+  / _v2），用 sparse_mode + 入参承接各种注意力变体，而不是在 softmax 前后手拼逻辑。
 tags:
 - task.optimization
 - topic.attention
@@ -16,8 +19,14 @@ sources:
   role: evidence
 - resource: https://github.com/vllm-project/vllm-ascend/pull/2465
   role: evidence
+- resource: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score.md
+  role: constraint
+- resource: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score_v2.md
+  role: constraint
+- resource: https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/op_plugin/python/meta/_meta_registrations.py
+  role: implementation
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-21T01:48:04Z'
+updated_at: '2026-11-09T09:42:58Z'
 platforms:
 - agnostic
 ---
@@ -26,7 +35,7 @@ platforms:
 
 ## 条件 → 优先怎么映射
 
-在昇腾上把各类注意力（含 attention sink、滑动窗口、全窗因果）落到融合算子时，优先整段映射到 [FIA](../../concepts/kernels/fused_infer_attention_score.md)（`npu_fused_infer_attention_score` / `_v2`），用 `sparse_mode` + 入参承接各种注意力变体，而不是在 softmax 前后手拼逻辑。
+下文记录固定模型的调用经验；满足对应接口、产品及阶段约束时，可考虑整段映射到 [FIA](../../concepts/kernels/fused_infer_attention_score.md)（`npu_fused_infer_attention_score` / `_v2`），用 `sparse_mode` + 入参承接各种注意力变体，而不是在 softmax 前后手拼逻辑。
 
 ## attention sink + 滑窗/全窗交替 → 单个 FIA
 
@@ -61,7 +70,7 @@ platforms:
 **SpecDecoding 专属参数**（区别于普通 decode 的关键）：
 
 - `sparse_mode=3`（标准因果），配 `atten_mask=decode.attn_mask`；
-- 必须传 `actual_seq_lengths=actual_seq_lengths_q`（每请求的 query 段长，投机解码一步验证多 token）；
+- 必须传 `actual_seq_lengths=actual_seq_lengths_q`（此TND入口使用每请求query累计边界，投机解码一步验证多token）；
 - 前置约束 `num_tokens % spec_token_num == 0`（不满足即 assert 失败）。
 - **非 spec 路径**：`sparse_mode=0`、`atten_mask=None`、`actual_seq_lengths=None`。
 
@@ -89,6 +98,14 @@ platforms:
 - 另见 [块内双向注意力（掩码扩散 / DLLM 解码）走 FIA 非因果全注意力，勿套 causal FA 快路径](bidirectional_attention_fia_non_causal_full.md)。
 - 另见 [单卡 NPU 推理优化的三阶段固定流程：KVCache 静态化+FA 替换 → torch_npu 融合算子替换 → GE 图模式(仅 decode)，每阶段精度+性能 gate](../../guides/optimization/staged_single_card_optimize_pipeline.md)。
 
+## 主线标准接口的消费边界
+
+OpPlugin主线 `d84e9b1d6a558e5f27973cd4329f62968e46fdda` 明确：Q_S=1且无RoPE时sparse_mode无效，不能只因模型示例传4和pre_tokens就声称decode窗口已由算子裁剪。上文为特定模型调用经验，部署时还应检查实际KV裁剪、长度、mask或其他窗口承接位置。mode3是右下因果，mode2是左上因果，不能省略Q/K长短及mask对齐检查。
+
+learnable_sink是v2输入，A2/A3限非量化TND/NTD_TND及V_D≤128；950限V_D为64/128，均有PSE/prefix/后量化互斥。不是把普通v1调用添加sink关键字即可复用。标准接口文档与实现中的mask极性示例、INT8产品表、GQA NZ tree mask也有冲突，限定与待确认项见[mask与LSE](../../guides/fia_mask_prefix_and_lse.md)和[量化路线](../../guides/fia_quantized_attention_paths.md)。
+
+实际选择图模式仍需逐路径核对，例如主线GQA FP8模式3/3/2只支持Eager。本次补充为静态约束审阅，不证明上文模型实践在所有平台、版本及图模式都成立。
+
 ## Evidence
 
 - `diff 事实`（@f8e36fc）：sink 经 `learnable_sink`、滑窗 `sparse_mode=4`+`pre_tokens`、全窗 `sparse_mode=3`、prefill/decode 复用、支持图模式。
@@ -96,3 +113,8 @@ platforms:
 - `diff 事实`（@ef1d890）：用推理 FIA 非训练 FA，GQA 须传 `num_key_value_heads`。
 - `diff 事实`（@c8d1df3，vllm-ascend `vllm_ascend/attention/mla_v1.py`，merged 2025-08-28）：MLA `_forward_decode` 统一收敛到单个 FIA；`input_layout` 三态 BNSD/BSND(`enable_kv_nz`)/TND(SpecDecoding)；SpecDecoding 用 `sparse_mode=3`+`actual_seq_lengths=actual_seq_lengths_q`+`atten_mask=decode.attn_mask`、约束 `num_tokens % spec_token_num == 0`；非 spec `sparse_mode=0`/`atten_mask=None`；q/k 的 nope 与 rope 经 `query`/`query_rope`、`key`/`key_rope` 分传不 cat；输出 latent 维后接 V 上投影。
 - 溯源下探：[cann-recipes-infer-pr-195-feat-add-gpt-oss-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/195)、[cann-recipes-infer-pr-408-feat-add-gemma-4-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/408)、[cann-recipes-infer-pr-232-fix-hunyuanimage-3-0-fix-path-error-and-fia](https://gitcode.com/cann/cann-recipes-infer/merge_requests/232)、[vllm-ascend-pr-2465-refactor-wip-refactor-mla-v1-by-moving-all-mla-preprocessing-ops-into-ml](https://github.com/vllm-project/vllm-ascend/pull/2465)
+- [增补固定来源](https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score.md)（constraint）
+
+- [增补固定来源](https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/docs/zh/custom_APIs/torch_npu/torch_npu-npu_fused_infer_attention_score_v2.md)（constraint）
+
+- [增补固定来源](https://gitcode.com/Ascend/op-plugin/blob/d84e9b1d6a558e5f27973cd4329f62968e46fdda/op_plugin/python/meta/_meta_registrations.py)（implementation）

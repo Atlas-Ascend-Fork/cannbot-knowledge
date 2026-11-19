@@ -1,0 +1,297 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+# Frozen before knowledge production; retrieval checks do not establish technical applicability.
+cases:
+- id: ascend_target_stack_versions
+  group: target
+  query: 软件栈 TorchNPU 产品版本 安装包版本
+  filters:
+    domain: model
+    technology: inference
+    type: concepts
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/ascend_software_stack_baselines
+- id: ascend_target_npu_backend
+  group: target
+  query: get_npu_backend
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/apis/torchair/get_npu_backend
+- id: ascend_target_ge_cache
+  group: target
+  query: torchair GE cache_compile
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/apis/torchair/ge_cache_compile
+- id: ascend_target_npugraph_cache
+  group: target
+  query: npugraph_ex cache_compile
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/apis/torchair/npugraph_ex_cache_compile
+- id: ascend_target_dim_gears
+  group: target
+  query: set_dim_gears
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/apis/torchair/set_dim_gears
+- id: ascend_target_static_kernel
+  group: target
+  query: static_kernel_compile LOCAL_WORLD_SIZE
+  filters:
+    domain: model
+    technology: inference
+    type: optimizations
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/npugraph_ex_static_kernel_compile
+- id: ascend_target_custom_graph
+  group: target
+  query: 自定义算子 入图 converter Meta
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/guides/integration/torchair/custom_operator_graph_contract
+- id: ascend_target_graph_streams
+  group: target
+  query: 图内多流 record wait
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/guides/optimization/torchair/graph_multistream_dependencies
+- id: ascend_target_allocator
+  group: target
+  query: PYTORCH_NPU_ALLOC_CONF expandable_segments
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/guides/optimization/torch_npu_allocator_options
+- id: ascend_target_fia
+  group: target
+  query: npu_fused_infer_attention_score
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_fused_infer_attention_score
+- id: ascend_target_gmm
+  group: target
+  query: npu_grouped_matmul
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/apis/torch_npu/npu_grouped_matmul
+- id: ascend_target_memory_counters
+  group: target
+  query: memory_reserved memory_allocated npu-smi
+  filters:
+    domain: model
+    technology: inference
+    type: guides
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/guides/optimization/torch_npu/torch_npu_memory_counters
+- id: ascend_existing_01
+  group: existing
+  query: TorchAir
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/torchair
+- id: ascend_existing_02
+  group: existing
+  query: torchair cache_compile 图编译缓存落盘复用：调用约定、缓存失效与后端/版本约束
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/torchair_cache_compile_persisted_graph
+- id: ascend_existing_03
+  group: existing
+  query: LLM Decode 图编译指南（当前 GE 与 npugraph_ex）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/guides/optimization/graph_mode_decode_only_compile_backends
+- id: ascend_existing_04
+  group: existing
+  query: 多流优化流程：拆解依赖、选择后端并验收真实收益
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/guides/optimization/multi_stream_optimization_workflow
+- id: ascend_existing_05
+  group: existing
+  query: 跨流同步规则：GE 控制边、显式 Event 与历史 tagged API
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api
+- id: ascend_existing_06
+  group: existing
+  query: NPU 图模式（ge_graph / npugraph_ex）
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/concepts/techniques/npu_graph_mode
+- id: ascend_existing_07
+  group: existing
+  query: 图模式决策：profiling、host 下发占比与 freetime / host gap
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/graph_mode_enable_decision_profiling
+- id: ascend_existing_08
+  group: existing
+  query: 长序列 Prefill 的 CP 决策：按注意力结构与实现选择切分
+  filters:
+    domain: model
+    technology: inference
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/optimizations/rules/long_seq_prefill_context_parallel
+- id: ascend_boundary_no_platform
+  group: boundary
+  query: cache_compile
+  filters:
+    domain: model
+    technology: inference
+  expected_error: platform is required
+- id: ascend_boundary_unknown_platform
+  group: boundary
+  query: cache_compile
+  filters:
+    platform: ascend999
+  expected_error: unknown platforms
+- id: ascend_boundary_unknown_route
+  group: boundary
+  query: cache_compile
+  filters:
+    platform: a3
+    technology: torchair_unknown
+  expected_error: unknown technology
+- id: ascend_boundary_wrong_platform
+  group: boundary
+  query: cache_compile
+  filters:
+    domain: model
+    technology: inference
+    type: apis
+    tag: topic.graph_execution
+    platform: 310p
+    k: 5
+  expected_count: 0
+
+# Review 201129928: entry acceptance; the original 24 cases remain unchanged.
+- id: ascend_entry_ge_explicit_domain_preserved
+  group: domain_entry
+  query: torchair GE cache_compile
+  filters:
+    domain: graph
+    technology: torch_compile
+    type: apis
+    platform: a3
+    k: 5
+  excluded:
+  - model/inference/apis/torchair/ge_cache_compile
+- id: ascend_entry_ge_discover_model_owner
+  group: domain_entry
+  query: torchair GE cache_compile
+  filters:
+    type: apis
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/apis/torchair/ge_cache_compile
+- id: ascend_entry_stack_explicit_domain_preserved
+  group: domain_entry
+  query: 软件栈 TorchNPU 产品版本 安装包版本
+  filters:
+    domain: common
+    technology: toolchains
+    type: concepts
+    platform: a3
+    k: 5
+  excluded:
+  - model/inference/concepts/frameworks/ascend_software_stack_baselines
+- id: ascend_entry_stack_discover_model_owner
+  group: domain_entry
+  query: 软件栈 TorchNPU 产品版本 安装包版本
+  filters:
+    type: concepts
+    platform: a3
+    k: 5
+  expected:
+  - model/inference/concepts/frameworks/ascend_software_stack_baselines

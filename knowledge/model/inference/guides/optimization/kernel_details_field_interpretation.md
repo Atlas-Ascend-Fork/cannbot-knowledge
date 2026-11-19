@@ -14,7 +14,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-multi-stream/references/timeline-overlap-check.md
   role: supporting
 created_at: '2026-11-09T09:23:48Z'
-updated_at: '2026-11-10T04:11:13Z'
+updated_at: "2026-11-14T09:03:32Z"
 platforms:
 - a2
 - a3
@@ -32,6 +32,8 @@ aliases:
 - Block Num
 - Mix Block Dim
 - Mix Block Num
+- Stream ID
+
 ---
 
 # kernel_details 字段解读：流水指标、控核与多流真实重叠

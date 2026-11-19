@@ -26,7 +26,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/.agents/skills/model-infer-precision-debug/references/fa_debug_utils.md
   role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-11-10T12:21:07Z'
+updated_at: '2026-11-14T04:31:20Z'
 platforms:
 - agnostic
 aliases:
@@ -36,7 +36,9 @@ aliases:
 - debug_fa_all_params
 - MLA rope 维度约束
 - 旧版 MLA query 512/128 与 RoPE 64 维约束
+- MLA rope 512 128 64
 ---
+
 
 # KVCache 静态化 + FA / FIA 融合算子替换的精度陷阱
 

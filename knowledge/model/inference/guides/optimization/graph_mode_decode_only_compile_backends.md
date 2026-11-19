@@ -25,7 +25,7 @@ sources:
 - resource: https://www.hiascend.com/document/detail/zh/Pytorch/730/modthirdparty/torchairuseguide/torchair_00031.html
   role: supporting
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-11-10T02:01:56Z'
+updated_at: "2026-11-14T08:44:18Z"
 platforms:
 - agnostic
 scope:
@@ -110,6 +110,13 @@ npugraph_ex+持久缓存的非warmup执行使用skip_guard_eval_unsafe=True。�
 - [编译缓存](../../optimizations/rules/torchair_cache_compile_persisted_graph.md)
 - [跨流同步](../../optimizations/rules/graph_mode_multi_stream_cross_stream_sync_api.md)
 
+
+## 上游契约与版本核对
+
+本卡保留固定 Recipes 的模型调用与决策上下文。以下通用接口说明分别绑定其上游快照；阅读时核对运行版本，不能由模型调用证据推导主线与发布组合兼容。
+
+- [发布软件栈与主线边界](../../concepts/frameworks/ascend_software_stack_baselines.md)
+- [静态 Kernel 编译的上游协调条件](../../optimizations/rules/npugraph_ex_static_kernel_compile.md)
 
 ## Evidence
 

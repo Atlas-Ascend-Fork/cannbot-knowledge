@@ -1,0 +1,80 @@
+---
+type: Guide
+title: Inductor AscendC中央生成：转置CSE、模板回退与Wrapper
+description: 完整核对两版npu.py构图、产物/调用生成、转置slot与流内CSE、原生矩阵回退及图分区更新计划边界。
+tags:
+- task.implementation
+- topic.graph_execution
+- topic.compilation
+status: draft
+sources:
+- resource: https://gitcode.com/Ascend/torchair/blob/92e1e967bd35ebc37a442b4a969730bf3cf77a3c/experimental/_inductor_npu_ext/python/inductor_npu_ext/npu.py
+  role: primary
+- resource: https://gitcode.com/Ascend/torchair/blob/7c6c754bed00c86ffaaa2a45cb7ac2724f058013/experimental/_inductor_npu_ext/python/inductor_npu_ext/npu.py
+  role: implementation
+created_at: '2026-11-11T04:24:27Z'
+updated_at: "2026-11-14T08:44:18Z"
+platforms: []
+---
+
+
+# Inductor AscendC中央生成：转置CSE、模板回退与Wrapper
+
+本卡对应TorchAir主线92e1e967bd35ebc37a442b4a969730bf3cf77a3c及发布7c6c754bed00c86ffaaa2a45cb7ac2724f058013完整npu.py的本地生成文本和控制流，未导入/构建/执行上游，保持draft/空平台。编译器加载实现复用[异步/PCH](torchair_inductor_ascendc_async_cache_and_pch.md)、[运行ABI](torchair_inductor_ascendc_wrapper_launch_abi.md)，本文不以调用关系替代这些外部实现的独立覆盖。
+
+## 一个ASCGraph的实际构建
+
+主线NPUKernel保存_graph、当前loop、ASCBuffer缓存、输入view/raw slots、本地Store、_is_static及当前变量映射；graph/fused_graph/contiguous_loop是直接属性访问，assert_function返回ascir.Assert。size_hint先把内部ks名对应回外部符号，再取size_hint或optimization_hint(fallback=-1)，两个接口都缺失则-1。构造状态不是参数完整性验证。
+
+_get_nodes_outputs去掉is_weak的ordering-only用户，按OutputNode或组外用户收集输出再保序去重。tracing_asc计时后进入实现，先用[规范轴](torchair_inductor_ascendc_axis_mapping.md)完成逻辑对齐再挑Store友好遍历；一个ASCGraph存逻辑axis和独立schedule_axes，MatMul的k不混进遍历轴。普通node.run使用对齐索引，只有真正拆轴才套canonical域SimplifyIndexing；Cat/MM/BMM无普通body，先mark_run触发分配，再直接构图，并finally恢复current_node。全链finally恢复prior_loop。
+
+追踪后合并removed/inplaced集合，从最终_outputs剔除V.graph.removed_buffers中的名字；这是补救同步/nop组外users造成的假输出，不能要求实体buffer必存在。图输入按graph_inputs顺序重排，FusedASCGraph记录inner/outer输入输出，另外从inplace_buffers收集inner_name供Profiler补输入。_is_static依据当时precompile_args没有SizeArg；后续prof-only sizevars追加到调用参数不能混作Tiling动态轴。
+
+cache-hint AscGraph文本与生成cpp_wrapper共同MD5，再拼实际FX call_function目标名字为autofused名；实际目标取overload packet名，或函数/partial.func名，兜底净化非法字符并截64。每名保留最早FX拓扑位置排序，位置未知稳定后排。它是去重后的标签，不是原始算子实例数量或实际融合Kernel数。unsupported_ops非空再以前缀排序标注。_node_comment取元数据，必要时替换comment前缀供AscGraph嵌入Python注释，_node_label补debug_str。
+
+## 产物、三种Wrapper调用与缓存
+
+主线codegen先取外部codegen_kernel_def，增加is_fused_mm对应has_matmul_template和有效aiv/aic字符串（info缺失为-1），检查当时所有值非空；之后才生成cpp_wrapper、条件cpp_adapter及cpp_tiling_wrapper，所以前一次all(v.strip())不等于对后来所有字段做了同样检查。Artifacts保存代码、export_adapter字符串、模板和核数字段，to_dict原样输出；is_static由生成字典另加，不是Artifacts构造字段。Cpp wrapper路径只保_artifacts并返回None，FX借普通生成过程分离metadata并define_kernel(gpu=True)，Python生成字典和async_compile_ascendc表达式。
+
+codegen_nodes总是先trace当前节点，再取参数，追加prof-only符号并以生成kernel名查每调度器cache。命中仍按当前图生成layout检查/transpose调用并用缓存符号，未命中首次启动一次warmup_wrapper_pch，随后按FX或普通方式生成并发出调用，存cache；trace.enabled再写benchmark、dot和summary。cache命中不代表输入布局、模型日志或所有调用点预处理都可以省略。
+
+Cpp调用委托define_ascendc_kernel/layout_checks/transpose_call/kernel_call。FX每调用点结构化分配并调用转置核，再generate_kernel_call；Python先写header、layout guards、transpose prologue和CSE物化语句，最后wrap_kernel_call，CPU0D实参在_prepare_npu_call_args用.item()拆标量。普通Python布局检查只检查实际input、按buffer名去重、跳合成slot/无stride，并生成size/stride/dtype/device条件，不查storage_offset；fx_wrapper整个函数直接跳过，Cpp委托另一实现不能推定完全同检查。
+
+## 转置slot、独立核和CSE
+
+同物理输入的相同offset/road复用slot；第一个转置view通常占物理名，但若连续读取已占原名则也用name__ltN。不同view注册FixedLayout轻量buffer；连续读取发生在转置占物理槽之后则建name__raw，保存真实layout/offset，调用时直传物理buffer。_registered_slot_buffers供跳过假变量布局检查；注释声称codegen结束后清理，但本完整npu.py未见删除name_to_buffer或该列表的实现，不能仅凭注释承诺清理已经发生。
+
+_kernel_needs_transpose_split在已知低于Soc.A5时总切；否则逐子节点只放indirect或有body、非归约、非模板的elementwise判定。未知SoC没有低代际分支，但不据此确认支持；view在load中消融的注释也不是逐opcode独立白名单。只有enable_load_transpose且判断需切，load才抽取transpose前缀；关闭开关不等于任意后继可以安全inline。
+
+_TransposeKernel.build只构造ASCGraph文本：从offset/road两端size/stride/offset收集合法标识符符号（排名字0），按名排序，声明SizeArg；Data→Load→road→Store→Output，低精度先FP32再降原dtype，输出连续且offset0。prof_arg_shapes用内部符号空间，命名MD5只基于asc_graph，之后再生成cpp_wrapper；out_meta返回size/stride/dtype/device/symbol names。build本地不调用Autofuser，codegen才委托codegen_kernel_def并补adapter/tiling-wrapper和核数，非adapter/export字段要求非空。
+
+转置定义按名跨组去重，不等于每调用点只跑一次。Python header生成empty_strided分配输出、调用compiled(input,out,*syms)并返回；FX定义借_TransposeKernelArgsAdapter将out_ptr0登记输出，参数顺序固定input/output/SizeArg，实际每调用点把内部符号替成外层表达式、注册新Buffer并写AllocateLine/generate_kernel_call；Cpp分别委托wrapper。_rewrite_call_args对TensorArg按slot替换，raw直传，转置表达式映射内外SizeArg，找不到符号时可保留原名。未匹配slot只有key仍在call_args时抛错，已成为内部值且不在call_args的stale槽仅debug跳过，不是所有未匹配都报错。
+
+只有Python调用路径传sched启用转置调用点CSE：key=(current_stream_name, tname, physical, 字符串化symbol实参)，首现登记buf_cse_tN物化语句，后续复用。物化语句在layout检查后、主调用前flush。源buffer在touched写集合、图mutation/捐赠集合或任一unknown哨兵中则不复用而inline；写追踪收集output_buffers与未removed的inplace.other_names，信息异常/args缺失置哨兵。mutation集合懒缓存mutated_inputs、name_to_donated_buffer的keys及scheduler各输出get_mutations，异常也置哨兵。读不使缓存失效；跨流不同key不复用。Cpp不传该sched，FX每次独立分配，不能把Python CSE收益推广全部Wrapper或外部写入。
+
+## 模板分流与原生矩阵回退
+
+codegen_template对Cat先merge普通prologue loops，再按prologue+模板+epilogue生成；MM/BMM有任何prologue则NotImplemented，有epilogue先标记共享输入never_reuse再生成，无epilogue走原生回退。未知模板类型拒绝；无epilogue原生矩阵运算不是AscendC融合核。
+
+Python回退先按真实size/stride/offset生成reinterpret_tensor。reshape_bmm_reshape与reshape_baddbmm_reshape显式校验输入数，压平batch成3D、发aten bmm/baddbmm再reshape回逻辑输出并标allocated；存在fallback_op及fallback_inputs直接生成torch.ops对应调用。其余先分配模板输出，再按2输入或3输入且has_bias选择extern mm/addmm/bmm/baddbmm(out=)，其他数目拒绝。所有成功分支mark_run。
+
+Cpp回退选择fallback_inputs或模板inputs，reinterpret通过wrapper helper；reshape两类先造aten::reshape C shim/RAII handles，分配连续flat输出，调用bmm_out或baddbmm_out（bias两系数1.0），再reshape为逻辑输出。其他按batched/has_bias选择相应_out、校验2/3输入，bias追加1.0/1.0，分配后生成NPU C shim。此路径没有Python分支对任意fallback_op的同样通用发射，不能合成完全相同的fallback选择合同。真实Lowering、view和外部aten行为另核。
+
+## 分区、ACLGraph更新和多流
+
+_is_codegen_graph_partition_subgraph优先调用Torch helper，ImportError或调用AttributeError/TypeError回isinstance(SubgraphPythonWrapperCodegen)。_AclgraphUpdatePlanMixin先super.generate_after_suffix，再向外部emit函数交wrapper/result/是否分区；这只关闭本地plan提交点，不关闭FA handler或replay运行时。
+
+多流开关由一组Torch流符号导入和本地_EnterNpuStreamContextLine定义是否成功决定，任意Exception设False；注释称Torch>=2.12，本体不是显式版本号比较。关闭时stream_enter委托super；开启时拒绝已有current_stream_name嵌套，首次按scheduler.stream_idx_to_user_obj_idx生成外部对象imports、current_stream默认流并存index0，再按sorted映射取侧流。生成行使用with torch.npu.stream并缩进，返回带stream_idx的对象；真实跨流依赖/事件仍由外部调度负责。
+
+主图和子图Wrapper共享该mixin；create要求子图有name/parent，再创建对应类型，两者都加compiler导入。codegen_sync与benchmark_fused_nodes直接NotImplemented，flush空实现；不能据flush名字声称它做了队列同步或回收。
+
+## 发布实现与调试落点
+
+发布NPUKernel每节点new_subgraph，context finally恢复loop，之后FusedASCGraph接subgraphs；_get_nodes_outputs没有主线weak-user过滤，名称用original_aten血统，MD5仍含AscGraph和cpp_wrapper；没有主线removed输出过滤及prof-only参数追加这组本地代码。codegen只存五个artifact字段并做非空检查，生成compiler字典；codegen_nodes命中只发缓存调用，miss写header/调用后存cache。NpuWrapperCodeGen.create委托原生PythonWrapperCodegen再补compiler导入，没有主线本地子图mixin/流/更新计划定义。这是固定模块差异，不证明发布其他包或后端不存在相关能力。
+
+两版view_dot生成符号hint、节点debug标签和DOT，ImportError/AssertionError告警，其余异常不在该方法吞掉。主线summary聚合单图所有标签，benchmark只向generate_benchmark_script交节点、artifacts、静态标志、prof_size_vars与Cpp标志，[检查/性能口径](torchair_inductor_ascendc_benchmark_contract.md)继续适用。发布benchmark本地生成完整脚本：校验位置参数e2e，生成期读相邻asc_graph.py并内联两分支来源，按hint造rand_strided，Level2 CPU+NPU profiler、wait0/warmup0/active10/repeat1/skip_first1并11轮调用/prof.step；该生成器没有数值参考比较，不能把采集完成当精度验证。本次没有执行任何生成脚本、外部builder或设备采集。
+
+## 固定实现证据
+
+- [固定源码 1](https://gitcode.com/Ascend/torchair/blob/92e1e967bd35ebc37a442b4a969730bf3cf77a3c/experimental/_inductor_npu_ext/python/inductor_npu_ext/npu.py)（primary）：95–102, 160–221, 255–362, 990–1019, 1344–1677, 1679–1764, 2587–2892, 3041–3061, 4849–5526。
+- [固定源码 2](https://gitcode.com/Ascend/torchair/blob/7c6c754bed00c86ffaaa2a45cb7ac2724f058013/experimental/_inductor_npu_ext/python/inductor_npu_ext/npu.py)（implementation）：78–129, 177–375, 532–547, 584–637。

@@ -16,7 +16,7 @@ sources:
 - resource: cann-recipes-raw/cann-recipes-infer/944d2d3ece86f7df33dbb0cb155c72ca619a9c66/executor/core/config/inference_config.py
   role: constraint
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-10-29T16:10:39Z'
+updated_at: "2026-11-14T08:44:18Z"
 platforms:
 - agnostic
 ---
@@ -46,6 +46,13 @@ enable_cache_compile=True时，GE用TorchAir cache_compile（dynamic=False、ful
 - [当前编译指南](../../guides/optimization/graph_mode_decode_only_compile_backends.md)
 - [图模式决策](graph_mode_enable_decision_profiling.md)
 
+
+## 上游契约与版本核对
+
+本卡保留固定 Recipes 的模型调用与决策上下文。以下通用接口说明分别绑定其上游快照；阅读时核对运行版本，不能由模型调用证据推导主线与发布组合兼容。
+
+- [GE 缓存接口合同](../../apis/torchair/ge_cache_compile.md)
+- [npugraph_ex 缓存接口合同](../../apis/torchair/npugraph_ex_cache_compile.md)
 
 ## Evidence
 

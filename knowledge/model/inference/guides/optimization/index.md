@@ -38,3 +38,10 @@
 - [SuperKernel 范围分析：依赖边界、受控基线与融合验证](superkernel_scope_analysis_and_validation.md)：从模块、整层到跨层选择 SuperKernel scope，识别动态控制流和分流控核边界；在相同 GE 配置下比较预热后的中位数、波动、编译产物和精度。
 
 - [SGLang 昇腾性能优化指南](sglang_ascend/index.md)：共 9 张知识卡（如 SGLang 昇腾 attention 后端与混合 GDN 的选择边界、SGLang 昇腾在线与离线性能评测的接口和指标、SGLang Ascend 环境变量：框架、DeepEP与DSPARK路径的作用域 等）。
+- [TorchNPU 推理显存配置：扩展段、碎片与版本门槛](torch_npu_allocator_options.md)：根据碎片和 Host 下发信号选择 PYTORCH_NPU_ALLOC_CONF，记录 expandable_segments 的冲突和较新选项的产品/PyTorch 版本门槛。
+- [MoE Dispatch/Combine v2 发布配套：通信组、拓扑与容量](moe_dispatch_combine_v2_release_contract.md)：按 26.0.0 来源检查 A2/A3 的组隔离、TP 限制、算法、mask、缓冲区和静态图配套，独立于较新模型调用。
+- [因果卷积的APC、投机接受与状态隔离](torch_npu_causal_conv_state_contract.md)：按950固定接口管理冷启动、读写缓存行与状态容量，保留接受数量和遗留参数的未决边界。
+- [推荐模型推理基准：固定批次、同步时延与数据前提](torch_npu_recommendation_benchmarks.md)：区分DCNv2/DIN/ETA/MMOE示例的数据、compile模式和重复单批推理计时，避免把输出文件当质量或全链路吞吐验收。
+
+- [TorchNPU模型开发指南](torch_npu/index.md)：共 258 张知识卡（如 Dynamo Guards 与后端：版本门槛和过滤失效边界、Inductor编译模式选择：值与首次编译时机、ShapeHandling配置与恢复：文档合同和源码差异 等）。
+- [TorchAir模型开发指南](torchair/index.md)：共 157 张知识卡（如 集合通信入图：GE 支持范围、Send/Recv 与稳定拓扑、dynamo_export：GE 离线导图、外置权重与部署路径、GE 编译调优：在线编译、优化级别、View 与 Tiling 下沉 等）。

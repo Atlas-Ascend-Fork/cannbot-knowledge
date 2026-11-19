@@ -1,0 +1,70 @@
+---
+type: Guide
+title: 实验Triton归约索引别名：依赖、可见性与延迟赋值
+description: 保存归约索引结构别名的依赖与scope检查、prefix合并、延迟赋值共享状态和最后打印的局部合同。
+tags:
+- task.optimization
+- topic.compilation
+status: draft
+sources:
+- resource: https://gitcode.com/Ascend/pytorch/blob/ac0e1564ca6ffb00c1f4fb834fc4b41a601862bf/torch_npu/_inductor/triton_experimental/reduction_index_alias.py
+  role: primary
+- resource: https://gitcode.com/Ascend/pytorch/blob/ac0e1564ca6ffb00c1f4fb834fc4b41a601862bf/torch_npu/_inductor/triton_experimental/codegen/triton.py
+  role: implementation
+created_at: '2026-11-11T08:33:38Z'
+updated_at: "2026-11-14T08:44:18Z"
+platforms: []
+---
+
+# 实验Triton归约索引别名：依赖、可见性与延迟赋值
+
+## 固定结构与边界
+
+本文依据TorchNPU主线`ac0e1564ca6ffb00c1f4fb834fc4b41a601862bf`的reduction_index_alias.py完整213行及codegen/triton.py的所列局部调用。发布`f3ecfe4a7ef7395754da7ca2e35661a7132b519b`在这两个精确路径均无Git条目，不据此断言发布没有归约或索引优化。没有导入模块、操作SymPy表达式、运行拓扑排序/生成器、执行模型或设备；产品与配套未知，保持draft和空平台。
+
+它把折叠后的索引表达式作为结构化metadata保留到后端printer，再按reduction pass显式发射别名和抑制原赋值。完整helper资格不包括整个8617行codegen、所有range-tree折叠方程、外部DeferredLineBase协议、形状边界或设备数值正确性。
+
+## 表达式和单个pass记录
+
+ReductionIndexAlias是frozen dataclass，字段为name、仍保留的SymPy expr、dependencies元组；ReductionLoopPass记录scope_id、reduction_prefixes元组和默认空的reduction_index_aliases元组。frozen是记录的赋值约束，不是在此完成名称合法性、表达式范围或外部对象深度不可变的认证。ReductionIndexAliasError继承ValueError。
+
+make_reduction_loop_pass把传入prefix可迭代对象转成tuple，不排序、去重或在helper中生成全局唯一scope ID。所读codegen初始化每个kernel的pass列表、按prefix保存的alias计划和独立AssignmentState；_record_reduction_loop_pass收集range_trees中is_loop的prefix，以当前列表长度作scope_id，按这些prefix附已有计划，最后追加该pass。它不是对所有IR scope的通用推断。
+
+## 构建依赖与逐项可见性检查
+
+build_reduction_index_aliases按输入映射的名称排序遍历，对每个expr调用sympy.sympify，指定类型的sympify失败转换为ReductionIndexAliasError。然后从free_symbols中收集名称属于alias映射、且**不等于当前别名自身名称**的依赖，按名称排序存入记录，再用TopologicalSorter产生一份依赖顺序。捕获到的ValueError转成“cyclic reduction index aliases”错误。
+
+拓扑图只追踪**其他alias**的依赖，外部自由符号不进入该图，自引用也显式排除；因此不能称它拒绝所有语义上的循环或检查了所有索引来源。它也没有把整个输入处理包在统一except内：依赖字段访问、非法映射键或外部操作引发的其它异常不保证都改成同一种错误。
+
+validate_reduction_index_alias_scope把调用方visible_symbols转成名称集合，按传入alias顺序检查expr.free_symbols。出现当前尚不可见名称就报错并列出名称；每校验完一个alias，才把其name加入visible，供后面的alias使用。它不自行重排aliases。自引用若不在初始visible中会被这一关识别为未定义，若名称已在visible里则没有额外的“自引用”拒绝规则，不能用拓扑图的行为代替这层校验。
+
+codegen的_bind_reduction_index_alias_plan从tree的结构化_npu_reduction_index_alias_exprs属性取得映射，先build、再以调用方给出的visible_symbols校验，然后存入按tree.prefix索引的计划并附加到已有passes。这里的可见性是基于提供的符号集合和顺序，不是完整控制流支配、每条loop入口、表达式边界或整数溢出的证明。
+
+## attach按prefix匹配，保留原顺序
+
+attach_reduction_index_aliases只更新reduction_prefixes包含目标prefix的pass；不匹配的pass原样保留。匹配时先按名称收集已有记录，再逐项合并incoming。已有同名记录与incoming不相等就抛冲突错误，包含scope_id；相同记录可共存于合并过程，不静默选一个不同计划。
+
+输出顺序先保留已有alias元组中的名称顺序，再追加incoming里原顺序尚未出现的名称。**attach不会重新做拓扑排序或可见性检查**，因此builder生成的依赖顺序与scope validator的使用时点仍有独立作用；不能将任意外部手工构造的alias集合交给attach后就认为依赖已经修复。
+
+更新用dataclasses.replace构造新pass并返回tuple，不就地修改frozen记录，但整个codegen绑定不是统一事务：_bind先写计划字典，再调用attach；若attach冲突抛错，这里没有回滚先前计划赋值。attach保留已有别名，也不以一个新空计划删除老pass里的记录，不能把重绑当作全局清空/替换协议。
+
+## 按结构身份抑制原赋值，最后才打印
+
+ReductionIndexAssignmentState用reduction_prefix→index-name集合累积抑制项；suppress_assignments只向集合加入，is_assignment_suppressed查询同一prefix和name，没有在此按scope_id另分一层，也没有公开清空方法。所读调用者先以ordered_names建立集合，再合入该prefix各pass的superseded索引名后登记；本卡未展开ordered_names的完整生产过程。
+
+superseded_reduction_index_names返回generated_indices与该pass所有alias.name的frozenset并集。它处理结构名称，不从字符串正则识别赋值，也不独立验证这些名称对应的完整生成图。前述prefix匹配与caller提供的pass仍是身份边界。
+
+ReductionIndexAssignmentLine保存state、prefix、index_name和原line；__call__在**实际被调用时**查共享state，已抑制就返回None，否则返回原line。_new_line构造新的line对象时继续共享同一个state和结构身份，因此后续登记抑制项也能影响已存在的这些对象；不是创建时复制一个固定布尔值或搜索赋值文本。
+
+所读range-tree默认小分支先用kexpr/rename_indexing构造赋值line；entry.root.is_loop时向indexing_code写入这个结构对象，否则直接向body写字符串。仅此默认分支被核对，不能推广成整个codegen完全没有其它文本判断或所有提前返回均已审阅。
+
+render_reduction_index_aliases按pass当前alias顺序产生`indent + name = render_expr(expr)`，把表达式交调用方printer才转成生成代码。所读两处render分支都传kernel.index_to_str，分别使用inner_indent或indent。render本身不重新验证scope/依赖，也没有吞掉printer异常；外部printer和各分支采用条件仍独立。
+
+## 排查折叠后缺失、重复或未定义索引
+
+保留原tree.prefix、每次pass的scope_id和prefix元组、原始符号表达式、builder输出顺序、实际visible集合、attach冲突、superseded集合及共享state，再核最终生成代码。局部机制明确区分别名声明、可见性、打印和抑制，但不能单凭没有异常或重复赋值消失，证明整个range-tree折叠、并行loop作用域或所有动态shape数值已正确。
+
+## Evidence
+
+- [固定源码](https://gitcode.com/Ascend/pytorch/blob/ac0e1564ca6ffb00c1f4fb834fc4b41a601862bf/torch_npu/_inductor/triton_experimental/reduction_index_alias.py)：1–213行；完整结构化别名模块。
+- [固定源码](https://gitcode.com/Ascend/pytorch/blob/ac0e1564ca6ffb00c1f4fb834fc4b41a601862bf/torch_npu/_inductor/triton_experimental/codegen/triton.py)：79–88,502–511,938–949,2640–2642,2670–2704,4188–4200行；仅所列局部调用/完整方法/默认小分支，不提升整个codegen资格。

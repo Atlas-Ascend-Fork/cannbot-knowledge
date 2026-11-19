@@ -58,6 +58,7 @@
 - [torch extension 导入失败时的 device kernel 未定义符号判别](torch_extension_und_symbol_aclnn_dlsym.md)：torch extension 导入报告 kernel_fused_ar_mhc_post 未定义时，用动态符号表区分 UND 引用与定义。来源重编后导入和注册检查通过，但未公开完整修复 diff，也未验证算子数值前向。
 - [TorchAir dynamo_export(dynamic=True) 权重位置错位：Data-first 稳定排序 + specialize_float 修复](torchair_dynamic_export_weight_bake_reorder_fix.md)：动态 B/S 导出的 AIR 权重冻结错位：torchair 2.12.0 _convert_data_to_const 按位置（export_graph.op[i]）烘焙权重，动态路径 SymInt 抽取链（Shape/Const/Gather）使 op list 交错，把 Gather 擦成权重 Const、真实 pos/length Data 被擦掉。工程内修复：bind_converter 内调用 _reorder_data_nodes_first() 把 root Data 按 index 稳定前移（protobuf 原地 sort 保持 Tensor.node 引用），再以 specialize_float=True 阻止 86 个 Python float 提升为 f64 输入。
 
+- [图捕获安全策略：global、thread_local 与 relaxed 定界](capture_error_mode_scope.md)：定位 npugraph_ex 捕获期不安全操作报错，解释 capture_error_mode 的检查范围及放宽检查的验证边界。
 - [hc_pre 返回契约不一致：单 Tensor 不能替代调用点要求的三元组](cant_unpack_tensor_32_rows_tuple_mismatch.md)：调用点需要 hidden_states、post、comb，而封装函数只返回 y。保留返回结构诊断与待验证修正，删除 eager 更宽松的错误解释。
 - [FXRT cold 缓存失败：比对副作用节点、生产者与 DCE 调用点](fxrt_cold_cache_mte_illegal_addr_edc_elision.md)：在相同 rank 对比图、生成代码和写入者，定位无谓词 DCE 可能移除 in-place HOP 的差异；修复后的设备闭环未完成。
 - [FXRT 缓存补丁未安装：核对模块导入链与实际部署版本](fxrt_compile_cache_bootstrap_never_runs.md)：模块末尾的 bootstrap 依赖模块被导入；排查时同时核对 worker 的包路径、初始化导入段和补丁标记，避免混用 fxrt_pkg 与 site-packages。

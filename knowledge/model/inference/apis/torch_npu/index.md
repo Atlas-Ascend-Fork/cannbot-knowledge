@@ -134,3 +134,145 @@
 - [按轴索引散点原地更新（torch_npu.scatter_update_）](scatter_update_.md)：torch_npu.scatter_update_：按轴索引散点原地更新。将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据被改变。
 - [进程内设备核数设置（torch.npu.set_device_limit）](set_device_limit.md)：torch.npu.set_device_limit：为当前进程指定设备的 Cube/Vector 执行核数。
 - [流设备资源限制设置（torch.npu.set_stream_limit）](set_stream_limit.md)：torch.npu.set_stream_limit：流设备资源限制设置。设置指定Stream的Device资源限制。
+- [npu_add_rms_norm：残差相加与三输出语义](npu_add_rms_norm.md)：说明残差 Add 与 RMSNorm 的融合顺序、FP32 rstd、残差输出和形状约束。
+- [npu_add_rms_norm_cast：950 双精度输出与残差](npu_add_rms_norm_cast.md)：说明 FP32/输入精度双输出、残差和统计形状，保留 rstd 名称与来源语义差异。
+- [npu_add_rms_norm_dynamic_mx_quant：950 残差与四输出顺序](npu_add_rms_norm_dynamic_mx_quant.md)：说明残差相加、归一化、beta与MXFP4/8融合的顺序、物理打包及双输入梯度和rstd边界。
+- [npu_apply_rotary_pos_emb：Q/K 原地旋转与平台分支](npu_apply_rotary_pos_emb.md)：区分原地 RoPE 与 rotary_mul，明确 A2/A3 和 950DT 的布局、维度及旋转模式差异。
+- [npu_chunk_gated_delta_rule：分块线性注意力与状态约束](npu_chunk_gated_delta_rule.md)：说明 chunk GDR 的 TND 输入、必填 scale/状态、950 FP32 状态边界及序列长度文档冲突。
+- [npu_clipped_swiglu：GPT-OSS 门控截断与分组](npu_clipped_swiglu.md)：说明奇偶/前后切分、clamp 顺序、分组 token 数量和变体 SwiGLU 参数。
+- [npu_dynamic_mx_quant：950 MXFP 量化与 E8M0 布局](npu_dynamic_mx_quant.md)：说明主线 MXFP4/8 的实际存储、块大小、scale 算法组合和非尾轴交织，限制发布版外推。
+- [npu_fused_matmul：950 融合类型、广播与 HF32](npu_fused_matmul.md)：说明按 fused_op_type 区分维数、bias、x3 和输出类型，明确 FP32 输入必须开启 HF32。
+- [npu_geglu：双输出与待确认的平台契约](npu_geglu.md)：记录主线 Schema、实现和旧文档签名差异；平台及发布支持尚未确认，保留草稿。
+- [npu_kv_rmsnorm_rope_cache_v2：950 原地缓存与实际双返回](npu_kv_rmsnorm_rope_cache_v2.md)：结合文档、Schema 和实现区分原地 Cache 更新与 k_rope/c_kv 双返回，说明索引唯一及分页模式。
+- [npu_rms_norm_dynamic_mx_quant：950 FP4/FP8与占位rstd](npu_rms_norm_dynamic_mx_quant.md)：说明RMSNorm加beta后的MXFP4/8量化、物理打包及Eager和图模式rstd的有效性。
+- [npu_rms_norm_quant：归一化后静态量化与 INT4 打包](npu_rms_norm_quant.md)：说明 RMSNorm、beta 与乘法 scale 的融合顺序及必填 offset、打包和 shape 约束。
+- [npu_swiglu_mx_quant：950门控模式与MXFP4/8分组](npu_swiglu_mx_quant.md)：说明四种门控顺序、FP4物理打包、分组尺度容量和预留算法，区分count与cumsum编号。
+- [npu_transpose_quant_batchmatmul：950 三维量化矩阵乘](npu_transpose_quant_batchmatmul.md)：区分 K-C、MX 与 T-C 的输入、scale 形状和排列限制，不沿用浮点 transpose_batchmatmul。
+- [npu_add_rms_norm_dynamic_quant：双分支有效性与五输出](npu_add_rms_norm_dynamic_quant.md)：说明输出 mask、平滑分支、INT4/FP8 产品差异以及无效槽返回空 Tensor。
+- [npu_add_rms_norm_quant：静态双量化与 axis 限定](npu_add_rms_norm_quant.md)：说明每产品 dtype 组合、scale乘除方向与仅单算子调用，并保留非默认 axis 的 Meta 差异。
+- [npu_add_rms_norm_v2：覆盖残差输入，仅返回 rstd](npu_add_rms_norm_v2.md)：说明 950 的双输入 mutation、RMSNorm 与残差写回位置，避免按旧版三输出接口接入。
+- [npu_attention_update：SP 局部 Attention 的稳定合并](npu_attention_update.md)：按 LSE 权重合并已取得的局部输出，说明 SP/head_dim 范围与 update_type=0 的无效 LSE 槽。
+- [npu_dynamic_block_mx_quant：32×32 MX块与FP4物理形状](npu_dynamic_block_mx_quant.md)：以Meta和C++包装纠正文档FP4输出形状，说明E8M0尺度、两个轴的pad布局及算法可选值。
+- [npu_gelu_quant：静动态量化与 FP8 舍入模式](npu_gelu_quant.md)：说明 950 的 GELU 后量化、动态 scale 形状和 hifloat8 不能沿用默认 rint。
+- [npu_masked_causal_conv1d：950 三点因果卷积与输出掩码](npu_masked_causal_conv1d.md)：说明序列优先布局、固定窗口和 mask 仅置零输出，不把它当作输入状态重置。
+- [npu_rms_norm_quant_v2：scale 方向、打包与 rstd 有效性](npu_rms_norm_quant_v2.md)：说明 950 单算子 RMSNorm 量化的 div_mode、可选参数、INT4 打包以及 requires_grad=False 的占位输出。
+- [npu_anti_mx_quant：E8M0配对、FP4展开与None差异](npu_anti_mx_quant.md)：说明MX反量化的尾轴和配套尺度，区分省略src_type与显式None触发不同默认分支。
+- [npu_dynamic_dual_level_mx_quant：512与32两级尺度](npu_dynamic_dual_level_mx_quant.md)：说明FP4 E2M1的两级缩放、两种尺度存储及暂不支持的smooth_scale。
+- [npu_dynamic_mx_quant_with_dual_axis：两套量化结果与算法矩阵](npu_dynamic_mx_quant_with_dual_axis.md)：区分两轴独立32元素分组与32×32共享块，说明四输出、FP4打包和参数组合。
+- [npu_grouped_dynamic_block_quant：分组FP8块与尺度容量](npu_grouped_dynamic_block_quant.md)：说明行列块大小、累计边界和列向上取整，区分FP32尺度与MX E8M0布局。
+- [npu_grouped_dynamic_mx_quant：组内分块与V2运行库门槛](npu_grouped_dynamic_mx_quant.md)：说明累计边界、按第0轴分组及E8M0容量，明确旧CANN分支对Optional默认值的拒绝。
+- [npu_moe_token_permute：专家排序、逆映射与输出裁剪](npu_moe_token_permute.md)：说明token扩展排序和sorted_indices方向，保留完整映射长度、负切片和950 INT8边界。
+- [npu_moe_token_permute_with_routing_map：路由矩阵与容量取整](npu_moe_token_permute_with_routing_map.md)：区分固定K和drop/pad模式，说明num_out_tokens默认N、实际输出向下取整及可选概率输出。
+- [npu_moe_token_unpermute：K推导、加权还原与反向保存](npu_moe_token_unpermute.md)：说明无probs时K固定为1，并区分CANN 9.1反向显存分支和950后端入口的来源差异。
+- [npu_moe_token_unpermute_with_routing_map：无效槽位与非确定性](npu_moe_token_unpermute_with_routing_map.md)：说明restore_shape必填、-1槽位、容量映射和可选权重，避免继承前向重排的确定性保证。
+- [npu_dual_level_quant_matmul：两级FP4尺度与NZ权重](npu_dual_level_quant_matmul.md)：说明512/32固定分组、FP4物理打包以及E8M0配对尺度的文档测试差异。
+- [npu_grouped_matmul_add：K轴累加与输入修改差异](npu_grouped_matmul_add.md)：说明FP32累加、分组计数的V2门槛，以及无下划线包装先修改self再clone的契约风险。
+- [npu_kronecker_quant：双侧旋转与两种4位布局](npu_kronecker_quant.md)：说明950双矩阵乘的INT4 pertoken与FP4 pergroup差异，按C++和Meta修正FP4物理输出shape。
+- [npu_mhc_post：残差映射与必填None位置](npu_mhc_post.md)：说明950残差连接、FP32投影dtype和h_res允许None但没有省略默认值的Schema。
+- [npu_mhc_pre：六输出、残差投影与HF32门槛](npu_mhc_pre.md)：说明950 mHC前处理、H_post维度、未做Sinkhorn的H_res及CANN/V2精度模式要求。
+- [npu_mhc_sinkhorn：迭代顺序和中间缓存开关](npu_mhc_sinkhorn.md)：说明950双随机归一化、带eps的有限次迭代及out_flag控制的扁平缓存容量。
+- [npu_quant_matmul_gelu：bias位置、输出dtype与A4图差异](npu_quant_matmul_gelu.md)：说明A2/A3量化矩阵乘融合GELU，保留INT4物理K校验及BF16 bias的Meta差异。
+- [npu_rotate_quant：旋转量化的产品矩阵与物理打包](npu_rotate_quant.md)：区分A2/A3整数量化与950 MX类型、图模式和块旋转，明确默认INT8不能直接用于950。
+- [npu_scatter_pa_cache：单Key分页写入与Schema差异](npu_scatter_pa_cache.md)：说明950 Norm布局、唯一slot和key_cache副作用，保留返回值及压缩参数名称的文档差异。
+- [npu_block_sparse_attention：块掩码、精度与950差异](npu_block_sparse_attention.md)：说明稀疏块mask与GQA/TND形状，保留950块粒度和精度参数的文档Meta冲突。
+- [npu_fused_causal_conv1d：固定核宽与原地历史状态](npu_fused_causal_conv1d.md)：说明950因果卷积的packed/固定batch输入、残差和APC入口，保留遗留参数与包装传递差异。
+- [npu_mrope：位置分段、两类interleave与V2要求](npu_mrope.md)：区分旋转配对与多模态cache拼接，明确预计算cache、分段名单和V2回退边界。
+- [npu_weight_quant_preprocess：数据流、预打包与输出alias](npu_weight_quant_preprocess.md)：说明950八类权重量化预处理、4位物理布局与ND/NZ分支，明确透传输出共享输入存储。
+- [npu_all_gather_quant_mm：量化 AllGather 与矩阵乘融合](npu_all_gather_quant_mm.md)：区分 A2/A3 的 aiv 与 950DT 低精度路径，说明输出、分组和 FP4 物理存储。
+- [npu_quant_mm_reduce_scatter：反量化矩阵乘与归约散射](npu_quant_mm_reduce_scatter.md)：说明 M 轴整除、平台通信默认值、MXFP4 配对参数和 amax 文档与 Meta 差异。
+- [npu_all_to_all_matmul：先交换再矩阵乘的布局契约](npu_all_to_all_matmul.md)：说明 BS 分片、隐藏维拼接、可选通信输出和显式 comm_mode 的 V2 依赖。
+- [npu_matmul_all_to_all：先矩阵乘再交换的输出切分](npu_matmul_all_to_all.md)：记录输出列整除、AlltoAll Permute 顺序及 A3/950 的 Eager 与图模式范围。
+- [npu_all_to_all_quant_matmul：交换后动态量化与 MX](npu_all_to_all_quant_matmul.md)：说明动态量化和 MX 的输入区别、GE 必填量化类型、可选输出及右 scale 文档缺口。
+- [npu_quant_matmul_all_to_all：量化矩阵乘后交换](npu_quant_matmul_all_to_all.md)：记录静态 K-C 与 MX 量化组合、输出列切分、转置权重和 950 通信依赖。
+- [npu_alltoallv_quant_gmm：量化路由通信、重排与专家计算](npu_alltoallv_quant_gmm.md)：说明 950DT 的 T-T/MX 模式、接收计数、共享专家、FP4 返回与空输出 rank 同步。
+- [npu_attention_to_ffn：A3 分离部署的派发与动态量化](npu_attention_to_ffn.md)：记录无返回通信副作用、专家映射、前缀 active_mask、静态图和窗口配套约束。
+- [npu_ffn_to_attention：A3 回传的 token 定位与专用通信域](npu_ffn_to_attention.md)：说明有效 token 数、目标 Attention 映射、形状文字歧义及通信域不得混用的要求。
+- [npu_quant_gmm_alltoallv：量化专家计算、反重排与回传](npu_quant_gmm_alltoallv.md)：区分发送端专家输入与接收端输出，记录量化 scale、保留通信参数和引擎证据差异。
+- [单层锚点responsible flags：输出长度与60000上限](contrib_anchor_responsibility.md)：保存特征图、步长和基础锚点参数，区分掩码长度与真实检测数。
+- [contrib BBox编解码：坐标、归一化及YOLO步长](contrib_bbox_coders.md)：分别记录三种格式转换和默认值，修正stride限制误植并保留dtype检查缺口。
+- [条件替换包装：torch.where新结果与原地语义差别](contrib_condition_index_put.md)：修正旧bbox文案，记录Bool条件、标量值和原生可能更快的边界。
+- [contrib IoU家族：别名、坐标转置与反向限制](contrib_iou_variants.md)：区分IoU/PTIoU常数和G/DI/CIoU一对一路线，保存废弃状态及语言默认差异；并给出 aten 内部 _npu_ciou 双派发路、950 反向硬拦截与 derivatives 自动微分接线。
+- [LinearQuant与旧A8W8类：参数装载、INT4打包与scale转换](contrib_linear_quant.md)：保存推理与图模式、dtype组合和模块状态，区分包装可接参和底层完整能力。
+- [LinearWeightQuant：反量化布局、分组与INT64特例](contrib_linear_weight_quant.md)：保存权重量化包装的形状/转置、dtype耦合和仅图NZ限制，区分真实初始化与描述。
+- [contrib多类NMS：批次、背景列与固定长度输出](contrib_multiclass_nms.md)：合并单批和batched包装，保留动态上限、FP16转换及有效数量丢弃的边界。
+- [QuantConv2d模块：静态图量化卷积与预留参数差异](contrib_quant_conv2d.md)：保存NCHW、FP16输出与范围，区分文档预留、实际拒绝和源码扩展签名。
+- [ROI模块：PSROIPool等尺寸与ROIAlign对齐/梯度](contrib_roi_pooling_and_align.md)：区分两类ROI布局、返回与默认值，保留主线更正和只对输入求梯度的边界。
+- [npu_layer_norm_eval：可空仿射参数与推理迁移](legacy_layer_norm_eval.md)：保留LayerNorm数学范围和实际克隆/脱离梯度行为，避免当通用训练替代。
+- [npu_batch_nms：旧产品、FP16和四输出有效数](legacy_batch_nms.md)：保留旧Atlas范围与批次/类别维，避免用contrib支持表补齐底层产品证据。
+- [旧检测框编码与分配：坐标、网格标志和GT数量](legacy_box_encoding_and_assignment.md)：覆盖Faster R-CNN/YOLO旧包装，保留参考逻辑修正、Scalar声明和无维护边界。
+- [旧IoU家族：布局、输出轴及受限反向](legacy_iou_family.md)：区分顶层与contrib入口，保留强制FP16、GIoU检查及旋转框文档冲突。
+- [旧NMS返回协议：旋转索引、V4有效数和mask](legacy_nms.md)：保留固定分配与动态有效长度的区别，不从填充区或阈值文字猜测有效检测。
+- [旧ROI算子：PS池化布局与ROIAlign参数缺省冲突](legacy_roi_ops.md)：区分物理NC1HWC0、五列ROI与原生模块的显式转换，不把临时cast当实际计算；另含交叉命名的 RoiAlign 文件（opapi 反向名文件承载前向、aclops 反向名文件承载 roi_alignbk）。
+- [npu_moe_gating_top_k_softmax_v2：归一化与Meta/图输出边界](npu_moe_gating_top_k_softmax_v2.md)：区分renorm、FP32可选Softmax与旧row_idx，记录固定版本Meta和GE签名冲突，作为待核验迁移依据。
+- [npu_grouped_matmul_swiglu_quant：融合GMM、SwiGLU与动态INT8量化](npu_grouped_matmul_swiglu_quant.md)：区分固定主线及发布版V1的A8W8/A8W4、NZ布局、有效前缀和输出尺度；950扩展按中文产品条款限定。
+- [npu_grouped_matmul_finalize_routing：专家GMM与按路由聚合](npu_grouped_matmul_finalize_routing.md)：区分count/cumsum、scatter-add回填和共享专家，限定固定发布与主线950 MX、BF16 Eager及Meta/GE边界。
+- [npu_moe_init_routing_quant：INT8路由融合的五返回与容量](npu_moe_init_routing_quant.md)：记录独立路由量化入口的1024默认容量、INT32统计、动态尺度与无效输出，避免与routing_v2四返回混用。
+- [PA KV缓存读取：原地目标、功能化拷贝与格式分派](npu_gather_pa_kv_cache.md)：补齐PA KV gather原地无返回、functional复制目标缓冲、key_cache格式分派及Meta/测试边界。
+- [设备侧图像解码与预处理后端：decode_jpeg等5个custom注册的门槛与host合同](legacy_image_decode_preprocess_backends.md)：记录decode_jpeg、img_to_tensor、crop_and_resize、image_normalize(_)五个无文档页custom注册的输出dtype/形状推导、host检查、NormalizeV2硬编码三通道形状与v2.1单版本门，并给出与Host侧增强包装的分界。
+- [npu_batch_gather_matmul：LoRA参数与实际返回边界](npu_batch_gather_matmul.md)：说明LoRA矩阵乘的校验、ACLNN输出缓冲与self返回差异，以及测试未证明的非原地语义。
+- [_npu_distribute_barrier：V1/V2能力分派与MoE分发前通信栅栏](npu_distribute_barrier.md)：记录内部通信栅栏入口的双aclnn能力分派、V1对time_out/elastic_info的host拒绝、返回x_ref本身的透传合同，以及MoE分发测试与16卡弹性用例的调用形态。
+- [npu_gemma_rms_norm：偏移权重与Rstd输出边界](npu_gemma_rms_norm.md)：区分Gemma参考的gamma+1、FP32 rstd与Meta尺寸校验缺口，说明被跳过数值测试及设备Meta比较的边界。
+- [npu_ifmr/npu_dequant_bias/npu_quant_matmul_dequant：量化校准与反量化杂项的Eager合同](npu_ifmr_and_dequant_misc.md)：IFMR校准走旧ACE算子且本地wrapper无字面TORCH_CHECK；dequant_bias限half/bfloat16并走无格式检查aclnn；quant_matmul_dequant由gen_opapi生成、Meta限2D fp16乘int8配1D fp32且trans=true要求先转置权重；官方用例多skip加机型门，dequant_bias用例golden自比不能作数值证据。
+- [npu_matmul_compress_dequant：压缩权重、反量化与输出维度](npu_matmul_compress_dequant.md)：补齐压缩权重矩阵乘的offset限制、双来源N维度、Meta UINT64尺度与固定skip载荷测试边界。
+- [npu_moe_distribute setup/teardown：发布独有两段式MoE EP通信协议](npu_moe_distribute_setup_teardown.md)：成组记录dispatch/combine四schema的setup预发comm_cmd_info、teardown消费回收的两段式调用合同，输出shape/dtype推导、host检查矩阵与Meta/C++实现差异，及16卡URMA测试的静态证据。
+- [npu_qkv_rms_norm_rope_cache 与 rope_quant_kvcache 家族：QKV 融合写入与量化 KV Cache 写读](npu_qkv_rms_norm_rope_cache.md)：区分 QKV 三分支融合写入（RMSNorm+RoPE+PA_NZ 量化缓存）与 rope_quant/dequant_rope_quant 的量化缓存写读往返，保留原地/functional 返回差异、scale 方向冲突与用例 skip 状态。
+- [npu_quant_all_reduce/npu_quant_reduce_scatter：发布独有量化集合通信的Eager合同](npu_quant_all_reduce_and_reduce_scatter.md)：成组记录两入口的host检查矩阵（world_size 2/4/8、H 1024..8192且128对齐、BS整除、FP8/FP4枚举）、输出分配与wrapper标签、Meta分层缺口，及950双卡官方测试的静态证据与疑点。
+- [npu_quant_grouped_matmul_dequant：分组量化反量化与NZ分流](npu_quant_grouped_matmul_dequant.md)：核对分组量化矩阵反量化的权重NZ分流、trans与Meta布局检查，并区分两个skip测试的参考和运行结论。
+- [npu_quant_max：低精度输出、Amax与分组路由](npu_quant_max.md)：区分QuantMax的低精度y与原dtype amax、group_list长度路由、Meta承载及仅形状测试的边界。
+- [npu_rotated_box_encode/npu_rotated_box_decode：旋转检测框编解码对](npu_rotated_box_encode_decode.md)：记录两个无文档页入口的注册面与host合同（weight强制CPU FP32后以属性下发）、文档模板三处缺陷、ONNX导出绑定与FP32/FP16基线用例边界。
+- [npu_nsa_* 稀疏注意力算子组：压缩注意力出 topk 与选择注意力的训练/推理入口](nsa_sparse_attention_ops.md)：汇总 torch_npu 侧 8 个 npu_nsa_* schema 的调用链、固定注入参数、输出分配与自动微分接线，区分训练 TND 链与推理分页链，保留长度列表与块对齐边界。
+
+- [aclnn.version：预留查询、警告与None返回](aclnn_version.md)：记录版本查询尚未实现，避免把空返回或产品支持表当作ACLNN兼容性检测。
+- [NPU缓存释放API：虚拟地址与Host物理缓存](cache_release.md)：区分empty_virt_addr_cache和host_empty_cache，保留扩展段前提及活跃内存边界。
+- [NPU Tensor合并API：值拷贝、局部视图与指针有效性](combine_tensors.md)：区分组合存储和torch.cat，保存偏移单位、空输入、有限有效性检查和底层边界缺口。
+- [兼容实现API：开关查询、算子名单与首次读取](compatible_impl.md)：区分实现选择和CPU回退，保留发布七类入口、主线SDPA补充与查询含义。
+- [NPU编译控制：JIT查询、模式设置与AOE图路径](compile_mode_and_aoe.md)：区分JIT布尔含义、设备默认和950查询范围，保留AOE目录行为及外部配置边界。
+- [TorchNPU C++设备API：设备编号、错误与同步诊断](cpp_device_and_sync_diagnostics.md)：区分GetDevice指针出参与current_device、SetDevice与set_device，以及WarningState和真正的同步操作。
+- [TorchNPU C++ Dropout mask：概率、seed与offset参数](cpp_dropout_gen_mask.md)：保存npu_dropout_gen_mask的显式参数与可选类型边界，不把mask生成当完整Dropout合同；并给出 op-plugin 侧 aten/_npu_dropout_gen_mask 与 npu_dropout_gen_mask 绑定的双派发host合同、副流parallel/sync形态与V2概率dtype透传。
+- [TorchNPU C++格式API：分配、格式号与底层存储维度](cpp_format_and_storage_sizes.md)：区分empty_with_format的keep_format、格式编号与get_npu_storage_sizes的各维大小。
+- [TorchNPU C++随机数API：生成器、状态与Hooks](cpp_generator_and_hooks.md)：保存默认生成器引用差异、seed与offset状态、graphsafe迁移及Hooks接口的独立签名。
+- [C++ npu_format_cast：版本参数与950DT私有格式限制](cpp_npu_format_cast.md)：区分发布双参数接口、主线customize_dtype门槛，以及950DT NZ格式的形状和后续操作限制。
+- [TorchNPU C++ NPUEvent：记录、等待、查询与计时](cpp_npuevent.md)：区分流依赖和CPU同步，保存延迟创建、recordOnce、毫秒计时与TaskQueue等待成本。
+- [TorchNPU C++流API：取得、包装与Host队列刷新](cpp_npustream.md)：保存NPUStream成员与current/default/pool区别，明确stream(need_empty)的Host flush语义。
+- [TorchNPU NPUStreamGuard：作用域、查询与reset_stream](cpp_npustream_guard.md)：区分Guard保存的上下文与线程当前状态，保存跨设备reset及文档/实现边界。
+- [TorchNPU OpCommand：输入输出描述、属性与执行同步](cpp_opcommand.md)：整理链式OpCommand成员和输入转换差异，区分Sync索引配置与立即流同步。
+- [TorchNPU C++ Host存储Tensor：empty_with_swapped_memory](cpp_swapped_memory.md)：保存NPU设备身份与Host实际存储的特殊合同、六类允许算子、图模式排除及打印版本门槛。
+- [TorchNPU 设备与流限核：设置、查询和重置](device_and_stream_limits.md)：说明进程级一次设置、流级覆盖与恢复、私有格式限制，以及核数配置和实际执行的区别。
+- [NPU设备恢复预留接口：UCE分类、停止与重建](device_recovery_reserved.md)：保留暂不支持提示及产品表冲突，区分资源重建、脏Tensor与训练状态恢复；补csrc绑定层、分配器块安全账与生成wrapper检查面。
+- [NPU Dump接口：初始化、JSON配置与收尾落盘](dump_lifecycle.md)：区分发布环境前提和主线调用顺序，说明同名包装与外部JSON规范未覆盖的范围。
+- [Event.recorded_time：设备时间戳与微秒单位](event_recorded_time.md)：保存启用计时和先record前提，区分时间戳、毫秒间隔与Host调用耗时。
+- [ExternalEvent：图外事件的record、wait与reset边界](external_event.md)：保留单流限制和自动复位冲突，区分Host提交、设备依赖与reset弃用提示。
+- [get_cann_version：组件名、空字符串与容器驱动版本](get_cann_version.md)：保存八个组件选择及CANN门槛，区分版本读取和整个软件栈配套。
+- [NPUGraph任务组API：捕获句柄与异流更新顺序](graph_task_groups.md)：合并四个begin/end入口，保留更新流与捕获流不同及预分配边界。
+- [NPU布局开关：私有格式与Linear中MM/BMM的ND策略](layout_options.md)：保留仅后续Tensor、Conv/JIT分支、950DT例外和ND初值注释冲突。
+- [旧切片与补零：indexing掩码、slice尺寸及pad顺序](legacy_indexing_and_padding.md)：区分区间和offset/size，保留ACL Op形状推导限制与无反向说明。
+- [旧形状变换：广播、reshape、转置及融合顺序](legacy_shape_transforms.md)：记录旧接口迁移和真实分配路径，避免把连续输出当作普通共享视图；含 npu_confusion_transpose 实现层的 950 门控与反向逆 perm。
+- [符号位压缩与解压：位序、reshape及信息损失](legacy_sign_bits.md)：保留8值一字节、FP类型和长度约束，纠正文档整除方向并区分量化。
+- [旧Tensor创建与写回：empty_with_format、copy_memory_和one_](legacy_storage_creation_and_copy.md)：区分未初始化分配、原始内存复制和原地填充，保留废弃及替换语义。
+- [libtorch_npu生命周期API：初始化、同步和收尾](libtorch_npu_lifecycle.md)：依据固定C++声明与实现区分init_npu重载、无参finalize_npu及current_device未初始化返回值。
+- [MegaCache产物接口：保存、加载与命中条件](megacache_artifacts.md)：记录save/load_cache_artifacts的返回值、兼容前提和CppWrapper打包限制。
+- [MSTX基础API：瞬时标记、跨线程ID范围与装饰器](mstx_mark_and_ranges.md)：保存Host/Device流选择、domain、失败返回和默认值差异，区别采集开关与有效产物。
+- [MSTX线程范围与annotate：LIFO配对和异常收尾](mstx_thread_ranges_and_annotate.md)：限定主线新增入口的A2/A3范围，保存层级返回、上下文message及装饰器默认。
+- [npu_hans_encode与npu_hans_decode：Host交换内存路径的PDF直方图无损压缩编解码](npu_hans_encode_decode.md)：保留pdf/mantissa/fixed/var缓冲区字节账、statistic/reshuff语义、压缩上界公式与A2/A3边界，衔接swapped memory特殊Tensor的六算子约束。
+- [npu_masked_fill_range与npu_normalize_batch：区间掩码填充与变长batch归一化](npu_masked_fill_range_and_normalize_batch.md)：成组记录两无文档页旧入口的host检查矩阵与错误类别、文档模板维度标注缺陷、属性下发细节（normalize_type映射与epsilon=1e-5）、用例跳过状态与覆盖边界。
+- [NpuGraphOpHandler：注册、预分配与版本化参数更新](npugraph_op_handler.md)：保存无状态类协议、替换函数一致性、弱引用及主线UPDATE_SPECS差异。
+- [捕获图张量诊断：print/save版本参数与异步落盘](npugraph_tensor_io.md)：区分发布多文件保存和主线列表单文件，说明命名计数及Python pending回调完成边界。
+- [set_op_timeout_ms：算子毫秒超时与图副作用标记](op_timeout_ms.md)：区分算子执行超时与设备/通信超时，记录主线Dispatcher包装及Fake分支边界。
+- [PMCC模型混淆接口：初始化、计算与资源释放](pmcc_obfuscation.md)：保存SDK前提、socket Tensor、命令及dtype约束，保留系数语言差异和样例缺口。
+- [Profiler支持查询：活动集合和配置成员集合](profiler_activity_and_support.md)：区分C扩展活动查询与三个静态集合，避免把合法成员当作硬件采集成功。
+- [Profiler analyse：离线输入、进程上限与导出回退](profiler_analyse.md)：保存目录和格式合同，区分默认读取原配置与强制Text以及实际异步内部行为。
+- [Profiler子线程接口：注册配置与同步注销](profiler_child_thread_callbacks.md)：保存五个开关、CPU活动条件和当前设备同步，区分线程观测与业务同步。
+- [dynamic_profile接口：目录、文件、划步与恢复计数](profiler_dynamic_control.md)：区分init与start参数和主线set_state，记录配置模式、排队与版本边界。
+- [_ExperimentalConfig：默认值、扩展开关与规范化顺序](profiler_experimental_config.md)：列出性能采集扩展选项、发布主线差异和配置回退，强调最终值验收。
+- [_KinetoProfile：手动启停、元数据与导出方法](profiler_kineto_profile.md)：保留基础采集类与profile控制层的区别，以及JSON元数据限制的发布主线差异。
+- [ProfilerLevel与AiCMetrics：成员、采集层次和指标单位](profiler_metrics.md)：区分Level控制层与单组AI Core指标，记录默认值和L2独立开关。
+- [Profiler profile：活动、回调和实际默认采集行为](profiler_profile.md)：区分可调用调度器、立即记录回退和主线观测器生命周期，保留版本签名边界。
+- [Profiler schedule与Action：步数、保存状态和参数回退](profiler_schedule.md)：说明Schedule可调用对象、四种Action、首次wait省略及非法参数的实际处理。
+- [Profiler导出回调：Text/Db、异步解析与压缩保留条件](profiler_trace_handler.md)：区分handler返回函数、原始数据生命周期，以及主线gzip参数和错误路径。
+- [Profiler trace ID：构造回调、后续替换与读取时点](profiler_trace_id.md)：保存主线专用回调、长度和异常回退，以及trace初始化与动态请求ID的区别。
+- [stress_detect：在线硬件检测模式、返回码与作业限制](stress_detect.md)：区分检测执行失败和硬件故障，保留HCCS建组、10GB及同节点作业条件。
+- [SyncLaunchStream：绕过TaskQueue的Host同步下发流](sync_launch_stream.md)：区分Host下发与Device完成，保存四流池复用、默认设备及性能代价。
+- [TaskQueue动态模式API：有效优先级与切换阻塞](task_queue_mode.md)：限定主线set/get入口，保存0/1/2含义、纯推理条件和无并发提交责任。
+- [线程绑核API：闭区间、多区间与恢复](thread_affinity.md)：区分发布单区间与主线多区间，限定CPU_AFFINITY_CONF模式和当前线程恢复行为；主线另增bind_irq设备中断亲和链。
+- [torch.compile在Inductor-Ascend的参数范围](torch_compile_inductor.md)：记录内置说明的backend/mode/options、默认值与950DT总览边界。
+- [torch_npu.jit.optimize：Script对象与FastGELU改写](torch_npu_jit_optimize.md)：保存单参数对象合同和静态图改写，区分无返回值、推理优化与数值等价。
