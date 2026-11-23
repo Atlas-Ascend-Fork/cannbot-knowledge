@@ -10,6 +10,8 @@ status: draft
 sources:
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/11-01_device_memory_malloc_and_free.md
   role: primary
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/25-02_Enumerations.md
+  role: supporting
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/include/external/acl/acl_rt.h
   role: header
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/src/acl/aclrt_impl/memory.cpp
@@ -53,4 +55,5 @@ aclError aclrtMallocForTaskScheduler(void **devPtr, size_t size, aclrtMemMallocP
 
 ## 约束说明
 
+- `policy` 的 P2P 取值 `310b` 不支持；1GB 大页取值（`HUGE1G_ONLY`、`HUGE1G_ONLY_P2P`）`310b`/`310p`/早期 `910` 不支持。
 - 图模式下部分算子需要使用该类型的内存

@@ -10,6 +10,8 @@ status: draft
 sources:
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/11-01_device_memory_malloc_and_free.md
   role: primary
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/25-02_Enumerations.md
+  role: supporting
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/include/external/acl/acl_rt.h
   role: header
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/src/acl/aclrt_impl/memory.cpp
@@ -17,7 +19,7 @@ sources:
 source_headers:
 - include/external/acl/acl_rt.h
 created_at: '2026-09-15T00:00:00Z'
-updated_at: '2026-10-29T08:46:01Z'
+updated_at: '2026-11-23T07:56:09Z'
 platforms:
 - '950'
 - 'a3'
@@ -52,5 +54,6 @@ aclError aclrtMallocCached(void **devPtr, size_t size, aclrtMemMallocPolicy poli
 
 ## 约束说明
 
+- 本接口不支持 P2P policy；`ACL_MEM_MALLOC_HUGE1G_ONLY` 在 `310b`/`310p`/早期 `910` 上不支持。
 - policy 仅支持单个枚举项
 - 本接口申请的内存等价于 [aclrtMalloc](aclrt_malloc.md) 申请的内存，都支持 Cache 缓存

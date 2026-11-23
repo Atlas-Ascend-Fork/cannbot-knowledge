@@ -10,6 +10,8 @@ status: draft
 sources:
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/04_device_management.md
   role: primary
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/25-02_Enumerations.md
+  role: supporting
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/include/external/acl/acl_rt.h
   role: header
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/src/acl/aclrt_impl/device.cpp
@@ -68,6 +70,7 @@ aclError aclrtGetRunMode(aclrtRunMode *runMode);
 
 ## 约束说明
 
+- Ascend 950 / A3 / A2 不支持 `ACL_DEVICE` 取值，查询结果只会是 `ACL_HOST`，无需为 Device 侧分支写代码。
 - 结果是进程级的运行模式，不随 Device 或 Context 变化，因此不需要先 [aclrtSetDevice](aclrt_set_device.md)。
 - 因为判定是"非 OFFLINE 即 ACL_HOST"，未来新增的驱动模式也会被归为 `ACL_HOST`；如果业务需要区分具体模式，不能只依赖本接口的返回值。
 - 与 [aclrtGetDevice](aclrt_get_device.md) 不同：后者需要本线程已 SetDevice 或已有有效 Context，本接口无此要求，两者不构成依赖关系。

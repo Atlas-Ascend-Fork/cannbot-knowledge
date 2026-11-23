@@ -23,7 +23,7 @@ sources:
 source_headers:
 - include/external/acl/acl_rt.h
 created_at: '2026-09-28T06:51:10Z'
-updated_at: '2026-10-29T08:46:01Z'
+updated_at: '2026-11-23T08:19:43Z'
 platforms:
 - '950'
 - a3
@@ -91,7 +91,8 @@ aclError aclrtGetDeviceInfo(uint32_t deviceId, aclrtDevAttr attr, int64_t *value
 
 - `deviceId` 的取值范围是 `[0, 可用 Device 数量)`，与 [aclrtGetDeviceCount](aclrt_get_device_count.md) 的返回一致；超出范围会因用户 Device ID 反查失败而报错。
 - SIMT 相关属性（`WARP_SIZE`、`MAX_THREAD_PER_VECTOR_CORE`、`UBUF_PER_VECTOR_CORE` 及 `MAX_*`）仅 Ascend 950 支持，其他产品默认返回 0，不能据返回值 0 判定硬件不具备该能力。
-- `attr` 的支持范围依赖具体产品与驱动能力（如超节点 ID、主板 ID），官方接口文档未给出逐属性支持矩阵；上板前应在目标产品核对该属性的返回值。
+- `HD_CONNECT_TYPE`、`DEVICE_FORM_FACTOR`、`SUPER_POD_CHASSIS_ID` 也仅 Ascend 950 支持，但其他产品返回报错而非返回 0。
+- `CUST_OP_PRIVILEGE` 在 Ascend 950 上不支持。
 - 本接口只读取 Device 信息，不改变线程状态；调用前需已能取得 Device ID，通常配合 [aclrtSetDevice](aclrt_set_device.md) 初始化环境。
 
 ## 最小调用示例

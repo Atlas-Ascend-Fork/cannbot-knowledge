@@ -10,6 +10,8 @@ status: draft
 sources:
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/11-01_device_memory_malloc_and_free.md
   role: primary
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/25-02_Enumerations.md
+  role: supporting
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/include/external/acl/acl_rt.h
   role: header
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/src/acl/aclrt_impl/memory.cpp
@@ -52,6 +54,7 @@ aclError aclrtMallocAlign32(void **devPtr, size_t size, aclrtMemMallocPolicy pol
 
 ## 约束说明
 
+- `policy` 的 P2P 取值 `310b` 不支持；1GB 大页取值（`HUGE1G_ONLY`、`HUGE1G_ONLY_P2P`）`310b`/`310p`/早期 `910` 不支持。
 - 分配的内存不会初始化
 - policy 仅支持单个枚举项（IPV350 除外）
 - 对于 950 功能等同 [aclrtMalloc](aclrt_malloc.md)；对于其他型号只对齐 32 字节不额外加 32 字节

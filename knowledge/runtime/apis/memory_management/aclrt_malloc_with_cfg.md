@@ -10,6 +10,8 @@ status: draft
 sources:
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/11-01_device_memory_malloc_and_free.md
   role: primary
+- resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/docs/zh/api_ref/25-02_Enumerations.md
+  role: supporting
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/include/external/acl/acl_rt.h
   role: header
 - resource: cann-runtime-raw/runtime/b523035a08ef573b6bc476c8ab2a34733ba069a4/src/acl/aclrt_impl/memory.cpp
@@ -57,4 +59,6 @@ aclError aclrtMallocWithCfg(void **devPtr, size_t size, aclrtMemMallocPolicy pol
 
 ## 约束说明
 
+- `policy` 的 P2P 取值 `310b` 不支持；1GB 大页取值（`HUGE1G_ONLY`、`HUGE1G_ONLY_P2P`）`310b`/`310p`/早期 `910` 不支持。
+- `ACL_MEM_TYPE_HIGH/LOW_BAND_WIDTH` 在本卡声明的全部产品上设置无效（系统按硬件自选内存类型），传入不报错但不生效。
 - policy 支持单个枚举项或多个位或，支持 ACL_MEM_TYPE_HIGH/LOW_BAND_WIDTH、ACL_MEM_ACCESS_USER_SPACE_READONLY 等组合
