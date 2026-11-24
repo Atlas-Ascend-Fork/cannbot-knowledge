@@ -5,6 +5,7 @@
 - [FA 变体族 A2/A3 手搓配方精要](flash_attention_fa_variants_patterns.md)：FA 变体（FA-Paged 标准/GQA/Causal、fa-sink、fa-varlen TND、fa-q8、FFA 双 KV、MLA latent 压缩分页）的手搓配方精要：算法差异、分核组织（S1 单遍/s1s2 双层/flash-decoding）、契约转换、关键修复、死锁前提与验收口径。
 - [FA-SageAttention Ascend 950 量化注意力实现模式](flash_attention_fa_sageattention_patterns.md)：SageAttention（K 平滑 + INT8 QK + online softmax + FP16 PV）在 dav-3510 上的双 kernel 架构、量化路径与 comp 补偿代数、CrossCore mode4 协议、8 条不变量 I1-I8、精度取证方法与平台坑排障路由。
 - [FAG dense 反向 Ascend 950 实现模式](flash_attention_grad_flash_attention_grad_patterns.md)：dense flash attention backward 的 ABI、反向公式、Tile 级 C++ 组装、五次 MMAD 数据链、L0C/UB/L1 预算、raw-NZ 存序、FagPostKernel、同步协议、失败表现与验收矩阵。
+- [Ascend 950 线性注意力高 GVA 任务切分与数据排布](linear_attention_high_gva.md)：从 head 归属和读写依赖推导分组、分核、片上窗口及写回位置，以 GDN 反向 G4 到 G16 的扩展验证设计。
 - [Linear Attention 矩阵逆模式](linear_attention_matrix_inverse_patterns.md)：单位下三角矩阵块化求逆及 Vector/Cube Stage。
 - [SWA 分块优化与性能证据](sparse_flash_mla_performance.md)：一般 SWA 和连续 prefill 的布局、复用、分核与流水优化，以及通用验收所需的性能证据边界。
 - [SWA 流水协议、片上结构与状态模型](sparse_flash_mla_pipeline.md)：跨任务双槽、三 actor 握手、QK/PV 片上资源、尾块和模型验证边界。
