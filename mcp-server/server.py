@@ -56,12 +56,14 @@ if str(SKILL_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SKILL_SCRIPTS))
 
 from pydantic import Field  # noqa: E402
-from mcp.server.auth.provider import AccessToken  # noqa: E402
+from mcp.server.auth.provider import AccessToken, ProviderTokenVerifier  # noqa: E402
 import api_keys  # noqa: E402
 import state_store  # noqa: E402
 from mcp.server.mcpserver import MCPServer  # noqa: E402
 from mcp.server.mcpserver.exceptions import ToolError  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
+from starlette.requests import Request  # noqa: E402
+from starlette.responses import HTMLResponse, JSONResponse, Response  # noqa: E402
 
 from retrieval.index import open_index  # noqa: E402
 from retrieval.root import ENV_KEY, resolve_root  # noqa: E402
@@ -77,12 +79,14 @@ RATE_KEY_ENV = "CANNBOT_MCP_RATE_KEY"
 GITCODE_VERIFY_ENV = "CANNBOT_MCP_GITCODE_VERIFY"
 GITCODE_API_ENV = "CANNBOT_MCP_GITCODE_API"
 AUTH_SECRET_ENV = "CANNBOT_MCP_AUTH_SECRET"
+PUBLIC_PATH_ENV = "CANNBOT_MCP_PUBLIC_PATH"
 ACCESS_TTL_ENV = "CANNBOT_MCP_ACCESS_TTL_S"
 REFRESH_TTL_ENV = "CANNBOT_MCP_REFRESH_TTL_S"
 DEVICE_TTL_ENV = "CANNBOT_MCP_DEVICE_TTL_S"
 DEVICE_INTERVAL_ENV = "CANNBOT_MCP_DEVICE_INTERVAL_S"
 AUTH_DB_ENV = "CANNBOT_MCP_AUTH_DB"
 AUTH_SERVER_ENV = "CANNBOT_MCP_AUTH_SERVER"
+SDK_AUTH_ENV = "CANNBOT_MCP_SDK_AUTH"
 GITCODE_AUTHORIZE_URL = "https://gitcode.com/oauth/authorize"
 GITCODE_TOKEN_URL = "https://gitcode.com/oauth/token"
 OAUTH_CLIENT_ID_ENV = "CANNBOT_MCP_OAUTH_CLIENT_ID"
@@ -121,6 +125,36 @@ request_meta: contextvars.ContextVar[RequestMeta] = contextvars.ContextVar(
 def _utc_now() -> str:
     now = datetime.now(timezone.utc)
     return now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
+
+def _env_int(name: str, default: int) -> int:
+    # Defined before the first construct-time consumer
+    # (SelfIssuedTokenAuthority at import time in SDK-auth-on wiring);
+    # pure helper over os.environ, no module-level dependencies.
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        print(
+            f"cannbot-mcp: ignoring invalid {name}={raw!r}, using {default}",
+            file=sys.stderr,
+        )
+        return default
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        print(
+            f"cannbot-mcp: ignoring invalid {name}={raw!r}, using {default}",
+            file=sys.stderr,
+        )
+        return default
+    return value if value > 0 else default
 
 CALL_LOG_SCHEMA = "mcp-call-log.v2"
 BOOT_ID = secrets.token_hex(4)
@@ -1084,25 +1118,6 @@ class DeviceCodeStore:
     def ttl_s(self) -> int:
         return self._ttl_s
 
-def _resolve_knowledge_root() -> Path | None:
-    """Best-effort knowledge root for the in-repo refusal check."""
-    try:
-        env_value = os.environ.get(ENV_KEY)
-        if env_value:
-            candidate = Path(env_value).expanduser().resolve()
-            if (candidate / "knowledge").is_dir():
-                return candidate
-        # Fall back to walking up from this file (the mcp-server dir lives in
-        # a full checkout; a bare wheel install simply has no root).
-        for parent in Path(__file__).resolve().parents:
-            if (parent / "knowledge").is_dir() and (
-                parent / "governance/schemas/registries.yaml"
-            ).is_file():
-                return parent
-    except OSError:
-        pass
-    return None
-
 class CliRunner:
     """Subprocess adapter around knowledge_query.py with a concurrency gate."""
 
@@ -1581,6 +1596,133 @@ def _repository_version() -> str:
         return "dev"
     return completed.stdout.strip() or "dev"
 
+def _gitcode_verify_enabled() -> bool:
+    """CANNBOT_MCP_GITCODE_VERIFY: 'off' disables the GitCode auth track."""
+    return (os.environ.get(GITCODE_VERIFY_ENV) or "").strip().lower() != "off"
+
+def _sdk_auth_enabled() -> bool:
+    """CANNBOT_MCP_SDK_AUTH: 'on' mounts the official MCP SDK auth stack.
+
+    Empty (default) keeps the handwritten auth chain exactly as it is
+    today: this is the phase-1 rollout switch of
+    the SDK_AUTH flag, so a deployment reverts by unsetting
+    the env and restarting (no data migration, no dual write).
+    """
+    return (os.environ.get(SDK_AUTH_ENV) or "").strip().lower() == "on"
+
+# Shared auth-stack singletons, populated at import time only when
+# CANNBOT_MCP_SDK_AUTH=on (all None otherwise, i.e. the default legacy
+# wiring). The token authority is the one build_http_app used to create
+# per call, promoted to module level because the SDK verifier must exist
+# BEFORE the MCPServer constructor below runs; build_http_app reuses it so
+# the handwritten AS legs and the SDK middleware sign and verify against
+# one key. Ticket 6 (AS wiring) promotes the authorization-code store and
+# its StateStore the same way: the SDK provider must exist before the
+# MCPServer constructor too, and its ledgers must be the very ledgers the
+# handwritten confirm/activate legs and the SDK AS routes (/authorize
+# /token /register) share, or the human consent page would mint codes the
+# SDK token exchange cannot consume.
+_SDK_TOKEN_AUTHORITY = None
+_SDK_AUTH_SETTINGS = None
+_SDK_TOKEN_VERIFIER = None
+_SDK_TOKEN_STORE = None
+_SDK_AUTH_CODE_STORE = None
+_SDK_AUTH_PROVIDER = None
+_SDK_AUTHORIZE_PAGE = None
+# Ticket 7 (feature endpoints): the device-code / activate / GitCode-login
+# endpoint handlers registered as custom_starlette_routes on the MCPServer
+# (streamable_http_app merges them with lowest matching precedence), plus
+# the path set build_http_app forwards to that inner (SDK) app while the
+# gate is on. Both stay empty in the default SDK-off wiring, so the
+# handwritten dispatcher keeps serving every path itself and the surface
+# is byte-identical to before this ticket.
+_SDK_FEATURE_ENDPOINTS: tuple[Callable[..., Any], ...] = ()
+_SDK_FEATURE_PATHS: frozenset[str] = frozenset()
+
+if _sdk_auth_enabled():
+    _sdk_public_url = (os.environ.get("CANNBOT_MCP_PUBLIC_URL") or "").strip().rstrip("/")
+    if not _sdk_public_url:
+        # AuthSettings needs a concrete issuer/resource identity and the
+        # import-time wiring has no request Host to derive one from; a
+        # guessed URL would silently mis-bind every token audience. Fail
+        # closed to the handwritten chain instead.
+        print(
+            "cannbot-mcp: CANNBOT_MCP_SDK_AUTH=on requires "
+            "CANNBOT_MCP_PUBLIC_URL (the SDK AuthSettings issuer/resource "
+            "identity is derived from it); staying on the handwritten auth "
+            "chain.",
+            file=sys.stderr,
+        )
+    else:
+        from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
+
+        # Script-launch alias: `python server.py` (the platform-start.sh
+        # and docker-entrypoint.sh launch path) executes this file as
+        # __main__, so 'server' is not in sys.modules when the imports
+        # below run. sdk_auth_provider/sdk_auth_verifier both
+        # `import server` at module top; without this alias that import
+        # re-executes the whole file a second time as module 'server',
+        # whose own SDK-auth block then hits the partially initialized
+        # sdk_auth_provider and crashes (AttributeError on
+        # CannbotAuthProvider). Aliasing the module under execution to
+        # 'server' gives those imports the same partially-initialized
+        # module the in-process path (import server first) always saw;
+        # they only resolve server attributes at call time, after this
+        # module has finished executing. No-op when imported as 'server'.
+        sys.modules.setdefault("server", sys.modules[__name__])
+        # Import order note: sdk_auth_verifier and sdk_auth_provider both
+        # import server, so neither may be imported standalone-first in an
+        # SDK-auth-on process.
+        import sdk_auth_provider
+        import sdk_auth_verifier
+
+        _sdk_resource_url = _sdk_public_url + "/mcp"
+        _SDK_TOKEN_AUTHORITY = SelfIssuedTokenAuthority()
+        _SDK_AUTH_SETTINGS = AuthSettings(
+            issuer_url=_sdk_public_url,
+            resource_server_url=_sdk_resource_url,
+            validate_token_resource=True,
+            # Ticket 6 (AS wiring): dynamic client registration on, so the
+            # SDK mounts POST /register against
+            # provider.register_client/get_client (the fixed public
+            # client semantics of the handwritten /register handler).
+            client_registration_options=ClientRegistrationOptions(enabled=True),
+        )
+        _SDK_TOKEN_STORE = state_store.open_state_store()
+        _SDK_AUTH_CODE_STORE = AuthCodeStore(_SDK_TOKEN_STORE)
+        _SDK_AUTH_PROVIDER = sdk_auth_provider.CannbotAuthProvider(
+            _SDK_AUTH_CODE_STORE,
+            _SDK_TOKEN_STORE,
+            _SDK_TOKEN_AUTHORITY,
+            resource_server_url=_sdk_resource_url,
+        )
+        _SDK_TOKEN_VERIFIER = sdk_auth_verifier.CannbotTokenVerifier(
+            _SDK_TOKEN_AUTHORITY,
+            GitCodeTokenVerifier() if _gitcode_verify_enabled() else None,
+            resource_server_url=_sdk_resource_url,
+        )
+
+class CannbotProviderTokenVerifier(ProviderTokenVerifier):
+    """ProviderTokenVerifier carrying the four-track CannbotTokenVerifier.
+
+    SDK constraint: MCPServer takes auth_server_provider XOR
+    token_verifier; mounting the provider makes the constructor auto-wrap
+    it in the SDK's ProviderTokenVerifier, whose verify_token routes to
+    provider.load_access_token — a later ticket's NotImplementedError
+    stub. This subclass keeps the ProviderTokenVerifier type the bearer
+    middleware consumes but delegates the actual verification to the
+    ticket-2 CannbotTokenVerifier, so /mcp admission keeps the ticket-3
+    semantics (four-track routing, resource_server_url audience binding)
+    while the AS routes ride the provider.
+    """
+
+    def __init__(self, provider: Any, verifier: Any) -> None:
+        super().__init__(provider)
+        self._verifier = verifier
+
+    async def verify_token(self, token: str) -> AccessToken | None:
+        return await self._verifier.verify_token(token)
+
 mcp_server = MCPServer(
     "cannbot-knowledge",
     instructions=(
@@ -1590,7 +1732,130 @@ mcp_server = MCPServer(
         "before searching; searches without a platform fail closed."
     ),
     version=_repository_version(),
+    # None (default) leaves the SDK auth stack unmounted, which is
+    # byte-identical to the previous constructor: streamable_http_app then
+    # mounts no middleware and no RFC 9728 route.
+    auth=_SDK_AUTH_SETTINGS,
+    # Ticket 6 (AS wiring): with the provider mounted,
+    # streamable_http_app() auto-mounts the SDK AS route set (/authorize
+    # /token /register + RFC 8414) behind this same CANNBOT_MCP_SDK_AUTH
+    # gate. Passing token_verifier here too would violate the SDK's
+    # either/or constraint; the constructor auto-wraps the provider in the
+    # SDK's ProviderTokenVerifier, and the assignment right below swaps
+    # that auto-created verifier for a ProviderTokenVerifier subclass that
+    # keeps the ticket-2 four-track CannbotTokenVerifier logic.
+    auth_server_provider=_SDK_AUTH_PROVIDER,
 )
+
+if _SDK_AUTH_PROVIDER is not None:
+    mcp_server._token_verifier = CannbotProviderTokenVerifier(
+        _SDK_AUTH_PROVIDER, _SDK_TOKEN_VERIFIER
+    )
+
+    async def _sdk_authorize_page(request: Request) -> HTMLResponse:
+        """Human consent page on the SDK /authorize path (ticket 6).
+
+        The SDK's /authorize route speaks programmatic JSON/redirect
+        semantics; a browser needs THIS HTML page. It is registered as a
+        custom starlette route (GET only) and lifted ahead of the SDK's
+        own /authorize route by build_http_app: the SDK appends custom
+        routes with the LOWEST matching precedence, so without the lift
+        its route would shadow this page — on the conflict the custom
+        route wins, and the GET-only registration leaves POST /authorize
+        to the SDK route (Starlette keeps scanning past a method-partial
+        match). The path is root-absolute, exactly the SDK route's own
+        path: this deployment has no PUBLIC_PATH prefix mechanism — the
+        SDK stack derives every path from the single
+        CANNBOT_MCP_PUBLIC_URL fact source (the RFC's fix for the
+        PUBLIC_URL/PUBLIC_PATH dual-variable problem). Rendering reuses
+        auth_pages.authorize_page and the page's form posts back to the
+        handwritten /oauth/authorize/confirm leg, so the grant mints in
+        the same AuthCodeStore the SDK /token exchange consumes. The
+        GitCode-login reentry (code + server-side binding token st) keeps
+        the handwritten /oauth/authorize contract.
+        """
+        if not _auth_server_enabled():
+            return JSONResponse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {"code": -32601, "message": "Method not found"},
+                },
+                status_code=404,
+            )
+        query = request.query_params
+        redirect_uri = (query.get("redirect_uri") or "").strip()
+        response_type = (query.get("response_type") or "").strip()
+        code_param = (query.get("code") or "").strip()
+        binding_token = (query.get("st") or "").strip()
+        signed_in = ""
+        if code_param:
+            # Returning from the GitCode login leg with the same grant:
+            # re-render the consent page instead of minting a new code. The
+            # session carries the original redirect_uri, and the verified
+            # identity comes from the server-side binding (st).
+            session = _SDK_AUTH_CODE_STORE.lookup(code_param)
+            if session is None:
+                return HTMLResponse(
+                    _render_auth_pages().error_page(
+                        "授权请求已过期或已使用，请回到客户端重新发起。"
+                    )
+                )
+            redirect_uri = session.redirect_uri
+            if binding_token:
+                # VerifiedIdentityBinding is defined further down this
+                # module, so it is resolved at request time, not at the
+                # import-time wiring; the wrapper is stateless over the
+                # shared StateStore, so per-request construction is exact.
+                bound = VerifiedIdentityBinding(_SDK_TOKEN_STORE).peek(
+                    binding_token
+                )
+                if bound is None or bound[0] != code_param:
+                    return HTMLResponse(
+                        _render_auth_pages().error_page(
+                            "登录会话已过期或无效，请重新通过 GitCode 登录。"
+                        )
+                    )
+                signed_in = bound[1]
+        else:
+            # PKCE is mandatory for this public-client grant (RFC 7636
+            # §4.4.1, MCP spec authorization requirements): every
+            # authorization code is bound to a challenge at mint time.
+            code_challenge = (query.get("code_challenge") or "").strip()
+            challenge_method = (query.get("code_challenge_method") or "").strip()
+            if not code_challenge or challenge_method != "S256":
+                return HTMLResponse(
+                    _render_auth_pages().error_page(
+                        "授权请求缺少 code_challenge 或未使用 S256 方法；"
+                        "本服务要求公共客户端强制 PKCE。"
+                    )
+                )
+            if response_type != "code" or not redirect_uri:
+                return HTMLResponse(
+                    _render_auth_pages().error_page(
+                        "授权请求缺少 redirect_uri 或 response_type 不是 code。"
+                    )
+                )
+            state = query.get("state") or ""
+            # RFC 8707 resource indicator: canonical form matches the
+            # handwritten authorize endpoint (trailing slash stripped).
+            resource = (query.get("resource") or "").strip().rstrip("/")
+            session = _SDK_AUTH_CODE_STORE.create(
+                redirect_uri, code_challenge, state, resource
+            )
+        return HTMLResponse(
+            _render_auth_pages().authorize_page(
+                session.code,
+                signed_in=signed_in,
+                gitcode_available=bool(_oauth_client_id()),
+                session_token=binding_token if signed_in else "",
+                path_prefix=_public_path(),
+            )
+        )
+
+    mcp_server.custom_route("/authorize", methods=["GET"])(_sdk_authorize_page)
+    _SDK_AUTHORIZE_PAGE = _sdk_authorize_page
+
 _LOGGER = CallLogger()
 _RUNNER: CliRunner | None = None
 _READER: CardReader | None = None
@@ -1959,7 +2224,9 @@ def _activation_page(prefill: str) -> str:
     this page via /activate?code=… → GitCode login.
     """
     return _render_auth_pages().activation_page(
-        prefill, gitcode_available=bool(_oauth_client_id())
+        prefill,
+        gitcode_available=bool(_oauth_client_id()),
+        path_prefix=_public_path(),
     )
 
 
@@ -1972,6 +2239,7 @@ def _activation_confirm_page(
         signed_in,
         gitcode_available=bool(_oauth_client_id()),
         session_token=session_token,
+        path_prefix=_public_path(),
     )
 
 
@@ -2088,6 +2356,810 @@ def _request_jsonrpc_id(body: bytes) -> Any:
         return message.get("id")
     return None
 
+@dataclass
+class _AuthLegDeps:
+    """Dependencies the device-code / activate / GitCode-login legs run on.
+
+    One value serves both registrations of the same handler bodies
+    (ticket 7): the handwritten dispatcher inside build_http_app (the
+    SDK-off default, behaviour identical to before) and the
+    custom_starlette_routes the SDK-on wiring mounts on the MCPServer.
+    The stores, broker, binding and authority are the shared ledgers of
+    whichever wiring built them, so a grant minted through one
+    registration is consumable through the other. ``device_audience``
+    selects the resource identity the device-flow pair mints for (None
+    keeps the handwritten ``_public_url(scope)`` derivation; the SDK-on
+    legs pass the SDK resource identity the /mcp bearer comparison
+    requires), and ``sdk_as_active`` carries the ticket-6 routing
+    decisions embedded in the shared bodies (the auth-code/refresh
+    grants yield to the SDK /token endpoint; the GitCode callback
+    reenters the custom /authorize consent page).
+    """
+
+    device_store: DeviceCodeStore
+    auth_code_store: AuthCodeStore
+    gitcode_login: GitCodeLoginBroker
+    identity_binding: VerifiedIdentityBinding
+    token_authority: SelfIssuedTokenAuthority
+    token_store: state_store.StateStore
+    device_audience: str | None = None
+    sdk_as_active: bool = False
+
+
+async def _asgi_leg_response(
+    request: Request, leg: Callable[..., Any]
+) -> Response:
+    """Serve one handwritten ASGI auth leg behind a Starlette custom route.
+
+    Ticket 7 reuses the existing handler bodies verbatim (logic
+    unchanged, registration method changed), so the custom route bridges
+    Starlette back down to raw ASGI: the drained request body is replayed
+    to the leg in one message (the _replay_body shape), the leg's
+    http.response messages are captured, and they are rebuilt into the
+    Response Starlette sends. The leg keeps reading the same ASGI scope,
+    so every URL derivation inside it (_public_url over PUBLIC_URL/Host,
+    root-relative redirect Locations) answers exactly as on the
+    handwritten registration — no PUBLIC_PATH prefix mechanism exists and
+    none is introduced.
+    """
+    body = await request.body()
+    replayed = {"delivered": False}
+
+    async def receive() -> dict[str, Any]:
+        if not replayed["delivered"]:
+            replayed["delivered"] = True
+            return {"type": "http.request", "body": body, "more_body": False}
+        return {"type": "http.disconnect"}
+
+    start: dict[str, Any] = {}
+    chunks: list[bytes] = []
+
+    async def send(message: dict[str, Any]) -> None:
+        if message.get("type") == "http.response.start":
+            start.update(message)
+        elif message.get("type") == "http.response.body":
+            chunks.append(message.get("body", b""))
+
+    await leg(request.scope, receive, send)
+    headers = {
+        key.decode("latin-1"): value.decode("latin-1")
+        for key, value in start.get("headers", [])
+    }
+    return Response(
+        content=b"".join(chunks),
+        status_code=start.get("status", 200),
+        headers=headers,
+    )
+
+
+async def _handle_device_code(
+    scope: dict[str, Any],
+    receive: Callable[..., Any],
+    send: Callable[..., Any],
+    legs: _AuthLegDeps,
+) -> None:
+    """RFC 8628 §3.1 device authorization endpoint (ticket 7: extracted
+    verbatim from the build_http_app dispatcher so the custom-route
+    registration reuses it).
+
+    Bare path like /health: no auth, no rate limiting by principal, no
+    call log — but a coarse per-IP throttle so the open endpoint cannot
+    be hammered (30 requests/IP/minute, reusing the cooldown gate).
+    """
+    if not _auth_server_enabled():
+        await _drain_body(receive)
+        await _send_404(send)
+        return
+    client_ip = (scope.get("client") or ("unknown", 0))[0]
+    if not device_endpoint_gate().check(client_ip).allowed:
+        await _drain_body(receive)
+        await _send_json_response(
+            send,
+            429,
+            {"error": "slow_down_permanent", "retry_after_s": 60},
+            [(b"retry-after", b"60")],
+        )
+        return
+    await _drain_body(receive)
+    device_code, user_code = legs.device_store.create()
+    await _send_json_response(
+        send,
+        200,
+        {
+            "device_code": device_code,
+            "user_code": user_code,
+            "verification_uri": f"{_public_url(scope)}/activate",
+            "verification_uri_complete": (
+                f"{_public_url(scope)}/activate?code={user_code}"
+            ),
+            "expires_in": legs.device_store.ttl_s,
+            "interval": _env_int(DEVICE_INTERVAL_ENV, 5),
+        },
+    )
+
+
+async def _handle_device_token(
+    scope: dict[str, Any],
+    receive: Callable[..., Any],
+    send: Callable[..., Any],
+    legs: _AuthLegDeps,
+) -> None:
+    """RFC 8628 §3.4/3.5 token polling (ticket 7: extracted verbatim from
+    the build_http_app dispatcher). Same bare-path treatment as the
+    device authorization endpoint.
+    """
+    if not _auth_server_enabled():
+        await _drain_body(receive)
+        await _send_404(send)
+        return
+    body = await _drain_body(receive)
+    fields: dict[str, str] = {}
+    for pair in body.decode("utf-8", "replace").split("&"):
+        if "=" in pair:
+            key, _, value = pair.partition("=")
+            fields[unquote_plus(key)] = unquote_plus(value)
+    grant_type = fields.get("grant_type", "")
+    if grant_type == "authorization_code":
+        if legs.sdk_as_active:
+            # SDK AS mode (ticket 6): the SDK /token route inside
+            # `inner` owns the authorization-code exchange, so this
+            # handwritten grant yields here. Ticket 8 re-scoped the
+            # RFC's phase-3 deletion: the body below stays as the
+            # SDK_AUTH=off (fallback) implementation, so reverting
+            # the env keeps the full legacy grant set. The
+            # device-code grant further down stays on this endpoint
+            # in BOTH modes (the SDK mounts no device flow; RFC §2.4
+            # keeps that leg self-managed).
+            await _send_json_response(
+                send,
+                400,
+                {
+                    "error": "unsupported_grant_type",
+                    "hint": "SDK 模式下授权码换发走 /token 端点。",
+                },
+            )
+            return
+        # Self-hosted authorization-code exchange (RFC 6749 §4.1.3).
+        # The client proves itself with PKCE (public client, no
+        # secret); the redirect must loopback-match the stored one.
+        code = fields.get("code", "").strip()
+        redirect_uri = fields.get("redirect_uri", "").strip()
+        code_verifier = fields.get("code_verifier", "").strip()
+        session = legs.auth_code_store.consume(
+            code, redirect_uri, code_verifier
+        )
+        if session is None:
+            await _send_json_response(
+                send, 400, {"error": "invalid_grant"}
+            )
+            return
+        assert session.username is not None
+        # RFC 8707: the aud of the minted pair is the resource the
+        # client named at authorize time (or this server's URL).
+        token_audience = session.resource or _public_url(scope)
+        access, expires_in = legs.token_authority.sign(
+            session.username, "access", token_audience
+        )
+        refresh, _ = legs.token_authority.sign(
+            session.username, "refresh", token_audience
+        )
+        # One-time-use ledger (13b): register the fresh refresh id.
+        refresh_jti = SelfIssuedTokenAuthority.token_jti(refresh)
+        assert refresh_jti is not None
+        legs.token_store.put(
+            f"jti:{refresh_jti}", "live",
+            legs.token_authority.refresh_remaining_s(refresh),
+        )
+        await _send_json_response(
+            send,
+            200,
+            {
+                "access_token": access,
+                "refresh_token": refresh,
+                "token_type": "Bearer",
+                "expires_in": expires_in,
+                "scope": "mcp",
+            },
+        )
+        return
+    if grant_type == "refresh_token":
+        if legs.sdk_as_active:
+            # SDK AS mode (ticket 6): the SDK /token route owns the
+            # refresh grant, so this handwritten grant yields here.
+            # Ticket 8 keeps the body below as the SDK_AUTH=off
+            # (fallback) implementation — same re-scope as the
+            # authorization-code grant above.
+            await _send_json_response(
+                send,
+                400,
+                {
+                    "error": "unsupported_grant_type",
+                    "hint": "SDK 模式下刷新换发走 /token 端点。",
+                },
+            )
+            return
+        refresh_token = fields.get("refresh_token", "")
+        # RFC 8707: the refresh grant may carry a resource
+        # indicator; when present it must match the token's aud.
+        # Absent defaults to this server (legacy clients).
+        # Trailing-slash canonicalization matches the authorize
+        # endpoint's (clients derive the resource from their URL).
+        requested_resource = (
+            (fields.get("resource") or "").strip().rstrip("/")
+        )
+        verified = legs.token_authority.verify(
+            refresh_token,
+            "refresh",
+            requested_resource
+            or SelfIssuedTokenAuthority._default_audience(scope),
+        )
+        if verified is None:
+            await _send_json_response(
+                send, 400, {"error": "invalid_grant"}
+            )
+            return
+        username, _typ = verified
+        # One-time-use ledger (13b): a refresh token is consumed by
+        # the refresh itself. The take() is atomic — replaying an
+        # old (possibly leaked) refresh finds the id gone and gets
+        # invalid_grant instead of a second token pair.
+        old_jti = SelfIssuedTokenAuthority.token_jti(refresh_token)
+        if old_jti is None or legs.token_store.take(f"jti:{old_jti}") is None:
+            await _send_json_response(
+                send, 400, {"error": "invalid_grant"}
+            )
+            return
+        # Keep the refresh pair on the SAME audience the old token
+        # carried. With no explicit resource, that is this
+        # server's URL; with one, verify() already enforced it.
+        token_aud = requested_resource or _public_url(scope)
+        access, expires_in = legs.token_authority.sign(
+            username, "access", token_aud
+        )
+        # Book the new refresh's id for its whole lifetime: the
+        # next refresh that presents it must find it here.
+        new_refresh, _ = legs.token_authority.sign(
+            username, "refresh", token_aud
+        )
+        new_jti = SelfIssuedTokenAuthority.token_jti(new_refresh)
+        assert new_jti is not None
+        legs.token_store.put(
+            f"jti:{new_jti}", "live",
+            legs.token_authority.refresh_remaining_s(new_refresh),
+        )
+        await _send_json_response(
+            send,
+            200,
+            {
+                "access_token": access,
+                "refresh_token": new_refresh,
+                "token_type": "Bearer",
+                "expires_in": expires_in,
+            },
+        )
+        return
+    if grant_type != "urn:ietf:params:oauth:grant-type:device_code":
+        await _send_json_response(
+            send, 400, {"error": "unsupported_grant_type"}
+        )
+        return
+    device_code = fields.get("device_code", "")
+    session = legs.device_store.poll(device_code)
+    if session is None:
+        # Unknown or expired: RFC 8628 expired_token.
+        await _send_json_response(
+            send, 400, {"error": "expired_token"}
+        )
+        return
+    if session.state == "pending":
+        # Poll faster than the advertised interval gets slow_down.
+        gate = device_poll_gate()
+        client_ip = (scope.get("client") or ("unknown", 0))[0]
+        if not gate.check(client_ip).allowed:
+            await _send_json_response(
+                send,
+                429,
+                {"error": "slow_down"},
+                [(b"retry-after", b"5")],
+            )
+            return
+        await _send_json_response(
+            send, 400, {"error": "authorization_pending"}
+        )
+        return
+    if session.state == "denied":
+        await _send_json_response(
+            send, 400, {"error": "access_denied"}
+        )
+        return
+    # allowed: mint the token pair for the bound username, then
+    # consume the session so tokens are handed out exactly once —
+    # a repeat poll sees unknown/expired (RFC 8628 one-shot).
+    allowed = legs.device_store.consume(device_code)
+    if allowed is None:
+        await _send_json_response(
+            send, 400, {"error": "expired_token"}
+        )
+        return
+    assert allowed.username is not None
+    # RFC 8707: device-flow tokens are audience-bound to this
+    # server (device flow has no redirect, so this server IS the
+    # resource the client wants). The SDK-on legs pin
+    # device_audience to the SDK resource identity (the full
+    # endpoint URL the /mcp bearer comparison accepts); the
+    # handwritten wiring leaves it None and keeps the
+    # _public_url derivation.
+    token_aud = legs.device_audience or _public_url(scope)
+    access, expires_in = legs.token_authority.sign(
+        allowed.username, "access", token_aud
+    )
+    refresh, _ = legs.token_authority.sign(
+        allowed.username, "refresh", token_aud
+    )
+    # One-time-use ledger (13b): register the fresh refresh id so
+    # the first refresh grant that presents it can consume it.
+    refresh_jti = SelfIssuedTokenAuthority.token_jti(refresh)
+    assert refresh_jti is not None
+    legs.token_store.put(
+        f"jti:{refresh_jti}", "live",
+        legs.token_authority.refresh_remaining_s(refresh),
+    )
+    await _send_json_response(
+        send,
+        200,
+        {
+            "access_token": access,
+            "refresh_token": refresh,
+            "token_type": "Bearer",
+            "expires_in": expires_in,
+            "scope": "mcp",
+        },
+    )
+
+
+async def _handle_gitcode_login(
+    scope: dict[str, Any],
+    receive: Callable[..., Any],
+    send: Callable[..., Any],
+    legs: _AuthLegDeps,
+) -> None:
+    """GitCode identity source for the activation page (ticket 7:
+    extracted verbatim from the build_http_app dispatcher).
+
+    The redirect_uri below is OUR fixed address, registered on the
+    GitCode application — the loopback-ephemeral-port problem of
+    the MCP client flow does not exist on this leg.
+    The state carries either a device user_code ("ABCD-EFGH") or
+    an authcode grant marker ("authcode:<code>"); the callback
+    routes back accordingly.
+    """
+    if not _auth_server_enabled():
+        await _drain_body(receive)
+        await _send_404(send)
+        return
+    query = _query_params(scope)
+    raw_state = (query.get("state") or "").strip()
+    authcode_mode = raw_state.startswith("authcode:")
+    # device user_codes are uppercased (XXXX-XXXX form); authcode
+    # session codes are token_urlsafe and MUST stay case-exact.
+    user_code = (
+        raw_state.removeprefix("authcode:").strip().upper()
+        if not authcode_mode
+        else raw_state.removeprefix("authcode:").strip()
+    )
+    client_id = _oauth_client_id()
+    session = (
+        legs.device_store.lookup(user_code)
+        if (user_code and not authcode_mode)
+        else None
+    )
+    authcode_session = (
+        legs.auth_code_store.lookup(user_code) if authcode_mode else None
+    )
+    if not client_id:
+        await _drain_body(receive)
+        await _send_html_response(
+            send,
+            200,
+            _activation_error_page(
+                "服务器未配置 GitCode 登录（CANNBOT_MCP_OAUTH_CLIENT_ID）；"
+                "请回到上一页使用用户名方式确认。"
+            ),
+        )
+        return
+    if not authcode_mode and session is None:
+        await _drain_body(receive)
+        await _send_html_response(
+            send,
+            200,
+            _activation_error_page("未知或已过期的设备码，请回到终端重新发起。"),
+        )
+        return
+    if authcode_mode and authcode_session is None:
+        await _drain_body(receive)
+        await _send_html_response(
+            send,
+            200,
+            _render_auth_pages().error_page(
+                "授权请求已过期或已使用，请回到客户端重新发起。"
+            ),
+        )
+        return
+    _verifier, challenge = legs.gitcode_login.begin(raw_state) or ("", "")
+    authorize_url = (
+        GITCODE_AUTHORIZE_URL
+        + "?"
+        + urllib.parse.urlencode(
+            {
+                "response_type": "code",
+                "client_id": client_id,
+                "redirect_uri": f"{_public_url(scope)}/oauth/gitcode/callback",
+                "state": raw_state,
+                "code_challenge": challenge,
+                "code_challenge_method": "S256",
+            }
+        )
+    )
+    await _drain_body(receive)
+    await send(
+        {
+            "type": "http.response.start",
+            "status": 302,
+            "headers": [(b"location", authorize_url.encode())],
+        }
+    )
+    await send({"type": "http.response.body", "body": b""})
+
+
+async def _handle_gitcode_callback(
+    scope: dict[str, Any],
+    receive: Callable[..., Any],
+    send: Callable[..., Any],
+    legs: _AuthLegDeps,
+) -> None:
+    """Consume the code, exchange for the GitCode username (ticket 7:
+    extracted verbatim from the build_http_app dispatcher), then bounce
+    back to the activation confirmation (device flow) or the authorize
+    consent page (authorization-code flow) with it.
+    """
+    if not _auth_server_enabled():
+        await _drain_body(receive)
+        await _send_404(send)
+        return
+    query = _query_params(scope)
+    code = (query.get("code") or "").strip()
+    raw_state = (query.get("state") or "").strip()
+    authcode_mode = raw_state.startswith("authcode:")
+    # device user_codes are uppercased (XXXX-XXXX form); authcode
+    # session codes are token_urlsafe and MUST stay case-exact.
+    user_code = (
+        raw_state.removeprefix("authcode:").strip().upper()
+        if not authcode_mode
+        else raw_state.removeprefix("authcode:").strip()
+    )
+    error = (query.get("error") or "").strip()
+    if error:
+        await _drain_body(receive)
+        await _send_html_response(
+            send, 200, _activation_error_page(f"GitCode 返回错误：{error}")
+        )
+        return
+    pkce_verifier = (
+        legs.gitcode_login.take_verifier(raw_state) if raw_state else None
+    )
+    if not code or not raw_state or pkce_verifier is None:
+        await _drain_body(receive)
+        await _send_html_response(
+            send,
+            200,
+            _activation_error_page("登录会话已过期或无效，请回到终端重新发起。"),
+        )
+        return
+    username = await _gitcode_exchange_login(
+        code, pkce_verifier, f"{_public_url(scope)}/oauth/gitcode/callback"
+    )
+    if username is None:
+        await _drain_body(receive)
+        await _send_html_response(
+            send,
+            200,
+            _render_auth_pages().error_page(
+                "GitCode 登录失败（服务不可达或已拒绝）。",
+                retry_url=_public_path()
+                        + "/oauth/gitcode/login?state="
+                + _html_escape(raw_state),
+            ),
+        )
+        return
+    # The verified identity lands in a SERVER-SIDE binding keyed by
+    # an unguessable token; the username itself never appears in
+    # the redirect URL (or any later form field).
+    binding_token = legs.identity_binding.create(user_code, username)
+    if authcode_mode:
+        # SDK AS mode reenters the custom /authorize consent page
+        # (the handwritten /oauth/authorize handler is skipped
+        # there); the legacy path stays for the SDK-off wiring.
+        back_to = (
+            _public_path()
+            + ("/authorize" if legs.sdk_as_active else "/oauth/authorize")
+            + "?code="
+            + urllib.parse.quote(user_code)
+            + "&st="
+            + urllib.parse.quote(binding_token)
+        )
+    else:
+        back_to = (
+            _public_path()
+            + "/activate?code="
+            + urllib.parse.quote(user_code)
+            + "&st="
+            + urllib.parse.quote(binding_token)
+        )
+    await _drain_body(receive)
+    await send(
+        {
+            "type": "http.response.start",
+            "status": 302,
+            "headers": [(b"location", back_to.encode())],
+        }
+    )
+    await send({"type": "http.response.body", "body": b""})
+
+
+async def _handle_activate(
+    scope: dict[str, Any],
+    receive: Callable[..., Any],
+    send: Callable[..., Any],
+    legs: _AuthLegDeps,
+) -> None:
+    """RFC 8628 §3.3 user interaction (ticket 7: extracted verbatim from
+    the build_http_app dispatcher). UX contract:
+
+    with a GitCode application configured, opening /activate goes
+    STRAIGHT to the GitCode login (the user never types a device
+    code — the terminal link /activate?code=… carries it in the
+    query, the one-click direct connect). After the login the flow
+    returns with a server-side identity binding token (st), and one
+    click on 允许 finishes it. The manual code-entry form only
+    appears when no client_id is configured — with GitCode
+    configured the username is ALWAYS the server-stored verified
+    identity, never a form field.
+    """
+    if not _auth_server_enabled():
+        await _drain_body(receive)
+        await _send_404(send)
+        return
+    query = _query_params(scope)
+    binding_token = (query.get("st") or "").strip()
+    code_param = (query.get("code") or "").strip().upper()
+    if scope.get("method") == "GET" and code_param and _oauth_client_id():
+        if not binding_token:
+            # Straight to GitCode: /activate?code=XXXX-XXXX becomes a
+            # one-link experience (the terminal prints exactly this).
+            login_url = (
+                "/oauth/gitcode/login?state="
+                + urllib.parse.quote(code_param)
+            )
+            await _drain_body(receive)
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 302,
+                    "headers": [(b"location", login_url.encode())],
+                }
+            )
+            await send({"type": "http.response.body", "body": b""})
+            return
+        # Returning from the GitCode login: the binding holds the
+        # verified identity for THIS grant.
+        bound = legs.identity_binding.peek(binding_token)
+        if bound is None or bound[0] != code_param:
+            await _drain_body(receive)
+            await _send_html_response(
+                send,
+                200,
+                _activation_error_page(
+                    "登录会话已过期或无效，请回到终端重新发起。"
+                ),
+            )
+            return
+        await _drain_body(receive)
+        await _send_html_response(
+            send,
+            200,
+            _activation_confirm_page(
+                code_param,
+                signed_in=bound[1],
+                session_token=binding_token,
+            ),
+        )
+        return
+    body = await _drain_body(receive)
+    fields: dict[str, str] = {}
+    for pair in body.decode("utf-8", "replace").split("&"):
+        if "=" in pair:
+            key, _, value = pair.partition("=")
+            fields[unquote_plus(key)] = unquote_plus(value)
+    if scope.get("method") != "POST":
+        await _send_html_response(
+            send,
+            200,
+            _activation_page((query.get("code") or "").strip()),
+        )
+        return
+    user_code = fields.get("user_code", "").strip().upper()
+    session = legs.device_store.lookup(user_code)
+    if session is None:
+        await _send_html_response(
+            send, 200, _activation_error_page("未知或已过期的设备码，请回到终端重新发起。")
+        )
+        return
+    action = fields.get("action", "")
+    if action == "allow":
+        if _oauth_client_id():
+            # GitCode configured: the username comes ONLY from the
+            # server-side verified binding (one-shot); any username
+            # value in the form is ignored.
+            form_binding = (fields.get("st") or "").strip()
+            bound = (
+                legs.identity_binding.take(form_binding)
+                if form_binding
+                else None
+            )
+            if bound is None or bound[0] != user_code:
+                await _send_html_response(
+                    send,
+                    200,
+                    _activation_error_page(
+                        "缺少有效的登录会话，请通过 GitCode 登录后再确认。"
+                    ),
+                )
+                return
+            username = bound[1]
+        else:
+            # No GitCode application configured: manual username
+            # bootstrap (trusted-network deployments only).
+            username = fields.get("username", "").strip()
+            if not username:
+                await _send_html_response(
+                    send, 200, _activation_error_page("请填写用户名。")
+                )
+                return
+        allowed = legs.device_store.allow(user_code, username)
+        if allowed is None:
+            await _send_html_response(
+                send, 200, _activation_error_page("设备码已失效（可能刚被使用或过期）。")
+            )
+            return
+        await _send_html_response(
+            send,
+            200,
+            _render_auth_pages().success_page(username),
+        )
+        return
+    if action == "deny":
+        legs.device_store.deny(user_code)
+        await _send_html_response(
+            send,
+            200,
+            _render_auth_pages().denied_page(),
+        )
+        return
+    await _send_html_response(
+        send,
+        200,
+        _activation_confirm_page(user_code),
+    )
+
+
+if _SDK_AUTH_PROVIDER is not None:
+    # Ticket 7 (feature endpoints): the SDK auth stack has no device-code
+    # flow, no RFC 8628 user-interaction page and no GitCode login leg,
+    # so those endpoints are mounted back onto the SDK stack as custom
+    # routes (MCPServer.custom_route appends to custom_starlette_routes;
+    # streamable_http_app merges them, and no SDK route claims these
+    # paths). The handler bodies are the very ones the handwritten
+    # build_http_app dispatcher runs — extracted to module level above
+    # and shared through _AuthLegDeps — so the logic is unchanged and
+    # only the registration method differs. Page URLs keep the
+    # handwritten derivation on both registrations (_public_url over
+    # CANNBOT_MCP_PUBLIC_URL / Host, root-relative redirect Locations);
+    # this deployment has no PUBLIC_PATH prefix mechanism, and none is
+    # introduced here. This block sits AFTER the extracted handler
+    # definitions (a fresh SDK_AUTH=on import evaluates
+    # _sdk_leg_endpoint(_handle_...) at import time — a reload-only
+    # placement above them would NameError on the production path, the
+    # same masking ticket 6 fixed for _env_int).
+
+    def _sdk_feature_legs() -> "_AuthLegDeps":
+        """Legs for the custom-route feature endpoints, per request.
+
+        Constructed lazily like the VerifiedIdentityBinding in
+        _sdk_authorize_page: every component is a stateless wrapper over
+        the module-level shared ledgers (DeviceCodeStore reads only its
+        env-derived TTL), so a per-request build is exact. Reusing
+        _SDK_TOKEN_STORE/_SDK_AUTH_CODE_STORE/_SDK_TOKEN_AUTHORITY keeps
+        one ledger set across the custom-route legs, the SDK AS routes
+        and the handwritten confirm leg.
+        """
+        return _AuthLegDeps(
+            device_store=DeviceCodeStore(_SDK_TOKEN_STORE),
+            auth_code_store=_SDK_AUTH_CODE_STORE,
+            gitcode_login=GitCodeLoginBroker(_SDK_TOKEN_STORE),
+            identity_binding=VerifiedIdentityBinding(_SDK_TOKEN_STORE),
+            token_authority=_SDK_TOKEN_AUTHORITY,
+            token_store=_SDK_TOKEN_STORE,
+            # RFC 8707 on the SDK stack: the resource identity is
+            # resource_server_url (the full endpoint URL), so the device
+            # pair mints audience-bound to exactly what the ticket-3
+            # bearer comparison on /mcp accepts. None would keep the
+            # handwritten _public_url(scope) derivation, which that
+            # strict resource check rejects.
+            device_audience=_sdk_resource_url,
+            sdk_as_active=True,
+        )
+
+    def _sdk_leg_endpoint(leg: Callable[..., Any]) -> Callable[[Request], Any]:
+        """Wrap one extracted handwritten leg as a custom-route endpoint.
+
+        The leg body runs unchanged behind the ASGI bridge over the
+        shared SDK ledgers; only the registration method (custom route
+        merged into the SDK app) differs from the handwritten dispatch.
+        """
+
+        async def endpoint(request: Request) -> Response:
+            return await _asgi_leg_response(
+                request,
+                lambda scope, receive, send: leg(
+                    scope, receive, send, _sdk_feature_legs()
+                ),
+            )
+
+        return endpoint
+
+    _sdk_device_code_endpoint = _sdk_leg_endpoint(_handle_device_code)
+    _sdk_device_token_endpoint = _sdk_leg_endpoint(_handle_device_token)
+    _sdk_activate_endpoint = _sdk_leg_endpoint(_handle_activate)
+    _sdk_gitcode_login_endpoint = _sdk_leg_endpoint(_handle_gitcode_login)
+    _sdk_gitcode_callback_endpoint = _sdk_leg_endpoint(_handle_gitcode_callback)
+    # GET+POST covers every method the handwritten no-method-check
+    # surface ever answered in practice; beyond that the router answers
+    # 405 — a registration-level difference the handwritten legs never
+    # produced, and the behavioural proof (in the wiring test) that a
+    # request took the custom-route path.
+    mcp_server.custom_route("/oauth/device/code", methods=["GET", "POST"])(
+        _sdk_device_code_endpoint
+    )
+    mcp_server.custom_route("/oauth/device/token", methods=["GET", "POST"])(
+        _sdk_device_token_endpoint
+    )
+    mcp_server.custom_route("/activate", methods=["GET", "POST"])(
+        _sdk_activate_endpoint
+    )
+    mcp_server.custom_route("/oauth/gitcode/login", methods=["GET", "POST"])(
+        _sdk_gitcode_login_endpoint
+    )
+    mcp_server.custom_route("/oauth/gitcode/callback", methods=["GET", "POST"])(
+        _sdk_gitcode_callback_endpoint
+    )
+    _SDK_FEATURE_ENDPOINTS = (
+        _sdk_device_code_endpoint,
+        _sdk_device_token_endpoint,
+        _sdk_activate_endpoint,
+        _sdk_gitcode_login_endpoint,
+        _sdk_gitcode_callback_endpoint,
+    )
+    _SDK_FEATURE_PATHS = frozenset(
+        (
+            "/oauth/device/code",
+            "/oauth/device/token",
+            "/activate",
+            "/oauth/gitcode/login",
+            "/oauth/gitcode/callback",
+        )
+    )
+
+
 def build_http_app(
     knowledge_server: MCPServer,
     tokens: TokenList,
@@ -2101,11 +3173,73 @@ def build_http_app(
         streamable_http_path="/mcp", stateless_http=True, host=host
     )
 
-    token_authority = SelfIssuedTokenAuthority()
+    # SDK auth stack: a
+    # knowledge_server constructed with AuthSettings + a TokenVerifier (the
+    # CANNBOT_MCP_SDK_AUTH=on wiring at module level) has already mounted
+    # the SDK bearer middleware and the RFC 9728 route inside
+    # streamable_http_app() above. Detect it off the server itself so stub
+    # servers in tests keep the handwritten chain, and mirror the SDK's
+    # 9728 declaration for the bare well-known path the SDK does not
+    # route (its metadata URL is resource_server_url-derived, i.e.
+    # /mcp-suffixed).
+    _server_auth = getattr(
+        getattr(knowledge_server, "settings", None), "auth", None
+    )
+    sdk_rs_active = _server_auth is not None and getattr(
+        knowledge_server, "_token_verifier", None
+    ) is not None
+    # SDK AS wiring (ticket 6): the same gate, one level up — a server
+    # constructed with auth_server_provider has the SDK AS route set
+    # (/authorize /token /register + RFC 8414) mounted inside `inner`,
+    # served by the module-level CannbotAuthProvider.
+    sdk_as_active = getattr(knowledge_server, "_auth_server_provider", None) is not None
+    # Ticket 7 (feature endpoints): the device-code/activate/GitCode-login
+    # legs are custom routes on the SDK stack when the wiring mounted them.
+    # Detected off the server's own custom_starlette_routes (the
+    # registration the SDK-on wiring made), so stub servers in tests keep
+    # the handwritten dispatcher serving those paths.
+    sdk_feature_endpoints = any(
+        getattr(route, "endpoint", None) in _SDK_FEATURE_ENDPOINTS
+        for route in (
+            getattr(knowledge_server, "_custom_starlette_routes", None) or []
+        )
+    )
+    if sdk_as_active and _SDK_AUTHORIZE_PAGE is not None:
+        # The custom /authorize consent page rides custom_starlette_routes,
+        # which the SDK appends with the LOWEST matching precedence — its
+        # own /authorize route would shadow the page. Resolve the conflict
+        # in the custom route's favour: lift it to the front of THIS app's
+        # route list (a per-app copy, so the shared registration is
+        # untouched). The GET-only registration keeps the SDK's /authorize
+        # serving programmatic POST calls — Starlette keeps scanning past a
+        # method-partial match.
+        routes = inner.routes
+        ours = [
+            route
+            for route in routes
+            if getattr(route, "endpoint", None) is _SDK_AUTHORIZE_PAGE
+        ]
+        for route in ours:
+            routes.remove(route)
+            routes.insert(0, route)
+    _sdk_pr_metadata: dict[str, Any] | None = None
+    if sdk_rs_active:
+        from mcp.server.auth.routes import ProtectedResourceMetadata
+
+        _sdk_pr_metadata = ProtectedResourceMetadata(
+            resource=_server_auth.resource_server_url,
+            authorization_servers=[_server_auth.issuer_url],
+            scopes_supported=_server_auth.required_scopes,
+        ).model_dump(mode="json", exclude_none=True)
+
+    token_authority = _SDK_TOKEN_AUTHORITY or SelfIssuedTokenAuthority()
     # Shared state backend (sqlite default / Redis opt-in). Device-code
     # sessions, PKCE pairings and the refresh one-time-use ledger live
-    # here so multi-node deployments share them.
-    token_store = state_store.open_state_store()
+    # here so multi-node deployments share them. In SDK AS mode the
+    # module-level singleton (the provider's ledgers) is reused so the
+    # handwritten confirm/activate legs and the SDK AS routes share one
+    # AuthCodeStore/jti ledger.
+    token_store = _SDK_TOKEN_STORE or state_store.open_state_store()
     device_store = DeviceCodeStore(token_store)
     gitcode_login = GitCodeLoginBroker(token_store)
     identity_binding = VerifiedIdentityBinding(token_store)
@@ -2117,10 +3251,26 @@ def build_http_app(
         if (os.environ.get(AUTH_DB_ENV) or "").strip()
         else DEFAULT_LOG_DIR
     )
-    auth_code_store = AuthCodeStore(token_store)
+    auth_code_store = _SDK_AUTH_CODE_STORE or AuthCodeStore(token_store)
     # Self-service machine tokens. Same state directory and same
     # discipline as the other auth stores (never inside the repo).
     api_key_store = api_keys.ApiKeyStore(_auth_state_dir / "apikeys.db")
+    # Ticket 7: the shared handler bodies (extracted to module level) run
+    # with THESE legs on the handwritten dispatch — the same stores and
+    # authority the branches closed over before the extraction.
+    # device_audience None keeps the handwritten device-flow audience
+    # derivation (_public_url(scope)); the SDK-on custom-route legs pass
+    # the SDK resource identity instead (see _sdk_feature_legs).
+    auth_legs = _AuthLegDeps(
+        device_store=device_store,
+        auth_code_store=auth_code_store,
+        gitcode_login=gitcode_login,
+        identity_binding=identity_binding,
+        token_authority=token_authority,
+        token_store=token_store,
+        device_audience=None,
+        sdk_as_active=sdk_as_active,
+    )
 
     async def app(scope: dict[str, Any], receive: Callable[..., Any], send: Callable[..., Any]) -> None:
         if scope["type"] == "http" and scope.get("path") == "/health":
@@ -2254,6 +3404,18 @@ def build_http_app(
             # port — the exact rule GitCode lacks. The consent page is
             # our own (identity via the GitCode login leg when
             # configured, manual username otherwise).
+            if sdk_as_active:
+                # SDK AS mode (ticket 6): the authorize surface is the
+                # custom /authorize human consent page (mounted ahead of
+                # the SDK's own /authorize route inside `inner`), and the
+                # GitCode-login reentry from the callback targets
+                # /authorize accordingly. Ticket 8 keeps this handler as
+                # the SDK_AUTH=off (fallback) implementation: the SDK-off
+                # wiring has no custom /authorize page, so this branch
+                # remains the only authorize surface in that mode.
+                await _drain_body(receive)
+                await _send_404(send)
+                return
             if not _auth_server_enabled():
                 await _drain_body(receive)
                 await _send_404(send)
@@ -2348,7 +3510,18 @@ def build_http_app(
             )
             return
         if scope["type"] == "http" and scope.get("path") == "/oauth/authorize/confirm":
-            # POST from the authorize consent page.
+            # POST from the authorize consent page. Ticket 7 choice, kept
+            # as-is: this leg writes the bound identity straight into the
+            # shared AuthCodeStore (auth_code_store.bind) instead of
+            # calling CannbotAuthProvider.authorize/exchange — the SDK
+            # /token exchange consumes the very same store session
+            # (provider load/exchange over _SDK_AUTH_CODE_STORE), the
+            # ticket-6 wiring suite locks that closed loop end to end,
+            # and provider.authorize is the SDK's programmatic
+            # /authorize backend whose redirect-echo contract does not
+            # fit this HTML form POST. The endpoint itself stays on this
+            # handwritten dispatcher in both modes: the ticket mounts
+            # only the five feature endpoints as custom routes.
             if not _auth_server_enabled():
                 await _drain_body(receive)
                 await _send_404(send)
@@ -2373,7 +3546,8 @@ def build_http_app(
                             (
                                 b"location",
                                 (
-                                    "/oauth/gitcode/login?state="
+                                    _public_path()
+                                    + "/oauth/gitcode/login?state="
                                     + urllib.parse.quote("authcode:" + code)
                                 ).encode(),
                             )
@@ -2460,7 +3634,7 @@ def build_http_app(
                         query=urllib.parse.urlencode(params)
                     ).geturl()
                 else:
-                    target = "/activate"
+                    target = _public_path() + "/activate"
                 await send(
                     {
                         "type": "http.response.start",
@@ -2476,538 +3650,53 @@ def build_http_app(
                 _render_auth_pages().error_page("未知操作。"),
             )
             return
+        if (
+            scope["type"] == "http"
+            and sdk_feature_endpoints
+            and scope.get("path") in _SDK_FEATURE_PATHS
+        ):
+            # Ticket 7 (feature endpoints): in SDK-auth mode the device
+            # code/token, activate and GitCode-login legs ride the SDK
+            # stack — custom_starlette_routes merged into `inner` by
+            # streamable_http_app (lowest matching precedence, and no SDK
+            # route claims these paths, so ours serve). The handler bodies
+            # are the very ones the branches below run (extracted to
+            # module level and shared through _AuthLegDeps), so the
+            # per-mode difference is the registration, not the logic. The
+            # SDK-off default never enters here (empty path set) and
+            # keeps the handwritten dispatch unchanged.
+            await inner(scope, receive, send)
+            return
         if scope["type"] == "http" and scope.get("path") == "/oauth/device/code":
-            # RFC 8628 §3.1 device authorization endpoint. Bare path like
-            # /health: no auth, no rate limiting by principal, no call log —
-            # but a coarse per-IP throttle so the open endpoint cannot be
-            # hammered (30 requests/IP/minute, reusing the cooldown gate).
-            if not _auth_server_enabled():
-                await _drain_body(receive)
-                await _send_404(send)
-                return
-            client_ip = (scope.get("client") or ("unknown", 0))[0]
-            if not device_endpoint_gate().check(client_ip).allowed:
-                await _drain_body(receive)
-                await _send_json_response(
-                    send,
-                    429,
-                    {"error": "slow_down_permanent", "retry_after_s": 60},
-                    [(b"retry-after", b"60")],
-                )
-                return
-            await _drain_body(receive)
-            device_code, user_code = device_store.create()
-            await _send_json_response(
-                send,
-                200,
-                {
-                    "device_code": device_code,
-                    "user_code": user_code,
-                    "verification_uri": f"{_public_url(scope)}/activate",
-                    "verification_uri_complete": (
-                        f"{_public_url(scope)}/activate?code={user_code}"
-                    ),
-                    "expires_in": device_store.ttl_s,
-                    "interval": _env_int(DEVICE_INTERVAL_ENV, 5),
-                },
-            )
+            # RFC 8628 §3.1 device authorization endpoint (shared body:
+            # _handle_device_code).
+            await _handle_device_code(scope, receive, send, auth_legs)
             return
         if scope["type"] == "http" and scope.get("path") == "/oauth/device/token":
-            # RFC 8628 §3.4/3.5 token polling. Same bare-path treatment.
-            if not _auth_server_enabled():
-                await _drain_body(receive)
-                await _send_404(send)
-                return
-            body = await _drain_body(receive)
-            fields: dict[str, str] = {}
-            for pair in body.decode("utf-8", "replace").split("&"):
-                if "=" in pair:
-                    key, _, value = pair.partition("=")
-                    fields[unquote_plus(key)] = unquote_plus(value)
-            grant_type = fields.get("grant_type", "")
-            if grant_type == "authorization_code":
-                # Self-hosted authorization-code exchange (RFC 6749 §4.1.3).
-                # The client proves itself with PKCE (public client, no
-                # secret); the redirect must loopback-match the stored one.
-                code = fields.get("code", "").strip()
-                redirect_uri = fields.get("redirect_uri", "").strip()
-                code_verifier = fields.get("code_verifier", "").strip()
-                session = auth_code_store.consume(
-                    code, redirect_uri, code_verifier
-                )
-                if session is None:
-                    await _send_json_response(
-                        send, 400, {"error": "invalid_grant"}
-                    )
-                    return
-                assert session.username is not None
-                # RFC 8707: the aud of the minted pair is the resource the
-                # client named at authorize time (or this server's URL).
-                token_audience = session.resource or _public_url(scope)
-                access, expires_in = token_authority.sign(
-                    session.username, "access", token_audience
-                )
-                refresh, _ = token_authority.sign(
-                    session.username, "refresh", token_audience
-                )
-                # One-time-use ledger (13b): register the fresh refresh id.
-                refresh_jti = SelfIssuedTokenAuthority.token_jti(refresh)
-                assert refresh_jti is not None
-                token_store.put(
-                    f"jti:{refresh_jti}", "live",
-                    token_authority.refresh_remaining_s(refresh),
-                )
-                await _send_json_response(
-                    send,
-                    200,
-                    {
-                        "access_token": access,
-                        "refresh_token": refresh,
-                        "token_type": "Bearer",
-                        "expires_in": expires_in,
-                        "scope": "mcp",
-                    },
-                )
-                return
-            if grant_type == "refresh_token":
-                refresh_token = fields.get("refresh_token", "")
-                # RFC 8707: the refresh grant may carry a resource
-                # indicator; when present it must match the token's aud.
-                # Absent defaults to this server (legacy clients).
-                # Trailing-slash canonicalization matches the authorize
-                # endpoint's (clients derive the resource from their URL).
-                requested_resource = (
-                    (fields.get("resource") or "").strip().rstrip("/")
-                )
-                verified = token_authority.verify(
-                    refresh_token,
-                    "refresh",
-                    requested_resource
-                    or SelfIssuedTokenAuthority._default_audience(scope),
-                )
-                if verified is None:
-                    await _send_json_response(
-                        send, 400, {"error": "invalid_grant"}
-                    )
-                    return
-                username, _typ = verified
-                # One-time-use ledger (13b): a refresh token is consumed by
-                # the refresh itself. The take() is atomic — replaying an
-                # old (possibly leaked) refresh finds the id gone and gets
-                # invalid_grant instead of a second token pair.
-                old_jti = SelfIssuedTokenAuthority.token_jti(refresh_token)
-                if old_jti is None or token_store.take(f"jti:{old_jti}") is None:
-                    await _send_json_response(
-                        send, 400, {"error": "invalid_grant"}
-                    )
-                    return
-                # Keep the refresh pair on the SAME audience the old token
-                # carried. With no explicit resource, that is this
-                # server's URL; with one, verify() already enforced it.
-                token_aud = requested_resource or _public_url(scope)
-                access, expires_in = token_authority.sign(
-                    username, "access", token_aud
-                )
-                # Book the new refresh's id for its whole lifetime: the
-                # next refresh that presents it must find it here.
-                new_refresh, _ = token_authority.sign(
-                    username, "refresh", token_aud
-                )
-                new_jti = SelfIssuedTokenAuthority.token_jti(new_refresh)
-                assert new_jti is not None
-                token_store.put(
-                    f"jti:{new_jti}", "live",
-                    token_authority.refresh_remaining_s(new_refresh),
-                )
-                await _send_json_response(
-                    send,
-                    200,
-                    {
-                        "access_token": access,
-                        "refresh_token": new_refresh,
-                        "token_type": "Bearer",
-                        "expires_in": expires_in,
-                    },
-                )
-                return
-            if grant_type != "urn:ietf:params:oauth:grant-type:device_code":
-                await _send_json_response(
-                    send, 400, {"error": "unsupported_grant_type"}
-                )
-                return
-            device_code = fields.get("device_code", "")
-            session = device_store.poll(device_code)
-            if session is None:
-                # Unknown or expired: RFC 8628 expired_token.
-                await _send_json_response(
-                    send, 400, {"error": "expired_token"}
-                )
-                return
-            if session.state == "pending":
-                # Poll faster than the advertised interval gets slow_down.
-                gate = device_poll_gate()
-                client_ip = (scope.get("client") or ("unknown", 0))[0]
-                if not gate.check(client_ip).allowed:
-                    await _send_json_response(
-                        send,
-                        429,
-                        {"error": "slow_down"},
-                        [(b"retry-after", b"5")],
-                    )
-                    return
-                await _send_json_response(
-                    send, 400, {"error": "authorization_pending"}
-                )
-                return
-            if session.state == "denied":
-                await _send_json_response(
-                    send, 400, {"error": "access_denied"}
-                )
-                return
-            # allowed: mint the token pair for the bound username, then
-            # consume the session so tokens are handed out exactly once —
-            # a repeat poll sees unknown/expired (RFC 8628 one-shot).
-            allowed = device_store.consume(device_code)
-            if allowed is None:
-                await _send_json_response(
-                    send, 400, {"error": "expired_token"}
-                )
-                return
-            assert allowed.username is not None
-            # RFC 8707: device-flow tokens are audience-bound to this
-            # server (device flow has no redirect, so this server IS the
-            # resource the client wants).
-            token_aud = _public_url(scope)
-            access, expires_in = token_authority.sign(
-                allowed.username, "access", token_aud
-            )
-            refresh, _ = token_authority.sign(
-                allowed.username, "refresh", token_aud
-            )
-            # One-time-use ledger (13b): register the fresh refresh id so
-            # the first refresh grant that presents it can consume it.
-            refresh_jti = SelfIssuedTokenAuthority.token_jti(refresh)
-            assert refresh_jti is not None
-            token_store.put(
-                f"jti:{refresh_jti}", "live",
-                token_authority.refresh_remaining_s(refresh),
-            )
-            await _send_json_response(
-                send,
-                200,
-                {
-                    "access_token": access,
-                    "refresh_token": refresh,
-                    "token_type": "Bearer",
-                    "expires_in": expires_in,
-                    "scope": "mcp",
-                },
-            )
+            # RFC 8628 §3.4/3.5 token polling (shared body:
+            # _handle_device_token). Same bare-path treatment.
+            await _handle_device_token(scope, receive, send, auth_legs)
             return
         if scope["type"] == "http" and scope.get("path") == "/oauth/gitcode/login":
-            # GitCode identity source for the activation page.
-            # The redirect_uri below is OUR fixed address, registered on the
-            # GitCode application — the loopback-ephemeral-port problem of
-            # the MCP client flow does not exist on this leg.
-            # The state carries either a device user_code ("ABCD-EFGH") or
-            # an authcode grant marker ("authcode:<code>"); the callback
-            # routes back accordingly.
-            if not _auth_server_enabled():
-                await _drain_body(receive)
-                await _send_404(send)
-                return
-            query = _query_params(scope)
-            raw_state = (query.get("state") or "").strip()
-            authcode_mode = raw_state.startswith("authcode:")
-            # device user_codes are uppercased (XXXX-XXXX form); authcode
-            # session codes are token_urlsafe and MUST stay case-exact.
-            user_code = (
-                raw_state.removeprefix("authcode:").strip().upper()
-                if not authcode_mode
-                else raw_state.removeprefix("authcode:").strip()
-            )
-            client_id = _oauth_client_id()
-            session = (
-                device_store.lookup(user_code)
-                if (user_code and not authcode_mode)
-                else None
-            )
-            authcode_session = (
-                auth_code_store.lookup(user_code) if authcode_mode else None
-            )
-            if not client_id:
-                await _drain_body(receive)
-                await _send_html_response(
-                    send,
-                    200,
-                    _activation_error_page(
-                        "服务器未配置 GitCode 登录（CANNBOT_MCP_OAUTH_CLIENT_ID）；"
-                        "请回到上一页使用用户名方式确认。"
-                    ),
-                )
-                return
-            if not authcode_mode and session is None:
-                await _drain_body(receive)
-                await _send_html_response(
-                    send,
-                    200,
-                    _activation_error_page("未知或已过期的设备码，请回到终端重新发起。"),
-                )
-                return
-            if authcode_mode and authcode_session is None:
-                await _drain_body(receive)
-                await _send_html_response(
-                    send,
-                    200,
-                    _render_auth_pages().error_page(
-                        "授权请求已过期或已使用，请回到客户端重新发起。"
-                    ),
-                )
-                return
-            _verifier, challenge = gitcode_login.begin(raw_state) or ("", "")
-            authorize_url = (
-                GITCODE_AUTHORIZE_URL
-                + "?"
-                + urllib.parse.urlencode(
-                    {
-                        "response_type": "code",
-                        "client_id": client_id,
-                        "redirect_uri": f"{_public_url(scope)}/oauth/gitcode/callback",
-                        "state": raw_state,
-                        "code_challenge": challenge,
-                        "code_challenge_method": "S256",
-                    }
-                )
-            )
-            await _drain_body(receive)
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 302,
-                    "headers": [(b"location", authorize_url.encode())],
-                }
-            )
-            await send({"type": "http.response.body", "body": b""})
+            # GitCode identity source for the activation page (shared
+            # body: _handle_gitcode_login).
+            await _handle_gitcode_login(scope, receive, send, auth_legs)
             return
         if scope["type"] == "http" and scope.get("path") == "/oauth/gitcode/callback":
-            # Consume the code, exchange for the GitCode username,
-            # then bounce back to the activation confirmation (device flow) or
-            # the authorize consent page (authorization-code flow) with it.
-            if not _auth_server_enabled():
-                await _drain_body(receive)
-                await _send_404(send)
-                return
-            query = _query_params(scope)
-            code = (query.get("code") or "").strip()
-            raw_state = (query.get("state") or "").strip()
-            authcode_mode = raw_state.startswith("authcode:")
-            # device user_codes are uppercased (XXXX-XXXX form); authcode
-            # session codes are token_urlsafe and MUST stay case-exact.
-            user_code = (
-                raw_state.removeprefix("authcode:").strip().upper()
-                if not authcode_mode
-                else raw_state.removeprefix("authcode:").strip()
-            )
-            error = (query.get("error") or "").strip()
-            if error:
-                await _drain_body(receive)
-                await _send_html_response(
-                    send, 200, _activation_error_page(f"GitCode 返回错误：{error}")
-                )
-                return
-            pkce_verifier = (
-                gitcode_login.take_verifier(raw_state) if raw_state else None
-            )
-            if not code or not raw_state or pkce_verifier is None:
-                await _drain_body(receive)
-                await _send_html_response(
-                    send,
-                    200,
-                    _activation_error_page("登录会话已过期或无效，请回到终端重新发起。"),
-                )
-                return
-            username = await _gitcode_exchange_login(
-                code, pkce_verifier, f"{_public_url(scope)}/oauth/gitcode/callback"
-            )
-            if username is None:
-                await _drain_body(receive)
-                await _send_html_response(
-                    send,
-                    200,
-                    _render_auth_pages().error_page(
-                        "GitCode 登录失败（服务不可达或已拒绝）。",
-                        retry_url="/oauth/gitcode/login?state="
-                        + _html_escape(raw_state),
-                    ),
-                )
-                return
-            # The verified identity lands in a SERVER-SIDE binding keyed by
-            # an unguessable token; the username itself never appears in
-            # the redirect URL (or any later form field).
-            binding_token = identity_binding.create(user_code, username)
-            if authcode_mode:
-                back_to = (
-                    "/oauth/authorize?code="
-                    + urllib.parse.quote(user_code)
-                    + "&st="
-                    + urllib.parse.quote(binding_token)
-                )
-            else:
-                back_to = (
-                    "/activate?code="
-                    + urllib.parse.quote(user_code)
-                    + "&st="
-                    + urllib.parse.quote(binding_token)
-                )
-            await _drain_body(receive)
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 302,
-                    "headers": [(b"location", back_to.encode())],
-                }
-            )
-            await send({"type": "http.response.body", "body": b""})
+            # Consume the code, exchange for the GitCode username, then
+            # bounce back to the activation confirmation (device flow) or
+            # the authorize consent page (authorization-code flow) with it
+            # (shared body: _handle_gitcode_callback).
+            await _handle_gitcode_callback(scope, receive, send, auth_legs)
             return
         if scope["type"] == "http" and scope.get("path") == "/activate":
-            # RFC 8628 §3.3 user interaction. UX contract:
-            # with a GitCode application configured, opening /activate goes
-            # STRAIGHT to the GitCode login (the user never types a device
-            # code — the verification_uri carries it in the query). After
-            # the login the flow returns with a server-side identity
-            # binding token (st), and one click on 允许 finishes it. The
-            # manual code-entry form only appears when no client_id is
-            # configured — with GitCode configured the username is ALWAYS
-            # the server-stored verified identity, never a form field.
-            if not _auth_server_enabled():
-                await _drain_body(receive)
-                await _send_404(send)
-                return
-            query = _query_params(scope)
-            binding_token = (query.get("st") or "").strip()
-            code_param = (query.get("code") or "").strip().upper()
-            if scope.get("method") == "GET" and code_param and _oauth_client_id():
-                if not binding_token:
-                    # Straight to GitCode: /activate?code=XXXX-XXXX becomes a
-                    # one-link experience (the terminal prints exactly this).
-                    login_url = (
-                        "/oauth/gitcode/login?state="
-                        + urllib.parse.quote(code_param)
-                    )
-                    await _drain_body(receive)
-                    await send(
-                        {
-                            "type": "http.response.start",
-                            "status": 302,
-                            "headers": [(b"location", login_url.encode())],
-                        }
-                    )
-                    await send({"type": "http.response.body", "body": b""})
-                    return
-                # Returning from the GitCode login: the binding holds the
-                # verified identity for THIS grant.
-                bound = identity_binding.peek(binding_token)
-                if bound is None or bound[0] != code_param:
-                    await _drain_body(receive)
-                    await _send_html_response(
-                        send,
-                        200,
-                        _activation_error_page(
-                            "登录会话已过期或无效，请回到终端重新发起。"
-                        ),
-                    )
-                    return
-                await _drain_body(receive)
-                await _send_html_response(
-                    send,
-                    200,
-                    _activation_confirm_page(
-                        code_param,
-                        signed_in=bound[1],
-                        session_token=binding_token,
-                    ),
-                )
-                return
-            body = await _drain_body(receive)
-            fields: dict[str, str] = {}
-            for pair in body.decode("utf-8", "replace").split("&"):
-                if "=" in pair:
-                    key, _, value = pair.partition("=")
-                    fields[unquote_plus(key)] = unquote_plus(value)
-            if scope.get("method") != "POST":
-                await _send_html_response(
-                    send,
-                    200,
-                    _activation_page((query.get("code") or "").strip()),
-                )
-                return
-            user_code = fields.get("user_code", "").strip().upper()
-            session = device_store.lookup(user_code)
-            if session is None:
-                await _send_html_response(
-                    send, 200, _activation_error_page("未知或已过期的设备码，请回到终端重新发起。")
-                )
-                return
-            action = fields.get("action", "")
-            if action == "allow":
-                if _oauth_client_id():
-                    # GitCode configured: the username comes ONLY from the
-                    # server-side verified binding (one-shot); any username
-                    # value in the form is ignored.
-                    form_binding = (fields.get("st") or "").strip()
-                    bound = (
-                        identity_binding.take(form_binding)
-                        if form_binding
-                        else None
-                    )
-                    if bound is None or bound[0] != user_code:
-                        await _send_html_response(
-                            send,
-                            200,
-                            _activation_error_page(
-                                "缺少有效的登录会话，请通过 GitCode 登录后再确认。"
-                            ),
-                        )
-                        return
-                    username = bound[1]
-                else:
-                    # No GitCode application configured: manual username
-                    # bootstrap (trusted-network deployments only).
-                    username = fields.get("username", "").strip()
-                    if not username:
-                        await _send_html_response(
-                            send, 200, _activation_error_page("请填写用户名。")
-                        )
-                        return
-                allowed = device_store.allow(user_code, username)
-                if allowed is None:
-                    await _send_html_response(
-                        send, 200, _activation_error_page("设备码已失效（可能刚被使用或过期）。")
-                    )
-                    return
-                await _send_html_response(
-                    send,
-                    200,
-                    _render_auth_pages().success_page(username),
-                )
-                return
-            if action == "deny":
-                device_store.deny(user_code)
-                await _send_html_response(
-                    send,
-                    200,
-                    _render_auth_pages().denied_page(),
-                )
-                return
-            await _send_html_response(
-                send,
-                200,
-                _activation_confirm_page(user_code),
-            )
+            # RFC 8628 §3.3 user interaction, including the
+            # /activate?code=… one-click direct connect (shared body:
+            # _handle_activate).
+            await _handle_activate(scope, receive, send, auth_legs)
             return
-        if scope["type"] == "http" and scope.get("path") in (
-            "/.well-known/oauth-authorization-server",
-            "/.well-known/oauth-authorization-server/mcp",
+        if scope["type"] == "http" and scope.get("path") in _discovery_paths(
+            "/.well-known/oauth-authorization-server"
         ):
             # RFC 8414 Authorization Server metadata. GitCode itself does not
             # serve this document (its /.well-known path returns the SPA HTML
@@ -3018,9 +3707,54 @@ def build_http_app(
             # during the 401 bootstrap; without this document they die with a
             # JSON parse error on GitCode's HTML before ever reaching
             # gitcode.com/oauth/authorize.
+            #
+            # Dual existence (ticket 8 note): with CANNBOT_MCP_SDK_AUTH=on
+            # the SDK mounts its own 8414 route inside `inner`, but this
+            # outer handler stays authoritative even in that mode — the
+            # SDK's OAuthMetadata has no field for the device
+            # authorization endpoint this document must declare (RFC
+            # §2.4), so the outer doc shadows the SDK route; with the gate
+            # off this block is the whole 8414 surface. It stays.
             await _drain_body(receive)
             public_url = _public_url(scope)
             if _auth_server_enabled():
+                if sdk_as_active:
+                    # SDK AS mode (ticket 6): the AS route set is the SDK's
+                    # (/authorize /token /register, mounted inside `inner`)
+                    # plus the self-managed device-code legs (RFC §2.4: the
+                    # device authorization endpoint stays declared here —
+                    # the SDK's OAuthMetadata has no field for it, so this
+                    # document is the authoritative one and the SDK's own
+                    # 8414 route stays shadowed by this outer handler).
+                    # Known transitional gap: the single token_endpoint
+                    # cannot serve the device grant (the SDK handler
+                    # rejects it), so metadata-driven device clients keep
+                    # using the SDK-off mode. Ticket 8 closed the audit
+                    # WITHOUT adding a /token device-grant alias — the
+                    # off mode stays the documented answer for those
+                    # clients, and TROUBLESHOOTING.md carries the note.
+                    await _send_json_response(
+                        send,
+                        200,
+                        {
+                            "issuer": public_url,
+                            "authorization_endpoint": f"{public_url}/authorize",
+                            "token_endpoint": f"{public_url}/token",
+                            "device_authorization_endpoint": (
+                                f"{public_url}/oauth/device/code"
+                            ),
+                            "registration_endpoint": f"{public_url}/register",
+                            "response_types_supported": ["code"],
+                            "grant_types_supported": [
+                                "authorization_code",
+                                "urn:ietf:params:oauth:grant-type:device_code",
+                                "refresh_token",
+                            ],
+                            "code_challenge_methods_supported": ["S256"],
+                            "token_endpoint_auth_methods_supported": ["none"],
+                        },
+                    )
+                    return
                 # Self-hosted authorization server: THIS service
                 # is the AS. The device-code grant (RFC 8628) is the primary
                 # human flow; no redirect_uri matching is involved, so the
@@ -3086,6 +3820,16 @@ def build_http_app(
             # get the application credentials from the administrator out of
             # band). The POST body is accepted and ignored. Unauthenticated
             # like the metadata endpoints.
+            if sdk_as_active:
+                # SDK AS mode (ticket 6): the SDK's RegistrationHandler
+                # inside `inner` owns /register — provider.register_client
+                # and get_client carry the fixed-public-client semantics,
+                # and the SDK route answers with its own RFC 7591 §3.2.1
+                # 201 Created registration echo. The handwritten response
+                # below yields in this mode and stays as the SDK_AUTH=off
+                # (fallback) implementation (ticket 8 keeps it).
+                await inner(scope, receive, send)
+                return
             await _drain_body(receive)
             if _auth_server_enabled():
                 # Independent of the GitCode verification track (see the
@@ -3111,9 +3855,8 @@ def build_http_app(
             # whether an application is configured.
             await _send_404(send)
             return
-        if scope["type"] == "http" and scope.get("path") in (
-            "/.well-known/oauth-protected-resource",
-            "/.well-known/oauth-protected-resource/mcp",
+        if scope["type"] == "http" and scope.get("path") in _discovery_paths(
+            "/.well-known/oauth-protected-resource"
         ):
             # RFC 9728 Protected Resource Metadata (plus the /mcp-suffixed
             # variant some clients probe). Unauthenticated on purpose so MCP
@@ -3121,6 +3864,21 @@ def build_http_app(
             # handshake; like /health it bypasses auth, rate limiting and
             # the call log, and 404s only when EVERY dynamic auth track is
             # off (static-token-only mode has no AS to advertise).
+            #
+            # Why this 9728 surface exists ALONGSIDE the SDK's (the
+            # dual existence is deliberate two-phase design):
+            # CANNBOT_MCP_SDK_AUTH=on
+            # mounts the SDK's own 9728 route inside `inner` for the
+            # /mcp-suffixed path only — create_protected_resource_routes
+            # with the metadata URL build_resource_metadata_url derives
+            # from resource_server_url — and the branch right below passes
+            # that one path through. The SDK registers NO route for the
+            # bare well-known path, which clients also probe, so THIS
+            # handler answers it in both modes (mirroring the SDK metadata
+            # built from the same AuthSettings). With the gate off the SDK
+            # route does not exist at all and this block is the whole 9728
+            # surface. Deleting the block would break the bare path in
+            # BOTH modes and the off mode entirely; it stays.
             #
             # authorization_servers must point at a host that actually serves
             # RFC 8414 metadata. Pointing it directly at https://gitcode.com
@@ -3130,7 +3888,27 @@ def build_http_app(
             # against cannbot v1.1.2 and Claude Code 2.1.317). So this server
             # advertises itself as the discovery front-end and republishes
             # GitCode's endpoints via its own 8414 document above.
+            if sdk_rs_active and scope.get("path") == (
+                "/.well-known/oauth-protected-resource/mcp"
+            ):
+                # SDK mode: create_protected_resource_routes (mounted inside
+                # `inner`) owns the /mcp-suffixed variant — its metadata URL
+                # is derived from resource_server_url. Pass through so there
+                # is exactly one responder behind this path; the handwritten
+                # variant below stays as the SDK_AUTH=off (fallback)
+                # implementation (ticket 8 keeps it).
+                await inner(scope, receive, send)
+                return
             await _drain_body(receive)
+            if sdk_rs_active:
+                # SDK mode, bare path: the SDK registers no route here (see
+                # above), but clients probe it too; answer with the same
+                # metadata the SDK route serves, built from the same
+                # AuthSettings, so both 9728 variants agree on the resource
+                # identity (the full endpoint URL, the fix for RFC defect
+                # 1.3) and discovery keeps working.
+                await _send_json_response(send, 200, _sdk_pr_metadata)
+                return
             if not _gitcode_verify_enabled() and not _auth_server_enabled():
                 await _send_404(send)
                 return
@@ -3149,6 +3927,31 @@ def build_http_app(
             return
         if scope["type"] != "http" or scope.get("path") != "/mcp":
             await inner(scope, receive, send)
+            return
+        if sdk_rs_active:
+            # SDK mode: BearerAuthBackend (over the ticket-2
+            # CannbotTokenVerifier) and RequireAuthMiddleware inside
+            # `inner` own /mcp admission. The handwritten four-track chain
+            # below would reject exactly the full-endpoint-audience tokens
+            # that stack accepts (RFC 8707: the resource identity is
+            # resource_server_url now), so it yields here; ticket 8 keeps
+            # it as the SDK_AUTH=off (fallback) implementation. Phase-1
+            # gaps to be rebuilt on the SDK stack: IP cooldown,
+            # per-principal rate limiting and principal attribution in the
+            # call log. Call logging itself stays on via the meta below.
+            body = await _drain_body(receive)
+            request_meta.set(
+                RequestMeta(
+                    transport="http",
+                    principal=None,
+                    jsonrpc_id=_request_jsonrpc_id(body),
+                )
+            )
+            await inner(
+                scope,
+                _replay_body(receive, body),
+                send,
+            )
             return
         client_ip = (scope.get("client") or ("unknown", 0))[0]
         blocked = cooldown.check(client_ip)
@@ -3321,10 +4124,6 @@ def _rate_limit_key(presented: str, principal: str | None) -> str:
         return presented
     return principal or presented
 
-def _gitcode_verify_enabled() -> bool:
-    """CANNBOT_MCP_GITCODE_VERIFY: 'off' disables the GitCode auth track."""
-    return (os.environ.get(GITCODE_VERIFY_ENV) or "").strip().lower() != "off"
-
 
 def _auth_server_enabled() -> bool:
     """CANNBOT_MCP_AUTH_SERVER: self-hosted AS (default on).
@@ -3480,8 +4279,58 @@ def _www_authenticate_challenge(scope: dict[str, Any]) -> tuple[bytes, bytes]:
     value = f'Bearer resource_metadata="{metadata_url}"'
     return b"www-authenticate", value.encode("ascii")
 
+
+def _public_path() -> str:
+    """Path prefix a reverse proxy strips before proxying to this service.
+
+    ``CANNBOT_MCP_PUBLIC_PATH`` declares that prefix (for example
+    ``/mcp/gateway/mcp-server``). RFC 8414/9728 discovery inserts
+    ``/.well-known/...`` between the origin and the path, so standard
+    clients probe ``/.well-known/<doc>/<prefix>`` relative to the proxy
+    host; the proxy forwards those root-level URLs verbatim, so this
+    service must answer them relative to its own root. Empty (default)
+    keeps the bare discovery paths only. Restored by the E2E bug-1 fix:
+    ticket 8 wrongly removed the whole mechanism, regressing sub-path
+    gateway deployments (where the production service actually runs) in
+    BOTH auth modes.
+    """
+    raw = (os.environ.get(PUBLIC_PATH_ENV) or "").strip()
+    if raw and not raw.startswith("/"):
+        raw = "/" + raw
+    return raw.rstrip("/")
+
+
+def _discovery_paths(base: str) -> tuple[str, ...]:
+    """Route paths serving the ``base`` discovery document.
+
+    Bare path and its ``/mcp`` variant always serve; with
+    ``CANNBOT_MCP_PUBLIC_PATH`` set, the RFC 8414 insertion forms with
+    the proxy prefix (with and without a trailing ``/mcp``) serve too -
+    clients derive both from the issuer and from the MCP endpoint URL.
+    """
+    paths = [base, f"{base}/mcp"]
+    prefix = _public_path()
+    if prefix:
+        paths.append(f"{base}{prefix}")
+        paths.append(f"{base}{prefix}/mcp")
+    return tuple(paths)
+
+
 def _public_url(scope: dict[str, Any]) -> str:
-    """The URL clients use to reach this server, as used in metadata."""
+    """The URL clients use to reach this server, as used in metadata.
+
+    Dual existence (ticket 8 note): CANNBOT_MCP_SDK_AUTH=on derives the
+    resource identity from CANNBOT_MCP_PUBLIC_URL once at import time
+    (AuthSettings.resource_server_url; the SDK's
+    build_resource_metadata_url then derives every metadata path from
+    that single value). THIS per-request derivation is what the
+    SDK_AUTH=off handwritten chain still needs — 8414/9728 documents,
+    JWT audiences and redirect bases all call it — so both mechanisms
+    stay. No PUBLIC_PATH prefix mechanism exists in either mode: every
+    path this server emits is root-absolute, and the RFC's
+    PUBLIC_URL/PUBLIC_PATH dual-variable problem is solved by the
+    single-variable derivation, not by a second prefix knob.
+    """
     public_url = os.environ.get("CANNBOT_MCP_PUBLIC_URL")
     if not public_url:
         request_host = _http_headers(scope).get("host")
@@ -3489,33 +4338,6 @@ def _public_url(scope: dict[str, Any]) -> str:
             request_host = (scope.get("server") or ("localhost",))[0]
         public_url = f"http://{request_host}"
     return public_url.rstrip("/")
-
-def _env_int(name: str, default: int) -> int:
-    raw = os.environ.get(name, "").strip()
-    if not raw:
-        return default
-    try:
-        return int(raw)
-    except ValueError:
-        print(
-            f"cannbot-mcp: ignoring invalid {name}={raw!r}, using {default}",
-            file=sys.stderr,
-        )
-        return default
-
-def _env_float(name: str, default: float) -> float:
-    raw = os.environ.get(name, "").strip()
-    if not raw:
-        return default
-    try:
-        value = float(raw)
-    except ValueError:
-        print(
-            f"cannbot-mcp: ignoring invalid {name}={raw!r}, using {default}",
-            file=sys.stderr,
-        )
-        return default
-    return value if value > 0 else default
 
 def _log_enabled(transport: str) -> bool:
     value = (os.environ.get(LOG_ENV) or "auto").strip().lower()

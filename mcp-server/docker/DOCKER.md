@@ -190,3 +190,18 @@ sudo python3 mcp-server/analyze_logs.py --days 30 \
 ## 安全清单
 
 默认面向内网。对外开放前逐项核对 [README.md](../README.md) 的外网暴露前置条件清单：TLS 由反向代理终止、令牌强度与轮换、限流确认、`auth_failed` 审计留存。服务不信任 `X-Forwarded-For`——走反代时必须在反代层做真实 IP 透传与限流，否则个别客户端的认证失败会按反代 IP 触发冷却封禁、波及全体。
+
+### 启用官方 SDK 授权栈（可选，`CANNBOT_MCP_SDK_AUTH=on`）
+
+在 `tokens.env` 追加两行后 `docker compose up -d --force-recreate` 即切换：
+
+```
+CANNBOT_MCP_SDK_AUTH=on
+CANNBOT_MCP_PUBLIC_URL=https://<对外地址>[/<网关前缀>]
+```
+
+要点：
+- `CANNBOT_MCP_PUBLIC_URL` 为必配——缺失时进程在日志中给出诊断并自动保持手写链（fail-closed），不会静默错配令牌受众
+- 切换后存量自签 JWT 全部失效（令牌受众从基地址变为完整端点 URL），所有用户需重新授权一次；静态令牌与 API Key 不受影响
+- 认证状态（设备码/授权码/PKCE/refresh 台账）存于 `cannbot-mcp-auth` 卷，两模式切换仅重启即可，无需任何数据迁移
+- 子路径网关部署同时配 `CANNBOT_MCP_PUBLIC_PATH=/<前缀>`，两种授权模式均支持插入式发现路径

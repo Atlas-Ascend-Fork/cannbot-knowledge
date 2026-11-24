@@ -188,13 +188,15 @@ def _brandline() -> str:
     )
 
 
-def activation_page(prefill: str, gitcode_available: bool) -> str:
+def activation_page(
+    prefill: str, gitcode_available: bool, path_prefix: str = ""
+) -> str:
     """Manual code entry (fallback when no GitCode app is configured)."""
     link = ""
     if gitcode_available:
         link = (
             "<p class='footnote'>终端链接通常自动跳转 GitCode 登录；"
-            "如需手动登录，<a class='link' href='/oauth/gitcode/login?state="
+            "如需手动登录，<a class='link' href='" + path_prefix + "/oauth/gitcode/login?state="
             + esc(prefill)
             + "'>使用 GitCode 账号登录</a></p>"
         )
@@ -220,7 +222,11 @@ def activation_page(prefill: str, gitcode_available: bool) -> str:
 
 
 def authorize_page(
-    code: str, signed_in: str, gitcode_available: bool, session_token: str = ""
+    code: str,
+    signed_in: str,
+    gitcode_available: bool,
+    session_token: str = "",
+    path_prefix: str = "",
 ) -> str:
     """Consent page for the self-hosted authorization-code grant.
 
@@ -280,7 +286,7 @@ def authorize_page(
         + _brandline()
         + "<h1>确认授权</h1>"
         + f"<p class='sub'>{sub}</p>"
-        + "<form method='post' action='/oauth/authorize/confirm'>"
+        + f"<form method='post' action='{path_prefix}/oauth/authorize/confirm'>"
         + hidden
         + identity
         + actions
@@ -294,6 +300,7 @@ def confirm_page(
     signed_in: str,
     gitcode_available: bool,
     session_token: str = "",
+    path_prefix: str = "",
 ) -> str:
     """Confirmation: GitCode-bound identity or manual username fallback.
 
@@ -318,7 +325,7 @@ def confirm_page(
     elif gitcode_available:
         identity = (
             "<p class='footnote' style='border:0;padding:0;text-align:left'>"
-            "尚未通过 GitCode 登录。请<a class='link' href='/oauth/gitcode/login?state="
+            "尚未通过 GitCode 登录。请<a class='link' href='" + path_prefix + "/oauth/gitcode/login?state="
             + esc(user_code)
             + "'>使用 GitCode 账号登录</a>后确认。</p>"
         )

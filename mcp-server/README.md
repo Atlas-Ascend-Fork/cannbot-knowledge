@@ -59,6 +59,23 @@ uv --directory mcp-server run server.py --transport http
 - 认证失败按直连 IP 冷却：1 分钟内 10 次 401 → 封禁 5 分钟（不信任 `X-Forwarded-For`）；
 - HTTP 模式默认记调用日志。
 
+**授权栈模式（`CANNBOT_MCP_SDK_AUTH`，默认空=关）**：授权层有两条等价实现——手写链（默认，即上文全部行为）与官方 MCP SDK auth 栈（`on` 时挂载）。回退 = 把变量改回空/删掉并重启，无数据迁移。两模式差异：
+
+| 面 | 空（默认，手写链） | `on`（SDK 栈） |
+|---|---|---|
+| 授权码/刷新换发 | `POST /oauth/device/token`（设备码/授权码/刷新三 grant 共用） | `POST /token`（SDK TokenHandler；设备码 grant 仍在 `/oauth/device/token`） |
+| 授权页 | `GET /oauth/authorize` 手写页 | `GET /authorize` 自定义路由页（先于 SDK 自身 /authorize 路由匹配） |
+| DCR `/register` | 手写应答 200，固定公共客户端 | SDK RFC 7591 应答 201 并回显请求 |
+| 9728 发现 | 手写文档，`resource` = 对外基地址 | `/mcp` 后缀变体由 SDK 路由应答，`resource` = 完整端点 URL；裸路径由外层以同一 AuthSettings 镜像应答，两变体一致 |
+| `/mcp` 验签与防护 | 手写四轨链 + IP 冷却 + 按 principal 限流 + 日志 principal | SDK BearerAuthBackend（同四轨验签器）；阶段一未接 IP 冷却、按 principal 限流与日志 principal 归因 |
+| 设备码/激活/GitCode 登录腿 | 手写 dispatch | 同一 handler 体经 `custom_starlette_routes` 挂 SDK 栈 |
+
+切到 `on` 的必配与影响：
+
+- **`CANNBOT_MCP_PUBLIC_URL` 必须显式配置**：SDK 的 issuer/resource 身份由它单源推导；缺失时进程 fail-closed 留在手写链并在 stderr 打 `staying on the handwritten auth chain` 提示（不是崩溃，看启动日志确认实际模式）。
+- **resource 标识变化 → 存量 JWT 全量失效（aud 失配）**：`aud` 从基地址（`http://host:8090`）变为完整端点 URL（`PUBLIC_URL/mcp`），全部已发 access/refresh 令牌在 `/mcp` 立即 401，所有 OAuth 用户需重新走一次授权（一次性迁移代价，缓解见 RFC §5.1）；`cbk_live_` API Key 与静态令牌不受影响，机器接入无感。refresh 台账不迁移，旧 refresh 直接作废。
+- 已知过渡缺口：按 8414 元数据 `token_endpoint` 走设备码 grant 的客户端在 `on` 模式会被 SDK `/token` 拒绝（单值 token 端点不服务设备码 grant），此类客户端继续用默认（关）模式。
+
 **GitCode OAuth（人类用户）**：在 GitCode 上用本人账号授权后获得访问令牌，直接作为 `Authorization: Bearer` 使用，无需向运营方领静态令牌；服务端通过 GitCode 用户接口换取用户名记入调用日志 principal（结果缓存 60 秒）。令牌由 GitCode 发放（有效期以 GitCode 侧为准，通常 15 天）并自动续期；GitCode 侧撤销授权即失去访问权。GitCode 不支持 OAuth 动态客户端注册——完整浏览器授权前需先在 GitCode 注册 OAuth 应用并把 client_id 交给使用者（见 [MCP_CONFIG.md](MCP_CONFIG.md)）；注册完成前，GitCode 个人访问令牌（PAT）同样走这条验证轨，可作过渡接入方式。`CANNBOT_MCP_GITCODE_VERIFY=off` 可整体关闭 GitCode 轨（内网/网关不可达时临时回退纯静态令牌）。
 
 **自服务 API Key（机器身份推荐方式）**：人类用户先走一次 OAuth（设备码或授权码流程）拿到 access JWT，然后调 `POST /api/keys`（`Authorization: Bearer <JWT>`，body `label=机器用途`）为自己生成一把只能访问本服务的机器令牌；响应中的完整 key（`cbk_live_` 前缀）仅返回一次，服务端只存 scrypt 哈希。机器拿这把 key 直接访问 `/mcp`，principal 记为 `owner/label`（审计能同时回答谁生成、哪台机器在用）。`GET /api/keys` 列表、`DELETE /api/keys?key_id=...` 撤销均由本人自助完成，无需管理员。每用户最多 10 把有效 key，撤销立即生效。相比直接把 GitCode PAT 塞给 CI：key 只能访问本服务（GitCode PAT 能操作你全部仓库）、可单独撤销、审计粒度到机器槽位。
@@ -84,6 +101,7 @@ uv --directory mcp-server run server.py --transport http
 | `CANNBOT_MCP_RATE_KEY` | `principal` | 限流计数键：`principal`（默认，按身份合并）或 `token`（旧的按令牌计数） |
 | `CANNBOT_MCP_GITCODE_VERIFY` | 开 | `off` 关闭 GitCode 验证轨（/mcp 不再外呼 GitCode 验证令牌）；自建授权服务器不受影响 |
 | `CANNBOT_MCP_AUTH_SERVER` | 开 | `off` 端到端关闭自建授权服务器：设备码/授权码/激活/`/api/keys` 端点全部 404，`/mcp` 不再接受自签 JWT 与自服务 API Key（只剩 GitCode 验证轨 + 静态令牌）；两轨都关时发现端点一并 404 |
+| `CANNBOT_MCP_SDK_AUTH` | 空（关） | 授权栈模式开关：`on` 挂载官方 MCP SDK auth 栈（必配 `CANNBOT_MCP_PUBLIC_URL`，存量 JWT 失效需重新授权）；空保持手写链（回退模式）。两模式差异表见上文「授权栈模式」 |
 | `CANNBOT_MCP_GITCODE_API` | `https://api.gitcode.com` | GitCode 用户接口 base（内网代理部署可覆盖） |
 | `CANNBOT_MCP_OAUTH_CLIENT_ID` / `CANNBOT_MCP_OAUTH_CLIENT_SECRET` | 空 | 预注册 GitCode OAuth 应用凭证。仅服务端使用：作为设备码/授权码流程中 GitCode 登录腿的身份源，**绝不发给任何客户端**（`/register` 返回的是本服务公共客户端注册，无 secret）；未配置时授权页退回手填用户名（仅限可信网络引导部署） |
 | `CANNBOT_MCP_PUBLIC_URL` | 按 Host 头推断 | 元数据里声明的本服务对外 URL（生产域名与端口不匹配时必配；**多副本部署必须显式配置**——所有节点共享同一值，否则 JWT 的 `aud` 按各节点 Host 头各自推导、跨节点验证必然失败） |

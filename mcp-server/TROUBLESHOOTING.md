@@ -30,8 +30,14 @@ K8s/APISIX 等编排系统另有**无认证探活端点** `GET /health`(固定�
 
 ### 认证(HTTP)
 
+授权层有两条可切换的实现（`CANNBOT_MCP_SDK_AUTH`：默认空 = 手写链，`on` = 官方 SDK 栈）；两模式端点与防护差异表见 [README.md](README.md)「授权栈模式」。下表前四行是切到 `on` 后特有的症状。
+
 | 症状 | 原因 | 处置 |
 |---|---|---|
+| 开启 `CANNBOT_MCP_SDK_AUTH=on` 后，已授权用户 `/mcp` 全部 401（OAuth 流程本身能走通） | 预期的一次性迁移代价：resource 标识从基地址变为完整端点 URL（`PUBLIC_URL/mcp`），存量 JWT 的 `aud` 全部失配（SDK 验签按 RFC 8707 严格比较） | 全员重新走一次 OAuth 授权即可恢复；`cbk_live_` API Key 与静态令牌不受影响，机器接入无感 |
+| 设了 `SDK_AUTH=on` 但行为没变（启动日志见 `staying on the handwritten auth chain`） | `on` 模式强制要求显式 `CANNBOT_MCP_PUBLIC_URL`（SDK 的 issuer/resource 身份由它单源推导），缺失时 fail-closed 留在手写链，不崩溃 | 配置客户端可达的 `CANNBOT_MCP_PUBLIC_URL` 后重启；看启动日志确认实际模式 |
+| SDK 模式下设备码客户端按 8414 元数据 `token_endpoint` 发设备码 grant 被拒 | 已知过渡缺口：SDK `/token` 单值端点不接受设备码 grant，设备码 grant 仍由 `/oauth/device/token` 服务 | 元数据驱动的设备码客户端继续用默认（关）模式；差异见 README「授权栈模式」 |
+| SDK 模式下反复 401 不再触发 IP 冷却、429 限流未按 principal 生效 | 阶段一已知边界：SDK 模式 `/mcp` 暂未接 IP 冷却、按 principal 限流与调用日志 principal 归因（调用日志本身仍开启） | 需要这些防护的部署暂用默认（关）模式；勿在 SDK 模式下放开外网暴露 |
 | HTTP 401 | 令牌错误或未进入进程环境 | 在启动客户端的终端里 `echo ${CANNBOT_MCP_TOKEN:0:8}` 验证前 8 位;改完 bashrc 须开新终端或先 `source` |
 | OAuth 授权后仍 401 | GitCode 验证不可达或令牌无效(GitCode 侧已撤销授权) | 先确认 GitCode 可达(浏览器能登录);再在 GitCode 设置里检查应用授权状态;内网/网关故障期间可让部署方临时 `CANNBOT_MCP_GITCODE_VERIFY=off`(纯静态令牌模式),恢复后务必移除该变量 |
 | 客户端报 JSON 解析错误(如 `Unrecognized token '<'`)后授权流程无进展 | 客户端把 `authorization_servers` 指到的主机当授权服务器取 RFC 8414 元数据,该主机返回了 HTML 而非 JSON(GitCode 即如此);本服务的 9728 已指向自身 8414,出现此症状通常是网关/反代把 `/.well-known/` 路径改写到了别的页面 | 核对反代是否原样放行 `/.well-known/oauth-protected-resource` 与 `/.well-known/oauth-authorization-server`(含 `/mcp` 变体)两条路径;确认 `CANNBOT_MCP_PUBLIC_URL` 指向客户端实际可达的本服务地址 |
@@ -69,4 +75,5 @@ K8s/APISIX 等编排系统另有**无认证探活端点** `GET /health`(固定�
 - **platform fail-closed**:省略 `platform` 且无缺省时报错,是防止静默混合平台的**设计行为**;
 - **索引拒答(fail-closed)**:索引 stale 时拒绝服务而不是自动重建,服务器对知识仓严格只读;
 - **零命中**:索引正常时零命中是有效结果,不是错误;
-- **`trust_tier: unverified`**:表示该卡没有发生过真实复核事件,不影响返回,采信结论时按卡片正文核对来源。
+- **`trust_tier: unverified`**:表示该卡没有发生过真实复核事件,不影响返回,采信结论时按卡片正文核对来源;
+- **SDK_AUTH 切换后的存量令牌失效**:resource 标识（`aud`）随授权栈模式变化，切换 `CANNBOT_MCP_SDK_AUTH` 后旧令牌 401 是**一次性迁移代价**，重新走一次授权即恢复，不是令牌损坏或配置错误。
