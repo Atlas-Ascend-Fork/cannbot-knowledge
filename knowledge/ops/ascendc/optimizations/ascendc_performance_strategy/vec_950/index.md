@@ -1,0 +1,214 @@
+# 950 向量类算子策略
+
+> 平台 ID 为 950；正文中的 A5 为产品代际别名。
+
+- [规则二维切片的批量数据搬运](2d_bulk_data_copy.md)：用一条二维 DMA 描述符表达多个等长切片，替代循环内逐切片发射搬运。
+- [2D 行对合并搬运在 MTE2 带宽饱和满核场景的负向边界](2d_rowpair_datacopy_mte2_saturation_boundary.md)：先检查MTE2带宽饱和与关键路径，再比较h0/h1两次DataCopyPad合并为2D行对搬运是否减少实际工作。
+- [二维 tile 网格 + round-robin 核心分配（把并行度与行数解耦）](2d_tile_grid_round_robin_core_distribution.md)：将仅按行轴分核改为每行沿列轴切tile，并在min(totalTileNum,coreNum)核上轮询分发。
+- [聚合中转缓冲区同址别名（val@0/idx@0 共用 32B）导致标量写覆盖未搬出数据的 WAR](aggregate_buffer_alias_scalar_war.md)：单个 32B TBuf 中 val@0、idx@0：idx SetValue（PIPE_S 标量写）覆盖 val 字节后 val 才被 MTE3 DataCopyPad 读取 -> 同址 WAR 丢精度（case 13 精度失败根因）。
+- [API 语义/能力陷阱规避（舍入·上界·视图·弃用·静态门）](api_semantics_pitfalls.md)：每个 API 使用前逐项核对语义（含舍入模式）、上界/对齐、视图/stride、弃用/替代、编译期静态门，并给出支持/不支持/需绕行结论。
+- [允许重排的线性原子逆向分组](atomic_inverse_grouping.md)：把每组扫描全部输入的成员查找，改为每输入一次原子挂链并跨特征复用。
+- [均衡余数行划分：把 tokens%blockDim 余数按 +1 行摊到前 rem 个核，替代尾核全量堆余](balanced_remainder_row_partition.md)：把 tokens%blockDim 余数从堆给尾核改为按 +1 行摊到前 rem 个核，删失效尾核特判。
+- [跨流水同步的批级摊销](batched_sync_amortization.md)：把逐元素或逐行同步提升到批次边界，在批内集中生产、消费和写回。
+- [BF16 标量转换的编译支持边界](bf16_scalar_cast_unsupported.md)：不要假设 BF16 标量 static_cast 在所有编译后端可用；优先使用受支持的向量转换或显式位表示。
+- [二类别稳定损失表达与跨样本向量化](binary_stable_loss_vectorization.md)：将两类别通用指数归约化为稳定差值公式，把并行维度转到样本轴。
+- [TopK 的 UB 常驻有界二叉堆](bounded_heap_candidate_selection.md)：用容量 k 的 UB 二叉堆将 TopK 候选替换降为 O(log k)，并以堆排完成输出。
+- [有界幂二缩放后使用原生除法](bounded_power_two_native_division.md)：用受限幂二缩放修复特定 FTZ 敏感区间，从而以原生 Div 替代高代价精确除法。
+- [标量管减压：广播权重进寄存器 + 列累加器跨行驻留的批式乘累加](brc_weight_register_acc_batch_fma.md)：把逐行 VF 调用的 mask 重建与累加器 UB 往返改为按批单次 VF，权重广播进寄存器、列累加器跨 R 行驻留。
+- [TopK 稳态的最差候选缓存](cached_worst_candidate.md)：缓存候选集合最差项，让 TopK 稳态的大多数输入以 O(1) 快速拒绝。
+- [量化 cast 链在 int8 容差内的压缩](cast_chain_fusion_int8_tolerance.md)：把 f32→i32→f32→half→int8 压成 f32→half(RINT)→int8(SAT,RINT)，用 NaN/Inf/±128 验证。
+- [原始域 max 归约 + 溢出安全 clamped 平移，替换 reduce 扫的逐元素前处理](clamped_shift_raw_reduce.md)：把 reduce-max 扫的逐元素 hardswish 前处理改为对原始 x 归约，再用 Maxs 夹取得溢出安全平移 c。
+- [裁剪设备热路径参数对象以减少线程栈物化](compact_hotpath_plan_parameters.md)：把设备热路径传递的大型按值 Plan 改为必要标量参数，保留通用对象路径。
+- [连续源列窗搬入 UB，再由 SIMT 完成逐元素 gather](compact_source_window_simt_gather.md)：把全部源行的连续列窗搬入 UB，跨输出索引行复用，再由 SIMT 按索引读取并写回。
+- [连续多行批处理 + 预发射软件流水](consecutive_row_batch_pipelined_staging.md)：把每行一条描述符、一次向量调用、一次 V 到 S 同步改为多行合成一块批处理，并在取走当前块前预发射下一块搬运。
+- [从消费跨度反推生产布局](consumer_facing_contiguous_intermediate_layout.md)：先定位消费端真实重组，再反推并统一生产存储、消费跨度与容量；把独立输出打包进车道。
+- [连续广播段的整体地址折叠](contiguous_broadcast_run_offset_collapse.md)：由完整形状和步幅证明连续非平凡段，将整组广播坐标分解折叠并消去退化步骤。
+- [不变量外提：批内重复生成的权重表 Init 期一次生成常驻 UB](covh_init_precompute_ub_resident.md)：把每 (m,wc,i0) 批重复生成的 covH 权重改为 Init 期一次生成常驻 UB 表，批内改偏移 BRC 读。
+- [跨通道几何元数据物化复用](cross_channel_geometry_table_reuse.md)：把每个通道重复的几何解码提到独立生产阶段，物化为跨通道复用的 GM 表。
+- [跨 pass 复用已 Gather 的原输入](cross_pass_gathered_input_reuse.md)：将第一遍 Gather 得到的原输入按消费布局暂存，第二遍改用对齐加载，删除重复索引重排。
+- [跨 pass fp32 exp 的 UB 暂存复用](cross_pass_ub_staged_exp_reuse.md)：把 sum-exp 遍算出的 fp32 exp 按原始位暂存 UB，out 遍直接消费该 e。
+- [核间标量 partial 稀疏落盘与分块收集](cross_task_partial_spacing_gather.md)：将不同核的小记录从紧凑相邻存储改为带间距的槽位，同时把最终读取改为跨步 DMA 收集。
+- [D=2 配对反交错行-通道向量化快路径](d2_pair_dintlv_row_per_lane.md)：将D=2数据配对反交错为每lane一行；dst0承接偶索引列0，dst1承接奇索引列1，保持合并交错顺序，再单次向量加求行和。
+- [数值域降维：有限值域 fp32 双重补偿快链 + 特殊值整线精确回退](dd_compensated_finite_domain_scan.md)：把有限值主路径从 int64 超级累加器位操作链改为 Priest dd (hi,lo) 对累加，非有限值整线回退重扫。
+- [deferred k 端归一化 + fp32 域直排的链路精简（小幅净增益档）](deferred_k_norm_fp32_domain_cleanup.md)：在整行向量排序选择已生效的 dataflow 上，把归一化推迟到 k 端（只对 k 个输出归一化）、排序/键构造留在 fp32 值域并移除 dtype 域复合键构造、host 行块参数相应调整的链路精简；实测为小幅净增益档（增量略 >1、零回归、官方判据全过、净删百余行）。
+- [退化归约的向量化快路径](degenerate_shape_vector_reduce_fastpath.md)：识别退化归约形状，用向量累加器和分层树归约替代标量串行循环。
+- [小inner目的块驻留与有序FP32累加](destination_owned_ordered_fp32_ub_accumulation.md)：将小inner的逐命中微搬运改为目的块驻留、source批搬和有序片上累加；依据精度链、别名、UB总预算与重复扫描成本分派，不承诺通用阈值或独立收益百分比。
+- [派发斜坡与离散工作组联合选核模型](dispatch_workload_core_count_model.md)：联合派发曲线与每核离散组数建立成本模型，枚举合法启核数并保留饱和域并行度。
+- [分布统计门下的廉价计数器 PRF 替换（Weyl 高位哈希）](distribution_gated_cheaper_prf_substitution.md)：把每 repeat 的 2 轮 Mul-XorShift 混合核加 And24 改为 Weyl 高位计数器哈希 Mul+算术 Shr8+And24。
+- [dtype 限定的无除法二进制 GCD（Stein）轮体：在 TW=int32 计算域用尾零剥离 + min/|a-b| 收缩替换 Div/Mul，int64 保留父版欧几里得](divfree_binary_roundbody_int32_scoped.md)：在 int32 计算域用无除法 Stein 轮体替换每轮 vdiv，改用廉价 ALU 序列。
+- [无除法二进制 GCD（Stein）轮体在 int64 计算域的负向边界：B64 软件移位阶梯比被替换的软件除法更贵](divfree_binary_roundbody_int64_falsified.md)：负向边界：int64/B64 域用 Stein 无除法轮体替换 Div/Mul 轮体被证伪；int64 域改值域窄化 int32 快路径。
+- [双队列 freed 槽位复用竞态](double_buffer_slot_reuse_race.md)：深度 ≥2 双队列复用 freed 槽位会与在途访问竞态；depth=1 串行化或显式槽位生命周期可保证安全。
+- [跨 chunk 双递推链指令级交错：扫描链延迟隐藏](dual_recurrence_instruction_interleave.md)：饱和多 chunk 场景（totalChunks >= 64 向量核）被单条 64-lane 递推的 per-position 串行率钉住（该轮实测每核 7.67-8.81 ns/position，与单链单核参考 8.06 ns/pos 一致），每核是 latency-bound 而非 issue-bound。
+- [双行交错扫描：双 loop-carried 累加器填 vec 发射空闲](dual_row_interleaved_sweep.md)：对逐行独立的 softmax 类扫描，把行两两成对交错进同一循环体：三条扫描各带双份 loop-carried 累加器（两个 maxAcc / 两个 sumAcc），双份分段 exp 缓冲，pair loop 按 depth-4 队列环流水化，尾行保留单行路径。
+- [动态UB预算驱动的批量边界压缩流水](dynamic_ub_batched_boundary_compaction_pipeline.md)：用动态UB联合承载多切片分桶、边界压缩及稳定整理，边界缩小后局部续扫，按完整比较键分批输出。
+- [elementwise batch-per-lane 的 fused row-streaming 变体（n=6,8）](elementwise_batch_per_lane_fused_rowstream_n6n8.md)：R3 机制在 n=6/8 路由的 fused row-streaming 变体：Iter1 行 softmax-only + IterK fused col-norm/row-norm + trailing col-norm，全部 elementwise、byte-identical per-batch 值序列。
+- [逐 batch 串行 VEC 归一化算子的 elementwise batch-per-lane 打包 + batch-column MTE3](elementwise_batch_per_lane_multibatch_norm.md)：把 G 个 batch 的 (i,j) 元素打包进一条 64-lane 指令，MTE 改为每 group 一组 batch-column 描述符。
+- [elementwise batch-per-lane 泛化到 n=2,3 路由（batch-column 描述符 blockCount=n²）](elementwise_batch_per_lane_n2n3_route.md)：把 batch-per-lane VF 泛化到 n=2/3 路由，blockCount 泛化为 hcMult²，UseBatchPerLanePath 放宽到 {2,3,4}。
+- [重复状态变换的精确末状态摘要](exact_repeated_state_transition_collapse.md)：证明重复变换的末状态、步数及附加量可精确摘要后，以摘要替代逐步推进。
+- [固定轮逐 lane 迭代循环的分块全 lane 早退](fixed_round_vector_loop_early_exit.md)：将固定轮逐 lane 迭代改为分块执行，并在全部活动 lane 完成后早退。
+- [固定小K有序键单遍候选槽选择](fixed_small_k_ordered_key_lane_slot_single_pass.md)：把重复归约扫描改为每tile一次搬入与有序键转换，每lane维护K个键/索引候选槽，跨tile保留。
+- [foreach TensorList 元素平铺满 tile 化：消除细粒度 tiling 的 per-tile 开销伪影](flat_element_full_tile_tiling.md)：把细粒度 row/chunk tiling 改为每张量按满块容量平铺，1 segment/tile，32B 对齐走 DataCopy 快路。
+- [扁平输出字节区间跨核切分：host 按 32KB/核放宽 blockDim](flat_output_byte_range_cross_core_split.md)：把 blockDim 从 min(outer,coreNum) 改为按 m*inner*elemSize 每 32KB 一核，按输出字节区间分派。
+- [小输出平坦 zone 坐标 hoist / 像素拥有 plane-group-split 负边界（load-latency-bound 证据）](flat_zone_coordinate_hoist_load_latency_bound.md)：负向边界：把坐标一次计算/plane 循环移植进小输出平坦 zone 前，先用实测周期随访存步距扩张判别是否 load-latency 受限。
+- [连续流批管线：扁平化多槽 term-gather 发射窗口 + 跨批双缓冲 skip/out staging](flattened_multislot_term_gather_window_cross_batch_skipout_double_buffer.md)：把严格配对的 2 槽乒乓升级为 S 槽扁平发射窗口（gather 先全部发射再统一等待，解除行间 slot token 串行），skip/out staging 改跨批双缓冲（批 n+1 的拷贝与批 n 的计算重叠，消除批边界全排空），MTE2 gather 队列加深让搬运延迟互相重叠。
+- [完整窄浮点编码域占用表替代输入排序](full_narrow_float_code_occupancy.md)：使用完整窄类型编码域记录占用和代表，以固定域扫描代替全输入排序。
+- [行归一化与后继列统计的 pass 融合](fused_row_column_statistics_pass.md)：在生成行归一化结果时同步累加列统计量，删除一次矩阵重读与屏障。
+- [归一化值链融合进选择管线（单趟 Div+舍入+复合键 + 掩码向量化 + 队列双缓冲）](gating_softmax_chain_fusion.md)：在向量选择机制已生效后，把 softmax 链的多趟中间值（先归一化再取键等）压成单趟：融合前置向量 pass、整块 rowSum、一趟内完成除法/位级舍入/dtype 转换并直写选择键缓冲，行索引源提升、完成掩码向量化、输出队列双缓冲，并放宽 host 行块规模上限。
+- [GENERAL 广播 x2 侧搬入边界物化（模式分发 V-A / V-B / period-tile，附 done-scratch 每-slice 复位）](general_broadcast_slice_staging.md)：将 GENERAL 广播从每 slice 的 V 管索引链与 UB Gather 物化，改为 x2 侧搬入边界物化。
+- [GM 访存节食：成对打包事务 / 直访载体解除 chunk 上界 / 尾块右尺寸紧凑落盘](gm_access_diet.md)：把相邻两元素打包进一次宽事务、UB chunk 流水改为 direct-GM SIMT 载体、尾块改右尺寸紧凑落盘。
+- [散射乘归约的 GM CAS 原子更新](gm_cas_atomic_multiply.md)：用 GM CAS-loop 实现 Scatter multiply 的同址原子更新，替代标量 remap。
+- [按索引空间并行的 GM 直接散射写](gm_direct_scatter_write.md)：沿索引空间分核并直接更新目标 GM，绕过目标值 UB 暂存和逐元素搬运。
+- [低精度散射加的 FP32 工作区原子累加](gm_fp32_workspace_atomic_add.md)：使用 FP32 GM 工作区完成 Scatter 低精度 add 原子累加，并在末尾一次舍回。
+- [fp add/multiply 大足迹的 GM fp32-workspace 列独占串行累加](gm_fp32_workspace_column_serial_rmw.md)：预分配 numel×4B 的 fp32 GM workspace，把大足迹 fp add/multiply 的散射归约改为列独占、列内 j 升序的串行非原子 RMW，替代 UB D/K-split 路径。
+- [组级VF共享扫描与紧凑结果轴向量化](group_vf_shared_vector_compact_score_axis.md)：将逐行VF扫描合入组级VF，以小行块共享只读向量，并将标量结果紧凑排列到连续lane供下游并行处理。
+- [平面轴核空闲时对输出 H 行做二次切分唤醒空闲核](h_row_secondary_core_split.md)：当平面轴 N*C < coreNum 时，对每个 plane 组的输出 H 行段做二次切分（rowSplitNum S = min(coreNum/P, hOut)），blockDim = P*S，唤醒空闲核，每核只处理连续输出行区间 [rowBegin, rowBegin+rowCount)；不触碰计算路径。
+- [宿主机拟合代价模型分段路由：用实测 per-step 代价律 argmin 掉启发式下限](host_fitted_cost_model_seg_routing.md)：把 kernel 的 segs>=4 与 router 每段>=16 tiles 两处下界改为 host 拟合闭式代价模型 argmin 分段深度。
+- [host 侧放行：恒等条件下的取模消除 / UB 预算按实际队列数重平衡抬高 tile 容量](host_gated_cheap_path.md)：两类 host 侧放行的合并族。
+- [每核计划预分区：host 复刻 seg-split 语义下发私有 chunk 子表](host_per_core_plan_prepartition.md)：把每核重复的全量chunk表扫描、解码与overlap数学移出kernel，改由host按seg-split语义预切成每核私有子表。
+- [单调完成状态过滤幂等原子更新](idempotent_state_atomic_filter.md)：对只需成功一次的状态标记，先局部去重并一致读取状态，跳过已经完成的全局 CAS。
+- [恒等 V 段消除：MTE2→MTE3 直通拷贝替代整流计算段](identity_v_pipe_elimination_mte_passthrough.md)：conj 对实数输入逐位恒等，但 champion 每个 tile 仍走 MTE2→V→MTE3：fp16/bf16 每 repeat 5 条向量指令（unpack-load→Cast-up→Muls(1.0)→Cast-down→pack-store）、fp32 3 条，并为该段维护独立 VECOUT 队列与第二组事件往返。
+- [中间量寄存器直通：消除多 pass 链的 UB store→reload 往返与 RAW 屏障](in_register_s_forwarding.md)：两遍 softmax 的中间量 s 当前必须落 UB 再读回（模板A 对齐 fp32 2r2w、DX 量化路径 4r4w，非对齐同构，模板B 2 访存遍 + 每 unit 4 条 RAW 屏障）。
+- [行几何里程计：寄存器进位计数器 + 闭式区间计数替代每行重算](incremental_index_odometer_geometry.md)：把每行从行号反解的 (plane,d,h) 改为寄存器进位计数器（h++/d++/plane++），并把 CountRange 枚举换成闭式一对 clamp。
+- [纯极值归约的多路独立累加链](independent_maximum_accumulator_chains.md)：把纯极值归约单依赖链拆为多路独立部分状态，扫描末归并并单独处理尾部。
+- [独立行逐lane映射与组级融合流水](independent_row_lane_fused_pipeline.md)：把逐行跨lane归约和多阶段VF调用改为一行一lane的组级计算，按列镜像衔接生产、处理与写回。
+- [host 流量门控 + TBuf 常驻 BULK 索引搬运 + idxChunkRows 独立 UB 预算封顶每核行数的零回归分治](index_scalar_bulk_mte2_tbuf_gated_independent_ub_budget.md)：将索引数组整块 MTE2 搬入常驻 UB TBuf；host 按每行流量门控，小流量保留原路径。
+- [host 侧流量门控消除 microkernel 回归有效，但 TQue 逐 chunk 同步 + 索引块挤占 UB 预算使批量路径反而变慢](index_scalar_bulk_mte2_traffic_gated_boundary.md)：host tiling 按 numRowsTotal*topK >= 4096 设置 useBulkIdxPath flag 的流量门控机制本身验证有效：ORIG 路径 6 个 case（6/13/14/18/5/7）回到 baseline 附近（0.985-1.117x），完全消除轮次 1 D1 的 microkernel 回归。
+- [标量索引数组整块 MTE2 进 UB 替代逐元素 GetValue 的适用边界与 microkernel 回归](index_scalar_bulk_mte2_ub_resident_lesson.md)：将本核行块对应的 estdr/efsr/scales 索引片段按行块 chunk 整块 MTE2 搬入 UB 常驻 TBuf，PrefetchRowScalars 改读 UB LocalTensor.GetValue 替代逐元素标量 GM GetValue。
+- [带位置输出的极值归约改为单趟 lane 扫描](indexed_extreme_scan_single_pass.md)：把分段跨 lane 归约求极值加获胜段回溯的两段式改为 lane 内运行态反向单趟扫描，每 tile 只做一次跨 lane 定案。
+- [缓冲池化：InitBuffer 14→4、GetPhyAddr 11→1](init_buffer_pool_consolidation.md)：batch_norm_group_norm_slow_thinking 的 aiv_scalar 占 aiv_time 的 84.5-85.2% 且与数据量反向相关（每核数据最少的 blk=12 标量时间反而最高），属固定开销主导。
+- [T2 跨步扫描核心的 int32 argmin carry 表示 + laneChunkW 32->64 解封（numLaneChunks 减半、MTE 块宽翻倍）](int32_carry_64lane_scan_core.md)：把 T2 VF 核心的 runningArgmin/idxCand 改为 int32 表示，解封 laneChunkW 32->64，出口逐行 Cast 加宽回 int64。
+- [int64 数据门控的 int32 域窄快路径：|A|,|B|<2^31 的 slice 按 int32 视图执行已验证轮体，未过门 slice 走父版 int64 Div 路径](int64_narrow_int32_domain_fastpath.md)：以 slice 全量 |A|、|B|<2^31 为门，将计算从 int64 原生域转移到半宽 int32 轮体。
+- [int64 窄域 int32 视图的偶 lane 密集化（lane packing）：过门 slice 把 2x 视图的结构性死奇 lane 压缩成 N 元素密集 int32 窗口执行已验证半宽轮体，出口一次性扩张回交错布局](int64_narrow_int32_lane_packing.md)：将int64窄域的int32视图有效lane密集打包，消除奇数死lane计算。
+- [交错模式按 128 元素 chunk 打包两行](intl_128elem_chunk_two_row_pack.md)：把交错模式“一行一个窗口”改成按 128 元素 chunk（64 pair）切块，DeInterleave 后一行一 lane，D=64 时一块吃两行
+- [小方阵打包布局、边界与输出 slot](iterative_small_matrix_packed_layout.md)：h≤8 的小方阵按列打包整组驻留；处理部分列/尾组/负 lane；输出用线性目标索引 + Scatter，避免非 2 的幂除法。
+- [内核入口元数据瘦身：按 kernel 分档 tiling 复制 + host 预计算与片上同式重导出 + 入口 icode 收缩](kernel_init_metadata_diet.md)：把 kernel Init 的整结构体 tiling 逐字节复制改为按消费字段的有界字粒度复制，host 预计算与片上同式重导出。
+- [dtype 条件化 L2 cache hint（写旁路 + fp32 读常驻）](l2_cache_hint_dtype_conditional.md)：把输出写改为 CACHE_MODE_DISABLE 写旁路，并只在 fp32 实例把输入读流标为 PERSISTENT，fp16/bf16 保持 NORMAL。
+- [车道跨距对齐 + 列打包（VL/cal 列进一次向量 op）](lane_stride_packing_32b_gap_alignment.md)：把 UB 行距改成 VL 的整除因子 cal，P=VL/cal 个连续输出列一次向量 op 算完，filter 预复制 P 份，32B gap 用 stride 桥接
+- [启动参数按值直传：删除设备侧 tiling GM 读与每调用 H2D](launch_arg_by_value_tiling_fetch_elimination.md)：kernel 真正消费的 tiling 字段只有几个标量，却每次 launch 都付一遍设备侧 GM 结构体读（_nestedgetmaxseqlen 44 次串行标量 GM load；conj 4×u32 依赖加载 + 拷贝循环）与一遍 host 每调用 H2D。
+- [启动核数收敛：按工作量反解 launch 几何填平每核固定开销地板](launch_core_count_convergence.md)：把 launch 核数从满核改为按工作量反解：实测拟合截距+斜率成本律，按每核预算 clamp 出 blockDim，数据面不动。
+- [线性工作单元与自适应二次幂 tile（规避跨步 2D 写约束）](linear_work_unit_adaptive_pow2_tile.md)：输出按连续地址切线性工作单元并用一维连续搬运；tile 按 UB 预算取最大二次幂自适应，避免跨步 2D 写约束导致的逐行小 DMA。
+- [无损值序与位置联合编码键](lossless_ordered_value_index_key.md)：把可无损编码的值序与并列优先位置合为整数键，用一次Max联合确定值和位置。
+- [低精度原子累加的精度边界](low_precision_atomic_accumulation_precision_loss.md)：不要把低精度存储类型直接作为多次原子累加的计算精度；优先提升到 FP32 后一次舍回。
+- [掩码分块分类跳过扫描：打包位图 + 空桶 O(1) 跳过](mask_run_block_classification_skip_scan.md)：把逐字节掩码扫描改为按块/按字的一致性分类跳过：掩码 UB 常驻、Compares(uint8,EQ 0) 生成 packed 位图、空桶 O(1) 跳过。
+- [恒等冗余消除：以链上已有中间量替换整遍归约扫描](max_identity_substitution.md)：两遍 softmax 第二遍 max 归约 m2=max(s) 位级恒等于 rcp1=fl(1.0/sum1)（或其 RNE 量化像 castUp(castDown(rcp1))），以常数条指令替代整遍 UB 扫描。
+- [微型 shape 的半核与双 tile](micro_shape_half_core_two_tiles.md)：每核元素数远小于一次 DMA 往返时，核数减半、每核 2 tile；必须有 ≥2 输入槽。
+- [Microkernel 噪声地板测量门禁（不可重采收益边界）](microkernel_noise_floor_measurement_gate.md)：当 case 优化后 median 低于 microkernel_max_us 时，其绝对波动（±1us 量级）相对占比放大，CV/relative_mad 系统性超过阈值，性能系统归类 microkernel_noise_floor 且 non_retryable、repeat_collection_allowed=false。
+- [DMA 原子散射累加](mte3_atomic_scatter_add.md)：利用 DMA 写回阶段的原子加能力直接更新 GM，去掉显式读取目标值的步骤。
+- [非对齐域转对齐域：行粒度 strided 搬运 + UB 行槽 32B 自动垫整 + 行距参数化对齐前端](mte_row_pad_strided_staging.md)：模板A 非对齐主路径 GM↔UB 搬运改行粒度 strided DataCopyPad（UB 行槽 32B 自动垫整，模板B R8 同款契约）+ 计算链切换行距参数化对齐前端（LoadAlign/StoreAlign），消除全部 Arange/Adds/Gather/Scatter。
+- [按累加深度分桶的多累加器派发：补偿求和去补偿](multi_accumulator_compensated_sum_bucket_dispatch.md)：champion 的补偿式运行累加器（KahanStepRot）在每 64-lane 块约 12 条向量指令里有 8 条花在补偿上。
+- [输入多槽、预取前移与按 shape 路由](multi_slot_input_prefetch_with_shape_routing.md)：输入 ≥2 槽，预取前移到最后一个输入消费者之后；仅当不缩小行批时启用；钳位后重算可行性并补 MTE2→V 同步。
+- [多行批数据流：rowsPerTile 批处理 + 批量标量 IO + 每批一次队列编排](multirow_batch_scalar_io_dataflow.md)：把逐行 pipeline 迭代改为按 rowsPerTile 批处理：一条多块 2D DataCopyPad + flat R*4B 标量批读。
+- [多行批数据流：2D 批量 skip/out MTE 拷贝 + Db0/Db1 乒乓 term 重叠 + 整 bias UB 常驻](multirow_batch_skipout_2d_mte_pingpong_term_overlap_bias_ub_residency.md)：把逐行行拷贝与同步批量化：每 B 行一次 2D DataCopyPad，term/bias gather 走两个 TBuf 乒乓槽显式事件配对，可常驻数组整块预装 UB。
+- [tiny-row 场景的多行 strided DataCopy 批量搬运](multirow_strided_datacopy_tiny_row.md)：将逐行单块搬运合并为一条多行strided DataCopy，在总字节不变时减少迭代和描述符。
+- [逐元素链迁回原生半精度域（128-lane b16）](native_narrow_half_domain_compute.md)：把 fp16/bf16 逐元素链从 fp32 加宽域迁回原生 half 域（oneRepSize 64->128），bf16 经 bf16<->half 交叉 cast 借用 half 通路。
+- [int16 T1 原生 uint16 Stein 计算域（废除 int16→int32 提升）](native_uint16_stein_domain_no_promotion.md)：对 int16 实例废除 int16→int32 提升，在 uint16 无符号域重实例化 Stein 轮体与归一化阶梯，出口按位视图存回 int16。
+- [GM↔UB 搬运引擎替换：NDDMA MultiCopy → burst DataCopyPad](nddma_to_burst_engine_substitution.md)：把 GM↔UB 规则切片搬运从 NDDMA MultiCopy 换成 burst DataCopyPad(ExtParams)，删 DCI 刷新，两侧连续时塌缩成 1D burst
+- [非末轴归约：沿连续维条带并行](non_last_axis_contiguous_stripe_reduction.md)：把非末轴归约前的全量转置/逐元素组装改为各class连续inner条带搬运，SIMD lane对应独立inner位置，沿C累积。
+- [数值域迁移：从后端罚分域搬到便宜向量域（int64→int32 hi/lo 拆分 / fp16→fp32 加宽 SIMD）](numeric_domain_migration.md)：把计算从后端罚分域搬到便宜向量域：int64 走 hi/lo 拆分的 int32 字典序键，fp16 走 fp32 向量链→RNE narrow。
+- [组级在线归一化的连续访问预取与输出缓冲解耦](online_group_visit_prefetch_dealiased_epilogue.md)：用组级在线状态缩短slot驻留，将独立任务与组展平成连续访问流，计算前预取后继，并拆分输入输出缓冲。
+- [有序索引链与独占owner的SIMT累加](ordered_index_chain_simt_accumulation.md)：为同目的索引建稳定first/next链，每(o,d,p)由首命中owner沿j升序SIMT取数，FP32累加后一次转换写回。
+- [完整有序状态的拆链与合并](ordered_selection_state_chain_split.md)：定义值、原始位置、有效性和并列规则的完整状态，再拆成独立链并按同一规则合并。
+- [输出 dtype 分层去补偿：bf16 核 hi-only 平坦扫描，fp32 核逐字保留补偿路径](outdtype_tiered_uncompensated_scan.md)：把补偿扫描按输出 dtype 分层，低精度档核整档改为 hi-only 平坦扫描，fp32 档逐字保留补偿路径。
+- [成对关系遍历融合排名与集体位掩码生成](pair_pass_rank_ballot_fusion.md)：在已有成对遍历内顺带计排名，并用 warp ballot 并行压缩关系谓词。
+- [归约结构重构：极值状态逐 lane 寄存器驻留 + 跨 lane 合并推迟到切片末](per_lane_running_argmax_scan.md)：把切片归约从逐块 Reduce+Duplicate 广播合并链改为极值状态逐 lane 寄存器驻留，跨 lane 合并推迟到切片末一次。
+- [行循环内掩码与地址寄存器的常量化外提](per_row_mask_addrreg_hoist.md)：VF 入口算一次 UpdateMask(H)，行地址改指针算术，删掉 per-row CreateAddrReg 与 rem/isLast/cnt 分支
+- [平面平坦 direct-GM SIMT 小输出 zone 门控臂](plane_flat_direct_gm_simt_small_output_zone.md)：对单平面欠填充的小输出 zone 用平面平坦 direct-GM SIMT：单次 asc_vf_call 交给持久线程，线程内 2 次 magic UintDiv 分解 (plane,row)。
+- [2 的幂除数精确倒数乘法：以 Reg::Mul 替换分箱链的 0-ULP Div](pow2_divisor_exact_reciprocal_mul.md)：把热向量体的 0-ULP 精确除法改为乘 host 位运算门控下发的精确 2 的幂倒数，按编译期模板参量在乘法与除法间分派。
+- [p=1/p=2 专用廉价 reduce 路径替代 Ln/Exp 幂模拟](pow_pspecific_fast_reduce_paths.md)：p=1时用绝对值与恒等收尾，p=2时用平方累加与sqrt收尾，替代Ln/Exp。
+- [预扫相位消除：编译期 dtype 门控 + 单 dTile 融合 + 无标量循环的缩放决策](prescan_phase_elimination.md)：按 dtype 编译期门控整段跳过非 fp32 的 prescan，单 dTile 时把预扫融合进主 Compute，标量缩放决策换 VF 直读与 2 的幂梯子。
+- [生产阶段折叠有效值之和与计数](producer_folded_sum_count.md)：把归约的第一级累计并入原生产循环，删除逐项结果与有效标记的 GM 物化。
+- [提升域持久态早退：host tiling 为提升后中间态预留 UB 窗口](promoted_domain_ub_reservation_early_exit.md)：在host tiling的目标dtype分支按原生宽度2倍预留UB，使kernel可跨chunk持久化提升域中间态。
+- [量化尾 cast 链节食：3 级 cast 折叠为 fp32→half(CAST_ODD)→int8 并删除可证死钳位](quant_tail_cast_chain_diet.md)：把量化尾 3 级 cast 链折叠为 fp32→half(CAST_ODD)→int8，并删除可证死的 Mins(127)/Maxs(-128) 钳位。
+- [范围归约边界折返消除：删除数值上不可达的 ±π fold 对](range_reduction_boundary_fold_elimination.md)：cosreshape 的 cos 核心在 rint-magic + 3 项 Cody-Waite 范围归约之后仍然跑两组 ±π 边界折返（2×[Adds + CompareScalar + Select]，占每 64-lane fp32 repeat 约 26 条核心向量指令中的 6 条）。
+- [直接以窄浮点原始编码归约绝对值最大值](raw_narrow_code_maxabs_reduction.md)：把逐元素提升再求最大值改为原始 uint16 编码归约，仅转换最终幅值。
+- [归约轴跨核切分两级归并：低扇出 launch 的核数补全 + GM workspace partial 合并](reduce_axis_cross_core_split_two_stage_merge.md)：把从未切分的长归约轴切成每核一段，各核写 partial 到 GM workspace，再做两级合并。
+- [T1 连续轴前缀扫描的寄存器驻留向量化扫描树（Hillis-Steele）](register_carried_scan_tree_vectorization.md)：把 T1 快路径 per-element 串行扫描（每元素 ~11-12 条 1-lane 向量指令、向量宽度未利用，单核吞吐恒 ~100-114M elem/s/core）替换为寄存器驻留 Hillis-Steele 64-lane 前缀扫描树，每 64 元素块 O(1) 全宽指令。
+- [寄存器驻留累加器归约（含逐块部分掩码修复）](register_resident_accumulator_arg_reduce.md)：将maxVal/maxIdx全程驻留寄存器，以逐块向量比较RMW替代UB往返和逐块屏障，同步移至slice边界。
+- [gather 操作数寄存器驻留：tile 外层跨行复用 + Reg::Gather dst 直出](register_resident_gather_operands.md)：把行无关的操作数表从逐行从UB重取改为跨行寄存器驻留，gather改为dst直出寄存器并融合，循环重排为tile外层、行内层。
+- [误差契约内的快速除法模式](relaxed_division_mode.md)：在精度阈值允许时将 0-ULP 除法切换为高吞吐 intrinsic 模式。
+- [轮次 measure 中位数伪影会高估声称加速；>1.2x 声称必须用官方路径 spot check 裁决](round_measure_artifact_spotcheck_arbiter.md)：轮次声称 >1.2x 时对最大 case 跑官方路径 spot_check：偏差 >0.2 判 not_reproducible，机制标记待重验。
+- [独立行归约归一化的批处理](row_batch_normalize.md)：将独立行批量搬运并融合 reduce/rstd，以每批一次同步替代逐行流水排空。
+- [可证明恒等行映射的整行缓存与向量索引读取](row_map_identity_analytic.md)：解析证明 Gather 行映射恒等后启用整行 UB 加载与 SIMD Gather 快路径。
+- [非恒等行映射的逐行精确拷贝 + SIMD 向量 Gather（32B padded slot 数据流）](row_map_perrow_copy_simd_gather.md)：当行映射不可证明恒等但可解析表达时，放弃『单块连续拷贝』契约，改为批内逐行精确拷贝：第 r 行从源张量按行映射起点拷入 32B padded slot，随后既有 SIMD 向量 Gather 按 slot 收集输出；对任意行映射按构造逐位精确，无需恒等证明。
+- [T1 末轴串行扫描的行并行 lane 打包（一行一 lane + per-lane carry，无跨 lane 通信）](row_per_lane_packed_scan.md)：把 T1 串行 per-element VF 扫描改为行并行 lane 打包：K 行重排进向量寄存器，per-lane Compare/Select 更新 carry。
+- [整行 UB 常驻单读 + 跨 pass exp 复用](row_resident_single_gm_read_cross_pass_reuse.md)：把 row path 每行 x 一次 CopyIn 整行驻留 UB（depth-2 双缓冲），sum-exp 遍把 e 存入 eBuf_ 供 out 遍消费。
+- [输入行切分与片上分段累加](row_split_ub_accumulator_workspace.md)：按输入行分核，每核在 UB 中分段累加，再通过私有工作区完成跨核归约。
+- [S_MTE3 事件同步在 MIX_AIV_1_0 + 硬 SyncAll 上下文触发设备 507035](s_mte3_event_mix_syncall_error.md)：在MIX_AIV_1_0加硬SyncAll归并中禁用该事件组合，并以可证明的同步保持聚合写到读可见性。
+- [T2 scalar 管发射循环消除：SetValue 复位循环 -> 向量 Duplicate 广播；逐行 Cast 加宽循环 -> 守卫式整 tile 单次批量 Cast](scalar_emission_loop_duplicate_batched_cast.md)：把 VF 外围的标量发射循环换成整寄存器向量操作：SetValue 复位改两条 Duplicate，逐行 Cast 改守卫式整 tile 批量 Cast。
+- [PIPE_S serial reduce chain + UB-capacity D/K budget](scalar_serial_reduce_ub_budget.md)：Map the scalar serial reduce chain to PIPE_S with a UB-capacity D/K budget, avoiding vector-pipe idling on order-dependent RMW.
+- [逐 lane 标量 UB 读 → 单条广播向量装载](scalar_ub_read_to_broadcast_vector_load.md)：把 VF 热循环里的标量 UB 读加 Muls 换成一条 DIST_BRC_B32 广播装载加寄存器 Mul
+- [中轴扫描内轴 lane 跨核分配（blockDim 由 outer x lane 任务空间驱动）](scan_inner_lane_axis_core_distribution.md)：将任务空间从仅外轴扩为outer×laneChunk，并以outerCount×numLaneChunks计算总任务数。
+- [扫描循环证死删除：不变量守卫段末外提 + 退化段恒等塌缩](scan_loop_proof_deadwork_elimination.md)：把逐块逐步重复的 NaN/Inf 守卫外提到段末消费点一次，并把退化段恒零的 carry 链整段删掉。
+- [T1 单行/长 scanLen 的两级分块并行扫描（块内前缀 + 跨核归并 + 带偏移重扫）](scan_row_split_two_level_cross_core.md)：T1 单行/长 scanLen（outerRowCount=1）默认单核串行扫描，case 13 [1000003] bf16 dim=-1 冻结基线 4316.2us。
+- [退化 1D flat update 的 D 轴核心划分](scatter_1d_flat_daxis_core_partition.md)：对退化的 1D flat update（scTotal=1 只激活 core 0）增加 D 轴核心划分：每个核拷贝并散射落在其连续 D 切片内的更新，把单核 copy+scatter 摊到全核。
+- [形状门控 direct-GM SIMT 坐标一次计算数据流（大输出平面 zone）](shape_gated_direct_gm_simt_coordinate_once.md)：把逐行块 UB-staged 重采样迭代改为 kernel 侧按 DesHW 门控的持久 direct-GM SIMT 流，坐标每像素一次并跨 plane 复用。
+- [共享小表条目的寄存器外提（run 外层 + 行内层）](shared_entry_register_hoist_run_loop.md)：把行循环改成“共享 run 外层 + 行内层”，每 run 只装载并宽化一次表项、驻留寄存器供 run 内各行复用
+- [按更新轴长度混合分派独占归约与原子更新](short_axis_owner_long_axis_atomic.md)：短更新轴采用切片独占，长更新轴采用并行原子更新，以成本交叉决定分派。
+- [datablock 分段归约：短行用 vcgmax/vcgadd 一次产出逐行统计，取代跨 lane Reduce 链](short_row_datablock_segmented_reduce.md)：把短行每行的跨 lane Reduce 链改为按 32B datablock 分段的硬件归约原语，8 行一寄存器出统计量。
+- [短行归约的多行合批融合扫描](short_row_multirow_batched_fused_reduce.md)：把行宽不足一个行内展开宽度的独立行归约归一化，按固定行数成组合批，每行各持 max/sum 累加器交错推进，组末统一屏障，余行回落单行路径。
+- [RegTensor 数组化的编译支持边界](simd_regtensor_array_compile_failure.md)：不要默认 RegTensor 可以像普通 C++ 对象一样数组化和动态索引；先验证后端支持，否则静态展开。
+- [SIMD主体的SIMT离散取数与向量数学交接：UB直交接/GM桥接](simd_simt_gather_to_vector_math.md)：Preserve original math and casts; evaluate UB budget and repeated VF costs against extra GM traffic, with guarded vector and scalar fallbacks.
+- [手工展开循环后重置 auto-decrement sreg 的尾段会静默清空掩码](simd_unroll_sreg_reinit_miscompile.md)：在每块起点显式重建尾段掩码，弃用展开循环遗留的auto-decrement或POST_UPDATE递减值。
+- [冷路径隔离的编译边界与净收益](simt_cold_outline_codegen_boundary.md)：在合法调用边界隔离稀有冷路径，先验证声明与实例化，再比较热路径资源和整体净收益。
+- [dtype-aware size gate 修复 SIMT direct-GM 的 fp16 mid-size 回归（机制有效，正式门禁结构性阻塞）](simt_direct_gm_dtype_aware_gate.md)：将统一size gate改为按dtype与输入规模选择SIMT/VEC的门控，并为未知或不利区间保留回退。
+- [SIMT direct-GM 大数据机制与单一 size gate 过宽的负向边界](simt_direct_gm_size_gate_regression.md)：将过宽的单一总元素 size gate 改为按 dtype 分化，并验证回退边界。
+- [组数/核数占用与 elementwise 替换 packed](simt_group_occupancy_and_elementwise_replacement.md)：先算 G=B/64 与核数 C；G≥C/4 时减到 G 核（1 组/核）并实测 elementwise，禁止纸面排除。
+- [512-lane int64 SIMT 体的 per-element 偏移算术节食：magic-division（窄域 no-fixup）+ active-dim 列表 + 单活跃维直表达式 + SCALAR 预读](simt_int64_offset_arithmetic_diet.md)：GcdSimtKernelInt64（LAUNCH_BOUND(512)）在 GENERAL-broadcast 每元素上付出一次运行时整除 + 一次取模（tGm 加载的运行时值）外加 8 槽守卫扫描。
+- [SIMT 线程档选择与按 shape 双档路由](simt_launch_bounds_tier_selection.md)：按每线程寄存器预算选 launch_bounds 档；至少测 1024/2048，并允许双实例按 shape 路由。
+- [SIMT 低精度标量转换必须用显式 intrinsic](simt_lowprecision_scalar_cast_intrinsic.md)：SIMT 标量上下文的 fp16/bf16→fp32 转换必须用 __half2float/__bfloat162float，而不是 static_cast。
+- [按访存角色选择随机目标覆盖写策略](simt_random_target_store_policy.md)：只把 SIMT 随机目标的普通覆盖写改为 asc_stcg，独立评估其存储策略。
+- [归一化状态不变量与直接终止](simt_stein_odd_pair_equality_exit.md)：重建精确收敛过程的归一化循环不变量，在结果已可恢复时直接终止，减少退化末轮。
+- [跨步切片的线程独占有界状态与相邻访存](simt_thread_private_bounded_slice_state.md)：把独立跨步切片改为每个SIMT线程独占小规模有界状态，相邻线程沿内层连续坐标分配。
+- [size/dtype 门控的整核 SIMT direct-GM 载体（入口早分叉 + 每核一次 VF_CALL + GM 直达读写）](simt_whole_kernel_direct_gm_carrier.md)：把逐 slice TQue/UB 载体改为 host size+dtype 门控的整核 SIMT direct-GM 数据流，入口在 UB 初始化前分叉、每核一次 VF_CALL。
+- [SIMT 写后 DMA 读的可见性保证](simt_write_to_mte_read_visibility.md)：SIMT 写后必须 asc_threadfence 加核间同步，才能让后续 MTE 读观察到全部更新。
+- [极值索引单趟融合与选中位置单点失效](single_pass_extremum_index_point_invalidation.md)：把极值、位置查找和删除的多趟扫描融合为单趟值索引更新，再用单点Scatter失效选中项。
+- [单趟融合统计链与逐行 64-lane 折叠](single_pass_fused_statistics_chain.md)：把多趟逐元素/归约 VF 融合成单趟统计 VF；逐行用 64-lane fold 累加，AR-reduce 成对折叠树一次归约。
+- [单趟 sum/sumsq 融合扫描：双矩并发归约求方差](single_sweep_sum_sumsq_variance_fusion.md)：把每行两趟统计扫描（ReduceSum 再 ReduceSumsq）融合为单趟双寄存器累加器，方差改由 E[x²]−mean² 导出。
+- [跳过被 cross-core split 覆盖时冗余执行的 whole-tensor 归约路径](skip_redundant_whole_tensor_split_path.md)：当 cross-core split 完整覆盖且最终写回同一输出时，跳过先执行后被覆盖的 whole-tensor 路径。
+- [小方阵紧凑布局与整块搬运](small_matrix_bulk_compact_copy.md)：规则小方阵用紧凑连续布局 + 单条二维搬运；padded 槽位不适用；微 case 回退。
+- [固定小矩阵的跨迭代寄存器驻留](small_matrix_register_residency.md)：让固定小矩阵跨全部归一化迭代驻留 RegTensor，仅在首尾访问 UB。
+- [整段 span × 全 fh 行的 UB 窗口常驻](span_window_full_fh_residency.md)：把 span 缓冲从“1 行双槽”扩成“fh 行双槽”，一列的所有 tap 地址落在同一块 UB，行越界用整行 -inf 填充
+- [利用保序键空余位合并值与关联位置扫描](spare_key_bits_associated_index_scan.md)：把独立维护的值键和局部位置编码为一个整数状态，用一次 Min 完成联合选择。
+- [以稳定窄分数原生排序合成精确宽键顺序](stable_narrow_score_wide_key_sort.md)：把完整宽键比较桥接为若干次精确窄分数的原生排序，保持索引载荷及原始值位型。
+- [迭代稳态的分母 eps 省略](steady_state_epsilon_omission.md)：稳态省略分母 eps，首轮保留；所有路径纳入同一开关并逐路径验证。
+- [Stein 轮体两级尾零剥离 + 奇偶安全收缩：软件模拟 tz 阶梯宽度 {16,8,4,2,1}→{2,1}、B!=0 守卫收缩改奇偶交换收缩，每轮向量指令 26→15](stein_roundbody_twolevel_tzstrip_parity_swap.md)：将尾零阶梯缩为 {2,1}，每轮最多剥三位；若剥离后 B 仍为偶，则交换以维持不变量。
+- [跨步元素行切片：整段连续读入 + 向量 Gather 压实 + 打包写出](strided_element_rows_bulk_read_vector_compaction.md)：当切片的每个输出行只有单个元素宽时，逐块 MTE 描述符搬运使源侧有效带宽落在跨步地板（每描述符数十字节）。
+- [2B dtype 行打包扫描的 u32 双位置打包（每 lane 承载同一行 2 个连续扫描位置，Gather/Scatter 全 B32 粒度）](subword_u32_pair_packed_scan.md)：把 2B dtype 行打包扫描改为每 u32 lane 承载同一行相邻 2 个扫描位置，Gather/Scatter/Pack 全升 B32 粒度。
+- [跨步拷贝 DMA 超集/32B 窗口读 + UB 向量 Gather 压实](superset_window_read_vector_gather_compaction.md)：把按固定步长逐元素从 GM 取数改为读覆盖目标元素的连续超集或每元素一个 32B 窗口，再在片上用向量 gather 压实。
+- [按数据足迹自适应扩大离散索引读取分块](t2_narrow_dtype_ub_chunk_raise.md)：按 dtype、线程临时量和 UB 预算自适应扩大离散索引读取的 chunk，减少分块循环次数。
+- [小 xDim 索引 gather 列窗 slab 整块 MTE2 + SIMD 向量 Gather 替换逐元素 SIMT 散射读](t2_small_xdim_slab_bulk_mte2_simd_gather.md)：把逐元素 GM 散射读改为按 chunk 列窗整块 MTE2 搬入双缓冲 slab，SIMT 构偏移后由 SIMD Gather 收集。
+- [T2 split UB-window relocation](t2_split_ub_window_relocation.md)：Stage the tile's full idx/upd K-extent once and relocate the UB window, eliminating dNum-fold GM re-staging within an 8192B span.
+- [T4 1-D 段归约：GM-direct SIMT 直散射 fp32 原子累加进 per-core workspace](t4_simt_gm_direct_atomic_fp32_ws.md)：把逐元素 s-pipe RMW 标量链改为 SIMT grid-stride 经 __gm__ 直读并 asc_atomic_add 进每核私有 fp32 workspace。
+- [tap 循环不变量向量外提 + 编译期 kW 模板特化](tap_loop_invariant_vector_hoisting.md)：把 tap 循环内反复重建的向量不变量外提为寄存器常驻 per-(row,chunk) 前导，并以编译期 kW 模板特化分派。
+- [UB 填满式放大 tile 塌缩 per-core loopTimes 并丢失深度 2 双缓冲重叠](tile_enlarge_double_buffer_overlap_loss.md)：按 shape 区间放大 tile 以减少 tile 数和逐 tile 标量工作，同时保留深度 2 双缓冲重叠。
+- [tile 按 UB 预算扩满（下界保护）](tile_fill_ub_budget.md)：tile 按 UB 预算扩满（UB/2/2），小 shape 用下界守卫保证每核 >=2 tile 以维持双缓冲重叠。
+- [微型元数据标量 GM 直读：删除 GM->UB MTE2 暂存与 tile TBuf](tiny_tensor_direct_scalar_gm_read.md)：把微型元数据张量的GM→UB MTE2暂存与tile TBuf整段删除，改为在标量check循环里逐元素直读GM。
+- [all-equal/monotone 输入检测的 top-k 直接发射快路径](topk_allequal_input_fastpath.md)：kernel-side self-select：对 sortLen 内做向量化 MAX/MIN 归约检测行内是否全等（all-equal / monotone），若全等则直接按 largest 方向发射 y=value、idx=0..k-1；否则逐字节回退 ComputeTopK。
+- [高 k/sortLen 整行向量排序选择快路径](topk_high_k_vector_select.md)：对高 k/sortLen（>=0.2）整行驻留 UB 的行，用 AIV 向量引擎整行排序（AscendC::Sort RADIX）后截取前 k（值+索引），替代标量有界堆 fill+稳态+finalize 三段标量工作。
+- [In-kernel self-select 激活 latent 向量排序路径](topk_inkernel_selfselect_latent_vecsort.md)：在 kernel Init 中镜像已验证的 K1/K3 自选择模式：按可靠的运行时字段（sortLen/k/largest/chunkLen/dtype）在 kernel 内自选 useVectorSort_=1，激活 kernel 内已存在但宿主 tiling 未分发的 T1 ES1 向量排序路径；不匹配时逐字节回退原标量路径。
+- [ES1 向量排序 route 的 O(N) radix-select 直接选择](topk_o_n_radix_select_es1_vecsort.md)：对 ES1 向量排序 route 用 O(N) radix-select 直接选出 top-k，替代 O(N log N) 完整排序。
+- [小 k 比下整行向量排序选择（gating dataflow，SIMT 选择排序消除 + host 去钳位）](topk_small_k_vector_rowsort_select.md)：把逐元素 SIMT 选择排序（逐候选线性扫描 + k 次选择循环）替换为 AscendC::Sort<T,true> 整行向量排序 + 一次 top-k 截取（值+索引），并解除 host 侧对行块规模的钳位，使 kernel 能按整行块消费输入。
+- [bf16 受限 T2-ES1 整行向量排序 self-select](topk_t2_bf16_vecsort_selfselect.md)：把 useVectorSortT2_ self-select 门控收窄为仅 bf16 整行 Sort 几何，fp16 等明确留在标量堆。
+- [T2 多 chunk 大轴分块向量排序 + 归并](topk_t2_chunked_vector_sort_merge.md)：对 T2 Q>1 多 chunk 大轴 case，各 chunk 独立向量排序，再把各 chunk 前 k 归并池排序合并输出——把 round-4 门控排除的多 chunk 大轴 case 的 AIV Scalar 有界堆改为向量排序+归并。
+- [T2 向量 Gather free-compaction + 整行向量选择](topk_t2_gather_vector_select.md)：对 T2 Q>1 中轴 case 用向量 Reg::Gather 做局部转置（free compaction），把槽区 strided 行紧凑为连续候选区，再整行向量排序选择前 k——用向量 Gather 解决 round-2 证伪的 free-compaction 前置。
+- [T2-ES1 向量排序 self-select 门控过宽导致 fp16 中 k 段回归](topk_t2_vecsort_fp16_midk_regression.md)：T2 Q>1 ES1 向量排序 self-select 的 gate 须同时收紧 dtype 与 sortLen（sortLen<=256），禁只按 dtype 放行。
+- [TopK 稳态向量批量拒绝预过滤](topk_vector_batched_reject.md)：把稳态中被 cachedRoot（最差候选）逐元素标量拒绝的绝大多数输入改为每 64 元素一条向量比较 vs 广播 cachedRoot，整批无胜者直接跳过，削减 AIV Scalar 逐元素工作量。
+- [超越函数链代数化：副本链级数截断 / 共享 vexp 的精确代数恒等式](transcendental_chain_algebraization.md)：把位精确超越函数副本链替换为解析论证过的级数或精确代数恒等式。
+- [递推链超越函数降阶重拟合（相对误差 minimax）](transcendental_minimax_refit.md)：把超越函数的多项式从 Taylor 重拟合为相对误差 minimax，阶数当优化变量，并删掉区间守卫与兜底 Select
+- [UB 计算链迁移到 RegTensor 驻留（中间结果不落 UB / Duplicate 广播替代标量读回 / DIST_UNPACK_B16 替代 fp32 staging）](ub_compute_chain_regtensor_residency.md)：单一优化点：在 A5（DAV_3510）的 SIMD RegBase 载体下，把设计/翻译中"UB 中转"的计算链迁移到寄存器（RegTensor）驻留——中间结果不落 UB、Duplicate 寄存器广播替代标量读回、DIST_UNPACK_B16 替代 fp32 staging，避免"忠实翻译 TPipe/UB 词汇落到慢层"的载体错位。
+- [欠并行索引轴的逻辑行扩展切分](underfilled_axis_row_parallel_tiling.md)：将索引前缀行并入逻辑任务空间，修复短 outer 轴导致的多核欠利用。
+- [统一互补尾部有理式以消除双套近似链](uniform_complementary_tail_rational.md)：扩大一套互补函数有理近似的合法区间，删除另一套近似及其除法、比较和选择。
+- [8-bit narrow dtype LSD radix single-round reduction (roundNum 4->1)](unique_narrow_roundnum_reduction.md)：把 8-bit value domain 的 LSD radix keyBits 由 32 改为 8，使 roundNum 由 4 降到 1。
+- [UpdateMask 计数器作用域与 POST_DECREMENT 跨块语义](update_mask_counter_scope.md)：UpdateMask<T>(sreg) 为 POST_DECREMENT 语义：返回 min(sreg, VL) 的逐块有效 lane 掩码后原地递减。
+- [累加器与 filter 寄存器驻留的 tap 折叠](vec_acc_register_resident_tap_fold.md)：把 max(acc, span+f) 的 classic 两步折进一次 VF 调用：acc 与 filter 具名寄存器常驻，每 tap 只 LoadAlign 一次
+- [VEC 计算链代数强度削减：用单条指令复用代数恒等相关结果](vec_algebraic_strength_reduction.md)：在 VEC-bound 的 elementwise 计算链中，若某个子表达式与其前序结果满足代数恒等（如 den = 2+2u+u^2 ≡ num+2，其中 num = u*(u+2) 已由前序指令算出），则用单条 VEC 指令（Adds）复用已有结果替代独立构建该子表达式的多指令链，削减每 repeat 的 VEC 指令数与活寄存器数。
+- [向量前端指令节食：对齐分派 B 半 load + SiLU 直接除 + 每行倒数 hoist + amax 融合进生产 pass](vec_frontend_instruction_diet.md)：在 VEC-paced 逐 repeat 链里删除四类语义形式指令：对齐分派 B 半 load、SiLU 直接除、每行倒数 hoist、amax 融合进产出 pass。
+- [向量访存的对齐与边界约束](vector_api_unaligned_overread.md)：向量基址、步幅与实际读取宽度必须同时满足对齐和边界要求，不能用逻辑元素数推断物理访问安全。
+- [极值与索引回溯的全向量归约](vectorized_arg_index_reduce.md)：用向量极值、相等掩码和位置编码完成 argmax/argmin 的值与索引归约。
+- [VF 线程级线内分段两遍扫描（精确 int64 combine + 段内自包含回退）](vf_thread_chunked_two_pass_scan.md)：把 thread-per-line 的线内串行链按段切给空闲 VF 线程槽，用两遍扫描（段内扫状态加跨段精确归并）并行化。
+- [warp 协作连续行切片：SIMT lane 重映射消除散射访存](warp_cooperative_contiguous_row_slice.md)：把 lane→data 映射由「一 lane 独占一行」改为「一 warp 认领连续行段」，lane l 取元素对 l,l+32,…，以免除法增量状态保 warp-uniform。
+- [局部协作的唯一写者判定与连续搬运](warp_local_winner_prefetch_wide_copy.md)：以全局顺序判定唯一写者，让搬运组直接持有决定，联合比较预取、宽访问和按行长协作。
+- [行稀疏输出的 warp-per-row 批处理 + 宽合并访存 + 单趟直写](warp_per_row_coalesced_direct_write.md)：把每线程独占一段连续地址写输出改为按行分 warp、lane 交织宽访存、判定与写出同趟、普通 cached store。
+- [权重寄存器提升与分块双链加权累加](weight_hoist_dual_chain_block_accumulation.md)：把跨列块不变的行权重提前广播到寄存器，以两条独立FMA部分累加链计算并在列块末合并。
+- [多块描述符写回合并](wide_descriptor_store_collapse.md)：用 Normal 模式的 32B 块补齐（UB 侧 AlignUp(blockLen,32)==padded 行距）加 GM 侧 dstStride=0，把每列一条写回压成整 tile 一条多块描述符
+- [宽整数拆 32-bit 平面做字典序比较](wide_int_32bit_plane_lexicographic_compare.md)：把 64-bit 元素的比较与选择解交织成 hi、lo 两个 32-bit 平面，按字典序比较，使一次向量操作覆盖的元素数翻倍。

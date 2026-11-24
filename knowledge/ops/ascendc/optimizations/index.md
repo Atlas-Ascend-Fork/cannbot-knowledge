@@ -229,3 +229,5 @@
 
 - [指令模型](instruction_model/index.md)：在 Ascend 950PR/950DT 上按接口、类型和工作量选取单指令理论并行度，核对单双发模式及端口约束；每 VL 换算和循环合成成本是附加假设下的参考，不构成实际耗时界限，瓶颈须实测。另覆盖 SIMT 单指令理论吞吐口径与固定单次 Mmad shape 的 Cube 分形对齐、头开销模型；低档接口只是待测瓶颈候选，Cube 折算不代表整个实现的上界或跨方案收益。
 - [OpsTune 调优知识](opstune/index.md)：分层瓶颈判定规则语义（L0-L3 四层 24 条，含反证与阈值溯源）与优化机制卡（流水/搬运/API/存储层次/Tiling/MC²/RegBase VF）。迁入自 asc-tools tool-ops-tune 固定提交 14714fd，规则 YAML 机器真源留工具仓。
+
+- [Ascend C 性能优化策略（A3/950）](ascendc_performance_strategy/index.md)：417 张可复用策略卡，按 conv/cv/FA/vec 四族与 A3/950 芯片代际分目录；每卡含触发条件、机制、收益与失效边界，正文末附七字段检索短卡。

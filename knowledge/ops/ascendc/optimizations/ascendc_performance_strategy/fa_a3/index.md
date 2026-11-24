@@ -1,0 +1,42 @@
+# A3 FlashAttention 类算子策略
+
+- [累加器暂存的批量 gather / 批量跨步 scatter](accumulator_staged_batch_gather_scatter.md)：将逐行中转改为批循环，在连续UB累加器中紧凑gather，再批量scatter。
+- [CV 混合核下 vec 子核按行交错切分，消除多子核冗余并行](aiv_subcore_s1_split.md)：将vec子核的行工作按交错方式切分。
+- [FP32→QType 写回用整块批量 Cast 替代逐行 Cast 循环](batch_cast_loop_elimination.md)：将 FP32→QType 写回从逐行 Cast 改为整块批量 Cast。
+- [连续小搬运合并（per-element/per-row DataCopy → 单次批量 DataCopy）](contiguous_datacopy_coalescing.md)：将循环内逐元素或逐行的小DataCopy合并为循环前一次批量预取，并只做一次等待。
+- [全核连续任务环形流水，减少短流水反复启停](continuous_task_ring_pipeline.md)：将按外层 block 反复启动并排空的局部流水改为全核连续任务环形流水。
+- [跨内层 tile 复用不变操作数的片上 L1 持有（按外层 task 寻槽）](cross_inner_tile_invariant_operand_l1_reuse.md)：将每个内层 tile 从 GM 加载的不变操作数改为跨内层 tile 的 L1 复用
+- [跨内层迭代操作数复用（task-key 缓存跳过重载，带场景 gating）](cross_tile_operand_reuse_via_taskkey_cache.md)：加入 task-key 命中判断，将操作数由逐迭代装载改为跨 tile 复用。
+- [Cube 侧多 matmul 共享操作数的 L1 跨 mm 复用](cube_l1_operand_reuse_across_matmul.md)：将多个matmul的共享操作数改为在Cube侧L1中跨matmul复用。
+- [Cube 手写 Matmul 的双层循环重排 — 操作数 L1 复用](cube_loop_reorder_for_l1_operand_reuse.md)：交换双层循环；外层操作数仅装载一次并延迟释放，供内层迭代复用。
+- [Cube 手写 Matmul 的 L1→L0 K 维单搬块放大](cube_matmul_l1_to_l0_k_tile_upsizing.md)：在手工LoadData+Mmad矩阵乘中，将K内层切片步长由C0放大为K_L0_TILE。
+- [cube/vec 跨核软件流水——producer stage 当前 tile 先发，再等上一 tile consumer 的跨核 flag](cube_vec_pipeline_producer_first_overlap.md)：将主体由 consumer(wait) 在前改为 producer-first，先发当前 tile 的生产阶段。
+- [消除"中转专用"管线 hop（plain TBuf + 手工跨管线同步替代 TQue 桥）](eliminate_relay_pipe_hop_manual_sync.md)：将纯拷贝中转管线改为 plain TBuf，并在生产者写与消费者读之间显式同步。
+- [把"无依赖维"拆到空闲核（FlashDecode 式免 reduce 并行）](flashdecode_split_independent_axis_across_idle_cores.md)：baseTasks 小于核数时，将独立维拆为 fdSplitNum 份，使任务数乘以 fdSplitNum
+- [谓词门控快速路径（外层一次判定恒空分支/全局谓词，索引区间推导或有序数据探针）](gate_guaranteed_noop_branch_by_range_predicate.md)：在内层循环外计算循环不变量 feasible，用它门控原保护分支。
+- [GQA/MQA group 维打包进 Cube M 轴（共享 KV 摊销 + M 满载）](gqa_group_dim_packing_into_cube_m_axis.md)：由每个query head独立任务改为将group维打包进Cube M轴，mBaseSize取G或min(G,BLOCK_M)
+- [输出循环不变操作数装载外提与 L1 驻留（hoist loop-invariant GM→L1 load + L1-resident reused tile）](hoist_n_invariant_operand_load_out_of_output_loop.md)：将输出N循环内不变操作数的GM→L1 LoadData删除并外提到循环前。
+- [增大 cube/vector 计算基本块](increase_base_block_size.md)：把单级分块 kernel 的 baseM/baseN/baseK 三者同步放大（baseK 覆盖整个 dim 使 kTiles=1），host 派生量同步调整。
+- [索引 gather 相邻升序对合并读（blockCount=N + srcStride）+ UB 累加器批量 flush](indexed_gather_merge_accumulator_batch.md)：将逐块 gather 改为相邻升序对合并读取，并用 UB 累加器攒批后单条 flush。
+- [索引 gather 的相邻升序读合并（逐行 blockCount=1 → 单条 blockCount=N + srcStride）](indexed_gather_srcstride_coalescing.md)：把逐行单块 DataCopyPad 改为以 blockCount+srcStride 一次搬运多个源块。
+- [放大内层 tile + 串行相位共享片上 buffer（摊销 per-tile 固定开销）](inner_tile_upsizing_with_phase_shared_l1_buffer.md)：放大内层tile，并让串行相位共享同一L1 buffer，替代每相位各占一份。
+- [跨任务不变操作数 L1 生命周期缓存（signature 命中 + gating）](invariant_operand_l1_lifetime_cache.md)：将不变操作数的逐任务加载改为仅在归约组开始时载入L1，并跨连续任务缓存。
+- [复用型矩阵操作数常驻 L1，跨微块减少 GM 搬运](l1_resident_reused_operand_tile.md)：将每个输出微块内从GM加载的复用操作数tile改为跨微块常驻L1。
+- [单调屏蔽后缀的批量向量填充](monotonic_mask_suffix_bulk_fill.md)：将逐小段写入改为首个部分段选择性写入，再对齐批量填充其余连续后缀。
+- [多缓冲软流水，重叠 MTE 搬运与矩阵/向量计算](multibuffer_soft_pipeline.md)：引入多缓冲软流水，重叠MTE搬运与矩阵/向量计算；AIC先执行MM2(t-2)，再发射MM1(t)。
+- [收尾 Pointwise 阶段从"单核串行"改为"多核线性并行切分"](multicore_parallel_pointwise_output.md)：去掉指定核门控，将收尾Pointwise由单核串行改为多核线性分段处理。
+- [片上 buffer 容量回收与再分配（收紧过量分配 → 投入高 ROI 性能杠杆）](onchip_buffer_capacity_repacking.md)：先把过量片上buffer收紧至工作集上界，再把回收容量分配给目标杠杆。
+- [per-row 状态片上通路优化（子模式 A：消除 GM workspace 往返；子模式 B：消除片上二次拷贝）](onchip_state_cache.md)：将 per-row 状态由写入 GM 后回读改为直接保留在片上供后续阶段消费。
+- [有序数据不变量驱动的 O(1) 快路径（边界探针 + 通用顺序慢路径回退）](ordered_invariant_o1_fast_path.md)：用单个边界探针判定全局谓词，并据此分流快慢路径，替代 O(N) 谓词扫描
+- [消除 vec→cube 冗余 FP32 Cast 中转，matmul 改 bf16 直入（精度换取的搬运/算力节省）](precision_cast_hop_elimination_bf16_matmul.md)：删除 vector 侧 bf16→FP32 workspace 中转，改由 cube 以 bf16 HMMA 累加到 FP32。
+- [QKV 双向两级分块与 L1 复用](qkv_two_level_l1_reuse.md)：由每个Q微块重复加载全量K/V，改为Q大块常驻L1并让128行K/V微块复用于多个Q微块
+- [AscendC 核内冗余同步识别与受证据约束的安全删减](redundant_sync_elimination_compact.md)：识别 AscendC 核内冗余同步，并在证据约束下安全删减。
+- [跨核累加 workspace 从"每核私有副本 ×核数放大 + 单核串行归约"改为"单份共享 + 跨核 AtomicAdd 直累"](single_shared_workspace_atomic_reduce.md)：将跨核累加workspace由每物理核一份私有副本改为单份，并以GM AtomicAdd累加。
+- [Softmax 行统计量标量归约改为向量化归约与广播](softmax_scalar_to_vector.md)：将softmax行统计量的逐行标量归约改为向量化归约与广播。
+- [循环不变统计量的跨外层迭代片上缓存，消除重复 GM 搬运](softmax_stats_s2_cache.md)：将循环不变统计量缓存在持久UB中，跨外层迭代复用，消除重复GM搬运。
+- [稀疏 scatter 读批量化（MTE2 批读连续多 block）+ 逐块 AtomicAdd 背靠背写](sparse_scatter_batch_read_atomic_add.md)：把稀疏scatter的逐块GM读取改为批量读取，同时保留按稀疏索引的逐块AtomicAdd写。
+- [固定生命周期 L0 TQue 改为 TBuf 双缓冲并显式 HardEvent 管理](static_l0_tbuf_double_buffer.md)：将固定ping-pong生命周期的L0临时tensor由TQue改为TBuf静态双缓冲。
+- [结构化掩码下的归约块裁剪](structured_mask_reduce_tile_pruning.md)：任务生成由完整归约长度改为按查询块联合可见终点生成，跳过完全不可见归约块
+- [Vec1 软状态早释放与 P 数据写完成同步](vec1_early_p_release.md)：前移 Vec1 的软状态释放信号，P 数据仍以 MTE3 写完成事件为 ready；禁止用 PRELAUNCH 间隙替代同步。
+- [Vec2 rescale/divide 标量循环改 Brcb 广播向量化](vec2_rescale_divide_vectorization.md)：把 Vec2 逐行 GetValue 标量读取+逐行 Muls/Divs，改为 Brcb 广播行状态后用 RowMuls/RowDivs 向量化。
+- [容量驱动的向量后处理行块合并](vec_row_chunk_coalescing.md)：将向量后处理的固定小逐行块改为容量驱动的行块合并

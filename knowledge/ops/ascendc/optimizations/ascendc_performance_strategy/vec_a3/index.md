@@ -1,0 +1,86 @@
+# A3 向量类算子策略
+
+> 注：本册含 1 张 A2 专属卡「A2 (dav-2201) 前缀扫描向量化实施陷阱集」——因上游 `vec-A3` 源库归置收录于此，frontmatter `platforms` 为 `a2`，按 A3 平台过滤不会命中；A3 侧未验证，勿直接套用。
+
+- [列对齐时增大行块以减少元数据预取同步](aligned_row_tile_adaptive.md)：按列对齐性调整行块：对齐时增大，非对齐时保持较小，以减少预取同步并避开间接访问退化。
+- [连续行逐行搬运改批量 DataCopyPad](batch_contiguous_rows_datadcopypad.md)：将连续行的逐行DataCopyPad改为一次调用，以blockCount=行数批量搬完整段。
+- [大末维按块累积 softmax 后逐行 topK](col_block_online_softmax.md)：放弃整行一次性 softmax+topK，改为末维分块累积 softmax 后逐行 topK。
+- [N≫D 逐行归约改跨行批归约 + 整 tile 批施加](cross_row_batched_reduce_tall_narrow.md)：将 N≫D 下的逐行小维归约改为跨行批归约。
+- [小归约维多行规约直接整段规约（跳过 R×vecWidth 暂存）](direct_multi_row_reduce_small_dim.md)：删除 R×vecWidth 暂存清零及跨行 Add 累加，改为直接整段规约。
+- [逐元素激活算子的数学路径重构（指令融合 + 重指令替换决策）](elementwise_math_path_refactor.md)：将计算链中相邻的标量乘与向量加融合为复合指令。
+- [分裂-融合类逐元素算子的扁平跨核切分与 kernel 内非对齐半行读取](flat_parallel_inkernel_split_read.md)：将两半输入的搬运与逐元素融合置于 kernel 内，并按扁平空间跨核切分。
+- [Host 调用层开销消除（逻辑下沉 kernel 与同步/分配收敛）](host_reduce_sync_gate.md)：将每次全张量 reduce→.item() 检测改为门控：仅少数小 case 检测，其余路径信任输入
+- [行并行归一化算子的多行分块批处理与跨行向量化逆缩放](nn_rowbatch_vectorized_rowreduce.md)：把逐行 GM↔片上搬运+每行标量同步求逆缩放因子，改为多行 tile 批量搬运、归约结果留片上槽并跨行向量化逆缩放。
+- [均匀小窗口的末轴归约改用「相邻对求和」批量指令](pair_reduce_uniform.md)：用相邻对求和批量指令替代每个输出一次的末轴段归约；2的幂窗口通过多次级联
+- [逐样本标量累加改片上向量缓冲 + 循环外归约](per_sample_scalar_accum_onchip_vector.md)：把逐样本标量累加改为每样本结果写片上向量缓冲槽位，循环结束后一次向量归约。
+- [per-token 标量参数从全局内存直接读取](per_token_scalar_gm_getvalue.md)：删除标量的UB缓冲、全局到片上搬运及MTE2屏障，改为逐token从全局内存直接读取
+- [精确 UB tiling（仅调每批行数 + bf16 批量 Cast，不重构主循环）](precise_ub_tiling_only.md)：纳入全部片上缓冲精确反算每批行数，并将bf16逐行Cast改为批量Cast；不重构主循环
+- [精确 UB tiling + 软件流水（搬运/计算/写出重叠）](precise_ub_tiling_pipeline.md)：纳入全部片上缓冲动态反算批量并移除固定小上限，同时重排主循环以重叠搬运、计算和写出
+- [行共享/列广播操作数用 repeat-stride 二元 op（repStride=0）](repeat_stride_broadcast_shared_operand.md)：将逐行调用或预广播矩阵改为高维切分二元op，并令共享操作数repStride=0。
+- [形状自适应双路径分派（形状可算判据 + host/kernel 一致路由）](shape_adaptive_strategy_dispatch.md)：将硬编码单一路径改为形状自适应双路径分派，host与kernel用同一形状公式计算判据。
+- [小 k topk 的手写向量化路径（替代高阶 TopK API）](smallk_vectorized_topk.md)：小 k 时以手写向量化路径替代高阶 TopK API；k=1 改走带索引的块归约 max。
+- [全归约的双 kernel 纯向量归约（partsum + gathersum）](two_phase_vector_reduce.md)：将单输出全归约改为双kernel纯向量归约：先partsum，再gathersum。
+- [片上容量自适应的归约 tile 放大](ub_aware_reduce_tile.md)：将固定小归约tile改为按片上buffer实际容量自适应取齐并放大。
+- [多轴自适应归约改为「读一次 + 片上累加 + 末轴向量段归约」](vec_reduce_readonce.md)：将逐输出标量归约和逐窗口同步改为输入只读一次、片上累加、末轴向量段归约
+- [逐行归约的树形折叠向量化](vector_tree_reduce.md)：将逐行的通用归约接口加标量回读链改为树形折叠向量化
+
+- [A2 (dav-2201) 前缀扫描向量化实施陷阱集](a2_scan_vectorization_pitfalls.md)：将标量前缀扫描改为 lane 并行，以 Compare/Select/Min 跨 lane 推进扫描状态。
+- [bit-mask popcount 向量计数 + Gather 逆索引（标量直方图路径向量化）](bitmask_popcount_gather_vectorized_histogram.md)：将标量计数改为Duplicate→Compare位掩码→字节popcount累加直方图，并向量化查表scatter。
+- [内容寻址 tiling device buffer 缓存（消除每帧常量 H2D 重传）](content_addressed_tiling_device_cache.md)：按常量内容寻址缓存 tiling device buffer，替代每次 CPU 分配、填充和传至 device。
+- [退化标量输出短路为纯 GM Fill（NaN-scale FillNaN）](degenerate_scalar_gm_fill_shortcircuit.md)：标量为 NaN 时跳过输入读取与常规计算，改用大 UB 缓冲 Duplicate 后循环 DataCopy 填充输出。
+- [device 端 float64 bit-exact 仿真（double-float + 整数 dyadic 长除法）](device_float64_emulation_df_dyadic.md)：以 device 端 bit-exact float64 仿真把 host 标量数学下沉到 kernel。
+- [自研直调 launch 路径：消除 auto_gen 框架的 per-launch overflow 设备内存分配/释放](direct_launch_bypass_overflow_alloc.md)：改走自研直调 launch，绕过 auto_gen 每次 8B overflow 分配与释放。
+- [直调小算子 host 每调用固定开销分层消除（python wrapper 精简 + C++ 快路径零查询零分配）](direct_launch_host_fixed_overhead_layered_elimination.md)：分层测量 Python、host 与 launch 链路，定位并消除直调小算子的每调用固定开销。
+- [direct UB 指针访问（绕过 LocalTensor 标量 GetValue/SetValue，~18ns → ~1-2ns）](direct_ub_pointer_scalar_bypass.md)：将热点标量循环的 LocalTensor GetValue/SetValue 攓为 GetPhyAddr 后的直接 UB 指针访问。
+- [fallback 泛化行解码 outerDims 修复](fallback_row_decode_outerdims.md)：将 DecodeRowBase 的行分解范围改为前 outerDims 维，避免把合并内层维作为行维解码。
+- [连续输出行的等差段批量 gather](fastpath_arithmetic_segment_batch_gather.md)：将快路径每行一次 DataCopy 改为对连续输出行的等差源段执行批量 gather。
+- [固定深度整数 divmod 链的向量化解法（偏置倒数 + 单侧符号修正 + f32 桥接扩宽）](fixed_depth_divmod_chain_vectorization.md)：采用偏置倒数qF=fl(rem×fl((1+2^-22)/base))，向量化固定深度标量整数除模链。
+- [少段大块的扁平区间多核切分（flat-range-core-partition）](flat_range_core_partition.md)：将按段分核改为每核认领输出扁平连续区间，并扫描最大同源 run。
+- [fp16 host 双 cast 下沉 kernel（native half 进出 + 类型系统陷阱清单）](fp16_native_kernel_no_host_cast.md)：取消 fp16 的 host 双 cast，改由 kernel 接收 half、内部转 f32 后复用 f32 主路径。
+- [fp32 原地 Transform（删除恒等中转拷贝）](fp32_inplace_transform.md)：fp32 分支从先做 Adds 恒等中转改为直接在输入队列 tensor 上执行 Transform/计算。
+- [全局 tile 轮转切分替代 per-core 分段（消除非对齐尾块）](global_tile_round_robin_partition.md)：将 per-core 分段后切 tile 改为全局 tile 轮转，把非对齐余量集中到最多一个全局尾块。
+- [减法移位合并与迭代上界同轮收紧（halve-merge + tighten-bound 配套）](halve_merge_tighten_bound_together.md)：将 odd-odd 分支的减法与后续 halve 合为 u'=|u-v|>>1，并在同轮收紧迭代上界。
+- [host 侧输出分配绕过 dispatcher（empty_like/empty_generic 直构 TensorImpl）](host_alloc_bypass_dispatcher_emptylike.md)：用StorageImpl+TensorImpl直接构造输出，替代empty_like/empty的dispatcher分配路径
+- [host 侧 blockLength 32 元素对齐扩大裸 DMA 覆盖（大 case 分档）](host_blocklength_alignment_gates_bare_dma.md)：host将blockLength向上对齐到32元素，使对齐分支采用裸DataCopy而非DataCopyPad
+- [迭代类整数逐元素算法改「fp32 商 + 整数精确修正」向量欧几里得型步进](iterative_int_op_vector_euclid_fp32_quotient.md)：将逐元素标量或位迭代改为FP32求商、截断转换驱动的向量欧几里得迭代
+- [非末轴扫描的 kernel 原生 strided 处理（去宿主 permute）](kernel_native_strided_any_dim_no_host_permute.md)：非末轴改由kernel按原生stride访问，移除宿主permute+contiguous及结果回填转置
+- [多行打包摊薄 per-row 标量/流水开销](multirow_packing_perrow_scalar.md)：将每核每次pipeline迭代由处理1行改为打包处理baseRowLen行
+- [窄 dtype 向量化（int64 索引/数据先 Cast 到 int32，用 128-lane 向量链）](narrow_dtype_vectorization.md)：将可无损窄化的int64热点先Cast为int32，再用int32向量链处理
+- [归一化类算子「统计遍 + 施加遍」两遍扫描改单遍驻留复用（整组一次向量链）](normalize_singlepass_resident_reuse.md)：将统计遍与施加遍改为单次搬入后片上驻留复用，避免施加阶段再次从GM搬入
+- [scatter-add 类算子的核内局部归约](onchip_partial_reduction_for_scatter_add.md)：把逐行GM原子写改为整chunk搬入UB，并在accLocal[ns]中做标量RMW局部累加。
+- [按输出区间（列/段）切分核消除原子写与中间 workspace](output_partition_atomic_free_direct_write.md)：将scatter-add多核切分从输入行改为输出列/段，使各核独占输出并取消原子串行化及fp32中间区。
+- [自有 memset0 kernel + 值域无损 int32-ws 原子](own_memset0_and_int32_ws.md)：用自有memset0替换host清零；int64数据在输入、单段和与中间累加均在int32双边值域时可用int32 workspace。
+- [Path A 累加器长度自适应（accLen 随实际归约长度取 2 的幂）](patha_acc_len_adaptive.md)：将固定大累加器及整段归约长度改为不小于min(red,TILE)的最小2次幂。
+- [Path B 批量行中转（一次 DataCopyPad 搬多行消除 MTE2 短突发）](pathb_batched_row_staging.md)：将inner>1的2D归约从逐行DataCopyPad改为每次批量搬运redTile行。
+- [Path B 输入队列双缓冲（MTE2 与 Vector 计算重叠）](pathb_double_buffer.md)：将输入TQue从bufferNum=1改为2，使MTE2搬运与Vector计算重叠。
+- [pinned 池 + aclrtMemcpyAsync 消除 per-call 元数据同步 H2D](pinned_pool_async_metadata_h2d.md)：将每次小元数据同步H2D改为pinned池配合aclrtMemcpyAsync异步传输。
+- [超越函数多项式次数按最终容差预算最小化（economization + 配套魔数取整）](poly_degree_budget_from_final_tolerance.md)：依据最终容差和误差传递预算，最小化软件超越函数的多项式展开次数。
+- [pooling backward 按窗口几何分派与向量 Gather 展开](pooling_backward_geometry_dispatch_gather.md)：将标量gather/scatter循环改为host几何分派：等尺寸走平面纯拷贝，三轴整数倍走向量Gather。
+- [串行前缀扫描改转置 + Hillis-Steele 向量化 block-scan](prefix_scan_transpose_hillis_steele_vectorization.md)：将逐元素串行前缀扫描改为tile转置与Hillis-Steele扫描。
+- [Python 调用层 no-op dispatch 消除（恒等 view 链短路 + Module hook 机制短路）](python_call_layer_noop_dispatch_elimination.md)：消除Python wrapper中恒等变换产生的无效框架dispatch调用链。
+- [Python 调用路径静态绑定（staticmethod 零帧直绑）](python_callpath_static_bind.md)：将Model纯转发层改为staticmethod直绑C++扩展，并把适合的属性检查下沉C++。
+- [Python 包装零 view 直连：连续张量不经 flatten/reshape 进 kernel](python_wrapper_zero_view_direct_call.md)：连续输入跳过flatten与回形view，直接调用ext.run；非连续输入保留兜底。
+- [归约轴跨核切分两阶段（partial 合并 final 单核）](red_axis_cross_core_split_two_phase.md)：由仅按输出维分工改为跨核切分归约轴：第一阶段写fp32局部结果，第二阶段合并。
+- [ReduceMax/ReduceMin calIndex 打包 (max, 首达 idx) 槽式归约替代手写定位链](reducemax_calindex_first_idx_slot.md)：用calIndex=true的ReduceMax/ReduceMin一次产出最值与首达索引，替代条件定位链。
+- [标量恒等式短路尾乘（scale==1.0 跳过 Muls）](scalar_identity_skip_trailing_muls.md)：Init记录scale是否为1.0；Compute仅在非1.0时执行尾部Muls。
+- [标量 kernel 参数直传：消除 tiling 的 GM 中转与同步 H2D 拷贝](scalar_kernel_arg_direct_pass_eliminate_tiling_h2d.md)：将 host 打包并经 GM 传入 tiling，改为在 kernel 签名中直接传递标量参数。
+- [扫描体积最小化切分（条带切分，按 (outer×inner) 切分减少每核扫描量）](scan_volume_minimizing_partition.md)：将输出扁平字节分片且各子块重扫全输入，改为按 outer×inner 条带切分。
+- [索引散写类算子的任务网格唯一归属分派 + 向量化 filter/GatherMask 压缩 + 精确事件同步](scatter_elements_vector_filter_task_grid.md)：将按输出字节或行区间分核，改为把外层块×内层 tile 摊平为 task 并作 grid-stride 分派。
+- [免排序值域直方图（unique/计数类算子跳过排序本身）](sort_free_value_histogram_unique.md)：将先排序再查找 run 边界，改为按值建立直方图并遍历非零桶。
+- [稀疏权重表 Axpy 累积（gather-free 一维加权混合向量化）](sparse_weight_table_axpy_gatherfree_vectorization.md)：将逐元素标量 gather 与 FMA，改为使用稀疏权重表进行 Axpy 累积。
+- [strided 列数据 32B 槽位 MTE 搬运](strided_column_slot_mte_gather.md)：将 db<32 的逐元素标量 GM 读取，改为以 32B 槽位通过 DataCopyExtParams 搬运。
+- [step>1 末维切片的行批装配（strided-row-batch-assembly）](strided_row_batch_assembly.md)：将按行×位置切分的微段搬运，改为每核认领连续 outer 行并按 R 行批量装配。
+- [strided scatter 的向量交错展开（Gather+And 构造 \[x,0\] 交错 + 连续写）](strided_scatter_vector_interleave_expand.md)：将固定步长的小块 strided scatter 搬运，改为通过 vecExpand 执行向量交错展开。
+- [as_strided 窄视图直返，消除非对齐输出的回拷 kernel](strided_view_output_eliminate_copyback.md)：将非对齐输出的回拷分支改为 as_strided 窄视图直接返回
+- [tensor-list 单 kernel 融合 + tile 粒度全局核分配](tensor_list_single_kernel_fuse_tile_granular_core_split.md)：将 tensor-list 的逐张量 kernel 合为单 kernel，并按 tile 粒度分核
+- [tile 级 bitlen probe 两遍法——按收敛度驱动迭代次数](tile_bitlen_probe_convergence_driven_iterations.md)：把固定最坏上界迭代改为两遍：先探测块内最大 bitlen，再据此动态迭代
+- [tileLength 上板扫描标定（切分粒度校准）](tile_length_sweep_calibration.md)：扫描参数化 tileLength，以实测平衡并行度和每-tile 固定开销，替换按 UB 倒推的默认值
+- [行内多 tile 延迟归并 + winner tile 重扫（宽行 argmax/argmin）](tile_reduce_slotarray_deferred_winner_merge.md)：将行内多 tile 归约改为延迟归并，并在 winner tile 上完成后续处理
+- [任意 perm 转置的 MKY 面分解 + UB 内 vtranspose NZ 分形流水](transpose_mky_vtranspose_nz_fractal.md)：将任意 perm 转置改为 MKY 面分解，并用 vtranspose 的 NZ fractal 路径搬运
+- [大行宽 UB 溢出防护——H 维度列分块两 pass](ub_column_tiled_two_pass.md)：当单行工作集超出 UB 时，沿 H 维切列块，并改用 UB 列分块两遍处理
+- [非对齐行宽的 kernel 端 DataCopyPad 直通（消除 host F.pad + 切片）](unaligned_datadcopypad_direct.md)：用 DataCopyPad 将非 32B 对齐的 GM 紧凑行直接搬入 UB，尾部 lane 不参与统计和写出
+- [统一 32 元素行步长 + 批量 Cast 消除 per-row 指令](unified_row_stride_batch_cast.md)：将多行路径各UB buffer的行步长统一为32元素，把逐行Cast改为跨行批量Cast。
+- [值域自适应 LSD 基数排序替换 O(N²) 标量排序（排序键类算子）](value_adaptive_lsd_radix_sort.md)：用值域自适应LSD基数排序替换O(N²)标量插入或选择排序，并由umin与umax确定pass数。
+- [VECOUT 队列双缓冲（写回与下一 tile 计算重叠）](vecout_double_buffer_overlap.md)：将VECOUT写出队列由单缓冲改为双缓冲，使slot交替使用并重叠写回与后续tile处理。
+- [向量化索引过滤 + GatherMask 命中压缩（把标量工作量从 O(扫描) 降到 O(命中)）](vector_filter_gathermask_compaction.md)：将负索引修正和范围命中判断改为int32向量链，以GatherMask压缩命中项；命中后的RMW仍用标量。
+- [version-keyed host 标量缓存（device 标量的跨调用记忆化，D2H 仅冷失效时发生）](version_keyed_host_scalar_cache.md)：以tensor对象身份和version为键缓存host标量，避免值未变化时每次调用都执行D2H读取。
