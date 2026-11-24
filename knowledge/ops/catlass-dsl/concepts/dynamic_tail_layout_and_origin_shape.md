@@ -5,7 +5,7 @@ description: "区分固定 storage tile、逻辑有效区域和真实地址 stri
 tags: [task.implementation, topic.data_movement.layout_transform, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/zh/kernel_development/core_concepts/layout.md
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/core_concepts/tensor_layout.md
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
 created_at: '2026-09-20T07:00:00Z'
 updated_at: '2026-09-20T07:00:00Z'
@@ -60,5 +60,5 @@ full = tla.make_layout(
 静态打印 logical/storage shape、stride 和起始 pointer；覆盖 1/15/16/17/63/64/65/127/128
 行。先验证 GM round-trip，再验证 UB/L1 consumer，最后验证计算输出。
 
-[^layout]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/zh/kernel_development/core_concepts/layout.md> 固定提交 layout 文档对 shape、stride、coordinate、logical shape 的定义。
+[^layout]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/core_concepts/tensor_layout.md> 固定提交 layout 文档对 shape、stride、coordinate、logical shape 的定义。
 [^core]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 core API 对 tensor/layout 构造和校验的实现。

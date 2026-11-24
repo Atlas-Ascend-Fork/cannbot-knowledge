@@ -43,7 +43,7 @@ CUBE→Vector 中测试 L0C→UB 直通，消除 GM 中转。[^vector-function][
 ## 代码模式
 
 ```python
-# CATLASS DSL 示意：一次 load，多步寄存器计算，一次 store。
+# CATLASS Python 示意：一次 load，多步寄存器计算，一次 store。
 with tla.vec.func(mode="simd"):
     x = ub_in.load(mask=tail_mask)
     y = gelu_fused(x)

@@ -1,6 +1,6 @@
 # operator playbooks
 
-原插件 `operator/` 目录整体迁入，收录 CATLASS DSL 各算子实现任务的知识卡。
+原插件 `operator/` 目录整体迁入，收录 CATLASS Python 各算子实现任务的知识卡。
 
 - [convolution](convolution/index.md)：共 2 张知识卡（如 Causal Conv1d、Causal Conv1d Bwd）。
 - [flash attention](flash_attention/index.md)：共 2 张知识卡（如 Flash Attention Backward (FAG / flash_attn_grad)、Flash Attention Inference）。

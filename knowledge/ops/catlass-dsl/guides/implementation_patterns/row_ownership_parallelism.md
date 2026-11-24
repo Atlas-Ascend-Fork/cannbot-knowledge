@@ -5,14 +5,15 @@ description: "按 M 切块让每个 block 独占完整行，行统计免跨块�
 tags: [task.design, topic.parallelism, topic.compute.reduction, topic.programming_model.execution_unit.cube]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/grouped_matmul_slice_m/grouped_matmul_slice_m.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/multi_core_splitk_matmul/multi_core_splitk_matmul.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T08:00:00Z'
+updated_at: '2026-10-23T08:00:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T08:00:00Z'}
 ---
 # 按行独占的并行划分（每 block 一个 Cube 与两个 AIV）
+
 
 ## 接口与概念
 
@@ -51,4 +52,4 @@ for mi in tla.range(tla.arch.block_idx(), (m + bm - 1) // bm, tla.arch.block_num
 打印 `block_num` 与实际任务数，确认任务数 >= 核数；小 M 与大 M 各测一次，
 记录块数利用率；若小 M 明显劣化，在设计文档中如实标注适用域。
 
-[^api]: 固定提交的 block_idx / sub_block_idx 实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的 block_idx / sub_block_idx 实现。

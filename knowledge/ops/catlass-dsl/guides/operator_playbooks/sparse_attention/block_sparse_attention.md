@@ -75,11 +75,11 @@ Q head 到 KV head 的映射为 `kvHead = qHead / (Nq / Nkv)`，因此 `Nq` 必�
 
 ### 生成前必须完成的 AscendC 对照审计
 
-在起草 CATLASS DSL kernel 前，必须完整检查 frontmatter 固定提交中的 `entry`、`kernel`、`qk`、
+在起草 CATLASS Python kernel 前，必须完整检查 frontmatter 固定提交中的 `entry`、`kernel`、`qk`、
 `softmax`、`pv`、`rescale` 六份 AscendC 来源，并在设计记录或首轮 proposal 中产出下面的逐阶段
 映射。不能只阅读 README 或 Python reference 后直接编码。
 
-| 阶段 | 必查 AscendC 来源 | CATLASS DSL 首版必须保留的结构 |
+| 阶段 | 必查 AscendC 来源 | CATLASS Python 首版必须保留的结构 |
 | --- | --- | --- |
 | 路径选择 | `entry` | 确认 c310 regular/quantized、MM1 转置与否、dtype/layout；只实现实际命中的实例 |
 | mask→稀疏索引 | `kernel` | AIV 压缩 `sparseIdx/sparseCount`，或在受限 workload 中保留等价的块索引遍历；主计算不得退化成稠密标量扫描 |

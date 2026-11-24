@@ -5,8 +5,8 @@ description: "按 batch、head、tile、row 和 lane 聚合误差，区分源 wo
 tags: [task.debugging, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/zh/kernel_development/core_concepts/layout.md
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/simt/multi_ops_simt.py
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/core_concepts/tensor_layout.md
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simt_ops/basic_vadd_simt/basic_vadd_simt.py
 created_at: '2026-09-20T07:00:00Z'
 updated_at: '2026-09-20T07:00:00Z'
 platforms: ['950']
@@ -58,5 +58,5 @@ consumer 读取前的可见性和 L1/UB tensor view。SIMT 标量 copy 适合验
 每次修改保存逐坐标误差摘要；原始尾长通过后扩展到相邻边界和多 batch。最终必须同时验证
 workspace、consumer 输入、三个输出和重复运行稳定性。
 
-[^layout]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/zh/kernel_development/core_concepts/layout.md> 固定提交 CATLASS layout 文档对逻辑坐标、shape 和 stride 的地址语义。
-[^simt]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/simt/multi_ops_simt.py> 固定提交 SIMT 示例中的线程索引、标量访问与线程同步模式。
+[^layout]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/core_concepts/tensor_layout.md> 固定提交 CATLASS layout 文档对逻辑坐标、shape 和 stride 的地址语义。
+[^simt]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simt_ops/basic_vadd_simt/basic_vadd_simt.py> 固定提交 SIMT 示例中的线程索引、标量访问与线程同步模式。

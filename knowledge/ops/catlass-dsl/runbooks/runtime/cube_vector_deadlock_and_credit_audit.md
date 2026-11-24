@@ -5,8 +5,8 @@ description: "用资源所有权表审计 Cube、FIX、MTE 与 Vector 的 set/wa
 tags: [task.debugging, topic.implementation.synchronization]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/cross_flag_two_way/cross_flag_two_way.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/cross_flag_two_way/cross_flag_two_way.py
 created_at: '2026-09-20T07:00:00Z'
 updated_at: '2026-09-20T07:00:00Z'
 platforms: ['950']
@@ -61,5 +61,5 @@ workspace 取代，资源 credit 仍可能是后续 task 的必要条件。
 对 0/1/2/3 个有效 task、连续有效、交替 skip 和最后 task skip 分别核对计数。使用短超时，
 一次只改变一条依赖边；通过后再做重复运行、完整正确性和 timeline 等待位置检查。
 
-[^mixed]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py> 固定提交 mixed 示例中的 Cube/FIX 与 Vector cross-core 交接。
-[^sync]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/cross_flag_two_way/cross_flag_two_way.py> 固定提交双向 cross flag 示例中的 producer/consumer 配对。
+[^mixed]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py> 固定提交 mixed 示例中的 Cube/FIX 与 Vector cross-core 交接。
+[^sync]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/cross_flag_two_way/cross_flag_two_way.py> 固定提交双向 cross flag 示例中的 producer/consumer 配对。

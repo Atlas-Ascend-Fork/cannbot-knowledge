@@ -6,7 +6,7 @@ tags: [task.implementation, topic.precision, topic.data_movement.data_copy]
 status: stable
 sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/params.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/store_pack.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/store_pack.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
 created_at: '2026-09-23T07:00:00Z'
 updated_at: '2026-09-23T07:00:00Z'
@@ -63,8 +63,10 @@ L0C/UB(FP32) -> (可选 *scale) -> .to(io_dtype, CastParams) -> NormalStoreParam
 ```
 
 `DIST_PACK_B32` 要求源寄存器保留输入 dtype，PACK 只做压缩不做数值转换，所以窄化必须显式写在
-store 之前。[^example] 2x 宽度窄化一次只填一个 `reg_slot`，完整一行需要两个 slot 的结果；
-如何合成完整行属于布局/去交织问题，见
+store 之前。[^example] 2x 宽度窄化一次只填一个 `reg_slot`，但“完整一行”需要几个 slot
+取决于逻辑行宽、单 slot 的有效 lane 数和目标 dtype，不能把“2x 宽度 = 两个 slot”当成
+通用规则；先按实际 API 的 lane 布局计算，再用标量/小向量验证。如何合成完整行属于布局/
+去交织问题，见
 [BSAG zN Cast Passthrough](../guides/operator_playbooks/sparse_attention/block_sparse_attention_grad/block_sparse_attention_grad.md)。
 
 ## 约束
@@ -89,5 +91,5 @@ store 之前。[^example] 2x 宽度窄化一次只填一个 `reg_slot`，完整�
 cast 的结果差异，确认舍入方向；再把同一逻辑接到真实算子的输出回写路径上，逐 lane 比较。
 
 [^params]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/params.py> 固定提交 `params.py` 中的 `StoreDist`、`NormalStoreParams`、`CastParams`、`RegSlot`、`SatMode` 与 `RoundMode` 定义。
-[^example]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/store_pack.py> 固定提交 `vector_ops/store_pack.py` 中 `DIST_PACK_B32` 的压缩语义与用法。
+[^example]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/store_pack.py> `dsl_tutorials/vector_simd_ops/store_pack.py` 中 `DIST_PACK_B32` 的压缩语义与用法。
 [^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 `core_api.py` 中的向量 store 与 cast 前端接口。

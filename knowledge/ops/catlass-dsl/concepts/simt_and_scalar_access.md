@@ -6,7 +6,7 @@ tags: [task.implementation, topic.programming_model.execution_model.simt]
 status: stable
 sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/simt/basic_vadd_simt.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simt_ops/basic_vadd_simt/basic_vadd_simt.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/test_tensor_indexing.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-29T00:00:00Z'
@@ -92,5 +92,5 @@ dump TLAIR 检查 SIMT region、thread index op 与标量 load/store；运行 te
 与 SIMD 实现。
 
 [^core]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 Core API 的 SIMT region、thread 几何和 tensor indexing 实现。
-[^simt-example]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/simt/basic_vadd_simt.py> 固定提交 basic SIMT VADD 的 thread-stride 代码与 host launch。
+[^simt-example]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simt_ops/basic_vadd_simt/basic_vadd_simt.py> 固定提交 basic SIMT VADD 的 thread-stride 代码与 host launch。
 [^indexing-tests]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/test_tensor_indexing.py> 固定提交 tensor 标量读取、赋值与前端约束测试。

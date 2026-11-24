@@ -5,12 +5,12 @@ description: "Unary、binary、cast、mask、gather、reduction 的离线可复�
 tags: [task.design, topic.compute.elementwise.arithmetic, topic.compute.reduction]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/unary_ops.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/binary_op.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/vector_op_harness.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/gather_op.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/reduction_ops.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/cast_multi.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/unary_ops.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/binary_op.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/vector_op_harness.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/gather_op.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/reduction_ops.py
+- resource: https://gitcode.com/cann/catlass/blob/7c6581139494d83206e3e8d1607ffc1628e6c8bc/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/cast_multi.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
 platforms: ['950']
@@ -92,9 +92,9 @@ converted = values.to(tla.Int32, params, mask=mask)
 
 分别覆盖整块、tail、边界 index、NaN/Inf，以及每种 cast round/saturation 组合。
 
-[^unary]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/unary_ops.py> 固定提交 unary 示例的逐 lane 算法。
-[^binary]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/binary_op.py> 固定提交 binary 示例的 tensor/scalar 运算。
-[^advanced]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/vector_op_harness.py> 固定提交 vector harness 的 tile、mask 与流水结构。
-[^gather]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/gather_op.py> 固定提交 gather 的 UB source 与 index vector 数据路径。
-[^reduction]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/reduction_ops.py> 固定提交 reduction kind 与标量写回结构。
-[^cast]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/cast_multi.py> 固定提交 VectorSSA cast 与精度控制参数。
+[^unary]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/unary_ops.py> 固定提交 unary 示例的逐 lane 算法。
+[^binary]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/binary_op.py> 固定提交 binary 示例的 tensor/scalar 运算。
+[^advanced]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/vector_op_harness.py> 固定提交 vector harness 的 tile、mask 与流水结构。
+[^gather]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/gather_op.py> 固定提交 gather 的 UB source 与 index vector 数据路径。
+[^reduction]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/reduction_ops.py> 固定提交 reduction kind 与标量写回结构。
+[^cast]: <https://gitcode.com/cann/catlass/blob/7c6581139494d83206e3e8d1607ffc1628e6c8bc/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/cast_multi.py> 固定提交 VectorSSA cast 与精度控制参数。

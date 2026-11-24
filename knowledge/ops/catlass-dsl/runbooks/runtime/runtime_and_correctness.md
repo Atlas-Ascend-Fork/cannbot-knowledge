@@ -8,7 +8,7 @@ sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/jit_executor.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/test_dlpack_bridge.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/runtime.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-29T00:00:00Z'
 platforms: ['950']
@@ -98,4 +98,4 @@ compile、launch、synchronize、oracle 为独立状态。本文未执行 runtim
 [^runtime]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/jit_executor.py> 固定提交 runtime 参数转换与执行实现。
 [^dlpack]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/test_dlpack_bridge.py> 固定提交 DLPack bridge 的契约测试。
 [^dlpack-runtime]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/runtime.py> 固定提交 DLPack tensor 的解析和 layout 转换。
-[^vadd]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py> 固定提交 VADD 的 device tensor 与 reference 流程。
+[^vadd]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py> 固定提交 VADD 的 device tensor 与 reference 流程。

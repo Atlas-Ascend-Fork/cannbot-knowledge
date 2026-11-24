@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: "AICError 异常定位与 msDebug Core dump 解析"
-description: "采集 AICError 现场、加载异常算子 Core dump，并从异常核、调用栈、寄存器和内存逐层定位到 CATLASS DSL 代码。"
+description: "采集 AICError 现场、加载异常算子 Core dump，并从异常核、调用栈、寄存器和内存逐层定位到 CATLASS Python 代码。"
 tags: [task.debugging, topic.implementation.debugging]
 status: stable
 sources:
@@ -32,7 +32,7 @@ Host 首个失败同步点
   -> ascend info summary 选择异常 AIC/AIV 核
   -> bt / PC 映射到 kernel 代码
   -> ARGS、TILING_DATA、INPUT/OUTPUT/WORKSPACE 地址与长度
-  -> CATLASS DSL 的 tile、layout、extent、同步或搬运参数
+  -> CATLASS Python 的 tile、layout、extent、同步或搬运参数
 ```
 
 ## 用法
@@ -203,7 +203,7 @@ ARGS/TILING_DATA 与预期不符
 ```bash
 bash check.sh
 python3 .agents/skills/knowledge-query/scripts/knowledge_query.py search \
-  --knowledge-root . --query aicerror --technology catlass-dsl --platform 950
+  --knowledge-root . --query aicerror --technology catlass-python --platform 950
 ```
 
 设备验证要求保存：首个失败同步点、生成的 Core、匹配的 kernel 调试对象、

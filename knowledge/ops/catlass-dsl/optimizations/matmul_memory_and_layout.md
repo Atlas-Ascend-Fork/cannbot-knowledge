@@ -11,17 +11,18 @@ sources:
 - resource: https://gitcode.com/cann/cann-samples/blob/928d8dfa322731f576b697c9ec997d34abd810b7/Samples/1_Features/memory_optimization/slide_window_adaptive_template/main.asc
 - resource: https://gitcode.com/cann/cann-samples/blob/928d8dfa322731f576b697c9ec997d34abd810b7/Samples/1_Features/instruction_optimization/weightnz/main.asc
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-08-12T00:00:00Z'
+updated_at: '2026-10-10T16:00:00Z'
 platforms: ['950']
 verified:
 - {by: "process:cann-samples-source-audit", at: '2026-08-12T00:00:00Z'}
+- {by: "process:catlass-python-kda-architecture-review", at: '2026-10-10T16:00:00Z'}
 ---
 # CANN 样例：MatMul 片上复用与布局候选
 
 
 ## 接口与概念
 
-本页把五种固定源码机制转写成 CATLASS DSL 的待验证候选，而不继承样例 README 的性能结论。
+本页把五种固定源码机制转写成 CATLASS Python 的待验证候选，而不继承样例 README 的性能结论。
 它们分别减少重复 GM→L1 搬运、避免 L1 ping/pong 地址冲突、合并小粒度 Scale 搬运、
 改变多核 tile 访问顺序以争取 L2 复用，以及把固定权重预先转换为计算亲和布局。
 
@@ -51,7 +52,7 @@ verified:
 ### 常驻复用与聚合小搬运
 
 ```python
-# 伪代码：具体 layout、capacity 和 copy API 以当前 CATLASS DSL 为准。
+# 伪代码：具体 layout、capacity 和 copy API 以当前 CATLASS Python 为准。
 resident_a = make_l1_tensor((m_tile, k))
 copy(resident_a, gm_a_block)                 # 每个可复用域仅一次
 for n_tile in range(n_tiles_in_reuse_domain):

@@ -5,13 +5,15 @@ description: "用前置断言声明算子支持域；不得在 host 侧静默回
 tags: [task.implementation, topic.implementation, topic.architecture]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/flash_attention_infer/kernel_mask.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T12:00:00Z'
+updated_at: '2026-10-23T12:00:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T12:00:00Z'}
 ---
 # 显式声明支持域，禁止静默回退
+
 
 ## 接口与概念
 
@@ -30,7 +32,7 @@ if m - mi * bm < bm:
 nc = tla.as_numeric(bn)
 if v - vi * bn < bn:
     nc = v - vi * bn          # 列尾块
-## K 方向尾块按 16 对齐后送入 mmad，并让 fixpipe 使用同样的 tile 语义
+# K 方向尾块按 16 对齐后送入 mmad，并让 fixpipe 使用同样的 tile 语义
 ```
 
 动态 extent 让算子天然覆盖边界形状；只有在确实无法支持时才前置断言：
@@ -43,17 +45,13 @@ assert hidden.dtype == torch.bfloat16 and ids.dtype in (torch.int32, torch.int64
 
 ## 约束
 
-- host wrapper 只允许元数据检查、空输出分配与 GM 中间张量分配；
-  任何计算阶段都必须由 solution 声明的 kernel 承担。
-- 允许的 torch 调用仅限 `torch.device/empty/empty_like/empty_strided/is_tensor`；
-  张量元数据方法仅限 dim/size/stride/numel/is_contiguous 等。
 - 尾块 extent 必须同时用于搬运、mmad 与 fixpipe，三者对"实际 tile 大小"的认知要保持一致。
 - 若确需回退，必须在设计中显式登记为偏差并让 anti-hack 的声明与测量路径一致，
   不得让回退路径悄悄参与性能测量。
 
 接口行为以固定提交的实现为准。[^workflow]
 
-[^workflow]: 固定提交的源码与文档中对应实现。
+[^workflow]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的源码与文档中对应实现。
 
 ## 代码模式
 

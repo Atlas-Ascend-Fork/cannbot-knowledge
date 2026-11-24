@@ -6,6 +6,7 @@
 - [Chunk Gated Delta Rule](chunk_gated_delta_rule.md)：Ascend 950 Chunk Gated Delta Rule 的三阶段分块算法、workspace 数据路径、Cube/Vector 协同和精度边界。
 - [Chunk Gated Delta Rule Bwd Dhu](chunk_gated_delta_rule_bwd_dhu.md)：门控 Delta Rule 的反向状态链 mixed kernel，覆盖四 head window、八槽 workspace、A5 直达 UB 和当前接口漂移。
 - [Chunk Gated Delta Rule Fwd H](chunk_gated_delta_rule_fwd_h.md)：分块门控 Delta Rule 的跨 chunk 隐藏状态传播核。
+- [GDN2 Prepare 融合开发指南（标量门控接口）](chunk_gdn2_prepare.md)：自包含的 prepare 接口约定与 DSL 设计候选：双 task 流水、64-lane 双叶块布局、两行共享前代与 Cube 递归逆成本门禁。
 - [Chunk Local Cumsum](chunk_local_cumsum.md)：按 chunk 重置的局部门控前缀和向量核。
 - [Chunk Scaled Dot Kkt](chunk_scaled_dot_kkt.md)：按 chunk 计算缩放 Key-Key 转置乘积的矩阵核。
 - [Prepare Wy Repr Bwd](prepare_wy_repr_bwd.md)：Gated Delta Rule 的融合 WY 表示反向核，覆盖 dA 构造、四个输出、head 复用、四槽 workspace 和 mixed 流水。

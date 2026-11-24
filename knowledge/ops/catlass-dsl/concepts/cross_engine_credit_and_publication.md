@@ -6,8 +6,8 @@ tags: [task.implementation, topic.implementation.synchronization, topic.programm
 status: stable
 sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/api/kernel_api_reference.md
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/cross_flag_two_way/cross_flag_two_way.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/cross_flag_two_way/cross_flag_two_way.py
 created_at: '2026-09-20T07:00:00Z'
 updated_at: '2026-09-20T07:00:00Z'
 platforms: ['950']
@@ -60,5 +60,5 @@ flag 或 barrier 自动同时满足。[^api][^mixed][^sync]
 验证顺序为最小同步测试、focused correctness、重复运行、完整 workload和 timeline。
 
 [^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/api/kernel_api_reference.md> 固定提交 API 文档中的 flag、cross flag 与 barrier 接口。
-[^mixed]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py> 固定提交 mixed 示例中的 Cube/FIX/Vector 同步组合。
-[^sync]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/cross_flag_two_way/cross_flag_two_way.py> 固定提交双向 cross flag 示例中的显式交接模式。
+[^mixed]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py> 固定提交 mixed 示例中的 Cube/FIX/Vector 同步组合。
+[^sync]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/cross_flag_two_way/cross_flag_two_way.py> 固定提交双向 cross flag 示例中的显式交接模式。

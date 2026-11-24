@@ -6,7 +6,7 @@ tags: [task.implementation, topic.data_movement.data_copy, topic.implementation.
 status: stable
 sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/api/kernel_api_reference.md
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/params.py
 created_at: '2026-08-10T00:00:00Z'
@@ -120,8 +120,7 @@ VADD 源码同时给出 flag、mutex 和 `mutex_guard` 三种同步写法。[^va
 - flag 的 producer/consumer pipe 必须与实际操作一致。
 - cross flag 用于 Cube/Fix/Vector 等跨核域协作；pipe 在 set/wait 调用处指定。mode 4
   还要求各端显式传 `aiv_id=0` 或 `aiv_id=1`，不可替代普通同核依赖。
-- `mutex_guard` 的 body 必须包含可推断 pipe 的 `copy`、`mmad` 或 `tla.vec.func`，
-  且所有相关操作必须推断到唯一 pipe。
+- `mutex_guard` 的 body 必须包含可推断 pipe 的 `copy` 或 `mmad`。
 - 同一个 guard 内不能混入无法唯一推断 pipe 的不兼容访问。
 - atomic add 要求输出初值和 reference 都采用累加语义。
 - barrier 是强同步；不能把它当作性能默认值。
@@ -139,6 +138,6 @@ VADD 源码同时给出 flag、mutex 和 `mutex_guard` 三种同步写法。[^va
 边界 case 检查数据依赖。性能选择必须通过 benchmark/profile 另行确认。
 
 [^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/api/kernel_api_reference.md> 固定提交 API 文档中的 copy、同步与 range 接口。
-[^vadd]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py> 固定提交 VADD 示例中的 flag、mutex、guard 与 barrier 数据流。
+[^vadd]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py> 固定提交 VADD 示例中的 flag、mutex、guard 与 barrier 数据流。
 [^core]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 Core API 中当前同步与 range 实现。
 [^params]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/params.py> 固定提交 params 模块中的 copy 参数与 `MemType`。

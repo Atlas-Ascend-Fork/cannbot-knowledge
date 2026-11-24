@@ -5,15 +5,15 @@ description: "把行 max、临时值、行 sum 存在 [rows, 64] 张量的第 0/
 tags: [task.design, topic.memory, topic.data_movement.layout_transform, topic.compute.reduction]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/vector_ops/pack_op.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/vector_ops/store_pack.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/vector_ops/reduction_ops.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T07:40:00Z'
+updated_at: '2026-10-23T07:40:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T07:40:00Z'}
 ---
 # 统计量打包在同一 UB 张量的列偏移里
+
 
 ## 接口与概念
 
@@ -55,4 +55,4 @@ tla.tile_view(stats, tla.make_shape(1, 1), tla.make_coord(rr, 16)).store(
 
 小 shape 下打印每行 (max, sum) 与 host 侧对拍；检查 store 的 mask 是否只放行 1 lane。
 
-[^api]: 固定提交的 NormalLoadParams / UnalignStoreParams 实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的 NormalLoadParams / UnalignStoreParams 实现。

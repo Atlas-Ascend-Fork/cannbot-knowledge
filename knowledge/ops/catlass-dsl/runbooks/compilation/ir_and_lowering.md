@@ -5,9 +5,9 @@ description: "使用 dump_mlir、pytest 与 lit 将前端、TLAIR 和 NPUIR 问�
 tags: [task.debugging, topic.compilation]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/dsl.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/lit/tla-compile/mmad-end_to_end.mlir
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/README.md
+- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/dsl.py
+- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/tests/lit/tla-compile/mmad-end_to_end.mlir
+- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/README.md
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
 platforms: ['950']
@@ -103,6 +103,6 @@ TLAIR pass/lowering 问题；lit 通过但生成 `kernel.o` 失败才进入 HIVM
 新增最小 pytest 或 lit regression，确认修复前失败、修复后通过；同时保存原始
 TLAIR，而不是只保存测试摘要。本文未运行这些测试。
 
-[^dump]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/dsl.py> 固定提交 `catlass/dsl.py` 的 kernel `dump_mlir` 实现。
-[^lit]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/lit/tla-compile/mmad-end_to_end.mlir> 固定提交 MMAD lowering lit 用例。
-[^readme]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/README.md> 固定提交 README 对 pytest 与 lit 职责的说明。
+[^dump]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/dsl.py> 固定提交 `catlass/dsl.py` 的 kernel `dump_mlir` 实现。
+[^lit]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/tests/lit/tla-compile/mmad-end_to_end.mlir> 固定提交 MMAD lowering lit 用例。
+[^readme]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/README.md> 固定提交 README 对 pytest 与 lit 职责的说明。

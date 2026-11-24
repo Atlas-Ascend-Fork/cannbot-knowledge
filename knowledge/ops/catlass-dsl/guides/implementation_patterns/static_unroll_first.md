@@ -5,13 +5,15 @@ description: "编译期常量用 Constexpr 形参 + Python range 展开；动态
 tags: [task.implementation, topic.compilation, topic.programming_model]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/basic_mmad_streamk/basic_mmad_streamk.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T12:00:00Z'
+updated_at: '2026-10-23T12:00:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T12:00:00Z'}
 ---
 # 静态展开优先，动态循环只用于真正运行时边界
+
 
 ## 接口与概念
 
@@ -28,11 +30,11 @@ platforms: ['950']
 - 同一层多个动态循环不要复用同名归纳变量。
 
 ```python
-## 编译期：静态展开
+# 编译期：静态展开
 for c in range(N_CHUNKS):
     ...
 
-## 运行时：动态循环
+# 运行时：动态循环
 for v in tla.range(c0, num_v, c1):
     ...
 ```
@@ -44,7 +46,7 @@ for v in tla.range(c0, num_v, c1):
 
 接口行为以固定提交的实现为准。[^api]
 
-[^api]: 固定提交的源码与文档中对应实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的源码与文档中对应实现。
 
 ## 代码模式
 

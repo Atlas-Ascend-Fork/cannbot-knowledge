@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: "Chunk Gated Delta Rule Fwd H"
-description: "64x64 chunk gated delta rule recurrent FwdH 的 CATLASS DSL 单 launch task-loop mixed kernel，涵盖 task-major host packing、AIC/AIV 片上交接、状态链和负载均衡诊断。"
+description: "64x64 chunk gated delta rule recurrent FwdH 的 CATLASS Python 单 launch task-loop mixed kernel，涵盖 task-major host packing、AIC/AIV 片上交接、状态链和负载均衡诊断。"
 tags: [task.design, topic.attention]
 status: stable
 sources:

@@ -5,9 +5,9 @@ description: "Ascend950 Prefill Flash Attention 的 Online Softmax、GQA、tilin
 tags: [task.design, topic.attention]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/flash_attention_infer.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/fa_tiling.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/README.md
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/flash_attention_infer.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/fa_tiling.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/README.md
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-09-11T00:00:00Z'
 platforms: ['950']
@@ -300,6 +300,6 @@ vector（rescale 相位）: acc = acc·e^(m_old−m_new) + pv_new（首块直接
 名字。性能需要在空闲 NPU 上分别 benchmark/profile，源码流水结构本身不构成性能结论。
 [^kernel][^guide]
 
-[^kernel]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/flash_attention_infer.py> 固定提交 Flash Attention kernel、host reference、sentinel 与误差校验入口。
-[^tiling]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/fa_tiling.py> 固定提交 tiling data 和 actual sequence metadata 的打包实现。
-[^guide]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/README.md> 固定提交对算法、支持特性、限制和运行方法的说明。
+[^kernel]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/flash_attention_infer.py> 固定提交 Flash Attention kernel、host reference、sentinel 与误差校验入口。
+[^tiling]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/fa_tiling.py> 固定提交 tiling data 和 actual sequence metadata 的打包实现。
+[^guide]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/README.md> 固定提交对算法、支持特性、限制和运行方法的说明。

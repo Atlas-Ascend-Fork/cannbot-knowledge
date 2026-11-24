@@ -121,7 +121,7 @@ platforms:
 
 ## 内置Inductor组件和后端回退的限定流程
 
-同提交内置总览约束950DT：Dynamo取得FX图后，由Inductor-Ascend完成图优化、lowering、scheduling融合及codegen，生成Triton/Catlass DSL，再经Triton-Ascend、AscendNPU-IR形成设备二进制。不能参与融合的ATen算子可回AclNN或手写Ascend C，这里的fallback不是CPU fallback的同义词。CPU路径可生成C++/OpenMP代码，不据此推定整个NPU模型全在Host。
+同提交内置总览约束950DT：Dynamo取得FX图后，由Inductor-Ascend完成图优化、lowering、scheduling融合及codegen，生成Triton/Catlass Python，再经Triton-Ascend、AscendNPU-IR形成设备二进制。不能参与融合的ATen算子可回AclNN或手写Ascend C，这里的fallback不是CPU fallback的同义词。CPU路径可生成C++/OpenMP代码，不据此推定整个NPU模型全在Host。
 
 两张已查看架构图补充Pass注册、NPUCombined/NPUTritonScheduling、索引线性化/cat重构/split_tiling_axis、多流、动态shape、CppWrapper/AOTI与MegaCache等层次；图上TorchRec、vLLM、模型名和A2/A3/A5/A6等生态标签只是架构背景，不覆盖正文950DT使用约束或证明这些模型/产品全已验证。具体四Pass改写及访存条件见[图改写](torch_npu_inductor_fx_rewrite_conditions.md)与[访存Lowering](torch_npu_inductor_memory_lowering.md)。完整外部库/Kernel没有因图中出现而全部摄取。
 

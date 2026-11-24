@@ -1,12 +1,12 @@
 ---
 type: Optimization
 title: "Tile 与本地内存容量预算"
-description: "依据 C310 L1/L0/UB 容量筛选 tile 候选，并用实测决定是否接受。"
+description: "依据 C310 L1/L0/UB 容量筛选 tile 候选，并用实测决定是否接受；多段共用同一 UB tile 时按剩余空间反推 tile 面积。"
 tags: [task.optimization, topic.performance.optimization.optimization_overview, topic.tiling, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/arch.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py
+- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/base_dsl/arch.py
+- resource: https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
 platforms: ['950']
@@ -47,6 +47,17 @@ L0C         = 256 * 256 * 4 = 262144 bytes <= 262144
 ```
 
 L0C 在此正好触及容量上限，没有额外 accumulator 空间。[^mmad]
+
+### UB 多段共用同一 tile
+
+SIMD 段与 SIMT 段处理同一块 tile 时（典型是读改写型 epilogue），UB 剩余空间直接就是 tile
+面积的上限：每多一份整 tile 的中间缓冲，tile 面积就被压低一档。不改算法的放大手段是在 tile
+内原地复用：读入 → 改写 → 写回同一块缓冲，省掉一份整 tile 占用。
+
+SIMT region 要求静态 shape，所以省空间只能缩 buffer，不能靠动态 shape 少分配。判定要在
+测量之后：向量占比接近 1 而元素吞吐明显偏低时，先核算 tile 面积与每块固定开销的摊销，
+再决定是放大 tile 还是换结构。具体写法见
+[广播加载与 SIMT 收尾](../guides/implementation_patterns/broadcast_and_simt_epilogue.md)。
 
 ## 代码模式
 
@@ -90,5 +101,5 @@ candidate = {
 自由名字；运行非整齐 M/N/K 正确性，再比较同一 benchmark 配置的 mean/std。源码不能
 证明某 tile 更快。
 
-[^arch]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/arch.py> 固定提交 C310 本地内存容量表。
-[^mmad]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py> 固定提交 MMAD 的元素字节、L1/L0 分块和 buffer 分配。
+[^arch]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/base_dsl/arch.py> 固定提交 C310 本地内存容量表。
+[^mmad]: <https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py> 固定提交 MMAD 的元素字节、L1/L0 分块和 buffer 分配。

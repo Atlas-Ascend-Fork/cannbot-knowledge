@@ -9,10 +9,11 @@ sources:
 - resource: https://gitcode.com/cann/cann-samples/blob/928d8dfa322731f576b697c9ec997d34abd810b7/Samples/2_Performance/matmul_story/matmul_tutorials/README.md
 - resource: https://gitcode.com/cann/cann-samples/blob/928d8dfa322731f576b697c9ec997d34abd810b7/Samples/2_Performance/grouped_matmul_story/docs/quant_grouped_matmul_mx_performance.md
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-08-12T00:00:00Z'
+updated_at: '2026-10-10T16:00:00Z'
 platforms: ['950']
 verified:
 - {by: "process:cann-samples-source-audit", at: '2026-08-12T00:00:00Z'}
+- {by: "process:catlass-python-kda-architecture-review", at: '2026-10-10T16:00:00Z'}
 ---
 # CANN Performance：MatMul 与 Grouped MatMul 模板选择
 

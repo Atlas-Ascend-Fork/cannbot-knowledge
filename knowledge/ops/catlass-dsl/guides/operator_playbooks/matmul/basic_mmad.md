@@ -5,8 +5,8 @@ description: "GM-L1-L0 分层、动态 tiling、FP/BF16/FP8/INT8/HF32 路由及 
 tags: [task.design, topic.tiling, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/README.md
+- resource: https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py
+- resource: https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/README.md
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-29T00:00:00Z'
 platforms: ['950']
@@ -107,5 +107,5 @@ HF32 reference 会先按选择的 HF32 mode 舍入 f32 输入。[^kernel][^guide
 FP8 的四种配对及 i8×i8→i32。检查 TLAIR 中 copy、MMAD dtype、`hf32_mode`、unit flag
 和同步顺序；整数使用精确相等，FP8/HF32 使用与输入量化/舍入一致的独立 oracle。
 
-[^kernel]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py> 固定提交 MMAD kernel 的算法、切分、layout、buffer 与同步实现。
-[^guide]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/README.md> 固定提交 MMAD README 的数据流说明。
+[^kernel]: <https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py> 固定提交 MMAD kernel 的算法、切分、layout、buffer 与同步实现。
+[^guide]: <https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/README.md> 固定提交 MMAD README 的数据流说明。

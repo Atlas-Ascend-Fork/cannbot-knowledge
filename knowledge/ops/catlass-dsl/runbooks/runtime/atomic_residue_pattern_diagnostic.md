@@ -7,7 +7,7 @@ status: stable
 sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/params.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py
 created_at: '2026-09-23T07:00:00Z'
 updated_at: '2026-09-23T07:00:00Z'
 platforms: ['950']
@@ -78,4 +78,4 @@ layout 或同步的前提下把 `ADD` 临时换成 `NONE`。[^api]
 
 [^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 `core_api.py` 中 `tla.copy` 与 `CopyL0C2DstParams` 的 `atomic_mode` 参数。
 [^params]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/params.py> 固定提交 `params.py` 中 `AtomicMode` 的取值与合法性校验。
-[^mixed]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py> 固定提交 atomic 累加示例中“首个 tile 普通写、后续 tile 原子加”的写法。
+[^mixed]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py> 固定提交 atomic 累加示例中“首个 tile 普通写、后续 tile 原子加”的写法。

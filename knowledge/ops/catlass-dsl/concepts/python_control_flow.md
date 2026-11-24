@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: "Python 语法与动态控制流"
-description: "CATLASS DSL 中自包含静态值、动态分支、循环、短路条件和 loop-carried 状态的语法边界。"
+description: "CATLASS Python 中自包含静态值、动态分支、循环、短路条件和 loop-carried 状态的语法边界。"
 tags: [task.implementation, topic.programming_model.language_extension]
 status: stable
 sources:

@@ -1,18 +1,19 @@
 ---
 type: Guide
 title: "广播加载与 SIMT 收尾"
-description: "用 DIST_BRC_B32 做行广播，用 simt 模式的 thread_block_dim 处理非对齐标量写。"
+description: "用 DIST_BRC_B32 做行广播，用 simt 模式的 thread_block_dim 处理非对齐标量写；混合 pattern 先按 UB 空间反推 tile 面积，再调旋钮。"
 tags: [task.implementation, topic.data_movement, topic.programming_model.execution_model.simt]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/simt/simt_mixed/simt_mixed.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/flash_attention_infer/kernel_mask.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T12:00:00Z'
+updated_at: '2026-11-23T00:00:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T12:00:00Z'}
 ---
 # 广播加载与 SIMT 收尾
+
 
 ## 接口与概念
 
@@ -33,12 +34,12 @@ platforms: ['950']
 ## 用法
 
 ```python
-## 广播
+# 广播
 brc = tla.tile_view(stat_ub, tla.make_shape(1), tla.make_coord(i)).load(
     params=tla.params.NormalLoadParams(load_dist=tla.params.LoadDist.DIST_BRC_B32)
 )
 
-## SIMT 收尾
+# SIMT 收尾
 with tla.vec.func(mode="simt", thread_block_dim=128):
     tid, _, _ = tla.arch.thread_idx()
     nthreads, _, _ = tla.arch.thread_block_dim()
@@ -57,6 +58,28 @@ with tla.vec.func(mode="simt", thread_block_dim=128):
 - UB 标量访问的基址必须直接来自 `tla.allocate` 返回的指针；先对 arena 指针做加减
   再标量访问会报 `tla.vec.func cannot outline scalar access`。
 
+## 空间预算（先算这笔账，再调旋钮）
+
+SIMD 段与 SIMT 段处理的是**同一块** tile，UB 剩余空间就是 tile 面积的上限；tile 面积又决定
+搬运、广播、barrier、写回这些每块固定开销能摊到多少元素。该段吞吐明显低于向量占比应有的
+水平时，先核空间账，再调算子细节：
+
+- 每多一份整 tile 的中间缓冲，tile 面积就被钉低一档；同一块缓冲在多段之间复用，
+  等于把面积上限抬高一档。
+- 优先做不改算法的那件事：tile 内**原地复用**（读出 → 改写 → 写回同一块）。SIMT region
+  要求静态 shape，省空间只能靠缩 buffer，不能靠动态 shape。
+- 判定看 elem/core/cycle 而不是只看向量占比，且分子分母必须同口径：
+  - 整段口径：`elem/core/cycle = 该段元素数 ÷（该段耗时 × 实际参与的物理核数 × 核频）`，
+    或改用各核有效周期之和归一化；mixed kernel 要把 AIC 与 AIV 分开统计。
+  - 单 block 口径：`该 block 元素数 ÷（该 block 耗时 × 1 核 × 核频）`。
+  - launch 的逻辑 block 数不能代替物理核数：多波调度下逻辑块会在同一物理核上排队，
+    例如 100 个逻辑块在 10 个核上分 10 波执行，用 block 数当分母会把每核吞吐低估 10 倍；
+    仅调整 grid/task 粒度也会改变该指标，从而把"tile 太小"判断错。
+  - 向量占比接近 1 但该值明显偏低，说明单块 tile 太小、固定开销摊不开，此时放大 tile
+    比继续调算子细节更有效。
+- 放大后仍要 fresh profile 复核：吞吐随面积增长通常次线性，固定开销占比降下来后瓶颈会切到
+  别的管道，此时再按该管道的判据决定下一步。
+
 ## 收益参考
 
 同一形状下把 `[M, K+1]` 的写回从"向量方式"改成 SIMT 标量逐元素写后，
@@ -64,7 +87,7 @@ with tla.vec.func(mode="simt", thread_block_dim=128):
 
 接口行为以固定提交的实现为准。[^api]
 
-[^api]: 固定提交的源码与文档中对应实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的源码与文档中对应实现。
 
 ## 代码模式
 

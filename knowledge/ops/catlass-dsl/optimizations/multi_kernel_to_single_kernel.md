@@ -1,0 +1,114 @@
+---
+type: Optimization
+title: "多 kernel 合并为单 kernel"
+description: "多个串行 launch 的 kernel 拼成一个 @tla.kernel 单次 launch 时，段间同步的原语选择、边界判定、硬约束与容量限制。"
+tags: [task.optimization, topic.performance.optimization.optimization_overview, topic.implementation.pipeline]
+status: stable
+sources:
+- resource: https://gitcode.com/cann/catlass/blob/5376905e95ad50673db456f87a81188992697439/python/tla_dsl/docs/zh/kernel_development/core_concepts/sync.md
+- resource: https://gitcode.com/cann/catlass/blob/84774fdf9f60756d746b25cbb8a3af0fba876334/examples/python/tla_dsl/tla/kernel/matmul/fused_ffn/ffn/sync_hard.py
+created_at: '2026-11-15T00:00:00Z'
+updated_at: '2026-11-16T00:00:00Z'
+platforms: ['950']
+verified:
+- {by: "process:catlass-python-source-audit", at: '2026-11-16T00:00:00Z'}
+---
+# 多 kernel 合并为单 kernel
+
+
+## 适用条件
+
+多个 `@tla.kernel` 依次 launch、后一段读前一段写在 GM 的结果，这种"stream 串行"在合成
+一次 launch 后**不再存在**：MIX 1:2 执行体里所有 AIC/AIV 同时启动，段间先后必须逐条重建。
+
+**阶段位置**：本知识条用于主流程的独立 `merge` 阶段，入口条件是自然划分的多 kernel 版
+已通过 `full test #1`，且基线源码、SHA、命令与逐例结果均已保留。不要在 `develop` 阶段
+提前合并；`develop` 只交付自然划分版本，这样基线可运行、可对比、可回退定位。
+
+合并可行、且值得做的条件：
+
+- 段间数据流是单向的（A → B → C，没有回边）；
+- 每段的 tile 映射可以独立保留，不需要两段同时驻留同一份片上缓冲；
+- 合并后仍只有一个 `@tla.kernel`、`run` 只 launch 一次。
+
+各段原 `block_num` 不同也可以合并，但合并后整个 kernel 只保留一个 `block_num`：任务少的
+段里，多出来的核走空 range 后仍须到达该段栅栏。
+
+不满足时不要合并：例如两段各自需要一份完整 L0C 输出 tile（`BM·BN·4` 顶满后无法再放第二
+份）。这类情形只能缩 tile 或把中间量落到 GM，吞吐通常会变差，**必须重测配对性能后再决定**，
+不能默认合并值得做；确实不可行时如实记录"用户要求无法满足"及容量账，比强行拼更可靠。
+
+## 原语能力边界
+
+| 原语 | 作用范围 | 关键约束 |
+|---|---|---|
+| `tla.mutex(id=...)` | 仅单核内跨 pipe | 不能跨核；Cube / Vector 两侧 id 空间互相独立 |
+| `cross_flag` mode 0 | 同类全核栅栏（所有 AIC 或所有 AIV） | 全 kernel 共 16 个 id，每 id 一次性计数 |
+| `cross_flag` mode 1 | 同核内两个 AIV 互等 | 同上 |
+| `cross_flag` mode 2（默认） | 同核 AIC ↔ 本核两个 AIV | AIC set 一次放行本核 2 个 AIV；2 个 AIV 都 set 才放行本核 AIC |
+| `cross_flag` mode 4 | 同核 AIC ↔ 单个 AIV（`aiv_id=0/1`） | 仅 Ascend 950；必须给 aiv_id |
+| `AscendC::SyncAll()` | 仅 AIV 全核 | 不等 AIC，不能当全局屏障 |
+| `AscendC::SyncAll<false>()` | AIV-AIV + AIC-AIC + AIV↔AIC | 需 MIX 1:2 配对成立、两侧调用次数严格一致、`block_num ≤ 物理核数` |
+
+证据：`python/tla_dsl/docs/zh/kernel_development/core_concepts/sync.md`（mode 表与 16 个 id
+上限）[^sync]、`tla/kernel/matmul/fused_ffn/ffn/sync_hard.py`（用 cross_flag 复刻
+`SyncAll<false>()`）[^sample]、`include/catlass/gemm/kernel/dual_level_quant_mx_batched_matmul_tla.hpp`
+（`SyncAll<false>()` 一次完成三组同步）。
+
+## 边界 → 原语判定
+
+按"谁等谁"和"覆盖范围"两维判定。**本节在 merge 阶段使用**：design 只登记边界方向与
+映射一致性，不预选原语，也不要为选型去调研同步 API；merge 按本节选型后回填 DESIGN 的
+边界清单。
+
+1. **AIV → AIV**：`SyncAll()`。
+2. **AIC → AIC**：`cross_flag` mode 0，不要用 `SyncAll<false>()`（会强制 AIV 参与）。
+3. **跨引擎且前后映射一致**（本核 AIC 只消费本核 AIV 的产出）：mode 2；要按 AIV 粒度细分
+   时用 mode 4。
+4. **跨引擎且前后映射不一致**（第 2 段的 AIC 可能读别的核 AIV 写的数据）：必须全局栅栏，
+   即按 `SyncAll<false>()` 的组合语义实现——`aiv_arrive`（mode 4，每个 AIV 独立到达）+
+   `aic_ffts`（mode 0，全 AIC 栅栏）+ `aic_done`（mode 2，放行本核 AIV）。只用 mode 2 不够。
+5. **无依赖的两段**（都只读同一上游、写不同输出）：不设栅栏，用一张任务表并列
+   （`tla.range(block_idx, total_a + total_b, block_num)`），每核按 `block_idx` 先领完前段
+   tile 再领后段。
+
+## 三条硬约束
+
+1. **空核必须到达每个栅栏**：任务数少于核数时，空核走空 range 后仍调用同一栅栏；任何
+   `if` 分支跳过栅栏都会死锁。栅栏写在 per-task 循环之外。
+2. **pipe 必须对**：`set_flag` 用发布方数据真正落盘的那条管（AIV 写 GM → MTE3；AIC 写 GM
+   → FIX）；`wait_flag` 用等待方真正开始搬运的那条管（读 GM → MTE2，或按实际等待的
+   SCALAR/FIX）。选错不报错，只出脏数据或偶发挂死。
+3. **每段前后 `pipe_barrier(ALL)`**：发布前排空本核各 pipe，消费前同样排空。
+
+## 实施步骤
+
+1. 确认前置：多 kernel 版已通过 `full test #1`，基线源码、`solution.json`、SHA、命令与
+   逐例结果均已保留；没有可运行的基线时不得开始合并。
+2. 列出段清单与边界清单（依赖方向、前后段映射是否一致、覆盖核范围）。原语与 pipe 用上一节
+   的判定表一次选型，不重新调研 API。
+3. 把各段 kernel 体原样搬进同一个 `@tla.kernel`，保留各自的 tile 常量与缓冲；段间只加上一步
+   选定的栅栏，不改数学语义与累加顺序。全局栅栏之后**不能沿用前一段的 tile 索引**：
+   每段按自己的 `tla.range` 重新领 tile，这就是"映射不一致"的落地方式。
+4. 无依赖的两段（第 5 类）合并成一张任务表，不额外加栅栏。
+5. 逐位对比：同一 seed、同一输入，合并版与基线输出 `bitwise_equal`；不等先查栅栏与 pipe。
+   前提是中间量的窄化点没变——基线把中间量落 GM 并窄化、合并后留在片上不窄化时，本来就
+   不该逐位，按精度分档规则判"不劣于基线"即可，不得为了逐位强行插一次窄化。
+6. 融合版先跑 `focused test`（与基线逐位对比），再跑 `full test #2`；两项 passed 后
+   `merge` 阶段才算完成。
+7. 同进程配对计时（基线 / 合并版交替）：合并版回退必须 ≤ 5%；超过 5% 时继续优化合并版
+   （定位栅栏、空核与映射统一带来的额外开销），不得退回多 kernel 版本收口；确实定位不到
+   可消除开销时，把证据与剩余偏差记入 `ITERATIONS.md` 与 Final Verdict；profiling 确认
+   每次 `run` 只有一行目标 kernel。
+
+## 失败表现
+
+- 用默认 `SyncAll()` 当全局屏障：AIC 不等 AIV，下游读到未写完的 GM，表现为"只累加最后
+  一个 K 块"、多次运行结果漂移。
+- `SyncAll<false>()` 只在一侧调用或两侧次数不等：直接死锁。
+- 映射变化的边界上用 mode 2：只保证本核 AIV 写完，读到别的核未写完的数据。
+- 用 `tla.mutex` 做跨引擎同步：无效（两套对象）。
+- 栅栏写在 `if` 里：空核死锁。
+
+[^sync]: <https://gitcode.com/cann/catlass/blob/5376905e95ad50673db456f87a81188992697439/python/tla_dsl/docs/zh/kernel_development/core_concepts/sync.md> 固定提交的同步原语文档，含 mode 表与 16 个 cross_flag id 上限。
+[^sample]: <https://gitcode.com/cann/catlass/blob/84774fdf9f60756d746b25cbb8a3af0fba876334/examples/python/tla_dsl/tla/kernel/matmul/fused_ffn/ffn/sync_hard.py> 官方 MIX 样例，展示用 cross_flag 组合复刻 `SyncAll<false>()` 的语义。

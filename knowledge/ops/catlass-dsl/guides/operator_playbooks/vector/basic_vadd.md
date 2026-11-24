@@ -5,8 +5,8 @@ description: "从 GM 分块到 UB、vector 加法和回写 GM 的最小完整算
 tags: [task.design, topic.compute.elementwise.arithmetic]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/README.md
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/README.md
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
 platforms: ['950']
@@ -84,5 +84,5 @@ MTE2 copy X/Y --loaded--> Vector add --computed--> MTE3 copy Z
 使用非整齐长度和多 block case；launch 后同步设备，再以
 `torch.allclose(z, x + y, rtol=0.0, atol=1e-5)` 检查结果。
 
-[^source]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py> 固定提交 `basic_vadd.py` 的 kernel、分块、存储与同步实现。
-[^guide]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/README.md> 固定提交 VADD README 的数据流说明。
+[^source]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py> 固定提交 `basic_vadd.py` 的 kernel、分块、存储与同步实现。
+[^guide]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/README.md> 固定提交 VADD README 的数据流说明。

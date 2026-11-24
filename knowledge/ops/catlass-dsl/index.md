@@ -1,4 +1,4 @@
-# CATLASS DSL
+# CATLASS Python
 
 - [apis](apis/index.md)：Shape、coord、stride、layout、tensor、tile、copy、MMAD 与 vector API 的开发索引。
 - [concepts](concepts/index.md)：共 13 张知识卡（如 Kernel、编译与运行时、Constexpr 折叠与动态 if 初始化约束、Copy、flag、mutex 与流水同步 等）。

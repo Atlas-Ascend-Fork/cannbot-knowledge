@@ -7,7 +7,7 @@ status: stable
 sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/api/kernel_api_reference.md
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/flash_attention_infer.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/flash_attention_infer.py
 created_at: '2026-09-23T07:00:00Z'
 updated_at: '2026-09-23T07:00:00Z'
 platforms: ['950']
@@ -76,6 +76,26 @@ l0_k = tla.make_tensor_like(l0b_ptr, l1_k)                             # l0b 推
   `shape`/`stride` 必须与各自的 tag 自洽。
 - `zN`/`nZ` 的 stride 值必须是 C0 的整数倍，C0 为 32 字节。[^ref]
 - 视图只改解释方式，不搬数据；换视图后必须重新确认 buffer 的写者/读者同步。
+- **列主序 A 的 K 必须让 SK 子块按 BK/SK 闭合**：`ceil(K/SK) % (BK/SK) == 0`。否则搬运到
+  L0A 的尾块地址越界。最省事的充分条件是 `K` 取 `BK` 的倍数（256 倍数也满足，但过强）。
+
+## K 尾块相位（实测）
+
+在 950PR、bf16、`tile 256/256/128/32` 上对 `layout_a=col` 做了 16 点扫描，全部符合
+`ceil(K/32) % 4 == 0` 才通过：
+
+| K | ceil(K/32) | %4 | 结果 |
+|---|---|---|---|
+| 41316 / 41344 / 49396 / 49408 / 49152 / 50176 / 51200 / 51328 / 51456 | 1292 / 1292 / 1544 / 1544 / 1536 / 1568 / 1600 / 1604 / 1608 | 0 | 通过 |
+| 41345 / 45000 / 49409 / 50000 / 51264 / 51344 / 51348 / 51350 / 51360 / 51400 / 51424 / 52000 | 1293 / 1407 / 1545 / 1563 / 1602 / 1605 / 1605 / 1605 / 1605 / 1607 / 1607 / 1625 | 1~3 | 失败 |
+
+失败有两种形态：多数是 `errcode (5,131)`「LOAD2D 写 L0A 越界」，少数直接挂死到 60s 超时。
+换 tile 到 `128/256/128/64`（BK/SK=2）后，同一个 `K=41440` 由失败变通过、`K=41408`
+由通过变失败，与 `ceil(K/64) % 2` 一致——说明约束是子块相位，不是 128/256 倍数、也不是
+4 元素（8 字节）对齐。
+
+模板与驱动器已按此自动把 `K` 补到 `BK` 倍数，并在结果里记 `k_raw` / `k_pad`；
+实现侧同样要保证 K 恒为 `ceil(原始K/BK)*BK`，不能拿原始 K 直接跑列主序 A。
 
 ## 失败表现
 
@@ -87,6 +107,8 @@ l0_k = tla.make_tensor_like(l0b_ptr, l1_k)                             # l0b 推
 - 数值正确但性能异常：`zN`/`nZ` stride 未按 C0 对齐，触发非预期搬运路径。
 - 结果与前一次运行不同：换视图后没有重建 buffer 同步，读到了旧内容。
 - 出现 MTE 访问异常或 507015：把 `nZ` 数据当 `zN` 解释后搬运到 L0A。
+- `errcode (5,131)`「LOAD2D 写 L0A/L0B 越界」或 60s 无输出：列主序 A 的
+  `ceil(K/SK) % (BK/SK) != 0`（K 未按 BK 对齐），先补 K 再排查其他原因。
 
 ## 验证方法
 
@@ -95,4 +117,4 @@ l0_k = tla.make_tensor_like(l0b_ptr, l1_k)                             # l0b 推
 
 [^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 `core_api.py` 中的 `mmad` 形状/layout 校验与 `make_tensor_like` 的 layout 推断分支。
 [^ref]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/api/kernel_api_reference.md> 固定提交 API 文档中 layout tag、C0=32 字节与 stride 对齐约束。
-[^fa]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/flash_attention_infer.py> 固定提交 flash-attention 示例中的 ColumnMajor 转置操作数配方与 `make_tensor_like` 用法。
+[^fa]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/flash_attention_infer.py> 固定提交 flash-attention 示例中的 ColumnMajor 转置操作数配方与 `make_tensor_like` 用法。

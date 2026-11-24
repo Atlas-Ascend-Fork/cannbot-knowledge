@@ -5,10 +5,10 @@ description: "使用显式 buffer 轮换、unit_flag、flag、mutex 和 barrier 
 tags: [task.optimization, topic.performance.optimization.optimization_overview, topic.implementation.pipeline, topic.implementation.synchronization]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_auto_sync.py
+- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/core_api.py
+- resource: https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_auto_sync.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-11T08:52:15Z'
 platforms: ['950']
@@ -27,9 +27,11 @@ verified:
 [^api] MMAD 使用 `unit_flag` 表达末次 K 计算/搬运协议；VADD 展示 flag、mutex
 与 barrier 的可替换实现。[^mmad][^vadd]
 
-当前还提供 `@tla.kernel(auto_sync="v0")`：编译 pass 可为 MMAD/FIX 流水插入核内
-mutex 与 unit-flag 协议，示例 kernel 本身不手写 local flag/mutex。它是明确的 v0
-模式，不能假设覆盖 cross-core 或所有自定义内存别名。[^auto-sync]
+也可以用 `@tla.kernel(auto_sync="v0")`：编译 pass 可代插核内 mutex 与 unit-flag 协议，
+kernel 本身不手写 local flag/mutex。它是明确的 v0 模式，不能假设覆盖 cross-core 或所有
+自定义内存别名；骨架与融合 kernel 的核内流水默认用显式 mutex（与
+`matmul_row_exp_scatter_add` 的 GEMM 段同构），跨核交棒仍用 `cross_flag`，`auto_sync`
+仅作纯 MMAD/FIX 的对照写法。[^auto-sync]
 
 ## 用法
 
@@ -173,7 +175,7 @@ for task in tla.range(...):
 正确性失败的候选不得 benchmark。正确候选也只有超过测量方差与批准最小提升
 阈值才更新 best-correct；源码本身不构成性能结论。
 
-[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 Core API 中当前 range 和同步实现。
-[^mmad]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py> 固定提交 MMAD 的 unit flag 与循环同步。
-[^vadd]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_vadd/basic_vadd.py> 固定提交 VADD 的 flag、mutex 和 barrier 变体。
-[^auto-sync]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_auto_sync.py> 固定提交 `basic_matmul_auto_sync.py` 的 v0 自动同步入口与适用模式。
+[^api]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/core_api.py> 固定提交 Core API 中当前 range 和同步实现。
+[^mmad]: <https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py> 固定提交 MMAD 的 unit flag 与循环同步。
+[^vadd]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/vec/basic_vadd/basic_vadd.py> 固定提交 VADD 的 flag、mutex 和 barrier 变体。
+[^auto-sync]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_auto_sync.py> 固定提交 `basic_matmul_auto_sync.py` 的 v0 自动同步入口与适用模式。

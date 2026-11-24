@@ -5,14 +5,15 @@ description: "逐块更新 running max 与 running sum，并正确处理 rescale
 tags: [task.implementation, topic.compute.reduction, topic.precision, topic.attention]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/flash_attention_infer/stage_rescale.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/flash_attention_infer/stage_softmax.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-28T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T07:45:00Z'
+updated_at: '2026-10-23T07:45:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T07:45:00Z'}
 ---
 # 在线 softmax 的统计量递推
+
 
 ## 接口与概念
 
@@ -82,4 +83,4 @@ new_sum  = tla.add(
 与 host 侧 fp32 全量 softmax 对拍，重点看块边界（第 1、2、最后一块）；
 用极端输入（全相同值、含 ±inf）验证掩码。
 
-[^api]: 固定提交的归约与向量运算实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的归约与向量运算实现。

@@ -5,8 +5,8 @@ description: "L1/L0/UB buffering、复用与 GM 流量优化的可证伪策略�
 tags: [task.optimization, topic.performance.optimization.optimization_overview, topic.data_movement.data_copy, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py
+- resource: https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
 platforms: ['950']
@@ -99,5 +99,5 @@ IR 中检查 `wait released -> copy -> set ready -> wait ready -> compute ->
 set released`；正确性覆盖 tile_count=1、2、3 和尾 tile，再比较 MTE/Vector/Cube
 等待指标及 benchmark。
 
-[^mmad]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul.py> 固定提交 MMAD 的 L1/L0 双缓冲与同步。
-[^mixed]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py> 固定提交 mixed kernel 的 L0C->UB->Vector 数据路径。
+[^mmad]: <https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py> 固定提交 MMAD 的 L1/L0 双缓冲与同步。
+[^mixed]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py> 固定提交 mixed kernel 的 L0C->UB->Vector 数据路径。

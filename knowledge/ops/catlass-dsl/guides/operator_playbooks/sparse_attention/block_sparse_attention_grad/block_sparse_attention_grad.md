@@ -23,11 +23,11 @@ sources:
 - resource: https://gitcode.com/cann/ops-transformer/blob/2b67400cf8284717cb38f1d4ecdc69df9191943f/attention/flash_attn/README.md
 - resource: https://gitcode.com/cann/ops-transformer/blob/2b67400cf8284717cb38f1d4ecdc69df9191943f/attention/flash_attn_grad/README.md
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/cross_flag_two_way/cross_flag_two_way.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/cast_multi.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/flash_attention_infer.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/cross_flag_two_way/cross_flag_two_way.py
+- resource: https://gitcode.com/cann/catlass/blob/7c6581139494d83206e3e8d1607ffc1628e6c8bc/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/cast_multi.py
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/flash_attention_infer.py
 created_at: '2026-09-15T13:44:19Z'
 updated_at: '2026-09-23T07:00:00Z'
 platforms: ['950']
@@ -285,7 +285,7 @@ dQ/dK/dV 的 workspace 写回显式启用 FP32 atomic add；`deterministic=true`
 latin-square 分支而不是拒绝 atomic。不同运行的低位差异属于实现允许的现象，但偏差仍必须
 落在已定义容差内。[^bsag-cube][^bsag-addr]
 
-**CATLASS DSL 复现要点。** 一次调用只 launch 一个 `@tla.kernel`，host 侧只做元数据检查、
+**CATLASS Python 复现要点。** 一次调用只 launch 一个 `@tla.kernel`，host 侧只做元数据检查、
 输出/workspace 分配与参数透传；三路 atomic 落盘用 `AtomicMode.ADD`；L0C→UB 用
 `L0C2UBMode.SPLIT_M` 让两个 AIV 各取半行；阶段切换用一对 `mode=0` 的全核 `cross_flag`，
 两侧都配 `local_mem_bar` + `pipe_barrier(ALL)`，必要时用 `@tla.extern` 内联
@@ -419,7 +419,7 @@ correctness 与 benchmark/profile 才能进入 learned knowledge。[^bsag-cube][
 ## 扩展层（非 vendor Arc35 基线）
 
 以下内容**不属于** `ops-transformer` 的 Arc35 实现，出处是本仓库的 `code/flex_fag_kernel.py`
-（一份 CATLASS DSL 变体）。放在这里是为了不丢信息并明确边界：**默认主体仍是前面的 vendor
+（一份 CATLASS Python 变体）。放在这里是为了不丢信息并明确边界：**默认主体仍是前面的 vendor
 Arc35 行为**，不要把本节机制当作 Arc35 的既有能力。
 
 ### 细 token mask
@@ -514,12 +514,12 @@ b16→f32 仍必须组合 even/odd RegSlot，只用一个会丢一半 lane。[^t
 [^tla-api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交 `core_api.py` 中的 `mmad` layout 契约、`cross_flag` mode 与
     `L0C2UBMode.SPLIT_M`、`tla.extern` 接口。
 
-[^tla-atomic]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py> 固定提交 `basic_matmul_atomic_add` 中的 `AtomicMode.ADD` copy 模式。
+[^tla-atomic]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py> 固定提交 `basic_matmul_atomic_add` 中的 `AtomicMode.ADD` copy 模式。
 
-[^tla-mixed]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py> 固定提交 `basic_mixed` 中的 Cube/Vector 混合与跨核 flag 骨架。
+[^tla-mixed]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py> 固定提交 `basic_mixed` 中的 Cube/Vector 混合与跨核 flag 骨架。
 
-[^tla-crossflag]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/cross_flag_two_way/cross_flag_two_way.py> 固定提交 `cross_flag_two_way` 中的双向 cross flag 配对模式。
+[^tla-crossflag]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/cross_flag_two_way/cross_flag_two_way.py> 固定提交 `cross_flag_two_way` 中的双向 cross flag 配对模式。
 
-[^tla-cast]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/vector_ops/cast_multi.py> 固定提交 `cast_multi` 中的多 RegSlot cast 与寄存器布局用法。
+[^tla-cast]: <https://gitcode.com/cann/catlass/blob/7c6581139494d83206e3e8d1607ffc1628e6c8bc/examples/python/tla_dsl/dsl_tutorials/vector_simd_ops/cast_multi.py> 固定提交 `cast_multi` 中的多 RegSlot cast 与寄存器布局用法。
 
-[^tla-fa]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/flash_attention_infer/flash_attention_infer.py> 固定提交 flash-attention 示例中的尾块 `tile_view`、DINTLV lane 与 zN 落盘用法。
+[^tla-fa]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/flash_attention_infer.py> 固定提交 flash-attention 示例中的尾块 `tile_view`、DINTLV lane 与 zN 落盘用法。

@@ -17,7 +17,7 @@ sources:
 - resource: https://gitcode.com/cann/ops-transformer/blob/2b67400cf8284717cb38f1d4ecdc69df9191943f/attention/block_sparse_attention_grad/op_host/op_api/aclnn_block_sparse_attention_grad.cpp
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/tensor.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py
 created_at: '2026-09-23T00:00:00Z'
 updated_at: '2026-09-23T07:00:00Z'
 platforms: ['950']
@@ -76,11 +76,8 @@ dsinks[h]  = -sum_{b,i} exp(sinks[h] - LSE[b,h,i]) * D[b,h,i]
 可选输入，输出仍只有 `dq/dk/dv`。[^sink-fag][^sink-fagapi] `sinks = null` 时必须跳过整段
 归约，`dsinks` 保持精确全零。
 
-sink 不进入 `O`，`dO` 对 sink 因此没有直接路径；`P`、`D`、`dS`、`dQ/dK/dV` 的**算式**也不
-感知 sink——sink 的全部影响都通过 `LSE` 编码（分母里的 `exp(sinks[h]-m)` 项）。正确的
-不变量是：**给定同一份 `LSE` 输入，`dQ/dK/dV` 不随 `sinks` 变化**。但 `sinks[h]` 的取值
-会改变 softmax 分母与 max，进而改变 `LSE/P/O` 的数值，因此与无 sink 的前向相比，
-`dQ/dK/dV` 的数值一般不同。[^sink-bsag]
+sink 不进入 `O`，`dO` 对 sink 因此没有直接路径；sink 也不改变 `P`、`D`、`dS` 的算式，所以
+在 LSE 口径一致的前提下，`dQ/dK/dV` 的数值与无 sink 时完全相同。[^sink-bsag]
 
 **块级稀疏与任务生成**沿用 Arc35：`blockSparseMask` 的每个元素控制一个
 `blockShapeX × blockShapeY` 块是否参与，公开 shape 是
@@ -149,9 +146,8 @@ layout 绑定后按标量 load。[^sink-api][^sink-tensor][^sink-atomic]
 
 - `block_sparse_attention_grad`（Arc35）不接受 `sinks`、也不输出 `dsinks`；带 sink 是扩展层
   能力，不要把 sink 写进主卡的输入表。[^sink-bsag]
-- sink 不进入 `O`、不改变 `D/P/dS` 的算式，反向实现不得感知 sink；但 `sinks[h]` 会通过
-  softmax 分母/max 改变 `LSE/P/O` 的数值，因此 `dQ/dK/dV` 的数值随 `sinks[h]` 变化。
-  给定同一份 `LSE` 输入，`dQ/dK/dV` 必须与 `sinks` 无关。
+- sink 只通过 `LSE` 影响 `P_j`，不进入 `O`、不改变 `D/P/dS` 的算式，因此不改变
+  `dQ/dK/dV`（前提是 LSE 口径与产生 `O` 的前向一致）。
 - `LSE` 必须来自产生 `O` 的同一次前向，且与 `dsinks` 公式口径一致：前向把 sink 算进分母
   就用含 sink 的 LSE，前向只覆盖真实 key 就用不含 sink 的 LSE。[^sink-fwd][^sink-fasgv3]
 - `sinks` 索引维度是 query head；`sinks = null` 时 `dsinks` 必须精确为 0。
@@ -176,8 +172,7 @@ layout 绑定后按标量 load。[^sink-api][^sink-tensor][^sink-atomic]
 - `dsinks` 等于「两份 LSE 之差」：调用方把两次前向的 `O` 与 `LSE` 混搭。
 - 只有部分 head 的 `dsinks` 错：清零未 publish，或索引用了 KV head 而不是 query head。
 - 同一行被多核重复计入：`dsinks` 直接写而不是 atomic 累加。[^sink-atomic]
-- 给定同一份 `LSE` 输入，`dQ/dK/dV` 仍随 `sinks` 变化：错误地把 sink 当成参与计算的
-  KV token，或绕过 `LSE` 单独改了 `P/D`。
+- `dQ/dK/dV` 随 sink 变化：错误地把 sink 当成参与计算的 KV token，或改了 `P`/`D`。
 - `dsinks` 偶发非有限值：`LSE` 与 `sinks` 量级差过大让 `exp` 溢出，按 FP32 域检查。
 - 空 query 行的 `dsinks` 非零：该行 `LSE` 不是 `+inf`，或没有按 `exp(-inf)=0` 处理。[^sink-fwd]
 - 非对称 mask 下结果像沿块对角线转置：轴语义被当成 KV-major。[^sink-maskread]
@@ -237,4 +232,4 @@ layout 绑定后按标量 load。[^sink-api][^sink-tensor][^sink-atomic]
 
 [^sink-tensor]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/tensor.py> 固定提交 `tla/tensor.py` 中标量 load 的地址空间分发与 layout 限制。
 
-[^sink-atomic]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py> 固定提交 `basic_matmul_atomic_add` 中的 `AtomicMode.ADD` 累加模式。
+[^sink-atomic]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py> 固定提交 `basic_matmul_atomic_add` 中的 `AtomicMode.ADD` 累加模式。

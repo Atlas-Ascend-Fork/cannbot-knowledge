@@ -5,14 +5,15 @@ description: "通过 ColumnMajor/ptr 算术构造 GM 视图，避免 host 侧预
 tags: [task.implementation, topic.data_movement.layout_transform, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed_ub2l1.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/vector_ops/ub_to_ub_copy.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T12:00:00Z'
+updated_at: '2026-10-23T12:00:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T12:00:00Z'}
 ---
 # 零拷贝视图：用 layout 表达转置与切片
+
 
 ## 接口与概念
 
@@ -44,7 +45,7 @@ gm_b_tile = tla.make_tensor(
 
 接口行为以固定提交的实现为准。[^api]
 
-[^api]: 固定提交的源码与文档中对应实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的源码与文档中对应实现。
 
 ## 代码模式
 

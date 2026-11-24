@@ -5,10 +5,10 @@ description: "设备标量/张量打印的适用范围、同步要求和最小�
 tags: [task.debugging, topic.implementation.debugging]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/debug_print/README.md
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/print_tensor/README.md
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/debug_print/debug_print.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/print_tensor/print_tensor.py
+- resource: https://gitcode.com/cann/catlass/blob/96fef753b4e9a3c8e31eb6a02abd7bcae8e1ec71/examples/python/tla_dsl/dsl_tutorials/debug_print/README.md
+- resource: https://gitcode.com/cann/catlass/blob/96fef753b4e9a3c8e31eb6a02abd7bcae8e1ec71/examples/python/tla_dsl/dsl_tutorials/print_tensor/README.md
+- resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/debug_print/debug_print.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/dsl_tutorials/print_tensor/print_tensor.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-29T00:00:00Z'
 platforms: ['950']
@@ -176,7 +176,7 @@ output_ok=True
 本文是离线自包含知识，不要求访问 `sources` URL 或取得上游示例脚本。未执行设备
 打印；接口、支持矩阵和错误边界来自固定提交示例与实现。
 
-[^scalar]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/debug_print/README.md> 固定提交 scalar debug print 的类型与 region 契约。
-[^tensor]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/print_tensor/README.md> 固定提交 tensor print 的 storage、shape、length 和同步约束。
-[^scalar-code]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/debug_print/debug_print.py> 固定提交 `debug_print.py` 的 kernel、CLI 和输出校验实现。
-[^tensor-code]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/print_tensor/print_tensor.py> 固定提交 `print_tensor.py` 的 GM/UB/dynamic kernel 与 CLI。
+[^scalar]: <https://gitcode.com/cann/catlass/blob/96fef753b4e9a3c8e31eb6a02abd7bcae8e1ec71/examples/python/tla_dsl/dsl_tutorials/debug_print/README.md> 固定提交 scalar debug print 的类型与 region 契约。
+[^tensor]: <https://gitcode.com/cann/catlass/blob/96fef753b4e9a3c8e31eb6a02abd7bcae8e1ec71/examples/python/tla_dsl/dsl_tutorials/print_tensor/README.md> 固定提交 tensor print 的 storage、shape、length 和同步约束。
+[^scalar-code]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/debug_print/debug_print.py> 固定提交 `debug_print.py` 的 kernel、CLI 和输出校验实现。
+[^tensor-code]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/dsl_tutorials/print_tensor/print_tensor.py> 固定提交 `print_tensor.py` 的 GM/UB/dynamic kernel 与 CLI。

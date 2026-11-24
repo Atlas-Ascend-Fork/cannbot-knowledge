@@ -5,9 +5,9 @@ description: "Cube/Vector 混合流水、跨核 flag、atomic add 和 mutex 的�
 tags: [task.design, topic.tiling, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_mutex.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_mutex.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
 platforms: ['950']
@@ -111,6 +111,6 @@ with tla.mutex_guard(mutex_c):
 先分别验证 Cube 与 Vector 子图，再验证跨核组合；对 atomic 重复运行并显式清零；
 对 mutex 检查所有退出路径。性能收益不能由这些源码存在性推出。
 
-[^mixed]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py> 固定提交 mixed kernel 的 Cube/Vector 与 cross flag 数据流。
-[^atomic]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_atomic_add.py> 固定提交 MMAD atomic-add copy 变体。
-[^mutex]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/basic_mmad/basic_matmul_mutex.py> 固定提交 MMAD mutex 同步变体。
+[^mixed]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mixed/basic_mixed.py> 固定提交 mixed kernel 的 Cube/Vector 与 cross flag 数据流。
+[^atomic]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py> 固定提交 MMAD atomic-add copy 变体。
+[^mutex]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_mutex.py> 固定提交 MMAD mutex 同步变体。

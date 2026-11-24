@@ -11,10 +11,11 @@ sources:
 - resource: https://gitcode.com/cann/cann-samples/blob/928d8dfa322731f576b697c9ec997d34abd810b7/Samples/2_Performance/kv_rms_norm_rope_cache_story/README.md
 - resource: https://gitcode.com/cann/cann-samples/blob/928d8dfa322731f576b697c9ec997d34abd810b7/Samples/2_Performance/simd_vf_story/README.md
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-08-12T00:00:00Z'
+updated_at: '2026-10-10T16:00:00Z'
 platforms: ['950']
 verified:
 - {by: "process:cann-samples-source-audit", at: '2026-08-12T00:00:00Z'}
+- {by: "process:catlass-python-kda-architecture-review", at: '2026-10-10T16:00:00Z'}
 ---
 # CANN Performance：RegBase、SIMD 与归约链优化
 
@@ -23,6 +24,8 @@ verified:
 
 共性主线是固定外层 GM/UB 数据流，只把热 compute body 从“每步读写 UB”改为“一次 load、寄存器串联、
 一次 store”；随后才测试 VF 循环拆分/合并、常量外提、多行并行和 tile 扩大。[^gelu][^kv-rope]
+这些候选也适用于 mixed kernel 中边界清楚的 gate、mask 和局部 solve Vector Stage，但不能据此改变
+跨 Stage owner、同步或数值顺序；相关架构变化需先完成 mixed-kernel 设计门禁。
 RmsNormQuant 明确展示瓶颈迁移顺序：共享 gamma 预加载、多核、VF 融合减少中间 UB 写、等 Vector 与
 MTE2 接近后再开双缓冲、扩大 UB tile，最后单独实验二分累加。[^rmsnorm]
 

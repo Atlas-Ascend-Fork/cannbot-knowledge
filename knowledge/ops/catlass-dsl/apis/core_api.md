@@ -1,6 +1,6 @@
 ---
 type: API
-title: "CATLASS DSL Core API"
+title: "CATLASS Python Core API"
 description: "Shape、coord、stride、layout、tensor、tile、copy、MMAD 与 vector API 的开发索引。"
 tags: [task.lookup, topic.implementation.api_layer, topic.programming_model]
 status: stable
@@ -15,7 +15,7 @@ verified:
 - {by: "process:catlass-dsl-source-audit", at: '2026-08-10T00:00:00Z'}
 - {by: "process:catlass-dsl-source-audit", at: '2026-08-29T00:00:00Z'}
 ---
-# CATLASS DSL Core API
+# CATLASS Python Core API
 
 
 ## 接口与概念
@@ -205,7 +205,7 @@ Tail 循环应把 `update_mask` 返回的 remaining 作为 loop-carried 状态�
 用 `catlass.core_api.__all__` 和 `catlass.runtime._CORE_API_EXPORTS` 审计导出面；
 再调用 kernel 的 `dump_mlir(type_args=...)` 检查 TLAIR，并运行
 `tests/test_core_api_preconditions.py`、vector pytest 和 lit lowering 用例。
-本文只完成固定提交源码核对，未运行 CATLASS DSL、CANN 或 NPU。
+本文只完成固定提交源码核对，未运行 CATLASS Python、CANN 或 NPU。
 
 [^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/docs/en/api/kernel_api_reference.md> 固定提交中生成的 Kernel API 清单。
 [^core]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交中的 `catlass/core_api.py` 参数检查与 lowering 实现。

@@ -5,19 +5,23 @@ description: "用固定字节偏移把 L1 分成两个半区，每半区放 A �
 tags: [task.optimization, topic.implementation.pipeline, topic.memory, topic.implementation.synchronization]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed_mutex.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/basic_mixed/basic_mixed.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T07:40:00Z'
+updated_at: '2026-10-23T07:40:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T07:40:00Z'}
 ---
 # L1 半区偏移与双缓冲 flag 配对
+
 
 ## 接口与概念
 
 L1 双缓冲的常见实现是"一块大 allocation + 固定偏移切半区"，而不是两次 allocate。
 每个半区内部再按 A 在前、B 在后的顺序排布，偏移量在编译期算好。
+
+本条描述 flag 配对写法；骨架与融合 kernel 默认改用 mutex，每份缓冲一个 mutex、`lock`/
+`unlock` 的 pipe 成对，半区切分方式不变。仅在允许 flag 的 kernel 中使用下面的写法。
 
 ## 用法
 
@@ -56,4 +60,4 @@ bl = tla.make_tensor_like(l1 + slot * half + b_off, br, tla.arch.nZ)
 把偏移与各 tile 字节数列成表核对总和 <= half；最小 shape 连跑两轮以上，
 确认第二轮与第一轮一致。
 
-[^api]: 固定提交的 allocate 与 flag 实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的 allocate 与 flag 实现。

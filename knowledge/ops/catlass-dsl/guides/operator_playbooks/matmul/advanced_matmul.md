@@ -5,8 +5,8 @@ description: "端到端 batched matmul 与按 M 切片 grouped matmul 的动态 
 tags: [task.design, topic.tiling, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/batched_matmul/batched_matmul.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/grouped_matmul_slice_m/grouped_matmul_slice_m.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/batched_matmul/batched_matmul.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/gmm/grouped_matmul_slice_m/grouped_matmul_slice_m.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-29T00:00:00Z'
 platforms: ['950']
@@ -81,5 +81,5 @@ partial sum。输入通常为 f16，L0C 以 f32 累加；动态 GM 只改变运�
 compile/TLAIR，再同步设备并比较输出。任何性能结论都需在目标 NPU 上
 单独 benchmark/profile，不能从样例结构直接推出。
 
-[^batched]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/batched_matmul/batched_matmul.py> 固定提交 batched matmul 的 dynamic GM、runtime extent 和 swizzle 实现。
-[^grouped]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/grouped_matmul_slice_m/grouped_matmul_slice_m.py> 固定提交 grouped matmul slice-M 的 group metadata 与分块实现。
+[^batched]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/batched_matmul/batched_matmul.py> 固定提交 batched matmul 的 dynamic GM、runtime extent 和 swizzle 实现。
+[^grouped]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/gmm/grouped_matmul_slice_m/grouped_matmul_slice_m.py> 固定提交 grouped matmul slice-M 的 group metadata 与分块实现。

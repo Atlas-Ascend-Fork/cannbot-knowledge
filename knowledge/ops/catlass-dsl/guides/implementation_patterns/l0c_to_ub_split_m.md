@@ -5,14 +5,15 @@ description: "累加结束后用 CopyL0C2DstParams(SPLIT_M) 一次搬进两个 A
 tags: [task.implementation, topic.data_movement, topic.memory, topic.implementation.synchronization]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/basic_mmad_epilogue/matmul_add_ub.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/params.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T07:45:00Z'
+updated_at: '2026-10-23T07:45:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T07:45:00Z'}
 ---
 # L0C 经 SPLIT_M 直通 UB
+
 
 ## 接口与概念
 
@@ -57,4 +58,4 @@ tla.copy(
 把两个 AIV 的 UB 半区分别 dump 出来与 host 侧 `[0:half]`、`[half:]` 对拍；
 再用非 2 的幂的 M/N 验证尾块。
 
-[^api]: 固定提交的 CopyL0C2DstParams 实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的 CopyL0C2DstParams 实现。

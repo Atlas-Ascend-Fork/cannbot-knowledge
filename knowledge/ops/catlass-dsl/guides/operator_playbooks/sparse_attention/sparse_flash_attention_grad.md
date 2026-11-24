@@ -41,7 +41,7 @@ dK/dV，chunk 内 `pos >= nuse` 的位置既不 gather 也不散写。
 ```text
 S      = Q @ K^T + Q_rope @ K_rope^T
 P      = exp(scale * S - softmax_max) / softmax_sum
-dP     = dY @ V^T
+dP     = dY @ K^T
 dS     = P * (dP - D)
 dV     = P^T @ dY
 dQ     = dS @ K            dQ_rope = dS @ K_rope
@@ -165,7 +165,7 @@ vendor 侧同族约束：一轮延迟流水的 credit 距离等于槽数，收�
 - profiler 关注 `kernel_details.csv` 的 block 数与 mix block 数，以及 AIC 的 fixpipe 占比与
   AIV 的 MTE2/MTE3/scalar 占比。
 - 本文只给机制、适用条件与失败指纹；本实现的实测幅度、生效范围与原始证据在
-  项目本地运行时知识（`.catlass-dsl/knowledge/learned/`） 的 2026-09-24 四条 sparse-attention 结论里。
+  项目本地运行时知识（`.catlass-python/knowledge/learned/`） 的 2026-09-24 四条 sparse-attention 结论里。
 
 [^guide]: <https://gitcode.com/cann/ops-transformer/blob/2b67400cf8284717cb38f1d4ecdc69df9191943f/attention/sparse_flash_attention_grad/README.md> 固定提交中 SparseFlashAttentionGrad 的接口、gather 语义与阶段公式。
 [^entry]: <https://gitcode.com/cann/ops-transformer/blob/2b67400cf8284717cb38f1d4ecdc69df9191943f/attention/sparse_flash_attention_grad/op_kernel/arch35/sparse_flash_attention_grad_entry_regbase.h> 固定提交中 `KERNEL_TASK_TYPE_DEFAULT(KERNEL_TYPE_MIX_AIC_1_2)` 与 pre/主循环/post 三段调用链。

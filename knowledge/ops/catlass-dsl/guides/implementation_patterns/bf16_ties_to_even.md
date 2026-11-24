@@ -5,15 +5,15 @@ description: "SIMD 的 f32→bf16 转换默认 round-half-away-from-zero，与 G
 tags: [task.implementation, topic.precision, topic.compute.elementwise.type_conversion]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/catlass/core_api.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/vector_ops/bitcast_op.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/vector_ops/shift_op.py
-- resource: https://gitcode.com/cann/catlass/blob/30a45e447824888ba97e089962064334c1d21163/python/tla_dsl/examples/end_to_end/vector_ops/bitwise_ops.py
-created_at: '2026-10-26T00:00:00Z'
-updated_at: '2026-10-27T00:00:00Z'
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
+created_at: '2026-10-23T07:20:00Z'
+updated_at: '2026-10-23T07:20:00Z'
 platforms: ['950']
+verified:
+- {by: "process:catlass-python-kernel-run-audit", at: '2026-10-23T07:20:00Z'}
 ---
 # 在 SIMD 中复现 bf16 的 ties-to-even 舍入
+
 
 ## 接口与概念
 
@@ -52,6 +52,8 @@ with tla.vec.func(mode="simd"):
 - 只适用于 f32→bf16；f16 的偏置与掩码位数不同。
 - 依赖小端与 IEEE754 位序，不允许在打包/解包路径重复做。
 - 会增加一段全 tile 的 SIMD 位运算，需评估对流水的影响。
+- 本条目在 2.1.0 上验证；目标版本升级后需重新确认 `to()` 的默认舍入模式是否仍为
+  round-half-away-from-zero，再决定是否继续仿真。
 
 ## 失败表现
 
@@ -60,9 +62,9 @@ with tla.vec.func(mode="simd"):
 
 ## 验证方法
 
-构造 halfway 输入（如 `1 + 2^-9`），与 numpy 的 `round-half-to-even` 结果逐位比对；
-再用同一 shape 与 GEMM 输出做 bitwise 比较。
+构造 halfway 输入（如 `1 + 2^-8`；1 附近 bf16 相邻间隔为 `2^-7`，中点是 `1 + 2^-8`），
+与 numpy 的 `round-half-to-even` 结果逐位比对；再用同一 shape 与 GEMM 输出做 bitwise 比较。
 
 接口行为以固定提交的实现为准。[^api]
 
-[^api]: 固定提交的源码与文档中对应实现。
+[^api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交的源码与文档中对应实现。

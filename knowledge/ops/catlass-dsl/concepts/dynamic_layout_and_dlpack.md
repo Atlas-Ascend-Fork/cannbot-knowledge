@@ -7,7 +7,7 @@ status: stable
 sources:
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/runtime.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/test_dynamic_gm_launch_abi.py
-- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/batched_matmul/batched_matmul.py
+- resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/batched_matmul/batched_matmul.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-29T00:00:00Z'
 platforms: ['950']
@@ -79,4 +79,4 @@ reference；同时测试 RowMajor、ColumnMajor、producer 提前失去调用方
 
 [^tensor-runtime]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/runtime.py> 固定提交 runtime tensor 的 DLPack、动态 shape 与 stride 规则。
 [^abi-tests]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/tests/test_dynamic_gm_launch_abi.py> 固定提交 dynamic GM launch ABI 的编译和运行参数测试。
-[^batched]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/examples/end_to_end/batched_matmul/batched_matmul.py> 固定提交 batched matmul 对 A/B/C 使用 dynamic GM 的端到端模式。
+[^batched]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/batched_matmul/batched_matmul.py> 固定提交 batched matmul 对 A/B/C 使用 dynamic GM 的端到端模式。
