@@ -1,4 +1,4 @@
-# validations
+# validations（共 40 张知识卡）
 
 - [LongBench 输入构造 input_max_len < system_prompt 长度 → 负索引尾切静默裁掉正文](longbench_input_max_len_sysprompt.md)：LongBench 输入构造 input_max_len < system_prompt 长度 → 负索引尾切静默裁掉正文。跑 LongBench / 自定义长序列数据集（dataset != "default"）时，喂给模型的 prompt 正文被大幅裁掉，长序列 case 实际输入远短于预期——但控制台只有一条 logging.info（"The parameter 'input_max_len' should be greater than the length of system_prompt..."），无报错、无中断，极易被忽略。看到这条 info 即代表已越界。
 - [纯 EP MoE decode 中 GMM 无条件执行（0 token 也跑）：profiling 里某卡缺 GMM 不能用「该卡没分到 token」解释，用 expert_token_num 诊断](moe_ep_gmm_unconditional_zero_token_diagnosis.md)：纯 EP MoE decode 中 GMM 无条件执行（0 token 也跑）：profiling 里某卡缺 GMM 不能用「该卡没分到 token」解释，用 expert_token_num 诊断。采集昇腾纯 EP（moe_ep_size>1 / moe_tp_size==1）MoE decode 的 profiling，发现某卡没有 GroupedMatmul(gmm) 算子、其余卡有（各卡 gmm 非对称）。直觉会把它当作「该卡专家没分到 token → 不跑 gmm」的正常负载不均现象——这个直觉是错的。

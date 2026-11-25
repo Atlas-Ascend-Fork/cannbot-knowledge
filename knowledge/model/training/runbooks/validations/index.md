@@ -1,4 +1,4 @@
-# 模型训练验证方法
+# 模型训练验证方法（共 9 张知识卡）
 
 - [rollout dump 的采样 token surprisal 分桶：均值下降、百分比舍入与判读边界](rollout_dump_vllm_surprisal.md)：用 vLLM rollout_log_probs 统计采样 token 的 surprisal 均值、分位数及各数值区间贡献。单次观测中均值从 0.2094 降至 0.0160 nats/token；后期两个高 surprisal 桶的 token 占比虽均显示 0%，仍分别贡献 29% 和 24% 的总 surprisal，不能判为归零。分桶不识别语法或决策位置，也不能单独裁决 KL-Cov 效果、探索预算或是否重启。
 - [sigtrace CULPRIT 与 NaN 定位边界：日志顺序、运行间差异与 logger 门控](sigtrace_culprit_nan_count_logger.md)：sigtrace 的 first_introducer 会先记录任意字段的首次发散，并不专门标记 NaN。本例 CULPRIT 为 absmax 发散，另一个 kernel 随后才记录 NaN；默认 logger 又隐藏 PROPAGATED warning。应分别核对采集覆盖、运行间差异和每次调用，首个已记录 NaN 输出只是定位候选，不能独立证明真实引入点。

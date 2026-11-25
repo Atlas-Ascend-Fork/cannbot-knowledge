@@ -1,5 +1,6 @@
 """Equivalent multi-Agent evidence and format-independent failure boundaries."""
 
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -242,6 +243,55 @@ class NormalizeTests(unittest.TestCase):
         self.assertNotEqual(events[0]['provenance']['raw_sha256'], events[1]['provenance']['raw_sha256'])
         for event in events:
             event['content']['text'].encode('utf-8')
+
+    def test_line_separator_characters_stay_on_one_jsonl_line(self):
+        text_with_separators = 'before\u2028mid\u2029after\u0085end'
+        events, manifest = self.run_source([
+            {'type': 'response_item', 'payload': {'type': 'message', 'role': 'user',
+                                                  'content': [{'type': 'input_text', 'text': text_with_separators}]}},
+            {'type': 'response_item', 'payload': {'type': 'message', 'role': 'assistant',
+                                                  'content': [{'type': 'output_text', 'text': 'plain reply'}]}},
+        ])
+        self.assertEqual(2, len(events))
+        self.assertEqual(text_with_separators, events[0]['content']['text'])
+        for event in events:
+            event['content']['text'].encode('utf-8')
+        lines = (self.root / 'out/normalized_trace.jsonl').read_text().splitlines()
+        self.assertEqual(2, len(lines))
+        self.assertEqual(2, manifest['coverage']['normalized_events'])
+
+    def test_raw_line_separator_in_input_records_does_not_split_records(self):
+        text_with_separators = 'a\u2028b\u2029c\u0085d'
+        raw = ('{"type": "response_item", "payload": {"type": "message", "role": "user", '
+               '"content": [{"type": "input_text", "text": "' + text_with_separators + '"}]}}\n')
+        raw += json.dumps({'type': 'response_item', 'payload': {'type': 'message', 'role': 'assistant',
+                            'content': [{'type': 'output_text', 'text': 'plain reply'}]}}) + '\n'
+        source = self.root / 'raw-sep.jsonl'
+        source.write_text(raw, encoding='utf-8')
+        result = normalize(source, self.root / 'out-sep')
+        self.assertTrue(result['ok'])
+        events = [json.loads(s) for s in (self.root / 'out-sep/normalized_trace.jsonl').read_text().splitlines()]
+        self.assertEqual(2, len(events))
+        self.assertEqual(text_with_separators, events[0]['content']['text'])
+        self.assertEqual('plain reply', events[1]['content']['text'])
+
+    def test_unknown_jsonl_records_keep_lf_and_crlf_endings_and_raw_hash(self):
+        for label, ending in [('lf', '\n'), ('crlf', '\r\n')]:
+            with self.subTest(ending=label):
+                expected = 'not-json' + ending
+                source = self.root / (label + '.jsonl')
+                source.write_bytes((expected + '{"type":"foo"}' + ending).encode())
+                output = self.root / ('out-' + label)
+                self.assertTrue(normalize(source, output)['ok'])
+                events = [json.loads(line) for line in
+                          (output / 'normalized_trace.jsonl').read_text().splitlines()]
+                self.assertEqual(2, len(events))
+                self.assertEqual('unknown', events[0]['event_type'])
+                self.assertEqual(expected, events[0]['content']['text'])
+                expected_hash = hashlib.sha256(json.dumps(
+                    expected, ensure_ascii=False, sort_keys=True, separators=(',', ':')
+                ).encode()).hexdigest()
+                self.assertEqual(expected_hash, events[0]['provenance']['raw_sha256'])
 
     def test_mixed_agent_batch_normalizes_without_model_calls(self):
         source = self.root / 'batch'

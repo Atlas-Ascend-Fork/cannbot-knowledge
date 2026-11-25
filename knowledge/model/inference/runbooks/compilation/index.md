@@ -1,4 +1,4 @@
-# 编译故障
+# 编译故障（共 60 张知识卡）
 
 - [AscendC 自定义算子的构建/打包/可用性坑：vendor 同名覆盖、build.sh op-name 不匹配、未编译则命名空间缺失、镜像滞后源码、逐 SoC AddConfig、并行编译提速](ascendc_custom_op_build_packaging_availability.md)：AscendC 自定义算子的构建/打包/可用性坑：vendor 同名覆盖、build.sh op-name 不匹配、未编译则命名空间缺失、镜像滞后源码、逐 SoC AddConfig、并行编译提速。围绕 AscendC 自定义融合算子从「构建 → 打包 → 判定可用」的全链路，有一组反复出现的坑。bringup/联调阶段遇到「算子调不到 / 装完丢了旧算子 / 构建报奇怪错」时对照。
 - [AscendC 算子 host 侧未覆盖运行时可达配置空间：缺省可选输入被无条件读取、模板参数取值未全枚举 → 特定 config 崩溃 / npu fail / 无 tiling key](ascendc_op_host_optional_input_and_tiling_key_coverage.md)：在昇腾上开发 / 适配 AscendC 自定义算子（proto 的 InferShape/InferDataType 回调、op_host tiling 校验、模板 tiling-key 定义）时，出现「某一部分 config 路径运行时失败、另一些 config 正常」的分裂现象：不传某个可选输入就崩、开/关某个量化开关就报「tiling key 缺失」。根因几乎都在算子 host 侧没有覆盖到运行时实际可达的那个配置——缺省的可选输入仍被无条件读取，或模板实例化矩阵漏枚举了某个会被走到的参数取值。失败落在 host 侧 tiling/prepare 阶段或直接 npu fail，不在 kernel 计算阶段。
@@ -64,3 +64,5 @@
 - [FXRT 缓存补丁未安装：核对模块导入链与实际部署版本](fxrt_compile_cache_bootstrap_never_runs.md)：模块末尾的 bootstrap 依赖模块被导入；排查时同时核对 worker 的包路径、初始化导入段和补丁标记，避免混用 fxrt_pkg 与 site-packages。
 - [FXRT warm guard 恢复失败：区分可重建对象与不可序列化占位](fxrt_warm_restore_guard_pybind_rebind_policy.md)：宽泛的 pybind 替换规则可能把 guard 需要的类型变成 _Missing；区分白名单重建、允许舍弃与拒绝，并把 CPU reducer 测试限定在实际覆盖范围。
 - [GMM1 双累加器预算反例：512 列 fp32 在 256KiB L0C 下已满](gmm1_vb_l0c_capacity_arithmetic_falsified.md)：在固定宽度 512、fp32 和 256KiB 预算下，128 行基线已占满，额外 16 行通道会超出 32KiB；该预算结论不等于其他循环结构不可行。
+
+- [cache_compile 单 trace 约束下的 python-bool 分支拆双静态图（GLM-5.2 MTP IndexShare E8）](cached_decode_compute_cached_decode_reuse_get_cached_graph_reuse_variant_kwargs_.md)：Ascend NPU 上以 `torch.npu.npugraph_ex.inference.cache_compile` / torchair `cache_compile`（ge_cache）为 decode 建静态图时，被缓存函数内存在**逐步翻转的 python bool 分支**（本例 GLM-5.2 MTP IndexShare variant A′ 的 `reuse_shared_topk`：step-0 由 indexer 计算 top-k，之后复用冻结的 `shared_mtp_topk`）。

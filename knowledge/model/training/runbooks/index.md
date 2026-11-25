@@ -1,6 +1,6 @@
 # 故障处置
 
-- [运行问题](runtime/index.md)：在 Qwen3 Tool Agent 的历史 veRL checkout 中，处理本地 parquet 推断错误和 AIME 多配置 schema 混入，保留数据选择的边界。
+- [运行故障](runtime/index.md)：共 20 张知识卡（本批新增：训练侧运行/环境/启动故障的轨迹沉淀，如 Mooncake 共享段默认值、custom_op Optional-in-tuple 注册、容器 EBUSY 分层定位、HiF8 训练启动器 CPU 预检等）。
 
 - [模型训练编译与构建排障](compilation/index.md)：共 3 张知识卡（如 inductor_npu_ext 放开 sigmoid_backward decompose 白名单并双环境同步验证、inductor 图输出身份决定 realize 时机：`sigmoid_1` 不在 return 里时 RMSNorm 链算两份（--check 结构性假阴性根因））。
 - [模型训练性能优化](performance/index.md)：ATen/CUDA foreach copy 的形状限制是 self[i]/src[i] 逐对匹配，不要求列表内所有参数同形；异形 FSDP 参数本身不能判定 slow path。CPU/device offload 因设备不同不满足所读 CUDA fast path 的同设备条件；已进入 slow path 时才有逐对 copy_ 调用，实际 host 收益和 DMA 数需运行测量。

@@ -1,4 +1,4 @@
-# 模型训练性能优化
+# 模型训练性能优化（共 15 张知识卡）
 
 - [torch._foreach_copy_ 的 fast/slow path 判别与 host 派发收益边界](foreach_copy_fast_slow_path_dispatch.md)：ATen/CUDA foreach copy 的形状限制是 self[i]/src[i] 逐对匹配，不要求列表内所有参数同形；异形 FSDP 参数本身不能判定 slow path。CPU/device offload 因设备不同不满足所读 CUDA fast path 的同设备条件；已进入 slow path 时才有逐对 copy_ 调用，实际 host 收益和 DMA 数需运行测量。
 
@@ -16,3 +16,5 @@
 - [增量式梯度范数穿刺：单次 backward 的 dtype、归约与验收边界](incremental_clip_grad_norm_fsdp2_hook.md)：对齐最终穿刺脚本的 float64 本地平方和与 fp32 HCCL 归约；仅保留单卡、单次 backward 的对拍结果，不宣称支持梯度累积或训练步加速。
 - [MoE dispatch 删除 CalCumSum 的负结果：通信状态依赖不能按函数名省略](moe_dispatch_nocumsum_ablation_deadlock.md)：在指定 950 多卡路径跳过 CalCumSum 后出现缺 rank、带宽异常和设备错误；只保留该版本负结果，不把未量出的同步链条写成最终根因。
 - [小张量 RepeatInterleave 回退：分开训练内观测与隔离微基准](repeat_interleave_small_tensor_fixed_overhead.md)：记录 metadata tensorize 路径中的 RepeatInterleave 观测；隔离 CPU/NPU/searchsorted 数字只解释各自用例，没有可信基线统计时不作调用次数增幅比较。
+
+- [Speculators 训练取数瓶颈分诊：`fetch_ms/fetch_frac`（_StepTimer）定位数据链路占比，`Time taken for batch_get_into` 是 Mooncake C++ easylog INFO 且用 `MC_YLT_LOG_LEVEL` 控制](fetch_ms_fwd_ms_bwd_ms_opt_ms_step_ms_fetch_frac.md)：Speculators/hs_connectors 训练（NPU + Mooncake 取数）性能排查：判断 step 慢在取数还是计算、取数内部又慢在哪一段，以及治理 Mooncake 原生计时日志。

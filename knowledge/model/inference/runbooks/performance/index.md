@@ -1,4 +1,4 @@
-# 性能故障
+# 性能故障（共 56 张知识卡）
 
 - [AFD 后 FFN 侧成新瓶颈：Attention 侧 Recv EVENT_WAIT 拖尾 → 对 FFN 侧 MoE-GMM 权重做通信间隙预取](afd_ffn_side_bottleneck_prefetch.md)：AFD 后 FFN 侧成新瓶颈：Attention 侧 Recv EVENT_WAIT 拖尾 → 对 FFN 侧 MoE-GMM 权重做通信间隙预取。在 Attention-FFN 解耦（AFD）部署下（Attention 侧解除控核、计算算子提速后），profiling 里 Attention 侧的 Recv 算子长时间收不到 FFN 侧发回的数据，计算流上出现 EVENT_WAIT 间隙的拖尾。
 - [MoE 长序列 prefill 峰值显存 / OOM：专家负载不均 + dispatch 中间量放大；分块 / 均衡 / double-routing 处置](moe_prefill_oom_peak_memory.md)：MoE 长序列 prefill 峰值显存 / OOM：专家负载不均 + dispatch 中间量放大；分块 / 均衡 / double-routing 处置。expert-parallel MoE 模型在长序列 prefill 阶段 device OOM（EL0004 Failed to allocate memory / out of memory），常发生在 MoE 的 grouped_matmul 或 dispatch 展开处；同配置换短输入 / 小序列不复现。
@@ -57,3 +57,11 @@
 
 - [torch 主机张量 madvise 返回 -1：先采集 errno 和 VMA 边界](madvise_hugepage_vma_boundary_einval_fix.md)：原记录只观察到 madvise 返回 -1，不能据此判定 EINVAL 或 VMA 越界根因。保留原始失败与 VMA 裁剪候选，提供明确标为后续采证的探针。
 - [mega_moe 内核打点：按角色、marker 和 worker 写入设备计数器](mega_moe_stage_timing_gm_instrumentation.md)：记录 get_system_cycle 与 scalar.store_bypass 的设备侧打点布局；时钟频率、扰动和跨 rank 对齐须单独核定。
+
+- [TP1 NPU context 后台预创建：完成通知、惰性 torchair 与启动计时边界](create_context_global_error_import_torch_npu_set_device.md)：Qwen3.5-9B TP1 eager 的 dummy 权重回放：还原后台完成通知与主线程等待兜底，区分整批调度和批内命令计时，不外推冷热收益。
+- [MiniMax-H3 FL2VA 融合算子优化反致 denoise 变慢：npu_fusion_attention BSND 布局长序列回归](environ_setdefault_diffusers_attn_backend_native_npu_diffusers_models.md)：MiniMax-H3长序列注意力微基准中BSND慢于BNSD/SDPA；整网归因与修复收益尚未闭合，SwiGLU必须另核对半区语义，不能凭小幅度探针直接保留。
+- [Kimi-K3.1 QSFA 整网与单点算子性能对不上：先校正 Decode 单点复现参数，再 dump 实际 LI 索引](li_indices_dump_dir_exe_mode_is_prefill_dump_dir_parents_exist_ok.md)：Ascend NPU 上以 cann-recipes-infer_K31 跑 Kimi-K3.1（K3-alpha）推理，DSA/QSFA 走 DSL 量化稀疏注意力后端（dsa_backend=npu，enable_dsa_quant），16 rank、Prefill dsa_cp=8 / dsa_dp=2、输入 128k、DSpark7投机解码（MTP draft）、LI TopK=2048。
+- [minimax_h3 fl2va 重复运行耗时双峰波动：denoise 逐 step 均匀移位的日志取证诊断](log_20260817_113326_log_20260817_115708_log_20260817_140927_pipeline_start_pipel.md)：模型/任务：MiniMax-H3（`models/minimax_h3`，fl2va 文本到音视频生成），工作负载固定：768x1280、video_length 129、infer-steps 50、seed 42、cfg-scale 6.0（source 0 seq 14、seq 46）。
+- [Ascend 950PR 混 die 主机上单 rank MatMul 慢 15–17 倍：957c die 负载下不升频的诊断](normal_samples_x163840_x67584_shared_x12288.md)：模型/框架：Kimi-K3（4 层裁剪合成权重验证配置，BF16 权重 + MXFP4 路由专家），cann-recipes-infer 离线推理，rank4 npugraph 配置。
+- [MoE ge_graph 的 torch_npu profiling 拆解：SuperKernel 语义段归属与 prefill/decode 通信暴露判别](search_start_ge_graph_decode_torch_npu_profiler.md)：模型/框架：Hy3-preview 295B MoE Transformer（Dense 层 + Sparse MoE + shared expert，80 层 = 1 Dense + 79 MoE），bf16，executor 框架 `ge_graph`（图模式 + MC2 dispatch/combine + GMM），16 die（8物理卡×2 die）的 Atlas A3
+- [MoE profiling 代表性输入：循环复读输入使专家路由退化失真；mixed-radix 四槽词库确定性生成 100% unique 长文本；32k greedy 输出重复环非输入伪影](sentences_unique_sentences_est_tokens_per_sentence_wrapped_tokens_truncated.md)：模型/框架：hy3_preview 295B MoE（~21B 激活）on cann-recipes-infer，32k 输入/8 batch baseline profiling；适用于一切 MoE 模型的 profiling/性能基线输入构造。

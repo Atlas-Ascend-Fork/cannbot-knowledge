@@ -4,6 +4,7 @@
 import argparse
 from collections import Counter
 import hashlib
+import io
 import json
 from pathlib import Path
 
@@ -22,6 +23,19 @@ def require(condition, message):
 
 def digest(value):
     return hashlib.sha256(canonical(value)).hexdigest()
+
+
+def jsonl_line(event):
+    """Serialize one event so that str.splitlines() cannot split inside its text.
+
+    json.dumps(ensure_ascii=False) emits U+2028/U+2029/U+0085 raw inside string
+    literals; Python splitlines() treats them as line breaks, which would make
+    the normalized JSONL unverifiable. Escaping them as \\uXXXX keeps the JSON
+    value identical while keeping one event on exactly one physical line.
+    """
+    dumped = json.dumps(event, ensure_ascii=False, sort_keys=True)
+    return dumped.replace('\u2028', '\\u2028').replace('\u2029', '\\u2029') \
+                 .replace('\u0085', '\\u0085')
 
 
 def visible_unicode(value):
@@ -47,7 +61,7 @@ def records(data, fmt, warnings):
     else:
         return value if isinstance(value, list) else [value]
     result = []
-    for line in raw.splitlines(keepends=True):
+    for line in io.StringIO(raw, newline='\n'):
         if not line.strip():
             continue
         try:
@@ -123,7 +137,7 @@ def normalize(source, output, fmt='auto', mapping=None, layout='events', redacti
             adapter.warnings.clear()
         require(sha256_file(path) == file_hash, 'raw source changed during normalization')
     kinds = Counter(e['event_type'] for e in events)
-    trace = ''.join(json.dumps(e, ensure_ascii=False, sort_keys=True) + '\n' for e in events).encode()
+    trace = ''.join(jsonl_line(e) + '\n' for e in events).encode()
     manifest = {'schema_version': MANIFEST, 'source': {'sha256': digest(identities), 'files': identities},
                 'normalized_trace_sha256': hashlib.sha256(trace).hexdigest(),
                 'sessions': sorted({str(e['session_id']) for e in events}),
