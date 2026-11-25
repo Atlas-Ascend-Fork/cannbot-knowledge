@@ -1,6 +1,6 @@
 # 进化发现策略（X 系列）
 
-AscendC 算子性能进化运行期自动发现的策略记录，117 条按发现编号平铺（原 evolution-strategies `references/discovered/`）。X 系列是单算子实战发现（draft），晋升后的精选卡见同级 `cards/` 目录（P/D/A/R 策略卡）；已晋升条目（X17-X20 → P128-P131）标记 deprecated 并指向继任卡。
+AscendC 算子性能进化运行期自动发现的策略记录，166 条平铺归档（原 evolution-strategies `references/discovered/`；2026-11-13 增补 42 条：X 系列策略 19 张、已验证方案 8 张、实测失败模式 15 张，失败模式编号 F16–F30；另有 6 张与同源 X 策略卡重复的已验证方案已合并）。X 系列是单算子实战发现（draft），晋升后的精选卡见同级 `cards/` 目录（P/D/A/R 策略卡）；已晋升条目（X17-X20 → P128-P131）标记 deprecated 并指向继任卡。
 
 - [X1: Inline Target Capture](disc_x1.md)：在 Online Softmax 的前向流式扫描过程中，当处理到包含目标索引的 tile 时，立即捕获目标元素的原始值（如 target logit），避免在扫描完成后再用一次独立的 DataCopy 回读目标 tile。
 - [X2: 大张量驻留 Device、仅小索引过总线](disc_x2.md)：host 协调的 gather/scatter/routing 类算子应让大张量驻留 device，仅把小索引张量过总线交给 CPU 排序，再由 NPU kernel 按索引搬运；避免大数据张量 device→host→device 往返。
@@ -128,3 +128,46 @@ AscendC 算子性能进化运行期自动发现的策略记录，117 条按发�
 - [X185: DMA 切片轴翻转](disc_x185.md)：列分块微 DMA 成本正比于指令条数；改行分块连续取数 + 整块 UB 常驻，读写两侧成对修。
 - [X186: 语义级快速路径剥离独立 kernel](disc_x186.md)：可证明的数学退化走独立 AIV-only kernel，主路径位级不变；共享路径加分支净 -4.2%。
 - [X187: host 前处理融合 prep kernel](disc_x187.md)：把 host 前处理链融合成单个 AIV prep kernel，一趟产出目标面板；wrapper 死分配清理。
+
+- [已验证方案：把「中间张量的通道均值」解析重建为「生产者输入的列和 + 小 GEMV」](analytic_mean_from_producer_input.md)：把「中间张量的通道均值」解析重建为「生产者输入的列和 + 小 GEMV」，避免对最大中间张量做完整列和扫描；适用于均值只依赖生产者输入的归约与门控链。
+- [X112: shift/gather-sum 的行块广播 MAC（消除逐行标量壳与窄段 DMA）](disc_x112.md)：把「分支权重 × 位移张量求和」类内核从逐行小 DMA + 窄 repeat 乘加，改写为行块工作单元 + 一条 level-0 广播 MAC；判断依据是指令形状与同步次数受限，而不是 DMA 总量或 burst 大小。
+- [X113: MIX 单 kernel 把 epilogue 藏进 cube 的 MTE2 阴影（整 slab 生产者-消费者 + 全 N 单次 IterateAll）](disc_x113.md)：把 cube 段（受 L2→L1 回填限制）与向量后处理合成一个 MIX 单 kernel，让 epilogue 藏进 cube 的搬运阴影；适用于两段串行且 cube 段本身受回填限制的算子。
+- [X114: 多分支汇聚单网格 + 单核头下沉](disc_x114.md)：多分支卷积/多 kernel-size 算子按分支各 launch 一次会导致每次只占少量 cube 核；把分支折进同一张 block 表，并把小头阶段下沉到末阶段，可把多次低占用 launch 合成一次满核 launch。
+- [X115: tap 展平三级流水 + baseK 减半双份驻留](disc_x115.md)：把 direct/im2col conv 的 (tap, kPanel) 两级循环展平为单迭代空间做三级阶梯流水，并减半 baseK 让 L0A/L0B 各驻两份 panel，使 MTE1 与 Mmad 重叠。
+- [X116: 向量阶段的通道级 DMA 批处理（issue-many / wait-once）](disc_x116.md)：向量阶段的逐通道「下发 DMA → 等一次同步」成本由 DMA 往返次数与固定延迟支配，不是带宽；把同相位通道搬运算子合并为 issue-many / wait-once 批处理即可摊薄。
+- [X117: 超参 keyed 的操作数打包缓存 + host 侧打包](disc_x117.md)：只依赖超参、与输入数据无关的操作数变换（permute/reshape/cat/stack）不应在每个新 shape 或超参组合上重做；按超参 key 在 host 侧打包并缓存，可把设备侧变换移出计时路径。
+- [X118: 归约向量重复读摊薄 + split-K 折叠](disc_x118.md)：纯 AIV 多段流水里，fp32 中间向量在归约段被按行重复读往往是一阶成本；用行块摊薄重复读、split-K 折叠与末段降维，可把归约从标量壳改成块操作。
+- [X119: 行切片流的列宽/波数代价模型](disc_x119.md)：行切片流的成本由列宽与波数决定；按 8KB burst 反推列宽、用波数代价模型选切分，并把累加器解耦，可避免窄列导致的 MTE2 事务膨胀。
+- [X120: 行和与加权归约同趟合并（avg-free fused xn）](disc_x120.md)：「先求行均值再按行加权累加」的两段式实现会让 avg 落 GM；在同一 UB 驻留内合并行和与加权累加，并配 2D 整块 DMA，可把读次数从 4N 降到 3N。
+- [X121: kick 合并 + level-0 整块发射](disc_x121.md)：纯 AIV 门控类算子的成本常由 device task 数与向量发射条数支配；合并同相位 launch 并用 level-0 count-mask 整块发射，可同时压低每 task 固定开销与指令数。
+- [X122: L0C 满额单累加器时把 cube 调度 CFG_NORM 换成 CFG_MDL](disc_x122.md)：L0C 被单个累加器占满时，CFG_NORM 调度下 MMAD 与排空几乎无重叠；改用 CFG_MDL 的多数据加载调度模板可让加载与计算/排空更好衔接，但 UnitFlag 的语义是 MMAD↔FIXPIPE 同步，不能据此推断 MTE1/MMAD 解耦。
+- [X123: 按模 aicCores 取整补齐 cube 核占用](disc_x123.md)：当 totalBlock = mTotal*nTotal 小于 AIC 核数时，取最小正整数 k 使 (k*nTotal) % aicCores == 0（即 k*nTotal 成为 aicCores 的整数倍）来补 mTotal，并用最小 singleCoreM 门控挡住小 M；早期「收缩 nTotal 降 A 重读」的路径已被后续实验否定。
+- [X124: 轻权重 GEMM 的「每核搬运字节」core-fill 重切](disc_x124.md)：轻权重 GEMM 常只点亮少量 cube 核；按「每核搬运字节」而不是 base tile 合法性来重切网格，可把网格铺满并降低单核墙钟。
+- [X125: L2 常驻权重 GEMM 的「请求率」切分器](disc_x125.md)：L2 常驻权重 GEMM 的成本由「MTE2 请求条数 × 每条请求字节」决定，而不是单纯字节数；按请求率切分可让小权重 GEMM 选到合适的 baseK 与核数。
+- [X130: 微 matmul 的「向量 API 调用数定律」与单扫点积（原 K 布局 + MulAddDst repeat 广播）](disc_x130.md)：微小 shape 的（反量化）matmul 在纯 AIV 路径上主要受「向量 API 调用次数」支配；用原 K 布局 + MulAddDst repeat 广播做单扫点积，可显著减少指令条数。
+- [X188: 权重流 GEMM 的 baseK「扇区对齐」判据](disc_x188.md)：权重流 GEMM 的 achieved 带宽不只由 burst 长度决定，还要求 realize 后的 baseK 与 512B 扇区对齐；两者同时满足才能避免 burst 塌陷。
+- [X189: X125 的两个边界——「每块派发项」该取、「cube 网格 cap」该弃、「stepN」已触顶](disc_x189.md)：X125 把 L2 常驻权重 GEMM 的成本写成「每波请求行数」；本卡补充该目标函数的两个边界（该取「每块派发项」、该弃「cube 网格 cap」），并说明 stepN 已触顶。
+- [X190: 依赖轴对齐分核的无屏障阶段融合](disc_x190.md)：多阶段向量链路能合多少阶段取决于依赖图的形状，而不是阶段数量；按依赖轴对齐分核可消掉跨阶段 barrier，实现无屏障融合。
+- [X191: launch 数作为显式成本维 + 按规模门控的双路径](disc_x191.md)：纯 AIV 多段流水里，打满并行度往往顺带增加 launch 数；把 launch 数当作显式成本维，并按规模门控双路径，可避免小规模下 launch 开销吃掉收益。
+- [F16: host 侧跨调用缓存（权重 repack LRU / tiling 缓存）在 batch 口径单次调用测量里零收益](f16_batch_caliber_single_call_host_caches_null.md)：在 batch 口径单次调用测量里，host 侧跨调用缓存（权重 repack LRU / tiling 缓存）无法命中，收益为零；应改用同窗口 A/B 或改变缓存生命周期来评估。
+- [F17: 想靠「抬 baseM / 预置 NZ / K 轴切块」降低 L1 回填体积——三条路全被 L0C 与 L2 带宽锁死](f17_basem_amplification_blocked_by_l0c_single_tile.md)：int8 grouped GEMM 的 A 面板常驻几何下，靠「抬 baseM / 预置 NZ / K 轴切块」降低 L1 回填体积的三条路全部失败：L0C 只有单个输出 tile 的累加器，跨 K 段持久部分和无处安放；手写 tiling 字段不会恢复框架常驻；ND→NZ 预置只改描述符粒度、不改字节数。
+- [F18: M=1 GEMV 的 Cube 化是带宽墙，且受 A/B 同 dtype 约束](f18_cube_m1_gemv_bandwidth_wall_910b2c.md)：把 M=1 GEMV 改成 Cube 化会撞上带宽墙，且受 A/B 同 dtype 约束；小 M 的矩阵向量积更适合留在向量路径。
+- [F19: 编译期 CANN 与运行时 CANN 版本不匹配 → 假的内核 bug](f19_cann_version_mismatch_aicore_exception_910b2c.md)：编译期 CANN（$ASCEND_HOME_PATH 指向的默认安装）与设备侧运行时 CANN 版本不一致时，device .so 能加载、能 launch，但在第一个 ReduceMax（softmax）处必然 aicore exception；未改动的基线内核同样复现。基线也失败时应先隔离环境与共享路径，而不是直接改内核。
+- [F20: 失败模式：融合形态四条死路 + 两条工程陷阱](f20_multi_tpipe_fusion_and_stale_cmake_910b2c.md)：融合形态的四类死路与两条工程陷阱：单 kernel 内多 TPipe/TBuf、跨相位单 launch、删除流同步、手工 SetFlag/WaitFlag ping-pong 都会导致精度失败或 hang；融合应使用单 TPipe + TQue。
+- [F21: int8 grouped GEMM 的 fixpipe 是 L0C 读侧固定地板——C 面格式/布局/NZ/直通全闭](f21_fixpipe_l0c_read_floor_and_closed_c_plane_levers_910b2c.md)：int8 grouped GEMM 的 C 面（fixpipe）方向被多点探针逐条走死：格式/布局/NZ/步长/写策略均为噪声级；固定地板在 L0C 源侧读带宽，不在任何格式变换。dbL0C 与 L0C→UB 直通在 910B 的 API/架构层不存在，应停止排这类节点。
+- [F22: 用「缩 baseK 换大 baseN」减少 A 重读，会让 burst 长度塌陷并净亏](f22_basen_upshift_collapses_burst_910b2c.md)：用「缩 baseK 换大 baseN」减少 A 重读，会让 burst 长度塌陷并净亏；字节模型必须同时约束 burst 长度与扇区对齐。
+- [F23: `aicore_time/dur ≈ aiv_time/dur ≈ 0.94` 不代表 AIC/AIV 串行——据此做跨 stage 流水是负收益](f23_aicore_time_ratio_misread_as_lockstep_910b2c.md)：aicore_time/dur ≈ aiv_time/dur ≈ 0.94 不代表 AIC/AIV 严格串行；据此做跨 stage 流水是负收益，需要独立的重叠证据。
+- [F24: 把下游就地旋转（RoPE）融进 GEMM epilogue 的 MIX 融合——精度可修，但净负向](f24_mix_epilogue_rope_fusion_net_negative_and_posub_war_910b2c.md)：把下游就地旋转（RoPE）融进 GEMM epilogue 的 MIX 融合，精度可修但净负向；省下的往返不足以抵消融合与同步开销。
+- [F25: quick-batch 口径把「模型首次 forward 的权重初始化」计入每个 case 的被测时间——加速比存在人造天花板](f25_quick_batch_weight_init_counted_per_case_910b2c.md)：某些算子在 forward() 内惰性构造权重；quick-batch 口径的计时窗口内每个 case 只跑一次 forward，权重构造 kernel 被按 stream 求和计入该 case，于是小 shape 的加速比被压向 1.0，存在与内核无关的人造天花板。卡片给出识别、双口径判定与合法的包装层摊薄方法。
+- [F26: 用 `MIX_AIC_1_2` 把两段独立阶段合成一次 launch，比两个单引擎 launch 更贵](f26_mix_aic_1_2_costs_more_than_two_single_engine_launches_910b2c.md)：用 MIX_AIC_1_2 把两段独立的单引擎阶段合成一次 launch，往往比两个单引擎 launch 更贵：成对 AIV 启动与 barrier 开销超过省下的 launch 成本。
+- [F27: baseK 的 L0B 上界必须用「realize 后的 baseN」校验，不能用常量下界](f27_capk_l0b_ceiling_uses_min_stream_basen_910b2c.md)：host tiling 中 baseK 的 L0B 上界必须用 realize 后的 baseN 计算，不能用常量下界，否则部分 plan 会在设备侧触发 ACL 507015。
+- [F28: `Pattern::Reduce::RA` 的 workspace ≈2B/元素会撑爆 UB，且 row-stride ≠ padLast 时静默算错](f28_reduce_ra_workspace_and_stride_910b2c.md)：Pattern::Reduce::RA 的 workspace 约 2B/元素，大 shape 会撑爆 UB；且 ReduceSum 按 padLast 推导行距，实际行距不一致时不报错但结果错。
+- [F29: level-2 `Mul` 的 `src1RepStride=0` 跨 repeat 广播在特定调用组合下数值错误（level-0 形式可用）](f29_vec_mul_repstride0_cross_repeat_broadcast_910b2c.md)：level-2 Mul 的 repeat + src1RepStride=0 在特定调用组合下会出现形状对、数值全错；跨 repeat 广播应使用 level-0 + 位图 mask + BinaryRepeatParams 的形式。
+- [F30: 纯 AIV 微内核上「标量地址链 / 代码体积 / 运行时 mask / 少开 block」四类看似合理的杠杆实测无效或负向](f30_pure_aiv_microkernel_scalar_and_icache_levers_negative_910b2c.md)：纯 AIV 微内核上「标量地址链 / 代码体积 / 运行时 mask / 少开 block」四类看似合理的杠杆，在同窗口 A/B 下实测无效或负向。
+- [已验证方案：FA 反向的 CV ring 流水 + BLOCK_N 大块化](fa_bwd_cv_ring_pipeline_blockn128.md)：FA 反向的 CV ring 流水 + BLOCK_N 大块化：把 AIC 与 AIV 的严格锁步三段改成多槽 ring 与预发射，让 cube 与 vector 重叠，并减少跨核握手。
+- [C 面按 expert 做 512B 基址错位，避开与 B 流的 L2 set 冲突](gmsq_cplane_l2_skew_910b2c.md)：int8 grouped GEMM + SwiGLU 融合内核里，epilogue 读 C 面与 cube 的 B 流会争 L2；按 expert 给 C 面起点加 512B 基址错位，可打散 set 冲突。
+- [配方：K 跨核 2 分段 + epilogue 扇出 + 波次重整（grouped int8 GEMM）](grouped_int8_gemm_k_split_episplit_waverebalance_910b2c.md)：8 专家 int8 grouped GEMM + 配对 SwiGLU + 逐行 requant 的调优配方：K 跨核分段、epilogue 扇出与波次重整，并给出 singleCoreN 必须整 slab 等硬前置。
+- [已验证方案：MLA preprocess 的 cube 调度与流水重排](mla_preprocess_cfg_mdl_and_core_fill_910b2c.md)：面向含多个 GEMM 与向量段的 preprocess 类算子，按「cube 调度模板、核占用整除对齐、向量段重写」三个方向优化；本卡记录适用判据与已否定的路径。
+- [已验证方案：二维 strided DMA + AR 行归约替换逐通道/逐行标量壳](ppsa_2d_strided_dma_ar_row_reduce.md)：把逐通道/逐行标量壳（小 DataCopyPad + ReduceSum + GetValue/SetValue）改成二维 strided DMA + AR 行归约，可一次性消除事务粒度与同步开销。
+- [已验证方案：纯 AIV 五段归约流水的「并行度塌陷」修复（PPSA 续跑）](ppsa_5stage_parallel_collapse_fix.md)：纯 AIV 五段归约流水的并行度塌陷修复：按输出行/列切分并折叠部分和，使每段吃满可用核数，而不是只改单段内部循环。
+- [已验证方案：权重流 GEMM 的天花板是「字节数」不是「带宽」——用实测 achieved 带宽而非 MTE2 占用率判定](weight_stream_gemm_byte_ceiling.md)：MTE2 占用率接近饱和、cube 利用率很高，并不等于带宽已打满；权重流 GEMM 的天花板是每核搬运的字节数，应按实测 achieved 带宽而不是 MTE2 占用率判定。

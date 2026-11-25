@@ -1,6 +1,6 @@
 # 进化策略实验
 
-AscendC 算子性能进化优化沉淀的通用策略卡（原 evolution-strategies 精选库，P/D/A/R 系列，175 张）与进化运行期自动发现的策略记录（X 系列，117 条）。
+AscendC 算子性能进化优化沉淀的通用策略卡（原 evolution-strategies 精选库，P/D/A/R 系列，175 张）与进化运行期自动发现的策略记录（166 条：X 系列策略、已验证方案与实测失败模式统一归档于 `discovered/`）。
 Playbook（分步落地 SOP，157 份）在同级目录 `runbooks/performance/`。
 
 ## 策略卡
