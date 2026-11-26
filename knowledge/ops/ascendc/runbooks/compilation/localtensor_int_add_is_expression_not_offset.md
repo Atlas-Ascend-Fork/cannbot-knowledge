@@ -12,7 +12,7 @@ sources:
   - resource: https://gitcode.com/cann/asc-devkit/blob/8746f7ced6cef47e3fd7abd64c0eb827e28e2b56/docs/zh/api/SIMD-API/basic_api/data_structures/LocalTensor/operator.md
     role: supporting
 created_at: "2026-10-28T09:52:17Z"
-updated_at: "2026-10-28T09:52:17Z"
+updated_at: "2026-11-19T12:24:09Z"
 platforms: ["310p"]
 ---
 
@@ -40,6 +40,15 @@ error: no matching function for call to 'DataCopy(...)'      // 同一处连带�
 Adds(z + r * C64, src, 0.0f, C64);
 DataCopy(gDq[base], z + r * C64, DataCopyParams(1, 4, 0, 0));
 stripsA(a16ds + 64, l1aP0, 2 * M64 * C64);
+```
+
+**第二报错表面（赋值初始化场景，2026-11-16 轨迹追加）**：`LocalTensor<float> mRow = mskTBuf.Get<float>() + T64;` 编译报 `no viable conversion from 'SymbolOverrideAdd<float>' to 'LocalTensor<float>'`，并触发 `kernel_tensor_impl.h:882` 静态断言 `only support TensorTrait type Tensor!`——`+ T64` 求值出表达式对象后试图拷贝构造 `LocalTensor` 被拦。同修法 `Get<float>()[T64]`（同一 UB buffer mskTBuf 切出 0 与 T64 两段视图的场景，连续偏移同样适用）。修后形态（第三行的偏移写法原为 `+ T64`）：
+
+```cpp
+LocalTensor<float> colIdx = colTBuf.Get<float>();
+LocalTensor<float> ifRow = mskTBuf.Get<float>();
+LocalTensor<float> mRow = mskTBuf.Get<float>()[T64];
+LocalTensor<float> negRow = nbTBuf.Get<float>();
 ```
 
 ## 适用场景
@@ -119,6 +128,7 @@ stripsA(a16ds[64], l1aP0, 2 * M64 * C64);
 
 - 修复前 `bash build.sh` 失败，`<build-dir>/build.log` 同时列出 `could not match 'LocalTensor' against 'SymbolOverrideAdd'` 与 `invalid operands to binary expression ('SymbolOverrideAdd<float>' and 'int')`（来源平台：310P；证据等级：tool_observed）。
 - 改写后同一命令 `exit=0`，末尾打印 `BUILD_OK: build/lib<generic>_ops.so`（来源平台：310P；证据等级：tool_observed）。
+- 第二表面复现（2026-11-16 轨迹）：赋值初始化形态报 `no viable conversion from 'SymbolOverrideAdd<float>' to 'LocalTensor<float>'` + `kernel_tensor_impl.h:882` 静态断言；改 `Get<float>()[T64]` 后编译链接通过（来源平台：310p；证据等级：tool_observed）。
 
 ## 失效边界
 

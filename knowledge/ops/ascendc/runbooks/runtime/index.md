@@ -143,3 +143,4 @@
 - [GM 标量表读取：256B 整拷 + 大分配 + 读前硬序](scalar_metadata_table_needs_256b_copy_and_barrier.md)：核内从 GM 读小标量表再 GetValue 需三件套：每单元垫到 256B 用 8 块整拷、表总量落常规大分配、读前加 PIPE_ALL 硬序；缺一即读回全零。
 
 - [VectorPadding 是 DataBlock 内邻近值填充：不能做 16→32 零扩展](vectorpadding_is_block_padding_not_zero_extension.md)：VectorPadding 在 310P + CANN 9.1.0 实测可用，语义是 DataBlock 内邻近值复制/镜像/偏移对称，不含 16→32 位零扩展——零扩展用途必然无效果，改用 Gather + host 交织表；曾据六组输出相同误判“空操作”，干净复验已作废该判定。
+- [同ID重复set单wait致MTE1定序失效或EE9999挂死](ee9999_token_set_wait_unpaired_mte1.md)：每轮 SetFlag/WaitFlag 必须一一配对，重复 set 后仅一次 wait 不能提供逐份 L1 定序——表型为静默错值或 EE9999 aicpu exception 挂死，逐轮配对的 K2 重写版 48/50。
