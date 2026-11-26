@@ -10,6 +10,7 @@
 - [同输入线性投影合并](common_input_projection_packing.md)：把消费同一输入的兄弟仿射投影合并为一次更宽的收缩或共调度收缩，复用彼此的输入读取。
 - [编译与下降提示](compile_hint_adding.md)：kernel 结构稳定后，用编译提示传达指针数学无法安全推断的对齐与连续性事实，仅以证据保留。
 - [共享值算一次经 GM 分发](compute_once_share_via_gm.md)：在受支持的 kernel 边界把昂贵共享值计算一次写入 GM，消费者按需读取，替代各 program 重复计算。
+- [单 launch 融合（多 kernel 优化后融合为单 launch）](single_launch_fusion.md)：先构建并优化多 kernel 基线，再把阶段融合为单 launch；覆盖中间量最小化、mixed cube/vector barrier、精度舍入、fusion tax 与 fallback。
 - [950 CV 编译项消融](cv_compile_option_ablation_950.md)：Ascend 950 编译链上独立消融 Cube/Vector 流水、HFusion 向量化、多缓冲深度与 UB 块参数等调度控制项。
 - [CV 中间 Tile 朝向](cv_intermediate_tile_orientation.md)：为跨越 L0C 到 GM 供 Vector 消费的 Cube 中间矩形选择朝向，使其沿融合扫描轴构成规则 row-major tile。
 - [细粒度稀疏 Attention 稠密替代](dense_substitution_fine_grained_sparse_attention.md)：当逐行任意索引选取的 KV 占比足够高时，用带散射 mask 的稠密计算替代细粒度稀疏 attention 选取。

@@ -10,7 +10,7 @@ sources:
   role: primary
 created_at: '2026-08-12T00:00:00Z'
 updated_at: '2026-09-08T09:05:00Z'
-platforms: [a2]
+platforms: [a2, '950']
 ---
 # Persistent Kernel 模式
 
@@ -46,3 +46,9 @@ def persistent_kernel(ptr, n, BLOCK_SIZE: tl.constexpr):
 | 标准 grid | 简单、负载天然均衡 | 多轮调度开销 |
 | Persistent | 无启动开销、L2 复用 | 需手动 stride、尾块处理 |
 
+## 不适用（A5 实测）
+
+- 大 grid + 短 K 的写密集 kernel：block 数约 8e3、`K` 约 2.5e3 的 bf16 形状上，naive grid 3.71 ms / 370.0 TFLOPS，
+  persistent（28 programs）7.21 ms / 190.6 TFLOPS，慢 94%。
+- 反向证据：block 数约 1e3、`K` 约 3.2e4 时 persistent 更优（140.0 vs 114.5 TFLOPS）。
+- 因此判据不是“n_rows 远大于核数”，而是 block 数、核数与 K 长度的三者关系；先做一次 grid 形态对比再选。

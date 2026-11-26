@@ -24,6 +24,7 @@
 - [data_types](data_types.md)：数据类型优化：Scalar Fallback 诊断、int64→fp32、混合精度
 - [data_types_ascend](data_types_ascend.md)：NPU dtype 支持矩阵、tl.dot/tl.load 类型约束、隐式提升规则与 FP8 现状
 - [data_type_precision](data_type_precision.md)：910_95 平台 dtype 速查、归约升精度、matmul 混合精度与精度验证参数
+- [bf16_reference_rounding](bf16_reference_rounding.md)：1 ulp 经 exp 放大 13–28%，用 reference-g 对照/ulp 容差。
 
 ## 访存与数据搬运
 
@@ -32,16 +33,20 @@
 - [care_padding](care_padding.md)：care_padding：padding 填充行为、MTE2/Vector 并行度影响与禁忌场景
 - [store_merge](store_merge.md)：同基地址连续 tl.store 合并，减少 MTE3 搬运次数
 - [bank_conflict](bank_conflict.md)：Bank Conflict 消除：对角线遍历、padding
+- [large_tensor_gm_addressing](large_tensor_gm_addressing.md)：10GB+ 缓冲 2D store 可能非法地址，1D + int64 + M 切块。
 
 ## 计算与流水线
 
 - [ilp](ilp.md)：指令级并行：care_padding、异步任务、流水线展开
 - [compute_and_branch](compute_and_branch.md)：计算与分支优化：constexpr 特化、tl.where、tl.cdiv
 - [operator_fusion](operator_fusion.md)：算子融合模式与决策树
+- [multi_output_gemm_chain_fusion](multi_output_gemm_chain_fusion.md)：多输出 GEMM 链的融合与单 launch 化：两路归约轴不同必须物化中间量、phase 顺序与成对屏障、UB 按最坏 epilogue 估、单 launch 的 tax 与交付判定
+- [fusion_friendly_restructure](fusion_friendly_restructure.md)：单 launch 契约下的可融合重构：行内阶段就地完成、中间量 chunk-major、屏障成对
 - [online_algorithms](online_algorithms.md)：在线算法：online softmax、running mean/variance
 - [cv_pipeline_optimization](cv_pipeline_optimization.md)：CV 流水线：指令重排序、编译参数组合、fixpipe 数据通路与精度回退
 - [fixpipe_bias_fusion](fixpipe_bias_fusion.md)：FixPipe 随路操作与 bias 融合：Cube 侧融合、随路转置/量化/激活
 - [sync_and_barrier](sync_and_barrier.md)：三层同步机制：set_flag/wait_flag/pipe_barrier、sync_block_*、UnitFlag
+- [single_kernel_feasibility](single_kernel_feasibility.md)：单 launch 可行性体系：分阶段门、交接形态谱与实测、失败归因、并行度下限、UB 预算、launch 计数与融合税分解
 - [scalar_degradation_avoidance](scalar_degradation_avoidance.md)：标量降级（Scalar Lowering）触发条件与规避模式，910_95 Reg-based vs 910B Mem-based
 - [where_optimization](where_optimization.md)：单位置 False 的 tl.where 退化规避：get_element + insert_slice
 

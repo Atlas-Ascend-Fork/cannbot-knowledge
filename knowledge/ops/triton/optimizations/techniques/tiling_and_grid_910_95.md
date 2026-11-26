@@ -2,7 +2,7 @@
 type: Optimization
 title: Tiling 与 Grid 分核策略（910_95 平台）
 description: 910_95/910B 平台 Tiling 大小与 Grid 分核数确定方法：UB 预算公式、Grid 收缩、单行改多行、NPU Autotune
-  规则。
+  规则；含 bf16 GEMM 的 BM/BN/BK 扫描顺序与实测 TFLOPS 对照表（选 tile 先扫哪个轴）。
 tags: [task.optimization, topic.tiling, topic.parallelism, topic.implementation.memory_management]
 status: stable
 sources:
@@ -111,6 +111,22 @@ def kernel(X_ptr, Y_ptr, X_stride, Y_stride, total_rows,
 | Softmax | ≈48 KB | 4 | 5 |
 | MatMul BM=BN=128, BK=64 fp16 | ≈96 KB | 2（开 multiBuffer 不足） | 2（开 multiBuffer 124KB 可行） |
 
+## 实测：tile 与 grid 形态敏感性（bf16，28 核，A5）
+
+bf16 GEMM `C[M,N] = A[M,K] @ B[K,N]`（M≈8e3、N≈2.5e3、K≈3.2e4），persistent 28 programs，`BK=256`：
+
+| BM | BN | ms | TFLOPS |
+|---|---|---|---|
+| 64 | 128 | 15.39 | 89.3 |
+| 128 | 128 | 10.02 | 137.1 |
+| 128 | 256 | 6.30 | 218.1 |
+| 256 | 128 | 6.60 | 208.4 |
+| 128 | 128（BK=512） | 10.02 | 137.1 |
+| 256 | 256 | 编译失败（UB 超限） | — |
+
+- 非收缩方向（BN 128→256）**+59%**，收缩方向 tile（BM 256）**+52%**，`BK` 加倍无收益，方 tile 编译失败 → **先扫 BN，再扫 BM，最后才动 BK**。
+- grid 形态与 tile 同等重要，但结论不在本卡：`persistent` 与 naive grid 的取舍见 `persistent_kernels.md` 的实测段（同一 bf16 形状下两者可差 ~2x）。
+
 ## 常见错误速查
 
 | 错误 | 原因 | 解决 |
@@ -119,6 +135,7 @@ def kernel(X_ptr, Y_ptr, X_stride, Y_stride, total_rows,
 | coreDim 超限 | `ceil(N/BLOCK) > 65535` | 增大 BLOCK 或 Grid 收缩 |
 | SIMD 利用率低 | 每 program 1 行 | BLOCK_ROWS 多行 |
 | Autotune 无效 | Config 含 num_stages/num_warps | 移除 GPU 专属参数 |
+| 分组 tile 解码错位 | 固定组宽且不处理尾组时，`GROUP_M` 不整除 tile 数会让 grouped 映射非双射 | 取 tile 数的因数（如 `_pick_gm` 选最接近目标值的因数），或按实际尾组宽度解码并验证恰好覆盖一次 |
 
 
 ## 参考

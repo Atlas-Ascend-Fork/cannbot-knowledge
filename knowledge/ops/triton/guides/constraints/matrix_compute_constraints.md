@@ -234,3 +234,6 @@ self._stream_cache = {}
 | 全量 row-persistent 覆盖大 shape | 大 tile(128) cube 效率丢失 | L1.3 hybrid 分派 |
 | 分组小 R 用 BM64/BN 固定 tile | 6.4x pad + A 多读 | L1.2 BM16+复用 |
 | 对齐 shape 仍带全 mask | 每 tile 标量/谓词开销 | L1.4 ALL_ALIGNED 分支 |
+
+
+---

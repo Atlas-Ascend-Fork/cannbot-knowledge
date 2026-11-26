@@ -36,6 +36,26 @@ def fused_kernel(..., HAS_BIAS: tl.constexpr, HAS_RESIDUAL: tl.constexpr):
     # 编译期分支消除：不影响无此 feature 的代码路径
 ```
 
+## 实测：multi-kernel 与 full single launch 的 fusion tax
+
+同一代表性 GEMM-heavy 算子、同一多 kernel 基线：
+
+| 交付形态 | 相对基线 |
+|---|---|
+| multi-kernel + stage-level fused epilogue | ≈1.36× |
+| full single launch | ≈0.74×（比 fused epilogue 慢约 1.8×） |
+| 与多 kernel 同阶段结构的单 kernel 版 | 慢约 15.4% |
+
+- 强制 full single launch 时所有 phase 共用一套 `multibuffer_mode` / tile：大 tile 的 fp32 累加器要固定 `l0c`，producer 流水深度被动降级，这就是 tax 的来源。
+- 融合收益的顺序是：先消掉中间量 GM 往返（fused epilogue），再谈单 launch；把两者混在一起调，会把"省下的搬运"和"流水降级"互相掩盖。
+- 交付判定与 [多输出 GEMM 链的融合与单 launch 化](multi_output_gemm_chain_fusion.md) 的三分支表一致：
+  单 launch 仅是优化目标时按收益取舍；单 launch 为硬约束、性能仅观测时交付满足精度与 launch 的版本并单列性能；
+  两者同时是硬约束时任一未满足即验收未通过。融合尝试后仍无符合精度与 launch 契约（或性能硬门槛）的候选时，
+  才采用多 kernel 回退并记录 `contract_conflict`；**该回退只是"待确认的替代方案"，验收状态仍为未通过**（`target_reached=false`、
+  交付形态不满足 launch 硬约束），报告中不得表述为已满足验收。
+
+单 launch 的可行性门、交接形态谱与失败归因见 [单 kernel 单 launch 的可行性体系](single_kernel_feasibility.md)。
+
 ## OPT-triton-fusion-003: Cube/Vector 并行
 
 ```python
