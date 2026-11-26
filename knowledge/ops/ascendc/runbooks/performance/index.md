@@ -193,3 +193,8 @@
 - [向量指令按行发散改为行块化，仅限等长逐元素链](vector_row_loop_block_batching_equal_length.md)：每行 5 条向量指令、64 行下来一段因子构建要 320 次调用；把 64 行合成 2×32 行块可降到 10 次，但只在“所有操作数等长、无标量参照”的纯逐元素链上安全。
 - [负结果：m200 的向量转置不能替代立方转置取操作数](whole_block_transpose_stays_on_cube.md)：Transpose 只吃连续 16×16 tile、v4dtrans 输出交错、BinaryRepeatParams 行广播被忽略——整块 [64,64] 转置仍应交给立方。
 - [墙钟比 kernel 慢 10 倍：按算子拆账，别猜 host 物化](per_operator_kernel_details_accounting_before_optimizing.md)：端到端墙钟约为自研 kernel 的 10 倍时，把这 9 成差额归因于 host 侧标量物化只是猜测；逐算子拆账显示大头是 host 预处理链引入的元级小算子。
+
+- [转置卷积等价标准卷积：零插值 32B 粒度免费](310p_convtranspose2d_zero_insert_standard_conv_equivalence.md)：转置卷积 = 零插值上采样 + 翻转权重 + pad'=k-1-p 的标准卷积；310P 的 16 通道 block = 32B，列插零就是 block 间隔 1，xrepack 一套 DataCopy 即可表达，之后复用 conv2d 硬件 im2col。
+- [310P depthwise：flat Axpy + mask hoist](310p_depthwise_flat_axpy_mask_hoist.md)：310P depthwise 的墙是每 tap 每行一次小向量调用；Level-2 Axpy 每次 75–90 scalar cycles。padded 窗口与 acc 同 stride → 单 tap 一次 flat Axpy（K·K·R→K·K），mask 每 task 一次，padded 输出消 flush；逐 tap 源起址在 fp32 下按 4B 平移，K≥2 时不可能全部 32B 对齐，310P 实测过门但非契约保证的通用 fast path。
+- [310P GM→L1 Nd2Nz 软件模拟，改单条 DataCopy](310p_gm_to_l1_nd2nz_software_emulation_single_dma.md)：310P 的 GM→L1 Nd2Nz 走 GM→UB 8KB→TransND2NZ→UB→L1 软件模拟，每 8KB 一轮流水同步；GM 已是 L1 镜像布局时改用 DataCopy(L1,GM) 单条 DMA，同轮单 case 快 1.8–3.5×。
+- [310P im2col：V2Pro/多块 V1 的 s>1+f>1 全零](310p_im2col_stride_gt1_filter_gt1_silent_zero.md)：310P 硬件 im2col 在 V2Pro（mode 0）与 V1 多块（mode 3）下，stride>1+filter>1 静默全零；V1 单块（mode 1）在 M=16 prepad 用例上曾 PASS，最终探针未复跑，不能把 V1 整体判死。

@@ -502,3 +502,8 @@
 
 - [带数上限撞顶时末带跨度过大，f16 因子直接爆掉](band_partition_cap_is_correctness_parameter.md)：强门控用例需要约 16 个带，带数上限常量撞顶后末带跨 55 log2，2^±28 超出 f16；抬上限并用 ring 槽即可不增 scratch。
 - [标量 GetValue 读不到 MTE3 写的 UB（op30 语境，最小探针不可复现）](scalar_read_cannot_see_mte3_ub_write.md)：op30 实内核中 UB→UB DataCopy（MTE3 写）后的标量 GetValue 即使加了 PIPE_ALL 也读到 0，改成 V 管道 Adds(+0) 后可见；干净最小探针不可复现——属 op30 语境观察而非 310P 固定语义，稳妥写法仍是 V 物化/消掉标量读。
+
+- [310P conv eager 参考的 fp16 语义四档](310p_conv_eager_fp16_reference_semantics.md)：310P conv 族 eager 参考把操作数量化到 fp16 RNE；Conv2D/depthwise 输出 fp32，Conv3D/ConvTranspose2d 额外做 fp16(fp16(Σ)+fp16(bias))。两个非平凡乘数的乘积探针 5 分钟识别；单操作数探针只作预筛，候选侧按同一舍入点对齐。
+- [310P fp32 matmul 逐位复现：裸 Mmad](310p_fp32_matmul_fp16_internal_bare_mmad_bit_exact.md)：310P 的 torch fp32 matmul 内部是 fp16 输入 + fp32 累加；纯 fp32/拼接实现会在 fp32 末态门上差 1 ulp。要逐位复现，用裸 Mmad 按同一 Kpad/CO1 布局重算。
+- [310P im2col padList 契约未定论：先预 pad + P=0](310p_im2col_padlist_no_zero_prepad_fmap.md)：官方契约里 padList 是 [left,right,top,bottom] 填充列表、padValue 是填充值；早期探针用非零 padList + leftTop=-P、未预 pad 时 p=1 失败，终版改为零 padList + 预 pad 后 PASS。非零 padList 的成功形态未找到，prepad + P=0 是已验证配方。
+- [310P torch.exp2(-inf) 返回 NaN 的参考缺陷](310p_torch_exp2_neg_inf_nan_reference_errata.md)：310P 上 torch.exp2(-inf) 返回 NaN（torch.exp(-inf) 返回 0）；冻结 golden 在 masked_fill(-inf)+exp2 的 attention/MLA 参考里会产出 NaN/垃圾。实现侧改用有限大负数 + 自然 exp，参考侧用 dtype-faithful compose + CPU 裁决。
