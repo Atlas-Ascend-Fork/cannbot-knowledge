@@ -47,10 +47,33 @@ import state_store
 
 PUBLIC_CLIENT_ID = "cannbot-knowledge-public"
 
-# In-memory client registry {client_id: info}, process lifetime only
-# (ticket 4 scope; whether the state_store ledger persists it is a later
-# wiring ticket's decision).
-_clients: dict[str, OAuthClientInformationFull] = {}
+# In-memory client registry {client_id: (info, expires_at)}. A write-through
+# cache over the shared StateStore ledger (key prefix dcr:): registrations
+# survive restarts and are visible to every replica behind the load
+# balancer, so a /token exchange routed to a different instance (or issued
+# after a restart) still resolves the client the SDK's DCR handler minted.
+# Cache entries carry the ledger's expiry and are checked on read, so the
+# shared ledger stays authoritative — an entry that fell out of its TTL
+# window disappears here too instead of lingering in memory.
+_CLIENT_REGISTRY_PREFIX = "dcr:"
+# Registration retention, deliberately longer than the refresh-token
+# lifetime: refresh tokens live 30 days by default and each rotation
+# re-issues the full window, so an actively refreshing client outlives a
+# 30-day registration record and its next /token exchange would fail with
+# invalid_client. 90 days = one full refresh window plus two more for
+# rotation slack; a client idle for 90 days re-registers transparently
+# (every OAuth client starts with a fresh DCR before authorizing).
+_CLIENT_REGISTRY_TTL_S = 90 * 24 * 3600
+
+# Short cache window for entries recovered from the ledger (cache misses on
+# this replica): the ledger record may be anywhere inside its TTL window
+# and StateStore.get does not expose the remainder, so a recovered entry
+# must not assume a fresh full window — one hour of caching still absorbs
+# a /register→/authorize→/token burst while keeping the shared ledger
+# authoritative over replicas.
+_CLIENT_RECOVERY_TTL_S = 3600
+
+_clients: dict[str, tuple[OAuthClientInformationFull, float]] = {}
 
 
 def public_client_information() -> OAuthClientInformationFull:
@@ -128,12 +151,15 @@ class CannbotAuthProvider(
     """SDK ``OAuthAuthorizationServerProvider`` over the existing auth
     ledgers.
 
-    Client registry (ticket 4): register_client keeps the /register
-    handler's semantics — the submitted client_info is accepted and
-    ignored, the registration actually issued and stored is always the
-    fixed public client; get_client resolves the registry first, the
-    public client id also resolves without prior registration. The
-    authorize/token series (ticket 5) rides the ledgers server.py
+    Client registry: register_client persists the SDK DCR handler's
+    registration (random client_id) through the shared StateStore ledger
+    (``dcr:`` keys, 90-day TTL — longer than the 30-day refresh window so
+    actively rotating clients never outlive their registration), so
+    registrations survive restarts and are visible to every replica;
+    get_client resolves the TTL-checked in-memory cache, then the ledger,
+    and the fixed public client id also resolves
+    without prior registration. The
+    authorize/token series rides the ledgers server.py
     already owns:
 
     - authorize mints the one-shot code with ``AuthCodeStore.create``
@@ -175,6 +201,15 @@ class CannbotAuthProvider(
         self._token_store = token_store
         self._token_authority = token_authority
         self._resource_server_url = resource_server_url
+        # Registration retention must stay ahead of the refresh-token
+        # lifetime it protects: refresh TTL is operator-configurable
+        # (CANNBOT_MCP_REFRESH_TTL_S), and an actively rotating client
+        # outlives a registration record shorter than its refresh window.
+        # max(90d, 3 × refresh TTL): the default keeps 90 days, a longer
+        # refresh window scales the retention with it.
+        self._registry_ttl_s = max(
+            _CLIENT_REGISTRY_TTL_S, 3 * token_authority._refresh_ttl_s
+        )
 
     def _default_audience(self) -> str:
         """Audience when the grant names no resource: the ticket-3
@@ -200,9 +235,32 @@ class CannbotAuthProvider(
     async def get_client(
         self, client_id: str
     ) -> OAuthClientInformationFull | None:
-        registered = _clients.get(client_id)
-        if registered is not None:
-            return registered
+        cached = _clients.get(client_id)
+        if cached is not None:
+            info, expires_at = cached
+            if expires_at > time.time():
+                return info
+            # Expired in the cache: the ledger is authoritative, so the
+            # entry disappears from memory too (bounded cache, no
+            # unbounded growth) and the lookup falls through to the
+            # ledger below.
+            del _clients[client_id]
+        # Cache miss: a replica may have registered this client, or the
+        # process restarted after the registration. Resolve from the
+        # shared ledger before falling back to the public client.
+        raw = self._token_store.get(_CLIENT_REGISTRY_PREFIX + client_id)
+        if raw:
+            try:
+                info = OAuthClientInformationFull.model_validate_json(raw)
+            except ValueError:
+                return None
+            # The ledger entry may be near its own expiry and StateStore.get
+            # does not expose the remaining TTL, so cache the recovered
+            # entry under a short window instead of a fresh full one: the
+            # ledger stays authoritative even for replicas that recover an
+            # old record, and a re-read costs one store get.
+            _clients[client_id] = (info, time.time() + _CLIENT_RECOVERY_TTL_S)
+            return info
         if client_id == PUBLIC_CLIENT_ID:
             return public_client_information()
         return None
@@ -210,9 +268,24 @@ class CannbotAuthProvider(
     async def register_client(
         self, client_info: OAuthClientInformationFull
     ) -> None:
-        # Like the /register handler: the submitted body is accepted and
-        # ignored; what gets registered is the fixed public client.
-        _clients[PUBLIC_CLIENT_ID] = public_client_information()
+        # The SDK DCR handler generates a fresh random client_id, calls us
+        # with the full info, and returns THAT id to the client — the token
+        # exchange later resolves the same id via get_client. Storing only
+        # the fixed public client here breaks that round-trip (token
+        # exchange fails with "Existing OAuth client information is
+        # required"). Register what the SDK minted, write it through to
+        # the shared ledger (restarts and other replicas read it back),
+        # and keep the fixed public client available through get_client's
+        # fallback. The cache entry mirrors the ledger's TTL window so
+        # memory never serves a registration the ledger has already
+        # expired.
+        expires_at = time.time() + self._registry_ttl_s
+        _clients[client_info.client_id] = (client_info, expires_at)
+        self._token_store.put(
+            _CLIENT_REGISTRY_PREFIX + client_info.client_id,
+            client_info.model_dump_json(exclude_none=True),
+            self._registry_ttl_s,
+        )
 
     async def authorize(
         self, client: OAuthClientInformationFull, params: AuthorizationParams

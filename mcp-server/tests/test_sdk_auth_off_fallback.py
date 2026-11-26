@@ -412,6 +412,33 @@ class HandwrittenFallbackSurfaceTests(unittest.TestCase):
         self.assertEqual(PUBLIC_URL, payload["resource"])
         self.assertEqual([PUBLIC_URL], payload["authorization_servers"])
 
+    def test_discovery_metadata_carries_cors_headers(self) -> None:
+        # The handwritten (SDK_AUTH=off) discovery endpoints keep the same
+        # CORS posture the SDK's own routes carry: browser clients must
+        # read the metadata cross-origin, GET and OPTIONS preflight alike.
+        for path in (
+            "/.well-known/oauth-protected-resource",
+            "/.well-known/oauth-protected-resource/mcp",
+            "/.well-known/oauth-authorization-server",
+            "/.well-known/oauth-authorization-server/mcp",
+        ):
+            for method in ("GET", "OPTIONS"):
+                with self.subTest(path=path, method=method):
+                    _, _, _, start = self._request(
+                        self.app, path, method=method, statuses=(200,)
+                    )
+                    header_map = {
+                        name.decode("latin-1").lower(): value.decode("latin-1")
+                        for name, value in start.get("headers") or []
+                    }
+                    self.assertEqual(
+                        "*", header_map.get("access-control-allow-origin")
+                    )
+                    self.assertIn(
+                        "MCP-Protocol-Version",
+                        header_map.get("access-control-allow-headers", ""),
+                    )
+
     def test_mcp_admission_via_handwritten_chain(self) -> None:
         # Wrong bearer: 401 with the RFC 6750 + RFC 9728 hint header.
         _, _, _, start = self._request(

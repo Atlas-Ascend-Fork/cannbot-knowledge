@@ -2182,6 +2182,30 @@ async def _send_json_response(
     )
     await send({"type": "http.response.body", "body": body})
 
+
+_DISCOVERY_CORS_HEADERS: list[tuple[bytes, bytes]] = [
+    # Same CORS posture the SDK's own 9728/8414 routes carry (their
+    # cors_middleware wraps handlers with allow_origins="*"): browser-based
+    # MCP clients (MCP Inspector and friends) fetch the discovery
+    # documents cross-origin, and without Access-Control-Allow-Origin the
+    # browser refuses to hand the JSON to the page even though the server
+    # answered 200. Both GET and the OPTIONS preflight go through the same
+    # path-matched discovery blocks, so one header set covers both.
+    # allow-headers mirrors the SDK posture too: Starlette's CORSMiddleware
+    # auto-joins the CORS-safelisted request headers (accept,
+    # accept-language, content-language, content-type) to whatever the
+    # wrapper names, and some fetch wrappers send content-type on GET —
+    # without it in the allowlist a passing preflight still gets the
+    # actual cross-origin request blocked.
+    (b"access-control-allow-origin", b"*"),
+    (
+        b"access-control-allow-headers",
+        b"MCP-Protocol-Version, accept, accept-language, "
+        b"content-language, content-type",
+    ),
+    (b"access-control-allow-methods", b"GET, OPTIONS"),
+]
+
 async def _send_404(send: Callable[..., Any]) -> None:
     """Uniform 404 for endpoints disabled by configuration."""
     await _send_json_response(
@@ -3753,6 +3777,7 @@ def build_http_app(
                             "code_challenge_methods_supported": ["S256"],
                             "token_endpoint_auth_methods_supported": ["none"],
                         },
+                        _DISCOVERY_CORS_HEADERS,
                     )
                     return
                 # Self-hosted authorization server: THIS service
@@ -3784,6 +3809,7 @@ def build_http_app(
                         "code_challenge_methods_supported": ["S256"],
                         "token_endpoint_auth_methods_supported": ["none"],
                     },
+                    _DISCOVERY_CORS_HEADERS,
                 )
                 return
             if not _gitcode_verify_enabled():
@@ -3805,7 +3831,9 @@ def build_http_app(
             # pre-registered application credentials from the administrator
             # out of band; zero-config registration is served by the
             # self-hosted default above.
-            await _send_json_response(send, 200, as_metadata)
+            await _send_json_response(
+                send, 200, as_metadata, _DISCOVERY_CORS_HEADERS
+            )
             return
         if scope["type"] == "http" and scope.get("path") == "/register":
             # RFC 7591 dynamic client registration. In self-hosted mode the
@@ -3888,26 +3916,35 @@ def build_http_app(
             # against cannbot v1.1.2 and Claude Code 2.1.317). So this server
             # advertises itself as the discovery front-end and republishes
             # GitCode's endpoints via its own 8414 document above.
-            if sdk_rs_active and scope.get("path") == (
-                "/.well-known/oauth-protected-resource/mcp"
-            ):
-                # SDK mode: create_protected_resource_routes (mounted inside
-                # `inner`) owns the /mcp-suffixed variant — its metadata URL
-                # is derived from resource_server_url. Pass through so there
-                # is exactly one responder behind this path; the handwritten
-                # variant below stays as the SDK_AUTH=off (fallback)
-                # implementation (ticket 8 keeps it).
-                await inner(scope, receive, send)
-                return
+            #
+            # SDK mode serves every 9728 path from _sdk_pr_metadata (the
+            # branch below). The earlier pass-through of the bare
+            # /mcp-suffixed path to `inner` was a route mismatch, not a
+            # hand-off: create_protected_resource_routes registers the
+            # SDK route at /.well-known/oauth-protected-resource +
+            # urlparse(resource_server_url).path — WITH the PUBLIC_URL
+            # prefix — so `inner` answers only that prefixed form, never
+            # the bare suffixed one. A gateway that rewrites RFC 9728
+            # insertion URLs by stripping only its own prefix delivers
+            # the suffixed request here as bare+/mcp; forwarding it into
+            # `inner` hit no route and surfaced as a Starlette 404 —
+            # Claude Code dies at discovery ("Dynamic Client Registration
+            # rejected") because the 401's resource_metadata points at
+            # that very URL. The prefixed form is still matched one
+            # branch up by _discovery_paths and lands here too, so this
+            # block is the single 9728 responder in SDK mode; with the
+            # gate off the handwritten variant below is the whole
+            # surface.
             await _drain_body(receive)
             if sdk_rs_active:
-                # SDK mode, bare path: the SDK registers no route here (see
-                # above), but clients probe it too; answer with the same
-                # metadata the SDK route serves, built from the same
-                # AuthSettings, so both 9728 variants agree on the resource
-                # identity (the full endpoint URL, the fix for RFC defect
-                # 1.3) and discovery keeps working.
-                await _send_json_response(send, 200, _sdk_pr_metadata)
+                # SDK mode, every probed path (bare, bare+/mcp, prefixed
+                # insertion forms): answer with the metadata the SDK route
+                # serves, built from the same AuthSettings, so all 9728
+                # variants agree on the resource identity (the full
+                # endpoint URL, the fix for RFC defect 1.3).
+                await _send_json_response(
+                    send, 200, _sdk_pr_metadata, _DISCOVERY_CORS_HEADERS
+                )
                 return
             if not _gitcode_verify_enabled() and not _auth_server_enabled():
                 await _send_404(send)
@@ -3923,6 +3960,7 @@ def build_http_app(
                     "resource_name": "cannbot-knowledge",
                     "bearer_methods_supported": ["header"],
                 },
+                _DISCOVERY_CORS_HEADERS,
             )
             return
         if scope["type"] != "http" or scope.get("path") != "/mcp":

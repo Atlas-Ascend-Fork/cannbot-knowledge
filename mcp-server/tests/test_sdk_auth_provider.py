@@ -122,36 +122,47 @@ class CannbotAuthProviderClientRegistryTests(unittest.TestCase):
         # Public client: no secret is ever issued.
         self.assertIsNone(info.client_secret)
 
-    def test_register_then_get_returns_complete_public_client(self) -> None:
-        # The submitted client_info is accepted and ignored, exactly like
-        # the /register handler's POST body.
+    def test_register_stores_sdk_minted_client(self) -> None:
+        # The SDK DCR handler mints a fresh client_id, calls us with the
+        # full info, and returns that id to the client; the token exchange
+        # resolves the SAME id. register_client must therefore store what
+        # the SDK submitted (bug fix: storing only the fixed public client
+        # broke the DCR round-trip — token exchange died with "Existing
+        # OAuth client information is required").
         submitted = OAuthClientInformationFull(
             client_id="sdk-generated-id", client_name="some-sdk-client"
         )
         self.assertIsNone(
             asyncio.run(self.provider.register_client(submitted))
         )
-        stored = asyncio.run(self.provider.get_client(PUBLIC_CLIENT_ID))
-        self._assert_fixed_public_client(stored)
-        # Retrieval comes from the registry entry register_client wrote.
-        self.assertIs(stored, sdk_auth_provider._clients[PUBLIC_CLIENT_ID])
-        # The submitted id never becomes a registry key.
-        self.assertIsNone(
-            asyncio.run(self.provider.get_client("sdk-generated-id"))
+        # The submitted id is retrievable (identity preserved).
+        stored = asyncio.run(self.provider.get_client("sdk-generated-id"))
+        self.assertIs(stored, submitted)
+        # The fixed public client still resolves without registration.
+        self._assert_fixed_public_client(
+            asyncio.run(self.provider.get_client(PUBLIC_CLIENT_ID))
         )
 
-    def test_repeated_registration_stays_idempotent(self) -> None:
-        for _ in range(2):
+    def test_repeated_registration_overwrites_same_id(self) -> None:
+        # Registering the same id twice keeps one entry (dict overwrite),
+        # and unrelated ids coexist — one entry per SDK-minted client.
+        for round_no in range(2):
             asyncio.run(
                 self.provider.register_client(
                     OAuthClientInformationFull(
-                        client_id="irrelevant", client_name="x"
+                        client_id="sdk-id", client_name=f"x{round_no}"
                     )
                 )
             )
-        self.assertEqual([PUBLIC_CLIENT_ID], list(sdk_auth_provider._clients))
-        self._assert_fixed_public_client(
-            asyncio.run(self.provider.get_client(PUBLIC_CLIENT_ID))
+            asyncio.run(
+                self.provider.register_client(
+                    OAuthClientInformationFull(
+                        client_id="sdk-id-2", client_name="y"
+                    )
+                )
+            )
+        self.assertEqual(
+            {"sdk-id", "sdk-id-2"}, set(sdk_auth_provider._clients)
         )
 
     def test_get_public_client_without_registration(self) -> None:
@@ -163,6 +174,150 @@ class CannbotAuthProviderClientRegistryTests(unittest.TestCase):
 
     def test_unknown_client_returns_none(self) -> None:
         self.assertIsNone(asyncio.run(self.provider.get_client("random")))
+
+    def test_registration_survives_new_provider_instance(self) -> None:
+        # Cross-replica read: a second provider over the SAME ledger
+        # (what another instance behind the load balancer is) resolves a
+        # client the first one registered — the in-memory cache is
+        # per-process, the dcr: ledger is shared.
+        asyncio.run(
+            self.provider.register_client(
+                OAuthClientInformationFull(
+                    client_id="replica-id", client_name="replica-client"
+                )
+            )
+        )
+        sdk_auth_provider._clients.clear()  # simulate the other process
+        other = sdk_auth_provider.CannbotAuthProvider(
+            self._fixture.auth_code_store,
+            self._fixture.store,
+            self._fixture.token_authority,
+            resource_server_url=RESOURCE_URL,
+        )
+        resolved = asyncio.run(other.get_client("replica-id"))
+        self.assertIsNotNone(resolved)
+        self.assertEqual("replica-id", resolved.client_id)
+        self.assertEqual("replica-client", resolved.client_name)
+
+    def test_registration_survives_store_reopen(self) -> None:
+        # Restart read: close the sqlite handle and reopen the same file
+        # (what a process restart does); the registration is still
+        # readable through a fresh provider. The fixture's close() also
+        # removes the tempdir, so this test manages its own lifecycle.
+        path = Path(self._fixture._tmp.name) / "restart.db"
+        store = state_store.SqliteStateStore(path)
+        provider = sdk_auth_provider.CannbotAuthProvider(
+            server.AuthCodeStore(store),
+            store,
+            self._fixture.token_authority,
+            resource_server_url=RESOURCE_URL,
+        )
+        try:
+            asyncio.run(
+                provider.register_client(
+                    OAuthClientInformationFull(
+                        client_id="restart-id", client_name="restart-client"
+                    )
+                )
+            )
+            store.close()
+        finally:
+            sdk_auth_provider._clients.clear()
+        store = state_store.SqliteStateStore(path)
+        try:
+            resolved = asyncio.run(
+                sdk_auth_provider.CannbotAuthProvider(
+                    server.AuthCodeStore(store),
+                    store,
+                    self._fixture.token_authority,
+                    resource_server_url=RESOURCE_URL,
+                ).get_client("restart-id")
+            )
+            self.assertIsNotNone(resolved)
+            self.assertEqual("restart-id", resolved.client_id)
+            self.assertEqual("restart-client", resolved.client_name)
+        finally:
+            store.close()
+
+    def test_corrupt_ledger_entry_returns_none(self) -> None:
+        # A dcr: value that fails OAuthClientInformationFull validation
+        # (schema drift, truncation) must not raise through get_client;
+        # the SDK treats None as an unknown client and answers
+        # invalid_client.
+        self._fixture.store.put(
+            sdk_auth_provider._CLIENT_REGISTRY_PREFIX + "broken",
+            "{not json",
+            60,
+        )
+        self.assertIsNone(
+            asyncio.run(self.provider.get_client("broken"))
+        )
+
+    def test_registration_ttl_is_bounded(self) -> None:
+        # Capacity: registrations expire after a bounded window instead
+        # of growing the ledger forever. The window stays ahead of the
+        # refresh-token lifetime (default 30 days, operator-configurable
+        # via CANNBOT_MCP_REFRESH_TTL_S — the derivation is
+        # max(90d, 3 × refresh TTL)), so actively rotating clients never
+        # outlive their registration, and the default keeps a fixed 90
+        # days.
+        self.assertGreater(
+            self.provider._registry_ttl_s,
+            3 * self._fixture.token_authority._refresh_ttl_s - 1,
+        )
+        self.assertGreaterEqual(
+            self.provider._registry_ttl_s,
+            sdk_auth_provider._CLIENT_REGISTRY_TTL_S,
+        )
+        asyncio.run(
+            self.provider.register_client(
+                OAuthClientInformationFull(client_id="ttl-id")
+            )
+        )
+        # The ledger actually carries the entry (write-through, not
+        # memory-only).
+        raw = self._fixture.store.get(
+            sdk_auth_provider._CLIENT_REGISTRY_PREFIX + "ttl-id"
+        )
+        self.assertIsNotNone(raw)
+
+    def test_expired_cache_entry_defers_to_ledger(self) -> None:
+        # The ledger is authoritative: an entry whose TTL window elapsed
+        # must not be served from the in-memory cache (no stale reads past
+        # the registration's lifetime), and once the ledger no longer
+        # carries it the client resolves to None — the registration is
+        # gone everywhere, hot or cold.
+        asyncio.run(
+            self.provider.register_client(
+                OAuthClientInformationFull(client_id="stale-id")
+            )
+        )
+        # Age the cache entry past its window while the ledger still has
+        # time left (a replica wrote it later, or clocks drift).
+        info, _expires = sdk_auth_provider._clients["stale-id"]
+        sdk_auth_provider._clients["stale-id"] = (info, time.time() - 1)
+        resolved = asyncio.run(self.provider.get_client("stale-id"))
+        # Cache entry expired → ledger hit repopulates it.
+        self.assertIsNotNone(resolved)
+        self.assertEqual("stale-id", resolved.client_id)
+        # Ledger gone too → None, and the cache entry was evicted.
+        class _FakeStore:
+            def get(self, key):
+                return None  # simulate TTL elapsed in the shared ledger
+
+            def close(self):
+                pass
+
+        real_store = self.provider._token_store
+        self.provider._token_store = _FakeStore()
+        try:
+            sdk_auth_provider._clients["stale-id"] = (info, time.time() - 1)
+            self.assertIsNone(
+                asyncio.run(self.provider.get_client("stale-id"))
+            )
+            self.assertNotIn("stale-id", sdk_auth_provider._clients)
+        finally:
+            self.provider._token_store = real_store
 
     def test_later_ticket_stub_methods_raise_not_implemented(self) -> None:
         for name in (

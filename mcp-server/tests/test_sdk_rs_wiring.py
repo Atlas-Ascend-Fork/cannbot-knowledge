@@ -8,7 +8,7 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------------------------------------
 
-"""SDK RS-layer wiring tests (ticket 3 of the SDK auth migration).
+"""SDK RS-layer wiring tests (SDK_AUTH=on acceptance locks).
 
 MCPServer(auth=AuthSettings, token_verifier=CannbotTokenVerifier) behind
 CANNBOT_MCP_SDK_AUTH=on, driven end to end through build_http_app with the
@@ -47,7 +47,7 @@ INITIALIZE_BODY = {
 
 
 class SdkRsWiringTests(unittest.TestCase):
-    """Acceptance locks for ticket 3, all under CANNBOT_MCP_SDK_AUTH=on."""
+    """Acceptance locks for the RS wiring, all under CANNBOT_MCP_SDK_AUTH=on."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -145,10 +145,33 @@ class SdkRsWiringTests(unittest.TestCase):
                 [str(server._SDK_AUTH_SETTINGS.issuer_url)],
                 metadata["authorization_servers"],
             )
-        # Both 9728 variants agree: the /mcp-suffixed one is served by the
-        # SDK's own route (passed through to `inner`), the bare one by the
-        # outer handler mirroring the same declaration.
+        # Both 9728 variants agree: the outer handler answers every probed
+        # path (bare and /mcp-suffixed) with the same _sdk_pr_metadata
+        # declaration.
         self.assertEqual(bare.json(), variant.json())
+
+    def test_discovery_metadata_carries_cors_headers(self) -> None:
+        # Browser-based MCP clients (MCP Inspector and friends) fetch the
+        # discovery documents cross-origin; the SDK's own 9728/8414 routes
+        # wrap their handlers with allow_origins="*", and this server's
+        # outer discovery handlers must keep the same posture. Both GET and
+        # the OPTIONS preflight go through the path-matched discovery
+        # blocks, so both must answer with Access-Control-Allow-Origin.
+        probed = [
+            "/.well-known/oauth-protected-resource",
+            "/.well-known/oauth-protected-resource/mcp",
+            "/.well-known/oauth-authorization-server",
+            "/.well-known/oauth-authorization-server/mcp",
+        ]
+        with self._client() as client:
+            for path in probed:
+                for method in ("get", "options"):
+                    with self.subTest(path=path, method=method):
+                        response = getattr(client, method)(path)
+                        self.assertEqual(200, response.status_code)
+                        self.assertEqual(
+                            "*", response.headers.get("access-control-allow-origin")
+                        )
 
     def test_legacy_bare_base_resource_jwt_is_rejected(self) -> None:
         # Tokens audience-bound to the bare base address (the legacy
@@ -174,6 +197,117 @@ class SdkRsWiringTests(unittest.TestCase):
         with self._client() as client:
             response = self._initialize(client, None)
         self.assertEqual(401, response.status_code)
+
+
+class PrefixedPublicUrlPrdTests(unittest.TestCase):
+    """9728 discovery under a path-prefixed PUBLIC_URL deployment.
+
+    The remote gateway shape: PUBLIC_URL carries a path prefix (a sub-path
+    gateway deployment). create_protected_resource_routes registers the
+    SDK route at /.well-known/oauth-protected-resource + the resource path
+    (prefix + /mcp), so a gateway that strips only its own prefix from
+    RFC 9728 insertion URLs delivers the /mcp-suffixed probe to this
+    server as the bare +/mcp path. The old pass-through of that path to
+    `inner` hit no route there and surfaced as a Starlette 404 — Claude
+    Code dies at discovery because the 401's resource_metadata points at
+    that very URL. Every probed path must answer with the SDK metadata.
+    """
+
+    PREFIXED_PUBLIC_URL = "http://127.0.0.1:9999/mcp/gateway/mcp-server"
+    PREFIX = "/mcp/gateway/mcp-server"
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls._tmp = tempfile.TemporaryDirectory(prefix="sdk-prd-prefix-")
+        cls._saved = {
+            name: os.environ.get(name)
+            for name in (
+                server.SDK_AUTH_ENV,
+                PUBLIC_URL_ENV,
+                server.PUBLIC_PATH_ENV,
+                server.AUTH_SECRET_ENV,
+                server.AUTH_DB_ENV,
+                server.GITCODE_VERIFY_ENV,
+                server.LOG_ENV,
+            )
+        }
+        os.environ[server.SDK_AUTH_ENV] = "on"
+        os.environ[PUBLIC_URL_ENV] = cls.PREFIXED_PUBLIC_URL
+        # Sub-path deployments declare the prefix explicitly (the
+        # 3310e225/a5892470 contract); _discovery_paths reads this env
+        # at request time.
+        os.environ[server.PUBLIC_PATH_ENV] = cls.PREFIX
+        os.environ[server.AUTH_SECRET_ENV] = "sdk-prd-prefix-secret"
+        os.environ[server.AUTH_DB_ENV] = str(Path(cls._tmp.name) / "auth.db")
+        os.environ[server.GITCODE_VERIFY_ENV] = "off"
+        os.environ[server.LOG_ENV] = "off"
+        importlib.reload(server)
+        assert server._SDK_AUTH_SETTINGS is not None
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        for name, value in cls._saved.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
+        importlib.reload(server)
+        assert server._SDK_AUTH_SETTINGS is None
+        cls._tmp.cleanup()
+
+    def setUp(self) -> None:
+        self.app = server.build_http_app(
+            server.mcp_server,
+            server.TokenList.parse("cbk_ready:ready"),
+            server.SlidingWindowRateLimiter(state_store.open_state_store()),
+            server.IpCooldown(state_store.open_state_store()),
+            0,
+            "127.0.0.1",
+        )
+
+    def test_every_probed_9728_path_serves_sdk_metadata(self) -> None:
+        resource = self.PREFIXED_PUBLIC_URL + "/mcp"
+        issuer = self.PREFIXED_PUBLIC_URL
+        probed = [
+            # Direct (gateway strips its prefix, keeps the suffix).
+            "/.well-known/oauth-protected-resource",
+            "/.well-known/oauth-protected-resource/mcp",
+            # RFC 9728 insertion forms clients derive from the endpoint
+            # URL — the suffixed one is what the 401's resource_metadata
+            # names and where Claude Code died.
+            f"/.well-known/oauth-protected-resource{self.PREFIX}",
+            f"/.well-known/oauth-protected-resource{self.PREFIX}/mcp",
+        ]
+        with TestClient(self.app, base_url="http://127.0.0.1:9999") as client:
+            for path in probed:
+                with self.subTest(path=path):
+                    response = client.get(path)
+                    self.assertEqual(200, response.status_code, path)
+                    metadata = response.json()
+                    self.assertEqual(resource, metadata["resource"])
+                    self.assertEqual([issuer], metadata["authorization_servers"])
+                    self.assertEqual(["header"], metadata["bearer_methods_supported"])
+
+    def test_prefixed_discovery_metadata_carries_cors_headers(self) -> None:
+        # The prefixed deployment's discovery responses keep the same CORS
+        # posture as the bare deployment (and the SDK's own routes):
+        # browser clients must read the metadata cross-origin on every
+        # probed path, GET and OPTIONS preflight alike.
+        probed = [
+            "/.well-known/oauth-protected-resource/mcp",
+            f"/.well-known/oauth-protected-resource{self.PREFIX}/mcp",
+            f"/.well-known/oauth-authorization-server{self.PREFIX}",
+            f"/.well-known/oauth-authorization-server{self.PREFIX}/mcp",
+        ]
+        with TestClient(self.app, base_url="http://127.0.0.1:9999") as client:
+            for path in probed:
+                for method in ("get", "options"):
+                    with self.subTest(path=path, method=method):
+                        response = getattr(client, method)(path)
+                        self.assertEqual(200, response.status_code, path)
+                        self.assertEqual(
+                            "*", response.headers.get("access-control-allow-origin")
+                        )
 
 
 if __name__ == "__main__":
