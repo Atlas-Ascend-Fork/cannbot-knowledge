@@ -61,6 +61,14 @@ Query 当前不按 CANN 版本执行结构化过滤。非 Runbook 卡片可记�
 
 全部 decision covered 后生成绑定各 search receipt 文件 SHA-256 的 ready receipt，再由 outcome manifest 将未被修改的检索链、目标平台实验及产物 SHA-256 绑定到原 decision。
 
+## 显式组件机器检索
+
+`knowledge-query` 另提供通用组件机器检索入口。组件状态、归档来源、资源白名单、机器入口、索引和覆盖条件统一登记在 `governance/schemas/component_search.yaml`；当前 active 组件为 Ascend C C API 的 `asc-search`。组件机器 skill 及其文档、include、示例由官方归档提供，不随本仓提交，也不增加本仓治理或可安装 Skill 数量。
+
+通用 provisioner 负责下载、SHA-256 校验、白名单解压、缓存、索引准备和原生机器 JSON 校验。资源与索引只写入 ignored 的 `artifacts/`；搜索在需要时运行同一准备流程，不能视为无网络、无写入操作。组件状态查询只读取注册表，active 不证明远端归档或索引已就绪。
+
+入口仅在调用方显式选择时执行，不改变普通知识卡检索、审计或安装器流程。返回缺少上下文时由调用方澄清；不可用或失败时返回结构化状态及回退提示，由调用方决定是否执行原 Query，不自动检索知识卡。成功的零命中仍是有效组件结果。外部证据保留来源，不伪装成 Concept，不扩展原 receipt/state/outcome 链。具体接口由 Query Skill 的参考资料维护，架构见[组件搜索接入](../../docs/component_search_integration.md)。
+
 ## Ascend C API 专用消费
 
 `ascendc-api-knowledge-query` 是显式可调用的专业流程，负责通用 Query 之外的全文阅读、按问题追踪多跳关系，以及将 API 卡的 `source_headers` 相对路径解析到已确认的 AscendC 包根。它依赖并复用 Query 的检索、平台识别、索引和审计，不引入第二份检索实现、SDK 索引或 API 事实库；与 Query 同装，避免独立安装缺少底层能力。通用 API 选择模式仍服务其他技术，Ascend C 场景无需重复执行两套流程。

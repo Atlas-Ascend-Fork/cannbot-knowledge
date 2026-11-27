@@ -9,6 +9,7 @@
 | `schemas/frontmatter.schema.json` | OKF 与扩展字段白名单、数据类型、数组形状和基础枚举 | 不按路径 Profile 选择字段，不保存平台或标签词表 |
 | `schemas/profiles.yaml` | 八个公共必选字段、Profile 到 OKF `type` 的映射、各 Profile 字段组合 | 不定义字段数据类型，不判断路径是否合法 |
 | `schemas/registries.yaml` | domain、route、platform、标签、受控附加路径值，以及文档归档、固定提交 Git 本地来源与转换策略 | 不保存知识正文、逐卡来源、发布版本或变更历史 |
+| `schemas/component_search.yaml` | 组件机器检索注册表：组件状态、官方归档路径与解压白名单、索引/检索命令 | 不保存组件文档正文、检索结果或安装状态 |
 | `contracts/knowledge.py` | 加载声明并为 Ingest、Query 等消费者保留统一兼容门面 | 不重复实现各检查类别 |
 | `contracts/checks/*.py` | 按路径、Profile、来源、图片、导航等类别实现确定性检查；`__init__.py` 静态注册检查及 P0–P2 等级 | 不保存 Schema、Profile 或 Registry 的平行枚举 |
 | `contracts/indexes.py` | 生成并比较直接子项索引，供 Ingest 与 Lint 共用 | 不写文件，不决定 CI 展示 |

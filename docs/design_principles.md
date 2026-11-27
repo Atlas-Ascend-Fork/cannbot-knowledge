@@ -68,6 +68,8 @@ Query 会先按平台和技术范围过滤，再返回最相关的知识卡。�
 
 索引缺失、损坏或过期时，Query 会直接停止。没有搜索结果时，也只能说明“当前条件下没有找到”，不能说明相关技术不存在。
 
+组件机器检索是显式选择的补充入口：knowledge-query 按独立注册表准备官方归档中的机器 skill 与白名单资源，并校验其原生 JSON。下载、解压、缓存和索引属于通用 provisioner，组件负责检索语义；准备产物只进入 ignored 的 `artifacts/`。该入口不改变普通 Query 或安装器，不把外部结果写成 Concept 或纳入知识卡审计链。设计与边界见[组件搜索接入](component_search_integration.md)。
+
 ## 7. 查询、写入和检查分开处理
 
 仓库维护三项基础 Skill、Ascend C API 与 Runtime API 两项专用消费流程、两项仓内 trace producer 和两项源码级 Operator producer：

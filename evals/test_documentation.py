@@ -1260,6 +1260,10 @@ class DocumentationContractTests(unittest.TestCase):
                         "build_parser",
                     ),
                     (
+                        self.root / ".agents/skills/knowledge-query/scripts/component_search.py",
+                        "build_parser",
+                    ),
+                    (
                         self.root / ".agents/skills/knowledge-query/scripts/knowledge_index.py",
                         "parser",
                     ),

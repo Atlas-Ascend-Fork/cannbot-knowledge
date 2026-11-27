@@ -1,0 +1,142 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+# 组件机器检索注册表：knowledge-query 只消费注册为 active 的组件；机器 skill 由组件
+# 在官方 raw 归档中发布，本仓的通用 provisioner 负责下载、校验、解压和建索引。
+schema: component-search/1
+archive:
+  url: https://ascend.devcloud.huaweicloud.com/artifactory/cann-run-mirror/cann-docs/master/latest/
+  checksums: checksums.txt
+  download_cache: artifacts/component-search/downloads
+components:
+  ascendc-devkit:
+    status: active
+    label: devkit
+    machine_name: asc-search
+    cache_dir: artifacts/ascendc-devkit
+    cache_env: CANNBOT_ASC_DEVKIT_CACHE
+    archive_env: CANNBOT_ASC_DEVKIT_ARCHIVE_URL
+    archive_prefix: asc-devkit/
+    extraction:
+      data_dir: devkit
+      paths:
+        - archive: .agent/skills/asc-search
+          kind: machine
+        - archive: docs/zh
+          kind: docs
+        - archive: include/c_api
+          kind: include
+        - archive: examples/02_simd_c_api
+          kind: examples
+      required_kinds: [machine, docs, include, examples]
+    machine:
+      dir: .agent/skills/asc-search
+      required:
+        - SKILL.md
+        - scripts/search.py
+        - scripts/build_index.py
+        - scripts/ensure_index.py
+        - scripts/detect_context.py
+        - config/product-map.yaml
+        - config/tag-taxonomy.json
+      detect: scripts/detect_context.py
+      build: scripts/build_index.py
+      search: scripts/search.py
+    index:
+      surface: c_api
+      marker: index.json
+      required_files: [index.json, build-meta.json, gaps.json]
+      validation_command:
+        - "{python}"
+        - "-c"
+        - |
+          import sys, json
+          from pathlib import Path
+          sys.path.insert(0, sys.argv[1])
+          import ensure_index, query
+          root, instance = Path(sys.argv[2]), Path(sys.argv[3])
+          surface, version, arch, source = sys.argv[4:8]
+          index, gaps = query.load(instance)
+          build_meta = json.loads((instance / "build-meta.json").read_text(encoding="utf-8"))
+          if index.get("schema") != "okf-index/5" or not isinstance(index.get("documents"), dict):
+              raise ValueError("invalid machine index schema/documents")
+          if not isinstance(index.get("views"), dict) or not isinstance(index.get("scope"), dict):
+              raise ValueError("invalid machine index views/scope")
+          if any(not isinstance(index["scope"].get(key), list) for key in ("primary_docs", "navigation_pages")):
+              raise ValueError("invalid machine index scope lists")
+          if any(not isinstance(gaps.get(key), list) for key in ("scope_out_gaps", "relation_gaps")):
+              raise ValueError("invalid gaps ledger")
+          if build_meta.get("schema") != "okf-index-meta/2" or build_meta.get("source_commit") != source:
+              raise ValueError("invalid build metadata schema/source")
+          reasons = ensure_index.gate_reasons(index["meta"], surface, version, arch)
+          if index["meta"].get("source_commit") != source:
+              reasons.append("source_commit differs from requested archive")
+          fresh, drift = ensure_index.light_fresh(instance, root, ensure_index.build_index.SCOPES[surface])
+          # Empty scope is an unsupported coverage result, not a corrupt index.
+          if build_meta.get("document_sha256") == dict() and index["meta"].get("doc_count") == 0 and index["meta"].get("pending_no_okf") == 0:
+              drift = [reason for reason in drift if reason != "build-meta has no document_sha256"]
+              fresh = not drift
+          if reasons or not fresh:
+              raise ValueError("invalid or stale machine index: " + "; ".join(reasons + drift))
+        - "{machine_dir}/scripts"
+        - "{data_root}"
+        - "{index_dir}"
+        - "c_api"
+        - "{cann_version}"
+        - "{arch}"
+        - "artifact:{sha256}"
+      meta:
+        source_commit: "artifact:{sha256}"
+        cann_version: "{cann_version}"
+        arch: "{arch}"
+        arch_label: "{arch}"
+        surface: "c_api"
+      build_command:
+        - "{python}"
+        - "{machine_dir}/scripts/build_index.py"
+        - "--root"
+        - "{data_root}"
+        - "--out"
+        - "{index_dir}"
+        - "--cann-version"
+        - "{cann_version}"
+        - "--arch"
+        - "{arch}"
+        - "--source-commit"
+        - "artifact:{sha256}"
+    search:
+      schema: asc-search-results/1
+      command:
+        - "{python}"
+        - "{search_script}"
+        - "--root"
+        - "{data_root}"
+        - "--index-dir"
+        - "{index_dir}"
+        - "--platform"
+        - "{platform}"
+        - "--version"
+        - "{cann_version}"
+        - "--repository"
+        - "{repository}"
+      env:
+        ASC_SEARCH_NO_LLM: "0"
+    coverage:
+      doc_count: [meta, doc_count]
+      pending_no_okf: [meta, pending_no_okf]
+      product_markers: [views, by_product]
+      require_products: true
+      messages:
+        empty: "official archive has no usable C API knowledge heads"
+        pending: "official archive documents lack usable knowledge heads ({pending_no_okf} pending)"
+        products: "official archive documents lack product support markers"
+    messages:
+      missing_resources: "archive lacks required devkit resources: {missing}"
+      missing_machine: "official archive lacks the asc-search machine core: {missing}"

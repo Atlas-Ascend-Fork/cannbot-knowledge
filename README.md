@@ -109,7 +109,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 
 安装和使用方法见[安装与使用指南](docs/installation_and_usage.md)；把知识库接入 MCP 客户端（Claude Desktop、Cursor 等）的说明见 [mcp-server](mcp-server/README.md)，工具参数与接入配置见 [TOOLS.md](mcp-server/TOOLS.md)与 [MCP_CONFIG.md](mcp-server/MCP_CONFIG.md)，接入故障排查见 [TROUBLESHOOTING.md](mcp-server/TROUBLESHOOTING.md)；Docker 一键部署见 [DOCKER.md](mcp-server/docker/DOCKER.md)。
 
-设计取舍见[设计原则](docs/design_principles.md)；常见任务见[形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)、[查询 API](recipes/api_search.md)和[使用知识库进行算子开发](recipes/operator_development.md)；用 Agent 分析和回复本仓 Issue 见[使用 Agent 处理知识库 Issue](docs/issue_handling.md)。
+设计取舍见[设计原则](docs/design_principles.md)，组件机器检索接入见[组件搜索接入](docs/component_search_integration.md)；常见任务见[形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)、[查询 API](recipes/api_search.md)和[使用知识库进行算子开发](recipes/operator_development.md)；用 Agent 分析和回复本仓 Issue 见[使用 Agent 处理知识库 Issue](docs/issue_handling.md)。
 
 知识库纳入 CANN 领域的概念与机制、API、硬件与平台知识、设计与优化方法，以及可复用的调试和故障处置经验，详见[知识纳入范围](docs/knowledge_and_skills_boundary.md#什么内容放到知识库仓)。用户可以将本仓作为个人 Skill 的知识来源，通过 `knowledge-query` 检索并引用相关知识卡。
 
@@ -141,6 +141,10 @@ bash check.sh
 - [精炼规约(预案)](governance/specs/refinery.md)：去中心知识精炼分支、独立成品目录与周期回灌的预案;未启用,获准并通过验收前不改变现行治理。
 
 本仓采用 [CANN Open Software License Agreement 2.0](LICENSE)。
+
+## 组件机器检索
+
+`knowledge-query` 提供可显式调用的通用组件机器检索入口，以注册表连接官方归档中的组件机器 skill。当前接入 Ascend C C API 的 `asc-search`；资源准备、校验、白名单解压与索引只写入 Git 忽略的 `artifacts/`，搜索输出组件原生 JSON。普通 Query CLI 和安装器保持原流程，不自动准备组件资源。入口与返回状态见 [Query Skill](.agents/skills/knowledge-query/SKILL.md)，架构与注册边界见[组件搜索接入](docs/component_search_integration.md)。
 
 ## 🤝联系我们
 
