@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/flash_attention_infer.py
 - resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/fa_tiling.py
 - resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/README.md
-- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/core_api.py
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
 - resource: https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py
 - resource: https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/dsl_tutorials/cross_flag_two_way/cross_flag_two_way.py
 created_at: '2026-09-29T00:00:00Z'
@@ -27,7 +27,7 @@ verified:
 
 ## 接口与概念
 
-> **证据分级**：本文 `sources` 分两类——(a) `cann/catlass` 固定提交（`7b574fb3`）里 catlass-python 自身的
+> **证据分级**：本文 `sources` 分两类——(a) `cann/catlass` 固定提交（`81da64bc`）里 catlass-python 自身的
 > kernel/example 与 API；(b) 固定提交的 ops-transformer 上游 FAG 实现与文档。**不引用 catlass 仓库
 > `examples/` 下的 C++ example，也不引用本项目自己产出的设计/benchmark artifact。**
 
@@ -388,7 +388,7 @@ L1→L0 载入与 MMAD 不重叠；再往后发现 fixpipe 掉一大截而 Durat
 
 [^fa-infer-readme]: <https://gitcode.com/cann/catlass/blob/fb110921bfb1ce82667093a73149e7db82ef3a69/examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/README.md> catlass-python `examples/python/tla_dsl/tla/kernel/attention/flash_attention_infer/README.md`：分块 + online softmax 公式、输入 f16/bf16 时中间计算恒 FP32、编译期常量被 CLI 覆盖且改值触发重新编译、`HEAD_NUM` 必须被 `KV_HEAD_NUM` 整除、mask 仅占位。
 
-[^dsl-core-api]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/core_api.py> catlass-python `python/tla_dsl/catlass/core_api.py`：`l0c` fixpipe 的 `f32 → f32/f16/bf16` 窄化白名单；atomic 目标必须为 GM，累加 dtype 白名单 `f32/f16/i16/i32/i8/bf16`。
+[^dsl-core-api]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> catlass-python `python/tla_dsl/catlass/core_api.py`：`l0c` fixpipe 的 `f32 → f32/f16/bf16` 窄化白名单；atomic 目标必须为 GM，累加 dtype 白名单 `f32/f16/i16/i32/i8/bf16`。
 
 [^dsl-atomic-add]: <https://gitcode.com/cann/catlass/blob/a9d40e1cabfe0eb1b66f6617516fb4ce420284c4/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py> catlass-python `examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul_atomic_add.py`：MMAD 结果直接累加到 GM 的写法，GM 侧 C 必须为 f32。
 

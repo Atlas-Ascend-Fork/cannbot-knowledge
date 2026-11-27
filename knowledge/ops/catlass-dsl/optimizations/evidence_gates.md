@@ -5,7 +5,7 @@ description: "将源码启发、profile 假设、正确性和 benchmark 结论�
 tags: [task.optimization, topic.performance.optimization.optimization_overview, topic.performance.analysis]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/README.md
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/README.md
 - resource: https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/README.md
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
@@ -118,5 +118,5 @@ launch argv、cache key 和 profile 路径，避免旧 binary 或旧 grid 混入
 空 vector region、动态 pointer/tensor load 等错误应保留原始片段，并与运行时或 profile
 环境干扰分开。只有完整测试或 profiling 直接支持的结论才能进入 `learned/`。
 
-[^readme]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/README.md> 固定提交 README 对不同验证层的定义。
+[^readme]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/README.md> 固定提交 README 对不同验证层的定义。
 [^examples]: <https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/README.md> 固定提交 MMAD 文档中独立 build 与 run 工作流。

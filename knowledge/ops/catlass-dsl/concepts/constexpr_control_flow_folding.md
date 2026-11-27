@@ -5,7 +5,7 @@ description: "tla.Constexpr 参数、dataclass 属性访问在 tla.range 循环�
 tags: [task.implementation, topic.programming_model.language_extension]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/base_dsl/ast_preprocessor.py
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/ast_preprocessor.py
 - resource: https://gitcode.com/cann/ops-transformer/blob/90b41d6d8f2ce716275383a28f5dfb1d7c75ca1e/attention/block_sparse_attention_grad/op_kernel/block_sparse_attention_grad.cpp
 created_at: '2026-09-10T00:00:00Z'
 updated_at: '2026-09-10T00:00:00Z'
@@ -89,5 +89,5 @@ mask 寄存器（`tla.cmp`/`tla.full`）的预初始化需要类型匹配的「�
 编译通过、正确性通过，并用 profiler 对比「动态 if」vs「const_expr 折叠」的向量段耗时。
 [^frontend][^kernel]
 
-[^frontend]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/base_dsl/ast_preprocessor.py> 固定提交的 ast_preprocessor 静态控制流判定与动态 if 初始化检查实现。
+[^frontend]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/ast_preprocessor.py> 固定提交的 ast_preprocessor 静态控制流判定与动态 if 初始化检查实现。
 [^kernel]: <https://gitcode.com/cann/ops-transformer/blob/90b41d6d8f2ce716275383a28f5dfb1d7c75ca1e/attention/block_sparse_attention_grad/op_kernel/block_sparse_attention_grad.cpp> 固定提交的 block_sparse_attention_grad 中属性访问 + 预初始化/mask 恒假默认值的实际用法。

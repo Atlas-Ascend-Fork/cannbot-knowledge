@@ -5,7 +5,7 @@ description: "依据 C310 L1/L0/UB 容量筛选 tile 候选，并用实测决定
 tags: [task.optimization, topic.performance.optimization.optimization_overview, topic.tiling, topic.memory]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/base_dsl/arch.py
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/arch.py
 - resource: https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py
 created_at: '2026-08-10T00:00:00Z'
 updated_at: '2026-08-10T00:00:00Z'
@@ -101,5 +101,5 @@ candidate = {
 自由名字；运行非整齐 M/N/K 正确性，再比较同一 benchmark 配置的 mean/std。源码不能
 证明某 tile 更快。
 
-[^arch]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/base_dsl/arch.py> 固定提交 C310 本地内存容量表。
+[^arch]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/arch.py> 固定提交 C310 本地内存容量表。
 [^mmad]: <https://gitcode.com/cann/catlass/blob/680cd6c42edee64a496edc76d751442e66f36100/examples/python/tla_dsl/tla/kernel/matmul/basic_mmad/basic_matmul.py> 固定提交 MMAD 的元素字节、L1/L0 分块和 buffer 分配。

@@ -5,7 +5,7 @@ description: "Tensor 视图、layout 标签、地址空间及 C310 本地内存�
 tags: [task.implementation, topic.memory, topic.programming_model]
 status: stable
 sources:
-- resource: https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/address_space.py
+- resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/address_space.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/arch.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/tensor.py
 - resource: https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py
@@ -121,7 +121,7 @@ Packed Cube layout 使用 `tla.arch.zN`、`nZ`、`zZ`、`nN`、`zNUnAlign` 或
 静态核对 `get_localmem_capacity_bytes`，对 tensor dump TLAIR，并以非对称 shape
 和非默认 layout 构造正确性 oracle。本文未在设备上验证容量边界。
 
-[^address]: <https://gitcode.com/cann/catlass/blob/7b574fb3547e76bff47c8514b07741d123a2766b/python/tla_dsl/catlass/address_space.py> 固定提交中的 `AddressSpace` 枚举。
+[^address]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/address_space.py> 固定提交中的 `AddressSpace` 枚举。
 [^arch]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/base_dsl/arch.py> 固定提交中的 C310 target 与 `LOCALMEM_CAPACITY_BYTES`。
 [^tensor]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/tla/tensor.py> 固定提交中的 tensor 类型与视图实现。
 [^core]: <https://gitcode.com/cann/catlass/blob/81da64bca9da5c782f6589541b967456d4fdc4c7/python/tla_dsl/catlass/core_api.py> 固定提交中的公共 layout token 与 `arch.get_capacity_in_bytes` 参数检查。
