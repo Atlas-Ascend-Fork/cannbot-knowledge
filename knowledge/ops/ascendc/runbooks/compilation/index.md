@@ -1,5 +1,9 @@
 # compilation
 
+- [嵌套类型转换触发同类型 asc_cast 编译失败](nested_asc_cast_identity_compile_guard.md)：泛型计算链中按当前表达式的实际类型选择转换分支，避免重复实例化同类型 asc_cast。
+- [VF 排序网络栈超限时缩小同时存活的寄存器集合](vf_sort_network_stack_budget.md)：根据编译器栈诊断分阶段处理排序数据，区分逻辑元素数和实际寄存器溢出预算。
+- [外置 C API 头文件缺依赖导致新旧实现混用](vendored_c_api_partial_headers_mixed_resolution.md)：用实际 include trace 检查公共头、实现头与工具头的一致性，识别部分拷贝后的 SDK 回落。
+
 - [507035 — 自定义命名空间绕过 aten dispatch](507035_aten_dispatch.md)：AscendC kernel 用 <<<>>> 直调写 at::empty 输出 tensor 返回 PyTorch 时，注册到 npu_test 等非 aten 命名空间会绕过 PyTorch aten dispatch 的 tensor NPU 格式后处理，下游 torch_npu op 读该 tensor 触发 CopyKernelOpApi 格式转换访问非法地址报 507035；同模式注册到 aten::* 的算子不报错。判别=对照 aten 命名空间同模式算子是否成功，定位根因在命名空间归属而非分配 API。
 - [507035 — 三队列 float32 tile 超 UB](507035_float32_tile_ub.md)：Ascend950/dav-3510 上多 TQue+双缓冲+大固定 tile 的 float32 Reg kernel 运行期抛 ACL 507035；用同环境对照算子+缩 tile 探针二分定位为每核 UB 超额，而非 D2H 拷贝故障。
 - [507035 — standalone ccec launch 失败](507035_standalone_ccec_launch.md)：单文件 ccec 编译的 AscendC standalone 带宽 benchmark 在 Ascend 950 上 BUILD OK 但每次 aclrtSynchronizeStream 返回 507035；UB 溢出假设被 tool_observed 排除后，判别指向 kernel launch / 二进制注册路径而非 kernel body。
