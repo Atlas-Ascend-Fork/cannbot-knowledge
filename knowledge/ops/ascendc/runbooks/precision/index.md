@@ -1,5 +1,10 @@
 # precision
 
+- [标量写 UB 后 MTE3 回写旧值的缓存可见性排查](scalar_ub_write_mte3_cache_visibility.md)：区分标量缓存维护与流水排序，用值和索引分离探针定位 UB 到 GM 的旧值回写。
+- [UB 间隔槽位压紧到 GM 时把跨度放在源侧](ub_slots_to_dense_gm_source_stride.md)：用带哨兵的多行序列区分 UB 槽位间隔与 GM 连续输出，定位单行用例掩盖的步长错误。
+- [b16 奇偶拆分尾块的空域归约排查](b16_odd_tail_empty_domain_reduce.md)：在更新剩余长度前保存有效计数，分别计算奇偶域长度并显式处理零元素归约。
+- [__vector__ 内标量 GM 写尾部丢失的存储排查](scalar_gm_store_partial_vector_tail.md)：通过每核短尾和搬运路径对照定位标量写回异常，避免向调用方输出越界补齐。
+
 - [CPU ACL hybrid 实际选择与跨 K 块累加状态判别](cpu_acl_hybrid_selected_provider_accumulator_persistence.md)：固定原 CPU FP32 合同时，透明观察实际 factory/config 与 balanced K 状态延续，保留完整修复和混合 dtype 转移失败的边界。
 
 - [950 mix(1,2) mode=2 漏 AIV1 flag 致全零](950_mix_1_2_mode_2_aiv1_flag.md)：DAV_3510 (Ascend 950) 上 __mix__(1,2) 双 AIV kernel 若沿用 A2/A3 的 CrossCoreSetFlag mode=2，AIC 发出的 flag 只路由到 AIV0，AIV1 永不收到，AIC↔AIV1 同步链断裂致输出全零。判别要点是查 mode 模板参数与 AIV1 flagId+16 偏移。

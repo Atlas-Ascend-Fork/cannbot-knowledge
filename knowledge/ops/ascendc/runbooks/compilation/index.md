@@ -495,6 +495,9 @@
 - [GEIR 算子缓存不感知 .h 修改，掩盖 kernel 修复](geir_op_cache_ignores_header_edits.md)：TTK-GEIR 算子编译缓存按其提取的 .cpp 判定「op source unchanged」，kernel 修复写在头文件时缓存复用修复前旧二进制，表现为修复完全无效；需对比缓存 mtime 并清 binary/lock/stamp。
 - [GEIR 路由 NOT_UNIQUE：RunGraph 失败非歧义](geir_route_not_unique_probe_rungraph_failure.md)：run.sh 路由探测 status=NOT_UNIQUE probe_exit=1 常因探测进程 RunGraph 失败（退出码非 0）而非 V1/V2 路由歧义；判路由须按 OpType 过滤 CallInferFunc 行，Data 源节点的 V1 行是噪音，可用 geir_infer 独立验证回调绑定。
 - [GEIR 图路径不消费 TilingParse/GenSimplifiedKey](geir_tilingparse_gensimplifiedkey_not_consumed.md)：op_host 注册的 TilingParse 与 GenSimplifiedKey 回调在 GEIR 图模式 TBE 动态编译路径下注册成功但从不被调用（compile_info 仍空、binary matching 不发生）；回调健壮化、IMPL_OP 前置注册、GenSimplifiedKey 返回键长修复、GE_JIT_COMPILE=0、清缓存五类 host 侧修复实测全部无效——注册域与消费域不重叠，勿在此层反复投入。
+
+- [dn2dn 视图模式不匹配引发错误模板回退](dn2dn_layout_dispatch_fallback.md)：从首个实例化调用检查源目标布局配对，识别搬运派发回退导致的无关模板报错。
+
 - [GenSimplifiedKey 签名 UINT32 不在 ge 命名空间](gensimplifiedkey_uint32_global_scope.md)：按 op_impl_registry.h 的 GenSimplifiedKeyKernelFunc 签名实现回调时写成 ge::UINT32 会编译报错 'UINT32 in namespace ge does not name a type'；UINT32 是 exe_graph/runtime/base_type.h 的全局 typedef，直接写 UINT32，勿采编译器建议的 DT_UINT32。
 - [GetBlockNum对齐numCores未修复GE路径EZ9999](getblocknum_align_numcores_not_fix_ge_ez9999.md)：kernel 三处以 AscendC::GetBlockNum() 覆盖 tiling numCores 以消除 cid>=numCores 越界后，GE 图路径（TBE 动态编译 blockDim=6）仍在 core 0 报 aivec error code 95 / mte error 0x80000000（EZ9999）；ACLNN 路径同一源码通过——对齐修复不足以作为"图路径 EZ9999 已修复"的验收结论，负结果卡。
 - [向量函数内HWLoop归纳变量必须uint16_t](hwloop_induction_variable_uint16.md)：向量函数（__simd_vf__/asc_vf_call 作用域）内嵌套的内层循环若用 uint32_t 归纳变量，ccec 设备侧编译直接报 "Induction variable must have a type uint16_t" 硬错误；须把内层循环界限收敛为 uint16_t 并用 uint16_t 归纳变量（界限结构性不超过 65535 时安全）。
