@@ -8,7 +8,7 @@
 - 被部署机不想安装 Python/uv 环境：检索索引在容器内自动构建与更新，宿主机只需要 Docker
 - 本地单人 stdio 接入不经过容器，仍按 [README.md](../README.md) 启动；本文件只覆盖 HTTP 团队共享形态
 
-服务器本体说明（工具面、环境变量、日志格式、多实例边界）见 [README.md](../README.md)；客户端接入配置样例见 [MCP_CONFIG.md](../MCP_CONFIG.md)。
+服务器本体说明（工具列表、环境变量、日志格式、多实例边界）见 [README.md](../README.md)；客户端接入配置样例见 [MCP_CONFIG.md](../MCP_CONFIG.md)。
 
 ## 前置条件
 
@@ -80,7 +80,7 @@ Docker 卷 cannbot-mcp-auth  ──────────►  /data/auth      
 - **知识仓只读**：`/data/repo` 以 `:ro` 挂载，容器内任何进程写入（`artifacts` 卷除外）都会得到 `Read-only file system`。这把服务器"对知识仓严格只读"的代码约束在系统层面再锁一次。
 - **认证状态持久化**：entrypoint 把 `CANNBOT_MCP_AUTH_DB` 固定到 `/data/auth` 卷（设备码/授权码会话、API key 库、StateStore、`auth.key` 签名密钥都在该目录），容器重建/重启后已签发令牌与已生成 API key 全部存活。未配置该卷时状态会落进容器层，重建即丢——不要删这个挂载。密钥轮换或在镜像重建间保持令牌有效：在 `tokens.env` 显式设置 `CANNBOT_MCP_AUTH_SECRET`（env 优先于 key 文件）。
 - **docker-entrypoint.sh**（每次容器启动执行）：校验 `knowledge/` 非空（防止挂错目录后静默服务空库）→ 索引缺失或与知识卡不一致（宿主机 `git pull` 过）时在容器内重建，重建与查询均只使用镜像内置依赖（PyYAML、git——git 用于记录索引与查询的 commit provenance）→ 修正日志与索引卷属主 → 以 `setpriv` 降权到 uid 1000 启动服务器。任何一步失败容器即退出，由重启策略退避重试——服务保持 fail-closed，绝不用过期索引对外作答。
-- **init: true**：容器内微型 init 进程收割僵尸进程；`search`/`discover` 每次调用经 subprocess fork 子进程，长期运行需要兜底。
+- **init: true**：容器内微型 init 进程收割僵尸进程；默认 in-process 检索引擎不逐调用 fork 子进程，但显式切回 `CANNBOT_MCP_ENGINE=subprocess` 或诊断性子进程仍可能留下孤儿，长期运行保留兜底。
 - **restart: unless-stopped**：Docker daemon 重启、宿主机重启、进程崩溃都自动拉起；只有手动 `docker stop` 过才不拉。
 
 ## 配置
@@ -91,7 +91,7 @@ Docker 卷 cannbot-mcp-auth  ──────────►  /data/auth      
 | `PIP_INDEX_URL` | `https://pypi.org/simple` | 构建镜像时的 pip 源。网络到官方源慢时，在 `mcp-server/docker/.env` 写 `PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple`（或所在网络可达的内网镜像）后重新 `up -d --build` |
 | 端口映射 | `8090:8090` | 宿主机端口冲突时改 `compose.yaml` 的 `ports` 左值，客户端地址同步调整 |
 | 令牌与服务器行为 | — | `CANNBOT_MCP_TOKENS`、限流、子进程闸等全部环境变量见 [README.md](../README.md)，可写进 `tokens.env` 一并注入 |
-| `CANNBOT_MCP_SUBPROC_TIMEOUT` | 镜像内固化为 `60` | 服务器默认 30 秒在慢查询下可能被打满，镜像默认放宽到 60；可在 `tokens.env` 覆盖 |
+| `CANNBOT_MCP_SUBPROC_TIMEOUT` | 镜像内固化为 `60` | 仅 `CANNBOT_MCP_ENGINE=subprocess` 模式生效的子进程超时;服务器默认 30 秒在慢查询下可能被打满,镜像默认放宽到 60;默认 in-process 引擎无子进程。可在 `tokens.env` 覆盖 |
 
 ## 日常运维
 
@@ -189,7 +189,7 @@ sudo python3 mcp-server/analyze_logs.py --days 30 \
 
 ## 安全清单
 
-默认面向内网。对外开放前逐项核对 [README.md](../README.md) 的外网暴露前置条件清单：TLS 由反向代理终止、令牌强度与轮换、限流确认、`auth_failed` 审计留存。服务不信任 `X-Forwarded-For`——走反代时必须在反代层做真实 IP 透传与限流，否则个别客户端的认证失败会按反代 IP 触发冷却封禁、波及全体。
+默认面向内网，不建议直接对外开放。服务自身只听 HTTP（需 TLS 时由反向代理终止）、默认开启认证与限流，且不信任 `X-Forwarded-For`——走反代时必须在反代层做真实 IP 透传与限流，否则个别客户端的认证失败会按反代 IP 触发冷却封禁、波及全体。
 
 ### 启用官方 SDK 授权栈（可选，`CANNBOT_MCP_SDK_AUTH=on`）
 

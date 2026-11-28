@@ -11,11 +11,13 @@
 
 """Read-only MCP server exposing the cannbot-knowledge retrieval contract.
 
-The server is an adapter, not a search engine: discover and search shell out
-to the existing knowledge_query CLI (fail-closed index checks included) and
-pass its JSON payload through verbatim; read_card serves governed cards from
-the knowledge/ bundle root. All diagnostics go to stderr - in stdio mode the
-stdout channel carries protocol frames only.
+The server is an adapter, not a search engine: discover and search run
+through the RetrievalEngine interface - the resident in-process engine by
+default, the subprocess CLI adapter behind CANNBOT_MCP_ENGINE=subprocess -
+and pass the CLI JSON payload through verbatim (fail-closed index checks
+included); read_card serves governed cards from the knowledge/ bundle
+root. All diagnostics go to stderr - in stdio mode the stdout channel
+carries protocol frames only.
 """
 
 from __future__ import annotations
@@ -24,6 +26,7 @@ import argparse
 import asyncio
 import base64
 import binascii
+import concurrent.futures
 import contextvars
 import copy
 import hashlib
@@ -57,15 +60,23 @@ if str(SKILL_SCRIPTS) not in sys.path:
 
 from pydantic import Field  # noqa: E402
 from mcp.server.auth.provider import AccessToken, ProviderTokenVerifier  # noqa: E402
+from mcp.server.auth.middleware.auth_context import get_access_token  # noqa: E402
 import api_keys  # noqa: E402
 import state_store  # noqa: E402
+import knowledge_query  # noqa: E402
 from mcp.server.mcpserver import MCPServer  # noqa: E402
 from mcp.server.mcpserver.exceptions import ToolError  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 from starlette.requests import Request  # noqa: E402
 from starlette.responses import HTMLResponse, JSONResponse, Response  # noqa: E402
 
-from retrieval.index import open_index  # noqa: E402
+from retrieval.index import (  # noqa: E402
+    _connect_readonly,
+    index_path,
+    load_cards,
+    open_index,
+    verify_freshness,
+)
 from retrieval.root import ENV_KEY, resolve_root  # noqa: E402
 
 from log_uploader import LogUploader  # noqa: E402
@@ -98,6 +109,19 @@ LOG_UPLOAD_INTERVAL_ENV = "CANNBOT_MCP_LOG_UPLOAD_INTERVAL"
 LOG_UPLOAD_BRANCH_ENV = "CANNBOT_MCP_LOG_UPLOAD_BRANCH"
 MAX_SUBPROCS_ENV = "CANNBOT_MCP_MAX_SUBPROCS"
 SUBPROC_TIMEOUT_ENV = "CANNBOT_MCP_SUBPROC_TIMEOUT"
+ENGINE_ENV = "CANNBOT_MCP_ENGINE"
+ENGINE_MODE_IN_PROCESS = "in_process"
+ENGINE_MODE_SUBPROCESS = "subprocess"
+# In-process engine admission bounds (review P2): the single worker thread
+# serializes every search/discover, so without a queue bound and a call
+# deadline one stuck I/O task would wedge the whole retrieval surface
+# indefinitely. The defaults keep the old CLI-subprocess shape of
+# guarantees: bounded waiting room, bounded execution time, worker
+# recovery after a wedged task (executor restart).
+ENGINE_QUEUE_ENV = "CANNBOT_MCP_ENGINE_QUEUE"
+ENGINE_TIMEOUT_ENV = "CANNBOT_MCP_ENGINE_TIMEOUT"
+ENGINE_QUEUE_DEFAULT = 64
+ENGINE_TIMEOUT_DEFAULT_S = 30.0
 HEADERS_ROOT_ENV = "CANNBOT_MCP_HEADERS_ROOT"
 PLATFORM_ENUM_TEXT = "a2 / a3 / 950 / 310p / 910 / kirin_x90 / kirin_9030 / agnostic"
 DEFAULT_LOG_DIR = Path.home() / ".local/state/cannbot-knowledge/mcp"
@@ -1118,8 +1142,145 @@ class DeviceCodeStore:
     def ttl_s(self) -> int:
         return self._ttl_s
 
-class CliRunner:
-    """Subprocess adapter around knowledge_query.py with a concurrency gate."""
+@dataclass
+class SearchRequest:
+    """Typed search request mirroring the CLI search flags one to one.
+
+    The tool surface builds this object without rewriting or defaulting
+    anything; adapters translate it either to CLI argv (subprocess adapter)
+    or to an argparse-equivalent namespace (in-process adapter) so both pay
+    exactly the CLI defaults.
+    """
+
+    query: str
+    decision: str | None = None
+    domain: str | None = None
+    technology: str | None = None
+    card_type: str | None = None
+    task: str | None = None
+    tag: list[str] | None = None
+    platform: list[str] | None = None
+    include_unlocated: bool = False
+    include_shared: bool = False
+    source_technology: str | None = None
+    target_technology: str | None = None
+    status: str | None = None
+    match: str | None = None
+    limit: int | None = None
+    alt_query: str | None = None
+
+
+class RetrievalEngine:
+    """Narrow seam carrying discover/search requests to the CLI JSON contract.
+
+    Both adapters - the resident in-process engine and the subprocess CLI
+    runner - satisfy this one interface, so the process boundary stays an
+    implementation detail: payload schema, fail-closed index discipline,
+    platform fail-closed and the error taxonomy are shared. read_card is
+    deliberately not part of this seam; it keeps its own CardReader path.
+    """
+
+    async def discover(self) -> dict[str, Any]:
+        raise NotImplementedError
+
+    async def search(self, request: SearchRequest) -> dict[str, Any]:
+        raise NotImplementedError
+
+
+def _search_cli_arguments(request: SearchRequest) -> list[str]:
+    """Argv for the subprocess adapter, in the historical flag order."""
+    cli: list[str] = ["search", "--json", "--query", request.query]
+    if request.decision is not None:
+        cli += ["--decision", request.decision]
+    if request.domain is not None:
+        cli += ["--domain", request.domain]
+    if request.technology is not None:
+        cli += ["--technology", request.technology]
+    if request.card_type is not None:
+        cli += ["--type", request.card_type]
+    if request.task is not None:
+        cli += ["--task", request.task]
+    for item in request.tag or []:
+        cli += ["--tag", item]
+    for item in request.platform or []:
+        cli += ["--platform", item]
+    if request.include_unlocated:
+        cli.append("--include-unlocated")
+    if request.include_shared:
+        cli.append("--include-shared")
+    if request.source_technology is not None:
+        cli += ["--source-technology", request.source_technology]
+    if request.target_technology is not None:
+        cli += ["--target-technology", request.target_technology]
+    if request.status is not None:
+        cli += ["--status", request.status]
+    if request.match is not None:
+        cli += ["--match", request.match]
+    if request.limit is not None:
+        cli += ["--limit", str(request.limit)]
+    if request.alt_query is not None:
+        cli += ["--alt-query", request.alt_query]
+    return cli
+
+
+def _search_cli_namespace(request: SearchRequest) -> argparse.Namespace:
+    """Argparse-equivalent namespace for the in-process adapter.
+
+    The CLI parser defaults (status stable, match text, limit 10, empty tag
+    and platform lists) are applied here so in-process requests travel the
+    exact same code path as parsed argv; the limit check mirrors the one
+    the CLI main() runs before touching the index.
+    """
+    if request.limit is not None and request.limit < 1:
+        raise ValueError("--limit must be greater than zero")
+    return argparse.Namespace(
+        command="search",
+        query=request.query,
+        alt_query=request.alt_query,
+        decision=request.decision,
+        domain=request.domain,
+        technology=request.technology,
+        card_type=request.card_type,
+        task=request.task,
+        tag=list(request.tag or []),
+        platform=list(request.platform or []),
+        all_platforms=False,
+        include_unlocated=request.include_unlocated,
+        include_shared=request.include_shared,
+        source_technology=request.source_technology,
+        target_technology=request.target_technology,
+        status=request.status or "stable",
+        match=request.match or "text",
+        limit=10 if request.limit is None else request.limit,
+        json=True,
+        text=False,
+        receipt=None,
+        scope=None,
+        scope_json=None,
+        scope_file=None,
+    )
+
+
+def _index_rebuild_hint(message: str, root: Path) -> str:
+    if "index" in message and any(
+        marker in message
+        for marker in ("rebuild", "index build", "missing", "inconsistent", "unsupported", "stale")
+    ):
+        return (
+            "; the maintainer should rebuild it with: python3 "
+            ".agents/skills/knowledge-query/scripts/knowledge_index.py "
+            f"--knowledge-root {root} build"
+        )
+    return ""
+
+
+class CliRunner(RetrievalEngine):
+    """Subprocess adapter around knowledge_query.py with a concurrency gate.
+
+    Kept as the isolation/diagnostic twin of the in-process engine: both
+    satisfy RetrievalEngine, and CANNBOT_MCP_ENGINE selects which one the
+    tools talk to.
+    """
 
     def __init__(
         self,
@@ -1240,17 +1401,14 @@ class CliRunner:
                 break
         if not message:
             message = stderr.strip() or "no diagnostics"
-        hint = ""
-        if "index" in message and any(
-            marker in message
-            for marker in ("rebuild", "index build", "missing", "inconsistent", "unsupported", "stale")
-        ):
-            hint = (
-                "; the maintainer should rebuild it with: python3 "
-                ".agents/skills/knowledge-query/scripts/knowledge_index.py "
-                f"--knowledge-root {self.root} build"
-            )
+        hint = _index_rebuild_hint(message, self.root)
         return f"knowledge CLI failed (exit {returncode}): {message}{hint}"
+
+    async def discover(self) -> dict[str, Any]:
+        return await self.run(["discover", "--json"])
+
+    async def search(self, request: SearchRequest) -> dict[str, Any]:
+        return await self.run(_search_cli_arguments(request))
 
     @staticmethod
     def _tail(stderr: str, limit: int = 400) -> str:
@@ -1269,6 +1427,327 @@ def _cli_error_kind_from_message(message: str) -> str:
     ):
         return "index_stale"
     return "cli_error"
+
+def _engine_query_error(root: Path, exc: BaseException) -> StructuredToolError:
+    """Wrap an in-process retrieval failure with the CLI error taxonomy.
+
+    The retrieval module raises the very ValueErrors the CLI prints on
+    stderr, so the message keywords classify through the same helper the
+    subprocess adapter uses and the client sees the same error_kind set.
+    """
+    message = str(exc).strip() or "no diagnostics"
+    return StructuredToolError(
+        f"knowledge CLI failed: {message}{_index_rebuild_hint(message, root)}",
+        kind=_cli_error_kind_from_message(message),
+    )
+
+class InProcessEngine(RetrievalEngine):
+    """Resident in-process retrieval engine over the CLI retrieval modules.
+
+    Loads the index metadata and the card set once and reuses them for
+    every call, importing the same retrieval module functions the CLI
+    uses (index opening, card loading, scoring, payload assembly), so the
+    JSON contract is shared by construction instead of re-parsed. All
+    engine work runs on one dedicated worker thread, and concurrent calls
+    serialize there, which makes every load and reload single-flight -
+    the load counter and the per-load stderr line exist to prove it.
+
+    The SQLite handle is **per query, never resident**: a resident
+    read-only connection pins the index file on Windows and blocks the
+    build's ``os.replace`` publish (WinError 5 - review P1), so the
+    engine keeps only the derived, connection-free state (cards,
+    metadata) resident and opens a short-lived read-only connection
+    inside each search call, closing it before returning. Discover needs
+    no connection at all.
+
+    Index freshness is validated per tool call, not per process: each call
+    first re-runs the repository-state verification the CLI performs
+    (governance fingerprint, card-set manifest, card count) on a fresh
+    connection, plus a fingerprint comparison against the metadata the
+    engine loaded. Any mismatch or failure is fail-closed - the call is
+    refused with the same structured index_stale/index_missing error the
+    CLI taxonomy produces, and the resident card set is dropped so a
+    replaced index file never leaves the engine answering from stale
+    data. The refused call never reloads; the next call re-opens and
+    reloads the card set after its validation passes, so a running server
+    recovers without a restart once the maintainer restores or rebuilds
+    the index - and with no resident handle, the build's file replacement
+    succeeds on Windows too.
+    """
+
+    def __init__(
+        self,
+        root: Path,
+        *,
+        queue_depth: int = ENGINE_QUEUE_DEFAULT,
+        call_timeout_s: float = ENGINE_TIMEOUT_DEFAULT_S,
+    ) -> None:
+        self.root = root
+        self._queue_depth = max(0, queue_depth)
+        self._call_timeout_s = call_timeout_s
+        self._executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="cannbot-retrieval"
+        )
+        # Bounded admission (review P2): a bounded semaphore counts both
+        # the running call and the queued ones; the (1 + queue) shape means
+        # one in flight and `queue_depth` waiting. Calls beyond that are
+        # refused immediately with a structured overload error instead of
+        # accumulating an unbounded queue behind a slow worker.
+        self._admission = asyncio.Semaphore(1 + self._queue_depth)
+        self._reloads = 0
+        self._deadline_missed = False
+        self._index_metadata: dict[str, Any] | None = None
+        self._cards: list[Any] | None = None
+        self._load_count = 0
+        self._closed = False
+
+    @property
+    def load_count(self) -> int:
+        """Completed card-set loads (startup prewarm plus reloads)."""
+        return self._load_count
+
+    async def discover(self) -> dict[str, Any]:
+        return await self._run_bounded(self._discover)
+
+    async def search(self, request: SearchRequest) -> dict[str, Any]:
+        return await self._run_bounded(self._search, request)
+
+    async def _run_bounded(self, work: Callable[..., Any], *args: Any) -> dict[str, Any]:
+        """Admission, deadline and worker recovery for one engine call.
+
+        Review P2 named three guarantees the subprocess adapter had and
+        the single worker lost:
+
+        - **Bounded queue**: the admission semaphore counts the running
+          call plus the waiting ones; beyond ``1 + queue_depth`` the call
+          is refused immediately (``engine_overload``) instead of piling
+          onto an unbounded backlog behind a slow task.
+        - **Call deadline**: ``asyncio.wait_for`` bounds how long a caller
+          waits for the worker. On expiry the caller is released with a
+          structured ``engine_timeout`` error, mirroring the CLI's
+          ``subprocess_timeout`` taxonomy.
+        - **Worker recovery**: the timeout CANNOT cancel a thread task
+          that already started (the reviewer's point: ``wait_for`` alone
+          does not free an occupied worker). A wedged task is detected
+          at the NEXT call: if a previous deadline expired while the
+          worker never produced a result, the executor is replaced (the
+          old one is shut down without waiting, abandoning the wedged
+          thread to the interpreter) and the call re-runs on a fresh
+          worker. ``_reloads`` counts those recoveries.
+        """
+        if self._closed:
+            raise StructuredToolError(
+                "retrieval engine is shut down", kind="engine_unavailable"
+            )
+        try:
+            # Zero-capacity mode (queue_depth=0): acquire immediately or
+            # refuse; positive depth: wait up to the call deadline.
+            try:
+                acquired = await asyncio.wait_for(
+                    self._admission.acquire(), timeout=self._call_timeout_s
+                )
+            except asyncio.TimeoutError:
+                raise StructuredToolError(
+                    "retrieval engine admission timed out: the queue is "
+                    f"full ({self._queue_depth} waiting) and no worker "
+                    "became free within the call deadline; retry shortly "
+                    "or raise CANNBOT_MCP_ENGINE_QUEUE / "
+                    "CANNBOT_MCP_ENGINE_TIMEOUT",
+                    kind="engine_overload",
+                ) from None
+            try:
+                if self._wedged():
+                    self._recover_worker()
+                future = self._executor.submit(work, *args)
+                try:
+                    return await asyncio.wait_for(
+                        asyncio.wrap_future(future), timeout=self._call_timeout_s
+                    )
+                except asyncio.TimeoutError:
+                    self._deadline_missed = True
+                    raise StructuredToolError(
+                        "knowledge retrieval exceeded the "
+                        f"{self._call_timeout_s:g}s engine call deadline and "
+                        "the caller was released; the server stays up - "
+                        "retry the call or ask the maintainer to inspect the "
+                        "knowledge root (CANNBOT_MCP_ENGINE_TIMEOUT raises "
+                        "the bound)",
+                        kind="engine_timeout",
+                    ) from None
+            finally:
+                self._admission.release()
+        except StructuredToolError:
+            raise
+        except (OSError, ValueError, yaml.YAMLError, sqlite3.Error) as exc:
+            raise _engine_query_error(self.root, exc) from None
+
+    def _wedged(self) -> bool:
+        return self._deadline_missed
+
+    def _recover_worker(self) -> None:
+        """Replace the single-thread executor after a deadline miss.
+
+        The old executor is shut down WITHOUT wait: its wedged task keeps
+        the old thread busy, but that thread no longer serves any engine
+        call and is abandoned to the interpreter. The new executor gets a
+        fresh thread; resident card state survives (it is plain data, not
+        tied to the thread). One recovery per deadline miss, so a
+        genuinely slow-but-progressing call is not preempted - only a
+        caller that already timed out leaves this marker behind.
+        """
+        self._deadline_missed = False
+        old = self._executor
+        self._executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="cannbot-retrieval"
+        )
+        self._reloads += 1
+        old.shutdown(wait=False)
+
+    @property
+    def reloads(self) -> int:
+        """Worker recoveries after deadline misses."""
+        return self._reloads
+
+    def prewarm(self) -> bool:
+        """Best-effort startup load: failures stay per-call fail-closed errors."""
+        if self._closed:
+            return False
+        try:
+            self._executor.submit(self._ensure_loaded).result()
+            return True
+        except Exception as exc:
+            print(
+                f"cannbot-mcp: retrieval engine warm-up failed: {exc}",
+                file=sys.stderr,
+            )
+            return False
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            self._executor.submit(self._drop_state).result()
+        except concurrent.futures.CancelledError:
+            pass
+        finally:
+            self._executor.shutdown(wait=True)
+
+    def _drop_state(self) -> None:
+        # No SQLite handle is resident (per-query connections only), so
+        # dropping state is pure memory invalidation.
+        self._cards = None
+        self._index_metadata = None
+
+    def _ensure_loaded(self) -> None:
+        if self._cards is not None:
+            return
+        try:
+            connection, metadata = open_index(self.root, full=False)
+            try:
+                cards = load_cards(connection)
+            finally:
+                connection.close()
+        except (OSError, ValueError, yaml.YAMLError, sqlite3.Error) as exc:
+            raise _engine_query_error(self.root, exc) from None
+        self._index_metadata = metadata
+        self._cards = cards
+        self._load_count += 1
+        print(
+            f"cannbot-mcp: retrieval engine loaded {len(cards)} cards "
+            f"from the knowledge index (load #{self._load_count})",
+            file=sys.stderr,
+        )
+
+    def _open_query_connection(self) -> sqlite3.Connection:
+        """Open the short-lived read-only connection for one search call.
+
+        Per-query connections keep the index file unpinned so the build's
+        os.replace publish succeeds on any platform (review P1). The
+        connection was already integrity-verified at load time and the
+        per-call freshness check just ran, so no re-verification here -
+        only the open.
+        """
+        path = index_path(self.root)
+        if not path.is_file():
+            raise ValueError(
+                f"knowledge index is missing: {path}; run knowledge_index.py build"
+            )
+        return _connect_readonly(path)
+
+    def _verify_resident_index(self) -> None:
+        """Per-call freshness check of the resident index, fail-closed.
+
+        Re-runs the repository-state verification the CLI performs on a
+        fresh connection and compares the current index metadata with the
+        fingerprints the engine loaded. On any failure the resident card
+        set is dropped before the structured error propagates, so the
+        next call reloads from the current index file instead of
+        answering from stale data.
+        """
+        if self._cards is None:
+            return
+        try:
+            current = verify_freshness(self.root)
+        except (OSError, ValueError, yaml.YAMLError, sqlite3.Error) as exc:
+            self._drop_state()
+            _LOGGER.log_event(
+                event="index_stale_refused",
+                reason="freshness_check_failed",
+                detail=f"{type(exc).__name__}: {exc}",
+                boot_id=BOOT_ID,
+            )
+            raise _engine_query_error(self.root, exc) from None
+        if current != self._index_metadata:
+            self._drop_state()
+            _LOGGER.log_event(
+                event="index_stale_refused",
+                reason="fingerprint_changed",
+                loaded_index_version=self._index_metadata.get("index_version")
+                if isinstance(self._index_metadata, dict)
+                else None,
+                current_index_version=current.get("index_version")
+                if isinstance(current, dict)
+                else None,
+                boot_id=BOOT_ID,
+            )
+            raise StructuredToolError(
+                "knowledge index fingerprint changed after the engine loaded "
+                "it; this call is refused fail-closed and the resident card "
+                "set was dropped - the next call reloads the current index",
+                kind="index_stale",
+            ) from None
+
+    def _discover(self) -> dict[str, Any]:
+        self._verify_resident_index()
+        self._ensure_loaded()
+        return knowledge_query.discover_payload(
+            self.root, self._cards, self._index_metadata
+        )
+
+    def _search(self, request: SearchRequest) -> dict[str, Any]:
+        self._verify_resident_index()
+        self._ensure_loaded()
+        try:
+            args = _search_cli_namespace(request)
+            knowledge_query.apply_default_platform(args)
+            # Per-query connection (review P1): closed before returning so
+            # no handle pins the index file; loads/validations are the
+            # only long-lived state.
+            connection = self._open_query_connection()
+            try:
+                return knowledge_query.search_payload(
+                    self.root,
+                    self._cards,
+                    self._index_metadata,
+                    connection,
+                    args,
+                    include_current_repository=False,
+                )
+            finally:
+                connection.close()
+        except (OSError, ValueError, yaml.YAMLError, sqlite3.Error) as exc:
+            raise _engine_query_error(self.root, exc) from None
 
 class CardReader:
     """Paginated, traversal-safe card reads from the knowledge bundle."""
@@ -1857,13 +2336,13 @@ if _SDK_AUTH_PROVIDER is not None:
     _SDK_AUTHORIZE_PAGE = _sdk_authorize_page
 
 _LOGGER = CallLogger()
-_RUNNER: CliRunner | None = None
+_ENGINE: RetrievalEngine | None = None
 _READER: CardReader | None = None
 
-def _require_runner() -> CliRunner:
-    if _RUNNER is None:
+def _require_engine() -> RetrievalEngine:
+    if _ENGINE is None:
         raise ToolError("server context is not initialized")
-    return _RUNNER
+    return _ENGINE
 
 def _require_reader() -> CardReader:
     if _READER is None:
@@ -1874,6 +2353,21 @@ async def _logged_call(
     tool: str, arguments: dict[str, Any], action: Callable[[], Any]
 ) -> dict[str, Any]:
     meta = request_meta.get()
+    # SDK-mode principal attribution: the wrapper sets request_meta before
+    # the SDK middleware verifies the credential (the verdict lives one
+    # layer deeper, inside `inner`), so meta.principal is None there. The
+    # SDK's AuthContextMiddleware has by now published the verified user
+    # on its own contextvar in the same task context this tool call runs
+    # in (tools execute inside the request handler's task tree), so the
+    # subject is read as the fallback. Offline (SDK_AUTH=off, stdio, or
+    # any unauthenticated path) get_access_token() returns None and the
+    # handwritten meta.principal stands as the only source — this bridge
+    # never overrides it.
+    principal = meta.principal
+    if principal is None:
+        access = get_access_token()
+        if access is not None and access.subject:
+            principal = access.subject
     started = time.perf_counter()
     payload: dict[str, Any] | None = None
     error_text: str | None = None
@@ -1916,7 +2410,7 @@ async def _logged_call(
             )
         _LOGGER.log_call(
             transport=meta.transport,
-            principal=meta.principal,
+            principal=principal,
             tool=tool,
             arguments=arguments,
             ok=error_text is None,
@@ -1948,7 +2442,7 @@ async def discover() -> dict[str, Any]:
     cheapest health check: a successful call proves the knowledge root and the
     search index are valid and fresh. Read-only.
     """
-    return await _logged_call("discover", {}, lambda: _require_runner().run(["discover", "--json"]))
+    return await _logged_call("discover", {}, lambda: _require_engine().discover())
 
 @mcp_server.tool(name="search", annotations=ToolAnnotations(read_only_hint=True))
 async def search(
@@ -2042,6 +2536,16 @@ async def search(
             "the target is not found."
         ),
     ),
+    alt_query: str | None = Field(
+        default=None,
+        description=(
+            "Optional alternate-language query for bilingual dual search "
+            "(e.g. the English translation of a Chinese query): requires "
+            "match=text, must be non-empty and differ from query, shares all "
+            "filters, and fuses both legs by rank interleaving. Omit it for "
+            "single-leg search."
+        ),
+    ),
 ) -> dict[str, Any]:
     """Search the knowledge base and return ranked candidate cards.
 
@@ -2070,41 +2574,32 @@ async def search(
             ("status", status),
             ("match", match),
             ("limit", limit),
+            ("alt_query", alt_query),
         )
         if value is not None and value is not False and value != []
     }
 
+    request = SearchRequest(
+        query=query,
+        decision=decision,
+        domain=domain,
+        technology=technology,
+        card_type=type,
+        task=task,
+        tag=tag,
+        platform=platform,
+        include_unlocated=include_unlocated,
+        include_shared=include_shared,
+        source_technology=source_technology,
+        target_technology=target_technology,
+        status=status,
+        match=match,
+        limit=limit,
+        alt_query=alt_query,
+    )
+
     def action() -> Any:
-        cli: list[str] = ["search", "--json", "--query", query]
-        if decision is not None:
-            cli += ["--decision", decision]
-        if domain is not None:
-            cli += ["--domain", domain]
-        if technology is not None:
-            cli += ["--technology", technology]
-        if type is not None:
-            cli += ["--type", type]
-        if task is not None:
-            cli += ["--task", task]
-        for item in tag or []:
-            cli += ["--tag", item]
-        for item in platform or []:
-            cli += ["--platform", item]
-        if include_unlocated:
-            cli.append("--include-unlocated")
-        if include_shared:
-            cli.append("--include-shared")
-        if source_technology is not None:
-            cli += ["--source-technology", source_technology]
-        if target_technology is not None:
-            cli += ["--target-technology", target_technology]
-        if status is not None:
-            cli += ["--status", status]
-        if match is not None:
-            cli += ["--match", match]
-        if limit is not None:
-            cli += ["--limit", str(limit)]
-        return _require_runner().run(cli)
+        return _require_engine().search(request)
 
     return await _logged_call("search", arguments, action)
 
@@ -3974,9 +4469,11 @@ def build_http_app(
             # that stack accepts (RFC 8707: the resource identity is
             # resource_server_url now), so it yields here; ticket 8 keeps
             # it as the SDK_AUTH=off (fallback) implementation. Phase-1
-            # gaps to be rebuilt on the SDK stack: IP cooldown,
-            # per-principal rate limiting and principal attribution in the
-            # call log. Call logging itself stays on via the meta below.
+            # gaps to be rebuilt on the SDK stack: IP cooldown and
+            # per-principal rate limiting. Principal attribution in the
+            # call log is covered by _logged_call's
+            # get_access_token() fallback (the SDK contextvar); call
+            # logging itself stays on via the meta below.
             body = await _drain_body(receive)
             request_meta.set(
                 RequestMeta(
@@ -4398,6 +4895,24 @@ def _upload_remote() -> str:
 def _upload_branch() -> str:
     return os.environ.get(LOG_UPLOAD_BRANCH_ENV, "").strip() or "main"
 
+def _engine_mode() -> str:
+    """CANNBOT_MCP_ENGINE selects the retrieval adapter.
+
+    Empty boots the resident in-process engine (the default since the
+    retrieval engine rollout); ``subprocess`` restores the CLI passthrough
+    adapter for process-level isolation diagnostics. Anything else refuses
+    to start instead of guessing a deployment's retrieval mode.
+    """
+    raw = (os.environ.get(ENGINE_ENV) or "").strip().lower().replace("-", "_")
+    if not raw:
+        return ENGINE_MODE_IN_PROCESS
+    if raw not in (ENGINE_MODE_IN_PROCESS, ENGINE_MODE_SUBPROCESS):
+        raise ValueError(
+            f"invalid {ENGINE_ENV}={os.environ.get(ENGINE_ENV)!r}; expected "
+            f"{ENGINE_MODE_IN_PROCESS} or {ENGINE_MODE_SUBPROCESS}"
+        )
+    return raw
+
 def _start_uploader(transport: str, logging_enabled: bool, interval_s: int) -> bool:
     """The uploader thread runs only for served HTTP traffic worth sharing.
 
@@ -4426,13 +4941,29 @@ def main(argv: list[str] | None = None) -> int:
             f"cannbot-mcp: knowledge CLI not found: {cli_script}", file=sys.stderr
         )
         return 2
-    global _RUNNER, _READER
-    _RUNNER = CliRunner(
+    global _ENGINE, _READER
+    try:
+        engine_mode = _engine_mode()
+    except ValueError as exc:
+        print(f"cannbot-mcp: {exc}", file=sys.stderr)
+        return 2
+    runner = CliRunner(
         script=cli_script,
         root=root,
         max_subprocs=_env_int(MAX_SUBPROCS_ENV, os.cpu_count() or 1),
         timeout_s=_env_float(SUBPROC_TIMEOUT_ENV, 30.0),
     )
+    engine: RetrievalEngine
+    if engine_mode == ENGINE_MODE_IN_PROCESS:
+        engine = InProcessEngine(
+            root,
+            queue_depth=_env_int(ENGINE_QUEUE_ENV, ENGINE_QUEUE_DEFAULT),
+            call_timeout_s=_env_float(ENGINE_TIMEOUT_ENV, ENGINE_TIMEOUT_DEFAULT_S),
+        )
+        engine.prewarm()
+    else:
+        engine = runner
+    _ENGINE = engine
     _READER = CardReader(root=root, transport=transport)
     _LOGGER.configure(_log_directory(), _log_enabled(transport), REPO_ROOT)
     if transport == "http":

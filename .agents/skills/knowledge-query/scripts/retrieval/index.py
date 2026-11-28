@@ -692,11 +692,13 @@ def _verify_connection(
     connection: sqlite3.Connection,
     *,
     full: bool,
+    quick: bool = True,
 ) -> dict[str, Any]:
     try:
-        check = connection.execute("PRAGMA quick_check").fetchone()[0]
-        if check != "ok":
-            raise ValueError(f"knowledge index quick_check failed: {check}")
+        if quick:
+            check = connection.execute("PRAGMA quick_check").fetchone()[0]
+            if check != "ok":
+                raise ValueError(f"knowledge index quick_check failed: {check}")
         metadata = _read_meta(connection)
         if metadata.get("schema_version") != INDEX_SCHEMA:
             raise ValueError("knowledge index schema is unsupported; rebuild the index")
@@ -783,6 +785,37 @@ def _open_verified_index(
 def verify_index(root: Path, *, full: bool = False) -> dict[str, Any]:
     connection, metadata = _open_verified_index(root, full=full)
     connection.close()
+    return metadata
+
+
+def verify_freshness(root: Path) -> dict[str, Any]:
+    """Repository-state freshness check for resident engines.
+
+    Runs every repository-consistency check ``open_index`` applies on a
+    fresh read-only connection - index presence, metadata readability,
+    schema/index version, governance fingerprint, card-set manifest
+    (paths, size, mtime_ns) and card count - but skips ``PRAGMA
+    quick_check``: that pragma reads the whole database and costs seconds
+    on large indexes, while a resident engine has already integrity-checked
+    its connection at load time and mid-flight corruption surfaces as
+    sqlite errors on the query path. Returns the current index metadata so
+    callers can additionally detect a replaced or rebuilt index by
+    fingerprint comparison against the metadata they loaded.
+    """
+    root = root.resolve()
+    path = index_path(root)
+    if not path.is_file():
+        raise ValueError(
+            f"knowledge index is missing: {path}; run knowledge_index.py build"
+        )
+    try:
+        connection = _connect_readonly(path)
+    except sqlite3.Error as exc:
+        raise ValueError(f"cannot open knowledge index {path}: {exc}") from exc
+    try:
+        metadata = _verify_connection(root, path, connection, full=False, quick=False)
+    finally:
+        connection.close()
     return metadata
 
 

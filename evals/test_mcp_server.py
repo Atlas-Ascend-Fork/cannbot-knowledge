@@ -1415,6 +1415,11 @@ class SubprocessGuardTests(unittest.TestCase):
         self.marker = Path(self.temporary) / "concurrency.log"
         self.scripts = self.root / ".agents/skills/knowledge-query/scripts"
         self.scripts.mkdir(parents=True)
+        # These tests exercise the subprocess adapter's contract (stub
+        # script, MAX_SUBPROCS queueing, SUBPROC_TIMEOUT guard); the
+        # in-process engine never invokes the stub, so pin the adapter
+        # the way deployments restore it for isolation diagnostics.
+        self.engine = "subprocess"
 
     def tearDown(self) -> None:
         shutil.rmtree(self.temporary, ignore_errors=True)
@@ -1434,7 +1439,8 @@ class SubprocessGuardTests(unittest.TestCase):
             "print(json.dumps({'stub': True, 'cards': 1}))\n"
         )
         client = StdioClient(
-            self.root, HOME_DIR, CANNBOT_MCP_MAX_SUBPROCS="1"
+            self.root, HOME_DIR, CANNBOT_MCP_MAX_SUBPROCS="1",
+            CANNBOT_MCP_ENGINE=self.engine,
         )
         try:
             client.initialize()
@@ -1462,7 +1468,8 @@ class SubprocessGuardTests(unittest.TestCase):
     def test_hung_cli_times_out_with_structured_error(self) -> None:
         self.write_stub("import time\ntime.sleep(60)\n")
         client = StdioClient(
-            self.root, HOME_DIR, CANNBOT_MCP_SUBPROC_TIMEOUT="2"
+            self.root, HOME_DIR, CANNBOT_MCP_SUBPROC_TIMEOUT="2",
+            CANNBOT_MCP_ENGINE=self.engine,
         )
         try:
             client.initialize()

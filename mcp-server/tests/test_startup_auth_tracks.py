@@ -35,14 +35,19 @@ class StartupAuthTrackTests(unittest.TestCase):
                 server.AUTH_SERVER_ENV,
                 server.AUTH_DB_ENV,
                 server.AUTH_SECRET_ENV,
+                server.ENGINE_ENV,
                 "CANNBOT_MCP_LOG",
             )
         }
         self._saved = saved
-        # Neutral defaults: no tokens, both dynamic tracks on.
+        # Neutral defaults: no tokens, both dynamic tracks on. These tests
+        # are about auth tracks, not the retrieval engine: pin the subprocess
+        # adapter so startup stays cheap instead of prewarming the resident
+        # engine against the real repository index.
         os.environ.pop(server.TOKENS_ENV, None)
         os.environ.pop(server.GITCODE_VERIFY_ENV, None)
         os.environ.pop(server.AUTH_SERVER_ENV, None)
+        os.environ[server.ENGINE_ENV] = "subprocess"
         os.environ[server.AUTH_DB_ENV] = str(Path(self._tmp.name) / "auth.db")
         os.environ[server.AUTH_SECRET_ENV] = "test-secret"
         os.environ["CANNBOT_MCP_LOG"] = "off"

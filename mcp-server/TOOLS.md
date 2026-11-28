@@ -50,6 +50,7 @@
 | `platform` | string[] | 否* | — | 目标平台。合法值:`a2 / a3 / 950 / 310p / 910 / kirin_x90 / kirin_9030 / agnostic`;多值 AND(要求卡片同时支持全部);未知值直接拒绝。*省略且无缺省平台时报错指导补参(fail-closed) |
 | `match` | string | 否 | `text` | `literal`(整串原样匹配,适合确切 API 名/类名)或 `text`(词法相关排序,适合概念性问题) |
 | `limit` | int | 否 | — | 返回条数上限。从 5 起步,目标没找到再逐步调大;`count` 是本次返回条数,不是全库匹配总数 |
+| `alt_query` | string | 否 | — | 双语双搜的第二条查询腿:`query` 的替代语言版本(如中文 query 配英文 alt_query)。约束与 CLI `--alt-query` 逐字一致:要求 `match=text`、不得为空、不得与 `query` 相同(大小写与首尾空白归一后比较);与 `query` 共享全部过滤参数与 Scope;两腿命中按名次交错(`rank-interleave`)融合排序。传入后返回 `knowledge-search.v6` 双语 payload:含 `alt_query` 回显与 `fusion` 块(`method`/`order`/`original_hits`/`alt_hits`),每条结果的 `bilingual` 块带双名次字段(`original_rank`/`alt_rank`)与各腿分数(`score_leg`/`original_score`/`alt_score`)。省略则保持单腿 `knowledge-search.v5`,结果不含 `bilingual` 字段 |
 | `decision` | string | 否 | — | 本次检索支持的决策的一句话说明;只进审计日志,不影响排序 |
 | `domain` | string | 否 | — | 知识域过滤:`ops / model / common / contrib / runtime` |
 | `technology` | string | 否 | — | 技术过滤:`ascendc / triton / tilelang / catlass / platforms / ...` |
@@ -146,18 +147,21 @@
 
 - 查**确切 API / 类名 / 宏**用 `match: literal`(整串原样匹配,不要把多个词当必然短语);
 - 概念性、多约束问题用默认 `text`,把准确 API 名或首发错误信号放进 query;
+- 中文查询召回不到英文知识卡时,把查询翻译成英文关键词传 `alt_query` 做双语双搜:两腿共享过滤条件、名次交错融合,英文卡也能进入结果(要求 `match=text`);
 - `stable` 之外的生命周期卡(draft/deprecated)需要有明确理由再查;
 - 结果排序不能代替声明核对:同名 API 不同家族时按返回的完整声明区分。
 
 ## 错误分类(error_kind)
 
-工具失败按 `error_kind` 结构化返回,完整症状→处置对照见 [TROUBLESHOOTING.md](TROUBLESHOOTING.md):| error_kind | 含义 |
+工具失败按 `error_kind` 结构化返回,完整症状→处置对照见 [TROUBLESHOOTING.md](TROUBLESHOOTING.md):
+
+| error_kind | 含义 |
 |---|---|
 | `platform_missing` | search 缺平台参数且无缺省,报错指导补参(fail-closed) |
 | `index_missing` / `index_stale` | 索引缺失/过期,拒绝服务,交由维护者重建 |
 | `path_not_indexed` | read_card 的 path 不在索引中;用 search 获取有效路径 |
 | `path_out_of_bundle` | 路径越界(Bundle 根之外) |
 | `invalid_argument` / `offset_out_of_range` | 分页参数非法 |
-| `subprocess_timeout` | CLI 子进程超时(默认 30 秒)被杀 |
+| `subprocess_timeout` | CLI 子进程超时被杀(仅 `CANNBOT_MCP_ENGINE=subprocess` 模式;默认 in-process 引擎无子进程,不产生该错误) |
 | `cli_error` | 其他 CLI 失败 |
 | `internal` | 服务器内部错误 |

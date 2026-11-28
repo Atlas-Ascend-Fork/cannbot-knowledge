@@ -247,13 +247,13 @@ def index_provenance(
     return result
 
 
-def discover(
+def discover_payload(
     root: Path,
     cards: list[IndexedCard],
     index_metadata: dict[str, Any],
-    args: argparse.Namespace,
-) -> int:
-    result = {
+) -> dict[str, Any]:
+    """Assemble the knowledge-discovery.v1 payload (shared with in-process consumers)."""
+    return {
         "schema_version": "knowledge-discovery.v1",
         "root": str(root),
         "cards": len(cards),
@@ -270,6 +270,15 @@ def discover(
         ),
         "index": index_provenance(index_metadata, root),
     }
+
+
+def discover(
+    root: Path,
+    cards: list[IndexedCard],
+    index_metadata: dict[str, Any],
+    args: argparse.Namespace,
+) -> int:
+    result = discover_payload(root, cards, index_metadata)
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
