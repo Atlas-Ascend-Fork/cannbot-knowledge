@@ -112,6 +112,8 @@
 - [Philox offset 须放 counter 2:3 而非 0:1](philox_offset_counter_2_3_0_1.md)：自定义 Philox kernel 把 generator offset 放入 PhiloxCounter 的 position 字段 counter[0:1]，原生 aclnnSimThreadExponential 放入 subsequence 字段 counter[2:3]，导致 offset=0 时逐元素匹配、offset!=0 时 0% 匹配；用单核逐字段试错对比判别。
 - [PhiloxRandom 默认 7 rounds 与原生 10 不匹配](philoxrandom_7_rounds_10.md)：自定义 AscendC exponential_ kernel 沿用 CANN philox.h 模板默认 Rounds=7，与原生 aclnnSimThreadExponential 的 Philox-4x32-10（10 rounds）不一致，单次调用即 0% 逐元素匹配；探针用 PhiloxRandom<10> 构建后单次调用 100% 一致，据此判别 rounds 数是单次调用错位的根因。
 - [跨批首行漏比较—续批从 row 0 扫描](prefix_scan_continuation_batch_must_compare_first_row.md)：前缀归约续批把 row 0 当作 carry 覆盖，当前输入未参与比较；首批跳过 row 0，续批从 row 0 全量扫描。
+- [量化结果差一位时检查除法改乘倒数的舍入变化](quantization_reciprocal_rewrite_rounding.md)：在半整数边界分别检查 scale 和归一化链，避免浮点容差通过掩盖整数输出不等价。
+- [基数直方图打包 digit 时同步转换有效掩码](radix_histogram_packed_digit_mask.md)：将 uint32 digit 压成 uint8 后按相同 lane 映射转换谓词，防止尾块直方图计数污染。
 - [RANK大于5时NDDMA漏维致accum错var另因](rank_5_nddma_accum_var.md)：fused_mul_apply_momentum 在 Ascend950 上 7D Nesterov 出现 accum 正确但 var 巨大误差；判别要点：NDDMA 描述符 ≤5 维、RANK>5 时外循环漏维只致 accum 错，var 误差另有根因，不可假设同源。
 - [低 rank 零填充致 count=0 用 td_->rank 非 RANK](rank_count_0_td_rank_rank.md)：多 rank 共用 RANK=4 模板时 host tiling 对低 rank tensor 把 max_bro_shape[rank..3] 零填充；kernel 若用模板 RANK 作维度循环上界，inner_count *= 0 致 count=0 不处理任何元素，仅真实 4D shape 通过。判别：低 rank 用例全 FAILED 而唯 4D PASSED 时查 kernel 是否用 RANK 而非 td_->rank 作循环上界。
 - [Reciprocal 低精度致 sigmoid 比对失败](reciprocal_sigmoid.md)：AscendC::Reciprocal 为低精度查表近似指令（相对误差约 1e-3），sigmoid 的 1/(1+exp(-x)) 用其求倒数会让 verify_result.py 报 max_diff≈0.00179、16384/16384 全 mismatch；判别方法：把最后一步 Reciprocal 换成 Duplicate+Div 高精度除法后 max_diff 降为 0，即可单点归因到 Reciprocal 的低精度近似。
