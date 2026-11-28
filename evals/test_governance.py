@@ -1444,6 +1444,46 @@ class IngestContractTests(unittest.TestCase):
         self.assertIn("title: Contract probe", result.stdout)
         self.assertIn("resource: https://gitcode.com/", result.stdout)
 
+    def test_create_rejects_symlinked_profile_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "repo"
+            shutil.copytree(ROOT / "governance", root / "governance")
+            guides = root / "knowledge/ops/ascendc/guides"
+            guides.mkdir(parents=True)
+            (guides.parent / "apis").symlink_to("guides", target_is_directory=True)
+            body = root.parent / "body.md"
+            body.write_text("# Candidate\n", encoding="utf-8")
+            target = guides / "symlink_probe.md"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(INGEST),
+                    "--knowledge-root",
+                    str(root),
+                    "create",
+                    "--path",
+                    "knowledge/ops/ascendc/apis/symlink_probe.md",
+                    "--title",
+                    "Symlink probe",
+                    "--description",
+                    "Check that creation preserves the path profile.",
+                    "--tag",
+                    "task.lookup",
+                    "--tag",
+                    "topic.compilation",
+                    "--platform",
+                    "a2",
+                    "--body-file",
+                    str(body),
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(2, result.returncode, result.stderr)
+            self.assertIn("must not traverse symbolic links", result.stderr)
+            self.assertFalse(target.exists())
+
     def test_target_contract_is_compared_without_execution(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

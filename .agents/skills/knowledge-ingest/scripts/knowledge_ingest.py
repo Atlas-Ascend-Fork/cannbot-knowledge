@@ -138,7 +138,10 @@ def create(args: argparse.Namespace) -> int:
     relative = Path(args.path)
     path_info = contract.derive_card_path(relative)
     card_type = path_info.card_type
-    target = (root / relative).resolve()
+    requested_target = root / relative
+    target = requested_target.resolve()
+    if target != requested_target:
+        raise ValueError("card path must not traverse symbolic links")
     if (root / "knowledge").resolve() not in target.parents:
         raise ValueError("target escapes knowledge root")
 
